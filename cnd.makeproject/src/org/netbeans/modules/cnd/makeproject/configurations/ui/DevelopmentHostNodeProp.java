@@ -75,7 +75,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
         this.description = description;
         setValue("title", NbBundle.getMessage(DevelopmentHostNodeProp.class, "DLG_TITLE_Connect")); // NOI18N
     }
-
+    
     @Override
     public String getName() {
         return name;
@@ -135,6 +135,14 @@ public class DevelopmentHostNodeProp extends Node.Property {
         return true;
     }
 
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }    
+    
     @Override
     public PropertyEditor getPropertyEditor() {
         return new IntEditor();

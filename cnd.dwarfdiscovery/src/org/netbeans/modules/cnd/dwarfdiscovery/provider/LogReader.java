@@ -1095,7 +1095,9 @@ public class LogReader {
                 if ("c89".equals(lang)) { //NOI18N
                     standard = ItemProperties.LanguageStandard.C89;
                 } else if ("c99".equals(lang)) { //NOI18N
-                    standard = ItemProperties.LanguageStandard.C89;
+                    standard = ItemProperties.LanguageStandard.C99;
+                } else if ("c11".equals(lang)) { //NOI18N
+                    standard = ItemProperties.LanguageStandard.C11;
                 } else if ("c++98".equals(lang)) { //NOI18N
                     standard = ItemProperties.LanguageStandard.CPP;
                 } else if ("c++11".equals(lang)) { //NOI18N

@@ -1,3 +1,47 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
 package org.netbeans.modules.cnd.editor.cos;
 
 import java.beans.PropertyChangeEvent;
@@ -46,6 +90,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private static final Logger LOG = Logger.getLogger(COSRedirectorImpl.class.getName());
     private static final boolean ENABLED;
     private static final int L1_CACHE_SIZE = 10;
+    private final static long INVALID_INODE = -1L;
 
     private static final Method getDataObjectMethod;
 
@@ -76,7 +121,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private final Map<Long, COSRedirectorImpl.Storage> imap = new HashMap<Long, COSRedirectorImpl.Storage>();
     private final LinkedList<Long> cache = new LinkedList<Long>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
+    
     @Override
     protected CloneableOpenSupport redirect(CloneableOpenSupport.Env env) {
         DataObject dobj = getDataObjectIfApplicable(env);
@@ -87,13 +132,14 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         if (dobjLookup == null) {
             return null;
         }
+        CloneableOpenSupport cos = env.findCloneableOpenSupport();
         lock.readLock().lock();
         try {
-            for (long n : cache) {
+            for (Long n : cache) {
                 COSRedirectorImpl.Storage storage = imap.get(n);
                 if (storage != null) {
                     if (storage.hasDataObject(dobj)) {
-                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+                        CloneableOpenSupport aCes = storage.getCloneableOpenSupport(dobj, cos);
                         if (aCes != null) {
                             return aCes;
                         }
@@ -104,21 +150,10 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         } finally {
             lock.readLock().unlock();
         }
-        Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
-        BasicFileAttributes attrs = null;
-        try {
-            attrs = Files.readAttributes(path, BasicFileAttributes.class);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        Object key = null;
-        if (attrs != null) {
-            key = attrs.fileKey();
-        }
-        if (key == null) {
+        long inode = getINode(dobj);
+        if (inode == INVALID_INODE) {
             return null;
-        }       
-        long inode = key.hashCode();
+        } 
         { // update L1 cache
             lock.writeLock().lock();
             try {
@@ -131,6 +166,15 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 lock.writeLock().unlock();
             }
         }
+        Storage list = findOrCreateINodeList(inode);
+        if (list.addDataObject(inode, dobj, cos)) {
+            return null;
+        }
+        return list.getCloneableOpenSupport(dobj, cos);
+    }
+
+    private Storage findOrCreateINodeList(long inode) {
+        assert inode != INVALID_INODE;
         COSRedirectorImpl.Storage list;
         lock.writeLock().lock();
         try {
@@ -142,10 +186,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         } finally {
             lock.writeLock().unlock();
         }
-        if (list.addDataObject(dobj, env.findCloneableOpenSupport())) {
-            return null;
-        }
-        return list.getCloneableOpenSupport(dobj, env.findCloneableOpenSupport());
+        return list;
     }
 
     @Override
@@ -231,7 +272,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         private Storage() {
         }
 
-        private boolean addDataObject(DataObject dao, CloneableOpenSupport cos) {
+        private synchronized boolean addDataObject(long origINode, DataObject dao, CloneableOpenSupport cos) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             boolean found = false;
             while (iterator.hasNext()) {
@@ -247,7 +288,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                 cosRef = null;
             }
             if (!found) {
-                list.add(new COSRedirectorImpl.StorageItem(dao));
+                list.add(createItem(origINode, dao, cos));
             }
             if (cosRef == null || cosRef.get() == null) {
                 cosRef = new WeakReference<CloneableOpenSupport>(cos);
@@ -259,7 +300,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return false;
         }
 
-        private void removeDataObject(DataObject dao) {
+        private synchronized void removeDataObject(DataObject dao) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             while (iterator.hasNext()) {
                 COSRedirectorImpl.StorageItem next = iterator.next();
@@ -271,7 +312,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             }
         }
 
-        private boolean hasDataObject(DataObject dao) {
+        private synchronized boolean hasDataObject(DataObject dao) {
             Iterator<COSRedirectorImpl.StorageItem> iterator = list.iterator();
             while (iterator.hasNext()) {
                 COSRedirectorImpl.StorageItem next = iterator.next();
@@ -285,7 +326,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return false;
         }
 
-        private CloneableOpenSupport getCloneableOpenSupport(DataObject dao, CloneableOpenSupport cos) {
+        private synchronized CloneableOpenSupport getCloneableOpenSupport(DataObject dao, CloneableOpenSupport cos) {
             CloneableOpenSupport aCos = null;
             if (cosRef != null) {
                 aCos = cosRef.get();
@@ -315,15 +356,47 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
         }
     }
 
+    private static StorageItem createItem(long origINode, DataObject dao, CloneableOpenSupport origCOS) {
+        StorageItem out = new COSRedirectorImpl.StorageItem(origINode, dao, origCOS);
+        dao.addPropertyChangeListener(out);
+        FileObject primaryFile = dao.getPrimaryFile();
+        primaryFile.addFileChangeListener(out);
+        return out;
+    }
+    
+    private static long getINode(DataObject dao) {
+        Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dao.getPrimaryFile()));
+        BasicFileAttributes attrs = null;
+        try {
+            attrs = Files.readAttributes(path, BasicFileAttributes.class);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Object key = null;
+        if (attrs != null) {
+            key = attrs.fileKey();
+        }
+        long inode = INVALID_INODE;
+        if (key != null) {
+            inode = key.hashCode();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "getInode {0}[{1}], {2}", new Object[] {key, dao, inode});
+            }
+        }
+        return inode;
+    }
+    
     private static final class StorageItem implements PropertyChangeListener, FileChangeListener {
 
         private final DataObject dao;
-        private AtomicBoolean removed = new AtomicBoolean(false);
+        private final long origINode;
+        private final AtomicBoolean removed = new AtomicBoolean(false);
+        private final CloneableOpenSupport origCOS;
 
-        private StorageItem(DataObject dao) {
+        private StorageItem(long origINode, DataObject dao, CloneableOpenSupport cos) {
             this.dao = dao;
-            dao.addPropertyChangeListener(this);
-            dao.getPrimaryFile().addFileChangeListener(this);
+            this.origINode = origINode;
+            this.origCOS = cos;
         }
 
         private DataObject getValidDataObject() {
@@ -344,7 +417,7 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
                     }
                     DataObject toBeRemoved = (DataObject) evt.getSource();
                     if (dao.equals(toBeRemoved)) {
-                        removed.set(true);
+                        checkAndUpdateIfNeeded();
                     }
                 }
             }
@@ -360,24 +433,38 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
 
         @Override
         public void fileChanged(FileEvent fe) {
+            checkAndUpdateIfNeeded();
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
+            removed.set(true);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            if (!removed.get()) {
-                removed.set(true);
-            }
+            checkAndUpdateIfNeeded();
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        private void checkAndUpdateIfNeeded() {
+            long curINode = getINode(dao);
+            // track file remove followed by create with the same name
+            // also handles file removes where curInode is invalid
+            if (origINode != curINode) {
+                LOG.log(Level.INFO, "inode file Changed {0} {1}->{2}", new Object[] {dao, origINode, curINode});
+                if (removed.compareAndSet(false, true)) {
+                    if (curINode != INVALID_INODE) {
+                        // register orig COS under new INode 
+                        COSRedirectorImpl instance = Lookup.getDefault().lookup(COSRedirectorImpl.class);
+                        Storage list = instance.findOrCreateINodeList(curINode);
+                        list.addDataObject(curINode, dao, origCOS);
+                    }
+                }
+            }
         }
     }
 }
