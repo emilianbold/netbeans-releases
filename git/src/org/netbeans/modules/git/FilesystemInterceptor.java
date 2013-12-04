@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
@@ -80,6 +81,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -109,7 +111,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
-        refreshTask = rp.create(new RefreshTask());
+        refreshTask = rp.create(new RefreshTask(), true);
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
         commandLogger = new CommandUsageLogger();
@@ -641,7 +643,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+    final ProgressMonitor.DefaultProgressMonitor shutdownMonitor = new ProgressMonitor.DefaultProgressMonitor();
     private class RefreshTask implements Runnable {
+        
         @Override
         public void run() {
             Thread.interrupted();
@@ -653,16 +657,33 @@ class FilesystemInterceptor extends VCSInterceptor {
                 files = new HashSet<File>(filesToRefresh);
                 filesToRefresh.clear();
             }
+            if (shutdownMonitor.isCanceled()) {
+                return;
+            }
             if (!"false".equals(System.getProperty("versioning.git.delayStatusForLockedRepositories"))) {
                 files = checkLockedRepositories(files, false);
             }
             if (!files.isEmpty()) {
-                cache.refreshAllRoots(files);
+                cache.refreshAllRoots(files, shutdownMonitor);
             }
             if (!lockedRepositories.isEmpty()) {
                 lockedRepositoryRefreshTask.schedule(5000);
             }
         }
+    }
+
+    @OnStop
+    public static class ShutdownCallable implements Callable<Boolean> {
+
+        @Override
+        public Boolean call () throws Exception {
+            Git.getInstance().getVCSInterceptor().shutdownMonitor.cancel();
+            try {
+                Git.getInstance().getVCSInterceptor().refreshTask.waitFinished(3000);
+            } catch (InterruptedException ex) {}
+            return true;
+        }
+
     }
 
     private Collection<File> checkLockedRepositories (Collection<File> additionalFilesToRefresh, boolean keepCached) {

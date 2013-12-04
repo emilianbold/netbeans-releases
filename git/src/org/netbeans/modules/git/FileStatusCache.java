@@ -139,7 +139,7 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots(File... roots) {
-        refreshAllRoots(Arrays.asList(roots));
+        refreshAllRoots(Arrays.asList(roots), GitUtils.NULL_PROGRESS_MONITOR);
     }
     
     /**
@@ -147,6 +147,15 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots (final Collection<File> files) {
+        
+    }
+    
+    /**
+     * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
+     * @param files roots to refresh
+     * @param pm progress monitor able to cancel the running status scan
+     */
+    public void refreshAllRoots (final Collection<File> files, ProgressMonitor pm) {
         long startTime = 0;
         if (LOG.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
@@ -158,6 +167,9 @@ public class FileStatusCache {
         HashMap<File, Collection<File>> rootFiles = new HashMap<File, Collection<File>>(5);
 
         for (File file : files) {
+            if (pm.isCanceled()) {
+                return;
+            }
             // go through all files and sort them under repository roots
             file = FileUtil.normalizeFile(file);
             File repository = Git.getInstance().getRepositoryRoot(file);
@@ -177,7 +189,7 @@ public class FileStatusCache {
             startTime = System.currentTimeMillis();
         }
         if (!rootFiles.isEmpty()) {
-            refreshAllRoots(rootFiles);
+            refreshAllRoots(rootFiles, pm);
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime)); //NOI18N
