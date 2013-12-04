@@ -800,7 +800,8 @@ public class ReformatterImpl {
             } else if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE_INIT){
                 if (entry.getKind() == LBRACE) {
                     if (entry.getImportantKind() != null &&
-                        (entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT || entry.getImportantKind() == UNION)) {
+                        (entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT ||
+                         entry.getImportantKind() == UNION || entry.getImportantKind() == NAMESPACE)) {
                         shift += codeStyle.getConstructorInitializerListContinuationIndent();
                     }
                 }
