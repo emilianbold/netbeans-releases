@@ -229,7 +229,8 @@ public final class OutputUtils {
         if (locator == null) {
             return;
         }
-        FileObject testfo = methodNode.getTestcase().getClassFileObject();
+        // Method node might belong to an inner class
+        FileObject testfo = methodNode.getTestcase().getClassFileObject(true);
 	if(testfo == null) {
 	    return;
 	}
@@ -239,14 +240,20 @@ public final class OutputUtils {
         if ((file == null) && (methodNode.getTestcase().getTrouble() != null) && lineNumStorage[0] == -1) {
             //213935 we could not recognize the stack trace line and map it to known file
             //if it's a failure text, grab the testcase's own line from the stack.
+            boolean methodNodeParentOfStackTraceNode = false;
             String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
             if ((st != null) && (st.length > 0)) {
                 int index = st.length - 1;
                 //213935 we need to find the testcase linenumber to jump to.
                 // and ignore the infrastructure stack lines in the process
-                while (!testfo.equals(file) && index != -1) {
+                while (!testfo.equals(file) && index != -1 && !methodNodeParentOfStackTraceNode) {
                     file = getFile(st[index], lineNumStorage, locator);
                     index = index - 1;
+                    // if frameInfo.isEmpty() == true, user clicked on a failed method node. 
+                    // Try to find if the stack trace node is relevant to the method node
+                    if(file != null && frameInfo.isEmpty()) {
+                        methodNodeParentOfStackTraceNode = FileUtil.isParentOf(testfo.getParent(), file);
+                    }
                 }
             }
         }

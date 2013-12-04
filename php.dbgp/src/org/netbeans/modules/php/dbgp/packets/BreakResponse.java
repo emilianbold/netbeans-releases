@@ -46,27 +46,22 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class BreakResponse extends DbgpResponse {
 
-    BreakResponse( Node node ) {
+    BreakResponse(Node node) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
-    
-    public boolean getSuccess(){
-        return getBoolean( getNode(), PropertySetResponse.SUCCESS );
+
+    public boolean getSuccess() {
+        return getBoolean(getNode(), PropertySetResponse.SUCCESS);
     }
 
 }

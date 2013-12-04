@@ -41,38 +41,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
-
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.performance.web.setup.WebSetup;
-
 
 /**
  * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenWebFilesWithOpenedEditorTest extends OpenWebFilesTest {
-    
-   
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenWebFilesWithOpenedEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -81,44 +78,49 @@ public class OpenWebFilesWithOpenedEditorTest extends OpenWebFilesTest {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(OpenWebFilesWithOpenedEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(OpenWebFilesWithOpenedEditorTest.class)
+                .suite();
     }
-    
-    public void testOpeningWebXmlFile(){
+
+    @Override
+    public void testOpeningWebXmlFile() {
         super.testOpeningWebXmlFile();
     }
 
-    public void testOpeningJSPFile(){
+    @Override
+    public void testOpeningJSPFile() {
         super.testOpeningJSPFile();
     }
 
-    public void testOpeningBigJSPFile(){
+    @Override
+    public void testOpeningBigJSPFile() {
         super.testOpeningBigJSPFile();
     }
-    
-    public void testOpeningHTMLFile(){
+
+    @Override
+    public void testOpeningHTMLFile() {
         super.testOpeningHTMLFile();
     }
 
-    public void testOpeningTagFile(){
+    @Override
+    public void testOpeningTagFile() {
         super.testOpeningTagFile();
     }
 
-    public void testOpeningTldFile(){
+    @Override
+    public void testOpeningTldFile() {
         super.testOpeningTldFile();
-    }    
-    
+    }
+
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
-    public void initialize(){
+    @Override
+    public void initialize() {
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Source Packages|test|Test.java"));
     }
-    
 }

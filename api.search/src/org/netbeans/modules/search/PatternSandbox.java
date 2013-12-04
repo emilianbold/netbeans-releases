@@ -96,6 +96,8 @@ public abstract class PatternSandbox extends JPanel
     protected Highlighter highlighter;
     protected Highlighter.HighlightPainter painter;
     protected BasicSearchCriteria searchCriteria;
+    private Color cboxPatternForegroundStd = null;
+    private static final Color errorColor = chooseErrorColor();
 
     /**
      * Initialize UI components.
@@ -120,6 +122,8 @@ public abstract class PatternSandbox extends JPanel
         pnlOptions = createOptionsPanel();
         btnApply = new JButton();
         btnCancel = new JButton();
+        cboxPatternForegroundStd = cboxPattern.getEditor().getEditorComponent().
+                getForeground();
 
         initTextPaneContent();
         initHighlighter();
@@ -270,7 +274,8 @@ public abstract class PatternSandbox extends JPanel
      */
     private void initHighlighter() {
         highlighter = new DefaultHighlighter();
-        painter = new DefaultHighlighter.DefaultHighlightPainter(Color.ORANGE);
+        painter = new DefaultHighlighter.DefaultHighlightPainter(
+                chooseHighlightColor());
         textPane.setHighlighter(highlighter);
     }
 
@@ -341,10 +346,10 @@ public abstract class PatternSandbox extends JPanel
                 throw new NullPointerException();
             }
             cboxPattern.getEditor().getEditorComponent().
-                    setForeground(SystemColor.textText);
+                    setForeground(cboxPatternForegroundStd);
         } catch (Throwable e) {
             cboxPattern.getEditor().getEditorComponent().
-                    setForeground(Color.red);
+                    setForeground(errorColor);
             return;
         }
         try {
@@ -1046,5 +1051,20 @@ public abstract class PatternSandbox extends JPanel
             }
             return component;
         }
+    }
+
+    private static Color chooseErrorColor() {
+        return chooseColor("nb.search.sandbox.regexp.wrong", //NOI18N
+                Color.RED);
+    }
+
+    private static Color chooseHighlightColor() {
+        return chooseColor("nb.search.sandbox.highlight", //NOI18N
+                Color.ORANGE);
+    }
+
+    private static Color chooseColor(String uiManagerKey, Color defaultColor) {
+        Color colorFromManager = UIManager.getColor(uiManagerKey);
+        return colorFromManager == null ? defaultColor : colorFromManager;
     }
 }

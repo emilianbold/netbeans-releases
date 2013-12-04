@@ -43,7 +43,9 @@ package org.netbeans.modules.php.analysis.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.analysis.commands.CodeSniffer;
+import org.netbeans.modules.php.analysis.commands.CodingStandardsFixer;
 import org.netbeans.modules.php.analysis.commands.MessDetector;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -63,15 +65,22 @@ public final class AnalysisOptions {
     // mess detector
     private static final String MESS_DETECTOR_PATH = "messDetector.path"; // NOI18N
     private static final String MESS_DETECTOR_RULE_SETS = "messDetector.ruleSets"; // NOI18N
+    // coding standards fixer
+    private static final String CODING_STANDARDS_FIXER_PATH = "codingStandardsFixer.path"; // NOI18N
+    private static final String CODING_STANDARDS_FIXER_LEVEL = "codingStandardsFixer.level"; // NOI18N
+    private static final String CODING_STANDARDS_FIXER_CONFIG = "codingStandardsFixer.config"; // NOI18N
+    private static final String CODING_STANDARDS_FIXER_OPTIONS = "codingStandardsFixer.options"; // NOI18N
 
     private volatile boolean codeSnifferSearched = false;
     private volatile boolean messDetectorSearched = false;
+    private volatile boolean codingStandardsFixerSearched = false;
 
 
     public static AnalysisOptions getInstance() {
         return INSTANCE;
     }
 
+    @CheckForNull
     public String getCodeSnifferPath() {
         String codeSnifferPath = getPreferences().get(CODE_SNIFFER_PATH, null);
         if (codeSnifferPath == null && !codeSnifferSearched) {
@@ -89,6 +98,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODE_SNIFFER_PATH, path);
     }
 
+    @CheckForNull
     public String getCodeSnifferStandard() {
         return getPreferences().get(CODE_SNIFFER_STANDARD, null);
     }
@@ -101,6 +111,7 @@ public final class AnalysisOptions {
         getPreferences().put(CODE_SNIFFER_STANDARD, standard);
     }
 
+    @CheckForNull
     public String getMessDetectorPath() {
         String messDetectorPath = getPreferences().get(MESS_DETECTOR_PATH, null);
         if (messDetectorPath == null && !messDetectorSearched) {
@@ -128,6 +139,56 @@ public final class AnalysisOptions {
 
     public void setMessDetectorRuleSets(List<String> ruleSets) {
         getPreferences().put(MESS_DETECTOR_RULE_SETS, AnalysisUtils.serialize(ruleSets));
+    }
+
+    @CheckForNull
+    public String getCodingStandardsFixerPath() {
+        String codingStandardsFixerPath = getPreferences().get(CODING_STANDARDS_FIXER_PATH, null);
+        if (codingStandardsFixerPath == null && !codingStandardsFixerSearched) {
+            codingStandardsFixerSearched = true;
+            List<String> scripts = FileUtils.findFileOnUsersPath(CodingStandardsFixer.NAME, CodingStandardsFixer.LONG_NAME);
+            if (!scripts.isEmpty()) {
+                codingStandardsFixerPath = scripts.get(0);
+                setCodingStandardsFixerPath(codingStandardsFixerPath);
+            }
+        }
+        return codingStandardsFixerPath;
+    }
+
+    public void setCodingStandardsFixerPath(String path) {
+        getPreferences().put(CODING_STANDARDS_FIXER_PATH, path);
+    }
+
+    @CheckForNull
+    public String getCodingStandardsFixerLevel() {
+        return getPreferences().get(CODING_STANDARDS_FIXER_LEVEL, null);
+    }
+
+    public void setCodingStandardsFixerLevel(String level) {
+        if (level == null) {
+            level = ""; // NOI18N
+        }
+        getPreferences().put(CODING_STANDARDS_FIXER_LEVEL, level);
+    }
+
+    @CheckForNull
+    public String getCodingStandardsFixerConfig() {
+        return getPreferences().get(CODING_STANDARDS_FIXER_CONFIG, null);
+    }
+
+    public void setCodingStandardsFixerConfig(String config) {
+        if (config == null) {
+            config = ""; // NOI18N
+        }
+        getPreferences().put(CODING_STANDARDS_FIXER_CONFIG, config);
+    }
+
+    public String getCodingStandardsFixerOptions() {
+        return getPreferences().get(CODING_STANDARDS_FIXER_OPTIONS, ""); // NOI18N
+    }
+
+    public void setCodingStandardsFixerOptions(String options) {
+        getPreferences().put(CODING_STANDARDS_FIXER_OPTIONS, options);
     }
 
     private Preferences getPreferences() {

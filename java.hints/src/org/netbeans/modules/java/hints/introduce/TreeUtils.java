@@ -161,6 +161,11 @@ public final class TreeUtils {
         return statementPath;
     }
 
+    /**
+     * Returns a path to the immediate enclosing method or initializer block
+     * @param path start of the search
+     * @return path to the nearest enclosing executable or {@code null} in case of error.
+     */
     static TreePath findMethod(TreePath path) {
         while (path != null) {
             if (path.getLeaf().getKind() == Tree.Kind.METHOD) {

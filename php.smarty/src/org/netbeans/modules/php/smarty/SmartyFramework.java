@@ -50,7 +50,6 @@ import org.openide.filesystems.FileObject;
  */
 public class SmartyFramework {
 
-    public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
 
     /**
@@ -70,10 +69,6 @@ public class SmartyFramework {
      */
     private static String delimiterDefaultClose = SmartyOptions.getInstance().getDefaultCloseDelimiter();
     /**
-     * Depth of scanning for TPL templates in PHP project.
-     */
-    private static int depthOfScanningForTpl = -1;
-    /**
      * Version of SMARTY templates.
      */
     private static Version smartyVersion = Version.SMARTY3;
@@ -81,20 +76,6 @@ public class SmartyFramework {
      * Toggle comment option. How to comment inside .tpl files.
      */
     private static ToggleCommentOption toggleCommentOption = ToggleCommentOption.SMARTY;
-
-    /**
-     * @return full IDE options Smarty path
-     */
-    public static String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
-    }
-
-    /**
-     * @return IDE options Smarty subpath
-     */
-    public static String getOptionsSubPath() {
-        return OPTIONS_SUB_PATH;
-    }
 
     /**
      * Gets the close delimiter for the given file. In relation to the owning project and general settings.
@@ -124,13 +105,6 @@ public class SmartyFramework {
         }
     }
 
-    public static int getDepthOfScanningForTpl() {
-        if (depthOfScanningForTpl == -1) {
-            depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
-        }
-        return depthOfScanningForTpl;
-    }
-
     public static String getDelimiterDefaultOpen() {
         return delimiterDefaultOpen;
     }
@@ -145,10 +119,6 @@ public class SmartyFramework {
 
     public static void setDelimiterDefaultOpen(String delimiterDefaultOpen) {
         SmartyFramework.delimiterDefaultOpen = delimiterDefaultOpen;
-    }
-
-    public static void setDepthOfScanningForTpl(int depthOfScanningForTpl) {
-        SmartyFramework.depthOfScanningForTpl = depthOfScanningForTpl;
     }
 
     public static void setSmartyVersion(Version version) {

@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -78,9 +79,9 @@ public class VcsHyperlinkProviderImpl extends VCSHyperlinkProvider {
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                Util.openIssue(file, issueId);
+                Util.openIssue(FileUtil.toFileObject(file), issueId);
             }
         });
     }
 
-        }
+}

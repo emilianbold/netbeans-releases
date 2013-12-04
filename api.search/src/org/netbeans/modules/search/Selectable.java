@@ -49,7 +49,15 @@ public interface Selectable {
 
     public boolean isSelected();
 
+    /**
+     * The node was selected because some of its child nodes was selected; or it
+     * was deselected because all of its children were deselected.
+     */
     public void setSelected(boolean selected);
 
+    /**
+     * The node was selected or delesected by the user, so child nodes should be
+     * selected or deselected recursively.
+     */
     public void setSelectedRecursively(boolean selected);
 }

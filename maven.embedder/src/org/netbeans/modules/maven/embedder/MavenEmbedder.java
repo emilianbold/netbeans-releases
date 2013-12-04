@@ -154,6 +154,10 @@ public final class MavenEmbedder {
         return plexus;
     }
 
+    /**
+     * contains System.getProperties() with some netbeans IDE JVM related items filtered out + environment variables prefixed with "env." 
+     * @return 
+     */
     public Properties getSystemProperties() {
         return embedderConfiguration.getSystemProperties();
     }
@@ -208,6 +212,7 @@ public final class MavenEmbedder {
         req.setGlobalSettingsFile(settingsXml);
         req.setUserSettingsFile(MavenCli.DEFAULT_USER_SETTINGS_FILE);
         req.setSystemProperties(getSystemProperties());
+        req.setUserProperties(embedderConfiguration.getUserProperties());
         try {
             settings = settingsBuilder.build(req).getEffectiveSettings();
             //now update the UNOWNED marker for FOQ at root of the local repository.
@@ -379,6 +384,7 @@ public final class MavenEmbedder {
         req.setLocationTracking(true);
         req.setModelResolver(new NBRepositoryModelResolver(this));
         req.setSystemProperties(getSystemProperties());
+        req.setUserProperties(embedderConfiguration.getUserProperties());
         return mb.build(req);
         
     }
@@ -406,7 +412,12 @@ public final class MavenEmbedder {
         }
         return null;
     }
-
+    
+    /**
+     * a prepopulate maven execution request object, most notably but systemProperties and userProperties 
+     * fields are prepopulated with default values, typically one should only add to these values, not replace them.
+     * @return 
+     */
     public MavenExecutionRequest createMavenExecutionRequest(){
         MavenExecutionRequest req = new DefaultMavenExecutionRequest();
 
@@ -424,6 +435,7 @@ public final class MavenEmbedder {
         }
         
         req.setSystemProperties(getSystemProperties());
+        req.setUserProperties(embedderConfiguration.getUserProperties());
         try {
             //#212214 populating from settings needs to come first
             //it adds mirrors and proxies to the request

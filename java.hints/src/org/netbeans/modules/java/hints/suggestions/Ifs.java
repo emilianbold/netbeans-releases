@@ -299,7 +299,7 @@ public class Ifs {
         int caret = ctx.getCaretLocation();
         boolean braces = CodeStyle.getDefault(ctx.getInfo().getFileObject()).redundantIfBraces() != BracesGenerationStyle.ELIMINATE;
         TreePath toSplit = null;
-        TreePath left = ctx.getVariables().get("$firstCondition");
+        TreePath left = ctx.getVariables().get("$firstCondition"); // NOI18N
         long leftStart = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getPath().getCompilationUnit(), left.getLeaf());
         long leftEnd   = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), left.getLeaf());
 
@@ -307,32 +307,31 @@ public class Ifs {
             toSplit = left;
         }
 
-        TreePath right = ctx.getVariables().get("$secondCondition");
+        TreePath right = ctx.getVariables().get("$secondCondition"); // NOI18N
         
         if (toSplit == null) {
             long rightStart = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getPath().getCompilationUnit(), right.getLeaf());
             long rightEnd   = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), right.getLeaf());
 
-            if (rightStart <= caret && caret <= rightEnd) {
-                toSplit = right;
+            if (rightStart > caret || caret > rightEnd) {
+                return null;
             }
         }
         
-        if (left.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
-            ctx.getVariables().put("$firstCondition", new TreePath(left, ((ParenthesizedTree) left.getLeaf()).getExpression()));
-        }
-        
-        if (right.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
-            ctx.getVariables().put("$secondCondition", new TreePath(left, ((ParenthesizedTree) right.getLeaf()).getExpression()));
-        }
+        ctx.getVariables().put("$firstCondition", unwrapParenthesized(left)); // NOI18N
+        ctx.getVariables().put("$secondCondition", unwrapParenthesized(right)); // NOI18N
 
-        if (toSplit == null)
-            return null;
-        
-        String targetPattern = braces ? "if ($firstCondition) { if ($secondCondition) $body; }" : "if ($firstCondition) if ($secondCondition) $body;";
+        String targetPattern = braces ? "if ($firstCondition) { if ($secondCondition) $body; }" : "if ($firstCondition) if ($secondCondition) $body;"; // NOI18N
         Fix f = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf(), ctx.getPath(), targetPattern);
         
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf(), f);
+    }
+    
+    private static TreePath unwrapParenthesized(TreePath x) {
+        while (x.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+            x = new TreePath(x, ((ParenthesizedTree)x.getLeaf()).getExpression());
+        }
+        return x;
     }
 
 }

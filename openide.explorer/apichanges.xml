@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="NoAutoComplete">
+        <api name="explorer"/>
+        <summary>Turn auto-complete in combo box editor off.</summary>
+        <version major="6" minor="55"/>
+        <date day="11" month="11" year="2013"/>
+        <author login="saubrecht"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Now it's possible to turn off the default autocomplete for in-line
+            combo box editors by using "canAutoComplete" attribute to Boolean.FALSE on appropriate FeatureDescriptor.
+        </description>
+        <issue number="238038"/>
+    </change>
     <change id="PropertySheetExtensions">
         <api name="explorer"/>
         <summary>PropertySheet extensions</summary>

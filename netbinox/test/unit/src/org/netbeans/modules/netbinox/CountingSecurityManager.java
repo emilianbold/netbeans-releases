@@ -464,6 +464,9 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             // and does not seem to be preventable
             return false;
         }
+        if (file.endsWith(".dll") && file.contains("writtableArea")) {
+            return false;
+        }
 
         if (containsPath(file, Places.getUserDirectory().getName() + "/.metadata")) {
             return false;
@@ -486,6 +489,10 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         for (Class<?> onStack : getClassContext()) {
             if (onStack.getName().startsWith("org.eclipse.osgi.internal.permadmin.SecurityAdmin")) {
                 // this is caused by our CountingSecurityManager being on
+                return false;
+            }
+            if (onStack.getName().startsWith("org.openide.util.lookup.implspi.ActiveQueue$Daemon")) {
+                // ignore random Garbage collection kicks-in
                 return false;
             }
         }

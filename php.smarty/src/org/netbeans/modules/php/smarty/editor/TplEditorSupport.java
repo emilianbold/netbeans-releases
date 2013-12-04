@@ -56,6 +56,8 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.modules.php.smarty.ui.SaveConfirmationPanel;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
@@ -69,9 +71,11 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.windows.CloneableOpenSupport;
+import static org.netbeans.modules.php.smarty.editor.Bundle.*;
 
 /**
  * Editor support for TPL data objects. Most code of this class was get from
@@ -128,6 +132,13 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 //        TplEditorSupport.this.getDataObject().setModified(false);
     }
 
+    @NbBundle.Messages({
+        "warning=Warning",
+        "# {0} document name",
+        "# {1} encoding",
+        "# {2} original encoding of the file when loaded",
+        "MSG_unsupportedEncodingSave=<html>The encoding {1} specified in meta tag of the document {0} is invalid<br> or the document contains characters which cannot be saved using this encoding.<br> Do you want to save the file using <b>{2}</b> encoding?</html>"
+    })
     void updateEncoding() throws UserCancelException {
         //try to find encoding specification in the editor content
         String documentContent = getDocumentText();
@@ -139,10 +150,18 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
             if (!isSupportedEncoding(encoding) || !canEncode(documentContent, encoding)) {
                 //test if the file can be saved by the original encoding or if it needs to be saved using utf-8
                 finalEncoding = canEncode(documentContent, feqEncoding) ? feqEncoding : UTF_8_ENCODING;
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(TplEditorSupport.class, "MSG_unsupportedEncodingSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding, finalEncoding.equals(UTF_8_ENCODING) ? "" : " the original"}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
-                nd.setValue(NotifyDescriptor.NO_OPTION);
-                DialogDisplayer.getDefault().notify(nd);
-                if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                Integer showEncodingWarnings = getTplDO().getShowEncodingWarnings();
+                if (showEncodingWarnings == null) {
+                    String message = MSG_unsupportedEncodingSave(getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding); 
+                    SaveConfirmationPanel panel = new SaveConfirmationPanel(message);
+                    DialogDescriptor dd = new DialogDescriptor(panel, Bundle.warning(), true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.YES_OPTION, null);
+                    DialogDisplayer.getDefault().notify(dd);
+                    showEncodingWarnings = (Integer) dd.getValue();
+                    if (panel.isDoNotShowAgainCheckBox() && showEncodingWarnings == NotifyDescriptor.YES_OPTION) {
+                        getTplDO().setShowEncodingWarnings(showEncodingWarnings);
+                    }
+                }
+                if (!showEncodingWarnings.equals(NotifyDescriptor.YES_OPTION)) {
                     throw new UserCancelException();
                 }
             } else {
@@ -186,6 +205,9 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         return text;
     }
 
+    private TplDataObject getTplDO() {
+        return (TplDataObject) getDataObject();
+    }
 
     private boolean canEncode(String docText, String encoding) {
         CharsetEncoder encoder = Charset.forName(encoding).newEncoder();
@@ -202,30 +224,31 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         return supported;
     }
 
-   @Override
+    @Override
+    @NbBundle.Messages({
+        "# {0} document name",
+        "# {1} encoding",
+        "# {2} alternative encoding",
+        "MSG_unsupportedEncodingLoad=<html>The encoding {1} specified in meta tag of the document {0} is invalid.<br>Do you want to load the file using <b>{2}</b> encoding?</html>"})
     public void open() {
         String encoding = ((TplDataObject) getDataObject()).getFileEncoding();
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
         if (encoding != null && !isSupportedEncoding(encoding)) {
-//            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//                feqEncoding = UTF_8_ENCODING;
-//            }
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(TplEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
-                    new Object[]{getDataObject().getPrimaryFile().getNameExt(),
-                        encoding,
-                        feqEncoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+            Integer showEncodingWarnings = getTplDO().getShowEncodingWarnings();
+            if (showEncodingWarnings == null) {
+                String message = MSG_unsupportedEncodingLoad(getDataObject().getPrimaryFile().getNameExt(), encoding, feqEncoding);
+                SaveConfirmationPanel panel = new SaveConfirmationPanel(message);
+                DialogDescriptor dd = new DialogDescriptor(panel, Bundle.warning(), true, DialogDescriptor.YES_NO_OPTION, DialogDescriptor.YES_OPTION, null);
+                DialogDisplayer.getDefault().notify(dd);
+                showEncodingWarnings = (Integer) dd.getValue();
+                if (panel.isDoNotShowAgainCheckBox() && showEncodingWarnings == NotifyDescriptor.YES_OPTION) {
+                    getTplDO().setShowEncodingWarnings(showEncodingWarnings);
+                }
+            }
+            if (!showEncodingWarnings.equals(NotifyDescriptor.YES_OPTION)) {
                 return; // do not open the file
             }
         }
-
-//        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
-//            feqEncoding = UTF_8_ENCODING;
-//        }
 
         super.open();
     }

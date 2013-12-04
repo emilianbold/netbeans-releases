@@ -6,12 +6,6 @@
             <code-name-base>org.netbeans.modules.mobility.kit</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.mobility</code-name-base>
-                    <run-dependency>
-                        <specification-version>8.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.apisupport.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.3</specification-version>
@@ -24,23 +18,17 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.java.kit</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2me.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.antext</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.kit</code-name-base>
                     <run-dependency>
-                        <specification-version>1.2</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.cldcplatform</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
+                </dependency>                
                 <dependency>
                     <code-name-base>org.netbeans.modules.mobility.cldcplatform.catalog</code-name-base>
                     <run-dependency>
@@ -75,12 +63,6 @@
                     <code-name-base>org.netbeans.modules.mobility.j2meunit</code-name-base>
                     <run-dependency>
                         <specification-version>1.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.mobility.licensing</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

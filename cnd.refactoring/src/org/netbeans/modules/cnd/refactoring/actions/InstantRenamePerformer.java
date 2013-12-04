@@ -69,6 +69,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -342,6 +343,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
+        if (!CndLexerUtilities.isCppIdentifierPart(e.getKeyChar())) {
+            JTextComponent aTarget = target;
+            if (aTarget != null) {
+                aTarget.getToolkit().beep();
+                e.consume();
+            }
+        }
     }
 
     @Override

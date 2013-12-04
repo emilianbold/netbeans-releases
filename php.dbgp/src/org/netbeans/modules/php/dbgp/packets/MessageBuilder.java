@@ -48,91 +48,85 @@ import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.packets.DbgpStream.StreamType;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
-class MessageBuilder {
-
+final class MessageBuilder {
     private static final Logger LOGGER = Logger.getLogger(MessageBuilder.class.getName());
-
-    private static final String TYPE    = "type";       // NOI18N
+    private static final String TYPE = "type"; // NOI18N
 
     private MessageBuilder() {
-        // avoid inst-ion
     }
 
-    static DbgpMessage createStream( Node node ) {
-        Node attr = node.getAttributes().getNamedItem( TYPE );
-        assert attr!=null;
+    static DbgpMessage createStream(Node node) {
+        Node attr = node.getAttributes().getNamedItem(TYPE);
+        assert attr != null;
         String type = attr.getNodeValue();
-        if ( StreamType.STDOUT.toString().equals(type) ) {
-            return new DbgpStream( node , StreamType.STDOUT );
-        }
-        else if ( StreamType.STDERR.toString().equals(type) ) {
-            return new DbgpStream( node , StreamType.STDERR );
-        }
-        else {
+        if (StreamType.STDOUT.toString().equals(type)) {
+            return new DbgpStream(node, StreamType.STDOUT);
+        } else if (StreamType.STDERR.toString().equals(type)) {
+            return new DbgpStream(node, StreamType.STDERR);
+        } else {
             assert false;
             return null;
         }
     }
 
-    static DbgpMessage createResponse( Node node ) {
-        String command = DbgpMessage.getAttribute(node, DbgpResponse.COMMAND );
-        if (RunCommand.RUN.equals(command) ||
-                StatusCommand.STATUS.equals(command) ||
-                StepOutCommand.STEP_OUT.equals(command) ||
-                StepOverCommand.STEP_OVER.equals(command) ||
-                StepIntoCommand.STEP_INTO.equals(command) ||
-                StopCommand.COMMAND.equals(command)) {
+    static DbgpMessage createResponse(Node node) {
+        String command = DbgpMessage.getAttribute(node, DbgpResponse.COMMAND);
+        if (RunCommand.RUN.equals(command)
+                || StatusCommand.STATUS.equals(command)
+                || StepOutCommand.STEP_OUT.equals(command)
+                || StepOverCommand.STEP_OVER.equals(command)
+                || StepIntoCommand.STEP_INTO.equals(command)
+                || StopCommand.COMMAND.equals(command)) {
             return new StatusResponse(node);
-        } else if(BrkpntSetCommand.BREAKPOINT_SET.equals(command)) {
+        } else if (BrkpntSetCommand.BREAKPOINT_SET.equals(command)) {
             return new BrkpntSetResponse(node);
-        } else if(BrkpntUpdateCommand.UPDATE.equals(command)) {
+        } else if (BrkpntUpdateCommand.UPDATE.equals(command)) {
             return new BrkpntUpdateResponse(node);
-        } else if(BrkpntRemoveCommand.REMOVE.equals(command)) {
+        } else if (BrkpntRemoveCommand.REMOVE.equals(command)) {
             return new BrkpntRemoveResponse(node);
-        } else if (ContextNamesCommand.CONTEXT_NAMES.equals(command)){
+        } else if (ContextNamesCommand.CONTEXT_NAMES.equals(command)) {
             return new ContextNamesResponse(node);
-        } else if (ContextGetCommand.CONTEXT_GET.equals(command)){
+        } else if (ContextGetCommand.CONTEXT_GET.equals(command)) {
             return new ContextGetResponse(node);
-        } else if (StackDepthCommand.STACK_DEPTH.equals(command)){
+        } else if (StackDepthCommand.STACK_DEPTH.equals(command)) {
             return new StackDepthResponse(node);
-        } else if (StackGetCommand.STACK_GET.equals(command)){
+        } else if (StackGetCommand.STACK_GET.equals(command)) {
             return new StackGetResponse(node);
-        } else if (TypeMapGetCommand.TYPEMAP_GET.equals(command)){
+        } else if (TypeMapGetCommand.TYPEMAP_GET.equals(command)) {
             return new TypeMapGetResponse(node);
-        } else if (PropertySetCommand.PROPERTY_SET.equals(command)){
+        } else if (PropertySetCommand.PROPERTY_SET.equals(command)) {
             return new PropertySetResponse(node);
-        } else if (PropertyGetCommand.PROPERTY_GET.equals(command)){
+        } else if (PropertyGetCommand.PROPERTY_GET.equals(command)) {
             return new PropertyGetResponse(node);
-        } else if (PropertyValueCommand.PROPERTY_VALUE.equals(command)){
+        } else if (PropertyValueCommand.PROPERTY_VALUE.equals(command)) {
             return new PropertyValueResponse(node);
-        } else if (SourceCommand.SOURCE.equals(command)){
+        } else if (SourceCommand.SOURCE.equals(command)) {
             return new SourceResponse(node);
         } else if (StreamType.STDERR.toString().equals(command)
                 || StreamType.STDOUT.toString().equals(command)) {
             return new StreamResponse(node);
-        } else if (FeatureGetCommand.FEATURE_GET.equals(command)){
+        } else if (FeatureGetCommand.FEATURE_GET.equals(command)) {
             return new FeatureGetResponse(node);
-        } else if (FeatureSetCommand.FEATURE_SET.equals(command)){
+        } else if (FeatureSetCommand.FEATURE_SET.equals(command)) {
             return new FeatureSetResponse(node);
-        } else if (BreakCommand.BREAK.equals(command)){
+        } else if (BreakCommand.BREAK.equals(command)) {
             return new BreakResponse(node);
-        } else if (EvalCommand.EVAL.equals(command)){
+        } else if (EvalCommand.EVAL.equals(command)) {
             String transactionId = DbgpMessage.getAttribute(node, DbgpResponse.TRANSACTION_ID);
             if (transactionId.equals(RequestedUrlEvalCommand.getLastUsedTransactionId())) {
                 return new RequestedUrlEvalResponse(node);
             }
             return new EvalResponse(node);
-        } else if (ExprCommand.EXPR.equals(command)){
+        } else if (ExprCommand.EXPR.equals(command)) {
             return new ExprResponse(node);
-        } else if (ExecCommand.EXEC.equals(command)){
+        } else if (ExecCommand.EXEC.equals(command)) {
             return new ExecResponse(node);
         }
-        LOGGER.log(Level.INFO, "Command not matched: {0} NODE: {1}", new Object[] {command, node});
+        LOGGER.log(Level.INFO, "Command not matched: {0} NODE: {1}", new Object[]{command, node});
         return new DbgpMessage.NoneDbgpMessage(node);
     }
 

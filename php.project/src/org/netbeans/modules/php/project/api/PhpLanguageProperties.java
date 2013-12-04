@@ -206,11 +206,13 @@ public final class PhpLanguageProperties {
 
         @Override
         public boolean areShortTagsEnabled() {
-            return SHORT_TAGS_ENABLED;
+            // #238257
+            return true;
         }
         @Override
         public boolean areAspTagsEnabled() {
-            return ASP_TAGS_ENABLED;
+            // #238257
+            return true;
         }
 
         @Override

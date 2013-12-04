@@ -123,9 +123,8 @@ public class ResultSetJXTable extends JXTableDecorator {
         getTableHeader().setReorderingAllowed(false);
         setColumnControlVisible(true);
         getColumnControl().setToolTipText(org.openide.util.NbBundle.getMessage(ResultSetJXTable.class, "ResultSetJXTable.columnControl.tooltip"));
-        setHorizontalScrollEnabled(true);
-        setAutoResizeMode(JXTable.AUTO_RESIZE_OFF);
         setFillsViewportHeight(true);
+        setHorizontalScrollEnabled(true);
 
         setHighlighters(HighlighterFactory.createAlternateStriping(ROW_COLOR, ALTERNATE_ROW_COLOR));
         addHighlighter(new ColorHighlighter(HighlightPredicate.ROLLOVER_ROW, ROLLOVER_ROW_COLOR, null));

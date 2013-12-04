@@ -46,15 +46,12 @@ package org.netbeans.modules.options.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -64,7 +61,6 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -231,7 +227,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
                 subpath = subpath.substring(e.getKey().length());
 
                 if (subpath.length() > 0 && subpath.startsWith("/")) {
-                    setCurrentSubcategory(e.getValue(), subpath.substring(1));
+                    e.getValue().setSubcategory(subpath.substring(1));
                 }
 
                 return ;
@@ -241,26 +237,6 @@ public final class FolderBasedController extends OptionsPanelController implemen
         Logger.getLogger(FolderBasedController.class.getName()).log(Level.WARNING, "setCurrentSubcategory: cannot open: {0}", subpath);
     }
 
-    private static void setCurrentSubcategory(OptionsPanelController c, String subpath) {
-        //#180821: cannot directly call setCurrentSubcategory on c as that is protected
-        try {
-            Method m = OptionsPanelController.class.getDeclaredMethod("setCurrentSubcategory", String.class);
-
-            m.setAccessible(true);
-            m.invoke(c, subpath);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
     Iterable<String> getMimeTypes() {
         return getMimeType2delegates ().keySet();
     }

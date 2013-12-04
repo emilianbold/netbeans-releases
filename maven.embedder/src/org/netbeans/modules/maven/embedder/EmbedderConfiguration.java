@@ -55,16 +55,22 @@ class EmbedderConfiguration {
     private final Properties props;
     private final boolean offline;
     private final File settingsXml;
+    private final Properties userprops;
 
-    EmbedderConfiguration(PlexusContainer cont, Properties props, boolean offline, File settingsXml) {
+    EmbedderConfiguration(PlexusContainer cont, Properties props, Properties userprops, boolean offline, File settingsXml) {
         this.cont = cont;
         this.props = props;
         this.offline = offline;
         this.settingsXml = settingsXml;
+        this.userprops = userprops;
     }
 
     Properties getSystemProperties() {
         return props;
+    }
+    
+    Properties getUserProperties() {
+        return userprops;
     }
 
     PlexusContainer getContainer() {

@@ -49,6 +49,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -61,7 +62,12 @@ import org.openide.util.NbBundle;
  */
 public class JiraIssueNode extends IssueNode<NbJiraIssue> {
     public JiraIssueNode(NbJiraIssue issue) {
-        super(JiraUtils.getRepository(issue.getRepository()), issue, Jira.getInstance().getChangesProvider());
+        super(JiraConnector.ID,
+              issue.getRepository().getID(),
+              issue, 
+              Jira.getInstance().getIssueProvider(),
+              Jira.getInstance().getStatusProvider(),
+              Jira.getInstance().getChangesProvider());
     }
 
     NbJiraIssue getNbJiraIssue() {
@@ -108,12 +114,12 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
             return getNbJiraIssue().getRepositoryFieldValue(IssueField.KEY);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            String id = getIssue().getID();
-            String pid = p.getIssue().getID();
+            String id = getIssueData().getKey();
+            String pid = p.getIssueData().getKey();
             int idx = id.lastIndexOf("-");      // NOI18N
             int pidx = pid.lastIndexOf("-");    // NOI18N
 

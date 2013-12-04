@@ -154,10 +154,9 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceFixVisitor extends DefaultTreePathVisitor {
-
-        private IntroduceFix fix;
-        private Model model;
+        private final Model model;
         private final OffsetRange lineBounds;
+        private IntroduceFix fix;
 
         IntroduceFixVisitor(Model model, OffsetRange lineBounds) {
             this.lineBounds = lineBounds;
@@ -202,6 +201,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                         ElementQuery.Index index = model.getIndexScope().getIndex();
                         Set<MethodElement> allMethods = ElementFilter.forName(NameKind.exact(methName)).filter(index.getAllMethods(type));
                         if (allMethods.isEmpty()) {
+                            assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
                             if (document != null && fileObject.canWrite()) {
@@ -229,6 +229,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                         final ElementFilter staticFilter = ElementFilter.forStaticModifiers(true);
                         Set<MethodElement> allMethods = ElementFilter.allOf(nameFilter, staticFilter).filter(index.getAllMethods(type));
                         if (allMethods.isEmpty()) {
+                            assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
                             if (document != null && fileObject.canWrite()) {
@@ -252,6 +253,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                         ElementQuery.Index index = model.getIndexScope().getIndex();
                         Set<FieldElement> allFields = ElementFilter.forName(NameKind.exact(fieldName)).filter(index.getAlllFields(type));
                         if (allFields.isEmpty()) {
+                            assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
                             if (document != null && fileObject.canWrite() && type instanceof ClassScope) {
@@ -275,6 +277,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                     if (!StringUtils.hasText(fieldName)) {
                         return;
                     }
+                    assert fieldName != null;
                     if (fieldName.startsWith("$")) { //NOI18N
                         fieldName = fieldName.substring(1);
                     }
@@ -288,6 +291,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                                 ElementFilter.forStaticModifiers(true));
                         Set<FieldElement> allFields = staticFieldsFilter.filter(index.getAlllFields(type));
                         if (allFields.isEmpty()) {
+                            assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
                             if (document != null && fileObject.canWrite() && type instanceof ClassScope) {
@@ -314,6 +318,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                         ElementQuery.Index index = model.getIndexScope().getIndex();
                         Set<TypeConstantElement> allConstants = ElementFilter.forName(NameKind.exact(constName)).filter(index.getAllTypeConstants(type));
                         if (allConstants.isEmpty()) {
+                            assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
                             if (document != null && fileObject.canWrite()) {
@@ -371,10 +376,9 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceClassFix extends IntroduceFix {
-
-        private String clsName;
-        private FileObject folder;
-        private FileObject template;
+        private final String clsName;
+        private final FileObject folder;
+        private final FileObject template;
 
         static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
             FileObject currentFile = model.getFileScope().getFileObject();
@@ -443,9 +447,8 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceMethodFix extends IntroduceFix {
-
-        private TypeScope type;
-        private MethodDeclarationItem item;
+        private final TypeScope type;
+        private final MethodDeclarationItem item;
 
         public IntroduceMethodFix(BaseDocument doc, MethodInvocation node, TypeScope type) {
             super(doc, node);
@@ -484,9 +487,8 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceStaticMethodFix extends IntroduceFix {
-
-        private TypeScope type;
-        private MethodDeclarationItem item;
+        private final TypeScope type;
+        private final MethodDeclarationItem item;
 
         public IntroduceStaticMethodFix(BaseDocument doc, StaticMethodInvocation node, TypeScope type) {
             super(doc, node);
@@ -524,11 +526,10 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceFieldFix extends IntroduceFix {
-
-        private ClassScope clz;
-        private String templ;
-        private String fieldName;
+        private final ClassScope clz;
+        private final String templ;
         private final VariableBase dispatcher;
+        private String fieldName;
 
         public IntroduceFieldFix(BaseDocument doc, FieldAccess node, ClassScope clz) {
             super(doc, node);
@@ -579,16 +580,15 @@ public class IntroduceSuggestion extends SuggestionRule {
             if (dispatcher instanceof Variable) {
                 Variable variable = (Variable) dispatcher;
                 String dispatcherName = CodeUtils.extractVariableName(variable);
-                result = "$this".equals(dispatcherName) ? true : false; //NOI18N
+                result = "$this".equals(dispatcherName); //NOI18N
             }
             return result;
         }
     }
 
     private static class IntroduceStaticFieldFix extends IntroduceFix {
-
-        private ClassScope clz;
-        private String templ;
+        private final ClassScope clz;
+        private final String templ;
         private String fieldName;
 
         public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, ClassScope clz) {
@@ -637,10 +637,9 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceClassConstantFix extends IntroduceFix {
-
-        private TypeScope type;
-        private String templ;
-        private String constantName;
+        private final TypeScope type;
+        private final String templ;
+        private final String constantName;
 
         public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, TypeScope type) {
             super(doc, node);
@@ -782,8 +781,6 @@ public class IntroduceSuggestion extends SuggestionRule {
                             retval = ts.offset();
                             break;
                         }
-                    } else {
-                        continue;
                     }
                 }
             }

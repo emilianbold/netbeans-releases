@@ -341,7 +341,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             } else if (selectedRevision != null) {
                 Revision newRev = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision(),
-                        selectedRevision.getShortMessage());
+                        selectedRevision.getShortMessage(), selectedRevision.getFullMessage());
                 if (!newRev.equals(oldRevision)) {
                     currRevision = newRev;
                     firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);

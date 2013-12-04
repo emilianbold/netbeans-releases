@@ -129,7 +129,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      */
     private boolean generateSourceCodeHints = true;
     /**
-     * should {@code setUp()} (or {@code @Before}) method be generated 
+     * should {@literal setUp()} (or {@literal @Before}) method be generated 
      * in test classes?
      *
      * @see  #generateTestTearDown
@@ -138,7 +138,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      */
     private boolean generateTestSetUp = true;
     /**
-     * should {@code tearDown()} (or {@code @After}) method be generated
+     * should {@literal tearDown()} (or {@literal @After}) method be generated
      * in test classes?
      *
      * @see  #generateTestSetUp
@@ -147,7 +147,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      */
     private boolean generateTestTearDown = true;
     /**
-     * should {@code @BeforeClass} method be generated in test classes?
+     * should {@literal @BeforeClass} method be generated in test classes?
      *
      * @see  #generateClassTearDown
      * @see  #generateTestSetUp
@@ -155,7 +155,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      */
     private boolean generateClassSetUp = true;
     /**
-     * should {@code @AfterClass} method be generated in test classes?
+     * should {@literal @AfterClass} method be generated in test classes?
      *
      * @see  #generateClassSetUp
      * @see  #generateTestTearDown
@@ -397,7 +397,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
      * Tells which methods should be tested - public, protected, private 
      * or a combination of these.
      * 
-     * @return  {@code EnumSet} of access modifiers that determine which methods
+     * @return  {@literal EnumSet} of access modifiers that determine which methods
      * should be tested (for which test skeletons should be created).
      */
     public EnumSet<Modifier> getMethodAccessModifiers() {

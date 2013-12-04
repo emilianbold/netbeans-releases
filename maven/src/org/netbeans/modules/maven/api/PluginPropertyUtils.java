@@ -175,9 +175,6 @@ public class PluginPropertyUtils {
      * tries to figure out if the property of the given plugin is customized in
      * the current project and returns it's value if so, otherwise null
      *
-     * @param parameter the name of the plugin parameter to look for
-     * @param expressionProperty expression property that once defined (and
-     * plugin configuration is omited) is used. only value, no ${}
      * @since 2.70
      */
     public static <T> T getPluginPropertyBuildable(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, 
@@ -185,6 +182,17 @@ public class PluginPropertyUtils {
         NbMavenProjectImpl project = prj instanceof NbMavenProjectImpl ? (NbMavenProjectImpl)prj : prj.getLookup().lookup(NbMavenProjectImpl.class);
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyImpl(project.getOriginalMavenProject(), createEvaluator(project), groupId, artifactId, builder, goal, null);
+    }
+    
+    /**
+     * tries to figure out if the property of the given plugin is customized in
+     * the current project and returns it's value if so, otherwise null
+     *
+     * @since 2.102
+     */
+    public static <T> T getPluginPropertyBuildable(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, 
+            @NullAllowed String goal, @NonNull ConfigurationBuilder<T> builder) {
+        return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, builder, goal, null);
     }
 
     /**
@@ -537,7 +545,8 @@ public class PluginPropertyUtils {
             eval =  new NBPluginParameterExpressionEvaluator(
                 mvnprj,
                 ss,
-                prj.createSystemPropsForPropertyExpressions());
+                prj.createSystemPropsForPropertyExpressions(),
+                prj.createUserPropsForPropertyExpressions());
             mvnprj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
         }
         return eval;
@@ -554,7 +563,8 @@ public class PluginPropertyUtils {
         if (eval != null) {
             return eval;
         }
-        Map<? extends String,? extends String> props = Collections.emptyMap();
+        Map<? extends String,? extends String> sysprops = Collections.emptyMap();
+        Map<? extends String,? extends String> userprops = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
         FileObject bsd = FileUtil.toFileObject(basedir);
@@ -563,7 +573,8 @@ public class PluginPropertyUtils {
             if (p != null) {
                 NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
                 if (project != null) {
-                    props = project.createSystemPropsForPropertyExpressions();
+                    sysprops = project.createSystemPropsForPropertyExpressions();
+                    userprops = project.createUserPropsForPropertyExpressions();
                 }
             }
         }
@@ -575,7 +586,8 @@ public class PluginPropertyUtils {
         eval = new NBPluginParameterExpressionEvaluator(
                 prj,
                 ss,
-                props);
+                sysprops,
+                userprops);
         prj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
         return eval;
     }

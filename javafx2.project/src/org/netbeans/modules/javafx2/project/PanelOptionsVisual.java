@@ -154,9 +154,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             case FXML:
                 createMainCheckBox.setSelected(lastMainClassCheck);
                 mainClassTextField.setEnabled(lastMainClassCheck);
-                preloaderCheckBox.setVisible(false);
-                lblPreloaderProject.setVisible(false);
-                txtPreloaderProject.setVisible(false);
+                preloaderCheckBox.setVisible(true);
+                lblPreloaderProject.setVisible(true);
+                txtPreloaderProject.setVisible(true);
                 break;
             case SWING:
                 createMainCheckBox.setSelected(lastMainClassCheck);

@@ -68,7 +68,7 @@ public class BranchMapping extends ItemSelector.Item {
     private static final String COLOR_REMOVED = GitUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor());
 
     public BranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, GitRemoteConfig remote, boolean preselected) {
-        super(preselected);
+        super(preselected, remoteBranchName == null);
         this.remoteBranchName = remoteBranchName;
         this.localBranch = localBranch;
         this.remote = remote;
@@ -139,10 +139,6 @@ public class BranchMapping extends ItemSelector.Item {
     
     public String getRemoteName () {
         return remote.getRemoteName();
-    }
-    
-    public final boolean isDeletion () {
-        return remoteBranchName == null;
     }
 
     @Override

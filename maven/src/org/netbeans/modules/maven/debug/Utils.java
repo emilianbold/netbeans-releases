@@ -68,6 +68,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -118,9 +119,9 @@ public class Utils {
         //for poms also include all module projects recursively..
         boolean isPom = NbMavenProject.TYPE_POM.equals(watcher.getPackagingType());
         if (isPom) {
-            SubprojectProvider subs = prj.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> subProjects = subs.getSubprojects();
-            for (Project pr : subProjects) {
+            ProjectContainerProvider subs = prj.getLookup().lookup(ProjectContainerProvider.class);
+            ProjectContainerProvider.Result res = subs.getContainedProjects();
+            for (Project pr : res.getProjects()) {
                 toRet.addAll(collectClasspaths(pr));
             }
         }
@@ -136,9 +137,9 @@ public class Utils {
         boolean isPom = NbMavenProject.TYPE_POM.equals(watcher.getPackagingType());
         if (isPom) {
             //only for pom is correct use of subprojectprovider
-            SubprojectProvider subs = prj.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> subProjects = subs.getSubprojects();
-            for (Project pr : subProjects) {
+            ProjectContainerProvider subs = prj.getLookup().lookup(ProjectContainerProvider.class);
+            ProjectContainerProvider.Result res = subs.getContainedProjects();
+            for (Project pr : res.getProjects()) {
                 toRet.addAll(collectSourceRoots(pr));
             }
         }

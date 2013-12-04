@@ -98,8 +98,15 @@ final class FileObjectKeeper implements FileChangeListener {
             if (fcl instanceof FileFilter && deepClass) {
                 filter = (FileFilter)fcl;
             }
-            
-            listenToAll(stop, filter);
+            try {
+                listenToAll(stop, filter);
+            } catch (Error e) {
+                LOG.log(Level.WARNING, null, e);
+                throw e;
+            } catch (RuntimeException e) {
+                LOG.log(Level.WARNING, null, e);
+                throw e;
+            }
         }
         listeners.add(fcl);
     }
@@ -111,7 +118,15 @@ final class FileObjectKeeper implements FileChangeListener {
         listeners.remove(fcl);
         LOG.log(Level.FINEST, "removeRecursiveListener for {0} isEmpty: {1}", new Object[]{root, listeners.isEmpty()});
         if (listeners.isEmpty()) {
-            listenNoMore();
+            try {
+                listenNoMore();
+            } catch (Error e) {
+                LOG.log(Level.WARNING, null, e);
+                throw e;
+            } catch (RuntimeException e) {
+                LOG.log(Level.WARNING, null, e);
+                throw e;
+            }
         }
     }
      public List<File> init(long previous, FileObjectFactory factory, boolean expected) {

@@ -334,7 +334,8 @@ public final class Model {
     private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
         JsObject parent = jsObject.getParent();
         boolean isThis = false;
-        if (expression.get(expression.size() - 2).equals("this")) { //NOI18N
+        
+        if ((expression.size() > 1) && expression.get(expression.size() - 2).equals("this")) { //NOI18N
             parent = ModelUtils.findJsObject(this, expRange.getStart());
             if (parent instanceof JsWith) {
                 parent = parent.getParent();

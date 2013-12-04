@@ -41,125 +41,124 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.menus;
 
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  * Test of popup menu on nodes in Projects View.
- * @author  mmirilovic@netbeans.org
+ *
+ * @author mmirilovic@netbeans.org
  */
 public class WebProjectsNodesViewPopupMenuTest extends PerformanceTestCase {
-    
-    private static ProjectsTabOperator projectsTab = null;
-        protected static Node dataObjectNode;
-        
-    public static final String suiteName="UI Responsiveness Web Menus suite";    
-        
 
-    /** Creates a new instance of ProjectsViewPopupMenu */
+    private static ProjectsTabOperator projectsTab = null;
+    protected static Node dataObjectNode;
+
+    public static final String suiteName = "UI Responsiveness Web Menus suite";
+
+    /**
+     * Creates a new instance of ProjectsViewPopupMenu
+     *
+     * @param testName test name
+     */
     public WebProjectsNodesViewPopupMenuTest(String testName) {
         super(testName);
     }
-    
-    /** Creates a new instance of ProjectsViewPopupMenu */
+
+    /**
+     * Creates a new instance of ProjectsViewPopupMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public WebProjectsNodesViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(WebProjectsNodesViewPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(WebProjectsNodesViewPopupMenuTest.class)
+                .suite();
     }
 
     public void testProjectNodePopupMenuProjects() {
         testNode(getProjectNode());
     }
-    
-    public void testSourcePackagesPopupMenuProjects(){
+
+    public void testSourcePackagesPopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Source Packages"));
     }
-    
-    public void testPackagePopupMenuProjects(){
+
+    public void testPackagePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "test"));
     }
-    
-    public void testServletPopupMenuProjects(){
+
+    public void testServletPopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "test" + '|' + "TestServlet.java"));
     }
-    
-    public void testWebPagesPopupMenuProjects(){
+
+    public void testWebPagesPopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages"));
     }
-     
-    public void testJspFilePopupMenuProjects(){
+
+    public void testJspFilePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "Test.jsp"));
     }
 
-    public void testHtmlFilePopupMenuProjects(){
+    public void testHtmlFilePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "HTML.html"));
     }
-    
-    public void testWebInfPopupMenuProjects(){
+
+    public void testWebInfPopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF"));
     }
-    
-    public void testMetaInfPopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Web Pages" + '|' + "META-INF"));
-    }
 
-    public void testWebXmlFilePopupMenuProjects(){
+    public void testWebXmlFilePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF" + '|' + "web.xml"));
     }
 
-    public void testContextXmlFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), "Web Pages" + '|' + "META-INF" + '|' + "context.xml"));
-    }
-
-    public void testTagFilePopupMenuProjects(){
+    public void testTagFilePopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF" + '|' + "tags" + '|' + "mytag.tag"));
     }
 
-    public void testTldPopupMenuProjects(){
+    public void testTldPopupMenuProjects() {
         testNode(new Node(getProjectNode(), "Web Pages" + '|' + "WEB-INF" + '|' + "MyTLD.tld"));
     }
-    
-    public void testNode(Node node){
+
+    public void testNode(Node node) {
         dataObjectNode = node;
         doMeasurement();
     }
-    
+
     private Node getProjectNode() {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
+
         return projectsTab.getProjectRootNode("TestWebProject");
     }
-        /**
+
+    /**
      * Closes the popup by sending ESC key event.
      */
     @Override
-    public void close(){
+    public void close() {
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.
         // This pushes Escape on underlying JTree which should be always visible
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
-    
+
     @Override
     public void prepare() {
         dataObjectNode.select();
@@ -168,7 +167,7 @@ public class WebProjectsNodesViewPopupMenuTest extends PerformanceTestCase {
     @Override
     public ComponentOperator open() {
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
+        int button = JTreeOperator.getPopupMouseButton();
         dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
         return new JPopupMenuOperator();
     }

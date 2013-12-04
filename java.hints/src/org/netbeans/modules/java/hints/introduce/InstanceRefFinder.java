@@ -72,7 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
  *
  * @author sdedic
  */
-class InstanceRefFinder extends TreePathScanner {
+public class InstanceRefFinder extends TreePathScanner {
     /**
      * The initial path for analysis
      */
@@ -195,7 +195,15 @@ class InstanceRefFinder extends TreePathScanner {
     }
     
     protected TypeElement findOwnerType(Element el) {
-        Element t = ci.getElementUtilities().enclosingTypeElement(el);
+        Element t;
+        if (el instanceof TypeElement) {
+            t = ((TypeElement)el);
+        } else {
+            t = ci.getElementUtilities().enclosingTypeElement(el);
+            if (t == null) {
+                return null;
+            }
+        }
         ElementKind k = t.getKind();
         TypeMirror declType = t.asType();
         
@@ -355,6 +363,7 @@ class InstanceRefFinder extends TreePathScanner {
                 break;
             case TYPE_PARAMETER:
                 addInstanceOfTypeParameter(el);
+                break;
             case FIELD:
             case METHOD:
                 addInstanceForMemberOf(el);

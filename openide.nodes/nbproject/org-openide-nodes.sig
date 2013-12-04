@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.33.1
+#Version 7.36.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -239,6 +239,7 @@ meth public void resize(int,int)
  anno 0 java.lang.Deprecated()
 meth public void resize(java.awt.Dimension)
  anno 0 java.lang.Deprecated()
+meth public void revalidate()
 meth public void setBackground(java.awt.Color)
 meth public void setBounds(int,int,int,int)
 meth public void setBounds(java.awt.Rectangle)
@@ -272,8 +273,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,acc,accessibleContext,actionListenerK,adjustmentListenerK,appContext,autoFocusTransferOnDisposal,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dropTarget,enabled,eventCache,eventLog,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public init()
@@ -289,6 +290,7 @@ meth public boolean isAncestorOf(java.awt.Component)
 meth public boolean isFocusCycleRoot()
 meth public boolean isFocusCycleRoot(java.awt.Container)
 meth public boolean isFocusTraversalPolicySet()
+meth public boolean isValidateRoot()
 meth public final boolean isFocusTraversalPolicyProvider()
 meth public final void setFocusTraversalPolicyProvider(boolean)
 meth public float getAlignmentX()
@@ -353,12 +355,11 @@ meth public void setFocusTraversalKeys(int,java.util.Set<? extends java.awt.AWTK
 meth public void setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
 meth public void setFont(java.awt.Font)
 meth public void setLayout(java.awt.LayoutManager)
-meth public void transferFocusBackward()
 meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,descendUnconditionallyWhenValidating,descendantsCount,dispatcher,eventLog,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,isJavaAwtSmartInvalidate,layoutMgr,listeningBoundsChildren,listeningChildren,log,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.Dialog
@@ -390,9 +391,12 @@ meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public void addNotify()
 meth public void hide()
  anno 0 java.lang.Deprecated()
+meth public void setBackground(java.awt.Color)
 meth public void setModal(boolean)
 meth public void setModalityType(java.awt.Dialog$ModalityType)
+meth public void setOpacity(float)
 meth public void setResizable(boolean)
+meth public void setShape(java.awt.Shape)
 meth public void setTitle(java.lang.String)
 meth public void setUndecorated(boolean)
 meth public void setVisible(boolean)
@@ -400,8 +404,7 @@ meth public void show()
  anno 0 java.lang.Deprecated()
 meth public void toBack()
 supr java.awt.Window
-hfds base,blockedWindows,initialized,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
-hcls WakingRunnable
+hfds base,blockedWindows,initialized,isInDispose,isInHide,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,secondaryLoop,serialVersionUID,title,undecorated
 
 CLSS public abstract interface java.awt.MenuContainer
 meth public abstract boolean postEvent(java.awt.Event)
@@ -414,6 +417,7 @@ cons public init(java.awt.Frame)
 cons public init(java.awt.Window)
 cons public init(java.awt.Window,java.awt.GraphicsConfiguration)
 innr protected AccessibleAWTWindow
+innr public final static !enum Type
 intf javax.accessibility.Accessible
 meth protected void processEvent(java.awt.AWTEvent)
 meth protected void processWindowEvent(java.awt.event.WindowEvent)
@@ -423,9 +427,12 @@ meth public <%0 extends java.util.EventListener> {%%0}[] getListeners(java.lang.
 meth public boolean getFocusableWindowState()
 meth public boolean isActive()
 meth public boolean isAlwaysOnTopSupported()
+meth public boolean isAutoRequestFocus()
 meth public boolean isFocused()
 meth public boolean isLocationByPlatform()
+meth public boolean isOpaque()
 meth public boolean isShowing()
+meth public boolean isValidateRoot()
 meth public boolean postEvent(java.awt.Event)
  anno 0 java.lang.Deprecated()
 meth public final boolean isAlwaysOnTop()
@@ -435,12 +442,15 @@ meth public final java.awt.Container getFocusCycleRootAncestor()
 meth public final java.lang.String getWarningString()
 meth public final void setAlwaysOnTop(boolean)
 meth public final void setFocusCycleRoot(boolean)
+meth public float getOpacity()
+meth public java.awt.Color getBackground()
 meth public java.awt.Component getFocusOwner()
 meth public java.awt.Component getMostRecentFocusOwner()
 meth public java.awt.Dialog$ModalExclusionType getModalExclusionType()
-meth public java.awt.GraphicsConfiguration getGraphicsConfiguration()
+meth public java.awt.Shape getShape()
 meth public java.awt.Toolkit getToolkit()
 meth public java.awt.Window getOwner()
+meth public java.awt.Window$Type getType()
 meth public java.awt.Window[] getOwnedWindows()
 meth public java.awt.event.WindowFocusListener[] getWindowFocusListeners()
 meth public java.awt.event.WindowListener[] getWindowListeners()
@@ -476,25 +486,32 @@ meth public void removeWindowListener(java.awt.event.WindowListener)
 meth public void removeWindowStateListener(java.awt.event.WindowStateListener)
 meth public void reshape(int,int,int,int)
  anno 0 java.lang.Deprecated()
+meth public void setAutoRequestFocus(boolean)
+meth public void setBackground(java.awt.Color)
 meth public void setBounds(int,int,int,int)
 meth public void setBounds(java.awt.Rectangle)
 meth public void setCursor(java.awt.Cursor)
 meth public void setFocusableWindowState(boolean)
 meth public void setIconImage(java.awt.Image)
 meth public void setIconImages(java.util.List<? extends java.awt.Image>)
+meth public void setLocation(int,int)
+meth public void setLocation(java.awt.Point)
 meth public void setLocationByPlatform(boolean)
 meth public void setLocationRelativeTo(java.awt.Component)
 meth public void setMinimumSize(java.awt.Dimension)
 meth public void setModalExclusionType(java.awt.Dialog$ModalExclusionType)
+meth public void setOpacity(float)
+meth public void setShape(java.awt.Shape)
 meth public void setSize(int,int)
 meth public void setSize(java.awt.Dimension)
+meth public void setType(java.awt.Window$Type)
 meth public void setVisible(boolean)
 meth public void show()
  anno 0 java.lang.Deprecated()
 meth public void toBack()
 meth public void toFront()
 supr java.awt.Container
-hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,disposing,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
+hfds OPENED,allWindows,alwaysOnTop,anchor,autoRequestFocus,base,beforeFirstShow,beforeFirstWindowShown,disposing,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,type,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
 hcls WindowDisposerRecord
 
 CLSS public abstract interface java.awt.event.ActionListener
@@ -526,6 +543,7 @@ meth public java.lang.Object getValue(java.lang.String)
 meth public java.lang.String getDisplayName()
 meth public java.lang.String getName()
 meth public java.lang.String getShortDescription()
+meth public java.lang.String toString()
 meth public java.util.Enumeration<java.lang.String> attributeNames()
 meth public void setDisplayName(java.lang.String)
 meth public void setExpert(boolean)
@@ -535,7 +553,7 @@ meth public void setPreferred(boolean)
 meth public void setShortDescription(java.lang.String)
 meth public void setValue(java.lang.String,java.lang.Object)
 supr java.lang.Object
-hfds classRef,displayName,expert,hidden,name,preferred,shortDescription,table
+hfds TRANSIENT,classRef,displayName,expert,hidden,name,preferred,shortDescription,table
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -561,9 +579,11 @@ CLSS public abstract interface java.lang.Cloneable
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -586,11 +606,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -603,7 +626,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -1391,7 +1415,7 @@ meth public void setName(java.lang.String)
 meth public void setShortDescription(java.lang.String)
 supr java.beans.FeatureDescriptor
 hfds INIT_LOCK,LOCK,TEMPL_COOKIE,err,hierarchy,listeners,lookups,parent,warnedBadProperties
-hcls LookupEventList
+hcls LookupEventList,PropertyEditorRef
 
 CLSS public abstract interface static org.openide.nodes.Node$Cookie
  outer org.openide.nodes.Node

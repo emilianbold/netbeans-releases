@@ -62,6 +62,7 @@ public abstract class EnablementSpeedBase extends NbTestCase {
     }
 
     protected abstract String featureName();
+    protected abstract long threshold();
 
     static Test suite(Class<? extends EnablementSpeedBase> clazz) {
         return NbModuleSuite.create(
@@ -90,8 +91,8 @@ public abstract class EnablementSpeedBase extends NbTestCase {
         assertTrue("Enabled", Utilities.featureDialog(enable, "notFoound", "featureName"));
         long now = System.currentTimeMillis();
         PerformanceData data = new PerformanceData();
-        data.name = this.getClass().getCanonicalName();
-        data.threshold = PerformanceData.NO_THRESHOLD;
+        data.name = "enable" + featureName().toUpperCase();
+        data.threshold = threshold();
         data.runOrder = PerformanceData.NO_ORDER;
         data.unit = "ms";
         data.value = (now - time);

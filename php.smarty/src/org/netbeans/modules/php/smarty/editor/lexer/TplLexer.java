@@ -348,6 +348,14 @@ public class TplLexer implements Lexer<TplTokenId> {
                     if (actChar == '\'' || actChar == EOF) {
                         lexerState = INIT;
                         return token(TplTokenId.STRING);
+                    } else if (actChar == '\\') {
+                        if (input.read() == '\'') {
+                            return token(TplTokenId.STRING);
+                        } else {
+                            input.backup(1);
+                        }
+                    } else {
+                        return token(TplTokenId.STRING);
                     }
                     break;
 
@@ -355,6 +363,14 @@ public class TplLexer implements Lexer<TplTokenId> {
                     argValue = false;
                     if (actChar == '"' || actChar == EOF) {
                         lexerState = INIT;
+                        return token(TplTokenId.STRING);
+                    } else if (actChar == '\\') {
+                        if (input.read() == '"') {
+                            return token(TplTokenId.STRING);
+                        } else {
+                            input.backup(1);
+                        }
+                    } else {
                         return token(TplTokenId.STRING);
                     }
                     break;

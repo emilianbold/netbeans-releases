@@ -59,6 +59,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -95,7 +96,7 @@ public final class RepositoryUtil {
         }
         ArtifactRepository repo = online.getLocalRepository();
         String localPath = repo.pathOf(art);
-        art.setFile(new File(online.getLocalRepositoryFile(), localPath));
+        art.setFile(FileUtil.normalizeFile(new File(online.getLocalRepositoryFile(), localPath)));
 
         return art;
     }

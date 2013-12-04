@@ -44,6 +44,7 @@ package org.netbeans.modules.db.dataview.output;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import java.sql.Types;
 import java.util.Arrays;
+import javax.swing.table.TableModel;
 import org.jdesktop.swingx.JXTable;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 
@@ -54,9 +55,13 @@ class InsertRecordTableUI extends ResultSetJXTable {
 
     boolean isRowSelectionAllowed = rowSelectionAllowed;
 
-    public InsertRecordTableUI() {
-        if (getColumnModel().getColumnCount() < 7) {
+    @Override
+    public void setModel(TableModel dataModel) {
+        super.setModel(dataModel);
+        if (dataModel.getColumnCount() < 7) {
             setAutoResizeMode(JXTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        } else {
+            setHorizontalScrollEnabled(true);
         }
     }   
 

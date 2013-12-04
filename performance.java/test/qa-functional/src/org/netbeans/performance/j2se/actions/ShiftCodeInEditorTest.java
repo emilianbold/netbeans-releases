@@ -41,82 +41,88 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
- * Test of Page Up and Page Down in opened source editor.
+ * Test of shift code in opened source editor.
  *
- * @author  anebuzelsky@netbeans.org
+ * @author anebuzelsky@netbeans.org
  */
 public class ShiftCodeInEditorTest extends PerformanceTestCase {
-    
-    private int line=1;
+
+    private int line;
     private EditorOperator editorOperator;
 
-    
-    /** Creates a new instance of PageUpPageDownInEditor */
+    /**
+     * Creates a new instance of PageUpPageDownInEditor
+     *
+     * @param testName test name
+     */
     public ShiftCodeInEditorTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
-    
-    /** Creates a new instance of PageUpPageDownInEditor */
+
+    /**
+     * Creates a new instance of PageUpPageDownInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ShiftCodeInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ShiftCodeInEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(ShiftCodeInEditorTest.class)
+                .suite();
     }
-    
-    public void testShiftCode1Line(){
-        line=1;
+
+    public void testShiftCode1Line() {
+        line = 1;
         doMeasurement();
     }
 
-    public void testShiftCode100Lines(){
-        line=100;
+    public void testShiftCode100Lines() {
+        line = 100;
         doMeasurement();
     }
 
-    public void testShiftCode1000Lines(){
-        line=1000;
+    public void testShiftCode1000Lines() {
+        line = 1000;
         doMeasurement();
     }
-    
+
     @Override
     public void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|BigJavaFile.java"));
-        editorOperator = EditorWindowOperator.getEditor("BigJavaFile.java");
+        editorOperator = new EditorOperator("BigJavaFile.java");
     }
-    
+
+    @Override
     public void prepare() {
         editorOperator.select(1, line);
-   }
-    
-    public ComponentOperator open(){
+    }
+
+    @Override
+    public ComponentOperator open() {
         new Action("Source|Shift Right", null).perform(editorOperator);
         editorOperator.clickMouse();
         return null;
@@ -124,7 +130,7 @@ public class ShiftCodeInEditorTest extends PerformanceTestCase {
 
     @Override
     protected void shutdown() {
+        EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
     }
-    
 }

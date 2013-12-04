@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -54,7 +55,11 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -65,27 +70,70 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({@ServiceProvider(service=MavenActionsProvider.class, position=121), @ServiceProvider(service=NbGlobalActionGoalProvider.class)})
 public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
-    
-    public static final String FILENAME = "Projects/org-netbeans-modules-maven/nbactions.xml"; //NOI18N
+    private static final String FILENAME_FOLDER = "Projects/org-netbeans-modules-maven"; //NOI18N
+    private static final String FILENAME = "nbactions.xml";
+    private static final String FILE_NAME_PATH = FILENAME_FOLDER + "/" + FILENAME;
+
     private static final Logger LOG = Logger.getLogger(NbGlobalActionGoalProvider.class.getName());
     
-    private Date lastModified = new Date();
-    private boolean lastTimeExists = true;
+    private final AtomicBoolean resetCache = new AtomicBoolean(false);
+    private FileChangeListener listener = null;
     
     @Override
     public InputStream getActionDefinitionStream() {
-        FileObject fo = FileUtil.getConfigFile(FILENAME);
-        lastTimeExists = fo != null;
+        checkListener();
+        FileObject fo = FileUtil.getConfigFile(FILE_NAME_PATH);
+        resetCache.set(false);
         if (fo != null) {
             try {
-                lastModified = fo.lastModified();
                 return fo.getInputStream();
             } catch (FileNotFoundException ex) {
                 LOG.log(Level.FINE, "File not found: " + FileUtil.getFileDisplayName(fo), ex);
             }
         }
-        lastModified = new Date();
         return null;
+    }
+
+    private synchronized void checkListener() {
+        if (listener == null) {
+            listener = new FileChangeAdapter() {
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    if (FILENAME.equals(fe.getName() + "." + fe.getExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    if (FILENAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    if (FILENAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    if (FILENAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+                
+            };
+            //we call from static context want to be always notified since first calling I guess, no need for weak listener here
+            FileUtil.getConfigFile(FILENAME_FOLDER).addFileChangeListener(listener);
+        }
+    }
+    
+    private void resetCache() {
+        resetCache.compareAndSet(false, true);
     }
    
     
@@ -125,9 +173,6 @@ public class NbGlobalActionGoalProvider extends AbstractMavenActionsProvider {
     
     @Override
     protected boolean reloadStream() {
-        FileObject fo = FileUtil.getConfigFile(FILENAME);
-        boolean prevExists = lastTimeExists;
-        lastTimeExists = fo != null;
-        return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));
+        return resetCache.get();
     }
 }

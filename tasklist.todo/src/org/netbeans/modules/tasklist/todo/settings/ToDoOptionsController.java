@@ -57,6 +57,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     id=ToDoOptionsController.OPTIONS_PATH,
     displayName="#LBL_Options",
+    location="Team",
 //    toolTip="#HINT_Options"
     keywords="#KW_ToDo",
     keywordsCategory="Advanced/ToDo"

@@ -41,9 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.FilesTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -51,80 +51,87 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.EditorOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  *
- * 
+ *
  */
-public class FileSwitchingTest  extends PerformanceTestCase {
+public class FileSwitchingTest extends PerformanceTestCase {
 
-        String filenameFrom;
-        String filenameTo;
-    
-    /** Creates a new instance of FileSwitchingTest */
+    String filenameFrom;
+    String filenameTo;
+
+    /**
+     * Creates a new instance of FileSwitchingTest
+     *
+     * @param testName test name
+     */
     public FileSwitchingTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 2000;
     }
-    
-    /** Creates a new instance of FileSwitchingTest */
+
+    /**
+     * Creates a new instance of FileSwitchingTest
+     *
+     * @param testName test name
+     * @param performanceDataName test name
+     */
     public FileSwitchingTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
         WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(FileSwitchingTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(FileSwitchingTest.class)
+                .suite();
     }
 
-    public void testSwitchJavaToJava(){
+    public void testSwitchJavaToJava() {
         filenameFrom = "Main.java";
         filenameTo = "Test.java";
         doMeasurement();
     }
 
-    public void testSwitchJSPToJSP(){
+    public void testSwitchJSPToJSP() {
         filenameFrom = "Test.jsp";
         filenameTo = "BigJsp.jsp";
         doMeasurement();
     }
 
-    public void testSwitchJavaToJSP(){
+    public void testSwitchJavaToJSP() {
         filenameFrom = "Test.java";
         filenameTo = "BigJsp.jsp";
         doMeasurement();
     }
 
-    public void testSwitchJSPToXML(){
+    public void testSwitchJSPToXML() {
         filenameFrom = "BigJSP.jsp";
         filenameTo = "build.xml";
         doMeasurement();
     }
 
-    public void testSwitchXMLToJava(){
+    public void testSwitchXMLToJava() {
         filenameFrom = "build.xml";
         filenameTo = "Main.java";
         doMeasurement();
     }
 
-    
     @Override
     protected void initialize() {
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         disableEditorCaretBlinking();
 
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
@@ -135,7 +142,7 @@ public class FileSwitchingTest  extends PerformanceTestCase {
         new OpenAction().performAPI(new Node(prn, "web|Test.jsp"));
         new OpenAction().performAPI(new Node(prn, "web|BigJSP.jsp"));
 
-        FilesTabOperator fto= FilesTabOperator.invoke();
+        FilesTabOperator fto = FilesTabOperator.invoke();
         Node f = fto.getProjectNode("TestWebProject");
 
         new OpenAction().performAPI(new Node(f, "build.xml"));
@@ -143,23 +150,26 @@ public class FileSwitchingTest  extends PerformanceTestCase {
         new MaximizeWindowAction().perform(new EditorOperator("build.xml"));
         CommonUtilities.setSpellcheckerEnabled(false);
     }
-        
+
+    @Override
     public void prepare() {
         EditorOperator eo = new EditorOperator(filenameFrom);
     }
-    
+
+    @Override
     public ComponentOperator open() {
         MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
         return new EditorOperator(filenameTo);
     }
-    
+
     @Override
     public void close() {
     }
-    
+
     @Override
     protected void shutdown() {
         new RestoreWindowAction().performAPI();
+        EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
         CommonUtilities.setSpellcheckerEnabled(true);
     }

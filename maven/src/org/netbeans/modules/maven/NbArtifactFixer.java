@@ -102,8 +102,9 @@ public class NbArtifactFixer implements ArtifactFixer {
             gav.set(gavSet);
         }
         String id = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
-        try {
-            if (!gavSet.contains(id)) {
+
+        if (!gavSet.contains(id)) {
+            try {
                 gavSet.add(id); //#234586
                 File pom = MavenFileOwnerQueryImpl.getInstance().getOwnerPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
                 if (pom != null) {
@@ -112,15 +113,16 @@ public class NbArtifactFixer implements ArtifactFixer {
                     artifact.setFile(pom);
                     return pom;
                 }
-            } else {
-               LOG.log(Level.INFO, "Cycle in NbArtifactFixer resolution (issue #234586): {0}", Arrays.toString(gavSet.toArray()));
+            } finally {
+                gavSet.remove(id); //#234586
+                if (gavSet.isEmpty()) {
+                    gav.remove();
+                }
             }
-        } finally {
-            gavSet.remove(id); //#234586
-            if (gavSet.isEmpty()) {
-                gav.remove();
-            }
+        } else {
+            LOG.log(Level.INFO, "Cycle in NbArtifactFixer resolution (issue #234586): {0}", Arrays.toString(gavSet.toArray()));
         }
+        
         try {
             File f = createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
             //instead of workarounds down the road, we set the artifact's file here.

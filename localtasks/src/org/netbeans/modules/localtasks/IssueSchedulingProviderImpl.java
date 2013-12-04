@@ -44,28 +44,18 @@ package org.netbeans.modules.localtasks;
 
 import java.util.Date;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-class IssueSchedulingProviderImpl implements IssueSchedulingProvider<LocalTask> {
-
-    @Override
-    public void setDueDate (LocalTask i, Date date) {
-        i.setTaskDueDate(date, true);
-    }
+class IssueSchedulingProviderImpl implements IssueScheduleProvider<LocalTask> {
 
     @Override
     public void setSchedule (LocalTask i, IssueScheduleInfo date) {
         i.setTaskScheduleDate(date, true);
-    }
-
-    @Override
-    public void setEstimate (LocalTask i, int hours) {
-        i.setTaskEstimate(hours, true);
     }
 
     @Override
@@ -78,9 +68,4 @@ class IssueSchedulingProviderImpl implements IssueSchedulingProvider<LocalTask> 
         return i.getPersistentScheduleInfo();
     }
 
-    @Override
-    public int getEstimate (LocalTask i) {
-        return i.getPersistentEstimate();
     }
-    
-}

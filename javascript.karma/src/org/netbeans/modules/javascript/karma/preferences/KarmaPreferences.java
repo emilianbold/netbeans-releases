@@ -43,10 +43,14 @@
 package org.netbeans.modules.javascript.karma.preferences;
 
 import java.io.File;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -56,39 +60,99 @@ import org.openide.filesystems.FileUtil;
  */
 public final class KarmaPreferences {
 
-    private static final String KARMA = "karma";
-    private static final String CONFIG = "config";
+    private static final String ENABLED = "enabled"; // NOI18N
+    private static final String KARMA = "karma"; // NOI18N
+    private static final String CONFIG = "config"; // NOI18N
+    private static final String AUTOWATCH = "autowatch"; // NOI18N
 
-    private static final KarmaPreferences INSTANCE = new KarmaPreferences();
+    private static final ConcurrentMap<Project, Preferences> CACHE = new ConcurrentHashMap<>();
+
 
     private KarmaPreferences() {
     }
 
-    public static KarmaPreferences getInstance() {
-        return INSTANCE;
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
     }
 
     @CheckForNull
-    public String getKarma(Project project) {
+    public static String getKarma(Project project) {
         return resolvePath(project, getPreferences(project).get(KARMA, null));
     }
 
-    public void setKarma(Project project, String karma) {
+    public static void setKarma(Project project, String karma) {
         getPreferences(project).put(KARMA, relativizePath(project, karma));
     }
 
     @CheckForNull
-    public String getConfig(Project project) {
+    public static String getConfig(Project project) {
         return resolvePath(project, getPreferences(project).get(CONFIG, null));
     }
 
-    public void setConfig(Project project, String config) {
+    public static void setConfig(Project project, String config) {
         getPreferences(project).put(CONFIG, relativizePath(project, config));
     }
 
-    private Preferences getPreferences(Project project) {
+    public static boolean isAutowatch(Project project) {
+        return getPreferences(project).getBoolean(AUTOWATCH, false);
+    }
+
+    public static void setAutowatch(Project project, boolean autowatch) {
+        getPreferences(project).putBoolean(AUTOWATCH, autowatch);
+    }
+
+    public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).addPreferenceChangeListener(listener);
+    }
+
+    public static void removePreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).removePreferenceChangeListener(listener);
+    }
+
+    public static void removeFromCache(final Project project) {
+        CACHE.remove(project);
+    }
+
+    private static Preferences getPreferences(final Project project) {
         assert project != null;
-        return ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
+        Preferences preferences = CACHE.get(project);
+        if (preferences == null) {
+            preferences = ProjectUtils.getPreferences(project, KarmaPreferences.class, false);
+            Preferences currentPreferences = CACHE.putIfAbsent(project, preferences);
+            if (currentPreferences != null) {
+                preferences = currentPreferences;
+            } else {
+                // preferences put into cache, run autodetection
+                detectKarma(project);
+                detectConfig(project);
+            }
+        }
+        assert preferences != null;
+        return preferences;
+    }
+
+    private static void detectKarma(Project project) {
+        if (getKarma(project) != null) {
+            return;
+        }
+        File karma = KarmaUtils.findKarma(project);
+        if (karma != null) {
+            setKarma(project, karma.getAbsolutePath());
+        }
+    }
+
+    private static void detectConfig(Project project) {
+        if (getConfig(project) != null) {
+            return;
+        }
+        File config = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        if (config != null) {
+            setConfig(project, config.getAbsolutePath());
+        }
     }
 
     private static String relativizePath(Project project, String filePath) {

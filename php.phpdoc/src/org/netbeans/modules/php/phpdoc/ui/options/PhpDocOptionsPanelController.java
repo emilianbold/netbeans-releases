@@ -56,9 +56,8 @@ import org.openide.util.Lookup;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=PhpDocScript.OPTIONS_SUB_PATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=PhpDocScript.OPTIONS_ID,
     displayName="#LBL_PHPDocOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=170

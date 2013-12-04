@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/svnClientAdapter-main.jar</runtime-relative-path>
-                <binary-origin>external/svnClientAdapter-main-1.8.18.jar</binary-origin>
+                <binary-origin>external/svnClientAdapter-main-1.10.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

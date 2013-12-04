@@ -47,46 +47,38 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class ObjectVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
-    protected static final String OBJECT_ICON =
-        "org/netbeans/modules/debugger/resources/localsView/LocalVariablesGroup";//NOI18N
+class ObjectVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    protected static final String OBJECT_ICON = "org/netbeans/modules/debugger/resources/localsView/LocalVariablesGroup"; //NOI18N
+    private static final String TYPE_OBJECT = "TYPE_Object"; // NOI18N
+    private static final String THIS = "$this"; // NOI18N
+    private static final String SELF = "self"; // NOI18N
 
-    private static final String TYPE_OBJECT = "TYPE_Object";                 // NOI18N
-
-    private static final String THIS        = "$this";                       // NOI18N
-
-    private static final String SELF        = "self";                        // NOI18N
-
-    ObjectVariableNode( Property property , AbstractModelNode parent ) {
-        super(property , parent );
+    ObjectVariableNode(Property property, AbstractModelNode parent) {
+        super(property, parent);
     }
 
     @Override
     public String getType() {
         String className = getProperty().getClassName();
-        return (className != null && !className.isEmpty()) ? className : NbBundle.getMessage( ObjectVariableNode.class, TYPE_OBJECT);
+        return (className != null && !className.isEmpty()) ? className : NbBundle.getMessage(ObjectVariableNode.class, TYPE_OBJECT);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode#getName()
-     */
     @Override
     public String getIconBase() {
         String name = getProperty().getName();
-        if ( THIS.equals(name) || SELF.equals(name)) {
+        if (THIS.equals(name) || SELF.equals(name)) {
             return FIELD_ICON;
         }
         return OBJECT_ICON;
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.OBJECT );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.OBJECT);
     }
+
 }

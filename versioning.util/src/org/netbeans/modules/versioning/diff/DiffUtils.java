@@ -397,20 +397,21 @@ public final class DiffUtils {
     
     /**
      * 
-     * @param originalLineNumber 0-based
-     * @return 0-based line number in the previous file
+     * @param file1 first file to compare
+     * @param file2 second file to compare
+     * @return differences between the two files, can be null if the content cannot be acquired
      * @throws IOException 
      */
-    public static int getMatchingLine (File currentFile, File previousFile, int originalLineNumber) throws IOException {
+    public static Difference[] getDifferences (File file1, File file2) throws IOException {
         DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
         if (diffProvider == null) {
-            return -1;
+            return null;
         }
         Reader currentReader = null, previousReader = null;
         try {
-            currentReader = Utils.createReader(currentFile);
-            previousReader = Utils.createReader(previousFile);
-            return getMatchingLine(currentReader, previousReader, originalLineNumber);
+            currentReader = Utils.createReader(file1);
+            previousReader = Utils.createReader(file2);
+            return diffProvider.computeDiff(currentReader, previousReader);
         } finally {
             if (currentReader != null) {
                 try {
@@ -422,6 +423,21 @@ public final class DiffUtils {
                     previousReader.close();
                 } catch (IOException ex) {}
             }
+        }
+    }
+    
+    /**
+     * 
+     * @param originalLineNumber 0-based
+     * @return 0-based line number in the previous file
+     * @throws IOException 
+     */
+    public static int getMatchingLine (File currentFile, File previousFile, int originalLineNumber) throws IOException {
+        Difference[] diffs = getDifferences(currentFile, previousFile);
+        if (diffs == null) {
+            return -1;
+        } else {
+            return getMatchingLine(diffs, originalLineNumber);
         }
     }
     
