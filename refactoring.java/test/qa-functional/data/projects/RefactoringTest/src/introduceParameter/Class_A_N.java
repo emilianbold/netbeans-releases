@@ -1,17 +1,17 @@
 package introduceParameter;
 
-public class Class_A_A implements Runnable{
+public class Class_A_N implements Runnable{
         
     private int field = 4;
     
-    public Class_A_A() {
+    public Class_A_N() {
         int x = field;
     }
        
-    public void m(int param, String... varargs ) {
+    public void m(int param, int zz) {
         String x = "ABC";
         String y = "ABC";
-        int z = 12345;
+        int z = zz;
     }
     
     public void run() {
@@ -46,11 +46,12 @@ public class Class_A_A implements Runnable{
     }
     
     public void usage() {
-        new Class_A_A();        
-        m(1,"","");
+        new Class_A_N();        
+        m(1,2);
         new Super().m1();
         new Sub().m1();
         y();
     
     }                                             
 }
+
