@@ -327,6 +327,7 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    @Override
     public void dispose(FSSResponse response) {
         synchronized (responseLock) {
             responses.remove(response.getId());
@@ -376,8 +377,8 @@ import org.openide.util.RequestProcessor;
         }
     }
     
-    private boolean isFreeBSD() {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "uname"); // NOI18N
+    private static boolean isFreeBSD(ExecutionEnvironment execEnv) {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
         if (res.isOK()) {
             if (res.output.equals("FreeBSD")) { // NOI18N
                 return true;
@@ -386,26 +387,27 @@ import org.openide.util.RequestProcessor;
         return false;
     }
     
-    private String checkServerSetup() throws ConnectException, IOException, 
-            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
-
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException();
-        }
-
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+    /*package*/ static File testGetOriginalFSServerFile(ExecutionEnvironment execEnv) 
+            throws IOException, ConnectionManager.CancellationException {
+        String path = getOriginalFSServerPath(execEnv);
+        return InstalledFileLocator.getDefault().locate(
+                path, "org.netbeans.modules.remote.impl", false); // NOI18N
+   }
+    
+    private static String getOriginalFSServerPath(ExecutionEnvironment execEnv) 
+            throws IOException, ConnectionManager.CancellationException {
 
         String toolPath = "";
-        MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(env);
+        MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         try {
             String platformPath;
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             if (osFamily == HostInfo.OSFamily.UNKNOWN) {
-                if (isFreeBSD()) {
+                if (isFreeBSD(execEnv)) {
                     platformPath = "FreeBSD-x86"; // NOI18N
-                } else {
-                    setInvalid(true);
-                    throw new IOException("Unsupported platform on " + env.getDisplayName()); //NOI18N
+                } else {                    
+                    throw new IOException("Unsupported platform on " + execEnv.getDisplayName()); //NOI18N
                 }
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
@@ -416,6 +418,24 @@ import org.openide.util.RequestProcessor;
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return toolPath;
+    }
+    
+    private String checkServerSetup() throws ConnectException, IOException, 
+            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            throw new ConnectException();
+        }
+
+        String toolPath;
+        try {
+            toolPath = getOriginalFSServerPath(env);
+        } catch (IOException ioe) {
+            setInvalid(true);
+            throw ioe;
+        }
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
 
         String remotePath = USER_DEFINED_SERVER_PATH;
         if (remotePath == null) {
