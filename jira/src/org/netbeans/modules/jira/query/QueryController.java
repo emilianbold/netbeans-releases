@@ -127,12 +127,12 @@ import org.openide.util.RequestProcessor.Task;
 public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
     private QueryPanel panel;
 
-    private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
 
     private final JiraRepository repository;
     protected JiraQuery query;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
 
     private QueryTask refreshTask;
     private final boolean modifiable;
