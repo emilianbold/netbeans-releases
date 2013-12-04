@@ -247,6 +247,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     @Override
     public Documentation documentElement(ParserResult info, ElementHandle element) {
+        if (element == null) {
+            return null;
+        }
         if (element instanceof IndexedElement) {
             final Documentation[] result = new Documentation[1];
             final IndexedElement indexedElement = (IndexedElement)element;
