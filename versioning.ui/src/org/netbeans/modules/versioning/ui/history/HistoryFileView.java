@@ -1175,7 +1175,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
     }
 
-    public static void appendHyperlinkHTMLFont(StringBuffer sb) {
+    private static void appendHyperlinkHTMLFont(StringBuilder sb) {
         sb.append("<font color=#");// NOI18N
         sb.append(Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff));
         sb.append(">"); // NOI18N
