@@ -58,6 +58,7 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.ui.spi.ProjectHudsonProvider;
 import org.netbeans.modules.hudson.spi.HudsonManagerAgent;
+import org.netbeans.modules.hudson.ui.nodes.HudsonInstanceNode;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -128,6 +129,10 @@ public class OpenProjectstHudsonManagerAgent extends HudsonManagerAgent {
                     if (in == null) {
                         String n = HudsonManager.simplifyServerLocation(url, false);
                         in = HudsonManager.addInstance(n, url, 60, false);
+                        if (assoc.getViewName() != null) {
+                            in.prefs().put(HudsonInstanceNode.SELECTED_VIEW,
+                                    assoc.getViewName());
+                        }
                     }
                     addProvider(in, project);
                     projectInstances.put(project, in);
