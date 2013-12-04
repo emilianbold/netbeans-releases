@@ -1316,7 +1316,8 @@ public class ModelUtils {
     
     public static String getDisplayName(String typeName) {
         String displayName = typeName;
-        if (displayName.startsWith("@param;")) {
+        if (displayName.startsWith("@param;") || displayName.contains(ModelBuilder.WITH_OBJECT_NAME_START)
+                || displayName.contains(ModelBuilder.ANONYMOUS_OBJECT_NAME_START)) {
             displayName = "";
         } else {
             if (displayName.contains(GENERATED_FUNCTION_PREFIX)) {

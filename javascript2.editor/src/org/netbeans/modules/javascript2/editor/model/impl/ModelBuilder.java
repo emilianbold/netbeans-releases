@@ -59,6 +59,9 @@ public final class ModelBuilder {
     private int withObjectCount;
     private JsWith currentWith;
     
+    protected final static String WITH_OBJECT_NAME_START = "With$"; //NOI18N
+    protected final static String ANONYMOUS_OBJECT_NAME_START = "Anonym$"; //NOI18N
+    
     ModelBuilder(JsFunctionImpl globalObject) {
         this.globalObject = globalObject;
         this.stack = new Stack<JsObjectImpl>();
@@ -125,11 +128,11 @@ public final class ModelBuilder {
     }
     
     String getUnigueNameForAnonymObject() {
-        return "Anonym$" + anonymObjectCount++;  
+        return  ANONYMOUS_OBJECT_NAME_START + anonymObjectCount++;  
     }
     
     String getUnigueNameForWithObject() {
-        return "With$" + withObjectCount++;  
+        return WITH_OBJECT_NAME_START + withObjectCount++;  
     }
     
 //    FunctionScope build(FunctionNode function) {
