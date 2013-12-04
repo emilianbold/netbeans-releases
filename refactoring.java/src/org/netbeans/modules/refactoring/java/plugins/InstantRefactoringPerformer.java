@@ -99,6 +99,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -388,7 +390,9 @@ public final class InstantRefactoringPerformer implements DocumentListener, KeyL
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
-        if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null) {
+        EditorUI editorUI = Utilities.getEditorUI(target);
+        Boolean ovr = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+        if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null || (ovr != null && ovr == true)) {
             return ;
         }
         

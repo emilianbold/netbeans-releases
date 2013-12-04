@@ -71,6 +71,7 @@ import org.netbeans.modules.j2me.project.ui.ManageMIDlets;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
@@ -85,12 +86,13 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_PROFILE;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_REBUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -169,7 +171,7 @@ final class J2MEActionProvider extends BaseActionProvider {
             src,
             test,
             updateHelper.getAntProjectHelper(),
-            new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+            new CallbackImpl(project.getClassPathProvider(), project));
         this.project = project;
     }
 
@@ -330,5 +332,59 @@ final class J2MEActionProvider extends BaseActionProvider {
             return mm.store();
         }
         return false;
+    }
+
+    public static final class CallbackImpl implements Callback3 {
+
+        private final ClassPathProviderImpl cp;
+        private final J2MEProject project;
+
+        public CallbackImpl(ClassPathProviderImpl cp, @NonNull final J2MEProject project) {
+            this.cp = cp;
+            this.project = project;
+        }
+
+        @Override
+        public ClassPath getProjectSourcesClassPath(String type) {
+            return cp.getProjectSourcesClassPath(type);
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            return cp.findClassPath(file, type);
+        }
+
+        @Override
+        public Map<String, String> createAdditionalProperties(String command, Lookup context) {
+            final Map<String, String> result = new HashMap<>();
+            if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
+                PropertyEvaluator pe = project.evaluator();
+                final String runMethod = pe.getProperty(J2MEProjectProperties.PROP_RUN_METHOD);
+                if (runMethod != null && runMethod.equals("OTA")) { //NOI18N
+                    String url = J2MEProjectUtils.getJadURL(project.getHelper());
+                    if (url != null) {
+                        result.put("dist.jad.url", url); //NOI18N
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Set<String> createConcealedProperties(String command, Lookup context) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public void antTargetInvocationStarted(String command, Lookup context) {
+        }
+
+        @Override
+        public void antTargetInvocationFinished(String command, Lookup context, int result) {
+        }
+
+        @Override
+        public void antTargetInvocationFailed(String command, Lookup context) {
+        }
     }
 }

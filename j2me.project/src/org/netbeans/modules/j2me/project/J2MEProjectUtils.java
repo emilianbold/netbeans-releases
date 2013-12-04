@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.j2me.project;
 
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -59,6 +64,12 @@ import org.netbeans.modules.j2me.project.ui.PlatformsComboBoxModel;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -204,5 +215,51 @@ public class J2MEProjectUtils {
 
     public static ListCellRenderer createJDKPlatformListCellRenderer() {
         return PlatformUiSupport.createPlatformListCellRenderer();
+    }
+
+    /**
+     * Gets the JAD file URL for OTA execution.
+     * @param helper
+     * @return JAD file URL.
+     */
+    public static String getJadURL(AntProjectHelper helper) {
+        final FileObject fo = FileUtil.getConfigFile("HTTPServer_DUMMY"); // NOI18N
+        final URL base = URLMapper.findURL(fo, URLMapper.NETWORK);
+        if (base == null) {
+            return null;
+        }
+        final PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+        try {
+            final URL newURL = new URL(base.getProtocol(), "localhost", base.getPort(), //NOI18N
+                    encodeURL("/servlet/org.netbeans.modules.j2me.project.ota.JAMServlet/" + helper.getProjectDirectory().getPath() + "/" + eval.evaluate("${dist.dir}/${dist.jad}"))); // NOI18N
+            return newURL.toExternalForm();
+        } catch (MalformedURLException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return null;
+        }
+    }
+
+    /**
+     * Encodes URL String.
+     * @param orig Original URL string to encode
+     * @return Encoded URL.
+     */
+    @SuppressWarnings("deprecation")
+    private static String encodeURL(final String orig) {
+        final StringTokenizer slashTok = new StringTokenizer(orig, "/", true); // NOI18N
+        final StringBuffer path = new StringBuffer();
+        while (slashTok.hasMoreTokens()) {
+            final String tok = slashTok.nextToken();
+            if (tok.startsWith("/")) { // NOI18N
+                path.append(tok);
+            } else {
+                try {
+                    path.append(URLEncoder.encode(tok, "UTF-8")); // NOI18N
+                } catch (UnsupportedEncodingException e) {
+                    path.append(URLEncoder.encode(tok));
+                }
+            }
+        }
+        return path.toString();
     }
 }

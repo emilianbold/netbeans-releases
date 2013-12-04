@@ -65,7 +65,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.j2me.project</friend>
-                <friend>org.netbeans.modules.mobility.antext</friend>
                 <friend>org.netbeans.modules.mobility.project</friend>
                 <package>org.netbeans.modules.j2me.keystore</package>
                 <package>org.netbeans.modules.j2me.keystore.ui</package>

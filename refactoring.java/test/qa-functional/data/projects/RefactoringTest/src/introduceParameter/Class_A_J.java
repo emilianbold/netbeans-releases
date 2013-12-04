@@ -1,17 +1,17 @@
 package introduceParameter;
 
-public class Class_A_A implements Runnable{
+public class Class_A_J implements Runnable{
         
     private int field = 4;
     
-    public Class_A_A() {
+    public Class_A_J() {
         int x = field;
     }
        
-    public void m(int param, String... varargs ) {
+    public void m(int param, int zz) {
         String x = "ABC";
         String y = "ABC";
-        int z = 12345;
+        int z = zz;
     }
     
     public void run() {
@@ -20,14 +20,13 @@ public class Class_A_A implements Runnable{
     
     
     class Super {
-        public void m1() {
+        public void m1(final int myParameter) {
             int y = 3;
         }
     }
     
     class Sub extends Super {
-        public void m1() {
-            int x = 3;
+        public void m1(final int myParameter) {
         }
     }
     
@@ -46,11 +45,13 @@ public class Class_A_A implements Runnable{
     }
     
     public void usage() {
-        new Class_A_A();        
-        m(1,"","");
-        new Super().m1();
-        new Sub().m1();
+        new Class_A_J();        
+        m(1,2);
+        new Super().m1(3);
+        new Sub().m1(3);
         y();
     
     }                                             
 }
+
+

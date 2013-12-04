@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -71,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class GsfDataLoader extends UniFileLoader {
     boolean initialized;
-    Set<String> registeredMimes;
+    volatile Set<String> registeredMimes = Collections.emptySet();
     
     public GsfDataLoader() {
         super("org.netbeans.modules.csl.core.GsfDataObject");

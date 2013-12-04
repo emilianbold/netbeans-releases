@@ -70,6 +70,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import static com.sun.source.tree.Tree.Kind.*;
 
 /**
@@ -194,7 +195,12 @@ public class ArithmeticUtilities {
                 
             }
         }
-        Object o = new VisitorImpl(info, resolveCompileTimeConstants, enhanced).scan(tp, null);
+        Object o;
+        try {
+            o = new VisitorImpl(info, resolveCompileTimeConstants, enhanced).scan(tp, null);
+        } catch (ArithmeticException | IndexOutOfBoundsException | IllegalArgumentException ex) {
+            o = null;
+        }
         if (save) {
             if (v == null) {
                 v = new ElementValue();
@@ -451,7 +457,11 @@ public class ArithmeticUtilities {
                     VariableTree vt = (VariableTree)varPath.getLeaf();
                     if (vt.getInitializer() != null) {
                         VisitorImpl recurse = new VisitorImpl(info, true, enhanceProcessing);
-                        obj = recurse.scan(new TreePath(varPath, vt.getInitializer()), null);
+                        try {
+                            obj = recurse.scan(new TreePath(varPath, vt.getInitializer()), null);
+                        } catch (ArithmeticException | IndexOutOfBoundsException | IllegalArgumentException ex) {
+                            // no op, obj is already null.
+                        }
                     }
                 }
             } else if (entry == null) {
@@ -522,10 +532,10 @@ public class ArithmeticUtilities {
             
             // JSL 5.6.2, binary numeric promotion + JLS 5.1.2, widening primitive conversion for char values.
             // other value types are handled by the Number class in JDK. Chars may be promoted further to float / double.
-            if (left instanceof Character) {
+            if (left instanceof Character && !(right instanceof String)) {
                 left = Integer.valueOf(((Character)left).charValue());
             }
-            if (right instanceof Character) {
+            if (right instanceof Character && !(left instanceof String)) {
                 right = Integer.valueOf(((Character)right).charValue());
             }
             if (left != null && right != null) {

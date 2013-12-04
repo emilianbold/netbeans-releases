@@ -455,7 +455,8 @@ public class NPECheck {
             }
             
             if (r != null && !doNotRecord) {
-                expressionState.put(tree, r);
+//                expressionState.put(tree, r);
+                expressionState.put(tree, mergeIn(expressionState, tree, r));
             }
             
             resume(tree, resumeAfter);
@@ -892,6 +893,8 @@ public class NPECheck {
             Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
             
                 
+            doNotRecord = oldDoNotRecord;
+            
             if (!oldDoNotRecord) {
                 variable2State = new HashMap<VariableElement, State>(oldVariable2State);
                 
@@ -904,8 +907,8 @@ public class NPECheck {
                 variable2State = oldVariable2State;
             }
         
-            
-            doNotRecord = oldDoNotRecord;
+//            
+//            doNotRecord = oldDoNotRecord;
             
             scan(condition, p);
             scan(statement, p);
@@ -1114,14 +1117,17 @@ public class NPECheck {
         private void mergeInto(Map<VariableElement, State> target, Map<VariableElement, State> other) {
             for (Entry<VariableElement, State> e : other.entrySet()) {
                 State t = e.getValue();
-                
-                if (target.containsKey(e.getKey())) {
-                    State el = target.get(e.getKey());
 
-                    target.put(e.getKey(), State.collect(t, el));
-                } else {
-                    target.put(e.getKey(), t);
-                }
+                target.put(e.getKey(), mergeIn(target, e.getKey(), t));
+            }
+        }
+        
+        private State mergeIn(Map m, Object k, State nue) {
+            if (m.containsKey(k)) {
+                State prev = (State)m.get(k);
+                return State.collect(nue, prev);
+            } else {
+                return nue;
             }
         }
         
