@@ -770,7 +770,7 @@ static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
     thread_init();    
     int pass = 0;
-    while (dirtab_is_empty()) { //TODO: replace with notification?
+    while (dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
     while (state_get_proceed()) {

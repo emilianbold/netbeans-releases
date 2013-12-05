@@ -31,6 +31,7 @@
       <itemPath>nbproject/launcher.properties</itemPath>
       <itemPath>make</itemPath>
       <itemPath>nbproject/project.xml</itemPath>
+      <itemPath>../../release</itemPath>
       <itemPath>todo.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -309,7 +310,7 @@
     </conf>
     <conf name="MacOS" type="0">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
