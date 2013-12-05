@@ -127,8 +127,6 @@ public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
         
         writeLongContent(3 * 1000 * 1000);
 
-        CharSequence log = Log.enable("org.openide.util", Level.SEVERE);
-        
         final Openable open2 = obj.getLookup().lookup(Openable.class);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -165,9 +163,6 @@ public class DefaultDataObjectMissingBinaryTest extends NbTestCase {
         });
         
         assertNull("No pane opened", arr);
-        if (log.length() > 0) {
-            fail("No warnings, but was:\n" + log);
-        }
     }
 
     private void writeContent(String cnt) throws IOException {
