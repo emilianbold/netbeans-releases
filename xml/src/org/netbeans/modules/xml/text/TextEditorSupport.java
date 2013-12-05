@@ -241,22 +241,37 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
                         return;
                     doc.addDocumentListener(WeakListeners.document(docListener, doc));
 
-                    if (rep == null) {
+                    Representation newRep;
+                    
+                    synchronized(TextEditorSupport.this) {
+                        newRep = rep;
+                    }
+                    
+                    if (newRep == null) {
                         XMLDataObjectLook dobj = (XMLDataObjectLook) getDataObject();
                         Synchronizator sync = dobj.getSyncInterface();
 
                         //!!! What does this hardcoding mean???
                         //[DEPENDENCY] it introduces really ugly core to it's client dependencies!!!
                         if (dobj instanceof org.netbeans.modules.xml.XMLDataObject) {
-                            rep = new XMLTextRepresentation(TextEditorSupport.this, sync);
+                            newRep = new XMLTextRepresentation(TextEditorSupport.this, sync);
                         } else if (dobj instanceof DTDDataObject) {
-                            rep = new DTDTextRepresentation(TextEditorSupport.this, sync);
+                            newRep = new DTDTextRepresentation(TextEditorSupport.this, sync);
                         } else if (dobj instanceof EntityDataObject) {
-                            rep = new EntityTextRepresentation(TextEditorSupport.this, sync);
+                            newRep = new EntityTextRepresentation(TextEditorSupport.this, sync);
                         }
 
-                        if (rep != null) {
-                            sync.addRepresentation(rep);
+                        if (newRep != null) {
+                            synchronized (TextEditorSupport.this) {
+                                if (rep == null) {
+                                    rep = newRep;
+                                } else {
+                                    newRep = null;
+                                }
+                            }
+                            if (newRep != null) {
+                                sync.addRepresentation(newRep);
+                            }
                         }
                     }
                 }
@@ -278,8 +293,11 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
 
         XMLDataObjectLook dobj = (XMLDataObjectLook) getDataObject();
         Synchronizator sync = dobj.getSyncInterface();
-        Representation oldRep = rep;
-        rep = null;
+        Representation oldRep;
+        synchronized (this) {
+            oldRep = rep;
+            rep = null;
+        }
         if ( oldRep != null ) { // because of remove modified document
             sync.removeRepresentation(oldRep);
         }

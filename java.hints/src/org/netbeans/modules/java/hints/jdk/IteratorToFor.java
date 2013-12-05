@@ -260,6 +260,7 @@ public class IteratorToFor {
                         }
                     }
                     toReplace.add(path);
+                    return null;
                 }
                 return super.visitArrayAccess(node, p);
             }
