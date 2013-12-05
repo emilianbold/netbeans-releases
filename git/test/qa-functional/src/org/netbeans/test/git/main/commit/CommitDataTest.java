@@ -195,6 +195,7 @@ public class CommitDataTest extends JellyTestCase {
             TestKit.printLogStream(stream, "Duration of invoking Commit dialog: " + (end - start));
             new EventTool().waitNoEvent(1000);
             vo = VersioningOperator.invoke();
+            new EventTool().waitNoEvent(5000);
             try {
                 vo.tabFiles();
             } catch (Exception e) {
