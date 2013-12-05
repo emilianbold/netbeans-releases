@@ -59,7 +59,7 @@ public class IndexOfToContainsTest extends NbTestCase {
                 .input("package test;\n" +
                        "public class Test {\n" +
                        "    private boolean test(String str) {\n" +
-                       "        return str.indexOf(\"sub\") == -1;\n" +
+                       "        return str.indexOf(\"sub\") == (-1);\n" +
                        "    }\n" +
                        "}\n")
                 .run(IndexOfToContains.class)
