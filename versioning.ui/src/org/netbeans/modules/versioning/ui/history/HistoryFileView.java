@@ -91,7 +91,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Stupka
  */
-public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
+class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
 
