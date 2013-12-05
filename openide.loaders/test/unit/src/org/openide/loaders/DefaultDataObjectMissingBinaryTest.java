@@ -51,7 +51,6 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.actions.Closable;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
