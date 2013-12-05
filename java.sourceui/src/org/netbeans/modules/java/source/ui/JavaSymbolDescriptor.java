@@ -210,6 +210,16 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         //todo: fixme
         return -1;
     }
+
+    @NonNull
+    public ElementKind getElementKind() {
+        return kind;
+    }
+
+    @NonNull
+    public Set<? extends Modifier> getModifiers() {
+        return modifiers;
+    }
     
     @CheckForNull
     private ProjectInformation getProjectInfo() {

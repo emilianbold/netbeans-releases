@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -126,7 +127,7 @@ public class ReplaceBufferByString {
             return null;
         }
         NewAppendScanner newScan = new NewAppendScanner(ci);
-        if (newScan.scan(initP, null) != Boolean.TRUE) {
+        if (newScan.scan(initP, null) != Boolean.TRUE || !newScan.hasContents) {
             return null;
         }
         
@@ -142,6 +143,7 @@ public class ReplaceBufferByString {
      */
     private static class NewAppendScanner extends TreePathScanner<Boolean, Void> {
         private final CompilationInfo ci;
+        private boolean hasContents;
         
         public NewAppendScanner(CompilationInfo ci) {
             this.ci = ci;
@@ -158,7 +160,9 @@ public class ReplaceBufferByString {
             if (r != Boolean.TRUE) {
                 return false;
             }
-            return node.getIdentifier().contentEquals("append"); // NOI18N
+            boolean appended = node.getIdentifier().contentEquals("append"); // NOI18N
+            hasContents |= appended;
+            return appended;
         }
 
         @Override
@@ -173,6 +177,11 @@ public class ReplaceBufferByString {
             }
             Name n = el.getQualifiedName();
             boolean res = n.contentEquals("java.lang.StringBuilder") || n.contentEquals("java.lang.StringBuffer"); // NOI18N
+            // check if there is some initial contents
+            if (node.getArguments().size() == 1 && 
+                    Utilities.isJavaString(ci, ci.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getArguments().get(0))))) {
+                hasContents = true;
+            }
             return res;
         }
 

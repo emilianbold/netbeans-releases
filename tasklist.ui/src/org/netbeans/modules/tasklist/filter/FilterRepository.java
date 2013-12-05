@@ -188,10 +188,10 @@ public final class FilterRepository {
         if( prefs.getBoolean( "firstTimeStartWithIssue", true ) ) { //NOI18N
             prefs.putBoolean( "firstTimeStartWithIssue", false ); //NOI18N
             TaskFilter filter = createNewFilter();
-            filter.setName( NbBundle.getMessage( FilterRepository.class, "LBL_IssuesFilter" ) ); //NOI18N
+            filter.setName( NbBundle.getMessage( FilterRepository.class, "LBL_TodoFilter" ) ); //NOI18N
             TypesFilter types = new TypesFilter();
             types.clear();
-            types.setEnabled("org.netbeans.modules.bugtracking.tasklist.TaskListProvider", true); //NOI18N
+            types.setEnabled("org.netbeans.modules.tasklist.todo.TodoTaskScanner", true); //NOI18N
             types.setTaskCountLimit( 100 );
             filter.setTypesFilter( types );
             filter.setKeywordsFilter( new KeywordsFilter() );

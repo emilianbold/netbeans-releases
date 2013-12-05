@@ -64,7 +64,6 @@ import org.netbeans.modules.nativeexecution.pty.PtyUtility;
  */
 public final class PtyNativeProcess extends AbstractNativeProcess {
 
-    private static final Boolean fixEraseKeyInTerminal = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
     private AbstractNativeProcess delegate = null;
 
     public PtyNativeProcess(final NativeProcessInfo info) {
@@ -83,7 +82,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
             newArgs.add(pty.getSlaveName());
         }
 
-        if (fixEraseKeyInTerminal) {
+        if (FIX_ERASE_KEY_IN_TERMINAL) {
             newArgs.add("--set-erase-key"); // NOI18N
         }
 

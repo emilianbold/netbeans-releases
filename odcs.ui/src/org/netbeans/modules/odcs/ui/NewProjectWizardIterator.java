@@ -112,7 +112,8 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         "# {0} - detailed message",
         "NewProject.progress.projectCreationFailed=Project creation failed: {0}",
         "NewProject.progress.creatingProject=Creating project...",
-        "NewProject.progress.creatingTaskRepository=Creating task repository...",
+        "NewProject.progress.creatingSCMRepository=Creating SCM repository...",
+        "NewProject.creatingSCMRepository.failed=Failed to create a SCM repository",
         "NewProject.progress.repositoryCheckout=Initializing local repository..."})
     @Override
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {
@@ -143,6 +144,22 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMessage);
             throw new IOException(errorMessage, ex);
         }
+        
+        // Create feature - SCM repository
+        handle.progress(Bundle.NewProject_progress_creatingSCMRepository(), 2);
+        int i = 60;
+        while (!project.hasScm() && i-- > 0) {
+            try {
+                Thread.sleep(2000); // any other way, is there a blocking call in the API?
+            } catch (InterruptedException ex) {
+            }
+            project = server.getProject(project.getId(), true);
+        }
+        if (!project.hasScm()) {
+            String errorMessage = Bundle.NewProject_creatingSCMRepository_failed();
+            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG, errorMessage);
+            throw new IOException(errorMessage);
+        }
 
         String repositoryUrl = null;
         Collection<ScmRepository> repositories = project.getRepositories();
@@ -164,55 +181,38 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             throw new IOException("Git client is not available"); //NOI18N
         }
         
-        // Create feature - SCM repository
-        boolean repoCreated = project != null;
-        
-        if (repoCreated) {
-            handle.progress(NewProject_progress_creatingTaskRepository(), 2);
-            int i = 30;
-            while (!project.hasTasks() && i-- > 0) {
-                try {
-                    Thread.sleep(2000); // any other way, is there a blocking call in the API?
-                } catch (InterruptedException ex) {
-                }
-                project = server.getProject(project.getId(), true);
-            }
-        }
-        
         // After the repository is created it must be checked out
-        if (repoCreated) {
-            try {
+        try {
 
-                if (repositoryUrl != null) {
-                    handle.progress(NewProject_progress_repositoryCheckout(), 3);
-                    logger.log(Level.FINE, "Checking out repository - Repository URL: {0}, Local Folder: {1}, Service: Git", //NOI18N
-                            new Object[]{repositoryUrl, newPrjScmLocal});
-                    PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
-                    if (passwdAuth != null) {
-                        final File localScmRoot = new File(newPrjScmLocal);
-                        boolean inPlaceRepository = isCommonParent(sharedItems, newPrjScmLocal);
-                        repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
-                        if (!inPlaceRepository) {
-                            copySharedItems(sharedItems, localScmRoot);
-                            // if shared items contain projects, those projects need to be closed and open from new location
-                            File[] oldLoc = new File[sharedItems.size()];
-                            File[] newLoc = new File[sharedItems.size()];
-                            int i = 0;
-                            for (SharedItem item : sharedItems) {
-                                oldLoc[i] = item.getRoot();
-                                newLoc[i] = new File(localScmRoot, item.getRoot().getName());
-                                i++;
-                            }
-                            ProjectServices projects  = Lookup.getDefault().lookup(ProjectServices.class);
-                            projects.reopenProjectsFromNewLocation(oldLoc, newLoc);
+            if (repositoryUrl != null) {
+                handle.progress(NewProject_progress_repositoryCheckout(), 3);
+                logger.log(Level.FINE, "Checking out repository - Repository URL: {0}, Local Folder: {1}, Service: Git", //NOI18N
+                        new Object[]{repositoryUrl, newPrjScmLocal});
+                PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
+                if (passwdAuth != null) {
+                    final File localScmRoot = new File(newPrjScmLocal);
+                    boolean inPlaceRepository = sharedItems.isEmpty() || isCommonParent(sharedItems, newPrjScmLocal);
+                    repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
+                    if (!inPlaceRepository) {
+                        copySharedItems(sharedItems, localScmRoot);
+                        // if shared items contain projects, those projects need to be closed and open from new location
+                        File[] oldLoc = new File[sharedItems.size()];
+                        File[] newLoc = new File[sharedItems.size()];
+                        i = 0;
+                        for (SharedItem item : sharedItems) {
+                            oldLoc[i] = item.getRoot();
+                            newLoc[i] = new File(localScmRoot, item.getRoot().getName());
+                            i++;
                         }
-                    } else {
-                        // user not logged in, do nothing
+                        ProjectServices projects  = Lookup.getDefault().lookup(ProjectServices.class);
+                        projects.reopenProjectsFromNewLocation(oldLoc, newLoc);
                     }
+                } else {
+                    // user not logged in, do nothing
                 }
-            } catch (ODCSException ex) {
-                Exceptions.printStackTrace(ex);
             }
+        } catch (ODCSException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
         Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();

@@ -461,6 +461,22 @@ final class ModuleListParser {
                 String reltext = XMLUtil.findText(runtimeRelativePath);
                 // No need to evaluate property refs in it - it is *not* substitutable-text in the schema.
                 resultBin = new File(jar.getParentFile(), reltext.replace('/', File.separatorChar));
+                if (!resultBin.exists() && reltext.contains("${java.home}/lib/ext/jfxrt.jar")) {
+                    String jhm = System.getProperty("java.home");
+                    resultBin = new File(new File(new File(new File(jhm), "lib"), "ext"), "jfxrt.jar");
+                    if (!resultBin.exists()) {
+                        File jdk7 = new File(new File(new File(jhm), "lib"), "jfxrt.jar");
+                        if (jdk7.exists()) {
+                            resultBin = jdk7;
+                        } else {
+                            String nball = (String) properties.get("nb_all");
+                            File external = new File(new File(new File(new File(nball), "libs.javafx"), "external"), "jfxrt.jar");
+                            if (external.exists()) {
+                                resultBin = external;
+                            }
+                        }
+                    }
+                }
             }
 
             if (origBin != null) {

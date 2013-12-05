@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -136,14 +137,20 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
             for( int i = 0; i < activatedNodes.length; i++ ) {
                 Project p = activatedNodes[i].getLookup().lookup(Project.class);
                 if ( p != null ) {
-                    SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-                    if(spp != null) {
-                        subProjects = spp.getSubprojects();
+                    ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+                    if (pcp != null) {
+                        subProjects = pcp.getContainedProjects().getProjects();
+                    } else {
+                        SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                        if(spp != null) {
+                            subProjects = spp.getSubprojects();
+                        }
                     }
                 }
             }
         }
         if(subProjects != null && !subProjects.isEmpty()) {
+            menu.getPopupMenu().setLayout(new VerticalGridLayout());
             final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
 
                 @Override

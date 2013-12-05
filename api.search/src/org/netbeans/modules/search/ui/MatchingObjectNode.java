@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -56,6 +57,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
@@ -102,6 +104,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
     private boolean valid = true;
     private PropertyChangeListener validityListener;
     private PropertyChangeListener selectionListener;
+    private final boolean replacing;
     PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
@@ -117,6 +120,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
             ReplaceCheckableNode checkableNode) {
         super(children, Lookups.fixed(matchingObject, checkableNode,
                 matchingObject.getFileObject(), matchingObject.getDataObject()));
+        replacing = checkableNode.isCheckable();
         Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
@@ -168,6 +172,9 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
                     "org.netbeans.modules.utilities.CopyPathToClipboard"); //NOI18N
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
+                        replacing && !matchingObject.isObjectValid()
+                            ? new RefreshAction(matchingObject) : null,
+                        null,
                         copyPath == null ? new CopyPathAction() : copyPath,
                         SystemAction.get(HideResultAction.class),
                         null,
@@ -186,7 +193,11 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
 
     @Override
     public String getHtmlDisplayName() {
-        return original.getHtmlDisplayName();
+        if (valid) {
+            return original.getHtmlDisplayName();
+        } else {
+            return getInvalidHtmlDisplayName();
+        }
     }
 
     @Override
@@ -232,7 +243,12 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
         }
         String oldDisplayName = original == null
                 ? null : original.getDisplayName();
-        original = new AbstractNode(Children.LEAF);
+        original = new AbstractNode(Children.LEAF) {
+            @Override
+            public String getHtmlDisplayName() {
+                return getInvalidHtmlDisplayName();
+            }
+        };
         original.setDisplayName(matchingObject.getFileObject().getNameExt());
         fireIconChange();
         fireDisplayNameChange(oldDisplayName,
@@ -255,6 +271,16 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
         }
     }
 
+    private String getInvalidHtmlDisplayName() {
+        Color colorMngr = UIManager.getColor(
+                "nb.search.sandbox.regexp.wrong");                      //NOI18N
+        Color color = colorMngr == null ? Color.RED : colorMngr;
+        String stringHex = Integer.toHexString(color.getRGB());
+        String stringClr = stringHex.substring(2, 8);
+        return "<html><font color='#" + stringClr + "'>" //NOI18N
+                + getDisplayName() + "</font></html>"; //NOI18N
+    }
+
     @Override
     public synchronized PropertySet[] getPropertySets() {
 
@@ -264,7 +290,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
             PropertySet set = new PropertySet() {
                 @Override
                 public Property<?>[] getProperties() {
-                    Property[] properties = new Property[]{
+                    Property<?>[] properties = new Property<?>[]{
                         new DetailsCountProperty(),};
                     return properties;
                 }
@@ -440,16 +466,15 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
 
         @Override
         public void propertyChange(PropertyChangeEvent e) {
-            if (matchingObject.getInvalidityStatus()
-                    == MatchingObject.InvalidityStatus.DELETED) {
-                matchingObject.removePropertyChangeListener(
-                        MatchingObject.PROP_INVALIDITY_STATUS,
-                        this);
-            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    setInvalidOriginal();
+                    if (matchingObject.getInvalidityStatus() == null) {
+                        resetValidOriginal();
+                        setChildren(matchingObject.getDetailsChildren(true));
+                    } else {
+                        setInvalidOriginal();
+                    }
                 }
             });
         }

@@ -49,39 +49,30 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.packets.StepIntoCommand;
 import org.netbeans.spi.debugger.ContextProvider;
 
-
 /**
  * @author ads
  *
  */
 public class StepIntoActionProvider extends AbstractActionProvider {
 
-    public StepIntoActionProvider( ContextProvider contextProvider ) {
+    public StepIntoActionProvider(ContextProvider contextProvider) {
         super(contextProvider);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProviderSupport#doAction(java.lang.Object)
-     */
     @Override
-    public void doAction( Object action )
-    {
+    public void doAction(Object action) {
         DebugSession session = getSession();
-        if ( session == null ){
+        if (session == null) {
             return;
         }
         hideSuspendAnnotations();
-        StepIntoCommand command = new StepIntoCommand( session.getTransactionId());
+        StepIntoCommand command = new StepIntoCommand(session.getTransactionId());
         session.sendCommandLater(command);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProvider#getActions()
-     */
     @Override
-    public Set getActions()
-    {
-        return Collections.singleton( ActionsManager.ACTION_STEP_INTO );
+    public Set getActions() {
+        return Collections.singleton(ActionsManager.ACTION_STEP_INTO);
     }
 
 }

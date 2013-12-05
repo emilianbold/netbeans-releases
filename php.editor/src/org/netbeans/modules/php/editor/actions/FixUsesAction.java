@@ -211,7 +211,8 @@ public class FixUsesAction extends BaseAction {
         DialogDescriptor dd = new DialogDescriptor(panel, Bundle.LongName(), true, new Object[] {ok, cancel}, ok, DialogDescriptor.DEFAULT_ALIGN,
                 HelpCtx.DEFAULT_HELP, new ActionListener() {
                                           @Override
-                                          public void actionPerformed(ActionEvent e) {}
+                                          public void actionPerformed(ActionEvent e) {
+                                          }
                                       }, true);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         ok.addActionListener(new ActionListener() {

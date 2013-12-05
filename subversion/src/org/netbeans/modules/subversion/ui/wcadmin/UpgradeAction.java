@@ -115,7 +115,10 @@ public class UpgradeAction extends ContextAction {
             try {
                 SvnUtils.getRepositoryRootUrl(root);
             } catch (SVNClientException ex) {
-                if (SvnClientExceptionHandler.isTooOldWorkingCopy(ex.getMessage()) && ex.getMessage().toLowerCase().contains("upgrade")) { //NOI18N
+                String msg = ex.getMessage().toLowerCase();
+                if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) && (
+                        msg.contains("upgrade") //NOI18N
+                        || (msg.contains("working copy format") && msg.contains("is too old")))) { //NOI18N
                     needsUpgrade = true;
                 }
             }

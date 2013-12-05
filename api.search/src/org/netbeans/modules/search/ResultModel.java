@@ -45,12 +45,11 @@
 
 package org.netbeans.modules.search;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.nio.charset.Charset;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.Constants.Limit;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -85,6 +84,8 @@ public final class ResultModel {
     /** */
     final BasicSearchCriteria basicCriteria;
     /** */
+    final BasicComposition basicComposition;
+    /** */
     private final boolean isFullText;
     /** */
     final String replaceString;
@@ -97,21 +98,22 @@ public final class ResultModel {
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
-    /** model is valid if all matching objects are valid */
+    /** model is valid if all selected matching objects are valid */
     private volatile boolean valid = true;
     /** Property change support */
     private final PropertyChangeSupport propertyChangeSupport =
             new PropertyChangeSupport(this);
     private int selectedMatches = 0;
-    private MatchSelectionListener matchSelectionListener =
-            new MatchSelectionListener();
+    private final MatchingObjectListener matchingObjectListener
+            = new MatchingObjectListener();
 
     /** Creates new <code>ResultModel</code>. */
     ResultModel(BasicSearchCriteria basicSearchCriteria,
-                       String replaceString) {
+                       String replaceString, BasicComposition basicComposition) {
 
         this.replaceString = replaceString;
         this.searchAndReplace = (replaceString != null);
+        this.basicComposition = basicComposition;
 
 	basicCriteria = basicSearchCriteria;
 	isFullText = (basicCriteria != null) && basicCriteria.isFullText();        
@@ -139,6 +141,9 @@ public final class ResultModel {
                     null, null);
             if (deselected < 0) {
                 updateSelected(deselected);
+            }
+            if (mo.isSelected() && !mo.isValid()) {
+                checkValid();
             }
             return true;
         }
@@ -206,9 +211,9 @@ public final class ResultModel {
         if(added) {
             totalDetailsCount += getDetailsCount(mo);
             int newSelectedMatches = 0;
-            if (mo.getTextDetails() != null && !mo.getTextDetails().isEmpty()) {
+            if (mo.getTextDetails() != null) {
+                mo.addPropertyChangeListener(matchingObjectListener);
                 for (TextDetail td : mo.getTextDetails()) {
-                    td.addChangeListener(matchSelectionListener);
                     if (td.isSelected()) {
                         newSelectedMatches++;
                     }
@@ -250,14 +255,63 @@ public final class ResultModel {
     }
 
     /**
+     * Called when an invalid object was selected, or when a selected object
+     * became invalid. If validity state of the model changes, fire changes.
      */
-    synchronized void objectBecameInvalid(MatchingObject matchingObj) {
+    private void setInvalid() {
         if (valid) {
             valid = false;
             propertyChangeSupport.firePropertyChange(PROP_VALID, true, false);
         }
     }
-    
+
+    /**
+     * If an invalid object was deselected, or when a selected object became
+     * valid again, we have to check whether all selected objects are now valid.
+     * If validity state of the model changes, fire changes.
+     */
+    private void checkValid() {
+
+        boolean allValid = true;
+        for (MatchingObject mo : getMatchingObjects()) {
+            if (mo.isSelected() && !mo.isValid()) {
+                allValid = false;
+            }
+        }
+
+        if (valid != allValid) {
+            valid = allValid;
+            propertyChangeSupport.firePropertyChange(PROP_VALID,
+                    !allValid, allValid);
+        }
+    }
+
+    private void objectValidityChanged(MatchingObject mo) {
+        if (mo.isSelected()) {
+            if (mo.isValid()) {
+                synchronized (this) {
+                    totalDetailsCount = 0;
+                    for (MatchingObject item : matchingObjects) {
+                        totalDetailsCount += item.getDetailsCount();
+                    }
+                }
+                checkValid();
+            } else {
+                setInvalid();
+            }
+        }
+    }
+
+    private void objectSelectionChanged(MatchingObject mo) {
+        if (!mo.isValid()) {
+            if (mo.isSelected()) {
+                setInvalid();
+            } else {
+                checkValid();
+            }
+        }
+    }
+
     /**
      */
     public synchronized int getTotalDetailsCount() {
@@ -408,8 +462,7 @@ public final class ResultModel {
     synchronized void searchException(RuntimeException ex) {
         ErrorManager.Annotation[] annotations =
                 ErrorManager.getDefault().findAnnotations(ex);
-        for (int i = 0; i < annotations.length; i++) {
-            ErrorManager.Annotation annotation = annotations[i];
+        for (ErrorManager.Annotation annotation : annotations) {
             if (annotation.getSeverity() == ErrorManager.USER) {
                 finishMessage = annotation.getLocalizedMessage();
                 if (finishMessage != null) return;
@@ -477,15 +530,30 @@ public final class ResultModel {
         }
     }
 
-    private class MatchSelectionListener implements ChangeListener {
+    private class MatchingObjectListener implements PropertyChangeListener {
 
         @Override
-        public void stateChanged(ChangeEvent e) {
-            TextDetail ts = (TextDetail) e.getSource();
-            if (ts.isSelected()) {
-                updateSelected(1);
+        public void propertyChange(PropertyChangeEvent evt) {
+            Object source = evt.getSource();
+            MatchingObject mo;
+            if (source instanceof MatchingObject) {
+                mo = (MatchingObject) source;
             } else {
-                updateSelected(-1);
+                throw new IllegalArgumentException();
+            }
+            String pn = evt.getPropertyName();
+            if (MatchingObject.PROP_MATCHES_SELECTED.equals(pn)) {
+                Object newVal = evt.getNewValue();
+                Object oldVal = evt.getOldValue();
+                if (newVal instanceof Integer && oldVal instanceof Integer) {
+                    updateSelected((Integer) newVal - (Integer) oldVal);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            } else if (MatchingObject.PROP_INVALIDITY_STATUS.equals(pn)) {
+                objectValidityChanged(mo);
+            } else if (MatchingObject.PROP_SELECTED.equals(pn)) {
+                objectSelectionChanged(mo);
             }
         }
     }

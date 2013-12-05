@@ -287,7 +287,7 @@ public abstract class BasicAbstractResultsPanel
         return resultsOutlineSupport.getOutlineView();
     }
 
-    private void setFinalRootNodeText() {
+    protected final void setFinalRootNodeText() {
 
         int resultSize = resultModel.size();
 

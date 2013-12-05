@@ -62,6 +62,8 @@ public final class FontColorNames {
      * side on the screen.
      */
     public static final String LINE_NUMBER_COLORING = "line-number"; // NOI18N
+    
+    public static final String INDENT_GUIDE_LINES = "indent-guide-lines"; // NOI18N
 
     /** Coloring used for guarded blocks */
     public static final String GUARDED_COLORING = "guarded"; // NOI18N

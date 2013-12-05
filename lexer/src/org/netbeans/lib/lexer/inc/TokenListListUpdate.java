@@ -162,9 +162,9 @@ final class TokenListListUpdate<T extends TokenId> {
                     " but real tokenListIndex is " + realIndex + // NOI18N
                     " (indexWasMinusOne=" + indexWasMinusOne + ").\n" + // NOI18N
                     "Wishing to remove tokenList\n" + // NOI18N
-                    ((removedTokenList != null) ? removedTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
+                    ((removedTokenList != null) ? removedTokenList.dumpInfo(new StringBuilder(256)) : "!!<NULL>!!") + // NOI18N
                     "\nbut marked-for-remove tokenList is \n" + // NOI18N
-                    ((markedForRemoveTokenList != null) ? markedForRemoveTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
+                    ((markedForRemoveTokenList != null) ? markedForRemoveTokenList.dumpInfo(new StringBuilder(256)) : "!!<NULL>!!") + // NOI18N
                     "\nfrom tokenListList\n" + tokenListList + // NOI18N
                     "\nModification description:\n" + eventInfo.modificationDescription(true); // NOI18N
             if (LOG.isLoggable(Level.WARNING)) {
@@ -235,7 +235,7 @@ final class TokenListListUpdate<T extends TokenId> {
         if (becomeJoining) {
             // Create JTL to init tokens
             tokenListList.setJoinSections(true);
-            tokenListList.joinTokenList();
+            tokenListList.checkCreateJoinTokenList();
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {
             EmbeddedTokenList<?,T> addedEtl = addedTokenLists.get(i);

@@ -33,9 +33,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.core.net.proxy.IProxyData;
@@ -48,7 +45,6 @@ import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.openide.util.Exceptions;
 import org.openide.util.NetworkSettings;
 
 public class ODCSClientImpl implements ODCSClient {

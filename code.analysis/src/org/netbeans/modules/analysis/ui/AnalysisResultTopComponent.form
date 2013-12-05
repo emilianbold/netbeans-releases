@@ -80,7 +80,7 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTextPane" name="descriptionPanel">
+            <Component class="javax.swing.JEditorPane" name="descriptionPanel">
               <Properties>
                 <Property name="editable" type="boolean" value="false"/>
                 <Property name="contentType" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

@@ -103,7 +103,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getNewLineElseOperator() {
         if (newLineElse == null) {
             newLineElse = formattingOperator.getCheckboxOperatorByLabel("\"else\"");
-            storeDefaultValue(Settings.NEWLINEELSE);
+            storeDefaultValue(Settings.ALIGNMENTNEWLINEELSE);
         }
         return newLineElse;
     }
@@ -111,7 +111,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getNewLineWhileOperator() {
         if (newLineWhile == null) {
             newLineWhile = formattingOperator.getCheckboxOperatorByLabel("\"while\"");
-            storeDefaultValue(Settings.NEWLINEWITH);
+            storeDefaultValue(Settings.ALIGNMENTNEWLINEWITH);
         }
         return newLineWhile;
     }
@@ -119,7 +119,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getNewLineCatch() {
         if (newLineCatch == null) {
             newLineCatch = formattingOperator.getCheckboxOperatorByLabel("\"catch\"");
-            storeDefaultValue(Settings.NEWLINECATCH);
+            storeDefaultValue(Settings.ALIGNMENTNEWLINECATCH);
         }
         return newLineCatch;
     }
@@ -127,7 +127,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getNewLineFinally() {
         if (newLineFinally == null) {
             newLineFinally = formattingOperator.getCheckboxOperatorByLabel("\"finally\"");
-            storeDefaultValue(Settings.NEWLINEFINALLY);
+            storeDefaultValue(Settings.ALIGNMENTNEWLINEFINALLY);
         }
         return newLineFinally;
     }
@@ -135,7 +135,7 @@ public class AlignmentOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getNewLineAfterModifiers() {
         if (newLineAfterModifiers == null) {
             newLineAfterModifiers = formattingOperator.getCheckboxOperatorByLabel("After modifiers");
-            storeDefaultValue(Settings.NEWLINEAFTERMODIFIERS);
+            storeDefaultValue(Settings.ALIGNMENTNEWLINEAFTERMODIFIERS);
         }
         return newLineAfterModifiers;
     }
@@ -252,9 +252,9 @@ public class AlignmentOperator extends FormattingPanelOperator {
         return alignmentFor;
     }
 
-    private enum Settings implements OperatorGetter {
+    enum Settings implements OperatorGetter {
 
-        NEWLINEELSE, NEWLINEWITH, NEWLINECATCH, NEWLINEFINALLY, NEWLINEAFTERMODIFIERS,
+        ALIGNMENTNEWLINEELSE, ALIGNMENTNEWLINEWITH, ALIGNMENTNEWLINECATCH, ALIGNMENTNEWLINEFINALLY, ALIGNMENTNEWLINEAFTERMODIFIERS,
         ALIGNMENTMETHODPARAMETERS, ALIGNMENTANNOTATIONARGUMENTS, ALIGNMENTTHROWSLIST, ALIGNMENTDISJUNCTIVECATCHTYPES, ALIGNMENTBINARYOPERATORS, ALIGNMENTASSIGNMENT, ALIGNMENTPARENTHESIZED,
         ALIGNMENTLAMBDAPARAMETERS, ALIGNMENTMETHODCALLARGUMENTS, ALIGNMENTIMPLEMENTSLIST, ALIGNMENTTRYRESOURCES, ALIGNEMTARRAYINITIALIZER, ALIGNMENTTERNARYOPERATORS, ALIGNMENTFOR;
 
@@ -262,15 +262,15 @@ public class AlignmentOperator extends FormattingPanelOperator {
         public Operator getOperator(FormattingPanelOperator fpo) {
             AlignmentOperator ao = (AlignmentOperator) fpo;
             switch (this) {
-                case NEWLINEELSE:
+                case ALIGNMENTNEWLINEELSE:
                     return ao.getNewLineElseOperator();
-                case NEWLINEWITH:
+                case ALIGNMENTNEWLINEWITH:
                     return ao.getNewLineWhileOperator();
-                case NEWLINECATCH:
+                case ALIGNMENTNEWLINECATCH:
                     return ao.getNewLineCatch();
-                case NEWLINEFINALLY:
+                case ALIGNMENTNEWLINEFINALLY:
                     return ao.getNewLineFinally();
-                case NEWLINEAFTERMODIFIERS:
+                case ALIGNMENTNEWLINEAFTERMODIFIERS:
                     return ao.getNewLineAfterModifiers();
                 case ALIGNMENTMETHODPARAMETERS:
                     return ao.getAlignmentMethodsParameters();

@@ -75,8 +75,8 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
-    private List<TaskNode> taskNodes = Collections.emptyList();
-    private List<TaskNode> filteredTaskNodes = Collections.emptyList();
+    private List<TaskNode> taskNodes = new ArrayList<TaskNode>();
+    private List<TaskNode> filteredTaskNodes = new ArrayList<TaskNode>();
     private TaskListener taskListener;
     private boolean refresh;
     private final Object LOCK = new Object();
@@ -107,7 +107,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     abstract Icon getIcon();
 
-    //override if you need to adjust node during updateNodes method
+    //override if you need to adjust node during updateContent method
     void adjustTaskNode(TaskNode taskNode) {
     }
 
@@ -208,10 +208,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         synchronized (LOCK) {
             int count = 0;
             for (TaskNode taskNode : filteredTaskNodes) {
-                if (taskNode.getTask().getStatus() != IssueStatusProvider.Status.SEEN) {
+                if (taskNode.getTask().getStatus() == IssueStatusProvider.Status.INCOMING_MODIFIED
+                        || taskNode.getTask().getStatus() == IssueStatusProvider.Status.INCOMING_NEW
+                        || taskNode.getTask().getStatus() == IssueStatusProvider.Status.CONFLICT) {
                     count++;
                 }
-            } 
+            }
             return count;
         }
     }
@@ -241,26 +243,23 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             }
             
             // remove obsolete
-            Set<String> set = new HashSet<String>(tasks.size());
-            for (IssueImpl task : tasks) {
-                set.add(task.getID());
-            }
+            Set<IssueImpl> set = new HashSet<IssueImpl>(tasks);
             Iterator<TaskNode> it = taskNodes.iterator();
             while(it.hasNext()) {
                 TaskNode n = it.next();
-                if(!set.contains(n.getTask().getID())) {
+                if (!set.contains(n.getTask())) {
                     it.remove();
                 }
             }
             
             // add new ones
-            set = new HashSet<String>(taskNodes.size());
+            set = new HashSet<IssueImpl>(taskNodes.size());
             for (TaskNode n : taskNodes) {
-                set.add(n.getTask().getID());
+                set.add(n.getTask());
             }
             
             for (IssueImpl task : tasks) {
-                if(!set.contains(task.getID())) {
+                if (!set.contains(task)) {
                     TaskNode taskNode = new TaskNode(task, this);
                     adjustTaskNode(taskNode);
                     taskNodes.add(taskNode);
@@ -372,7 +371,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
-    private final RequestProcessor.Task updateTask = rp.create(new Runnable() {
+    private final RequestProcessor.Task refilterNodes = rp.create(new Runnable() {
         @Override
         public void run() {
             SwingUtilities.invokeLater(new Runnable() {
@@ -385,13 +384,27 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             });
         }
     });
-    
+
+    private final RequestProcessor.Task updateContent = rp.create(new Runnable() {
+        @Override
+        public void run() {
+            updateContent();
+        }
+    });
+
     private class TaskListener implements PropertyChangeListener {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                updateTask.schedule(1000);
+                refilterNodes.schedule(1000);
+            } else if (IssueImpl.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                if (TaskContainerNode.this instanceof CategoryNode) {
+                    CategoryNode cn = (CategoryNode) TaskContainerNode.this;
+                    if (!cn.getCategory().persist()) {
+                        updateContent.schedule(500);
+                    }
+                }
             }
         }
     }

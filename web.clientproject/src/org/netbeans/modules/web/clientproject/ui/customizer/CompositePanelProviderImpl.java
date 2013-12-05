@@ -47,10 +47,11 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
-import org.netbeans.modules.javascript.karma.api.Karma;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -66,7 +67,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static final String SOURCES = "SOURCES"; // NOI18N
     public static final String RUN = "RUN"; // NOI18N
-    private static final String LICENSE = "License";
+    private static final String LICENSE = "License"; // NOI18N
 
     private final String name;
 
@@ -81,6 +82,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     })
     @Override
     public Category createCategory(Lookup context) {
+        ClientSideProject project = context.lookup(ClientSideProject.class);
+        assert project != null;
         ProjectCustomizer.Category category = null;
         if (SOURCES.equals(name)) {
             category = ProjectCustomizer.Category.create(
@@ -105,6 +108,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         String categoryName = category.getName();
+        ClientSideProject project = context.lookup(ClientSideProject.class);
+        assert project != null;
         final ClientSideProjectProperties uiProperties = context.lookup(ClientSideProjectProperties.class);
         if (SOURCES.equals(categoryName)) {
             return new SourcesPanel(category, uiProperties);
@@ -141,8 +146,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
             position = 400)
-    public static ProjectCustomizer.CompositeCategoryProvider createKarma() {
-        return Karma.getDefault().createCustomizer();
+    public static ProjectCustomizer.CompositeCategoryProvider createJsTesting() {
+        return JsTestingProviders.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

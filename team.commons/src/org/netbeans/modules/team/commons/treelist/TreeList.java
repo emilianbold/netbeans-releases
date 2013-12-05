@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.commons.treelist;
 
+import org.netbeans.modules.team.commons.ColorManager;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -126,6 +127,9 @@ public class TreeList extends JList {
                             al.actionPerformed(new ActionEvent(e.getSource(), e.getID(), e.paramString()));
                         }
                     } else if (null != node && node.isExpandable()) {
+                        if (!node.isLoaded()) {
+                            return;
+                        }
                         node.setExpanded(!node.isExpanded());
                     }
                 }

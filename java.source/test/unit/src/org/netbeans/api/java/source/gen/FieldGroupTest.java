@@ -46,6 +46,7 @@ package org.netbeans.api.java.source.gen;
 import java.io.File;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -302,6 +303,53 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
                 VariableTree vt = (VariableTree) clazz.getMembers().get(3);
                 workingCopy.rewrite(vt, make.setLabel(vt, "cecko"));
+            }            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testFieldGroup6() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    /** Javadoc */\n" +
+            "    int a, becko = 10, c = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "class UserTask {\n" +
+            "\n" +
+            "    /** Javadoc */\n" +
+            "    int a, what = 10, c = 25;\n" +
+            "\n" +
+            "    // aaa\n" +
+            "    @Override\n" +
+            "    public void method() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                GeneratorUtilities.get(workingCopy).importComments(workingCopy.getCompilationUnit(), workingCopy.getCompilationUnit());
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                VariableTree vt = (VariableTree) clazz.getMembers().get(2);
+                workingCopy.rewrite(vt, make.setLabel(vt, "what"));
             }            
         };
         testSource.runModificationTask(task).commit();
@@ -1369,6 +1417,59 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                                                                           null,
                                                                           Collections.<Tree>emptyList(),
                                                                           Arrays.asList(var1, var2))));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Checks that comments are not duplicated when the field group is torn apart
+     * @throws Exception 
+     */
+    public void testFieldGroupComments215629() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "\n" +
+            "class Source {\n" +
+            "    void foo() {\n" +
+            "        // Some comment1\n" +
+            "        int i1 = throwSomething(), i2 = throwSomething2();\n" +
+            "        // Some comment2\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "class Source {\n" +
+            "    void foo() {\n" +
+            "        // Some comment1\n" +
+            "        int i1 = throwSomething();\n" +
+            "        ;\n" +
+            "        int i2 = throwSomething2();\n" +
+            "        // Some comment2\n" +
+            "        \n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree)clazz.getMembers().get(1);
+                BlockTree oldB = mt.getBody();
+                GeneratorUtilities.get(workingCopy).importComments(oldB, workingCopy.getCompilationUnit());
+                List<StatementTree> stmts = new ArrayList<StatementTree>();
+                stmts.add(oldB.getStatements().get(0));
+                stmts.add(make.EmptyStatement());
+                stmts.add(oldB.getStatements().get(1));
+                workingCopy.rewrite(oldB, make.Block(stmts, false));
             }
         };
         testSource.runModificationTask(task).commit();

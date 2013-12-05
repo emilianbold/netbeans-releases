@@ -315,7 +315,6 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         nl.reset();
 
         QueryListener ql = new QueryListener(q.getRepository(), q);
-        q.addPropertyChangeListener(ql);
         q.getController().addPropertyChangeListener(ql);
         
         String name = QUERY_NAME + ts;
@@ -351,7 +350,6 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         int queriesCount = qs.size();
 
         QueryListener ql = new QueryListener(q.getRepository(), q);
-        q.addPropertyChangeListener(ql);
         q.getController().addPropertyChangeListener(ql);
         
         String name = QUERY_NAME + ts;
@@ -424,7 +422,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
                 }
                 removed++;
             }
-            if(evt.getPropertyName().equals(QueryController.PROPERTY_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryController.PROP_CHANGED)) {
                 saved++;
             }
         }

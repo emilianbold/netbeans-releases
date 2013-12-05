@@ -75,6 +75,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.PluginsOperator;
+import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
@@ -637,8 +638,6 @@ public class CommonUtilities {
 
         String addServerMenuItem = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); // Add Server...
         String addServerInstanceDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
-        String nextButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_NEXT");
-        String finishButtonCaption = Bundle.getStringTrimmed("org.openide.Bundle", "CTL_FINISH");
 
         RuntimeTabOperator rto = RuntimeTabOperator.invoke();
         Node serversNode = new Node(rto.getRootNode(), "Servers");
@@ -646,11 +645,12 @@ public class CommonUtilities {
         if (!serversNode.isChildPresent("GlassFish")) {
             // There is no GlassFish node so we'll add it
             serversNode.performPopupActionNoBlock(addServerMenuItem);
-            NbDialogOperator addServerInstanceDialog = new NbDialogOperator(addServerInstanceDialogTitle);
+            WizardOperator addServerInstanceDialog = new WizardOperator(addServerInstanceDialogTitle);
             new JListOperator(addServerInstanceDialog, 1).selectItem("GlassFish Server");
-            new JButtonOperator(addServerInstanceDialog, nextButtonCaption).push();
+            addServerInstanceDialog.next();
             new JTextFieldOperator(addServerInstanceDialog).setText(glassfishHome);
-            new JButtonOperator(addServerInstanceDialog, finishButtonCaption).push();
+            addServerInstanceDialog.next();
+            addServerInstanceDialog.finish();
         }
     }
 
@@ -810,11 +810,18 @@ public class CommonUtilities {
             }
             
         testResultsTag=allPerfDoc.getDocumentElement();
+        String buildNumber = System.getProperty("buildnumber");
+        if (buildNumber != null) {
+            testResultsTag.setAttribute("buildnumber", buildNumber);
+        }
 
         testTag=null;
         for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
-            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
-                testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
+            NamedNodeMap attributes = allPerfDoc.getElementsByTagName("Test").item(i).getAttributes();
+            String nameFromDoc = attributes.getNamedItem("name").toString();
+            String classnameFromDoc = attributes.getNamedItem("classname").toString();
+            if (("name=\"" + name + "\"").equalsIgnoreCase(nameFromDoc) && ("classname=\"" + classname + "\"").equalsIgnoreCase(classnameFromDoc)) {
+                testTag = (Element) allPerfDoc.getElementsByTagName("Test").item(i);
                 break;
             }
         }

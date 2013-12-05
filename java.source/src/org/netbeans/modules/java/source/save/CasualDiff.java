@@ -88,6 +88,7 @@ import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 
@@ -689,11 +690,29 @@ public class CasualDiff {
         PositionEstimator est = EstimatorFactory.members(filteredOldTDefs, filteredNewTDefs, diffContext);
         if (localPointer < insertHint)
             copyTo(localPointer, insertHint);
-        if ((newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty()) {
-            printer.blankline();
-            printer.toLeftMargin();
-            printer.print(";"); //NOI18N
-            printer.newline();
+        if ((newT.mods.flags & Flags.ENUM) != 0 && !filteredNewTDefs.isEmpty()) {
+            // also cover the case when the last const is removed for some reason, the semicolon should auto appear
+            boolean constMissing = filteredOldTDefs.isEmpty();
+            boolean firstDiff = false;
+            boolean oldEnum = constMissing;
+            boolean xxx = (newT.mods.flags & Flags.ENUM) != 0 && filteredOldTDefs.isEmpty() && !filteredNewTDefs.isEmpty() && !isEnum(filteredNewTDefs.get(0)) && !newT.getSimpleName().isEmpty();
+            if (constMissing) {
+                firstDiff = !isEnum(filteredNewTDefs.get(0));
+            } else {
+                firstDiff = (oldEnum = isEnum(filteredOldTDefs.get(0))) != isEnum(filteredNewTDefs.get(0));
+            }
+            if (firstDiff && !newT.getSimpleName().isEmpty()) {
+                if (oldEnum) {
+                    printer.blankline();
+                    printer.toLeftMargin();
+                    printer.print(";"); //NOI18N
+                    printer.newline();
+                } else {
+                    // there's probably a semicolon before the 1st member, which must be removed before the 1st constant
+                    // is created.
+                    insertHint = removeExtraEnumSemicolon(insertHint);
+                }
+            }
         }
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
@@ -708,6 +727,72 @@ public class CasualDiff {
             copyTo(localPointer, bounds[1]);
         }
         return bounds[1];
+    }
+    
+    /**
+     * When the enumeration contains just methods, it is necessary to preced them with single ;. If a constant is
+     * inserted, it must be inserted first; and the semicolon should be removed. This method will attempt to remove entire 
+     * lines of whitespace around the semicolon. Preceding or following comments are preserved.
+     * 
+     * @param insertHint the local Pointer value
+     * @return new localPointer value
+     */
+    private int removeExtraEnumSemicolon(int insertHint) {
+        int startWS = -1;
+        int rewind = tokenSequence.offset();
+        tokenSequence.move(insertHint);
+        tokenSequence.moveNext();
+        boolean semi = false;
+        out: do {
+            Token<JavaTokenId> t = tokenSequence.token();
+            switch (t.id()) {
+                case WHITESPACE:
+                    if (semi) {
+                        // after semicolon, find the last newline
+                        int nl = t.text().toString().lastIndexOf('\n');
+                        if (nl == -1) {
+                            startWS = tokenSequence.offset();
+                        } else {
+                            startWS = tokenSequence.offset() + nl + 1;
+                        }
+                    } else {
+                        // before semicolon, select the 1st complete line.
+                        if (startWS == -1) {
+                            startWS = t.text().toString().indexOf('\n');
+                            if (startWS == -1) {
+                                startWS = tokenSequence.offset();
+                            } else {
+                                startWS += tokenSequence.offset() + 1;
+                            }
+                        }
+                    }
+                break;
+                case SEMICOLON:
+                    if (startWS >= 0) {
+                        // copy up to the WS immediately preceding the semicolon.
+                        copyTo(insertHint, startWS);
+                        insertHint = tokenSequence.offset() + t.length();
+                    }
+                    startWS = -1;
+                    semi = true;
+                    break;
+
+                case LINE_COMMENT: case BLOCK_COMMENT: case JAVADOC_COMMENT:
+                    if (semi) {
+                        break out;
+                    }
+                    startWS = -1;
+                    break;
+                default:
+                    break out;
+            }
+        } while (tokenSequence.moveNext());
+        if (semi && startWS > -1) {
+            insertHint = startWS;
+        }
+        tokenSequence.move(rewind);
+        tokenSequence.moveNext();
+        return insertHint;
     }
         
     private boolean isEnum(Tree tree) {
@@ -2311,8 +2396,11 @@ public class CasualDiff {
             printer.setPrec(old);
         }
         //make sure the ')' is printed:
-        moveFwdToToken(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), JavaTokenId.RPAREN);
-        tokenSequence.moveNext();
+        JavaTokenId id = moveFwdToOneOfTokens(tokenSequence, oldT.params.isEmpty() ? posHint : endPos(oldT.params.last()), LAMBDA_PARAM_END_TOKENS);
+        if (id == JavaTokenId.RPAREN) {
+            tokenSequence.moveNext();
+        }
+        // TODO: if the text is broken so that it ends after the arrow or parens, then what ?
         posHint = tokenSequence.offset();
         if (localPointer < posHint)
             copyTo(localPointer, localPointer = posHint);
@@ -2324,11 +2412,18 @@ public class CasualDiff {
         copyTo(localPointer, bounds[1]);
         return bounds[1];
     }
+    
+    private static final EnumSet<JavaTokenId> LAMBDA_PARAM_END_TOKENS = EnumSet.of(JavaTokenId.RPAREN, JavaTokenId.ARROW);
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
             int localpointer = getCommentCorrectedOldPos(oldT.getVariables().get(0));
-            copyTo(bounds[0], localpointer);
+            // comments may be already handled
+            if (bounds[0] < localpointer) {
+                copyTo(bounds[0], localpointer);
+            } else {
+                localpointer = bounds[0];
+            }
             if (oldT.isEnum()) {
                 int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
@@ -2791,7 +2886,12 @@ public class CasualDiff {
                     }
                     tokenSequence.moveNext();
                     int start = Math.max(tokenSequence.offset(), pos);
-                    copyTo(start, bounds[0], printer);
+                    // in case when invoked through diffFieldGroup for enums, comments are already handled.
+                    if (start < bounds[0]) {
+                        copyTo(start, bounds[0], printer);
+                    } else {
+                        bounds[0] = Math.max(start, bounds[0]);
+                    }
                     diffTree(tree, item.element, parent, bounds);
                     tokenSequence.move(bounds[1]);
                     moveToSrcRelevant(tokenSequence, Direction.FORWARD);
@@ -2940,6 +3040,9 @@ public class CasualDiff {
                     if (oldIndex != 1) {
                         bounds[0] = tree.pos;
                     }
+                    if(j == 0) {
+                        copyTo(pos, pos = bounds[0]);
+                    }
                     tokenSequence.move(bounds[1]);
                     tokenSequence.movePrevious();
                     if (tokenSequence.token().id() == JavaTokenId.COMMA || tokenSequence.token().id() == JavaTokenId.SEMICOLON) {
@@ -2952,23 +3055,26 @@ public class CasualDiff {
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     copyTo(start, start = bounds[0], printer);
-                    CommentSet old = comments.getComments(tree);
-                    CommentSet cs = comments.getComments(item.element);
-                    List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
-                    List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
-                    int indentReset = -1;
-                    if (oldPrecedingComments.isEmpty() && !newPrecedingComments.isEmpty()) {
-                        if (printer.out.isWhitespaceLine()) {
-                            indentReset = printer.getIndent();
-                            printer.setIndent(printer.out.getCol());
-                        } else {
-                            printer.newline();
-                            printer.toLeftMargin();
+                    if (j > 0) {
+                        // Comments were handled by generic code for j == 0 (leading var)
+                        CommentSet old = comments.getComments(tree);
+                        CommentSet cs = comments.getComments(item.element);
+                        List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
+                        List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
+                        int indentReset = -1;
+                        if (oldPrecedingComments.isEmpty() && !newPrecedingComments.isEmpty()) {
+                            if (printer.out.isWhitespaceLine()) {
+                                indentReset = printer.getIndent();
+                                printer.setIndent(printer.out.getCol());
+                            } else {
+                                printer.newline();
+                                printer.toLeftMargin();
+                            }
                         }
-                    }
-                    start = diffPrecedingComments(tree, item.element, bounds[0], start);
-                    if (indentReset != (-1)) {
-                        printer.setIndent(indentReset);
+                        start = diffPrecedingComments(tree, item.element, bounds[0], start);
+                        if (indentReset != (-1)) {
+                            printer.setIndent(indentReset);
+                        }
                     }
                     int localPointer;
                     if (oldIndex != 1) {
@@ -2982,7 +3088,11 @@ public class CasualDiff {
                 }
                 case INSERT: {
                     JCVariableDecl decl = (JCVariableDecl) item.element;
-                    
+                    if(j == 0) {
+                        JCTree tree = oldList.get(oldIndex);
+                        int[] bounds = getBounds(tree);
+                        copyTo(pos, pos = bounds[0]);
+                    }
                     if (oldIndex == 0) {
                         int oldPrec = printer.setPrec(TreeInfo.noPrec);
                         printer.visitVarDef(decl);
@@ -3003,6 +3113,8 @@ public class CasualDiff {
                     int[] bounds = getBounds(item.element);
                     if (j != 0) {
                         bounds[0] = item.element.pos;
+                    } else {
+                        copyTo(pos, pos = bounds[0]);
                     }
                     tokenSequence.move(bounds[0]);
                     if (j != 0 && !skipWhitespaces) {
@@ -3375,21 +3487,45 @@ public class CasualDiff {
         return diffPrecedingComments(oldT, newT, getOldPos(oldT), localPointer);
     }
     
+    /**
+     * Retrieves comment set for the specified tree t. The FieldGroupTree is handled specially:
+     * preceding commenst are taken from the FG's first item, following comments from the last item
+     * <p/>
+     * The return may be NEGATIVE to indicate, that the comment set is the same and should be retained
+     * in the output. If the value is POSITIVE, the method has handled the copying.
+     * 
+     * @param t
+     * @param preceding
+     * @return 
+     */
+    private CommentSet getCommentsForTree(Tree t, boolean preceding) {
+        if (t instanceof FieldGroupTree) {
+            FieldGroupTree fgt = (FieldGroupTree)t;
+            List<JCVariableDecl> vars = fgt.getVariables();
+            t = preceding ? vars.get(0) : vars.get(vars.size() - 1);
+        }
+        return comments.getComments(t);
+    }
+    
     protected int diffPrecedingComments(JCTree oldT, JCTree newT, int oldTreeStartPos, int localPointer) {
-        CommentSet cs = comments.getComments(newT);
-        CommentSet old = comments.getComments(oldT);
+        CommentSet cs = getCommentsForTree(newT, true);
+        CommentSet old = getCommentsForTree(oldT, true);
         List<Comment> oldPrecedingComments = old.getComments(CommentSet.RelativePosition.PRECEDING);
         List<Comment> newPrecedingComments = cs.getComments(CommentSet.RelativePosition.PRECEDING);
         DocCommentTree newD = tree2Doc.get(newT);
-        if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null)
-            return localPointer;
+        if (sameComments(oldPrecedingComments, newPrecedingComments) && newD == null) {
+            if (oldPrecedingComments.isEmpty()) {
+                return localPointer;
+            }
+            return -oldPrecedingComments.get(oldPrecedingComments.size() - 1).endPos();
+        }
         DocCommentTree oldD = oldTopLevel.docComments.getCommentTree(oldT);
         return diffCommentLists(oldTreeStartPos, oldPrecedingComments, newPrecedingComments, oldD, newD, false, true, localPointer);
     }
 
     protected int diffTrailingComments(JCTree oldT, JCTree newT, int localPointer) {
-        CommentSet cs = comments.getComments(newT);
-        CommentSet old = comments.getComments(oldT);
+        CommentSet cs = getCommentsForTree(newT, false);
+        CommentSet old = getCommentsForTree(oldT, false);
         List<Comment> oldInlineComments = old.getComments(CommentSet.RelativePosition.INLINE);
         List<Comment> newInlineComments = cs.getComments(CommentSet.RelativePosition.INLINE);
         List<Comment> oldTrailingComments = old.getComments(CommentSet.RelativePosition.TRAILING);
@@ -4212,7 +4348,7 @@ public class CasualDiff {
             return start;
         }
     }
-
+    
     public static int commentEnd(CommentSet comments, CommentSet.RelativePosition pos) {
         List<Comment> list = comments.getComments(pos);
 
@@ -4274,6 +4410,27 @@ public class CasualDiff {
         }
         return result;
     }
+    
+    private int getPosAfterCommentEnd(Tree t, int minPos) {
+        CommentSet cs = getCommentsForTree(t, false);
+        List<Comment> cmm = cs.getComments(CommentSet.RelativePosition.TRAILING);
+        if (cmm.isEmpty()) {
+            cmm = cs.getComments(CommentSet.RelativePosition.INLINE);
+        }
+        if (cmm.isEmpty()) {
+            return minPos;
+        }
+        Comment c = cmm.get(cmm.size() - 1);
+        int pos = c.endPos();
+        assert pos >= 0;
+        if (c.style() == Comment.Style.LINE || c.style() == Comment.Style.WHITESPACE) {
+            // compensate trailing newline to preserve line ends for line comment and whitespace
+            if (pos > 0 && diffContext.origText.charAt(pos - 1) == '\n') {
+                pos--;
+            }
+        }
+        return Math.max(minPos, pos);
+    }
 
     protected int diffTreeImpl(JCTree oldT, JCTree newT, JCTree parent /*used only for modifiers*/, int[] elementBounds) {
         if (oldT == null && newT != null)
@@ -4296,7 +4453,10 @@ public class CasualDiff {
             return getCommentCorrectedEndPos(oldT);
         }
 
-        elementBounds[0] = diffPrecedingComments(oldT, newT, elementBounds[0]);
+        // if comments are the same, diffPredComments will skip them so that printer.print(newT) will
+        // not emit them from the new element. But if printer.print() won't be used (the newT will be merged in rather
+        // than printed anew), then surviving comments have to be printed.
+        int predComments = diffPrecedingComments(oldT, newT, elementBounds[0]);
         int retVal = -1;
 
         if (oldT.getTag() != newT.getTag()) {
@@ -4305,13 +4465,19 @@ public class CasualDiff {
                 ((unaries.contains(oldT.getKind()) && unaries.contains(newT.getKind())) == false)) {
                 // different kind of trees found, print the whole new one.
                 int[] oldBounds = getBounds(oldT);
+                elementBounds[0] = Math.abs(predComments);
                 if (oldBounds[0] > elementBounds[0]) {
                     copyTo(elementBounds[0], oldBounds[0]);
                 }
-                    printer.print(newT);
-                return oldBounds[1];
+                printer.print(newT);
+                // the printer will print attached traling comments, skip in the obsolete comments in the stream, so they don't duplicate.    
+                return getPosAfterCommentEnd(oldT, oldBounds[1]);
             }
         }
+        if (predComments < 0 && elementBounds[0] < -predComments) {
+            copyTo(elementBounds[0], -predComments);
+        }
+        elementBounds[0] = Math.abs(predComments);
         
         int commentsStart = Math.min(commentStart(diffContext, comments.getComments(oldT), CommentSet.RelativePosition.INLINE, endPos(oldT)), commentStart(diffContext, comments.getComments(oldT), CommentSet.RelativePosition.TRAILING, endPos(oldT)));
         if (commentsStart < elementBounds[1]) {

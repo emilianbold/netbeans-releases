@@ -54,11 +54,9 @@ import org.netbeans.modules.bugzilla.*;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -68,6 +66,8 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 /**
  *
@@ -137,7 +137,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
-        Repository repo = support.createRepository(TeamProjectImpl.getInstance(prj));
+        Repository repo = support.createRepository(createInfo(prj));
         assertNotNull(repo);
 
         BugzillaRepository bugzillaRepository = getData(repo);
@@ -151,7 +151,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
-        Repository repo = support.createRepository(TeamProjectImpl.getInstance(prj));
+        Repository repo = support.createRepository(createInfo(prj));
         assertNotNull(repo);
 
         KenaiRepository kenaiRepository = getData(repo);
@@ -175,7 +175,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         KenaiRepository kenaiRepository = getData(repository);
         
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -184,7 +184,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("https://testjava.net/bugzilla/buglist.cgi?product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -193,7 +193,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -202,7 +202,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -211,7 +211,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -220,7 +220,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net/bgzll/buglist.cgi?product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -229,7 +229,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
         assertNotNull(repository);
         kenaiRepository = getData(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("kekskenai.com", getFieldValue(kenaiRepository, "host"));
@@ -238,7 +238,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net/buglist.cgi?product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -247,7 +247,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net:8080/bugzilla/buglist.cgi?product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -256,7 +256,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         repository = createRepository("http://testjava.net:8080/buglist.cgi?product=someproject");
         kenaiRepository = getData(repository);
         assertNotNull(repository);
-        assertTrue(TeamUtil.isFromTeamServer(repository));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repository.getUrl()).isOwner(repository.getUrl()));
         assertEquals("someproject", getFieldValue(kenaiRepository, "product"));
         assertEquals("product=someproject", getFieldValue(kenaiRepository, "urlParam"));
         assertEquals("testjava.net", getFieldValue(kenaiRepository, "host"));
@@ -275,7 +275,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
 
     private Repository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
         BugzillaConnector support = new BugzillaConnector();
-        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", org.netbeans.modules.bugtracking.team.spi.TeamProject.class, String.class, String.class);
+        Method m = support.getClass().getDeclaredMethod("createKenaiRepository", org.netbeans.modules.team.spi.TeamProject.class, String.class, String.class);
         m.setAccessible(true);
         KenaiRepository kr = (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
         return kr != null ? BugzillaUtil.getRepository(kr) : null;
@@ -287,7 +287,7 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         return f.get(obj);
     }
 
-    private org.netbeans.modules.bugtracking.team.spi.TeamProject getKenaiProject() throws KenaiException {
+    private org.netbeans.modules.team.spi.TeamProject getKenaiProject() throws KenaiException {
         return TeamProjectImpl.getInstance(instance.getProject("nb-jnet-test"));
     }
 
@@ -300,4 +300,10 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         return (KenaiRepository) m.invoke(impl);
     }
 
+    private RepositoryInfo createInfo(KenaiProject prj) {
+        final TeamProjectImpl project = TeamProjectImpl.getInstance(prj);
+        RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
+        info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return info;
+    }    
 }

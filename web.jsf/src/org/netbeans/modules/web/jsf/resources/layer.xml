@@ -409,4 +409,16 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="hints">
+                <folder name="javaee">
+                    <folder name="jsf">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.hints.Bundle"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

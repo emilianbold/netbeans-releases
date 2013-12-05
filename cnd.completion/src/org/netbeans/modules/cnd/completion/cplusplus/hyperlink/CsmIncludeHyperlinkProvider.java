@@ -313,8 +313,25 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (!includeStack.isEmpty()) {
             buf.append("<i>").append(i18n("PathToCurFile")).append("</i>\n");  // NOI18N
             for (CsmInclude inc : includeStack) {
-                String msg = i18n("PathToHeaderOnLine", inc.getContainingFile().getAbsolutePath(), inc.getStartPosition().getLine()); // NOI18N
-                buf.append(msg).append('\n');
+                if (inc != null) {
+                    final CsmFile file = inc.getContainingFile();
+                    CharSequence path = null;
+                    if (file != null) {
+                        path = file.getAbsolutePath();
+                    }
+                    if (path == null) {
+                        path = "?"; //NOI18N
+                    }
+                    final CsmOffsetable.Position startPosition = inc.getStartPosition();
+                    int line = -1;
+                    if (startPosition != null) {
+                        line = startPosition.getLine();
+                    }
+                    if (file != null && startPosition != null){
+                        String msg = i18n("PathToHeaderOnLine", path.toString(), line); // NOI18N
+                        buf.append(msg).append('\n');
+                    }
+                }
             }
         }
     }

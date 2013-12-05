@@ -43,15 +43,14 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * 
  * Provides information and functionality related to incoming and outgoing issue changes. 
  * Issue Status information is used by the Tasks Dashboard to e.g.:
  * <ul>
- *  <li>to appropriately render Issue Status annotations (e.g. by coloring)</li>
- *  <li>to list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
+ *  <li>appropriately render Issue Status annotations (e.g. by coloring)</li>
+ *  <li>list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
  * </ul>
  * 
  * <p>
@@ -86,11 +85,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
  * </p>
  * 
  * <p>
- * Even though the status is entirely given by the particular implementation, 
- * the 
- * </p>
- * <p>
- * The precedence of Status values is expected to be the following:
+ * Even though the status value is entirely given by the particular implementation, 
+ * the precedence of Status values is expected to be the following:
  * <table border="1" cellpadding="3" cellspacing="0">
  * <tr bgcolor="#ccccff">
  * <td><b>Issue state</b></font></td>
@@ -118,35 +114,43 @@ import org.netbeans.modules.bugtracking.api.Issue;
  * @author Tomas Stupka
  * @param <R> the implementation specific repository type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface IssueStatusProvider<R, I> {
 
     /**
      * Determines an Issue status.
+     * @since 1.85
      */
     public enum Status {
         /**
          * The Issue appeared for the first time on the client and the user hasn't seen it yet.
+         * @since 1.85
          */
         INCOMING_NEW,
         /**
          * The Issue was modified (remotely) and the user hasn't seen it yet.
+         * @since 1.85
          */
         INCOMING_MODIFIED,
         /**
          * The Issue is new on client and haven't been submited yet.
+         * @since 1.85
          */
         OUTGOING_NEW,
         /**
          * There are outgoing changes in the Issue.
+         * @since 1.85
          */
         OUTGOING_MODIFIED,
         /**
          * There are incoming and outgoing changes at once.
+         * @since 1.85
          */
         CONFLICT,        
         /**
          * The user has seen the incoming changes and there haven't been any other incoming changes since then.
+         * @since 1.85
          */
         SEEN
     }
@@ -157,6 +161,7 @@ public interface IssueStatusProvider<R, I> {
      * <p>
      * Old value should be the status before the change, new value the Status after the change.
      * </p>
+     * @since 1.85
      */
     public static final String EVENT_STATUS_CHANGED = "issue.status_changed"; // NOI18N
 
@@ -164,7 +169,8 @@ public interface IssueStatusProvider<R, I> {
      * Get the Issue Status.
      * 
      * @param i an implementation specific Issue instance
-     * @return 
+     * @return teh status
+     * @since 1.85
      */
     public Status getStatus(I i);
 
@@ -212,13 +218,14 @@ public interface IssueStatusProvider<R, I> {
      * </p>
      * 
      * <p>
-     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
-     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
+     * <b>Note</b> that in case the implementation provides either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
+     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED} status values, this method may be called to either reset those
+     * values to {@link IssueStatusProvider.Status#SEEN} or set to set back the previous INCOMING_XXX status value.
      * </p>
      * 
      * @param i an implementation specific Issue instance
      * @param seen <code>true</code> if the Issue was seen or set as seen by the user 
+     * @since 1.85
      */
     public void setSeenIncoming(I i, boolean seen);
     
@@ -234,6 +241,7 @@ public interface IssueStatusProvider<R, I> {
      * 
      * @param r an implementation specific Repository instance
      * @return collection of unsubmitted issues
+     * @since 1.85
      */
     public Collection<I> getUnsubmittedIssues (R r);
     
@@ -248,6 +256,7 @@ public interface IssueStatusProvider<R, I> {
      * </p> 
      * 
      * @param i an implementation specific Issue instance
+     * @since 1.85
      */
     public void discardOutgoing(I i);
 
@@ -270,6 +279,7 @@ public interface IssueStatusProvider<R, I> {
      * @return <code>true</code> if the task was successfully
      * submitted,<code>false</code> if the task was not submitted for any
      * reason.
+     * @since 1.85
      */
     public boolean submit (I i);
     
@@ -278,6 +288,7 @@ public interface IssueStatusProvider<R, I> {
      * 
      * @param i an implementation specific Issue instance
      * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void removePropertyChangeListener(I i, PropertyChangeListener listener);
 
@@ -286,6 +297,7 @@ public interface IssueStatusProvider<R, I> {
      * 
      * @param i an implementation specific Issue instance
      * @param listener a PropertyChangeListener
+     * @since 1.85
      */
     public void addPropertyChangeListener(I i , PropertyChangeListener listener);
 

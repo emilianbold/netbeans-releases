@@ -79,4 +79,5 @@ made subject to such option by the copyright holder.
     <fontcolor name="indent-whitespace"/>
     <fontcolor name="trailing-whitespace"/>
     <fontcolor name="nbeditor-bracesMatching-sidebar"/>
+    <fontcolor name="indent-guide-lines" foreColor="253e5a"/>
  </fontscolors>

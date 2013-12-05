@@ -57,17 +57,12 @@ import org.netbeans.modules.profiler.spi.JavaPlatformProvider;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.profiler.spi.JavaPlatformManagerProvider.class)
 public class JavaPlatformManagerImpl extends JavaPlatformManagerProvider {
 
-    private Specification j2se = new Specification("j2se", null);
+    public static final Specification J2SE = new Specification("j2se", null);
+    public static final Specification REMOTE_J2SE = new Specification("j2se-remote", null);
     
     @Override
     public List<JavaPlatformProvider> getPlatforms() {
-        JavaPlatform[] jps = JavaPlatformManager.getDefault().getPlatforms(null, j2se);
-        List<JavaPlatformProvider> platforms = new ArrayList(jps.length);
-        
-        for (JavaPlatform jp : jps) {
-            platforms.add(new JavaPlatformImpl(jp));
-        }
-        return platforms;
+        return getPlatforms(J2SE, REMOTE_J2SE);
     }
 
     @Override
@@ -80,4 +75,21 @@ public class JavaPlatformManagerImpl extends JavaPlatformManagerProvider {
         PlatformsCustomizer.showCustomizer(null);
     }
     
+    public List<JavaPlatformProvider> getPlatforms(final Specification... specs) {
+        final List<JavaPlatformProvider> platforms = new ArrayList<JavaPlatformProvider>();
+        for (Specification spec : specs) {
+            for (JavaPlatform jp : JavaPlatformManager.getDefault().getPlatforms(null, spec)) {
+                platforms.add(new JavaPlatformImpl(jp));
+            }
+        }
+        return platforms;
+    }
+    
+    public JavaPlatform getPlatformDelegate(JavaPlatformProvider jpp) {
+        if (jpp instanceof JavaPlatformImpl) {
+            return ((JavaPlatformImpl)jpp).getDelegate();
+        } else {
+            return null;
+        }
+    }
 }

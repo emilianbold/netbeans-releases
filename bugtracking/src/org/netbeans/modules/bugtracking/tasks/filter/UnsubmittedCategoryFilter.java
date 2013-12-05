@@ -56,7 +56,7 @@ public class UnsubmittedCategoryFilter implements DashboardFilter<CategoryNode> 
     public boolean isInFilter(CategoryNode entry) {
         if (entry instanceof UnsubmittedCategoryNode) {
             UnsubmittedCategoryNode unsubmitted = (UnsubmittedCategoryNode) entry;
-           return !unsubmitted.getTasks(false).isEmpty() && DashboardUtils.isRepositoryOpened(unsubmitted.getRepository().getId());
+            return unsubmitted.getFilteredTaskCount() != 0 && DashboardUtils.isRepositoryOpened(unsubmitted.getRepository().getId());
         }
         return true;
     }

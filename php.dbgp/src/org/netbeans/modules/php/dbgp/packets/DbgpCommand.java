@@ -54,9 +54,7 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
-import org.openide.util.Exceptions;
 import sun.misc.BASE64Encoder;
-
 
 /**
  * @author ads
@@ -65,33 +63,33 @@ import sun.misc.BASE64Encoder;
 public abstract class DbgpCommand {
     private static final Logger LOGGER = Logger.getLogger(DbgpCommand.class.getName());
     protected static final String SPACE = " "; // NOI18N
-    private static final String DATA_SEPARATOR = " -- ";        // NOI18N
-    private static final String TRANSACTION_OPT = " -i ";       // NOI18N
+    private static final String DATA_SEPARATOR = " -- "; // NOI18N
+    private static final String TRANSACTION_OPT = " -i "; // NOI18N
     private String command;
     private String transactionId;
 
-    DbgpCommand( String command , String transactionId ){
+    DbgpCommand(String command, String transactionId) {
         this.command = command;
         this.transactionId = transactionId;
     }
 
     public void send(OutputStream out) throws IOException {
         String encodedData = null;
-        if ( getData() != null ){
+        if (getData() != null) {
             encodedData = encodeData();
         }
-        StringBuilder dataToSend = new StringBuilder( getCommand());
-        dataToSend.append( getArgumentString() );
-        if ( encodedData != null ){
-            dataToSend.append( DATA_SEPARATOR );
-            dataToSend.append( encodedData );
+        StringBuilder dataToSend = new StringBuilder(getCommand());
+        dataToSend.append(getArgumentString());
+        if (encodedData != null) {
+            dataToSend.append(DATA_SEPARATOR);
+            dataToSend.append(encodedData);
         }
-        LOGGER.log(Level.FINE, "command to send : {0}", dataToSend);             // NOI18N
+        LOGGER.log(Level.FINE, "command to send : {0}", dataToSend); // NOI18N
         byte[] bytes = dataToSend.toString().getBytes(Charset.defaultCharset());
-        byte[] sendBytes = new byte[ bytes.length + 1 ];
-        System.arraycopy(bytes , 0, sendBytes, 0, bytes.length );
-        sendBytes[ bytes.length ] = 0;
-        out.write( sendBytes );
+        byte[] sendBytes = new byte[bytes.length + 1];
+        System.arraycopy(bytes, 0, sendBytes, 0, bytes.length);
+        sendBytes[ bytes.length] = 0;
+        out.write(sendBytes);
         out.flush();
     }
 
@@ -121,7 +119,7 @@ public abstract class DbgpCommand {
 
     public abstract boolean wantAcknowledgment();
 
-    protected String getData(){
+    protected String getData() {
         return null;
     }
 
@@ -133,30 +131,29 @@ public abstract class DbgpCommand {
         return "";
     }
 
-    private String getArgumentString(){
-        if ( getArguments() != null && getArguments().length() >0 ) {
-            return TRANSACTION_OPT + transactionId+ " " +getArguments();
-        }
-        else {
+    private String getArgumentString() {
+        if (getArguments() != null && getArguments().length() > 0) {
+            return TRANSACTION_OPT + transactionId + " " + getArguments();
+        } else {
             return TRANSACTION_OPT + transactionId;
         }
     }
 
     @Override
     public String toString() {
-        StringBuilder dataToSend = new StringBuilder( getCommand());
-        dataToSend.append( getArgumentString() );
+        StringBuilder dataToSend = new StringBuilder(getCommand());
+        dataToSend.append(getArgumentString());
         String encodedData = null;
-        if ( getData() != null ){
+        if (getData() != null) {
             try {
                 encodedData = encodeData();
             } catch (IOException ex) {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
-        if ( encodedData != null ){
-            dataToSend.append( DATA_SEPARATOR );
-            dataToSend.append( encodedData );
+        if (encodedData != null) {
+            dataToSend.append(DATA_SEPARATOR);
+            dataToSend.append(encodedData);
         }
         return dataToSend.toString();
     }

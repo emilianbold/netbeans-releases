@@ -719,7 +719,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         if (needToRender) {
             CachePair newCachePair = new CachePair(FileImpl.getParseCount(), ResolverFactory.getCurrentStartFile(this));
             if (classifier == null || !newCachePair.equals(lastCache)) {                
-                if (qname != null) {
+                if (qname != null && qname.length > 0) {
                     classifier = renderClassifier(qname);
                 } else if (classifierText.length() > 0) {
                     classifier = renderClassifier(new CharSequence[] { classifierText });

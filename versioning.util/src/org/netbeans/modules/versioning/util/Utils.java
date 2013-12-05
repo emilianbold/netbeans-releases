@@ -142,6 +142,22 @@ public final class Utils {
     private static final Set<String> metrics = new HashSet<String>(3);
 
     private static File tempDir;
+    
+    /**
+     * Keeps forbidden folders without metadata
+     */
+    private static final Set<String> forbiddenFolders;
+    static {
+        Set<String> files = new HashSet<String>();
+        try {
+            String forbidden = System.getProperty("versioning.forbiddenFolders", ""); //NOI18N
+            files.addAll(Arrays.asList(forbidden.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
+        } catch (Exception e) {
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, e.getMessage(), e);
+        }
+        forbiddenFolders = files;
+    }
 
     private Utils() {
     }
@@ -264,6 +280,26 @@ public final class Utils {
             }
         }
         return filesToCheckout;
+    }
+
+    /**
+     * Some folders are special and versioning should not look for metadata in
+     * them. Folders like /net with automount enabled may take a long time to
+     * answer I/O on their children, so
+     * <code>VCSFileProxy.exists("/net/.git")</code> will freeze until it
+     * timeouts. You should call this method before asking any I/O on children
+     * of this folder you are unsure to actually exist. This does not mean
+     * however that whole subtree should be excluded from version control, only
+     * that you should not look for the metadata directly in this folder.
+     * Returns <code>true</code> if the given folder is among such folders.
+     *
+     * @param folderPath path to a folder to query
+     * @return <code>true</code> if the folder identified by the given path
+     * should be skipped when searching for metadata.
+     * @since 1.54
+     */
+    public static boolean isForbiddenFolder (String folderPath) {
+        return forbiddenFolders.contains(folderPath);
     }
 
     private static DataObject findDataObject(File file) {

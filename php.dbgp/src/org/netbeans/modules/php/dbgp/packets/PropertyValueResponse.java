@@ -47,43 +47,35 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class PropertyValueResponse extends DbgpResponse {
 
-    PropertyValueResponse( Node node ) {
+    PropertyValueResponse(Node node) {
         super(node);
     }
-    
-    public Property getProperty(){
-        Node node = getChild( getNode() , Property.PROPERTY );
-        if ( node != null ){
-            return new Property( node );
+
+    public Property getProperty() {
+        Node node = getChild(getNode(), Property.PROPERTY);
+        if (node != null) {
+            return new Property(node);
         }
         return null;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
+
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        DebugSession currentSession = SessionManager.getInstance().
-        getSession( session.getSessionId() );
-        if ( currentSession == session ){
+    public void process(DebugSession session, DbgpCommand command) {
+        DebugSession currentSession = SessionManager.getInstance().getSession(session.getSessionId());
+        if (currentSession == session) {
             // perform update local view only if response appears in current session
             Property property = getProperty();
-            /*
-             * TODO: 
-             */
-            if ( property != null  ) {
-                session.getBridge().getVariablesModel().updateProperty( 
+            if (property != null) {
+                session.getBridge().getVariablesModel().updateProperty(
                         getProperty());
             }
         }
     }
+
 }

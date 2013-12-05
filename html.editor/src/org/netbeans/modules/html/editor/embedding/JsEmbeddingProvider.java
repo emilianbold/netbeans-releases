@@ -87,7 +87,6 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private final JsEPPluginQuery PLUGINS;
     
     private static final Pattern GENERIC_MARK_PATTERN = Pattern.compile("@@@"); //NOI18N
-    private static final Pattern GENERIC_MARK_PATTERN_SPLITTER = Pattern.compile("[^@@@]*"); //NOI18N
     private static final String GENERATED_JS_IDENTIFIER = "__UNKNOWN__"; // NOI18N
     
     /** Files with mime types defined in this collection will use transitional
@@ -379,19 +378,22 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private Collection<Embedding> createEmbedding(Snapshot snapshot, int offset, int len) {
         Collection<Embedding> es = new ArrayList<>();
         CharSequence text = snapshot.getText().subSequence(offset, offset + len);
-        Matcher matcher = GENERIC_MARK_PATTERN_SPLITTER.matcher(text);
+        Matcher matcher = GENERIC_MARK_PATTERN.matcher(text);
+        int tmpOffset = 0;
         while(matcher.find()) {
             int start = matcher.start();
             int end = matcher.end();
             if(start != end) {
                 //create embedding from the original
-                es.add(snapshot.create(offset + start, end - start, JS_MIMETYPE));
+                es.add(snapshot.create(offset + tmpOffset, start - tmpOffset, JS_MIMETYPE));
+                tmpOffset = end;
                 if(!matcher.hitEnd()) {
                     //follows the delimiter - @@@ - convert it to the GENERATED_JS_IDENTIFIER
                     es.add(snapshot.create(GENERATED_JS_IDENTIFIER, JS_MIMETYPE));
                 }
             }
         }
+        es.add(snapshot.create(offset + tmpOffset, text.length() - tmpOffset, JS_MIMETYPE));
         return es;
     }
     

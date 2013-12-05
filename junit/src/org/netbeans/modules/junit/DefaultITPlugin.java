@@ -48,6 +48,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -199,6 +200,7 @@ public final class DefaultITPlugin extends JUnitPlugin {
         if (project != null) {
             JUnitPlugin plugin = TestUtil.getPluginForProject(project);
             if (plugin instanceof DefaultPlugin) {
+                params.put(CommonPlugin.CreateTestParam.INC_GENERATE_INTEGRATION_TEST, Boolean.TRUE);
 		return ((DefaultPlugin) plugin).createTests(filesToTest, targetRoot, params);
 	    }
 	}

@@ -67,6 +67,7 @@ class QUtils {
     
     private static final Set<File> acceptedQueuesWarning = Collections.synchronizedSet(new HashSet<File>(5));
     private static final String HG_EXTENSION_QUEUES = "mq"; //NOI18N
+    private static final String HG_EXTENSION_QUEUES_WITH_PREFIX = "hgext.mq"; //NOI18N
     
     private QUtils () {
         
@@ -91,7 +92,8 @@ class QUtils {
                 Mercurial.LOG.log(Level.INFO, null, config.getException());
                 accepted = true;
             } else {
-                accepted = config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES);
+                accepted = config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES)
+                        || config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES_WITH_PREFIX);
             }
             if (!accepted) {
                 config = new HgConfigFiles(root);
@@ -99,7 +101,8 @@ class QUtils {
                     Mercurial.LOG.log(Level.INFO, null, config.getException());
                     accepted = true;
                 } else {
-                    accepted = config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES);
+                    accepted = config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES)
+                        || config.containsProperty(HgConfigFiles.HG_EXTENSIONS, HG_EXTENSION_QUEUES_WITH_PREFIX);
                 }
             }
             if (!accepted) {

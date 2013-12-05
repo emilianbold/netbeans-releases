@@ -76,7 +76,9 @@ import org.openide.util.NbBundle;
 /**
  * Panel for Doctrine2 options.
  */
-@OptionsPanelController.Keywords(keywords={"php", "doctrine", "doctrine2", "orm", "odm"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_PHPDoctrineOptionsName")
+@NbBundle.Messages({"Doctrine2.options.keywords.TabTitle=Frameworks & Tools"})
+@OptionsPanelController.Keywords(keywords={"php", "doctrine", "doctrine2", "orm", "odm"}, 
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#Doctrine2.options.keywords.TabTitle")
 public class Doctrine2OptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 67643468774654L;

@@ -65,7 +65,7 @@ public final class SearchTestUtils {
     public static ResultModel createResultModelWithOneMatch()
             throws IOException {
 
-        ResultModel rm = new ResultModel(new BasicSearchCriteria(), null);
+        ResultModel rm = new ResultModel(new BasicSearchCriteria(), null, null);
         FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData(
                 "test.txt");                                            //NOI18N
         rm.objectFound(fo, Charset.defaultCharset(),
@@ -80,7 +80,7 @@ public final class SearchTestUtils {
     public static ResultModel createResultModelWithSampleData(boolean replace)
             throws IOException {
         ResultModel rm = new ResultModel(new BasicSearchCriteria(),
-                replace ? "replacement" : null);
+                replace ? "replacement" : null, null);
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         SearchPattern sp = SearchPattern.create("test", false, false, false);
         for (int i = 0; i < 10; i++) {

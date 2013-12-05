@@ -63,7 +63,7 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
         AnnotationProcessorTestUtils.makeSource(src, "p.H",
                 "import org.netbeans.spi.java.hints.*;\n",
                 "import org.netbeans.spi.editor.hints.*;\n",
-                "@Hint(category=\"general\")\n",
+                "@Hint(category=\"general\", displayName=\"aa\", description=\"aab\")\n",
                 "public class H {\n",
                 "    @TriggerPattern(\"$1.$2\")\n",
                 "    public static String h1(HintContext ctx) { return null;}\n",

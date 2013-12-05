@@ -86,7 +86,6 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -195,7 +194,7 @@ public final class PhpUnit {
     public static PhpUnit getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         if (validatePhpModule(phpModule) != null) {
             if (showCustomizer) {
-                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpUnitCustomizer.IDENTIFIER, null);
+                UiUtils.invalidScriptProvided(phpModule, PhpUnitCustomizer.IDENTIFIER, null);
             }
             return null;
         }
@@ -341,7 +340,12 @@ public final class PhpUnit {
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            if (PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
+                // custom phpunit
+                UiUtils.processExecutionException(ex, phpModule, PhpUnitCustomizer.IDENTIFIER);
+            } else {
+                UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            }
             throw new TestRunException(ex);
         }
         return null;

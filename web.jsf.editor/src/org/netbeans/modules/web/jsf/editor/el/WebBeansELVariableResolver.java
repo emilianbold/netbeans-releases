@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -171,7 +172,14 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
         }
 
         public String getBeanClassName() {
-            return getElement().asType().toString();
+            if (getElement() instanceof ExecutableElement) {
+                ExecutableElement methodElement = (ExecutableElement) getElement();
+                String returnType = methodElement.getReturnType().toString();
+                int genericOffset = returnType.indexOf('<');
+                return genericOffset == -1 ? returnType : returnType.substring(0, genericOffset);
+            } else {
+                return getElement().asType().toString();
+            }
         }
 
         public String getName() {

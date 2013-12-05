@@ -255,12 +255,23 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void componentClosed() {}
 
+        private JEditorPane pane;
+        
+        private int caretPosition;
+        
         @Messages("LBL_loading_Eff=Loading Effective POM...")
         @Override public void componentShowing() {
             if (firstTimeShown) {
                 firstTimeShown = false;
                 getVisualRepresentation().add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
                 task.schedule(0);
+            } else if( pane != null ) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        pane.requestFocus();
+                        pane.setCaretPosition(caretPosition);
+                    }
+                });
             }
         }
 
@@ -268,7 +279,9 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void componentActivated() {}
 
-        @Override public void componentDeactivated() {}
+        @Override public void componentDeactivated() {
+            caretPosition = pane.getCaretPosition();
+        }
 
         @Override public UndoRedo getUndoRedo() {
             return UndoRedo.NONE;
@@ -365,7 +378,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                     @Override public void run() {
                         EditorKit kit = mime.lookup(EditorKit.class);
                         NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
-                        JEditorPane pane = new JEditorPane(EFF_MIME_TYPE, null);
+                        pane = new JEditorPane(EFF_MIME_TYPE, null);
                         pane.setDocument(doc);
                         JComponent pnl = getVisualRepresentation(); 
                         pnl.removeAll();
@@ -377,6 +390,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }
+                        pane.requestFocus();
                         pane.setCaretPosition(0);
 
                         for (final Map.Entry<ModelProblem, Location> ent : prblmMap.entrySet()) {

@@ -117,7 +117,7 @@ public class CreateTestTest extends JunitTestCase {
                 "|" + TEST_PACKAGE_NAME+ "|" + Utilities.TEST_CLASS_NAME);
         
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         ndo.btOK().push(); //defaults checked
@@ -143,7 +143,7 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME);
         
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         ndo.btOK().push(); //defaults checked
@@ -176,7 +176,7 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(TEMP_SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME);
         
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         ndo.btOK().push(); //defaults checked
@@ -192,6 +192,38 @@ public class CreateTestTest extends JunitTestCase {
     }
     
     /**
+     * Integration Test creation accessed from popup menu
+     * With default options (checkboxes)
+     */
+    public void testCreateIntegrationTestAndSuiteByPopup() {
+        ProjectSupport.waitScanFinished();
+        
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);
+        Utilities.deleteNode(Utilities.TEST_PACKAGES_PATH +
+                "|" + TEST_PACKAGE_NAME);
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);
+        
+        //open sample class
+        Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
+                "|" + TEST_PACKAGE_NAME);
+        
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
+        
+        NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);        
+        Utilities.checkAllCheckboxes(ndo, true);//generate integration test
+        ndo.btOK().push(); //defaults checked
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);
+        
+        Node testCreationPackage = Utilities.openFile(Utilities.TEST_PACKAGES_PATH +
+                "|" + TEST_PACKAGE_NAME);
+        
+        String[] children = testCreationPackage.getChildren();
+        assertEquals("Test class and test suite expected", 2, children.length);
+        assertEquals("Test class not found", Utilities.TEST_CLASS_NAME + "IT.java", children[0]);
+        assertEquals("Test suite not found", "TestITSuite.java", children[1]);
+    }
+
+    /**
      * Test creation accessed from popup menu
      * Without public methods
      */
@@ -203,10 +235,10 @@ public class CreateTestTest extends JunitTestCase {
                 "|" + TEST_PACKAGE_NAME+ "|" + Utilities.TEST_CLASS_NAME);
         
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 0);//public methods
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 1);//public methods
         System.out.println(jbo.getText());
         jbo.clickMouse();
         ndo.btOK().push();
@@ -230,10 +262,10 @@ public class CreateTestTest extends JunitTestCase {
                 "|" + TEST_PACKAGE_NAME+ "|"  + Utilities.TEST_CLASS_NAME);
         
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 1);//protected methods
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 2);//protected methods
         System.out.println(jbo.getText());
         jbo.clickMouse();
         ndo.btOK().push();
@@ -256,10 +288,10 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 2);//friendly methods
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 3);//friendly methods
         System.out.println(jbo.getText());
         jbo.push();
         JTextFieldOperator tfo = new JTextFieldOperator(ndo);
@@ -282,11 +314,11 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 3);//tearDown methods
+        Utilities.checkAllCheckboxes(ndo, false);
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 4);//tearDown methods
         System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -309,11 +341,11 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 4);//tearDown methods
+        Utilities.checkAllCheckboxes(ndo, false);
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 5);//tearDown methods
         System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -336,11 +368,11 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 7);//methods bodies
+        Utilities.checkAllCheckboxes(ndo, false);
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 8);//methods bodies
         System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -363,11 +395,11 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 8);//javadoc
+        Utilities.checkAllCheckboxes(ndo, false);
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 9);//javadoc
         System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -390,11 +422,11 @@ public class CreateTestTest extends JunitTestCase {
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create Tests");
+        n.performPopupActionNoBlock("Tools|Create/Update Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
-        Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 9);//hints
+        Utilities.checkAllCheckboxes(ndo, false);
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 10);//hints
         System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);

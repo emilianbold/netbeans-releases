@@ -46,39 +46,34 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.packets.Stack.Type;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class Input extends BaseMessageChildElement {
-    
-    private static final String LINENO      = "lineno";        // NOI18N
+    private static final String LINENO = "lineno"; // NOI18N
+    private static final String FILENAME = "filename"; // NOI18N
+    private static final String TYPE = "type"; // NOI18N
+    private static final String LEVEL = "level"; // NOI18N
 
-    private static final String FILENAME    = "filename";      // NOI18N
-
-    private static final String TYPE        = "type";          // NOI18N
-
-    private static final String LEVEL       = "level";         // NOI18N
-
-    Input( Node node ) {
+    Input(Node node) {
         super(node);
     }
-    
-    public int getLevel(){
+
+    public int getLevel() {
         return getInt(LEVEL);
     }
-    
-    public Type getType(){
-        return Type.forString( getAttribute( TYPE ));
+
+    public Type getType() {
+        return Type.forString(getAttribute(TYPE));
     }
-    
-    public String getFileName(){
-        return getAttribute( FILENAME);
+
+    public String getFileName() {
+        return getAttribute(FILENAME);
     }
-    
-    public int getLine(){
-        return getInt( LINENO );
+
+    public int getLine() {
+        return getInt(LINENO);
     }
 
 }

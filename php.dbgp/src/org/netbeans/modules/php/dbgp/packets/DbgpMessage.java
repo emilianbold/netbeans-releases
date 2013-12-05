@@ -68,65 +68,57 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-
 /**
  * @author ads
  *
  */
 public abstract class DbgpMessage {
-
     private static final Logger LOGGER = Logger.getLogger(DbgpMessage.class.getName());
-
-    private static final String     INIT        = "init";               // NOI18N
-
-    private static final String     RESPONSE    = "response";           // NOI18N
-
-    private static final String     STREAM      = "stream";             // NOI18N
-
-    static final String             ISO_CHARSET = "ISO-8859-1";         // NOI18N
-
-    private static final int        MAX_PACKET_SIZE = 1024;
-
-
-    protected static final String     HTML_APOS       = "&apos;";       // NOI18N
-
-    protected static final String     HTML_QUOTE      = "&quot;";       // NOI18N
-
-    protected static final String     HTML_AMP        = "&amp";         // NOI18N
-
-    protected static final String     HTML_LT         = "&lt";          // NOI18N
-
-    protected static final String     HTML_GT         = "&gt";          // NOI18N
-
-    protected static final java.util.Map<String,Character>
-                                    ENTITIES          =
-            new HashMap<>( );
+    private static final String INIT = "init"; // NOI18N
+    private static final String RESPONSE = "response"; // NOI18N
+    private static final String STREAM = "stream"; // NOI18N
+    static final String ISO_CHARSET = "ISO-8859-1"; // NOI18N
+    private static final int MAX_PACKET_SIZE = 1024;
+    protected static final String HTML_APOS = "&apos;"; // NOI18N
+    protected static final String HTML_QUOTE = "&quot;"; // NOI18N
+    protected static final String HTML_AMP = "&amp"; // NOI18N
+    protected static final String HTML_LT = "&lt"; // NOI18N
+    protected static final String HTML_GT = "&gt"; // NOI18N
+    protected static final java.util.Map<String, Character> ENTITIES = new HashMap<>();
+    private static DocumentBuilder builder;
+    private static AtomicInteger myMaxDataSize = new AtomicInteger(MAX_PACKET_SIZE);
+    private Node myNode;
 
     static {
-        ENTITIES.put( HTML_APOS , '\'');
-        ENTITIES.put( HTML_QUOTE , '"');
-        ENTITIES.put( HTML_AMP , '&' );
-        ENTITIES.put( HTML_LT , '<');
-        ENTITIES.put( HTML_GT  , '>');
+        ENTITIES.put(HTML_APOS, '\'');
+        ENTITIES.put(HTML_QUOTE, '"');
+        ENTITIES.put(HTML_AMP, '&');
+        ENTITIES.put(HTML_LT, '<');
+        ENTITIES.put(HTML_GT, '>');
+        try {
+            builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            builder.setEntityResolver(new StubResolver());
+        } catch (ParserConfigurationException e) {
+            log(e);
+        }
     }
 
-    DbgpMessage( Node node ){
+    DbgpMessage(Node node) {
         myNode = node;
     }
 
-    public static DbgpMessage create( InputStream inputStream, String projectEncoding ) throws SocketException{
-
+    public static DbgpMessage create(InputStream inputStream, String projectEncoding) throws SocketException {
         try {
             int size = getDataSize(inputStream);
-            if ( size <0 ) {
-                notifyPacketError( null );
+            if (size < 0) {
+                notifyPacketError(null);
                 Logger.getLogger(DbgpMessage.class.getName()).log(Level.FINE, "Got {0} as data size", size); // NOI18N
                 return null;
             }
-            byte[] bytes = getContent( inputStream , size );
-            Node node = getNode( bytes, projectEncoding );
+            byte[] bytes = getContent(inputStream, size);
+            Node node = getNode(bytes, projectEncoding);
             logDebugInfo(bytes);
-            return create( node );
+            return create(node);
         } catch (SocketException e) {
             throw e;
         } catch (IOException e) {
@@ -135,112 +127,107 @@ public abstract class DbgpMessage {
         return null;
     }
 
-    public abstract void process( DebugSession session, DbgpCommand command );
+    public abstract void process(DebugSession session, DbgpCommand command);
 
     public static int getMaxDataSize() {
         return myMaxDataSize.get();
     }
 
-    public static void setMaxDataSize( int size ) {
+    public static void setMaxDataSize(int size) {
         int maxSize = myMaxDataSize.get();
-        if ( maxSize != size ) {
-            myMaxDataSize.compareAndSet( maxSize, size);
+        if (maxSize != size) {
+            myMaxDataSize.compareAndSet(maxSize, size);
         }
     }
 
-    public static DbgpMessage create( Node node ) {
-        if ( node == null ) {
+    public static DbgpMessage create(Node node) {
+        if (node == null) {
             return null;
         }
         String rootName = node.getNodeName();
         switch (rootName) {
             case INIT:
-                return new InitMessage( node );
+                return new InitMessage(node);
             case STREAM:
-                return MessageBuilder.createStream( node );
+                return MessageBuilder.createStream(node);
             case RESPONSE:
-                return MessageBuilder.createResponse( node );
+                return MessageBuilder.createResponse(node);
         }
         return null;
     }
 
-    protected static void log( IOException e ) {
-        Logger.getLogger( DbgpMessage.class.getName() ).log(
-                Level.SEVERE, null, e );
+    protected static void log(IOException e) {
+        Logger.getLogger(DbgpMessage.class.getName()).log(Level.SEVERE, null, e);
     }
 
-    protected static String getNodeValue( Node node ){
+    protected static String getNodeValue(Node node) {
         NodeList list = node.getChildNodes();
         StringBuilder builder = new StringBuilder();
-        for ( int i=0;  i<list.getLength() ;  i++) {
-            Node child = list.item( i );
-            if ( child instanceof Text ){
-                builder.append( child.getNodeValue() );
-            }
-            else if ( child instanceof CDATASection ){
-                builder.append( child.getNodeValue() );
+        for (int i = 0; i < list.getLength(); i++) {
+            Node child = list.item(i);
+            if (child instanceof Text) {
+                builder.append(child.getNodeValue());
+            } else if (child instanceof CDATASection) {
+                builder.append(child.getNodeValue());
             }
         }
-        return replaceHtmlEntities( builder.toString() );
+        return replaceHtmlEntities(builder.toString());
     }
 
-    protected static String getAttribute( Node node , String attrName ){
-        Node attr = node.getAttributes().getNamedItem( attrName );
-        return attr == null ? null : replaceHtmlEntities( attr.getNodeValue() );
+    protected static String getAttribute(Node node, String attrName) {
+        Node attr = node.getAttributes().getNamedItem(attrName);
+        return attr == null ? null : replaceHtmlEntities(attr.getNodeValue());
     }
 
-    protected static boolean getBoolean( Node node , String attrName ){
-       String value = getAttribute(node, attrName);
-       if ( value == null ){
-           return false;
-       }
-       try {
-           return Integer.parseInt( value ) >0;
-       }
-       catch( NumberFormatException e ){
-           return false;
-       }
+    protected static boolean getBoolean(Node node, String attrName) {
+        String value = getAttribute(node, attrName);
+        if (value == null) {
+            return false;
+        }
+        try {
+            return Integer.parseInt(value) > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
-    protected static Node getChild( Node node , String nodeName ) {
+    protected static Node getChild(Node node, String nodeName) {
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
             Node child = list.item(i);
-            if ( nodeName.equals( child.getNodeName() )) {
+            if (nodeName.equals(child.getNodeName())) {
                 return child;
             }
         }
         return null;
     }
 
-    protected static List<Node> getChildren( Node node , String nodeName ) {
+    protected static List<Node> getChildren(Node node, String nodeName) {
         List<Node> result = new LinkedList<>();
         NodeList list = node.getChildNodes();
         for (int i = 0; i < list.getLength(); i++) {
             Node child = list.item(i);
-            if ( nodeName.equals( child.getNodeName() )) {
-                result.add( child );
+            if (nodeName.equals(child.getNodeName())) {
+                result.add(child);
             }
         }
         return result;
     }
 
-    protected Node getNode(){
+    protected Node getNode() {
         return myNode;
     }
 
-    private static void log( ParserConfigurationException e ) {
-        Logger.getLogger( DbgpMessage.class.getName() ).log(
-                Level.SEVERE, null, e );
+    private static void log(ParserConfigurationException e) {
+        Logger.getLogger(DbgpMessage.class.getName()).log(Level.SEVERE, null, e);
     }
 
-    private static void logDebugInfo( byte[] bytes ) {
+    private static void logDebugInfo(byte[] bytes) {
         try {
             if (bytes != null) {
-                Logger.getLogger( DbgpMessage.class.getName() ).log(Level.FINE, new String( bytes , ISO_CHARSET));
+                Logger.getLogger(DbgpMessage.class.getName()).log(Level.FINE, new String(bytes, ISO_CHARSET));
             }
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             assert false;
         }
     }
@@ -248,25 +235,25 @@ public abstract class DbgpMessage {
     /*
      * Notify user about unexpected format of received packet.
      */
-    private static void notifyPacketError( Exception e ) {
+    private static void notifyPacketError(Exception e) {
         Logger.getLogger(DbgpMessage.class.getName()).log(Level.SEVERE, null, e);
     }
 
-    private static byte[] getContent( InputStream inputStream, int size )
-        throws IOException
-    {
-        byte[] bytes = new byte[ size ];
+    private static byte[] getContent(InputStream inputStream, int size)
+            throws IOException {
+        byte[] bytes = new byte[size];
         int count = 0;
-        while( count < size ) {
-            int awaitedBytes = size - count ;
-            int length = awaitedBytes < getMaxDataSize() ?
-                    awaitedBytes : getMaxDataSize();
-            count+= inputStream.read( bytes , count , length);
+        while (count < size) {
+            int awaitedBytes = size - count;
+            int length = awaitedBytes < getMaxDataSize() ? awaitedBytes : getMaxDataSize();
+            count += inputStream.read(bytes, count, length);
         }
-        if ( count != size ) {
-            notifyPacketError( null );
-            Logger.getLogger( DbgpMessage.class.getName() ).log(
-                    Level.FINE, "Red {0}" +" bytes from socket input stream," +" but expected {1} bytes" , new Object[]{count, size});       // NOI18N
+        if (count != size) {
+            notifyPacketError(null);
+            Logger.getLogger(DbgpMessage.class.getName()).log(
+                    Level.FINE,
+                    "Red {0}" + " bytes from socket input stream," + " but expected {1} bytes", // NOI18N
+                    new Object[]{count, size});
             return null;
         }
         int nullByte = inputStream.read();
@@ -274,29 +261,29 @@ public abstract class DbgpMessage {
         return bytes;
     }
 
-    private static int getDataSize( InputStream inputStream ) throws IOException {
+    private static int getDataSize(InputStream inputStream) throws IOException {
         List<Integer> list = new LinkedList<>();
         int next;
         while ((next = inputStream.read()) > 0) {
-            list.add( next );
+            list.add(next);
         }
-        byte[] bytes = new byte[ list.size() ];
+        byte[] bytes = new byte[list.size()];
         int i = 0;
         for (Integer integer : list) {
             byte byt = integer.byteValue();
             bytes[i++] = byt;
         }
-        String str = new String( bytes , ISO_CHARSET );
+        String str = new String(bytes, ISO_CHARSET);
         try {
             return Integer.parseInt(str);
-        }
-        catch( NumberFormatException e ) {
+        } catch (NumberFormatException e) {
             return -1;
         }
     }
 
     /**
      * Remove invalid XML characters from the string
+     *
      * @param text The string containing xml message.
      * @return
      */
@@ -307,8 +294,8 @@ public abstract class DbgpMessage {
         int index = 0;
         while (index < text.length()) {
             codePoint = text.codePointAt(index);
-            if ((codePoint == 0x9) ||
-                    (codePoint == 0xA)
+            if ((codePoint == 0x9)
+                    || (codePoint == 0xA)
                     || (codePoint == 0xD)
                     || ((codePoint >= 0x20) && (codePoint <= 0xD7FF))
                     || ((codePoint >= 0xE000) && (codePoint <= 0xFFFD))
@@ -332,8 +319,8 @@ public abstract class DbgpMessage {
         return out.toString();
     }
 
-    private static Node getNode( byte[] bytes, String projectEncoding ) throws IOException {
-        if ( BUILDER == null || bytes == null ) {
+    private static Node getNode(byte[] bytes, String projectEncoding) throws IOException {
+        if (builder == null || bytes == null) {
             return null;
         }
         String original = new String(bytes, projectEncoding);
@@ -345,64 +332,39 @@ public abstract class DbgpMessage {
             inputWithoutNullChars = input.replace("&#0;", ""); //NOI18N
             InputSource is = new InputSource(new StringReader(inputWithoutNullChars));
             is.setEncoding(projectEncoding);
-            Document doc = BUILDER.parse( is );
+            Document doc = builder.parse(is);
             return doc.getDocumentElement();
-        }
-        catch (SAXException e) {
+        } catch (SAXException e) {
             LOGGER.log(Level.SEVERE, "Possible invalid XML - ORIGINAL:\n\n{0}\n\nAFTER REPLACE:\n\n{1}", new Object[]{original, inputWithoutNullChars});
             notifyPacketError(e);
-
             return null;
         }
-        //return null;
     }
 
-    private static String replaceHtmlEntities( String str ) {
-        if ( str.indexOf( "&" ) == -1 ) {
+    private static String replaceHtmlEntities(String str) {
+        if (str.indexOf("&") == -1) {
             return str;
-        }
-        else {
-            for( Entry<String, Character> entry : ENTITIES.entrySet() ) {
+        } else {
+            for (Entry<String, Character> entry : ENTITIES.entrySet()) {
                 String entity = entry.getKey();
                 Character ch = entry.getValue();
-                str = str.replace( entity , ch +"" );
+                str = str.replace(entity, ch + "");
             }
             return str;
         }
     }
 
-    private Node myNode;
-
-    private static DocumentBuilder BUILDER;
-
-    private static AtomicInteger myMaxDataSize = new AtomicInteger( MAX_PACKET_SIZE);
-
-    static {
-        try {
-            BUILDER = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            BUILDER.setEntityResolver( new StubResolver() );
-        }
-        catch( ParserConfigurationException  e) {
-            log( e );
-        }
-    }
-
     private static class StubResolver implements EntityResolver {
 
-        /* (non-Javadoc)
-         * @see org.xml.sax.EntityResolver#resolveEntity(java.lang.String, java.lang.String)
-         */
         @Override
-        public InputSource resolveEntity( String publicId, String systemId )
-            throws SAXException, IOException
-        {
+        public InputSource resolveEntity(String publicId, String systemId)
+                throws SAXException, IOException {
             return null;
         }
 
     }
 
     public static final class NoneDbgpMessage extends DbgpMessage {
-
         public NoneDbgpMessage(Node node) {
             super(node);
         }
@@ -412,4 +374,5 @@ public abstract class DbgpMessage {
         }
 
     }
+
 }

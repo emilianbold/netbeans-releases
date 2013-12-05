@@ -47,7 +47,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.Authenticator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,7 +175,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
         } else if (component.getAdminUrl().trim().length() == 0) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.missingAdminUrl");
         } else if (OracleInstanceManager.getDefault().exist(component.getAdminUrl(), component.getIdentityDomain(), 
-                component.getJavaServiceName(), OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()))) {
+                component.getJavaServiceName(), component.getUserName())) {
             return NbBundle.getMessage(OracleWizardPanel.class, "OracleWizardPanel.alreadyRegistered");
         }
         return "";
@@ -213,7 +212,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
             }
             
             servers = new ArrayList<ServerResourceDescriptor>();
-            OracleInstance ai = new OracleInstance("Oracle Cloud", OracleWizardComponent.getPrefixedUserName(component.getIdentityDomain(), component.getUserName()), 
+            OracleInstance ai = new OracleInstance("Oracle Cloud", component.getUserName(), 
                     component.getPassword(), component.getAdminUrl(), component.getDataCenter(), 
                     component.getIdentityDomain(), component.getJavaServiceName(), component.getDatabaseServiceName(), null, component.getSDKFolder());
             Authenticator auth = resetCurrentAuthenticator();
@@ -250,8 +249,7 @@ public class OracleWizardPanel implements WizardDescriptor.AsynchronousValidatin
     
     public static boolean testPassword(String identityDomain, String user, String pwd, String javaServiceName,
             String adminURL, String sdkFolder) {
-        OracleInstance ai = new OracleInstance("Oracle Cloud", 
-                OracleWizardComponent.getPrefixedUserName(identityDomain, user), 
+        OracleInstance ai = new OracleInstance("Oracle Cloud", user, 
                 pwd, adminURL, "data center not needed", identityDomain, javaServiceName, "", null, sdkFolder); // NOI18N
         Authenticator auth = resetCurrentAuthenticator();
         try {

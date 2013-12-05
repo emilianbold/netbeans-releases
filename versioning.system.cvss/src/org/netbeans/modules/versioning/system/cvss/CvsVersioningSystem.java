@@ -462,7 +462,9 @@ public class CvsVersioningSystem {
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (Utils.containsMetadata(file)) {
+            // is the folder a special one where metadata should not be looked for?
+            boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file.getAbsolutePath());
+            if (!forbiddenFolder && Utils.containsMetadata(file)) {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by CVS

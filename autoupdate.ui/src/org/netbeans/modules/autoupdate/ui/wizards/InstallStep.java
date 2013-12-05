@@ -231,6 +231,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     
     private Validator validator;
     
+    @SuppressWarnings("null")
     private Validator handleDownload () {
         if (canceled) {
             log.fine("Quit handleDownload() because an previous installation was canceled.");
@@ -239,7 +240,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         validator = null;
         OperationContainer<InstallSupport> installContainer = model.getBaseContainer ();
         final InstallSupport support = installContainer.getSupport ();
-        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+        assert support != null : "Download failed: OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + installContainer.listAll () + " and invalid elements " + installContainer.listInvalid () + "\ncontainer: " + installContainer;
         assert installContainer.listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + installContainer.listInvalid () + " container: " + installContainer;
         
@@ -421,6 +422,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         
     }
     
+    @SuppressWarnings("null")
     private Installer handleValidation (Validator v) {
         if (canceled) {
             log.fine("Quit handleValidation() because an previous installation was canceled.");
@@ -428,9 +430,12 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
         component.setHeadAndContent (getBundle (HEAD_VERIFY), getBundle (CONTENT_VERIFY));
         final InstallSupport support = model.getBaseContainer().getSupport();
-        assert support != null : "OperationSupport cannot be null because OperationContainer " +
+        assert support != null : "Validation Failed: OperationSupport cannot be null because OperationContainer " +
                 "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
         if (support == null) {
+            log.warning("Validation failed: OperationSupport was null because OperationContainer "
+                        + "either does not contain any elements: " + model.getBaseContainer().listAll()
+                        + " or contains invalid elements " + model.getBaseContainer().listInvalid());
             return null;
         }
         ProgressHandle handle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
@@ -490,7 +495,6 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         
         try {
             tmpInst = support.doValidate (v, handle);
-            if (tmpInst == null) return null;
             if (tmpInst == null) return null;
         } catch (OperationException ex) {
             log.log (Level.INFO, ex.getMessage (), ex);

@@ -185,7 +185,7 @@ public class MatchingObjectTest extends NbTestCase {
     private MatchingObject prepareMatchingObject(int numTextDetails)
             throws IOException {
         ResultModel rm = new org.netbeans.modules.search.ResultModel(
-                new BasicSearchCriteria(), null);
+                new BasicSearchCriteria(), null, null);
         FileObject fo = FileUtil.createMemoryFileSystem().getRoot()
                 .createData("test.tst");
         List<TextDetail> details = new LinkedList<TextDetail>();
@@ -393,7 +393,7 @@ public class MatchingObjectTest extends NbTestCase {
                 "textFiles/utf8file.txt");
         Charset c = FileEncodingQuery.getEncoding(file);
         MatchingObject mo = new MatchingObject(new ResultModel(
-                new BasicSearchCriteria(), ""), file, c, null);
+                new BasicSearchCriteria(), "", null), file, c, null);
         StringBuilder text = mo.text(true);
         String textStr = text.toString();
         int lineBreakSize = textStr.charAt(textStr.length() - 1) == '\n'

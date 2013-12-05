@@ -154,10 +154,12 @@ public class GlassFishPropertiesCustomizer extends JTabbedPane {
             GlassfishInstance instance, Lookup lookup) {
         customizerListener = new CustomizerListener(instance);
         addAncestorListener(customizerListener);
-        JPanel commonCustomizer = new InstanceCustomizer(instance);
+        JPanel commonCustomizer = instance.isRemote()
+                ? new InstanceRemotePanel(instance)
+                : new InstanceLocalPanel(instance);
         JPanel vmCustomizer = new VmCustomizer(instance);
 
-        Collection<JPanel> pages = new LinkedList<JPanel>();
+        Collection<JPanel> pages = new LinkedList<>();
         Collection<? extends CustomizerCookie> lookupAll
                 = lookup.lookupAll(CustomizerCookie.class);
         for(CustomizerCookie cookie : lookupAll) {

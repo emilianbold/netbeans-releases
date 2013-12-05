@@ -521,7 +521,9 @@ public class Subversion {
                 break;
             }
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            if (SvnUtils.hasMetadata(file)) {
+            // is the folder a special one where metadata should not be looked for?
+            boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file.getAbsolutePath());
+            if (!forbiddenFolder && SvnUtils.hasMetadata(file)) {
                 Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
                 done.clear();

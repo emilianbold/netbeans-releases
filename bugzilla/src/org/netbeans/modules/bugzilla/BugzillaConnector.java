@@ -47,17 +47,16 @@ import java.net.URL;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,9 +66,10 @@ import org.openide.util.NbBundle;
 @BugtrackingConnector.Registration (
         id=BugzillaConnector.ID,
         displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
+        tooltip="#LBL_ConnectorTooltip",
+        iconPath = "org/netbeans/modules/bugzilla/resources/repository.png"
 )    
-public class BugzillaConnector extends TeamBugtrackingConnector {
+public class BugzillaConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
 
@@ -77,6 +77,10 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
+        Repository r = createKenaiRepository(info);
+        if(r != null) {
+            return r;
+        }
         BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
         if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
@@ -98,8 +102,12 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
      * Kenai
      ******************************************************************************/
     
-    @Override
-    public Repository createRepository(TeamProject project) {
+    public Repository createKenaiRepository(RepositoryInfo info) {
+        String name = info.getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME);
+        TeamProject project = null;
+        if(name != null) {
+            project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
+        }
         if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
             return null;
         }
@@ -157,8 +165,8 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
     }
 
     @Override
-    public Repository findNBRepository() {
-        return NBBugzillaUtils.findNBRepository();
+    public String findNBRepository() {
+        return NBBugzillaUtils.findNBRepository().getId();
     }
 
 }

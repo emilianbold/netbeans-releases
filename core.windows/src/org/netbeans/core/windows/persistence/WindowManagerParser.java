@@ -1963,4 +1963,19 @@ public class WindowManagerParser {
         0f, 0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f,
         1f, 1f
     };
+
+    /**
+     * Loads Mode configuration from the given file.
+     * @param fo
+     * @return
+     * @throws IOException 
+     * @since 2.70
+     */
+    public static ModeConfig loadModeConfigFrom( FileObject fo ) throws IOException {
+        String modeName = fo.getName();
+        ModeParser parser = new ModeParser(modeName, new HashSet(1));
+        parser.setInLocalFolder(true);
+        parser.setLocalParentFolder(fo.getParent());
+        return parser.load();
+    }
 }

@@ -79,6 +79,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -877,7 +878,9 @@ public class NbEditorKit extends ExtKit implements Callable {
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             Document doc = target.getDocument();
-            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null ||
+                doc.getProperty(UndoManager.class) != null )
+            { // Basic way of undo
                 super.actionPerformed(evt, target);
             } else { // Deleagte to system undo action
                 // Delegate to system undo action
@@ -894,7 +897,9 @@ public class NbEditorKit extends ExtKit implements Callable {
 
         public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
             Document doc = target.getDocument();
-            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null) { // Basic way of undo
+            if (doc.getProperty(BaseDocument.UNDO_MANAGER_PROP) != null ||
+                doc.getProperty(UndoManager.class) != null )
+            {
                 super.actionPerformed(evt, target);
             } else { // Deleagte to system undo action
                 // Delegate to system redo action

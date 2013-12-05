@@ -58,16 +58,16 @@ import org.openide.util.NbBundle;
 /**
  * Symfony2 IDE options.
  */
-@OptionsPanelController.SubRegistration(
-    location=UiUtils.OPTIONS_PATH,
-    id=Symfony2OptionsPanelController.OPTIONS_SUBPATH,
+@UiUtils.PhpOptionsPanelRegistration(
+    id=Symfony2OptionsPanelController.ID,
     displayName="#LBL_Symfony2OptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=190
 )
 public class Symfony2OptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_SUBPATH = "Symfony2"; // NOI18N
+    static final String ID = "Symfony2"; // NOI18N
+    public static final String OPTIONS_SUBPATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+ID; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 

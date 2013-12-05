@@ -63,10 +63,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.WindowManager;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -116,6 +114,7 @@ public final class DashboardTopComponent extends TopComponent {
     private final Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
     private final DashboardViewer dashboard;
+    private boolean firstStart = true;
 
     public DashboardTopComponent() {
         initComponents();
@@ -232,14 +231,17 @@ public final class DashboardTopComponent extends TopComponent {
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
         TopComponent.getRegistry().addPropertyChangeListener(dashboardSelectionListener);
         refresher.setRefreshEnabled(true);
-        dashboardRefreshTime.restart();
-        //load data after the component is displayed
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                dashboard.loadData();
-            }
-        });
+        refresher.setDashboardBusy(false);
+        if (firstStart) {
+            firstStart = false;
+            //load data after the component is displayed
+            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                @Override
+                public void run() {
+                    dashboard.loadData();
+                }
+            });
+        }
     }
 
     @Override
@@ -250,7 +252,6 @@ public final class DashboardTopComponent extends TopComponent {
         filterPanel.clear();
         dashboard.clearFilters();
         refresher.setRefreshEnabled(false);
-        dashboardRefreshTime.stop();
         super.componentClosed();
     }
 
@@ -319,13 +320,7 @@ public final class DashboardTopComponent extends TopComponent {
     }
     
     public void addTask(TaskNode... taskNodes) {
-        List<Category> categories = dashboard.getCategories(true, false);
-        for (TaskNode taskNode : taskNodes) {
-            if (taskNode.isCategorized()) {
-                categories.remove(taskNode.getCategory());
-            }
-        }
-        final CategoryPicker picker = new CategoryPicker(categories);
+        final CategoryPicker picker = new CategoryPicker(taskNodes);
         final NotifyDescriptor nd = new NotifyDescriptor(
                 picker,
                 NbBundle.getMessage(DashboardTopComponent.class, "LBL_AddTaskToCat"), //NOI18N
@@ -340,10 +335,7 @@ public final class DashboardTopComponent extends TopComponent {
                 nd.setValid(categoryAvailable);
             }
         });
-
-        if (categories.isEmpty()) {
-            nd.setValid(false);
-        }
+        nd.setValid(false);
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
             dashboard.addTaskToCategory(category, taskNodes);
@@ -366,6 +358,10 @@ public final class DashboardTopComponent extends TopComponent {
     
     public String getFilterText() {
         return filterPanel.getFilterText();
+    }
+
+    public void showTodayCategory(){
+        filterPanel.showTodayCategory();
     }
 
     void writeProperties(java.util.Properties p) {

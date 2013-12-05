@@ -48,12 +48,15 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -64,6 +67,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -79,8 +83,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -94,10 +100,12 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
+import org.netbeans.modules.java.hints.introduce.Flow;
 import org.openide.ErrorManager;
 import static org.netbeans.modules.java.hints.errors.Utilities.getIterableGenericType;
 
@@ -891,4 +899,60 @@ public final class CreateElementUtilities {
         return null;
     }
     
+    /**
+     * Determines whether a ctor variable/parameter can be declared as a final field.
+     * The class is checked whether it has other ctors that do not call this one (at least one
+     * of the other ctors does not begin with this() call). If `theVar' is not null, the ctor
+     * body is checked for definitive assignment to that variable. If it is null, no assignment
+     * check si done.
+     * 
+     * @param info context
+     * @param ctorTree path to the constructor
+     * @param theVar optional; the variable / symbol that is being converted to a field
+     * @return true, if the field could be declared final.
+     */
+    public static boolean canDeclareVariableFinal(CompilationInfo info, 
+            TreePath ctorTree, @NullAllowed Element theVar) {
+        TreePath classTree = ctorTree.getParentPath();
+        boolean hasOtherConstructors = false;
+        for (Tree member : ((ClassTree)classTree.getLeaf()).getMembers()) {
+            if (member.getKind() == Tree.Kind.METHOD && "<init>".contentEquals(((MethodTree)member).getName()) && ctorTree.getLeaf() != member) { //NOI18N
+                BlockTree body = ((MethodTree) member).getBody();
+                Iterator<? extends StatementTree> stats = body != null ? body.getStatements().iterator() : Collections.<StatementTree>emptyList().iterator();
+                if (stats.hasNext()) {
+                    StatementTree stat = stats.next();
+                    if (stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
+                        ExpressionTree exp = ((ExpressionStatementTree)stat).getExpression();
+                        if (exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                            ExpressionTree meth = ((MethodInvocationTree)exp).getMethodSelect();
+                            if (meth.getKind() == Tree.Kind.IDENTIFIER && "this".contentEquals(((IdentifierTree)meth).getName())) { //NOI18N
+                                continue;
+                            }
+                        }
+                    }
+                }
+                // TODO: the field will be declared as non-final even though it may
+                // me actually initialized from all the relevant constructors. To fix that, Flow
+                // analysis should be executed on the class as a whole to get all final candidates.
+                hasOtherConstructors = true;
+                break;
+            }
+        }
+        if (!hasOtherConstructors) {
+            if (theVar == null) {
+                return true;
+            }
+            BlockTree constructorBody = ((MethodTree) ctorTree.getLeaf()).getBody();
+            TypeElement source = (TypeElement)info.getTrees().getElement(classTree);
+            // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
+            // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,
+            // but then report errors on the field's assignments in regular methods.
+            if (Flow.unknownSymbolFinalCandidate(info, 
+                    theVar, source, Collections.singletonList(new TreePath(ctorTree, constructorBody)), new AtomicBoolean())) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

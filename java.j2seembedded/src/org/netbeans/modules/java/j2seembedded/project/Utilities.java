@@ -86,6 +86,7 @@ final class Utilities {
 
     private static final String TARGET_RUN = "$target.run";             //NOI18N
     private static final String TARGET_DEBUG = "$target.debug";         //NOI18N
+    private static final String TARGET_PROFILE = "$target.profile";         //NOI18N
     private static final String COS_DISABLE = "compile.on.save.unsupported.remote.platform"; //NOI18N
     private static final String DEBUG_TRANSPORT = "debug-transport";        //NOI18N
     private static final String EXTENSION_NAME = "remote-platform-1";       //NOI18N
@@ -95,7 +96,7 @@ final class Utilities {
     private static final String BUILD_SCRIPT_PROTOTYPE = "/org/netbeans/modules/java/j2seembedded/resources/remote-platform-impl.xml";  //NOI18N
     private static final Map<String,String> CONFIG_PROPERTIES;
     private static final Set<String> REMOVE_CONFIG_PROPERTIES = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(new String[] {TARGET_RUN, TARGET_DEBUG})));
+        new HashSet<String>(Arrays.asList(new String[] {TARGET_RUN, TARGET_DEBUG, TARGET_PROFILE})));
 
     private static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
 
@@ -103,6 +104,7 @@ final class Utilities {
         Map<String,String> m = new HashMap<>();
         m.put(TARGET_RUN,"run-remote");     //NOI18N
         m.put(TARGET_DEBUG,"debug-remote");     //NOI18N
+        m.put(TARGET_PROFILE,"profile-remote"); //NOI18N
         m.put(COS_DISABLE, Boolean.TRUE.toString());
         m.put(DEBUG_TRANSPORT,"dt_socket"); //NOI18N
         CONFIG_PROPERTIES = Collections.unmodifiableMap(m);
@@ -304,6 +306,53 @@ final class Utilities {
             }
         }
         return rpBuildScript;
+    }
+    
+    public static String getTargetOSForRP(String os, String arch, String abi, String vmName) {
+        String targetOS;
+        if (os.toLowerCase().contains("win")) { //NOI18N
+            targetOS="win"; //NOI18N
+            if (arch.toLowerCase().contains("64")) { //NOI18N
+                targetOS += "amd64-15"; //NOI18N
+            } else if (arch.toLowerCase().contains("86")) { //NOI18N
+                targetOS +="-15"; //NOI18N
+            } else if ("CVM".equals(vmName)) {
+                targetOS+="cvm"; //NOI18N
+            }
+        } else if (os.toLowerCase().contains("linux")) { //NOI18N
+            targetOS="linux"; //NOI18N
+            if (arch.toLowerCase().contains("arm")) { //NOI18N
+                targetOS+="arm";
+                if (abi.toLowerCase().contains("abihf")) { //NOI18N
+                    targetOS+="vfphflt"; //NOI18N
+                }
+                targetOS += "-15"; //NOI18N
+            } else if (arch.toLowerCase().contains("64")) { //NOI18N
+                targetOS += "amd64-15"; //NOI18N
+            } else if (arch.toLowerCase().contains("86")) { //NOI18N
+                targetOS +="-15"; //NOI18N
+            } else if ("CVM".equals(vmName)) {
+                targetOS+="cvm"; //NOI18N
+            }
+        } else if (os.toLowerCase().contains("sol")) { //NOI18N
+            targetOS="sol"; //NOI18N
+            if (arch.toLowerCase().contains("sparc")) { //NOI18N
+                targetOS+="sparc"; //NOI18N
+                if (arch.toLowerCase().contains("v9")) { //NOI18N
+                 targetOS+="v9"; //NOI18N
+                }
+            } else if (arch.toLowerCase().contains("64")) { //NOI18N
+                targetOS+="amd64";
+            } else if (arch.toLowerCase().contains("86")) { //NOI18N
+                targetOS+="x86"; //NOI18N
+            }
+            targetOS+="-15"; //NOI18N
+        } else if (os.toLowerCase().contains("mac")) { //NOI18N
+            targetOS="mac-15"; //NOI18N
+        } else {
+            targetOS=""; //NOI18N
+        }
+        return targetOS;
     }
 
 

@@ -60,6 +60,10 @@ class JavaPlatformImpl extends JavaPlatformProvider {
         platform = p;
     }
     
+    JavaPlatform getDelegate() {
+        return platform;
+    }
+    
     @Override
     public String getDisplayName() {
         return platform.getDisplayName();
@@ -69,13 +73,25 @@ class JavaPlatformImpl extends JavaPlatformProvider {
     public Map<String, String> getSystemProperties() {
         return platform.getSystemProperties();
     }
+    
+    @Override
+    public Map<String, String> getProperties() {
+        return platform.getProperties();
+    }
 
     @Override
     public String getPlatformJavaFile() {
-        FileObject javaBinary = platform.findTool("java"); // NOI18N
-        
-        if (javaBinary != null) {
-            return FileUtil.toFile(javaBinary).getAbsolutePath();
+        if (JavaPlatformManagerImpl.REMOTE_J2SE.getName().equals(platform.getSpecification().getName())) {
+            //Todo: create API in JavaPlatform to return install folder as an URI
+            final String installFolder = platform.getProperties().get("platform.install.folder"); //NOI18N
+            if (installFolder != null) {
+                return String.format("%s/bin/java", installFolder); //NOI18N
+            }
+        } else {
+            FileObject javaBinary = platform.findTool("java"); // NOI18N
+            if (javaBinary != null) {
+                return FileUtil.toFile(javaBinary).getAbsolutePath();
+            }
         }
         return null;
     }

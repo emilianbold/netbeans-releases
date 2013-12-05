@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -84,6 +85,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     private SortedSet<M2Configuration> nonshared = null;
     private M2Configuration active;
     private String initialActive;
+    private final AtomicBoolean initialActiveLoaded = new AtomicBoolean(false);
     private final AuxiliaryConfiguration aux;
     private final ProjectProfileHandler profileHandler;
     private final PropertyChangeListener propertyChange;
@@ -95,10 +97,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         project = proj;
         this.aux = aux;
         profileHandler = prof;
-        DEFAULT = M2Configuration.createDefault(project.getProjectDirectory());
-        //read the active one..
-        initialActive = readActiveConfigurationName(aux);
-        
+        DEFAULT = M2Configuration.createDefault(project.getProjectDirectory());           
         active = DEFAULT;
         propertyChange = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
@@ -116,6 +115,13 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 }
             }
         };
+    }
+    
+    private String getInitialActive() {
+        if (initialActiveLoaded.compareAndSet(false, true)) {
+            initialActive = readActiveConfigurationName(aux); 
+        }
+        return initialActive;
     }
 
     private void checkActiveAgainstAll(Collection<M2Configuration> confs, boolean async) {
@@ -227,15 +233,16 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         Collection<M2Configuration> confs;
         synchronized (this) {
             confs = getConfigurations(false);
-            if (initialActive != null) {
+            String initAct = getInitialActive();
+            if (initAct != null) {
                 for (M2Configuration conf : confs) {
-                    if (initialActive.equals(conf.getId())) {
+                    if (initAct.equals(conf.getId())) {
                         active = conf;
-                        initialActive = null;
+                        initAct = null;
                         break;
                     }
                 }
-                if (initialActive != null) {
+                if (initAct != null) {
                     RP.post(new Runnable() {
                         public @Override void run() {
                             try {
@@ -245,7 +252,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                             }
                         }
                     });
-                    initialActive = null;
+                    initialActive = null; //here we reset the initial active field value to prevent this block from happening exactly once.
                 }
             }
             _active = active;

@@ -1028,6 +1028,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug235462.cpp", 105, 9, "bug235462.cpp", 63, 5);
         performTest("bug235462.cpp", 106, 9, "bug235462.cpp", 67, 5);
         performTest("bug235462.cpp", 107, 9, "bug235462.cpp", 72, 5);
+        performTest("bug235462.cpp", 109, 9, "bug235462.cpp", 25, 5);
     }      
     
     public static class Failed extends HyperlinkBaseTestCase {

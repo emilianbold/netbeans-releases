@@ -62,6 +62,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -71,6 +72,8 @@ import org.openide.loaders.DataObject;
 public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     private static final Logger LOGGER = Logger.getLogger(NewFileWizardIterator.class.getName());
+
+    private static final String JSON_MIME_TYPE = "text/x-json"; // NOI18N
 
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -170,6 +173,10 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     }
 
     private SourceGroup[] getSourceGroups(Project project, FileObject file) {
+        // #239027
+        if (JSON_MIME_TYPE.equals(FileUtil.getMIMEType(file, JSON_MIME_TYPE))) {
+            return ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
+        }
         ClientSideProject clientSideProject = getClientSideProject(project);
         if (clientSideProject == null) {
             // #231347

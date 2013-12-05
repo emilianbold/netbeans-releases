@@ -208,12 +208,12 @@ public class JsIndex {
                     }
 
                     value = new CacheValue(fieldsToLoad, result);
-                    if ((result.size() * AVERAGE_BASIC_INFO_SIZE) < MAX_CACHE_VALUE_SIZE) {
-                        CACHE_INDEX_RESULT_SMALL.put(key, new SoftReference(value));
-                    } else {
-                        CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
-                    }
-                    logStats(result, false, fieldsToLoad);
+//                    if ((result.size() * AVERAGE_BASIC_INFO_SIZE) < MAX_CACHE_VALUE_SIZE) {
+//                        CACHE_INDEX_RESULT_SMALL.put(key, new SoftReference(value));
+//                    } else {
+//                        CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
+//                    }
+//                    logStats(result, false, fieldsToLoad);
                     return value.getResult();
                 } finally {
                     WRITE_LOCK.unlock();

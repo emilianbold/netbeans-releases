@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.29.1
+#Version 8.33.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -27,6 +27,7 @@ intf java.util.EventListener
 meth public abstract void actionPerformed(java.awt.event.ActionEvent)
 
 CLSS public abstract interface java.io.Closeable
+intf java.lang.AutoCloseable
 meth public abstract void close() throws java.io.IOException
 
 CLSS public abstract interface java.io.DataInput
@@ -95,6 +96,7 @@ hfds MAX_SKIP_BUFFER_SIZE
 
 CLSS public abstract interface java.io.ObjectInput
 intf java.io.DataInput
+intf java.lang.AutoCloseable
 meth public abstract int available() throws java.io.IOException
 meth public abstract int read() throws java.io.IOException
 meth public abstract int read(byte[]) throws java.io.IOException
@@ -147,6 +149,7 @@ hcls BlockDataInputStream,Caches,GetFieldImpl,HandleTable,PeekInputStream,Valida
 
 CLSS public abstract interface java.io.ObjectOutput
 intf java.io.DataOutput
+intf java.lang.AutoCloseable
 meth public abstract void close() throws java.io.IOException
 meth public abstract void flush() throws java.io.IOException
 meth public abstract void write(byte[]) throws java.io.IOException
@@ -239,14 +242,19 @@ supr java.lang.Object
 
 CLSS public abstract interface java.io.Serializable
 
+CLSS public abstract interface java.lang.AutoCloseable
+meth public abstract void close() throws java.lang.Exception
+
 CLSS public abstract interface java.lang.Cloneable
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -275,6 +283,7 @@ CLSS public abstract interface java.lang.Runnable
 meth public abstract void run()
 
 CLSS public java.lang.RuntimeException
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -283,11 +292,14 @@ supr java.lang.Exception
 hfds serialVersionUID
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -300,7 +312,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -361,6 +374,7 @@ meth public java.lang.Object[] toArray()
 meth public java.lang.String toString()
 meth public void clear()
 supr java.lang.Object
+hfds MAX_ARRAY_SIZE
 
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons protected init()
@@ -622,8 +636,8 @@ meth public static java.lang.CharSequence create(java.lang.CharSequence)
 meth public static java.lang.CharSequence empty()
 meth public static java.util.Comparator<java.lang.CharSequence> comparator()
 supr java.lang.Object
-hfds Comparator,EMPTY
-hcls ByteBasedSequence,CharBasedSequence,CharSequenceComparator,CompactCharSequence,Fixed_0_7,Fixed_16_23,Fixed_8_15
+hfds Comparator,EMPTY,decodeTable,encodeTable
+hcls ByteBasedSequence,CharBasedSequence,CharSequenceComparator,CompactCharSequence,Fixed6Bit_11_20,Fixed6Bit_1_10,Fixed6Bit_21_30,Fixed_0_7,Fixed_16_23,Fixed_8_15
 
 CLSS public abstract interface org.openide.util.ContextAwareAction
 intf javax.swing.Action
@@ -722,7 +736,7 @@ meth public final static javax.swing.ImageIcon loadImageIcon(java.lang.String,bo
 meth public static java.awt.Image createDisabledImage(java.awt.Image)
 meth public static javax.swing.Icon createDisabledIcon(javax.swing.Icon)
 supr java.lang.Object
-hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
+hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageIconFilter,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
 hcls ActiveRef,CompositeImageKey,DisabledButtonFilter,LazyDisabledIcon,ToolTipImage,ToolTipImageKey
 
 CLSS public abstract org.openide.util.Lookup
@@ -960,6 +974,16 @@ cons public init()
 cons public init(java.lang.String)
 supr java.lang.RuntimeException
 hfds serialVersionUID
+
+CLSS public final org.openide.util.Pair<%0 extends java.lang.Object, %1 extends java.lang.Object>
+meth public boolean equals(java.lang.Object)
+meth public int hashCode()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Object, %1 extends java.lang.Object> org.openide.util.Pair<{%%0},{%%1}> of({%%0},{%%1})
+meth public {org.openide.util.Pair%0} first()
+meth public {org.openide.util.Pair%1} second()
+supr java.lang.Object
+hfds first,second
 
 CLSS public org.openide.util.Parameters
 meth public static void javaIdentifier(java.lang.CharSequence,java.lang.CharSequence)
@@ -1230,7 +1254,7 @@ meth public static javax.swing.KeyStroke[] stringToKeys(java.lang.String)
 meth public static org.openide.util.Lookup actionsGlobalContext()
 meth public static void attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
 supr java.lang.Object
-hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,fileToPath,global,namesAndValues,operatingSystem,pathToFile,pathToUri,pathsGet,screenBoundsCache,transExp,transLoader
+hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,global,namesAndValues,operatingSystem,screenBoundsCache,transExp,transLoader
 hcls NamesAndValues,RE
 
 CLSS public static org.openide.util.Utilities$UnorderableException

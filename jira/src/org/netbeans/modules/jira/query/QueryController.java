@@ -78,7 +78,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
+import java.text.ParseException;    
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -89,6 +89,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
@@ -98,8 +99,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
-import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
+import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -123,19 +125,19 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, DocumentListener {
     private QueryPanel panel;
 
-    private RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Jira query", 1, true);  // NOI18N
 
     private final JiraRepository repository;
     protected JiraQuery query;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
 
     private QueryTask refreshTask;
     private final boolean modifiable;
-    private final JiraFilter jiraFilter;
+    private JiraFilter jiraFilter;
     private final IssueTable issueTable;
     private JiraQueryCellRenderer renderer;
 
@@ -149,6 +151,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private final Object REFRESH_LOCK = new Object();
     private final Semaphore querySemaphore = new Semaphore(1);
     private boolean populated = false;
+    private QueryProvider.IssueContainer<NbJiraIssue> delegatingIssueContainer;
+    private boolean isChanged;
     
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
@@ -160,17 +164,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         this.modifiable = modifiable;
         this.jiraFilter = jiraFilter;
 
-        issueTable = new IssueTable(JiraUtils.getRepository(repository), query, query.getColumnDescriptors(), query.isSaved());
+        issueTable = new IssueTable(repository.getID(), query.getDisplayName(), this, query.getColumnDescriptors(), query.isSaved());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this, isNamedFilter(jiraFilter));
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
-        panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
-        panel.saveButton.addActionListener(this);
         panel.refreshButton.addActionListener(this);
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
@@ -190,6 +192,33 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         panel.assigneeTextField.addActionListener(this);
         panel.reporterTextField.addActionListener(this);
 
+        panel.projectList.addListSelectionListener(this);
+        panel.componentsList.addListSelectionListener(this);
+        panel.fixForList.addListSelectionListener(this);
+        panel.affectsVersionList.addListSelectionListener(this);
+        panel.typeList.addListSelectionListener(this);
+        panel.statusList.addListSelectionListener(this);
+        panel.resolutionList.addListSelectionListener(this);
+        panel.priorityList.addListSelectionListener(this);
+
+        panel.summaryCheckBox.addItemListener(this);
+        panel.descriptionCheckBox.addItemListener(this);
+        panel.commentsCheckBox.addItemListener(this);
+        panel.environmentCheckBox.addItemListener(this);
+        panel.reporterComboBox.addItemListener(this);
+        panel.assigneeComboBox.addItemListener(this);
+        panel.reporterTextField.getDocument().addDocumentListener(this);
+        panel.assigneeTextField.getDocument().addDocumentListener(this);
+        panel.queryTextField.getDocument().addDocumentListener(this);
+        panel.ratioMinTextField.getDocument().addDocumentListener(this);
+        panel.ratioMaxTextField.getDocument().addDocumentListener(this);
+        panel.createdFromTextField.getDocument().addDocumentListener(this);
+        panel.createdToTextField.getDocument().addDocumentListener(this);
+        panel.updatedFromTextField.getDocument().addDocumentListener(this);
+        panel.updatedToTextField.getDocument().addDocumentListener(this);
+        panel.dueFromTextField.getDocument().addDocumentListener(this);
+        panel.dueToTextField.getDocument().addDocumentListener(this);
+            
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
         if(query.isSaved()) {
@@ -448,6 +477,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                                 Jira.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
                             } finally {
                                 querySemaphore.release();
+                                changed(false);
                                 Jira.LOG.log(Level.FINE, "released lock on query {0}", query.getDisplayName()); // NOI18N
 
                                 if(Jira.LOG.isLoggable(Level.FINE)) {
@@ -622,7 +652,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void closed() {
-        onCancelChanges();
         synchronized(REFRESH_LOCK) {
             if(refreshTask != null) {
                 refreshTask.cancel();
@@ -686,7 +715,28 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
+    public void insertUpdate(DocumentEvent e) {
+        changed(true);
+    }
+
+    public void changed(boolean b) {
+        isChanged = b;
+        fireChanged();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        changed(true);
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        changed(true);
+    }
+    
+    @Override
     public void itemStateChanged(ItemEvent e) {
+        changed(true);
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
         }
@@ -694,6 +744,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
+        changed(true);
         if(e.getSource() == panel.projectList) {
             onProjectChanged(e);
         }
@@ -722,14 +773,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             onGotoIssue();
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
-        } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(true);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
-        } else if (e.getSource() == panel.saveButton) {
-            onSave(false); // do not refresh
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -783,13 +830,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         query.setFilter(filter);
     }
 
-    private void onSave(final boolean refresh) {
+    private void onSave(final String newName, final boolean refresh) {
        Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                String name = query.getDisplayName();
+                String name = newName != null ? newName : query.getDisplayName();
                 boolean firstTime = false;
-                if(!query.isSaved()) {
+                if(name == null && !query.isSaved()) {
                     firstTime = true;
                     name = getSaveName();
                     if(name == null) {
@@ -797,8 +844,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     }
                 }
                 assert name != null;
+                jiraFilter = getFilterDefinition();
                 save(name, firstTime);
-
+                
                 if(refresh) {
                     onRefresh();
                 }
@@ -827,7 +875,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         repository.saveQuery(query);
         query.setSaved(true); // XXX
         setAsSaved();
-        fireSaved();
+        changed(false);
         if(!query.wasRun()) {
             onRefresh();
         }
@@ -835,11 +883,43 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private void onCancelChanges() {
         if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
-            // XXX
-//            String urlParameters = JiraConfig.getInstance().getUrlParams(repository, query.getDisplayName());
-//            if(urlParameters != null) {
-//                setfilterDefinition(fil);
-//            }
+            
+            panel.projectList.setSelectedIndex(-1);
+            panel.componentsList.setSelectedIndex(-1);
+            panel.fixForList.setSelectedIndex(-1);
+            panel.affectsVersionList.setSelectedIndex(-1);
+            panel.typeList.setSelectedIndex(-1);
+            panel.statusList.setSelectedIndex(-1);
+            panel.resolutionList.setSelectedIndex(-1);
+            panel.priorityList.setSelectedIndex(-1);
+
+            // find by text
+            panel.queryTextField.setText("");
+            panel.summaryCheckBox.setSelected(false);
+            panel.descriptionCheckBox.setSelected(false);
+            panel.commentsCheckBox.setSelected(false);
+            panel.environmentCheckBox.setSelected(false);
+            
+            // user filters
+            panel.reporterComboBox.setSelectedIndex(-1);
+            panel.assigneeComboBox.setSelectedIndex(-1);
+            panel.reporterTextField.setText("");
+            panel.assigneeTextField.setText("");
+
+            panel.ratioMinTextField.setText("");
+            panel.ratioMaxTextField.setText("");
+
+            panel.createdFromTextField.setText("");
+            panel.createdToTextField.setText("");
+            panel.updatedFromTextField.setText("");
+            panel.updatedToTextField.setText("");
+            panel.dueFromTextField.setText("");
+            panel.dueToTextField.setText("");
+
+            if(jiraFilter != null) {
+                postPopulate((FilterDefinition) jiraFilter, false);
+            }
+            changed(false);
         }
         setAsSaved();
     }
@@ -918,7 +998,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     private void documentChanged (DocumentEvent e) {
         final Document document = e.getDocument();
         panel.searchButton.setEnabled(true);
-        panel.saveButton.setEnabled(true);
         panel.warningLabel.setVisible(false);
         panel.warningLabel.setText(""); // NOI18N
         if (document == panel.idTextField.getDocument()) {
@@ -951,7 +1030,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             dateRangeDateFormat.parse(str);
         } catch (ParseException ex) {
             panel.searchButton.setEnabled(false);
-            panel.saveButton.setEnabled(false);
             panel.warningLabel.setVisible(true);
             panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_DATE")); // NOI18N
         }
@@ -973,7 +1051,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         if(!isValid) {
             panel.searchButton.setEnabled(false);
-            panel.saveButton.setEnabled(false);
             panel.warningLabel.setVisible(true);
             panel.warningLabel.setText(NbBundle.getMessage(QueryPanel.class, "MSG_VALUE_MUST_BE_A_BETWEEN_1_100")); // NOI18N
         }
@@ -1253,17 +1330,24 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     @Override
-    public boolean saveChanges() {
+    public boolean saveChanges(String name) {
+        onSave(name, true);
         return true;
     }
 
     @Override
     public boolean discardUnsavedChanges() {
+        onCancelChanges();
         return true;
     }
 
-    public void fireSaved() {
-        support.firePropertyChange(PROPERTY_QUERY_SAVED, null, null);
+    public void fireChanged() {
+        support.firePropertyChange(PROP_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isChanged() {
+        return isChanged;
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -1275,6 +1359,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         support.removePropertyChangeListener(l);
+    }
+
+    public void setIssueContainer(QueryProvider.IssueContainer<NbJiraIssue> c) {
+        delegatingIssueContainer = c;
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
@@ -1293,7 +1381,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    String displayName = query.getDisplayName() != null ? query.getDisplayName() : repository.getDisplayName();
+                    String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
+                            : repository.getDisplayName();
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_SearchingQuery", new Object[] { displayName }), QueryTask.this); // NOI18N
                     handle.start();
 
@@ -1303,10 +1392,16 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     QueryController.this.renderer.resetDefaultRowHeight();
                 }
             });
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingStarted();
+            }
         }
 
         private void finnishQuery() {
             task = null;
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.refreshingFinished();
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -1407,7 +1502,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
 
         @Override
-        public void notifyData(final NbJiraIssue issue) {
+        public void notifyDataAdded(final NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.add(issue);
+            }
             issueTable.addNode(issue.getNode());
             setIssueCount(++counter);
             if(counter == 1) {
@@ -1421,6 +1519,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
 
         @Override
+        public void notifyDataRemoved(NbJiraIssue issue) {
+            if(delegatingIssueContainer != null) {
+                delegatingIssueContainer.remove(issue);
+            }
+        }
+        
+        @Override
         public void started() {
             issueTable.started();
             counter = 0;
@@ -1431,5 +1536,5 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         public void finished() { }
 
     }
-
+    
 }

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.prefs.Preferences;
@@ -102,6 +103,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
     private static final String HINT_ID = "Uninitialized.Variable.Hint"; //NOI18N
     private static final String CHECK_VARIABLES_INITIALIZED_BY_REFERENCE = "php.verification.check.variables.initialized.by.reference"; //NOI18N
     private static final List<String> UNCHECKED_VARIABLES = new ArrayList<>();
+    private static final List<UglyElement> UGLY_ELEMENTS = new ArrayList<>();
     private Preferences preferences;
 
     static {
@@ -120,6 +122,8 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         UNCHECKED_VARIABLES.add("HTTP_RAW_POST_DATA"); //NOI18N
         UNCHECKED_VARIABLES.add("php_errormsg"); //NOI18N
         UNCHECKED_VARIABLES.add("http_response_header"); //NOI18N
+
+        UGLY_ELEMENTS.add(new UglyElementImpl("bind_result", "mysqli_stmt"));
     }
 
     @Override
@@ -320,10 +324,11 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         private void processAllFunctions(Set<BaseFunctionElement> allFunctions, List<Expression> invocationParametersExp) {
             if (allFunctions != null && !allFunctions.isEmpty()) {
                 BaseFunctionElement methodElement = ModelUtils.getFirst(allFunctions);
-                if (methodElement != null) {
+                if (methodElement != null && !UGLY_ELEMENTS.contains(new UglyElementImpl(methodElement))) {
                     List<ParameterElement> methodParameters = methodElement.getParameters();
-                    if (methodParameters.size() == invocationParametersExp.size()) {
-                        for (int i = 0; i < methodParameters.size(); i++) {
+                    int invocationParamsSize = invocationParametersExp.size();
+                    if (matchNumberOfParams(invocationParamsSize, methodParameters)) {
+                        for (int i = 0; i < invocationParamsSize; i++) {
                             Expression invocationParameterExp = invocationParametersExp.get(i);
                             if (methodParameters.get(i).isReference()) {
                                 initializeExpression(invocationParameterExp);
@@ -338,6 +343,16 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
             } else {
                 scan(invocationParametersExp);
             }
+        }
+
+        private boolean matchNumberOfParams(int invocationParamsNumber, List<ParameterElement> methodParameters) {
+            int mandatoryParams = 0;
+            for (ParameterElement parameterElement : methodParameters) {
+                if (parameterElement.isMandatory()) {
+                    mandatoryParams++;
+                }
+            }
+            return invocationParamsNumber >= mandatoryParams && invocationParamsNumber <= methodParameters.size();
         }
 
         private boolean isProcessableVariable(Variable node) {
@@ -466,6 +481,55 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 }
             }
             return retval;
+        }
+
+    }
+
+    private interface UglyElement {
+        boolean matches(BaseFunctionElement functionElement);
+    }
+
+    private static final class UglyElementImpl implements UglyElement {
+        private final String methodName;
+        private final String className;
+
+        public UglyElementImpl(String methodName, String className) {
+            assert methodName != null;
+            assert className != null;
+            this.methodName = methodName;
+            this.className = className;
+        }
+
+        public UglyElementImpl(BaseFunctionElement baseFunctionElement) {
+            this(baseFunctionElement.getName(), baseFunctionElement.getIn() == null ? "" : baseFunctionElement.getIn());
+        }
+
+        @Override
+        public boolean matches(BaseFunctionElement functionElement) {
+            return methodName.equals(functionElement.getName()) && className.equals(functionElement.getIn());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 53 * hash + Objects.hashCode(this.methodName);
+            hash = 53 * hash + Objects.hashCode(this.className);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UglyElementImpl other = (UglyElementImpl) obj;
+            if (!Objects.equals(this.methodName, other.methodName)) {
+                return false;
+            }
+            return Objects.equals(this.className, other.className);
         }
 
     }

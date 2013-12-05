@@ -46,14 +46,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
 
 /**
  * Represents information related to one particular repository. 
  *
  * @author Tomas Stupka
  * @see RepositoryController
+ * @since 1.85
  */
 public final class RepositoryInfo {
     
@@ -88,6 +89,7 @@ public final class RepositoryInfo {
      * @param url remote repository url
      * @param displayName display name to be used in the UI
      * @param tooltip tooltip to be used in the UI
+     * @since 1.85
      */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip) {
         LOG.log(
@@ -114,6 +116,7 @@ public final class RepositoryInfo {
      * @param httpUser http username 
      * @param password password
      * @param httpPassword http password
+     * @since 1.85
      */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
         LOG.log(
@@ -135,6 +138,7 @@ public final class RepositoryInfo {
      * Returns the display name to presented in the IDE UI.
      * 
      * @return display name
+     * @since 1.85
      */
     public String getDisplayName() {
         return map.get(PROPERTY_DISPLAY_NAME);
@@ -144,6 +148,7 @@ public final class RepositoryInfo {
      * Returns the http password.
      * 
      * @return http password
+     * @since 1.85
      */
     public char[] getHttpPassword() {
         if(isNbRepository(map)) {
@@ -156,11 +161,12 @@ public final class RepositoryInfo {
     }
 
     /**
-     * Returns this repositories unique ID.
+     * Returns this repository's unique ID.
      * 
      * @return id
+     * @since 1.85
      */
-    public String getId() {
+    public String getID() {
         return map.get(PROPERTY_ID);
     }
     
@@ -168,15 +174,17 @@ public final class RepositoryInfo {
      * Returns the id for the connector this repository belongs to.
      * 
      * @return connector id
+     * @since 1.85
      */
     public String getConnectorId() {
         return map.get(PROPERTY_CONNECTOR_ID);
     }
     
     /**
-     * Returns the remote repositories url.
+     * Returns the remote url of this repository.
      * 
      * @return url
+     * @since 1.85
      */
     public String getUrl() {
         return map.get(PROPERTY_URL);
@@ -186,6 +194,7 @@ public final class RepositoryInfo {
      * Returns the password for the repository user.
      * 
      * @return password
+     * @since 1.85
      */
     public char[] getPassword() {
         if(isNbRepository(map)) {
@@ -203,15 +212,17 @@ public final class RepositoryInfo {
      * Returns the tooltip to be presented in the IDE UI.
      * 
      * @return tooltip
+     * @since 1.85
      */
     public String getTooltip() {
         return map.get(PROPERTY_TOOLTIP);
     }
 
     /**
-     * Returns the repositories username.
+     * Returns the username of this repository.
      * 
      * @return username
+     * @since 1.85
      */
     public String getUsername() {
         return map.get(PROPERTY_USERNAME);
@@ -220,7 +231,8 @@ public final class RepositoryInfo {
     /**
      * Returns the http username.
      * 
-     * @return 
+     * @return the http username
+     * @since 1.85
      */
     public String getHttpUsername() {
         return map.get(PROPERTY_HTTP_USERNAME);
@@ -231,6 +243,7 @@ public final class RepositoryInfo {
      * 
      * @param key property key
      * @return property value
+     * @since 1.85
      */
     public String getValue(String key) {
         return map.get(key);
@@ -241,6 +254,7 @@ public final class RepositoryInfo {
      * 
      * @param key property key
      * @param value property value
+     * @since 1.85
      */
     public void putValue(String key, String value) {
         map.put(key, value);

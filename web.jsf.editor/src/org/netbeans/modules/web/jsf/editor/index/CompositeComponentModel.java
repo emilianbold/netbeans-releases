@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.index;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,6 +55,9 @@ import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -95,6 +99,7 @@ public class CompositeComponentModel extends JsfPageModel {
     static final String INTERFACE_FACETS = "interface_facets"; //NOI18N
     static final String HAS_IMPLEMENTATION_KEY = "has_implementation"; //NOI18N
     //other
+    private static final String WEBAPP_RESOURCES_DIRECTORY = "javax.faces.WEBAPP_RESOURCES_DIRECTORY";
     private static final String RESOURCES_FOLDER_NAME = "resources"; //NOI18N
     private static final char VALUES_SEPARATOR = ','; //NOI18N
     private static final char ATTRIBUTES_SEPARATOR = ';'; //NOI18N
@@ -252,7 +257,26 @@ public class CompositeComponentModel extends JsfPageModel {
             //check webmodule's resources folder
             FileObject docRoot = wm.getDocumentBase();
             if(docRoot != null) { //document root may be null if the folder is deleted
-                FileObject resourcesFolder = getChild(docRoot, RESOURCES_FOLDER_NAME);
+                String relPath = RESOURCES_FOLDER_NAME;
+                // issue #236035 - resource folder can be configurable
+                FileObject dd = wm.getDeploymentDescriptor();
+                if (dd != null) {
+                    try {
+                        WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
+                        if (ddRoot != null) {
+                            InitParam[] parameters = ddRoot.getContextParam();
+                            for (InitParam param: parameters) {
+                                if (param.getParamName().contains(WEBAPP_RESOURCES_DIRECTORY)) {
+                                    relPath = param.getParamValue().trim();
+                                }
+                            }
+                        }
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.WARNING, ex.getMessage());
+                    }
+                }
+
+                FileObject resourcesFolder = docRoot.getFileObject(relPath);
                 //check if the file is a descendant of the resources folder
                 if(resourcesFolder != null && FileUtil.isParentOf(resourcesFolder, file)) {
                     return resourcesFolder;
@@ -287,15 +311,6 @@ public class CompositeComponentModel extends JsfPageModel {
 //            }
 //        }
 //        
-        return null;
-    }
-
-    private static FileObject getChild(FileObject parent, String name) {
-        for (FileObject child : parent.getChildren()) {
-            if (child.getName().equals(name)) {
-                return child;
-            }
-        }
         return null;
     }
 

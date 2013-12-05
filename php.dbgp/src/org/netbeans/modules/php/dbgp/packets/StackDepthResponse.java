@@ -46,35 +46,28 @@ package org.netbeans.modules.php.dbgp.packets;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class StackDepthResponse extends DbgpResponse {
+    private static final String DEPTH = "depth"; // NOI18N
 
-    private static final String DEPTH = "depth";        // NOI18N
-
-    StackDepthResponse( Node node ) {
+    StackDepthResponse(Node node) {
         super(node);
     }
-    
-    public int getDepth(){
-        String depth = getAttribute( getNode() , DEPTH );
+
+    public int getDepth() {
+        String depth = getAttribute(getNode(), DEPTH);
         try {
-            return Integer.parseInt( depth );
-        }
-        catch ( NumberFormatException e) {
+            return Integer.parseInt(depth);
+        } catch (NumberFormatException e) {
             return -1;
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
 
 }

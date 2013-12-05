@@ -47,48 +47,44 @@ import java.util.List;
 
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 abstract class BaseMessageChildElement {
-    
-    BaseMessageChildElement( Node node ){
+    private Node myNode;
+
+    BaseMessageChildElement(Node node) {
         myNode = node;
     }
-    
-    protected Node getNode(){
+
+    protected Node getNode() {
         return myNode;
     }
-    
-    protected Node getChild( String nodeName ) {
-        return DbgpMessage.getChild( getNode() , nodeName );
+
+    protected Node getChild(String nodeName) {
+        return DbgpMessage.getChild(getNode(), nodeName);
     }
-    
-    protected List<Node> getChildren( String nodeName ) {
-        return DbgpMessage.getChildren( getNode(), nodeName);
+
+    protected List<Node> getChildren(String nodeName) {
+        return DbgpMessage.getChildren(getNode(), nodeName);
     }
-    
-    protected String getAttribute( String attrName ){
-        return DbgpMessage.getAttribute( getNode(), attrName);
+
+    protected String getAttribute(String attrName) {
+        return DbgpMessage.getAttribute(getNode(), attrName);
     }
-    
-    
-    protected int getInt( String attrName ){
-        String number = getAttribute( attrName );
-        if ( number == null ) {
+
+    protected int getInt(String attrName) {
+        String number = getAttribute(attrName);
+        if (number == null) {
             return 0;
         }
         try {
-            return Integer.parseInt( number );
-        }
-        catch(NumberFormatException e ){
+            return Integer.parseInt(number);
+        } catch (NumberFormatException e) {
             assert false;
             return -1;
         }
     }
-    
-    private Node myNode;
 
 }

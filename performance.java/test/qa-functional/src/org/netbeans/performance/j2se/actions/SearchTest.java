@@ -43,140 +43,81 @@
  */
 package org.netbeans.performance.j2se.actions;
 
-import java.io.IOException;
-
-import org.netbeans.jellytools.Bundle;
-
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.MainWindowOperator;
+import javax.swing.JComboBox;
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.SearchResultsOperator;
-import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.actions.FindAction;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Find Usages
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class SearchTest extends PerformanceTestCase {
 
-    //private Node testNode;
-    private NbDialogOperator dlg_Find;
-    private TopComponentOperator srchResult = null;
- 
+    private NbDialogOperator findOper;
 
-    /** Creates a new instance of RefactorFindUsagesDialog */
+    /**
+     * Creates a new instance of RefactorFindUsagesDialog
+     *
+     * @param testName test name
+     */
     public SearchTest(String testName) {
         super(testName);
-        expectedTime = 120000; // the action has progress indication and it is expected it will last
+        expectedTime = 1000;
     }
 
-    /** Creates a new instance of RefactorFindUsagesDialog */
+    /**
+     * Creates a new instance of RefactorFindUsagesDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public SearchTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = 120000; // the action has progress indication and it is expected it will last
+        expectedTime = 1000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class).addTest(SearchTest.class).enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(SearchTest.class)
+                .suite();
     }
 
-    public void testSetupProject() {
-
-       CommonUtilities.jEditProjectOpen();
-        try {
-            this.openDataProjects("jEdit41");
-        } catch (IOException ex) {
-        }
-    }
-
-    public void testFindInProjects_Text() {
+    public void testFindInProjects() {
         doMeasurement();
     }
 
     @Override
     public void initialize() {
-//      testNode = new Node(new SourcePackagesNode("src_app"), new SourcePackagesNode("src_app").getChildren()[0]);
-        new Node(new SourcePackagesNode("jEdit"), new SourcePackagesNode("jEdit").getChildren()[0]).select();
-        MainWindowOperator.getDefault().menuBar().pushMenu(Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_Action_FindInProjects"), "|");
     }
 
+    @Override
     public void prepare() {
-
-//      testNode.select();
-        
-        if (srchResult != null) {
-            new JButtonOperator(srchResult, Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_BUTTON_CUSTOMIZE")).push();
-        }
-
-        dlg_Find = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "LBL_FindInProjects"));
-        JComboBoxOperator searchPattern = new JComboBoxOperator(dlg_Find, 0);
-        //searchPattern.typeText("100%NoSuchTextExists");
-        searchPattern.typeText("static");
-        new JButtonOperator(dlg_Find, Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_BUTTON_SEARCH")).push();
+        new FindAction().perform(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"));
+        findOper = new NbDialogOperator("Find in Projects");
+        new JComboBoxOperator((JComboBox) new JLabelOperator(findOper, "Containing Text").getLabelFor()).typeText("public");
     }
 
+    @Override
     public ComponentOperator open() {
+        new JButtonOperator(findOper, "Find").push();
         SearchResultsOperator srchOp = new SearchResultsOperator();
         srchOp.waitEndOfSearch();
-        /*
-        final TopComponentOperator srch_wnd = new TopComponentOperator(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TITLE_SEARCH_RESULTS"));
-        srch_wnd.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 5 * 60 * 1000);
-        srch_wnd.getTimeouts().setTimeout("JTreeOperator.WaitNodeVisibleTimeout", 5 * 60 * 1000);
-
-//      Dumper.dumpComponent(srch_wnd.getSource(), getLog("dump.xml"));
-
-        srch_wnd.waitState(new ComponentChooser() {
-
-            JTreeOperator tree = new JTreeOperator(srch_wnd);
-
-            public boolean checkComponent(Component comp) {
-                return new Node(tree, tree.getPathForRow(0)).getText().contains(Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle", "TEXT_MSG_NO_NODE_FOUND"));
-            }
-
-            public String getDescription() {
-                return "Search window contains any result";
-            }
-        });
-*/
-        return srchOp; //srch_wnd;
+        return srchOp;
     }
 
     @Override
     public void close() {
-        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
-            srchResult = (TopComponentOperator) testedComponentOperator;
-//            srchResult.close();
-/*
-            if (flag) {
-                JTabbedPaneOperator tpo = new JTabbedPaneOperator(srchResult);
-                for (int t = tpo.getTabCount(); t>=0; t--) tpo.removeTabAt(t);
-            }
-            flag = true;
-            srchResult.close();
- **/
-        }
+        new SearchResultsOperator().close();
     }
-
-    public void shutdown() {
-        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
-            srchResult = (TopComponentOperator) testedComponentOperator;
-            srchResult.close();
-        }
-    }
-
 }
-
-

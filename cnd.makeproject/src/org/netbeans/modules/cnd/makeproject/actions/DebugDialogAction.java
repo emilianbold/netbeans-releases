@@ -48,14 +48,12 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
-import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.makeproject.launchers.Launcher;
+import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistry;
+import org.netbeans.modules.cnd.makeproject.launchers.LaunchersRegistryFactory;
+import org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction;
+import org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.LauncherExecutableAction;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,6 +65,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 
 public class DebugDialogAction extends NodeAction {
 
@@ -163,20 +162,24 @@ public class DebugDialogAction extends NodeAction {
     }
 
     private void performDebug(Project project, String executable) {
-        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-        if (conf != null) {
-            RunProfile profile = conf.getProfile();
-            String path = executable;
-            path = CndPathUtilities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                    project,
-                    PredefinedType.DEBUG,
-                    path, conf,
-                    profile,
-                    false);
-            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+        final LaunchersRegistry registry = LaunchersRegistryFactory.getInstance(project.getProjectDirectory());
+        Launcher launcher = null;
+        if (registry.hasLaunchers()) {
+            for (Launcher l : registry.getLaunchers()) {
+                if (executable.startsWith(l.getCommand())) {
+                    launcher = l;
+                    break;
+                }
+            }
         }
-
+        if (launcher == null) {
+            launcher = new Launcher(executable, null);
+            registry.add(launcher);
+        }
+        // we do not have API to "execute" launcher, so
+        LauncherAction action = LauncherAction.debugAsAction();
+        action.createContextAwareInstance(Lookups.fixed(project));
+        action.new LauncherExecutableAction(launcher).actionPerformed(null);
     }
     
     @Override

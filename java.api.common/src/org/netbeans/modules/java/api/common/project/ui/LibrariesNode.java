@@ -62,7 +62,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,6 +118,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -165,8 +165,9 @@ public final class LibrariesNode extends AbstractNode {
             refHelper,
             Collections.singletonList(classPathProperty),
             Arrays.asList(classPathIgnoreRef),
-            platformProperty,
-            null,
+            platformProperty == null ?
+                null :
+                Pair.<Pair<String,String>,ClassPath>of(Pair.<String,String>of(platformProperty, null),null),
             librariesNodeActions,
             webModuleElementName,
             cs,
@@ -181,14 +182,13 @@ public final class LibrariesNode extends AbstractNode {
             @NonNull final ReferenceHelper refHelper,
             @NonNull final List<String> classPathProperties,
             @NonNull final Collection<String> classPathIgnoreRef,
-            @NonNull final String platformProperty,
-            @NullAllowed final String platformType,
+            @NullAllowed final Pair<Pair<String,String>, ClassPath> boot,
             @NullAllowed final Action[] librariesNodeActions,
             @NullAllowed final String webModuleElementName,
             @NonNull final ClassPathSupport cs,
             @NullAllowed final Callback extraKeys) {
         super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperties,
-                    classPathIgnoreRef, platformProperty, platformType,
+                    classPathIgnoreRef, boot,
                     webModuleElementName, cs, extraKeys),
                 Lookups.fixed(project, new PathFinder()));
         this.displayName = displayName;
@@ -210,8 +210,7 @@ public final class LibrariesNode extends AbstractNode {
         private final List<Action> librariesNodeActions = new ArrayList<Action>();
         private final List<String> classPathProperties = new ArrayList<String>();
         private String name = NbBundle.getMessage(LibrariesNode.class, "TXT_LibrariesNode");
-        private String platformProperty;
-        private String platformType;
+        private Pair<Pair<String,String>,ClassPath> boot = Pair.<Pair<String,String>,ClassPath>of(Pair.<String,String>of(null,null),null);
         private String webModuleElementName;
         private NodeList<Key> extraNodes;
 
@@ -277,7 +276,11 @@ public final class LibrariesNode extends AbstractNode {
         @NonNull
         public Builder setPlatformType(@NonNull final String platformType) {
             Parameters.notNull("platformType", platformType);   //NOI18N
-            this.platformType = platformType;
+            this.boot = Pair.<Pair<String,String>,ClassPath>of(
+                Pair.<String,String>of(
+                    boot.first().first(),
+                    platformType),
+                boot.second());
             return this;
         }
 
@@ -288,8 +291,27 @@ public final class LibrariesNode extends AbstractNode {
          */
         @NonNull
         public Builder setPlatformProperty(@NonNull final String platformProperty) {
-            Parameters.notNull("platformProperty", platformProperty);   //NOI18N
-            this.platformProperty = platformProperty;
+            Parameters.notNull("platformProperty", platformProperty);   //NOI18N            
+            this.boot = Pair.<Pair<String,String>,ClassPath>of(
+                Pair.<String,String>of(
+                    platformProperty,
+                    boot.first().second()),
+                boot.second());
+            return this;
+        }
+
+        /**
+         * Sets bootstrap libraries to display under the platform node.
+         * In case when project's bootstrap libraries differ from {@link JavaPlatform}'s bootstrap libraries
+         * this method can be used to override the shown {@link JavaPlatform}'s libraries.
+         * @param bootPath the libraries to show
+         * @return the {@link Builder}
+         * @since 1.68
+         */
+        @NonNull
+        public Builder setBootPath(@NonNull final ClassPath bootPath) {
+            Parameters.notNull("bootPath", bootPath);   //NOI18N            
+            this.boot = Pair.<Pair<String,String>,ClassPath>of(boot.first(),bootPath);
             return this;
         }
 
@@ -335,6 +357,14 @@ public final class LibrariesNode extends AbstractNode {
          */
         @NonNull
         public LibrariesNode build() {
+            Pair<Pair<String,String>,ClassPath> _boot = boot;
+            if (_boot.first().first() == null) {
+                if (_boot.second() != null || _boot.first().second() != null) {
+                    throw new IllegalStateException("PlatformType or bootPath given but no platformProperty");  //NOI18N
+                } else {
+                    _boot = null;
+                }
+            }
             return new LibrariesNode(
                 name,
                 project,
@@ -343,8 +373,7 @@ public final class LibrariesNode extends AbstractNode {
                 refHelper,
                 classPathProperties,
                 classPathIgnoreRef,
-                platformProperty,
-                platformType,
+                _boot,
                 librariesNodeActions.toArray(new Action[librariesNodeActions.size()]),
                 webModuleElementName,
                 cs,
@@ -478,8 +507,7 @@ public final class LibrariesNode extends AbstractNode {
         private final UpdateHelper helper;
         private final ReferenceHelper refHelper;
         private final Set<String> classPathProperties;
-        private final String platformProperty;
-        private final String platformType;
+        private final Pair<Pair<String,String>, ClassPath> boot;
         private final Set<String> classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
@@ -494,15 +522,14 @@ public final class LibrariesNode extends AbstractNode {
 
 
         LibrariesChildren (Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
-                           List<String> classPathProperties, Collection<String> classPathIgnoreRef, String platformProperty,
-                           String platformType, String webModuleElementName, ClassPathSupport cs, Callback extraKeys) {
+                           List<String> classPathProperties, Collection<String> classPathIgnoreRef,
+                           Pair<Pair<String,String>, ClassPath> boot, String webModuleElementName, ClassPathSupport cs, Callback extraKeys) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
             this.classPathProperties = new LinkedHashSet<>(classPathProperties);
             this.classPathIgnoreRef = new HashSet<String>(classPathIgnoreRef);
-            this.platformProperty = platformProperty;
-            this.platformType = platformType;
+            this.boot = boot;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
             this.extraKeys = extraKeys;
@@ -568,7 +595,7 @@ public final class LibrariesNode extends AbstractNode {
             Node[] result = null;
             switch (key.getType()) {
                 case Key.TYPE_PLATFORM:
-                    result = new Node[] {PlatformNode.create(eval, platformProperty, platformType, cs)};
+                    result = new Node[] {PlatformNode.create(eval, boot, cs)};
                     break;
                 case Key.TYPE_PROJECT:
                     result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
@@ -634,7 +661,7 @@ public final class LibrariesNode extends AbstractNode {
             for (String classPathProperty : classPathProperties) {
                 result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList));
             }
-            if (platformProperty!=null) {
+            if (boot != null) {
                 result.add (Key.platform());
             }
             final RootsListener rootsListener = new RootsListener(rootsList);

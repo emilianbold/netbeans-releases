@@ -43,5 +43,5 @@ package org.netbeans.libs.oracle.cloud.sdkwrapper.api;
 
 public interface ApplicationManagerConnectionFactory {
 
-    public ApplicationManager createServiceEndpoint(String url, String user, String password);
+    public ApplicationManager createServiceEndpoint(String url, String identityDomain, String user, String password);
 }

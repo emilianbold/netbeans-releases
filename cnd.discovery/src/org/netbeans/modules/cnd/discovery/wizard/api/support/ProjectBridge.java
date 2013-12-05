@@ -96,8 +96,8 @@ public class ProjectBridge {
     private final FileSystem baseFolderFileSystem;
     private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     private boolean startedModification;
-    private Project project;
-    private Set<Project> resultSet = new HashSet<Project>();
+    private final Project project;
+    private final Set<Project> resultSet = new HashSet<Project>();
     private Map<String,Item> canonicalItems;
     private SnapShot delta;
     
@@ -107,7 +107,11 @@ public class ProjectBridge {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            baseFolderFileSystem = makeConfigurationDescriptor.getBaseDirFileSystem();
+            if (makeConfigurationDescriptor != null) {
+                baseFolderFileSystem = makeConfigurationDescriptor.getBaseDirFileSystem();
+            } else {
+                baseFolderFileSystem = CndFileUtils.getLocalFileSystem();
+            }
         } else {
             makeConfigurationDescriptor = null;
             baseFolderFileSystem = CndFileUtils.getLocalFileSystem();

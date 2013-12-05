@@ -63,12 +63,8 @@ public final class SmartyOptions {
     // preferences properties names
     private static final String OPEN_DELIMITER = "{"; // NOI18N
     private static final String CLOSE_DELIMITER = "}"; // NOI18N
-    protected static final String PROP_TPL_SCANNING_DEPTH = "tpl-scanning-depth";
     protected static final String PROP_TPL_VERSION = "tpl-version";
     protected static final String PROP_TPL_TOGGLE_COMMENT = "tpl-toggle-comment";
-
-    // TODO - temporary property which should be removed release after NB71
-    protected static final String PROP_TPL_SCANNING_DEPTH_OLD = "1";
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -136,28 +132,4 @@ public final class SmartyOptions {
         return NbPreferences.forModule(SmartyOptions.class).node(PREFERENCES_PATH);
     }
 
-    /**
-     * Temporary method for updating Smarty php module preferences to use
-     * {@link #PROP_TPL_SCANNING_DEPTH} property name instead of
-     * {@link #PROP_TPL_SCANNING_DEPTH_OLD}.
-     */
-    public static void updateSmartyScanningDepthProperty() {
-        Preferences preferences = getPreferences();
-
-        int originalValue = preferences.getInt(PROP_TPL_SCANNING_DEPTH_OLD, -1);
-        if (originalValue != -1) {
-            preferences.remove(PROP_TPL_SCANNING_DEPTH_OLD);
-            preferences.putInt(PROP_TPL_SCANNING_DEPTH, originalValue);
-        }
-    }
-
-    public int getScanningDepth() {
-        updateSmartyScanningDepthProperty();
-        return getPreferences().getInt(PROP_TPL_SCANNING_DEPTH, DEFAULT_TPL_SCANNING_DEPTH);
-    }
-
-    public void setScanningDepth(int depth) {
-        getPreferences().putInt(PROP_TPL_SCANNING_DEPTH, depth);
-        SmartyFramework.setDepthOfScanningForTpl(depth);
-    }
 }

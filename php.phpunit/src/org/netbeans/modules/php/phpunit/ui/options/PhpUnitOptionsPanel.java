@@ -76,9 +76,9 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-@NbBundle.Messages("PhpUnitOptionsPanel.keywords.coverage=coverage")
+@NbBundle.Messages({"PhpUnitOptionsPanel.keywords.coverage=coverage","PhpUnitOptionsPanel.keywords.TabTitle=Frameworks & Tools"})
 @OptionsPanelController.Keywords(keywords={"php", "phpunit", "unit testing", "framework", "coverage", "#PhpUnitOptionsPanel.keywords.coverage"},
-        location=UiUtils.OPTIONS_PATH, tabTitle= "#PhpUnitOptionsPanel.name")
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#PhpUnitOptionsPanel.keywords.TabTitle")
 public class PhpUnitOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -846796509345860L;

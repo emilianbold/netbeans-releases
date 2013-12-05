@@ -61,11 +61,11 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.ValidateCommand;
-import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
@@ -332,7 +332,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 } else {
                     logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] worked.", // NOI18N
                                        Level.INFO, name, url, user, password, httpUser, httpPassword);
-                    JiraUtils.runInAWT(new Runnable() {
+                    UIUtils.runInAWT(new Runnable() {
                         @Override
                         public void run() {
                             panel.connectionLabel.setVisible(true);
@@ -378,7 +378,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
 
         @Override
         final public void run() {
-            JiraUtils.runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     preRun();
@@ -387,7 +387,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             try {
                 execute();
             } finally {
-                JiraUtils.runInAWT(new Runnable() {
+                UIUtils.runInAWT(new Runnable() {
                     @Override
                     public void run() {                
                         postRun();
@@ -404,7 +404,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             handle.start();            
             panel.cancelButton.addActionListener(this);
             
-            JiraUtils.runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     panel.progressPanel.removeAll();
@@ -426,7 +426,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 handle.finish();
             }
             panel.cancelButton.removeActionListener(this);
-            JiraUtils.runInAWT(new Runnable() {
+            UIUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     panel.progressPanel.setVisible(false);
