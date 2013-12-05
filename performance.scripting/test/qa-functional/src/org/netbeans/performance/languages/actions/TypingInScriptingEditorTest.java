@@ -76,13 +76,11 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
 
     public TypingInScriptingEditorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
     public TypingInScriptingEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
@@ -142,7 +140,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "javascript20kb.js";
         afterTextStartTyping = "headers[0] = 'ID";
         nodePath = "Web Pages";
-        expectedTime = 200;
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -151,7 +149,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "javascript_200kb.js";
         afterTextStartTyping = "if(browser.klient=='op";
         nodePath = "Web Pages";
-        expectedTime = 200;
+        expectedTime = 1500;
         doMeasurement();
     }
 
@@ -160,6 +158,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         afterTextStartTyping = "include(\"";
         nodePath = "Source Files";
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -168,6 +167,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "json20kB.json";
         afterTextStartTyping = "\"firstName0\": \"";
         nodePath = "Web Pages";
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -176,6 +176,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "css20kB.css";
         afterTextStartTyping = "font: small-caps 40px/40px \"";
         nodePath = "Web Pages";
+        expectedTime = 1000;
         doMeasurement();
     }
 
@@ -184,6 +185,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "bat20kB.bat";
         afterTextStartTyping = "cd ..";
         nodePath = "Web Pages";
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -192,6 +194,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "diff20kB.diff";
         afterTextStartTyping = "LinkageError";
         nodePath = "Web Pages";
+        expectedTime = 300;
         doMeasurement();
     }
 
@@ -200,6 +203,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "manifest20kB.mf";
         afterTextStartTyping = "OpenIDE-Module-Implementation-Version-1: 1";
         nodePath = "Web Pages";
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -208,6 +212,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileName = "sh20kB.sh";
         afterTextStartTyping = "echo \"";
         nodePath = "Web Pages";
+        expectedTime = 300;
         doMeasurement();
     }
 }

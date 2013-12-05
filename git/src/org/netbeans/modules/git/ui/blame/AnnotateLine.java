@@ -168,8 +168,14 @@ public class AnnotateLine {
             if (shortened == null) {
                 shortened = author.toString();
                 if (shortened.length() > 10) {
-                    shortened = shortened.substring(0, 7) + "..."; //NOI18N
+                    pos = shortened.indexOf(' ', 7);
+                    if (pos <= 10) {
+                        shortened = shortened.substring(0, pos);
+                    }
                 }
+            }
+            if (shortened.length() > 10) {
+                shortened = shortened.substring(0, 7) + "..."; //NOI18N
             }
             return shortened;
         }

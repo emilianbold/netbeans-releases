@@ -43,12 +43,9 @@
 
 package org.netbeans.lib.profiler.ui.threads;
 
-import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
-import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.lib.profiler.results.threads.ThreadData;
 import org.netbeans.lib.profiler.ui.swing.renderer.LabelRenderer;
 
@@ -56,18 +53,17 @@ import org.netbeans.lib.profiler.ui.swing.renderer.LabelRenderer;
  *
  * @author Jiri Sedlacek
  */
-public class NameStateRenderer extends LabelRenderer implements TableCellRenderer {
+public class NameStateRenderer extends LabelRenderer {
     
     public NameStateRenderer() {
         setOpaque(true);
         setMargin(3, 4, 3, 4);
     }
     
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    public void setValue(Object value, int row) {
         ThreadData data = (ThreadData)value;
         setText(data.getName());
         setIcon(getIcon(data.getLastState()));
-        return this;
     }
     
     private static final int THREAD_ICON_SIZE = 9;    

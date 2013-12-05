@@ -45,6 +45,8 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -55,6 +57,7 @@ import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.team.spi.NBRepositoryProvider;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.openide.util.Utilities;
 
 
 /**
@@ -91,8 +94,18 @@ public final class RepositoryImpl<R, Q, I> {
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
-    private final Map<I, IssueImpl> issueMap = new WeakHashMap<I, IssueImpl>();
-    private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
+    private final WrapperMap<I, IssueImpl> issueMap = new WrapperMap<I, IssueImpl>() {
+        @Override
+        IssueImpl createWrapper(I d) {
+            return new IssueImpl(RepositoryImpl.this, issueProvider, d);
+        }
+    };
+    private final WrapperMap<Q, QueryImpl> queryMap = new WrapperMap<Q, QueryImpl>() {
+        @Override
+        QueryImpl createWrapper(Q d) {
+            return new QueryImpl(RepositoryImpl.this, queryProvider, issueProvider, d);
+        }
+    };
     private Repository repository;
     private IssuePrioritySupport prioritySupport;
     private final IssueFinder issueFinder;
@@ -127,10 +140,11 @@ public final class RepositoryImpl<R, Q, I> {
                     Collection<QueryImpl> queries = new ArrayList<QueryImpl>(getQueries());
                     synchronized(queryMap) {
                         List<Q> toRemove = new LinkedList<Q>();
-                        for(Entry<Q, QueryImpl> e : queryMap.entrySet()) {
+                        for(Entry<Q, WeakReference<QueryImpl>> e : queryMap.entrySet()) {
                             boolean contains = false;
                             for(QueryImpl q : queries) {
-                                if( e.getValue().isData(q.getData()) ) {
+                                QueryImpl cachedQuery = e.getValue().get();
+                                if( cachedQuery != null && cachedQuery.isData(q.getData()) ) {
                                     contains = true;
                                     break;
                                 }
@@ -398,29 +412,11 @@ public final class RepositoryImpl<R, Q, I> {
     }
 
     public synchronized IssueImpl getIssue(I i) {
-        if(i == null) {
-            return null;
-        }        
-        IssueImpl issue = issueMap.get(i);
-        if(issue == null) {
-            issue = new IssueImpl(RepositoryImpl.this, issueProvider, i);
-            issueMap.put(i, issue);
-        }
-        return issue;
+        return issueMap.getWrapper(i);
     }
 
     public QueryImpl getQuery(Q q) {
-        if(q == null) {
-            return null;
-        }
-        synchronized(queryMap) {
-            QueryImpl query = queryMap.get(q);
-            if(query == null) {
-                query = new QueryImpl(RepositoryImpl.this, queryProvider, issueProvider, q);
-                queryMap.put(q, query);
-            }
-            return query;
-        }
+        return queryMap.getWrapper(q);
     }
 
     public boolean isTeamRepository() {
@@ -438,8 +434,8 @@ public final class RepositoryImpl<R, Q, I> {
     }
     
     public void remove() {
-        repositoryProvider.remove(r);
         RepositoryRegistry.getInstance().removeRepository(this);
+        repositoryProvider.removed(r);
     }
 
     public RepositoryController getController() {
@@ -485,5 +481,41 @@ public final class RepositoryImpl<R, Q, I> {
         return getConnectorId() + "<=>" + getId() + "<=>" + (--fakeIdCounter);
     }
 
+    private abstract class WrapperMap<DATA, WRAPPER> extends HashMap<DATA, WeakReference<WRAPPER>> {
+
+        public synchronized WRAPPER getWrapper(DATA d) {
+            if(d == null) {
+                return null;
+            }        
+            WeakReference<WRAPPER> ref = get(d);
+            WRAPPER w = ref != null ? ref.get() : null;
+            if(w == null) {
+                w = createWrapper(d);
+                put(d, new MapReference(d, w));
+            } 
+            return w;
+        }
+        
+        public WeakReference get(DATA key, WRAPPER w) {
+            return super.put(key, new MapReference(key, w)); 
+        }
+        
+        abstract WRAPPER createWrapper(DATA d);
+        
+        private class MapReference extends WeakReference<WRAPPER> implements Runnable {
+            private final DATA key;
+            public MapReference(DATA d, WRAPPER w) {
+                super(w, Utilities.activeReferenceQueue());
+                this.key = d;
+            }
+            @Override
+            public void run() {
+                WrapperMap.this.remove(key);
+            }             
+        }        
+    }
+    
+
+    
 }
 

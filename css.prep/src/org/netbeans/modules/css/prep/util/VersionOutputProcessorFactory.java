@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,16 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.lib.profiler.ui.swing.renderer;
-
-/**
  *
- * @author Jiri Sedlacek
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-public interface Translatable {
-    
-    public void translate(int dx, int dy);
-    
+package org.netbeans.modules.css.prep.util;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
+
+public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+    private final Pattern versionPattern;
+
+    volatile String version;
+
+
+    public VersionOutputProcessorFactory(String versionPattern) {
+        assert versionPattern != null;
+        this.versionPattern = Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE);
+    }
+
+    @Override
+    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+        return InputProcessors.bridge(new LineProcessor() {
+
+            @Override
+            public void processLine(String line) {
+                assert version == null : version + " :: " + line;
+                version = parseVersion(line);
+            }
+
+            @Override
+            public void reset() {
+            }
+
+            @Override
+            public void close() {
+            }
+
+        });
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String parseVersion(String line) {
+        Matcher matcher = versionPattern.matcher(line);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
 }

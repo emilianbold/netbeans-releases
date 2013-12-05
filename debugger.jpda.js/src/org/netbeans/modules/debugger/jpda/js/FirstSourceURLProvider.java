@@ -110,7 +110,10 @@ public class FirstSourceURLProvider extends SourcePathProvider {
         if (source == null) {
             return null;
         }
-        URL url = source.getUrl();
+        URL url = source.getRuntimeURL();
+        if (url == null) {
+            url = source.getUrl();
+        }
         if (url != null) {
             return url.toExternalForm();
         } else {

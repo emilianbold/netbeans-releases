@@ -323,6 +323,10 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
                         }
                     }
                 });
+            } else if (IssueImpl.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                if (isCategorized()) {
+                    DashboardViewer.getInstance().removeTask(TaskNode.this);
+                }
             }
         }
     }

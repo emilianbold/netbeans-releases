@@ -58,11 +58,13 @@ import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
+import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -107,7 +109,7 @@ public class RevertModificationsAction extends ContextAction {
         final Context ctx = getContext(nodes);
         File[] roots = ctx.getRootFiles();
         // filter managed roots
-        List<File> l = new ArrayList<File>();
+        List<File> l = new ArrayList<>();
         for (File file : roots) {
             if(SvnUtils.isManaged(file)) {
                 l.add(file);
@@ -220,10 +222,12 @@ public class RevertModificationsAction extends ContextAction {
                                 }
                                 if(files.length > 0 ) {                        
                                     // check for deleted files, we also want to undelete their parents
-                                    Set<File> deletedFiles = new HashSet<File>();
+                                    Set<File> deletedFiles = new HashSet<>();
                                     for(File file : files) {
                                         deletedFiles.addAll(getDeletedParents(file));
-                                    }                        
+                                    }
+                                    
+                                    handleCopiedFiles(client, files, recursive);
 
                                     // XXX JAVAHL client.revert(files, recursive);
                                     for (File file : files) {
@@ -246,6 +250,45 @@ public class RevertModificationsAction extends ContextAction {
                     }
                     return null;
                 }
+
+                private void handleCopiedFiles (SvnClient client, File[] files, boolean recursively) {
+                    FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                    if (recursively) {
+                        files = cache.listFiles(files, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+                    }
+                    for (File f : files) {
+                        FileInformation fi = cache.getStatus(f);
+                        if (fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+                            ISVNStatus entry = fi.getEntry(f);
+                            if (entry.isCopied()) {
+                                // file exists but it's status is set to deleted
+                                File temporary = FileUtils.generateTemporaryFile(f.getParentFile(), f.getName());
+                                try {
+                                    if (f.renameTo(temporary)) {
+                                        client.remove(new File[] { f }, true);
+                                    } else {
+                                        Subversion.LOG.log(Level.WARNING, "RevertModifications.handleCopiedFiles: cannot rename {0} to {1}", new Object[] { f, temporary }); //NOI18N
+                                    }
+                                } catch (SVNClientException ex) {
+                                    Subversion.LOG.log(Level.INFO, null, ex);
+                                } finally {
+                                    if (temporary.exists()) {
+                                        try {
+                                            if (!temporary.renameTo(f)) {
+                                                FileUtils.copyFile(temporary, f);
+                                            }
+                                        } catch (IOException ex) {
+                                            Subversion.LOG.log(Level.INFO, "RevertModifications.handleCopiedFiles: cannot copy {0} back to {1}", new Object[] { temporary, f }); //NOI18N
+                                        } finally {
+                                            temporary.delete();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
             }, files);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, false);
@@ -287,7 +330,7 @@ public class RevertModificationsAction extends ContextAction {
     }     
 
     private static List<File> getDeletedParents(File file) {
-        List<File> ret = new ArrayList<File>();
+        List<File> ret = new ArrayList<>();
         for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
             FileInformation info = Subversion.getInstance().getStatusCache().getStatus(parent);
             if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||

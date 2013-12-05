@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
@@ -59,6 +60,7 @@ import org.netbeans.modules.nashorn.execution.NashornPlatform;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
@@ -158,6 +160,8 @@ abstract class ExecJSAction extends AbstractAction implements ContextAwareAction
     }
     
     private static final class NoAction implements Action, Presenter.Popup {
+        
+        private NoItem NO_ITEM = new NoItem();
 
         @Override
         public Object getValue(String key) {
@@ -188,7 +192,21 @@ abstract class ExecJSAction extends AbstractAction implements ContextAwareAction
 
         @Override
         public JMenuItem getPopupPresenter() {
-            return null;
+            return NO_ITEM;
+        }
+        
+        private static class NoItem extends JMenuItem implements DynamicMenuContent {
+
+            @Override
+            public JComponent[] getMenuPresenters() {
+                return new JComponent[]{};
+            }
+
+            @Override
+            public JComponent[] synchMenuPresenters(JComponent[] items) {
+                return items;
+            }
+            
         }
     }
 }

@@ -47,10 +47,10 @@ import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
- * Provides access to an Issues UI.
+ * Provides access to an Issue's UI.
  * 
  * <p>
- * Every Issue is expected to provide at least some visual expected to. 
+ * Every Issue is expected to provide at least some visual component. 
  * Typically this would be an Issue editor making it possible to create and 
  * modify issues.
  * </p>

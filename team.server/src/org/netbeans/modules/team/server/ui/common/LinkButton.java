@@ -53,6 +53,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.team.commons.ColorManager;
 
 /**
  * Button with no border painted looking like a hypertext link.

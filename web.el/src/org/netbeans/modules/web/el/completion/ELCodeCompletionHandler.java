@@ -386,8 +386,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                         enclosed.getModifiers().contains(Modifier.STATIC)) {
                     continue;
                 }
+                boolean hasParameters = !enclosed.getParameters().isEmpty();
+
                 String methodName = enclosed.getSimpleName().toString();
                 String propertyName = RefactoringUtil.getPropertyName(methodName, enclosed.getReturnType(), true);
+                if (hasParameters) {
+                    propertyName = methodName;
+                }
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
@@ -409,7 +414,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     ELJavaCompletionItem completionItem;
 
                     if (!contains(proposals, propertyName)) {
-                        if (enclosed.getParameters().isEmpty()) {
+                        if (!hasParameters) {
                             completionItem = new ELJavaCompletionItem(info, enclosed, elElement, isBracketCall); //
                         } else {
                             completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement, isBracketCall);

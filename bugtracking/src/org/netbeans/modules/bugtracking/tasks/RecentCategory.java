@@ -65,6 +65,10 @@ public class RecentCategory extends Category {
     }
 
     @Override
+    public void reload() {
+    }
+
+    @Override
     public List<IssueImpl> getTasks() {
         synchronized (this) {
             List<IssueImpl> recent = bugtrackingManager.getAllRecentIssues();

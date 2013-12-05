@@ -79,24 +79,6 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     /**
-     * Factory method to create a {@link Repository} instance.
-     * 
-     * @param r a implementation specific repository instance
-     * 
-     * @return a {@link Repository} instance
-     * @since 1.85
-     */
-    public Repository createRepository(R r) 
-    {
-        Repository repo = getRepository(r);
-        if(repo != null) {
-            return repo;
-        }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, null, null, null, null);
-        return impl.getRepository();
-    }
-    
-    /**
      * Factory method to create a {@link Repository} instance configured with optional providers.
      * 
      * @param r a implementation specific repository instance
@@ -132,7 +114,7 @@ public final class BugtrackingSupport<R, Q, I> {
             // in such a case it also has to be added to the registry 
             // as otherwise it happens only on manul repositoy creation
             RepositoryRegistry registry = RepositoryRegistry.getInstance();
-            if(registry.getRepository(impl.getConnectorId(), impl.getId()) == null) {
+            if(getRepositoryImpl(r) == null) {
                 registry.addRepository(impl);
             }
         }
@@ -236,7 +218,7 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, true);
     }    
     
     private Repository getRepository(R r) {

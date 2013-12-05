@@ -109,14 +109,14 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
     public void testExpandProjectNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = "";
-        expectedTime = 100;
+        expectedTime = 200;
         doMeasurement();
     }
 
     public void testExpandSourcePackagesNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES;
-        expectedTime = 100;
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -137,21 +137,21 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
     public void testExpandFolderWith1000JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder1000";
-        expectedTime = 1000;
+        expectedTime = 2500;
         doMeasurement();
     }
 
     public void testExpandFolderWith100XmlFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.xmlFolder100";
-        expectedTime = 800;
+        expectedTime = 2000;
         doMeasurement();
     }
 
     public void testExpandFolderWith100TxtFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.txtFolder100";
-        expectedTime = 300;
+        expectedTime = 600;
         doMeasurement();
     }
 

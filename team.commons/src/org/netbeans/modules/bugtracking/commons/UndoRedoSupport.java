@@ -40,17 +40,20 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.ui.issue;
+package org.netbeans.modules.bugtracking.commons;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
@@ -64,9 +67,10 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.openide.awt.UndoRedo;
 import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 /**
  * Support for compound undo/redo in text components
@@ -79,31 +83,37 @@ public class UndoRedoSupport {
     private static final Pattern DELIMITER_PATTERN = Pattern.compile("[ ,:;.!?\n\t]"); //NOI18N
     
     private final DelegateManager delegateManager;
-    private final IssueImpl issue;
     private static final String ACTION_NAME_UNDO = "undo.action"; //NOI18N
     private static final String ACTION_NAME_REDO = "redo.action"; //NOI18N
 
-    private static Map<IssueImpl, UndoRedoSupport> managers = new WeakHashMap<IssueImpl, UndoRedoSupport>();
-
+    private final RequestProcessor rp = new RequestProcessor("Bugtracking undoredo", 50); // NOI18N
     
-    private UndoRedoSupport (IssueImpl issue) {
-        this.issue = issue;
+    public UndoRedoSupport () {
         delegateManager = new DelegateManager();
     }
     
-    public synchronized static UndoRedo getUndoRedo(IssueImpl issue) {
-        UndoRedoSupport support = getSupport(issue);
-        return support.delegateManager;
+    public synchronized UndoRedo getUndoRedo() {
+        return delegateManager;
     }
     
-    public synchronized static UndoRedoSupport getSupport (IssueImpl issue) {
-        UndoRedoSupport support = managers.get(issue);
-        if(support == null) {
-            support = new UndoRedoSupport(issue);
-            managers.put(issue, support);
+    public void register (final TopComponent tc, boolean register) {
+        if(register) {
+            tc.removeContainerListener(undoRedoListener);
+            tc.addContainerListener(undoRedoListener);        
+            RequestProcessor.Task task = rp.create(new Runnable() {
+                @Override
+                public void run() {
+                    undoRedoListener.register(tc, true);
+                }
+            });
+            tc.putClientProperty(REGISTER_TASK, task);
+            task.schedule(1000);
+        } else {
+            unregisterAll();
         }
-        return support;
     }
+    
+    private static final String REGISTER_TASK = "hyperlink.task";
     
     /**
      * Registers undo/redo manager on the given component. You should always call unregister once undo/redo is not needed.
@@ -111,27 +121,26 @@ public class UndoRedoSupport {
      * @param component
      * @return
      */
-    public void register (JTextComponent component) {
+    private void register (JTextComponent component) {
         delegateManager.add(new CompoundUndoManager(component));
     }
 
     /**
      * Unregisters undo/redo manager on the component, removes registered listeners, etc.
      */
-    public void unregisterAll () {
-        managers.remove(issue);
+    private void unregisterAll () {
         delegateManager.removeAll();
     }
     
     /**
      * Unregisters undo/redo manager on the component, removes registered listeners, etc.
      */
-    public void unregister (JTextComponent component) {
+    private void unregister (JTextComponent component) {
         delegateManager.remove(component);
     }
     
     private class CompoundUndoManager extends UndoRedo.Manager implements FocusListener {
-        private ChangeSupport support = new ChangeSupport(this);
+        private final ChangeSupport support = new ChangeSupport(this);
         private CompoundEdit edit;
         private int lastOffset, lastLength;
         private final JTextComponent component;
@@ -418,5 +427,89 @@ public class UndoRedoSupport {
             }
         }
     }
+
+    private final UndoRedoListener undoRedoListener = new UndoRedoListener();
+    private class UndoRedoListener implements ContainerListener {
+        
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            Component c = e.getChild();
+            while(((c = c.getParent()) != null)) {
+                if(c instanceof TopComponent) {
+                    RequestProcessor.Task t = (RequestProcessor.Task) ((TopComponent)c).getClientProperty(REGISTER_TASK);
+                    if(t != null) {
+                        t.schedule(1000);
+                    } 
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) {
+            register((Container)e.getComponent(), false);
+        }
+        
+        private void register(Component c, boolean register) {
+            if(c instanceof JTextComponent) {
+                JTextComponent tx = (JTextComponent) c;
+                if(register) {
+                    registerTask.add(tx);
+                } else {
+                    registerTask.remove(tx);
+                }
+            }
+            if(c instanceof Container) {
+                Container container = (Container) c;
+                container.removeContainerListener(this);
+                if(register) {
+                    container.addContainerListener(this);
+                }
+                Component[] components = container.getComponents();
+                for (Component cmp : components) {
+                    register(cmp, register);
+                }
+            }
+        }
+    }    
     
+    private final RegisterTask registerTask = new RegisterTask();
+    private class RegisterTask implements Runnable {
+        private final ConcurrentLinkedQueue<JTextComponent> toRegister = new ConcurrentLinkedQueue<JTextComponent>();
+        private final ConcurrentLinkedQueue<JTextComponent> toUnregister = new ConcurrentLinkedQueue<JTextComponent>();
+        private final RequestProcessor.Task task;
+
+        public RegisterTask() {
+            this.task = rp.create(this);
+        }
+        
+        void add(JTextComponent tx) {
+            toRegister.add(tx);
+            task.schedule(500);
+        }
+        
+        void remove(JTextComponent tx) {
+            toUnregister.add(tx);
+            task.schedule(500);
+        }
+        
+        @Override
+        public void run() {
+            for (JTextComponent txt : toHandle(toRegister)) {
+                register(txt);
+            }            
+            for (JTextComponent txt : toHandle(toUnregister)) {
+                unregister(txt);
+            }            
+        }
+
+        public List<JTextComponent> toHandle(ConcurrentLinkedQueue<JTextComponent> q) {
+            List<JTextComponent> rs = new LinkedList<JTextComponent>();
+            JTextComponent tx;
+            while((tx = q.poll()) != null) {
+                rs.add(tx);
+            }
+            return rs;            
+        }
+    }
 }

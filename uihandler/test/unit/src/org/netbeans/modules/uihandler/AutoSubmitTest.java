@@ -52,6 +52,7 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
@@ -172,10 +173,10 @@ public class AutoSubmitTest extends NbTestCase {
     private static void waitTillTasksInRPFinish(RequestProcessor rp) throws Exception {
         // Perhaps there is a better way to wait untill all scheduled tasks are processed...?
         do {
-            Field runningFiled = RequestProcessor.class.getDeclaredField("running");
+            Field runningFiled = RequestProcessor.class.getDeclaredField("processors");
             runningFiled.setAccessible(true);
-            Integer running = (Integer) runningFiled.get(rp);
-            if (running.intValue() == 0) {
+            Set<?> running = (Set<?>) runningFiled.get(rp);
+            if (running.isEmpty()) {
                 break;
             } else {
                 Thread.sleep(500);

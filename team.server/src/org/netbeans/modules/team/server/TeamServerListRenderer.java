@@ -48,7 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.team.server.ui.common.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 
 /**

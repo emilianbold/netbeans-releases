@@ -79,7 +79,7 @@ import org.netbeans.modules.bugtracking.tasks.RecentCategory;
 import org.netbeans.modules.bugtracking.tasks.ScheduleCategory;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
-import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListModelListener;
@@ -138,9 +138,9 @@ public final class DashboardViewer implements PropertyChangeListener {
     private TreeListNode activeTaskNode;
     public static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
     private final ModelListener modelListener;
-    private final UnsubmittedCategoryFilter unsubmittedCategoryFilter;
     private ScheduleCategoryNode todayCategoryNode;
     private ScheduleCategoryNode thisWeekCategoryNode;
+    private boolean categoriesLoaded = false;
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -202,7 +202,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         appliedTaskFilters = new AppliedFilters<TaskNode>();
         appliedCategoryFilters = new AppliedFilters<CategoryNode>();
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
-        unsubmittedCategoryFilter = new UnsubmittedCategoryFilter();
+        appliedCategoryFilters.addFilter(new UnsubmittedCategoryFilter());
         taskHits = 0;
         treeList.setTransferHandler(new DashboardTransferHandler());
         treeList.setDragEnabled(true);
@@ -450,6 +450,26 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (CategoryNode categoryNode : categoryNodes) {
                 if (!(openedOnly && !categoryNode.isOpened()) && !(!includeUnsubmitted && !categoryNode.getCategory().persist())) {
                     list.add(categoryNode.getCategory());
+                }
+            }
+            return list;
+        }
+    }
+
+    public List<Category> preloadCategories() {
+        synchronized (LOCK_CATEGORIES) {
+            boolean loadNeeded = !categoriesLoaded;
+            if (loadNeeded) {
+                loadCategories();
+            }
+            List<Category> list = new ArrayList<Category>(categoryNodes.size());
+            for (CategoryNode categoryNode : categoryNodes) {
+                if (categoryNode.isOpened() && categoryNode.getCategory().persist()) {
+                    list.add(categoryNode.getCategory());
+                    if (loadNeeded) {
+                        categoryNode.getCategory().refresh();
+                        categoryNode.updateContent();
+                    }
                 }
             }
             return list;
@@ -879,13 +899,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
+                titleRepositoryNode.setProgressVisible(true);
+                titleCategoryNode.setProgressVisible(true);
                 // w8 with loading to preject ot be opened
                 Callable<Void> c = new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        appliedCategoryFilters.addFilter(unsubmittedCategoryFilter);
-                        titleRepositoryNode.setProgressVisible(true);
-                        titleCategoryNode.setProgressVisible(true);
                         loadRepositories();
                         titleRepositoryNode.setProgressVisible(false);
                         loadCategories();
@@ -921,6 +940,9 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void loadCategories() {
+        if (categoriesLoaded) {
+            return;
+        }
         try {
             DashboardStorage storage = DashboardStorage.getInstance();
             List<CategoryEntry> categoryEntries = storage.readCategories();
@@ -941,8 +963,10 @@ public final class DashboardViewer implements PropertyChangeListener {
             catNodes.addAll(loadUnsubmitedCategories());
 
             setCategories(catNodes);
+            categoriesLoaded = true;
         } catch (Throwable ex) {
             LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex);
+            categoriesLoaded = false;
             showCategoriesError();
         }
     }
@@ -1041,6 +1065,15 @@ public final class DashboardViewer implements PropertyChangeListener {
         return unsubmittedCategoryNode;
     }
 
+    private void updateCategories() {
+        synchronized (LOCK_CATEGORIES) {
+            for (CategoryNode categoryNode : categoryNodes) {
+                categoryNode.getCategory().reload();
+                categoryNode.updateContent();
+            }
+        }
+    }
+
     private void updateRepositories(Collection<RepositoryImpl> addedRepositories, Collection<RepositoryImpl> removedRepositories) {
         synchronized (LOCK_REPOSITORIES) {
             List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
@@ -1104,6 +1137,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
         }
         updateUnsubmitedCategories(toRemove, toAdd);
+        updateCategories();
     }
 
     private RepositoryNode createRepositoryNode(RepositoryImpl repository) {

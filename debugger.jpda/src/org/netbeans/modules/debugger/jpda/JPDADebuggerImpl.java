@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
@@ -144,6 +145,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.ClassVariableImpl;
 import org.netbeans.modules.debugger.jpda.models.VariableMirrorTranslator;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
@@ -1945,6 +1947,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public Variable getVariable (Value value) {
+        if (value instanceof ClassObjectReference) {
+            return new ClassVariableImpl(this, (ClassObjectReference) value, null);
+        }
         return getLocalsTreeModel ().getVariable (value);
     }
 

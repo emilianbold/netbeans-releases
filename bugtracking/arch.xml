@@ -36,11 +36,6 @@
         - e.g. VCS, Team Support (aka kenai.com, java.net)<br/>
   </p>     
     <p>
-      <b>Registration:</b><br/>
-      A bugtracking module extends <code>BugtrackingConnector</code> and registers it via the
-      <code>BugtrackingConnector.Registration</code> annotation.
-    </p>
-    <p>
       <api name="BugrackingSPI" group="java" type="export" category="devel">
           Enables Bugtracking modules to fully integrate into Bugtracking Issue Management facilities 
           and other IDE workflow.
@@ -49,6 +44,18 @@
       <api name="BugrackingAPI" group="java" type="export" category="devel">
           Provides Bugtracking functionality for other subsystems in the IDE.
       </api>
+  </p>  
+    
+  <p>
+      <b>SPI Registration:</b><br/>
+      A bugtracking module extends <code>BugtrackingConnector</code> and registers it via the
+      <code>BugtrackingConnector.Registration</code> annotation.
+  </p>
+    
+  <p>
+      <b>Cookbook and sample implementation:</b><br/>
+      For a more detailed descritpion on how to start writting a bugtracking plugin for NetBeans see also the 
+      <a href="http://wiki.netbeans.org/BugtrackingCookbook">Bugtracking Cookbook</a> (sample module attached).
   </p>
  </answer>
 

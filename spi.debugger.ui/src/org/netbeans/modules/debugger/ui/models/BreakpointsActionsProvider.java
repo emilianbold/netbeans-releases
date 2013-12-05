@@ -46,6 +46,7 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -90,8 +91,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         (NbBundle.getMessage(BreakpointsActionsProvider.class, "CTL_BreakpointAction_EnableAll_Label")) {
             @Override
             public boolean isEnabled () {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 int i, k = bs.length;
                 for (i = 0; i < k; i++) {
                     if (!bs[i].isEnabled()) {
@@ -102,8 +102,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             }
             @Override
             public void actionPerformed (ActionEvent e) {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 int i, k = bs.length;
                 for (i = 0; i < k; i++) {
                     bs [i].enable ();
@@ -114,8 +113,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         (NbBundle.getMessage(BreakpointsActionsProvider.class, "CTL_BreakpointAction_DisableAll_Label")) {
             @Override
             public boolean isEnabled () {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 int i, k = bs.length;
                 for (i = 0; i < k; i++) {
                     if (bs[i].isEnabled()) {
@@ -126,8 +124,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
             }
             @Override
             public void actionPerformed (ActionEvent e) {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 int i, k = bs.length;
                 for (i = 0; i < k; i++) {
                     bs [i].disable ();
@@ -138,14 +135,13 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         (NbBundle.getMessage(BreakpointsActionsProvider.class, "CTL_BreakpointAction_DeleteAll_Label")) {
             @Override
             public boolean isEnabled () {
-                DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 return bs.length > 0;
             }
             @Override
             public void actionPerformed (ActionEvent e) {
                 DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-                Breakpoint[] bs = dm.getBreakpoints ();
+                Breakpoint[] bs = getShowingBreakpoints();
                 int i, k = bs.length;
                 for (i = 0; i < k; i++) {
                     dm.removeBreakpoint (bs [i]);
@@ -363,6 +359,43 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
+    
+    /**
+     * @return all breakpoints that are not hidden.
+     */
+    private static Breakpoint[] getShowingBreakpoints() {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+        Breakpoint[] bs = dm.getBreakpoints ();
+        boolean[] visible = new boolean[bs.length];
+        int n = 0;
+        for (int i = 0; i < bs.length; i++) {
+            Breakpoint b = bs[i];
+            boolean v = isVisible(b);
+            visible[i] = v;
+            if (v) {
+                n++;
+            }
+        }
+        Breakpoint[] visibleBs = new Breakpoint[n];
+        int vi = 0;
+        for (int i = 0; i < bs.length; i++) {
+            if (visible[i]) {
+                visibleBs[vi++] = bs[i];
+            }
+        }
+        return visibleBs;
+    }
+    
+    private static boolean isVisible(Breakpoint b) {
+        // TODO: create an API for breakpoint visibility
+        try {
+            Method isHiddenMethod = b.getClass().getMethod("isHidden");
+            Object hidden = isHiddenMethod.invoke(b);
+            return Boolean.FALSE.equals(hidden);
+        } catch (Exception ex) {
+            return true;
+        }
+    }
 
     
     //private Vector listeners = new Vector ();

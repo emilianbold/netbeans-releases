@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,77 +39,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server.ui.common;
+package org.netbeans.lib.profiler.ui.threads;
 
-import java.awt.Color;
-import javax.swing.UIManager;
+import org.netbeans.lib.profiler.results.threads.ThreadsDataManager;
+import org.netbeans.lib.profiler.ui.Formatters;
+import org.netbeans.lib.profiler.ui.swing.renderer.NumberPercentRenderer;
 
 /**
  *
- * @author S. Aubrecht
+ * @author Jiri Sedlacek
  */
-public class ColorManager {
+public class ThreadTimeRelRenderer extends NumberPercentRenderer {
     
-    private static ColorManager theInstance;
-
-    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
-
-    private Color defaultBackground = UIManager.getColor("Tree.textBackground") == null  //NOI18N
-            ? UIManager.getColor("white")  //NOI18N
-            : UIManager.getColor("Tree.textBackground"); //NOI18N
-    private Color defaultForeground = UIManager.getColor("black"); //NOI18N
-    private Color disabledColor = Color.gray;
-    private Color linkColor = new Color(0x164B7B); // to match org.netbeans.modules.bugtracking.util.LinkButton
-    private Color errorColor = new Color(153,0,0);
-    private Color stableBuildColor = new Color(0,153,0);
-    private Color unstableBuildColor = Color.yellow.darker().darker();
-
-    private ColorManager() {
+    private final ThreadsDataManager manager;
+    
+    public ThreadTimeRelRenderer(ThreadsDataManager manager) {
+        super(Formatters.millisecondsFormat());
+        this.manager = manager;
     }
-
-    public static ColorManager getDefault() {
-        if( null == theInstance )
-            theInstance = new ColorManager();
-        return theInstance;
+    
+    public void setValue(Object value, int row) {
+        if (row > -1) setBasis(manager.getThreadData(row).getTotalTime());
+        super.setValue(value, row);
     }
-
-    public Color getDefaultBackground() {
-        if( isAqua )
-            return UIManager.getColor("NbExplorerView.background"); // NOI18N
-        return defaultBackground;
-    }
-
-    public Color getDefaultForeground() {
-        return defaultForeground;
-    }
-
-    public Color getDisabledColor() {
-        return disabledColor;
-    }
-
-    public Color getErrorColor() {
-        return errorColor;
-    }
-
-    public Color getLinkColor() {
-        return linkColor;
-    }
-
-    public Color getStableBuildColor() {
-        return stableBuildColor;
-    }
-
-    public static ColorManager getTheInstance() {
-        return theInstance;
-    }
-
-    public Color getUnstableBuildColor() {
-        return unstableBuildColor;
-    }
+    
 }

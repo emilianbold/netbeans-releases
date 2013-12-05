@@ -68,6 +68,7 @@ public final class IssueImpl<R, I> {
     public static final int SHORT_DISP_NAME_LENGTH = 15;
     
     public static final String EVENT_ISSUE_DATA_CHANGED = IssueProvider.EVENT_ISSUE_DATA_CHANGED;
+    public static final String EVENT_ISSUE_DELETED = IssueProvider.EVENT_ISSUE_DELETED;
 
     private Issue issue;
     private final RepositoryImpl<R, ?, I> repo;
@@ -79,15 +80,17 @@ public final class IssueImpl<R, I> {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
-        if (hasSchedule()) {
-            issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
-                        handleScheduling();
-                    }
+        issueProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (IssueScheduleProvider.EVENT_ISSUE_SCHEDULE_CHANGED.equals(evt.getPropertyName())) {
+                    handleScheduling();
+                } else if (IssueProvider.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                    issueDeleted();
                 }
-            });
+            }
+        });
+        if (hasSchedule()) {
             handleScheduling();
         }
     }
@@ -265,29 +268,12 @@ public final class IssueImpl<R, I> {
         return isp != null;
     }
     
-    
-    public void setDueDate(Date date) {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        assert isp != null : "do no call .setDueDate() if .hasSchedule() is false"; // NOI18N
-        if(isp != null) {
-            isp.setDueDate(data, date);
-        }
-    }
-
     public void setSchedule(IssueScheduleInfo info) {
         IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
         assert isp != null : "do no call .setSchedule() if .hasSchedule() is false"; // NOI18N
         if(isp != null) {
             isp.setSchedule(data, info);
             handleScheduling();
-        }
-    }
-
-    public void setEstimate(int hours) {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        assert isp != null : "do no call .setEstimate() if .hasSchedule() is false"; // NOI18N
-        if(isp != null) {
-            isp.setEstimate(data, hours);
         }
     }
 
@@ -301,11 +287,6 @@ public final class IssueImpl<R, I> {
         return isp != null ? isp.getSchedule(data) : null;
     }
 
-    public int getEstimate() {
-        IssueScheduleProvider<I> isp = repo.getSchedulingProvider();
-        return isp != null ? isp.getEstimate(data) : null;
-    }
-    
     public boolean providesPriority() {
         return repo.getPriorityProvider() != null;
     }
@@ -322,4 +303,8 @@ public final class IssueImpl<R, I> {
         TaskSchedulingManager.getInstance().handleTask(IssueImpl.this);
     }
     
+    private void issueDeleted () {
+        TaskSchedulingManager.getInstance().taskDeleted(IssueImpl.this);
+    }
+
 }

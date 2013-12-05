@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -211,6 +212,8 @@ public final class AntProjectHelper {
     
     /** Listener to XML files; needs to be held as an instance field so it is not GC'd */
     private final FileChangeListener fileListener;
+    private final AtomicBoolean fileListenerSet = new AtomicBoolean(false);
+    
     
     /** Atomic actions in use to save XML files. */
     private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
@@ -241,8 +244,13 @@ public final class AntProjectHelper {
         assert projectXml != null;
         properties = new ProjectProperties(this);
         fileListener = new FileListener();
-        FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
-        FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+    }
+
+    private void lazyAttachFileListener() {
+        if (fileListenerSet.compareAndSet(false, true)) {
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PROJECT_XML_PATH));
+            FileUtil.addFileChangeListener(fileListener, resolveFile(PRIVATE_XML_PATH));
+        }
     }
     
     /**
@@ -259,6 +267,7 @@ public final class AntProjectHelper {
     private Document getConfigurationXml(boolean shared) {
         assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
+        lazyAttachFileListener();
         if (!(shared ? projectXmlValid : privateXmlValid)) {
             String path = shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH;
             Document _xml = loadXml(path);
@@ -334,6 +343,7 @@ public final class AntProjectHelper {
      * If the file does not yet exist, it is created.
      */
     private FileLock saveXml(final Document doc, final String path) throws IOException {
+        lazyAttachFileListener();
         assert ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
         try {

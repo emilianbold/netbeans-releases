@@ -84,19 +84,19 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
         if ("app-client".equals(packagingType)) {
             return false;
         }
-
-        if (ACT_DEBUG.equals(action) ||
-            ACT_RUN.equals(action) ||
-            ACT_PROFILE.equals(action)) {
-            //only enable for doc root fileobjects..
-            return true;
-        } else if (ActionProvider.COMMAND_RUN.equals(action) || 
-                   ActionProvider.COMMAND_DEBUG.equals(action) ||
-                   ActionProvider.COMMAND_PROFILE.equals(action)) {
-            //performance, don't read the xml file to figure enablement..
-            return true;
-        } else {
-            return false;
+        switch (action) {
+            case ACT_DEBUG:
+            case ACT_RUN:
+            case ACT_PROFILE:
+                //only enable for doc root fileobjects..
+                return true;
+            case ActionProvider.COMMAND_RUN:
+            case ActionProvider.COMMAND_DEBUG:
+            case ActionProvider.COMMAND_PROFILE:
+                //performance, don't read the xml file to figure enablement..
+                return true;
+            default:
+                return false;
         }
     }
 }

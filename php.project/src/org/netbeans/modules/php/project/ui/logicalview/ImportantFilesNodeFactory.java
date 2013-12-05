@@ -110,12 +110,11 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            ProjectPropertiesSupport.addProjectPropertyChangeListener(project, this);
+            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
         }
 
         @Override
         public void removeNotify() {
-            ProjectPropertiesSupport.removeProjectPropertyChangeListener(project, this);
         }
 
         @Override
@@ -243,7 +242,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         public void addNotify() {
-            super.addNotify();
             attachListener();
         }
 

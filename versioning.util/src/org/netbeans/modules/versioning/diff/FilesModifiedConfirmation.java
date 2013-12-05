@@ -346,7 +346,9 @@ public class FilesModifiedConfirmation {
         dialog.setVisible(false);
     }
 
-    protected void savedLastFile() {}
+    protected void savedLastFile() {
+        handleSaveAllSucceeded();
+    }
 
     protected String getMessage(String msgKey, Object... params) {
         return getMessage(getClass(), msgKey, params);

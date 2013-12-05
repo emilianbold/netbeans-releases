@@ -57,6 +57,10 @@ public class KOCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("completion/foreach/index.html", "            <div data-bind=\"text: ^ , css: jmeno == 'pepa' ? 'jouda' :", false);
     }
 
+    public void testForEachAlias() throws Exception {
+        checkCompletion("completion/foreachAlias/index.html", "                <span data-bind=\"text: ^\"></span>", false);
+    }
+
     public void testWith() throws Exception {
         checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
     }

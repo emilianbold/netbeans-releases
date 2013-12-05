@@ -88,7 +88,7 @@ public class JsIndexer extends EmbeddingIndexer {
             JsIndex.changeInIndex();
         }
         JsParserResult parserResult = (JsParserResult) result;
-        Model model = parserResult.getModel();
+        Model model = parserResult.getModel(true);
 
         IndexingSupport support;
         try {
@@ -97,6 +97,9 @@ public class JsIndexer extends EmbeddingIndexer {
             LOG.log(Level.WARNING, null, ioe);
             return;
         }
+
+        // we need to remove old documents (document per object, not file)
+        support.removeDocuments(indexable);
 
         JsObject globalObject = model.getGlobalObject();
         for (JsObject object : globalObject.getProperties().values()) {

@@ -173,10 +173,11 @@ public final class WorkingCopyAttributesCache {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            String msg = ex.getMessage();
+                            String msg = ex.getMessage().toLowerCase();
                             if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) 
-                                    && (msg.toLowerCase().contains("svn upgrade") //NOI18N
-                                    || msg.toLowerCase().contains("needs to be upgraded"))) { //NOI18N
+                                    && (msg.contains("svn upgrade") //NOI18N
+                                    || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N
+                                    || msg.contains("needs to be upgraded"))) { //NOI18N
                                 SvnClientExceptionHandler.notifyException(ex, false, false);
                                 SystemAction.get(UpgradeAction.class).upgrade(topManaged);
                             } else {

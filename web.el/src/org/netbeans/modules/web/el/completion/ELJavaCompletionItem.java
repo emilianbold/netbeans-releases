@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -213,6 +216,28 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         }
 
         return super.getCustomInsertTemplate(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean beforeDefaultAction() {
+        Node node = elElement.findNodeAt(anchorOffset);
+        if (node != null) {
+            int startOfsset = elElement.getSnapshot().getOriginalOffset(node.startOffset());
+            int endOfsset = elElement.getSnapshot().getOriginalOffset(node.endOffset());
+            if (startOfsset != -1 && endOfsset != -1 && endOfsset != anchorOffset + 1) {
+                Document document = elElement.getSnapshot().getSource().getDocument(false);
+                if (document == null) {
+                    return false;
+                }
+                try {
+                    document.remove(startOfsset, endOfsset - startOfsset);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+
+        return super.beforeDefaultAction();
     }
 
     @Override

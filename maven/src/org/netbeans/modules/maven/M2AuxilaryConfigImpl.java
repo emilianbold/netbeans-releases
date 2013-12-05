@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -103,6 +104,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private final FileObject projectDirectory;
     private ProblemProvider pp;
     private final FileChangeAdapter fileChange;
+    private final AtomicBoolean fileChangeSet = new AtomicBoolean(false);
     
     public M2AuxilaryConfigImpl(FileObject dir, boolean longtermInstance) {
         this.projectDirectory = dir;
@@ -139,8 +141,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     }
                 }
             };
-            dir.addFileChangeListener(FileUtil.weakFileChangeListener(fileChange, dir));
-
+            
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
@@ -178,6 +179,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         });
         } else {
             fileChange = null;
+            fileChangeSet.set(true);
         }
     }
     
@@ -230,6 +232,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             + "So until the problem is resolved manually, the affected configuration will be ignored."
     })
     private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
+        lazyAttachListener();
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
@@ -308,7 +311,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         }
     }
 
+    private void lazyAttachListener() {
+        if (fileChangeSet.compareAndSet(false, true)) {
+            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(fileChange, projectDirectory));
+        }
+    }
+
     public @Override synchronized void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
+        lazyAttachListener();
         Document doc = null;
         if (shared) {
             if (scheduledDocument != null) {
@@ -374,6 +384,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
 
     public @Override synchronized boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
+        lazyAttachListener();
         Document doc = null;
         FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
         if (shared) {

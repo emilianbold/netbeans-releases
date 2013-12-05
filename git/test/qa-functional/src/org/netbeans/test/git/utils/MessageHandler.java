@@ -1,19 +1,7 @@
-package org.netbeans.modules.javascript2.jquery.model;
-
-import java.beans.PropertyChangeEvent;
-import java.util.Collection;
-import java.util.regex.Pattern;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
-import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,36 +37,55 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.test.git.utils;
+
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 /**
  *
- * @author Petr Pisl
+ * @author pvcs
  */
-@FunctionInterceptor.Registration(priority = 51)
-public class jQueryExtendInterceptor implements FunctionInterceptor {
+public final class MessageHandler extends Handler {
 
-    private final static Pattern PATTERN = Pattern.compile("(\\$|jQuery)\\.extend");  //NOI18N
+    String message;
+    boolean started = false;
+    boolean finished = false;
 
-    @Override
-    public Pattern getNamePattern() {
-        return PATTERN;
+    public MessageHandler(String message) {
+        this.message = message;
     }
 
     @Override
-    public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-        if (args.size() == 1) {
-            FunctionArgument arg = args.iterator().next();
-            if (arg.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
-                JsObject possiblePlugin = (JsObject)arg.getValue();
-                if (possiblePlugin.getProperties().size() == 1) {
-                    JsObject parent = globalObject;
-                    JsObject property = possiblePlugin.getProperties().values().iterator().next();
-                    JsObject newObject = factory.newReference(parent, property.getName(), property.getDeclarationName().getOffsetRange(), property, true, null);
-                    parent.addProperty(property.getName(), newObject);
-                }
+    public void publish(LogRecord record) {
+//        throw new UnsupportedOperationException("Not supported yet.");
+        if (started == false) {
+            if (record.getMessage().indexOf("Start - " + message) > -1) {
+                started = true;
+                finished = false;
             }
         }
+        if (started) {
+            if (record.getMessage().indexOf("End - " + message) > -1) {
+                started = false;
+                finished = true;
+            }
+        }
+    }
+
+    @Override
+    public void flush() {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void close() throws SecurityException {
+//        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isFinished() {
+        return finished;
     }
 }
