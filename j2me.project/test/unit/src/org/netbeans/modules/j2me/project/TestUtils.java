@@ -71,8 +71,6 @@ import org.openide.modules.SpecificationVersion;
  */
 public final class TestUtils {
 
-    public static final String S = "";
-
     private TestUtils() {
         throw new IllegalStateException("No instance allowed"); //NOI18N
     }
@@ -85,6 +83,11 @@ public final class TestUtils {
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <R,E extends Throwable> R sneaky(Throwable t) throws E {
+        throw (E) t;
     }
 
     @CheckForNull
