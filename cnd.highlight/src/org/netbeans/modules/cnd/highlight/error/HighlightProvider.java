@@ -46,14 +46,11 @@ package org.netbeans.modules.cnd.highlight.error;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
@@ -167,8 +164,11 @@ public final class HighlightProvider  {
         if (interrupter.cancelled()) {
             return;
         }
-        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
-        processingLevel.incrementAndGet();
+        synchronized (processingLevel) {
+            if (processingLevel.getAndIncrement() == 0) {
+                CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+            }
+        }
         
         final List<ResponseImpl> responces = new ArrayList<ResponseImpl>();
         final RequestImpl request = new RequestImpl(file, doc, interrupter);
@@ -193,8 +193,10 @@ public final class HighlightProvider  {
                     ex.printStackTrace(System.err);
                 }
 
-                if (processingLevel.decrementAndGet() == 0) {
-                    CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+                synchronized (processingLevel) {
+                    if (processingLevel.decrementAndGet() == 0) {
+                        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+                    }
                 }
                 Hook theHook = HighlightProvider.this.hook;
                 if( theHook != null ) {
