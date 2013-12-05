@@ -251,7 +251,7 @@ public class CustomizerTesting extends JPanel {
 
         testDirsLabel = new JLabel();
         testDirsScrollPane = new JScrollPane();
-        testDirsList = new JList();
+        testDirsList = new JList<BasePathSupport.Item>();
         addFolderButton = new JButton();
         removeButton = new JButton();
         moveUpButton = new JButton();
@@ -337,7 +337,7 @@ public class CustomizerTesting extends JPanel {
     private JPanel providersPanel;
     private JButton removeButton;
     private JLabel testDirsLabel;
-    private JList testDirsList;
+    private JList<BasePathSupport.Item> testDirsList;
     private JScrollPane testDirsScrollPane;
     // End of variables declaration//GEN-END:variables
 
