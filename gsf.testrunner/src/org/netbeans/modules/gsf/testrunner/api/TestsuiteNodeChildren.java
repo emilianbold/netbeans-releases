@@ -44,30 +44,18 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.openide.nodes.Children;
+import java.util.List;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Marian Petras
  */
-final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
+final class TestsuiteNodeChildren extends ChildFactory<Testcase> {
 
-    /** */
-    private static final Node[] EMPTY_NODE_ARRAY = new Node[0];
-
-    /** */
-    private final Report report;
-    /** */
+    private Report report;
     private int filterMask;
-    /** */
-    private boolean live = true;         //PENDING - temporary (should be false)
-
-    /*
-     * PENDING - threading, sychronization
-     */
     
     /**
      * Creates a new instance of TestsuiteNodeChildren
@@ -77,38 +65,32 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
         this.filterMask = filterMask;
     }
     
-    /**
-     */
     @Override
-    protected void addNotify() {
-        super.addNotify();
-        
-        if (live) {
-            setKeys(report.getTests());
+    protected boolean createKeys(List<Testcase> toPopulate) {
+        if(report != null) {
+            for (Testcase testcase : report.getTests()) {
+                if (!testcase.getStatus().isMaskApplied(filterMask)){
+                    toPopulate.add(testcase);
+                }
+            }
         }
-        //live = true;                          //PENDING
+        return true;
     }
-    
-    /**
-     */
-    @Override
-    protected void removeNotify() {
-        super.removeNotify();
-        
-        final Collection<Testcase> emptySet = Collections.emptySet();
-        setKeys(emptySet);
-        //live = false;                         //PENDING
-    }
-    
-    /**
-     */
-    @Override
-    protected Node[] createNodes(final Testcase testcase) {
-        if (testcase.getStatus().isMaskApplied(filterMask)){
-            return EMPTY_NODE_ARRAY;
-        }
 
-        return new Node[] {testcase.getSession().getNodeFactory().createTestMethodNode(testcase, report.getProject())};
+    @Override
+    protected Node createNodeForKey(Testcase testcase) {
+        if (testcase.getStatus().isMaskApplied(filterMask)){
+            return null;
+        }
+        return testcase.getSession().getNodeFactory().createTestMethodNode(testcase, report.getProject());
+    }
+
+    void setReport(Report report) {
+        this.report = report;
+    }
+
+    void notifyTestSuiteFinished() {
+        refresh(false);
     }
     
     /**
@@ -119,15 +101,12 @@ final class TestsuiteNodeChildren extends Children.Keys<Testcase> {
             return;
         }
         this.filterMask = filterMask;
-        
-//        if ((report.getErrors() + report.getFailures()) == report.getTotalTests()) {
-//            return;
-//        }
                 
-        if (isInitialized()) {
+        if (report != null) {
             for (Testcase testcase : report.getTests()) {
                 if (testcase.getStatus().isMaskApplied(diff)){
-                   refreshKey(testcase);
+                   refresh(false);
+                   break;
                 }
             }
         }

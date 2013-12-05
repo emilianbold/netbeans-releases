@@ -146,8 +146,8 @@ final class StatisticsPanel extends JPanel {
      */
     private JComponent createToolbar() {
         createShowButtons();
-        createRerunButtons();
         createNextPrevFailureButtons();
+        createRerunButtons();
 	createOptionButtons();
         String testingFramework = Manager.getInstance().getTestingFramework();
 
@@ -279,6 +279,15 @@ final class StatisticsPanel extends JPanel {
         rerunFailedButton.setEnabled(displayHandler.sessionFinished && 
                                      rerunHandler.enabled(RerunType.CUSTOM) &&
                                      !treePanel.getFailedTests().isEmpty());
+        btnShowPassed.setEnabled(displayHandler.sessionFinished);
+        btnShowPassedWithErrors.setEnabled(displayHandler.sessionFinished);
+        btnShowFailed.setEnabled(displayHandler.sessionFinished);
+        btnShowError.setEnabled(displayHandler.sessionFinished);
+        btnShowIgnored.setEnabled(displayHandler.sessionFinished);
+        btnShowSkipped.setEnabled(displayHandler.sessionFinished);
+        btnShowAborted.setEnabled(displayHandler.sessionFinished);
+        nextFailure.setEnabled(displayHandler.sessionFinished);
+        previousFailure.setEnabled(displayHandler.sessionFinished);
     }
 
     private void createShowButtons() {

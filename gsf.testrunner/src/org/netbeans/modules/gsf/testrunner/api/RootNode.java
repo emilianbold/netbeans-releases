@@ -70,7 +70,7 @@ final class RootNode extends AbstractNode {
     static final int ALL_PASSED_DISPLAYED = 2;
     /**
      */
-    private final RootNodeChildren children;
+    private RootNodeChildren children;
     /**
      */
     private volatile int filterMask;
@@ -94,15 +94,22 @@ final class RootNode extends AbstractNode {
      */
     @Messages("MSG_RunningTests=Running tests, please wait...")
     RootNode(TestSession session, int filterMask) {
-        super(new RootNodeChildren(session, filterMask));
+        super(Children.LEAF);
         this.session = session;
         this.filterMask = filterMask;
-        children = (RootNodeChildren) getChildren();
         setName(MSG_RunningTests());
 
         setIconBaseWithExtension(
                 "org/netbeans/modules/gsf/testrunner/resources/empty.gif");     //NOI18N
 
+    }
+    
+    private RootNodeChildren getRootNodeChildren() {
+        if (children == null) {
+            children = new RootNodeChildren(session, filterMask);
+            setChildren(Children.create(children, true));
+        }
+        return children;
     }
 
     /**
@@ -125,6 +132,7 @@ final class RootNode extends AbstractNode {
     void displayMessageSessionFinished(final String msg) {
         sessionFinished = true;
         displayMessage(msg);
+        getRootNodeChildren().notifyTestSuiteFinished();
     }
 
     /**
@@ -139,8 +147,8 @@ final class RootNode extends AbstractNode {
         assert EventQueue.isDispatchThread();
 
         /* Called from the EventDispatch thread */
-
-        children.displaySuiteRunning(suiteName);
+        
+        getRootNodeChildren().displaySuiteRunning(suiteName);
     }
 
     /**
@@ -156,7 +164,7 @@ final class RootNode extends AbstractNode {
 
         /* Called from the EventDispatch thread */
 
-        children.displaySuiteRunning(suite);
+        getRootNodeChildren().displaySuiteRunning(suite);
     }
 
     /**
@@ -166,7 +174,7 @@ final class RootNode extends AbstractNode {
 
         /* Called from the EventDispatch thread */
 
-        TestsuiteNode suiteNode = children.displayReport(report);
+        TestsuiteNode suiteNode = getRootNodeChildren().displayReport(report);
         updateStatistics();
         updateDisplayName();
         return suiteNode;
@@ -179,7 +187,7 @@ final class RootNode extends AbstractNode {
 
         /* Called from the EventDispatch thread */
 
-        children.displayReports(reports);
+        getRootNodeChildren().displayReports(reports);
         updateStatistics();
         updateDisplayName();
     }
@@ -195,7 +203,7 @@ final class RootNode extends AbstractNode {
 	aborted = 0;
         detectedPassedTests = 0;
         elapsedTimeMillis = 0;
-        for(Report rep: children.getReports()){
+        for(Report rep: getRootNodeChildren().getReports()){
             totalTests += rep.getTotalTests();
             failures += rep.getFailures();
             errors += rep.getErrors();
@@ -229,11 +237,8 @@ final class RootNode extends AbstractNode {
         }
         this.filterMask = filterMask;
 
-        Children ch = getChildren();
-        if (ch != Children.LEAF) {
-            ((RootNodeChildren) ch).setFilterMask(filterMask);
+        getRootNodeChildren().setFilterMask(filterMask);
         }
-    }
 
     @Messages({
         "MSG_TestsInfoNoTests=No tests executed.",
