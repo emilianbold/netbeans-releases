@@ -77,6 +77,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -112,7 +114,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryController implements QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class ODCSQueryController implements QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
 
     protected QueryPanel panel;
 
@@ -149,11 +151,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
-        panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
-        panel.saveButton.addActionListener(this);
         panel.refreshButton.addActionListener(this);
         panel.modifyButton.addActionListener(this);
         panel.seenButton.addActionListener(this);
@@ -195,6 +195,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         parameters.createByPeopleParameter(panel.userList, panel.creatorCheckBox, panel.ownerCheckBox, panel.commenterCheckBox, panel.ccCheckBox);                   
         parameters.createByDateParameter(panel.byDateComboBox, panel.startTextField, panel.endTextField);
         
+        parameters.addChangeListener(this);
+                
         panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
         setEndNow();
@@ -239,7 +241,6 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public void closed() {
-        onCancelChanges();
         synchronized(REFRESH_LOCK) {
             if(refreshTask != null) {
                 refreshTask.cancel();
@@ -411,6 +412,11 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     @Override
+    public void stateChanged(ChangeEvent e) {
+        fireChanged();
+    }
+    
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if(e.getSource() == panel.filterComboBox) {
             onFilterChange((Filter)e.getItem());
@@ -470,14 +476,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
-        } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
-        } else if (e.getSource() == panel.saveButton) {
-            onSave(false); // do not refresh
         } else if (e.getSource() == panel.refreshButton) {
             onRefresh();
         } else if (e.getSource() == panel.modifyButton) {
@@ -542,21 +544,20 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         selectFilter(filter);
     }
 
-    private void onSave(final boolean refresh) {
+    private void onSave(final String newName, final boolean refresh) {
        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 ODCS.LOG.fine("on save start");
-                String name = query.getDisplayName();
-                if(!query.isSaved()) {
+                String name = newName != null ? newName : query.getDisplayName();
+                if(name == null) {
                     name = getSaveName();
                     if(name == null) {
                         return;
                     }
                 }
                 assert name != null;
-                final String fname = name;
-                save(fname);
+                save(name);
                 ODCS.LOG.fine("on save finnish");
 
                 if(refresh) {
@@ -578,18 +579,18 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             enableFields(false);
             if(query.save(name)) {
                 setAsSaved();
-                fireSaved();
+                parameters.resetChanged();
+                fireChanged();                
                 if (!query.wasRun()) {
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
                 }
-                parameters.resetChanged();
             }
         } finally {
             panel.setRemoteInvocationRunning(false);
             enableFields(true);
+            ODCS.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
         }
-        ODCS.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
     }
 
     private String getSaveName() {
@@ -967,21 +968,23 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public boolean saveChanges(String name) {
+        onSave(name, true);
         return true;
     }
 
     @Override
     public boolean discardUnsavedChanges() {
+        onCancelChanges();
         return true;
     }
 
-    private void fireSaved() {
+    private void fireChanged() {
         support.firePropertyChange(PROP_CHANGED, null, null);
     }
 
     @Override
     public boolean isChanged() {
-        return false;
+        return parameters.parametersChanged();
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
