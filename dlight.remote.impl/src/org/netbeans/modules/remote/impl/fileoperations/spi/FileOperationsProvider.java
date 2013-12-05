@@ -64,6 +64,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
@@ -140,7 +141,7 @@ abstract public class FileOperationsProvider {
                 return statInfo.isDirectory(); 
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
                 ex.printStackTrace(System.err);
@@ -163,7 +164,7 @@ abstract public class FileOperationsProvider {
                 return statInfo.getLastModified().getTime();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return -1;
                 }
                 ex.printStackTrace(System.err);
@@ -186,26 +187,10 @@ abstract public class FileOperationsProvider {
                 return statInfo.isPlainFile(); 
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
                 ex.printStackTrace(System.err);
-            }
-            return false;
-        }
-        
-        private boolean notExist(ExecutionException e) {
-            Throwable ex = e;
-            while (ex != null) {
-                if (ex instanceof SftpIOException) {
-                    switch(((SftpIOException)ex).getId()) {
-                        case SftpIOException.SSH_FX_NO_SUCH_FILE:
-                        case SftpIOException.SSH_FX_PERMISSION_DENIED:
-                        return true;
-                    }
-                    break;
-                }
-                ex = ex.getCause();
             }
             return false;
         }
@@ -219,7 +204,7 @@ abstract public class FileOperationsProvider {
                 return statInfo.canWrite(env); 
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
                 ex.printStackTrace(System.err);
@@ -257,7 +242,7 @@ abstract public class FileOperationsProvider {
                 return statInfo != null;
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
                 System.err.println("Exception on file "+file.getPath());
@@ -293,7 +278,7 @@ abstract public class FileOperationsProvider {
                     }
                 } catch (InterruptedException ex) {
                 } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
+                    if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                         return null;
                     }
                     ex.printStackTrace(System.err);

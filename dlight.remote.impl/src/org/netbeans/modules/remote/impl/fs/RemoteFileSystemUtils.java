@@ -357,8 +357,10 @@ public class RemoteFileSystemUtils {
                 return true;
             }
             if (ex instanceof SftpIOException) {
-                if (((SftpIOException)ex).getId() == SftpIOException.SSH_FX_NO_SUCH_FILE) {
-                    return true;
+                switch (((SftpIOException) ex).getId()) {
+                    case SftpIOException.SSH_FX_NO_SUCH_FILE:
+                    case SftpIOException.SSH_FX_PERMISSION_DENIED:
+                        return true;
                 }
             }
             ex = ex.getCause();
