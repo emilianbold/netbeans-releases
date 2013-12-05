@@ -1786,4 +1786,11 @@ public class Utilities {
 //                (ExecutableElement)me : null;
     }
     
+    public static boolean isJavaString(CompilationInfo ci, TypeMirror m) {
+        if (m == null || m.getKind() != TypeKind.DECLARED) {
+            return false;
+        } 
+        Element e = ((DeclaredType)m).asElement();
+        return (e.getKind() == ElementKind.CLASS && ((TypeElement)e).getQualifiedName().contentEquals("java.lang.String")); // NOI18N
+    }
 }

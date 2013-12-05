@@ -81,6 +81,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
+import org.netbeans.modules.java.hints.OrganizeImports;
 import org.netbeans.modules.java.hints.infrastructure.CreatorBasedLazyFixList;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
@@ -391,12 +392,7 @@ public final class ImportClass implements ErrorRule<Void> {
                             Logger.getAnonymousLogger().warning(String.format("Attempt to fix import for FQN: %s, which does not have a TypeElement in currect context", fqn));
                             return ;
                         }
-                        
-                        CompilationUnitTree cut = GeneratorUtilities.get(copy).addImports(
-                            copy.getCompilationUnit(),
-                            Collections.singleton(te)
-                        );
-                        copy.rewrite(copy.getCompilationUnit(), cut);
+                        OrganizeImports.doOrganizeImports(copy, Collections.singleton(te), false);
                     }
                     
             };

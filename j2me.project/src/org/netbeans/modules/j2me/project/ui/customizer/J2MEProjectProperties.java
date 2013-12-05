@@ -90,8 +90,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -121,7 +119,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -143,8 +140,6 @@ public final class J2MEProjectProperties {
     public static final String OBFUSCATION_LEVEL = "obfuscation.level"; //NOI18N
     //J2MERunPanel
     public static final String PROP_RUN_METHOD = "run.method"; //NOI18N
-    public static final String PROP_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
-    public static final String PROP_SECURITY_DOMAIN = "security.domain"; //NOI18N
     public static final String PROP_DEBUGGER_TIMEOUT = "debugger.timeout"; //NOI18N
     //J2MESigningPanel
     public static final String PROP_SIGN_ENABLED = "sign.enabled"; //NOI18N
@@ -223,8 +218,6 @@ public final class J2MEProjectProperties {
     private static final String[] CONFIG_AWARE_PROPERTIES = {
         ProjectProperties.APPLICATION_ARGS,
         PROP_RUN_METHOD,
-        PROP_USE_SECURITY_DOMAIN,
-        PROP_SECURITY_DOMAIN,
         PROP_DEBUGGER_TIMEOUT,
         PROP_PLATFORM_DEVICE,
         PROP_PLATFORM_CONFIGURATION,
@@ -232,9 +225,6 @@ public final class J2MEProjectProperties {
         PROP_PLATFORM_APIS,
         PROP_PLATFORM_BOOTCLASSPATH
     };
-
-    //J2MERunPanel
-    String[] SECURITY_DOMAINS;
 
     //PlatformDevicesPanel
     public ComboBoxModel J2ME_PLATFORM_MODEL;
@@ -388,7 +378,6 @@ public final class J2MEProjectProperties {
         //J2MERunPanel
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
-        SECURITY_DOMAINS = readSecurityDomains();
 
         //PlatformDevicesPanel
         J2ME_PLATFORM_MODEL = ModelHelper.createComboBoxModel(evaluator, ProjectProperties.PLATFORM_ACTIVE, Arrays.asList(J2MEProjectUtils.readPlatforms()));
@@ -1136,42 +1125,6 @@ public final class J2MEProjectProperties {
                 project.getUpdateHelper().putProperties(privatePath, privateCfgProps);
             }
         }
-    }
-
-    /**
-     * Fetches available security domains for selected J2ME device.
-     *
-     * @return available security domains.
-     */
-    private String[] readSecurityDomains() {
-        String[] securityDomains = new String[0];
-        EditableProperties props = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String activePlatform = props.getProperty("platform.active"); //NOI18N
-        String activeDevice = props.getProperty("platform.device"); //NOI18N
-        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().
-                getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, new SpecificationVersion("8.0"))); //NOI18N
-        if (activePlatform != null && activeDevice != null && platforms != null) {
-            for (int i = 0; i < platforms.length; i++) {
-                if (platforms[i] instanceof J2MEPlatform) {
-                    final J2MEPlatform platform = (J2MEPlatform) platforms[i];
-                    if (activePlatform.equals(platform.getProperties().get("platform.ant.name"))) { //NOI18N
-                        final J2MEPlatform.Device[] devices = platform.getDevices();
-                        if (devices != null) {
-                            for (int j = 0; j < devices.length; j++) {
-                                final J2MEPlatform.Device device = devices[j];
-                                if (activeDevice.equals(device.getName())) {
-                                    if (device.getSecurityDomains() != null) {
-                                        securityDomains = device.getSecurityDomains();
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return securityDomains;
     }
 
     List<KeyStoreRepository.KeyStoreBean> loadKeystores() {
