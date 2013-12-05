@@ -156,6 +156,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (isValid != null && !isValid) {
             return false;
         }
+        @SuppressWarnings("unchecked")
         Map<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender, Boolean> validity = (Map<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender, Boolean>) descriptor.getProperty(PhpExtenderPanel.VALID);
         if (validity != null) {
             for (Boolean extenderValid : validity.values()) {

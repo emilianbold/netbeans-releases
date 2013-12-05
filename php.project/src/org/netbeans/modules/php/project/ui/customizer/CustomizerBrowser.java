@@ -74,6 +74,7 @@ public final class CustomizerBrowser extends JPanel {
         init();
     }
 
+    @SuppressWarnings("unchecked")
     private JComboBox<WebBrowser> createBrowserComboBox() {
         return BrowserUISupport.createBrowserPickerComboBox(
                 browserModel.getSelectedBrowserId(), true, false,

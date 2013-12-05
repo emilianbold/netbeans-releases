@@ -158,6 +158,7 @@ public class PhpExtenderPanel implements WizardDescriptor.Panel<WizardDescriptor
     }
 
     private void setValid(boolean valid) {
+        @SuppressWarnings("unchecked")
         Map<PhpModuleExtender, Boolean> validity = (Map<PhpModuleExtender, Boolean>) descriptor.getProperty(VALID);
         if (validity == null) {
             validity = new ConcurrentHashMap<>();
