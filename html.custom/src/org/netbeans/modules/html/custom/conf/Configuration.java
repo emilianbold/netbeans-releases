@@ -104,7 +104,7 @@ public class Configuration {
 
     public static Configuration get(@NonNull FileObject file) {
         Project owner = FileOwnerQuery.getOwner(file);
-        return get(owner);
+        return owner == null ? EMPTY : get(owner);
     }
 
     @NonNull
