@@ -147,7 +147,7 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots (final Collection<File> files) {
-        
+        refreshAllRoots(files, GitUtils.NULL_PROGRESS_MONITOR);
     }
     
     /**
