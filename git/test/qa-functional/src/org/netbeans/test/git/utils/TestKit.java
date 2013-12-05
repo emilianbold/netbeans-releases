@@ -60,6 +60,7 @@ import org.netbeans.test.git.operators.NewJavaProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
@@ -142,14 +143,17 @@ public final class TestKit {
 
         waitForScanFinishedSimple();//ProjectSupport.waitScanFinished();//AndQueueEmpty(); // test fails if there is waitForScanAndQueueEmpty()...
 
+        new EventTool().waitNoEvent(2000);
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(prj_name);
         rootNode.performPopupActionNoBlock("Versioning|Initialize Git Repository");
 
+        new EventTool().waitNoEvent(2000);
         ndo = new NbDialogOperator("Initialize a Git Repository");
         ndo.ok();
 
         waitForScanFinishedSimple();
 
+        new EventTool().waitNoEvent(2000);
         CommitOperator cmo = CommitOperator.invoke(rootNode);
         cmo.setCommitMessage("init");
         cmo.commit();

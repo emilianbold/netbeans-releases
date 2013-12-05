@@ -248,6 +248,9 @@ public class DeleteTest extends JellyTestCase {
             Thread.sleep(1000);
             try {
                 vo = VersioningOperator.invoke();
+                new EventTool().waitNoEvent(2000);
+                vo.refresh();
+                new EventTool().waitNoEvent(2000);
                 table = vo.tabFiles();
             } catch (Exception ex) {
                 e = ex;
