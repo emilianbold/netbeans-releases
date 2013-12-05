@@ -236,7 +236,8 @@ public class RemoteAWTScreenshot {
             return NO_SCREENSHOTS;
         }
 
-        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
+        final JPDADebugger debugger = ((JPDAThreadImpl) t).getDebugger();
+        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(debugger);
         final ClassType serviceClass;
         try {
             serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
@@ -245,24 +246,7 @@ public class RemoteAWTScreenshot {
         }
         final List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
         final RetrievalException[] retrievalExceptionPtr = new RetrievalException[] { null };
-        Field preferredEventThreadField = null;
         try {
-            preferredEventThreadField = ReferenceTypeWrapper.fieldByName(serviceClass, "preferredEventThread");
-        } catch (ObjectCollectedExceptionWrapper | ClassNotPreparedExceptionWrapper ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
-            return NO_SCREENSHOTS;
-        }
-        try {
-            if (preferredEventThreadField != null) {
-                try {
-                    ClassTypeWrapper.setValue(serviceClass, preferredEventThreadField, tawt);
-                } catch(ClassNotLoadedException | ClassNotPreparedExceptionWrapper | InvalidTypeException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
-                    return NO_SCREENSHOTS;
-                }
-            }
             RemoteServices.runOnStoppedThread(t, new Runnable() {
                 @Override
                 public void run() {
@@ -461,7 +445,7 @@ public class RemoteAWTScreenshot {
                     } catch (InvocationException iex) {
                         //Exceptions.printStackTrace(iex);
                         ((JPDAThreadImpl) t).notifyMethodInvokeDone();
-                        final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
+                        final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger);
                         // Initialize the translated exception:
                         iextr.setPreferredThread((JPDAThreadImpl) t);
                         iextr.getMessage();
@@ -493,15 +477,6 @@ public class RemoteAWTScreenshot {
         } catch (PropertyVetoException pvex) {
             // Can not invoke methods
             throw new RetrievalException(pvex.getMessage(), pvex);
-        } finally {
-            if (preferredEventThreadField != null) {
-                try {
-                    ClassTypeWrapper.setValue(serviceClass, preferredEventThreadField, null);
-                } catch(ClassNotLoadedException | ClassNotPreparedExceptionWrapper | InvalidTypeException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
-                }
-            }
         }
         if (retrievalExceptionPtr[0] != null) {
             throw retrievalExceptionPtr[0];

@@ -100,6 +100,8 @@ public class RemoteAWTService {
     static void stopAccessLoop() {
         awtAccessLoop = false;
         awtAccessLoopRunnable = null;
+        lastGUISnapshots = null;
+        preferredEventThread = null;
     }
     
     static String startHierarchyListener() {
