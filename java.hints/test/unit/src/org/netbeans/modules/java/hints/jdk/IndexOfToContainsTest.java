@@ -41,43 +41,36 @@
  */
 package org.netbeans.modules.java.hints.jdk;
 
-import com.sun.source.tree.Tree.Kind;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-@Messages({
-    "DN_containsForIndexOf=String.indexOf can be replaced with String.contains",
-    "DESC_containsForIndexOf=Finds usages of String.indexOf that can be replaced with String.contains",
-    "ERR_containsForIndexOf=String.indexOf can be replaced with String.contains",
-    "FIX_containsForIndexOf=String.indexOf can be replaced with String.contains",
-})
-public class Tiny {
+public class IndexOfToContainsTest extends NbTestCase {
     
-    @Hint(displayName="#DN_containsForIndexOf", description="#DESC_containsForIndexOf", category="rules15", suppressWarnings="IndexOfReplaceableByContains")
-    @TriggerPatterns({
-        @TriggerPattern(value="$site.indexOf($substring) == (-1)"),
-        @TriggerPattern(value="$site.indexOf($substring) != (-1)")
-    })
-    public static ErrorDescription containsForIndexOf(HintContext ctx) {
-        String target = "$site.contains($substring)";
-        
-        if (ctx.getPath().getLeaf().getKind() == Kind.EQUAL_TO) {
-            target = "!" + target;
-        }
-        
-        Fix fix = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_containsForIndexOf(), ctx.getPath(), target);
-        
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_containsForIndexOf(), fix);
+    public IndexOfToContainsTest(String name) {
+        super(name);
+    }
+    
+    public void testContainsForIndexOf1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private boolean test(String str) {\n" +
+                       "        return str.indexOf(\"sub\") == -1;\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(IndexOfToContains.class)
+                .findWarning("3:15-3:41:verifier:" + Bundle.FIX_containsForIndexOf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private boolean test(String str) {\n" +
+                              "        return !str.contains(\"sub\");\n" +
+                              "    }\n" +
+                              "}\n");
     }
 }

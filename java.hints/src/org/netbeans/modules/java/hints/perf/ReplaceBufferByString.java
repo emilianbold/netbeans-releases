@@ -72,6 +72,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -197,6 +198,7 @@ public class ReplaceBufferByString {
         private WorkingCopy wc;
         private TreeMaker mk;
         private DeclaredType stringType;
+        private GeneratorUtilities gu;
         
         public RewriteToStringFix(TreePathHandle initPath, TreePathHandle handle) {
             super(handle);
@@ -217,6 +219,8 @@ public class ReplaceBufferByString {
             }
             this.wc = ctx.getWorkingCopy();
             this.mk = wc.getTreeMaker();
+            this.gu = GeneratorUtilities.get(wc);
+            gu.importComments(p.getLeaf(), wc.getCompilationUnit());
             try {
                 TypeElement stringEl = wc.getElements().getTypeElement("java.lang.String"); // NOI18N
                 if (stringEl == null) {
@@ -227,7 +231,10 @@ public class ReplaceBufferByString {
                 rewriteAppends(new TreePath(p, vt.getInitializer()));
                 ToStringTranslator tst = new ToStringTranslator(wc, wc.getTrees().getElement(p));
                 tst.scan(ctx.getPath(), tst);
-                wc.rewrite(vt.getType(), mk.Type(stringType)); // NOI18N
+                Tree t = mk.Type(stringType);
+                gu.copyComments(vt.getType(), t, true);
+                gu.copyComments(vt.getType(), t, false);
+                wc.rewrite(vt.getType(), t); // NOI18N
             } finally {
                 this.wc = null;
                 this.mk = null;
@@ -247,8 +254,11 @@ public class ReplaceBufferByString {
                 }
                 TypeMirror argType = ee.getParameters().get(0).asType();
                 if (argType.getKind() == TypeKind.DECLARED) {
-                    wc.rewrite(expr, nct.getArguments().get(0));
-                    return nct.getArguments().get(0);
+                    ExpressionTree a = nct.getArguments().get(0);
+                    gu.copyComments(expr, a, true);
+                    gu.copyComments(expr, a, false);
+                    wc.rewrite(expr, a);
+                    return a;
                 }
                 return null;
             }
@@ -286,6 +296,8 @@ public class ReplaceBufferByString {
                 if (selector == null) {
                     return null;
                 } else {
+                    gu.copyComments(select.getExpression(), mit, true);
+                    gu.copyComments(select.getExpression(), mit, false);
                     wc.rewrite(mit, select.getExpression());
                     return expr;
                 }
@@ -315,11 +327,8 @@ public class ReplaceBufferByString {
                 TreePath resPath = new TreePath(p, arg);
                 Object o = ArithmeticUtilities.compute(wc, resPath, true, true);
                 if (o instanceof String) {
-                    wc.rewrite(mit, arg = mk.Literal(o));
-                } else {
-                    wc.rewrite(mit, arg);
+                    arg = mk.Literal(o);
                 }
-                return arg;
             } else {
                 Object o = ArithmeticUtilities.compute(wc, argPath, true, true);
                 if (ArithmeticUtilities.isRealValue(o)) {
@@ -327,9 +336,11 @@ public class ReplaceBufferByString {
                 } else if (!b1) {
                     arg = makeToString(argPath);
                 }
-                wc.rewrite(mit, arg);
-                return arg;
             }
+            gu.copyComments(mit, arg, true);
+            gu.copyComments(mit, arg, false);
+            wc.rewrite(mit, arg);
+            return arg;
         }
 
         private ExpressionTree makeParenthesis(ExpressionTree arg) {
@@ -393,10 +404,12 @@ public class ReplaceBufferByString {
     private static class ToStringTranslator extends TreePathScanner {
         private final WorkingCopy wc;
         private final Element varElement;
+        private final GeneratorUtilities gu;
         
         public ToStringTranslator(WorkingCopy wc, Element varElement) {
             this.wc = wc;
             this.varElement = varElement;
+            this.gu = GeneratorUtilities.get(wc);
         }
         
         @Override
@@ -411,6 +424,8 @@ public class ReplaceBufferByString {
                 if (k == Tree.Kind.METHOD_INVOCATION) {
                     if (node.getIdentifier().contentEquals("toString")) { // NOI18N
                         // rewrite the node to just the variable, which is going to change the type
+                        gu.copyComments(x, node.getExpression(), true);
+                        gu.copyComments(x, node.getExpression(), false);
                         wc.rewrite(x, node.getExpression());
                     }
                 }
