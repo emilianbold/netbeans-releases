@@ -72,11 +72,10 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
- * TODO: project's config should be merged with the default one in $userdir/conf
+ * TODO: project's config should be merged with the default one in $userdir/conf.
  *
  * @author marek
  */
@@ -86,8 +85,7 @@ public class Configuration {
 
     private static final String CONF_FILE_NAME = "customs.json"; //NOI18N
 
-    private static final Map<Project, Configuration> MAP
-            = new WeakHashMap<>();
+    private static final Map<Project, Configuration> MAP = new WeakHashMap<>();
 
     //json file keys
     public static final String DESCRIPTION = "description";
@@ -99,11 +97,11 @@ public class Configuration {
     public static final String ATTRIBUTES = "attributes";
     public static final String TYPE = "type";
 
-    private final Map<String, Tag> TAGS = new HashMap<>();
-    private final Map<String, Attribute> ATTRS = new HashMap<>();
+    private final Map<String, Tag> tags = new HashMap<>();
+    private final Map<String, Attribute> attrs = new HashMap<>();
 
     public static final Configuration EMPTY = new Configuration();
-    
+
     public static Configuration get(@NonNull FileObject file) {
         Project owner = FileOwnerQuery.getOwner(file);
         return get(owner);
@@ -126,7 +124,7 @@ public class Configuration {
 
     private Configuration() {
     }
-    
+
     public Configuration(Project project) {
         //TODO fix the conf location in maven and other project types
         FileObject nbproject = project.getProjectDirectory().getFileObject("config"); //NOI18N
@@ -182,11 +180,11 @@ public class Configuration {
      * @return
      */
     public Collection<String> getTagsNames() {
-        return TAGS.keySet();
+        return tags.keySet();
     }
 
     public Collection<Tag> getTags() {
-        return TAGS.values();
+        return tags.values();
     }
 
     /**
@@ -195,41 +193,41 @@ public class Configuration {
      * @return
      */
     public Collection<String> getAttributesNames() {
-        return ATTRS.keySet();
+        return attrs.keySet();
     }
 
     public Collection<Attribute> getAttributes() {
-        return ATTRS.values();
+        return attrs.values();
     }
 
     public Tag getTag(String tagName) {
-        return TAGS.get(tagName);
+        return tags.get(tagName);
     }
 
     public Attribute getAttribute(String name) {
-        return ATTRS.get(name);
+        return attrs.get(name);
     }
 
     public void add(Tag t) {
-        TAGS.put(t.getName(), t);
+        tags.put(t.getName(), t);
     }
 
     public void remove(Tag t) {
-        TAGS.remove(t.getName());
+        tags.remove(t.getName());
     }
 
     public void add(Attribute a) {
-        ATTRS.put(a.getName(), a);
+        attrs.put(a.getName(), a);
     }
 
     public void remove(Attribute a) {
-        ATTRS.remove(a.getName());
+        attrs.remove(a.getName());
     }
 
     private void reload() throws IOException {
         //if something goes wrong, the data will be empty until the problem is corrected
-        TAGS.clear();
-        ATTRS.clear();
+        tags.clear();
+        attrs.clear();
 
         final Document document = getDocument(configFile);
         final AtomicReference<String> docContentRef = new AtomicReference<>();
@@ -261,20 +259,20 @@ public class Configuration {
         if (elements != null) {
             Collection<Tag> rootTags = loadTags(elements, null);
             for (Tag rootTag : rootTags) {
-                TAGS.put(rootTag.getName(), rootTag);
+                tags.put(rootTag.getName(), rootTag);
             }
         }
         JSONObject attributes = (JSONObject) root.get(ATTRIBUTES);
         if (attributes != null) {
             Collection<Attribute> rootAttrs = loadAttributes(attributes, null);
             for (Attribute a : rootAttrs) {
-                ATTRS.put(a.getName(), a);
+                attrs.put(a.getName(), a);
             }
         }
 
     }
 
-    private Document getDocument(FileObject file) throws DataObjectNotFoundException, IOException {
+    private Document getDocument(FileObject file) throws IOException {
         DataObject dobj = DataObject.find(file);
         EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         if (ec != null) {
@@ -285,8 +283,8 @@ public class Configuration {
 
     public JSONObject store() throws IOException {
         JSONObject node = new JSONObject();
-        storeTags(node, TAGS.values());
-        storeAttributes(node, ATTRS.values());
+        storeTags(node, tags.values());
+        storeAttributes(node, attrs.values());
 
         //serialize the current model
         final String newContent = node.toJSONString();
@@ -411,19 +409,19 @@ public class Configuration {
         if (t.isRequired()) {
             ctn.put(REQUIRED, Boolean.TRUE.toString());
         }
-        
+
         //filter parent from contexts for storing
         Collection<String> contexts = t.getContexts();
-        if(t.getParent() != null) {
+        if (t.getParent() != null) {
             Collection<String> noParentInContexts = new ArrayList<>();
-            for(String ctx : contexts) {
-                if(!ctx.equals(t.getParent().getName())) {
+            for (String ctx : contexts) {
+                if (!ctx.equals(t.getParent().getName())) {
                     noParentInContexts.add(ctx);
                 }
             }
             contexts = noParentInContexts;
         }
-        
+
         if (!contexts.isEmpty()) {
             if (contexts.size() == 1) {
                 //as string
@@ -436,7 +434,7 @@ public class Configuration {
     }
 
     private List<Tag> loadTags(JSONObject node, Tag parent) {
-        List<Tag> tags = new ArrayList<>();
+        List<Tag> innerTags = new ArrayList<>();
         for (Object key : node.keySet()) {
             String name = (String) key;
             JSONObject val = (JSONObject) node.get(name);
@@ -455,40 +453,40 @@ public class Configuration {
             }
 
             String description = null;
-            Object _description = val.get(DESCRIPTION);
-            if (_description != null) {
-                if (_description instanceof String) {
-                    description = (String) _description;
+            Object jsonDescription = val.get(DESCRIPTION);
+            if (jsonDescription != null) {
+                if (jsonDescription instanceof String) {
+                    description = (String) jsonDescription;
                 } else {
                     LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DESCRIPTION);
                 }
             }
 
             String doc = null;
-            Object _doc = val.get(DOC);
-            if (_doc != null) {
-                if (_doc instanceof String) {
-                    doc = (String) _doc;
+            Object jsonDoc = val.get(DOC);
+            if (jsonDoc != null) {
+                if (jsonDoc instanceof String) {
+                    doc = (String) jsonDoc;
                 } else {
                     LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DOC);
                 }
             }
 
             String docURL = null;
-            Object _docURL = val.get(DOC_URL);
-            if (_docURL != null) {
-                if (_docURL instanceof String) {
-                    docURL = (String) _docURL;
+            Object jsonDocURL = val.get(DOC_URL);
+            if (jsonDocURL != null) {
+                if (jsonDocURL instanceof String) {
+                    docURL = (String) jsonDocURL;
                 } else {
                     LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", DOC_URL);
                 }
             }
 
             boolean required = false;
-            Object _required = val.get(REQUIRED);
-            if (_required != null) {
-                if (_required instanceof String) {
-                    required = Boolean.parseBoolean((String) _required);
+            Object jsonRequired = val.get(REQUIRED);
+            if (jsonRequired != null) {
+                if (jsonRequired instanceof String) {
+                    required = Boolean.parseBoolean((String) jsonRequired);
                 } else {
                     LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
                 }
@@ -497,10 +495,10 @@ public class Configuration {
             Tag tag = new Tag(name, description, doc, docURL, parent, required, contexts.toArray(new String[0]));
 
             //process nested elements
-            Object _elements = val.get(ELEMENTS);
-            if (_elements != null) {
-                if (_elements instanceof JSONObject) {
-                    JSONObject els = (JSONObject) _elements;
+            Object jsonElements = val.get(ELEMENTS);
+            if (jsonElements != null) {
+                if (jsonElements instanceof JSONObject) {
+                    JSONObject els = (JSONObject) jsonElements;
                     Collection<Tag> elements = loadTags(els, tag);
                     tag.setChildren(elements);
                 } else {
@@ -509,22 +507,22 @@ public class Configuration {
             }
 
             //process nested attributes
-            JSONObject attributes = (JSONObject) val.get(ATTRIBUTES);
+            JSONObject jsonAttributes = (JSONObject) val.get(ATTRIBUTES);
 
-            Collection<Attribute> attrs = attributes != null
-                    ? loadAttributes(attributes, tag)
+            Collection<Attribute> attributes = jsonAttributes != null
+                    ? loadAttributes(jsonAttributes, tag)
                     : Collections.<Attribute>emptyList();
 
-            tag.setAttributes(attrs);
+            tag.setAttributes(attributes);
 
-            tags.add(tag);
+            innerTags.add(tag);
 
         }
-        return tags;
+        return innerTags;
     }
 
     private List<Attribute> loadAttributes(JSONObject node, Tag tag) {
-        List<Attribute> attrs = new ArrayList<>();
+        List<Attribute> attributes = new ArrayList<>();
         for (Object key : node.keySet()) {
             String name = (String) key;
             Object value = node.get(key);
@@ -534,7 +532,7 @@ public class Configuration {
                 //the string value specifies just the type - boolean, string etc.
                 String type = (String) value;
                 Attribute a = new Attribute(name, type, null, null, null, tag, false);
-                attrs.add(a);
+                attributes.add(a);
 
             } else if (value instanceof JSONObject) {
                 //map
@@ -552,61 +550,61 @@ public class Configuration {
                 }
 
                 String type = null;
-                Object _type = val.get(TYPE);
-                if (_type != null) {
-                    if (_type instanceof String) {
-                        type = (String) _type;
+                Object jsonType = val.get(TYPE);
+                if (jsonType != null) {
+                    if (jsonType instanceof String) {
+                        type = (String) jsonType;
                     } else {
                         LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", TYPE);
                     }
                 }
 
                 String description = null;
-                Object _description = val.get(DESCRIPTION);
-                if (_description != null) {
-                    if (_description instanceof String) {
-                        description = (String) _description;
+                Object jsonDescription = val.get(DESCRIPTION);
+                if (jsonDescription != null) {
+                    if (jsonDescription instanceof String) {
+                        description = (String) jsonDescription;
                     } else {
                         LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DESCRIPTION);
                     }
                 }
 
                 String doc = null;
-                Object _doc = val.get(DOC);
-                if (_doc != null) {
-                    if (_doc instanceof String) {
-                        doc = (String) _doc;
+                Object jsonDoc = val.get(DOC);
+                if (jsonDoc != null) {
+                    if (jsonDoc instanceof String) {
+                        doc = (String) jsonDoc;
                     } else {
                         LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DOC);
                     }
                 }
 
                 String docURL = null;
-                Object _docURL = val.get(DOC_URL);
-                if (_docURL != null) {
-                    if (_docURL instanceof String) {
-                        docURL = (String) _docURL;
+                Object jsonDocURL = val.get(DOC_URL);
+                if (jsonDocURL != null) {
+                    if (jsonDocURL instanceof String) {
+                        docURL = (String) jsonDocURL;
                     } else {
                         LOGGER.log(Level.WARNING, "The '{0}' key needs to have string value!", DOC_URL);
                     }
                 }
 
                 boolean required = false;
-                Object _required = val.get(REQUIRED);
-                if (_required != null) {
-                    if (_required instanceof String) {
-                        required = Boolean.parseBoolean((String) _required);
+                Object jsonRequired = val.get(REQUIRED);
+                if (jsonRequired != null) {
+                    if (jsonRequired instanceof String) {
+                        required = Boolean.parseBoolean((String) jsonRequired);
                     } else {
                         LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
                     }
                 }
 
                 Attribute a = new Attribute(name, type, description, doc, docURL, tag, required, contexts.toArray(new String[0]));
-                attrs.add(a);
+                attributes.add(a);
             }
 
         }
-        return attrs;
+        return attributes;
     }
 
 }
