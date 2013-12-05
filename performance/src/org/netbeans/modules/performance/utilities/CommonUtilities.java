@@ -810,6 +810,10 @@ public class CommonUtilities {
             }
             
         testResultsTag=allPerfDoc.getDocumentElement();
+        String buildNumber = System.getProperty("buildnumber");
+        if (buildNumber != null) {
+            testResultsTag.setAttribute("buildnumber", buildNumber);
+        }
 
         testTag=null;
         for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
