@@ -316,6 +316,7 @@ public class RemoteServices {
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
         mb.setHidden(true);
+        mb.setThreadFilters(dbg, new JPDAThread[] { awtThread });
         mb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
