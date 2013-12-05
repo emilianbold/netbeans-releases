@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.hudson.api;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -228,5 +231,54 @@ public class Utilities {
      */
     private static UIExtension findUIExtension() {
         return Lookup.getDefault().lookup(UIExtension.class);
+    }
+
+    /**
+     * Check whether a URL represents a valid Hudson root.
+     *
+     * @param url The URL, which should end with a slash (/) character.
+     * @return {@link HudsonURLCheckResult#OK} if the URL is valid, or some
+     * other value if the URL cannot be used for a hudson instance.
+     * @since hudson/2.4
+     */
+    public static HudsonURLCheckResult checkHudsonURL(String url) {
+        try {
+            URL u = new URL(url);
+            HttpURLConnection connection = new ConnectionBuilder().homeURL(u).url(
+                    new URL(u, "?checking=redirects")).httpConnection(); // NOI18N
+            String sVersion = connection.getHeaderField("X-Hudson"); // NOI18N
+            connection.disconnect();
+            if (sVersion == null) {
+                return HudsonURLCheckResult.WRONG_VERSION;
+            }
+            HudsonVersion version = new HudsonVersion(sVersion);
+            if (!Utilities.isSupportedVersion(version)) {
+                return HudsonURLCheckResult.WRONG_VERSION;
+            }
+            if (!"checking=redirects".equals(connection.getURL().getQuery())) { // NOI18N
+                return HudsonURLCheckResult.INCORRECT_REDIRECTS;
+            }
+            return HudsonURLCheckResult.OK;
+        } catch (IOException x) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.INFO, null, x);
+            return HudsonURLCheckResult.OTHER_ERROR;
+        }
+    }
+
+    /**
+     * Enumeration of values that can be returned from
+     * {@link #checkHudsonURL(String)}. Value {@link #OK} means that the URL
+     * represents a valid Hudson instance, other values indicates possible
+     * problems. New values can be added in the future.
+     *
+     * @since hudson/2.4
+     */
+    public enum HudsonURLCheckResult {
+
+        OK, WRONG_VERSION, INCORRECT_REDIRECTS, OTHER_ERROR;
+
+        public boolean isOK() {
+            return this.equals(OK);
+        }
     }
 }
