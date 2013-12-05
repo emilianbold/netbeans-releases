@@ -153,8 +153,10 @@ public class InitializeTest extends JellyTestCase {
             cmo.commit();
 
             //TestKit.waitText(mh);
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(2000);
             vo = VersioningOperator.invoke();
+            new EventTool().waitNoEvent(2000);
+            vo.refresh();
             new EventTool().waitNoEvent(2000);
             TimeoutExpiredException tee = null;
             try {

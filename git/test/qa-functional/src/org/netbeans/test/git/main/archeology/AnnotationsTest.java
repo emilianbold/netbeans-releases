@@ -119,6 +119,7 @@ public class AnnotationsTest extends JellyTestCase {
             //TestKit.waitText(mh);
 
             EditorOperator.closeDiscardAll();
+            new EventTool().waitNoEvent(2000);
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
             node.performPopupAction("Git|Show Annotations");
             new EventTool().waitNoEvent(2000);

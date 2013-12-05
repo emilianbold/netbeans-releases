@@ -78,6 +78,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JList" name="testDirsList">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;BasePathSupport.Item&gt;"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
