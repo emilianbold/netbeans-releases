@@ -43,14 +43,17 @@
  */
 package org.netbeans.modules.cnd.modelimpl;
 
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.NbBundle;
 
 /**
  * start/stop csm model support.
+ *
  * @author Vladimir Voskresensky
  */
 public final class Installer {
@@ -74,10 +77,18 @@ public final class Installer {
         @Override
         public void run() {
             CndUtils.assertNonUiThread();
-            if (TraceFlags.TRACE_MODEL_STATE) {
-                System.err.println("=== Installer.Stop");
-            }
-            ModelSupport.instance().shutdown();
+            ProgressUtils.showProgressDialogAndRun(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (TraceFlags.TRACE_MODEL_STATE) {
+                        System.err.println("=== Installer.Stop");
+                    }
+                    ModelSupport.instance().shutdown();
+
+                }
+            }, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
+
         }
     }
 }
