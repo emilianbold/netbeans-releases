@@ -39,11 +39,13 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.html.angular.cc;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -52,18 +54,17 @@ import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
  *
- * @author Vladimir Riha
+ * @author vriha
  */
-public class ControllersGlobalTest extends GeneralAngular {
-
-    public ControllersGlobalTest(String args) {
+public class CtrlModuleTest extends GeneralAngular{
+     public CtrlModuleTest(String args) {
         super(args);
     }
-
-    public static Test suite() {
+    
+      public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ControllersGlobalTest.class).addTest(
-                        "openProject",
+                NbModuleSuite.createConfiguration(CtrlModuleTest.class).addTest(
+                             "openProject",
                         "testNgClick",
                         "testExpression2",
                         "testDirective6",
@@ -77,7 +78,6 @@ public class ControllersGlobalTest extends GeneralAngular {
                         "testDirective20",
                         "testNgBind",
                         "testNgModel",
-                        "testControllers",
                         "testGoTo28",
                         "testGoTo29",
                         "testGoTo30",
@@ -88,7 +88,6 @@ public class ControllersGlobalTest extends GeneralAngular {
                         "testGoTo35",
                         "testGoTo36",
                         "testGoTo37",
-                        "testGoToPartial",
                         "testGoToController"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
@@ -96,192 +95,175 @@ public class ControllersGlobalTest extends GeneralAngular {
     public void openProject() throws Exception {
         startTest();
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("ctrlglobal");
+        openDataProjects("ctrlmodule");
         evt.waitNoEvent(2000);
-        openFile("partials|partial1.html", "ctrlglobal");
+        openFile("partials|partial2.html", "ctrlmodule");
         waitScanFinished();
-        ControllersGlobalTest.originalContent = new EditorOperator("partial1.html").getText();
+        CtrlModuleTest.originalContent = new EditorOperator("partial2.html").getText();
         endTest();
     }
 
     public void testExpression2() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 2);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 2);
         endTest();
     }
 
     public void testDirective6() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 6);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 6);
         endTest();
     }
 
     public void testDirective7() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 7);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 7);
         endTest();
     }
 
     public void testDirective8() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 8);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 8);
         endTest();
     }
 
     public void testDirective9() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 9);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 9);
         endTest();
     }
 
     public void testExpression12() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 12);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 12);
         endTest();
     }
 
     public void testExpression14() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 14);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 14);
         endTest();
     }
 
     public void testExpression16() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 16);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 16);
         endTest();
     }
 
     public void testExpression18() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 18);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 18);
         endTest();
     }
 
     public void testDirective20() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 20);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 20);
         endTest();
     }
 
     public void testNgClick() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 1);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 1);
         endTest();
     }
 
     public void testNgBind() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 24);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 24);
         endTest();
     }
 
     public void testNgModel() throws Exception {
         startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 23);
+        testCompletionWithNegativeCheck(new EditorOperator("partial2.html"), 23);
         endTest();
     }
 
-    public void testControllers() throws Exception {
-        startTest();
-        testCompletionWithNegativeCheck(new EditorOperator("partial1.html"), 26);
-        endTest();
-    }
 
     public void testGoTo28() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 28);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 28);
         endTest();
     }
 
     public void testGoTo29() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 29);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 29);
         endTest();
     }
 
     public void testGoTo30() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 30);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 30);
         endTest();
     }
 
     public void testGoTo31() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 31);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 31);
         endTest();
     }
 
     public void testGoTo32() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 32);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 32);
         endTest();
     }
 
     public void testGoTo33() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 33);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 33);
         endTest();
     }
 
     public void testGoTo34() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 34);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 34);
         endTest();
     }
 
     public void testGoTo35() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 35);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 35);
         endTest();
     }
 
     public void testGoTo36() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 36);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 36);
         endTest();
     }
 
     public void testGoTo37() throws Exception {
         startTest();
-        testGoToDeclaration(new EditorOperator("partial1.html"), 37);
+        testGoToDeclaration(new EditorOperator("partial2.html"), 37);
         endTest();
     }
 
-    public void testGoToPartial() {
-        openFile("js|app.js", "ctrlglobal");
-        EditorOperator app = new EditorOperator("app.js");
-        app.setCaretPosition("ial1", true);
-        new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(app);
-        evt.waitNoEvent(500);
-        EditorOperator ed = new EditorOperator("partial1.html");
-        int position = ed.txtEditorPane().getCaretPosition();
-        ed.setCaretPosition(1, 1);
-        int expectedPosition = ed.txtEditorPane().getCaretPosition();
-        assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
-    }
-
+ 
     public void testGoToController() {
+        openFile("js|app.js", "ctrlmodule");
         EditorOperator app = new EditorOperator("app.js");
-        app.setCaretPosition("rl1", true);
+        app.setCaretPosition("rl2", true);
         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(app);
         evt.waitNoEvent(500);
         EditorOperator ed = new EditorOperator("controllers.js");
         int position = ed.txtEditorPane().getCaretPosition();
-        ed.setCaretPosition(5, 10);
+        ed.setCaretPosition(13, 22);
         int expectedPosition = ed.txtEditorPane().getCaretPosition();
         assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
     }
 
     @Override
     public void tearDown() throws Exception {
-        EditorOperator eo = new EditorOperator("partial1.html");
+        EditorOperator eo = new EditorOperator("partial2.html");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
-        eo.insert(ControllersGlobalTest.originalContent);
+        eo.insert(CtrlModuleTest.originalContent);
         eo.save();
         eo.pressKey(KeyEvent.VK_ESCAPE);
         evt.waitNoEvent(1000);
     }
-
 }
