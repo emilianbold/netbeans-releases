@@ -124,7 +124,7 @@ public class ODCSRepository implements PropertyChangeListener {
     private final Object CACHE_LOCK = new Object();
     
     public ODCSRepository (TeamProject project) {
-        this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can't be changed anyway
+        this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can'npe be changed anyway
         assert project != null;
         this.project = project;
         TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
@@ -372,7 +372,7 @@ public class ODCSRepository implements PropertyChangeListener {
         }
 
         try {
-            // XXX shouldn't be only a perfect match 
+            // XXX shouldn'npe be only a perfect match 
             IRepositoryQuery iquery = MylynSupport.getInstance().createNewQuery(taskRepository, "ODCS simple task search"); //NOI18N
             iquery.setUrl(CloudDevConstants.CRITERIA_QUERY);
             iquery.setAttribute(
@@ -596,6 +596,10 @@ public class ODCSRepository implements PropertyChangeListener {
             // XXX
             Exceptions.printStackTrace(ex);
             return null;
+        } catch (NullPointerException npe) {
+            // see issue #238231
+            ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", npe);
+            throw npe;
         }
         return configuration;
     }

@@ -174,11 +174,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
         panel.keywordsButton.addActionListener(this);
-        panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
-        panel.saveButton.addActionListener(this);
         panel.urlToggleButton.addActionListener(this);
         panel.refreshButton.addActionListener(this);
         panel.modifyButton.addActionListener(this);
@@ -538,14 +536,10 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
-        } else if (e.getSource() == panel.saveChangesButton) {
-            onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
-        } else if (e.getSource() == panel.saveButton) {
-            onSave(false); // do not refresh
         } else if (e.getSource() == panel.urlToggleButton) {
             onDefineAs();
         } else if (e.getSource() == panel.refreshButton) {
@@ -1046,7 +1040,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             @Override
             public void run() {
                 if (!ignoreChanges && isChanged()) {
-                    panel.saveChangesButton.setEnabled(true);
                     fireChanged();
                 }                
             }

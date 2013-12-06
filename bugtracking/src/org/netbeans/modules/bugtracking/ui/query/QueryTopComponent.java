@@ -217,12 +217,12 @@ public final class QueryTopComponent extends TopComponent
             if(!isNew) {
                 RepositoryImpl repoImpl = query.getRepositoryImpl();
                 if(repoImpl.isTeamRepository()) {
-                        TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
-                        if(teamProject != null) {
-                            instanceContent.add(query.getQuery());
-                            instanceContent.add(teamProject);
-                        }
+                    TeamProject teamProject = TeamRepositories.getInstance().getTeamProject(defaultRepository);
+                    if(teamProject != null) {
+                        instanceContent.add(query.getQuery());
+                        instanceContent.add(teamProject);
                     }
+                }
                 setSaved();
             } else {
                 if(!suggestedSelectionOnly) {
@@ -363,7 +363,7 @@ public final class QueryTopComponent extends TopComponent
 //                repositoryComboBox.requestFocusInWindow();
 //            }
 //        });
-        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} opened", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});
+        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} opened", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null}); // NOI18N
     }
 
     @Override
@@ -376,7 +376,7 @@ public final class QueryTopComponent extends TopComponent
         if(prepareTask != null) {
             prepareTask.cancel();
         }
-        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} closed", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});
+        BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} closed", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});  // NOI18N
     }
 
     /** replaces this in object stream */
@@ -541,7 +541,7 @@ public final class QueryTopComponent extends TopComponent
         String newName = null;
         if(query.getDisplayName() == null) {
             newName = SaveQueryPanel.show(new SaveQueryPanel.QueryNameValidator() {
-    @Override
+                @Override
                 public String isValid(String name) {
                     Collection<QueryImpl> queries = query.getRepositoryImpl().getQueries();
                     for (QueryImpl q : queries) {
