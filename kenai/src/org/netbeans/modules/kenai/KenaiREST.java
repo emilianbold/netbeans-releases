@@ -49,6 +49,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -192,7 +193,16 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Collection<ServicesListData.ServicesListItem> getServices() throws KenaiException {
-        ServicesListData pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class, null);
+        ServicesListData pld = null;
+        try {
+            pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class, null);
+        } catch (IllegalArgumentException iae) {
+            if(iae.getMessage().equals("OBJECT_OR_ARRAY_EXP")) {
+                Logger.getLogger(KenaiREST.class.getName()).log(Level.WARNING, null, iae);
+                return Collections.emptyList();
+            }
+            throw iae;
+        }
         return new LazyList(pld, ServicesListData.class, null);
     }
 
