@@ -45,30 +45,35 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager2;
+import java.awt.Rectangle;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.swing.JMenuItem;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author mkozeny
  */
 public class VerticalGridLayout implements LayoutManager2 {
+    
+    public VerticalGridLayout() {
+        super();
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated != null) {
+            Rectangle screenParams = Utilities.getUsableScreenBounds(activated.getGraphicsConfiguration());
+            //half of the size is used, b/c sometimes it is submenu not visible at the top
+            this.screenHeight = (int)(screenParams.height * 0.5);
+        } else {
+            this.screenHeight = (int)(WindowManager.getDefault().getMainWindow().getSize().height * 0.5);
+        }
+    }
+
+    private final int screenHeight;
 
     final private Set<Component> components = new LinkedHashSet<Component>();
-    private int hgap = 0;
-    private int vgap = 0;
-
-    private final static int ITEMS_PER_COLUMN = 20;
-
-    public void setHGap(int hgap) {
-        this.hgap = hgap;
-    }
-
-    public void setVGap(int vgap) {
-        this.vgap = vgap;
-    }
-
+    
     @Override
     public void addLayoutComponent(Component comp, Object constraints) {
         this.components.add(comp);
@@ -99,17 +104,16 @@ public class VerticalGridLayout implements LayoutManager2 {
     public void layoutContainer(Container parent) {
         int x = 0;
         int y = 0;
-        int columnWidth = 0;
+        int cellWidth = getMaxCellWidth();
         for (Component c : this.components) {
             if (c.isVisible()) {
                 Dimension d = c.getPreferredSize();
-                columnWidth = Math.max(columnWidth, d.width);
                 if (y + d.height > parent.getHeight()) {
-                    x += columnWidth + this.hgap;
+                    x += cellWidth;
                     y = 0;
                 }
-                c.setBounds(x, y, d.width, d.height);
-                y += d.height + this.vgap;
+                c.setBounds(x, y, cellWidth, d.height);
+                y += d.height;
             }
         }
     }
@@ -132,17 +136,19 @@ public class VerticalGridLayout implements LayoutManager2 {
 
     private Dimension layoutSize(Container target) {
         int cols = 1;
-        int rows = ITEMS_PER_COLUMN;
-        int componentCount = getRadioButtonMenuItemsCount();
-        if (componentCount > ITEMS_PER_COLUMN) {
-            cols = componentCount / ITEMS_PER_COLUMN;
-            if (componentCount % ITEMS_PER_COLUMN != 0) {
+        int height;
+        int componentCount = this.components.size();
+        int itemsPerColumn = this.screenHeight / getMaxCellHeight();
+        if (componentCount > itemsPerColumn) {
+            cols = componentCount / itemsPerColumn;
+            if (componentCount % itemsPerColumn != 0) {
                 cols++;
             }
+            height = itemsPerColumn * getMaxCellHeight();
         } else {
-            rows = componentCount;
+            height = getMenuItemsHeight();
         }
-        return new Dimension(cols * getMaxCellWidth(), rows * getMaxCellHeight());
+        return new Dimension(cols * getMaxCellWidth(), height);
     }
 
     @Override
@@ -153,7 +159,7 @@ public class VerticalGridLayout implements LayoutManager2 {
     private int getMaxCellHeight() {
         int cellHeight = 0;
         for (Component c : this.components) {
-            if ((c instanceof JMenuItem) && c.getPreferredSize().height > cellHeight) {
+            if (c.getPreferredSize().height > cellHeight) {
                 cellHeight = c.getPreferredSize().height;
             }
         }
@@ -163,20 +169,18 @@ public class VerticalGridLayout implements LayoutManager2 {
     private int getMaxCellWidth() {
         int cellWidth = 0;
         for (Component c : this.components) {
-            if ((c instanceof JMenuItem) && c.getPreferredSize().width > cellWidth) {
+            if (c.getPreferredSize().width > cellWidth) {
                 cellWidth = c.getPreferredSize().width;
             }
         }
         return cellWidth;
     }
-
-    private int getRadioButtonMenuItemsCount() {
-        int cnt = 0;
+    
+    private int getMenuItemsHeight() {
+        int height = 0;
         for (Component c : this.components) {
-            if (c instanceof JMenuItem) {
-                cnt++;
-            }
+            height += c.getPreferredSize().height;
         }
-        return cnt;
+        return height;
     }
-}
+ }
