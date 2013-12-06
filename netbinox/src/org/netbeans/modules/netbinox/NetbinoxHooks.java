@@ -99,6 +99,9 @@ BundleFileFactoryHook, FrameworkLog, FrameworkListener, AdaptorHook, LookupListe
     @Override
     public byte[] processClass(String className, byte[] bytes, ClasspathEntry ce, BundleEntry be, ClasspathManager cm) {
         BundleWiring w = ce.getBaseData().getBundle().adapt(org.osgi.framework.wiring.BundleWiring.class);
+        if (w == null) {
+            return bytes;
+        }
         ClassLoader loader = w.getClassLoader();
         return archive.patchByteCode(loader, className, ce.getDomain(), bytes);
     }
