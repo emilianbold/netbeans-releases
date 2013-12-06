@@ -165,8 +165,11 @@ public final class MavenProjectCache {
             // #135070
             req.setRecursive(false);
             req.setOffline(true);
-            req.setUserProperties(createUserPropsForProjectLoading(active.getProperties()));
-            req.setSystemProperties(createSystemPropsForProjectLoading());
+            //#238800 important to merge, not replace
+            Properties uprops = req.getUserProperties();
+            uprops.putAll(createUserPropsForProjectLoading(active.getProperties()));
+            req.setUserProperties(uprops);
+            
             res = projectEmbedder.readProjectWithDependencies(req, true);
             newproject = res.getProject();
             
@@ -256,30 +259,6 @@ public final class MavenProjectCache {
             return true;
         }
         return false;
-    }
-    
-    private static final Properties statics = new Properties();
-
-    public static Properties cloneStaticProps() {
-        synchronized (statics) {
-            if (statics.isEmpty()) { // not yet initialized
-                // Now a misnomer, but available to activate profiles only during NB project parse:
-                statics.setProperty("netbeans.execution", "true"); // NOI18N
-                EmbedderFactory.fillEnvVars(statics);
-                statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
-            }
-            Properties toRet = new Properties();
-            toRet.putAll(statics);
-            return toRet;
-        }
-    }
-
-    //#158700
-    public static Properties createSystemPropsForProjectLoading() {
-        Properties props = cloneStaticProps();
-        //TODO the properties for java.home and maybe others shall be relevant to the project setup not ide setup.
-        // we got a chicken-egg situation here, the jdk used in project can be defined in the pom.xml file.
-        return props;
     }
     
     public static Properties createUserPropsForProjectLoading(Map<String, String> activeConfiguration) {
