@@ -52,10 +52,12 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
  */
 public class CndParserResult  extends Result {
     private final CsmFile file;
+    private final long fileVersion;
 
-    public CndParserResult(CsmFile file, Snapshot snapshot) {
+    public CndParserResult(CsmFile file, Snapshot snapshot, long fileVersion) {
         super(snapshot);
         this.file = file;
+        this.fileVersion = fileVersion;
     }
 
     @Override
@@ -64,5 +66,9 @@ public class CndParserResult  extends Result {
 
     public CsmFile getCsmFile() {
         return file;
+    }
+    
+    public long getFileVersion() {
+        return fileVersion;
     }
 }
