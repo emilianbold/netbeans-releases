@@ -138,6 +138,7 @@ import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue.Attachment;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.util.NoUserProfile;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.team.ide.spi.IDEServices;
@@ -252,6 +253,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
     };
+    private final static NoUserProfile NO_USER_PROFILE = new NoUserProfile();
     
     /**
      * Creates new form IssuePanel
@@ -562,7 +564,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         ownerCombo.setModel(toComboModel(rc.getUsers()));
         ownerCombo.setRenderer(new ClientDataRenderer());
-
+        
         iterationCombo.setModel(toComboModel(new ArrayList<Iteration>(issue.isNew() 
                 ? rc.getActiveIterations()
                 : rc.getIterations())));
@@ -1071,7 +1073,9 @@ public class IssuePanel extends javax.swing.JPanel {
         if (value == null) {
             return false;
         }
-  
+        if(combo == ownerCombo && value.equals("")) {
+            value = NO_USER_PROFILE;
+        }
         combo.setSelectedItem(value);
         if (!value.equals(combo.getSelectedItem())) {
             ComboBoxModel model = combo.getModel();
@@ -1597,6 +1601,9 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void storeFieldValue (IssueField field, JComboBox combo) {
         Object value = combo.getSelectedItem();
+        if(value instanceof NoUserProfile) {
+            value = null;
+        }
         // It (normally) should not happen that value is null, but issue 159804 shows that
         // some strange configurations (or other bugs) can lead into this situation
         if (value != null) {
@@ -3161,6 +3168,11 @@ public class IssuePanel extends javax.swing.JPanel {
             TaskUserProfile userProfile = ((com.tasktop.c2c.server.tasks.domain.Component) component).getInitialOwner();
             if (userProfile != null) {
                 ownerCombo.setSelectedItem(userProfile);
+                ownerCombo.removeItem(NO_USER_PROFILE);
+            } else {
+                ownerCombo.removeItem(NO_USER_PROFILE);
+                ownerCombo.addItem(NO_USER_PROFILE);
+                ownerCombo.setSelectedItem(NO_USER_PROFILE);  
             }
         }
         

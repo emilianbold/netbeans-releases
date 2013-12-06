@@ -984,7 +984,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public boolean isChanged() {
-        return parameters.parametersChanged();
+        return parameters.parametersChanged() && getQueryString() != null;
     }
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
