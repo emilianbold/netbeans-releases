@@ -387,7 +387,7 @@ public final class JUnitAntLogger extends AntLogger {
             //Passing only really used properties
             //as some others may highlight build script errors
             //(See #178798)
-            String[] propsOfInterest = {"test.class", "test.methods", "test.includes", "javac.includes", "classname", "methodname", "work.dir", "classpath", "platform.java"};//NOI18N
+            String[] propsOfInterest = {"includes", "test.class", "test.methods", "test.includes", "javac.includes", "classname", "methodname", "work.dir", "classpath", "platform.java"};//NOI18N
             for(String prop:propsOfInterest) {
                 String val = event.getProperty(prop);
                 if (val!=null) {
