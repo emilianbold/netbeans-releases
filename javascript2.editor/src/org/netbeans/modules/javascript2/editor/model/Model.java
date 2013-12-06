@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -289,8 +290,19 @@ public final class Model {
                         DeclarationScope ds = ModelUtils.getDeclarationScope(with);
                         JsObject fromExpression = ModelUtils.findJsObjectByName((JsObject)ds, fqn.toString());
                         if (fromExpression == null) { 
-                            fromExpression = new JsObjectImpl(visitor.getGlobalObject(), new IdentifierImpl(type.getType(), offset), new OffsetRange(offset, offset + type.getType().length()), false, null, null);
-                            visitor.getGlobalObject().addProperty(type.getType(), fromExpression);
+                            int position = ((JsWithObjectImpl)with).getExpressionRange().getStart();
+                            JsObject parent = visitor.getGlobalObject();
+                            for (StringTokenizer stringTokenizer = new StringTokenizer( type.getType(), "."); stringTokenizer.hasMoreTokens();) {
+                                String name = stringTokenizer.nextToken();
+                                JsObject newObject = parent.getProperty(name);
+                                if (newObject == null) {
+                                    newObject = new JsObjectImpl(parent, new IdentifierImpl(name, position), new OffsetRange(position, position + name.length()), false, null, null);
+                                    parent.addProperty(name, newObject);
+                                }
+                                position = position + name.length() + 1; // 1 is the dot                                
+                                parent = newObject;
+                            }
+                            fromExpression = parent;
                         }
                         if (fromExpression != null) {
                             for (IndexedElement indexedElement : properties) {
