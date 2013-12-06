@@ -130,7 +130,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     /** current nodes to show content for */
     private Collection<? extends Node> curNodes = Collections.emptyList();
-    /** Lookup that is passed to clients */
+    /** Lookup that is passed to clients
+     * Every lookup() call can trigger resultChanged() on client side - update of client content,
+     * you should call lookup() only if you want client to react to the context change
+     */
     private final ClientsLookup clientsLookup;
     /** Lookup that wraps lookup of active panel */
     private final Lookup panelLookup;
@@ -799,7 +802,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
             LOG.fine("findMimeForContext - found mime for hints, mime: " + mimeType);
             return mimeType;
         }
-        FileObject fob = getClientsLookup().lookup(FileObject.class);
+        FileObject fob = getCurrentFileObject();
         LOG.fine("findMimeForContext - looking for mime, fob= " + fob);
         if (fob != null) {
             String mimeType = fob.getMIMEType();
@@ -821,6 +824,16 @@ public final class NavigatorController implements LookupListener, PropertyChange
             Lookup globalContext = Utilities.actionsGlobalContext();
             updateContext(globalContext.lookup(NavigatorLookupPanelsPolicy.class), globalContext.lookupAll(NavigatorLookupHint.class));
         }
+    }
+
+    private FileObject getCurrentFileObject() {
+        for (Node node : curNodesRes.allInstances()) {
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                return fo;
+            }
+        }
+        return null;
     }
 
     /** Handles ESC key request - returns focus to previously focused top component

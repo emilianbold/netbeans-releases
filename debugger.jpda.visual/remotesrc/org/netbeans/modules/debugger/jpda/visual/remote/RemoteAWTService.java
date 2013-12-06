@@ -69,6 +69,7 @@ public class RemoteAWTService {
     private static final String AWTAccessThreadName = "org.netbeans.modules.debugger.jpda.visual AWT Access Loop";   // NOI18N
     private static volatile boolean awtAccess = false;
     private static volatile boolean awtAccessLoop = false;
+    private static volatile AWTAccessLoop awtAccessLoopRunnable;
     private static volatile RemoteAWTHierarchyListener hierarchyListener;
     
     //private static final Map eventData = new HashMap();
@@ -80,13 +81,16 @@ public class RemoteAWTService {
     static boolean startAccessLoop() {
         if (!awtAccessLoop) {
             Thread loop;
+            AWTAccessLoop accessLoop;
             try {
-                loop = new Thread(new AWTAccessLoop(), AWTAccessThreadName);
+                accessLoop = new AWTAccessLoop();
+                loop = new Thread(accessLoop, AWTAccessThreadName);
                 loop.setDaemon(true);
                 loop.setPriority(Thread.MIN_PRIORITY);
             } catch (SecurityException se) {
                 return false;
             }
+            awtAccessLoopRunnable = accessLoop;
             awtAccessLoop = true;
             loop.start();
         }
@@ -95,6 +99,9 @@ public class RemoteAWTService {
     
     static void stopAccessLoop() {
         awtAccessLoop = false;
+        awtAccessLoopRunnable = null;
+        lastGUISnapshots = null;
+        preferredEventThread = null;
     }
     
     static String startHierarchyListener() {
@@ -164,14 +171,14 @@ public class RemoteAWTService {
     }
     
     static Snapshot[] getGUISnapshots() {
-        List snapshots = new ArrayList();
-        Window[] windows = Window.getWindows();
+        List snapshots = new ArrayList();   //System.err.println("gGUI: thread = "+Thread.currentThread());
+        Window[] windows = Window.getWindows(); //System.err.println("gGUI: windows = "+windows.length);
         for (int wi = 0; wi < windows.length; wi++) {
-            Window w = windows[wi];
+            Window w = windows[wi]; //System.err.println("gGUI: w["+wi+"] = "+w+", is visible = "+w.isVisible());
             if (!w.isVisible()) {
                 continue;
             }
-            Dimension d = w.getSize();
+            Dimension d = w.getSize();  //System.err.println("gGUI:  size = "+d);
             if (d.width == 0 || d.height == 0) {
                 continue;
             }
@@ -181,7 +188,7 @@ public class RemoteAWTService {
             w.paint(g);
             Raster raster = bi.getData();
             Object data = raster.getDataElements(0, 0, d.width, d.height, null);
-            int[] dataArr;
+            int[] dataArr;  //System.err.println("gGUI: data = "+data);
             if (data instanceof int[]) {
                 dataArr = (int[]) data;
             } else {
@@ -192,7 +199,7 @@ public class RemoteAWTService {
                 title = ((Frame) w).getTitle();
             } else if (w instanceof Dialog) {
                 title = ((Dialog) w).getTitle();
-            }
+            }   //System.err.println("gGUI: title = "+title);
             snapshots.add(new Snapshot(w, title, d.width, d.height, dataArr));
         }
         Snapshot[] snapshotArr = (Snapshot[]) snapshots.toArray(new Snapshot[] {});
@@ -203,6 +210,8 @@ public class RemoteAWTService {
     // This static field is used to prevent the result from GC until it's read by debugger.
     // Debugger should clear this field explicitly after it reads the result.
     private static Snapshot[] lastGUISnapshots;
+    
+    private static Thread preferredEventThread; // The preferred AWT thread
     
     private static class AWTAccessLoop implements Runnable {
         
@@ -216,7 +225,12 @@ public class RemoteAWTService {
             while (awtAccessLoop) {
                 if (awtAccess) {
                     awtAccess = false;
-                    SwingUtilities.invokeLater(this);
+                    ThreadGroup preferredThreadGroup = getPreferredAWTThreadGroup(preferredEventThread);
+                    if (preferredThreadGroup != null) {
+                        new TG_AWT_Invocator(preferredThreadGroup).start();
+                    } else {
+                        SwingUtilities.invokeLater(this);
+                    }
                 }
                 try {
                     Thread.sleep(100);
@@ -257,6 +271,32 @@ public class RemoteAWTService {
             // Stopped
             stopHierarchyListener();
         }
+    }
+    
+    private static ThreadGroup getPreferredAWTThreadGroup(Thread t) {
+        if (t == null) {
+            return null;
+        }
+        ThreadGroup tg = t.getThreadGroup();
+        if (tg == Thread.currentThread().getThreadGroup()) {
+            return null;
+        }
+        return tg;
+    }
+    
+    private static class TG_AWT_Invocator extends Thread {
+        
+        public TG_AWT_Invocator(ThreadGroup tg) {
+            super(tg, TG_AWT_Invocator.class.getName());
+        }
+
+        public void run() {
+            Runnable accessLoop = awtAccessLoopRunnable;
+            if (accessLoop != null) {
+                SwingUtilities.invokeLater(accessLoop);
+            }
+        }
+        
     }
     
     private static class Snapshot {

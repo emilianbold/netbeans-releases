@@ -51,11 +51,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
-import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -64,13 +63,9 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
-import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -81,6 +76,7 @@ public class GeneralAngular extends JellyTestCase {
 
     protected EventTool evt;
     public static String currentFile = "";
+    public static String originalContent = "";
     public final String TEST_BASE_NAME = "angular_";
     public static int NAME_ITERATOR = 0;
 
@@ -332,6 +328,120 @@ public class GeneralAngular extends JellyTestCase {
             CompletionInfo jlist,
             String[] asIdeal) {
         checkCompletionItems(jlist.listItself, asIdeal);
+    }
+    
+     public void testCompletion(EditorOperator eo, int lineNumber) throws Exception {
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("<!--cc;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
+        type(eo, config[2]);
+        eo.pressKey(KeyEvent.VK_ESCAPE);
+        int back = Integer.parseInt(config[3]);
+        for (int i = 0; i < back; i++) {
+            eo.pressKey(KeyEvent.VK_LEFT);
+        }
+
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        CompletionInfo completion = getCompletion();
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, config[4].split(","));
+        completion.listItself.hideAll();
+
+        if (config[5].length() > 0) {
+            String prefix = Character.toString(config[5].charAt(0));
+            type(eo, prefix);
+            eo.typeKey(' ', InputEvent.CTRL_MASK);
+            completion = getCompletion();
+            cjo = completion.listItself;
+            checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
+            evt.waitNoEvent(500);
+            cjo.clickOnItem(config[5]);
+            eo.pressKey(KeyEvent.VK_ENTER);
+            assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("|", "")));
+            completion.listItself.hideAll();
+        }
+ 
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
+        }
+    }
+     
+     public void testCompletionWithNegativeCheck(EditorOperator eo, int lineNumber) throws Exception {
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("<!--cc;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
+        type(eo, config[2]);
+        eo.pressKey(KeyEvent.VK_ESCAPE);
+        int back = Integer.parseInt(config[3]);
+        for (int i = 0; i < back; i++) {
+            eo.pressKey(KeyEvent.VK_LEFT);
+        }
+
+         eo.typeKey(' ', InputEvent.CTRL_MASK);
+         CompletionInfo completion = getCompletion();
+         CompletionJListOperator cjo = completion.listItself;
+         checkCompletionItems(cjo, config[4].split(","));
+         completion.listItself.hideAll();
+
+         eo.pressKey(KeyEvent.VK_ESCAPE);
+         eo.typeKey(' ', InputEvent.CTRL_MASK);
+         completion = getCompletion();
+         cjo = completion.listItself;
+         checkCompletionDoesntContainItems(cjo, config[7].split(","));
+
+         
+         eo.pressKey(KeyEvent.VK_ESCAPE);
+         if (config[5].length() > 0 && config[6].length() > 0) {
+             String prefix = Character.toString(config[5].charAt(0));
+             type(eo, prefix);
+             eo.typeKey(' ', InputEvent.CTRL_MASK);
+             completion = getCompletion();
+             cjo = completion.listItself;
+             checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
+             evt.waitNoEvent(500);
+             cjo.clickOnItem(config[5]);
+             eo.pressKey(KeyEvent.VK_ENTER);
+             assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("|", "")));
+             completion.listItself.hideAll();
+         }
+         
+    }
+
+     public void testGoToDeclaration(EditorOperator eo, int lineNumber) throws Exception {
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("<!--gt;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
+        eo.insert(config[2]);
+         eo.pressKey(KeyEvent.VK_ESCAPE);
+         int back = Integer.parseInt(config[3]);
+         for (int i = 0; i < back; i++) {
+             eo.pressKey(KeyEvent.VK_LEFT);
+         }
+         evt.waitNoEvent(1000);
+         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
+         evt.waitNoEvent(500);
+         try {
+             EditorOperator ed = new EditorOperator(config[4]);
+             int position = ed.txtEditorPane().getCaretPosition();
+             ed.setCaretPosition(Integer.valueOf(config[5]), Integer.valueOf(config[6]));
+             int expectedPosition = ed.txtEditorPane().getCaretPosition();
+             assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
+             ed.close(false);
+         } catch (Exception e) {
+             fail(e.getMessage());
+         }
+
     }
 
     public class CFulltextStringComparator implements Operator.StringComparator {

@@ -43,7 +43,6 @@ package org.netbeans.modules.html.angular.cc;
 
 import org.netbeans.modules.html.angular.GeneralAngular;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -132,44 +131,4 @@ public class CompletionTest extends GeneralAngular {
         endTest();
     }
 
-    public void testCompletion(EditorOperator eo, int lineNumber) throws Exception {
-        waitScanFinished();
-        String rawLine = eo.getText(lineNumber);
-        int start = rawLine.indexOf("<!--cc;");
-        String rawConfig = rawLine.substring(start + 2);
-        String[] config = rawConfig.split(";");
-        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
-        type(eo, config[2]);
-        eo.pressKey(KeyEvent.VK_ESCAPE);
-        int back = Integer.parseInt(config[3]);
-        for (int i = 0; i < back; i++) {
-            eo.pressKey(KeyEvent.VK_LEFT);
-        }
-
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        CompletionInfo completion = getCompletion();
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, config[4].split(","));
-        completion.listItself.hideAll();
-
-        if (config[5].length() > 0) {
-            String prefix = Character.toString(config[5].charAt(0));
-            type(eo, prefix);
-            eo.typeKey(' ', InputEvent.CTRL_MASK);
-            completion = getCompletion();
-            cjo = completion.listItself;
-            checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
-            evt.waitNoEvent(500);
-            cjo.clickOnItem(config[5]);
-            eo.pressKey(KeyEvent.VK_ENTER);
-            assertTrue("Wrong completion result", eo.getText(lineNumber).contains(config[6].replaceAll("|", "")));
-            completion.listItself.hideAll();
-        }
-
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
-        String l = eo.getText(eo.getLineNumber());
-        for (int i = 0; i < l.length() - 1; i++) {
-            eo.pressKey(KeyEvent.VK_BACK_SPACE);
-        }
-    }
 }

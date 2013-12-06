@@ -168,11 +168,22 @@ public class RemoteAWTScreenshot {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Threads = {0}", allThreads);
         }
+        RemoteScreenshot[] rs = NO_SCREENSHOTS;
         for (JPDAThread t : allThreads) {
             if (t.getName().startsWith(AWTThreadName)) {
                 long t1 = System.nanoTime();
                 try {
-                    return take(t, engine);
+                    RemoteScreenshot[] rst = take(t, engine);
+                    if (rst.length > 0) {
+                        if (rs.length > 0) {
+                            RemoteScreenshot[] nrs = new RemoteScreenshot[rs.length + rst.length];
+                            System.arraycopy(rs, 0, nrs, 0, rs.length);
+                            System.arraycopy(rst, 0, nrs, rs.length, rst.length);
+                            rs = nrs;
+                        } else {
+                            rs = rst;
+                        }
+                    }
                     /*
                 } catch (InvocationException iex) {
                     //ObjectReference exception = iex.exception();
@@ -203,7 +214,7 @@ public class RemoteAWTScreenshot {
                 }
             }
         }
-        return NO_SCREENSHOTS;
+        return rs;
     }
     
     public static RemoteScreenshot[] take(final JPDAThread t, final DebuggerEngine engine) throws RetrievalException {//throws ClassNotLoadedException, IncompatibleThreadStateException, InvalidTypeException, InvocationException {
@@ -225,6 +236,14 @@ public class RemoteAWTScreenshot {
             return NO_SCREENSHOTS;
         }
 
+        final JPDADebugger debugger = ((JPDAThreadImpl) t).getDebugger();
+        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(debugger);
+        final ClassType serviceClass;
+        try {
+            serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
+        } catch (InternalExceptionWrapper | ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+            return NO_SCREENSHOTS;
+        }
         final List<RemoteScreenshot> screenshots = new ArrayList<RemoteScreenshot>();
         final RetrievalException[] retrievalExceptionPtr = new RetrievalException[] { null };
         try {
@@ -249,8 +268,6 @@ public class RemoteAWTScreenshot {
                      */
                     try {
                         if (FAST_SNAPSHOT_RETRIEVAL) {
-                            ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
-                            ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
                             final Method getGUISnapshots = ClassTypeWrapper.concreteMethodByName(serviceClass, "getGUISnapshots", "()[Lorg/netbeans/modules/debugger/jpda/visual/remote/RemoteAWTService$Snapshot;");
                             ArrayReference snapshotsArray = (ArrayReference) ClassTypeWrapper.invokeMethod(serviceClass, tawt, getGUISnapshots, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                             List<Value> snapshots = ArrayReferenceWrapper.getValues(snapshotsArray);
@@ -428,7 +445,7 @@ public class RemoteAWTScreenshot {
                     } catch (InvocationException iex) {
                         //Exceptions.printStackTrace(iex);
                         ((JPDAThreadImpl) t).notifyMethodInvokeDone();
-                        final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, ((JPDAThreadImpl) t).getDebugger());
+                        final InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, (JPDADebuggerImpl) debugger);
                         // Initialize the translated exception:
                         iextr.setPreferredThread((JPDAThreadImpl) t);
                         iextr.getMessage();

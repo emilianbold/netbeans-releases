@@ -110,6 +110,7 @@ import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapp
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -308,6 +309,47 @@ public class RemoteServices {
         }
     }
     
+    static Field setPreferredEQThread(JPDAThread t) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
+        if (serviceClassObject == null) {
+            return null;
+        }
+        final ClassType serviceClass;
+        try {
+            serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
+        } catch (ObjectCollectedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        Field preferredEventThreadField = null;
+        try {
+            preferredEventThreadField = ReferenceTypeWrapper.fieldByName(serviceClass, "preferredEventThread");
+        } catch (ObjectCollectedExceptionWrapper | ClassNotPreparedExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (preferredEventThreadField != null) {
+            try {
+                ClassTypeWrapper.setValue(serviceClass, preferredEventThreadField, ((JPDAThreadImpl) t).getThreadReference());
+            } catch(ClassNotLoadedException | ClassNotPreparedExceptionWrapper | InvalidTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return preferredEventThreadField;
+    }
+    
+    static void clearPreferredEQThread(JPDADebugger dbg, Field preferredEventThreadField) {
+        if (preferredEventThreadField != null) {
+            ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(dbg);
+            final ClassType serviceClass;
+            try {
+                serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
+                ClassTypeWrapper.setValue(serviceClass, preferredEventThreadField, null);
+            } catch(ObjectCollectedExceptionWrapper | ClassNotLoadedException | ClassNotPreparedExceptionWrapper | InvalidTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {}
+        }
+    }
+    
     private static void runOnBreakpoint(final JPDAThread awtThread, String bpClass, String bpMethod, final Runnable runnable, final CountDownLatch latch) {
         final MethodBreakpoint mb = MethodBreakpoint.create(bpClass, bpMethod);
         final JPDADebugger dbg = ((JPDAThreadImpl)awtThread).getDebugger();
@@ -316,6 +358,7 @@ public class RemoteServices {
         mb.setBreakpointType(MethodBreakpoint.TYPE_METHOD_ENTRY);
         mb.setSuspend(MethodBreakpoint.SUSPEND_EVENT_THREAD);
         mb.setHidden(true);
+        mb.setThreadFilters(dbg, new JPDAThread[] { awtThread });
         mb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
@@ -383,6 +426,12 @@ public class RemoteServices {
         
         Lock lock = t.accessLock.writeLock();
         lock.lock();
+        Field setPreferredEQThreadField;
+        try {
+            setPreferredEQThreadField = setPreferredEQThread(thread);
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+            return ;
+        }
         try {
             ThreadReference threadReference = t.getThreadReference();
             boolean wasSuspended = t.isSuspended();
@@ -476,6 +525,7 @@ public class RemoteServices {
                 }
             }
         } finally {
+            clearPreferredEQThread(t.getDebugger(), setPreferredEQThreadField);
             if (lock != null) {
                 lock.unlock();
             }
@@ -487,16 +537,26 @@ public class RemoteServices {
         final List<RemoteListener> rlisteners = new ArrayList<RemoteListener>();
         final JPDAThreadImpl thread = ci.getThread();
         final ObjectReference component = ci.getComponent();
-        runOnStoppedThread(thread, new Runnable() {
-            @Override
-            public void run() {
-                if (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) {
-                    retrieveAttachedListeners(thread, component, rlisteners, combineAllTypes);
-                } else {
-                    retrieveAttachedFXListeners(thread, component, rlisteners);
+        Field setPreferredEQThreadField;
+        try {
+            setPreferredEQThreadField = setPreferredEQThread(thread);
+        } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
+            return rlisteners;
+        }
+        try {
+            runOnStoppedThread(thread, new Runnable() {
+                @Override
+                public void run() {
+                    if (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) {
+                        retrieveAttachedListeners(thread, component, rlisteners, combineAllTypes);
+                    } else {
+                        retrieveAttachedFXListeners(thread, component, rlisteners);
+                    }
                 }
-            }
-        }, (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) ? ServiceType.AWT : ServiceType.FX);
+            }, (ci instanceof RemoteAWTScreenshot.AWTComponentInfo) ? ServiceType.AWT : ServiceType.FX);
+        } finally {
+            clearPreferredEQThread(thread.getDebugger(), setPreferredEQThreadField);
+        }
         return rlisteners;
     }
         
