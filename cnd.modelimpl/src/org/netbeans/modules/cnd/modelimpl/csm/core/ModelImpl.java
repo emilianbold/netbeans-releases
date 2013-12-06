@@ -288,18 +288,22 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey, final boolean cleanRepository) {
-        _closeProject2_pre(csmProject, platformProjectKey);
-        if (SwingUtilities.isEventDispatchThread()) {
-            Runnable task = new Runnable() {
+        try {
+            _closeProject2_pre(csmProject, platformProjectKey);
+            if (SwingUtilities.isEventDispatchThread()) {
+                Runnable task = new Runnable() {
 
-                @Override
-                public void run() {
-                    _closeProject2(csmProject, platformProjectKey, cleanRepository);
-                }
-            };
-            this.enqueueModelTask(task, "Closing Project " + csmProject.getDisplayName()); // NOI18N
-        } else {
-            _closeProject2(csmProject, platformProjectKey, cleanRepository);
+                    @Override
+                    public void run() {
+                        _closeProject2(csmProject, platformProjectKey, cleanRepository);
+                    }
+                };
+                this.enqueueModelTask(task, "Closing Project " + (csmProject == null ? platformProjectKey + "" : csmProject.getDisplayName())); // NOI18N
+            } else {
+                _closeProject2(csmProject, platformProjectKey, cleanRepository);
+            }
+        } catch (Throwable thr) {
+            DiagnosticExceptoins.register(thr);
         }
     }
 
