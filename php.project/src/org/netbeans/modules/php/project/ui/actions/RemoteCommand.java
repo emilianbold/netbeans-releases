@@ -54,6 +54,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -353,11 +355,14 @@ public abstract class RemoteCommand extends Command {
      */
     public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
 
+        private static final Logger LOGGER = Logger.getLogger(DefaultOperationMonitor.class.getName());
+
         private final Deque<Operation> operations = new ArrayDeque<>();
         private final ProgressHandle progressHandle;
 
         private int workUnits = 0;
         private int workUnit = 0;
+        private boolean sizeIssueLogged = false;
 
 
         public DefaultOperationMonitor(ProgressHandle progressHandle, Set<TransferFile> forFiles) {
@@ -371,6 +376,11 @@ public abstract class RemoteCommand extends Command {
         @Override
         public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
             if (operations.isEmpty()) {
+                // #237847
+                if (workUnits < 0) {
+                    LOGGER.log(Level.WARNING, "Negative number of workunits {0} for transfer files {1}", new Object[] {workUnits, forFiles});
+                    workUnits = forFiles.size();
+                }
                 progressHandle.start(workUnits);
             }
             operations.offerFirst(operation);
@@ -382,11 +392,11 @@ public abstract class RemoteCommand extends Command {
 
         @Override
         public void operationProcess(Operation operation, TransferFile forFile) {
-            long size = forFile.getSize();
+            int size = getSize(forFile);
             switch (operation) {
                 case LIST:
                     if (size > 0) {
-                        workUnits += size / 1024;
+                        workUnits += size;
                     }
                     break;
                 case UPLOAD:
@@ -394,7 +404,7 @@ public abstract class RemoteCommand extends Command {
                     if (size > 0) {
                         String processMessageKey = operation == Operation.DOWNLOAD ? "LBL_Downloading" : "LBL_Uploading"; // NOI18N
                         progressHandle.progress(NbBundle.getMessage(DefaultOperationMonitor.class, processMessageKey, forFile.getName()), workUnit);
-                        workUnit += size / 1024;
+                        workUnit += size;
                     }
                     break;
                 default:
@@ -424,9 +434,22 @@ public abstract class RemoteCommand extends Command {
         private int getWorkUnits(Collection<TransferFile> forFiles) {
             int size = 0;
             for (TransferFile file : forFiles) {
-                size += file.getSize();
+                size += getSize(file);
             }
-            return size / 1024;
+            return size;
+        }
+
+        // #237847
+        private int getSize(TransferFile file) {
+            long size = file.getSize();
+            if (size < 0) {
+                if (!sizeIssueLogged) {
+                    LOGGER.log(Level.WARNING, "Negative size {0} of transfer file {1}", new Object[] {size, file});
+                    sizeIssueLogged = true;
+                }
+                return 1;
+            }
+            return (int) (size / 1024);
         }
 
     }
