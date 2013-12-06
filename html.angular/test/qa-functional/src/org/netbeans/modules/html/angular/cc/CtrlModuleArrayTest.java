@@ -44,6 +44,7 @@ package org.netbeans.modules.html.angular.cc;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
@@ -54,16 +55,16 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  *
  * @author Vladimir Riha
  */
-public class ControllersGlobalTest extends GeneralAngular {
+public class CtrlModuleArrayTest extends GeneralAngular {
 
-    public ControllersGlobalTest(String args) {
+    public CtrlModuleArrayTest(String args) {
         super(args);
     }
-
-    public static Test suite() {
+    
+      public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ControllersGlobalTest.class).addTest(
-                        "openProject",
+                NbModuleSuite.createConfiguration(CtrlModuleArrayTest.class).addTest(
+                             "openProject",
                         "testNgClick",
                         "testExpression2",
                         "testDirective6",
@@ -96,11 +97,11 @@ public class ControllersGlobalTest extends GeneralAngular {
     public void openProject() throws Exception {
         startTest();
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("ctrlglobal");
+        openDataProjects("ctrlmodule");
         evt.waitNoEvent(2000);
-        openFile("partials|partial1.html", "ctrlglobal");
+        openFile("partials|partial1.html", "ctrlmodule");
         waitScanFinished();
-        ControllersGlobalTest.originalContent = new EditorOperator("partial1.html").getText();
+        CtrlModuleArrayTest.originalContent = new EditorOperator("partial1.html").getText();
         endTest();
     }
 
@@ -249,7 +250,7 @@ public class ControllersGlobalTest extends GeneralAngular {
     }
 
     public void testGoToPartial() {
-        openFile("js|app.js", "ctrlglobal");
+        openFile("js|app.js", "ctrlmodule");
         EditorOperator app = new EditorOperator("app.js");
         app.setCaretPosition("ial1", true);
         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(app);
@@ -259,6 +260,7 @@ public class ControllersGlobalTest extends GeneralAngular {
         ed.setCaretPosition(1, 1);
         int expectedPosition = ed.txtEditorPane().getCaretPosition();
         assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
+        
     }
 
     public void testGoToController() {
@@ -268,7 +270,7 @@ public class ControllersGlobalTest extends GeneralAngular {
         evt.waitNoEvent(500);
         EditorOperator ed = new EditorOperator("controllers.js");
         int position = ed.txtEditorPane().getCaretPosition();
-        ed.setCaretPosition(5, 10);
+        ed.setCaretPosition(6, 21);
         int expectedPosition = ed.txtEditorPane().getCaretPosition();
         assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
     }
@@ -278,10 +280,9 @@ public class ControllersGlobalTest extends GeneralAngular {
         EditorOperator eo = new EditorOperator("partial1.html");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
-        eo.insert(ControllersGlobalTest.originalContent);
+        eo.insert(CtrlModuleArrayTest.originalContent);
         eo.save();
         eo.pressKey(KeyEvent.VK_ESCAPE);
         evt.waitNoEvent(1000);
     }
-
 }
