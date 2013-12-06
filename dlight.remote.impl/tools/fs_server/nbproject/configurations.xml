@@ -464,6 +464,7 @@
           <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
+            <standard>3</standard>
             <incDir>
               <pElem>.</pElem>
             </incDir>
@@ -475,17 +476,29 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Debug_Solaris-x86" type="0">

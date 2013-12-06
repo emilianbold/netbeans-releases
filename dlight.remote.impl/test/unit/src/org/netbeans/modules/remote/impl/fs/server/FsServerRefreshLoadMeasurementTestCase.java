@@ -162,9 +162,11 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
     
     private static void analyzeTime(String heading, FSServer[] servers, PrintStream ps) throws IOException {
         
-        String sep   = "----------------------------------------------------\n";
-        String title = "PID            Real    User    Sys  %CPU  %Usr  %Sys\n";
-        String format = "%-12s %6.1f  %6.1f %6.1f  %4.1f  %4.1f  %4.1f\n";
+        String sep   = "----------------------------------------------------------------\n";
+        String title = "PID             Real     User     Sys     %CPU     %Usr     %Sys\n";
+        String format = "%-12s %7.1f  %7.1f %7.1f  %7.1f  %7.1f  %7.1f\n";
+        
+        float max_real = 0;
         
         float total_real = 0;
         float total_user = 0;
@@ -187,13 +189,19 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
             total_real += real;
             total_user += user;
             total_sys += sys;
+            if (real > max_real) {
+                max_real = real;
+            }
             ps.printf(format, "" + server.getProcess().getPID(), 
                     real, user, sys, 
                     (user+sys)*100/real, user*100/real, sys*100/real);
         }
+        ps.printf(format, "Average", 
+                total_real/servers.length, total_user/servers.length, total_sys/servers.length, 
+                (total_user+total_sys)*100/total_real, total_user*100/total_real, total_sys*100/total_real);
         ps.printf(format, "Total", 
                 total_real, total_user, total_sys, 
-                (total_user+total_sys)*100/total_real, total_user*100/total_real, total_sys*100/total_real);
+                (total_user+total_sys)*100/max_real, total_user*100/max_real, total_sys*100/max_real);
         ps.printf("%s\n\n", sep);
     }
 

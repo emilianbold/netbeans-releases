@@ -50,7 +50,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 15
+#define FS_SERVER_MINOR_VERSION 16
 
 typedef struct fs_entry {
     int /*short?*/ name_len;

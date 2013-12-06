@@ -88,42 +88,6 @@ static void expand_table_if_needed() {
     }    
 }
 
-/** to use with qsort */
-static int compare_dirtab_elements_4qsort(const void *d1, const void *d2) {
-    if (!d1) {
-        return d2 ? -1 : 0;
-    } else if (!d2) {
-        return 1;
-    } else {
-        dirtab_element *el1 = *((dirtab_element **) d1);
-        dirtab_element *el2 = *((dirtab_element **) d2);
-        if (el1 && el1) {
-            int result = strcmp(el1->abspath, el2->abspath);
-            return result;
-        } else { // should never occur, but we'd better check
-            return el1 ? 1 : (el2 ? -1 : 0);
-        }
-    }
-}
-
-/** to use with bsearch */
-static int compare_dirtab_elements_4search(const void *to_find, const void *d2) {
-    if (!to_find) {
-        return d2 ? -1 : 0;
-    } else if (!d2) {
-        return 1;
-    } else {
-        char *path = (char *) to_find;
-        dirtab_element *el2 = *((dirtab_element **) d2);
-        if (el2) {
-            int result = strcmp(path, el2->abspath);
-            return result;
-        } else { // should never occur, but we'd better check
-            return 1;
-        }
-    }
-}
-
 static dirtab_element *new_dirtab_element(const char* path, int index) {
     char cache[32];
     sprintf(cache, "%s/%d", cache_subdir_name, index);
@@ -138,15 +102,6 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     el->cache_path = el->abspath + path_len + 1;
     strcpy(el->cache_path, cache);
     pthread_mutex_init(&el->mutex, NULL);
-    return el;
-}
-
-static dirtab_element *add_path(const char* path) {
-    dirtab_element *el = new_dirtab_element(path, table.next_index++);
-    expand_table_if_needed();
-    table.paths[table.size++] = el;
-    table.dirty = true;
-    qsort(table.paths, table.size, sizeof(dirtab_element *), compare_dirtab_elements_4qsort);
     return el;
 }
 
@@ -384,20 +339,40 @@ void dirtab_free() {
 dirtab_element *dirtab_get_element(const char* abspath) {
 
     mutex_lock(&table.mutex);
-    
+
     dirtab_element *el;
+
+    // perform a binary search
+    bool found = false;
+        
+    int left = 0;
+    int right = table.size - 1;
     
-    dirtab_element **found = (dirtab_element**) bsearch(abspath, table.paths, table.size, 
-            sizeof(dirtab_element *), compare_dirtab_elements_4search);
-    if (found) {
-        el = *found;
-    } else {
-        el = add_path(abspath);
-        if (table.dirty) {
-            if (flush_impl()) {
-                table.dirty = false;
+    if (table.size != 0) {
+        while (left <= right) {
+            int x = (left + right) / 2;
+            int cmp = strcmp(abspath, table.paths[x]->abspath);
+            if (cmp < 0) {
+                right = x - 1; 
+            } else if (cmp > 0) {
+                left  = x + 1; 
+            } else {
+                found = true;
+                el = table.paths[x];
+                break;
             }
         }
+    }
+
+    if (!found) {
+        el = new_dirtab_element(abspath, table.next_index++);
+        expand_table_if_needed();
+        for (int i = table.size-1; i >= left; i--) { 
+            table.paths[i+1] = table.paths[i];
+        }
+        table.paths[left] = el;
+        table.dirty = true;        
+        table.size++;
     }
 
     mutex_unlock(&table.mutex);
