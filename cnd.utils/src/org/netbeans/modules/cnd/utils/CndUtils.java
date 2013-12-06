@@ -81,6 +81,10 @@ public class CndUtils {
         if ("true".equals(System.getProperty ("cnd.command.line.utility"))) { // NOI18N
             return true;
         }
+        // headless is the same as standalone
+        if (getBoolean("java.awt.headless", false)) { // NOI18N
+            return true;
+        }
         return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
     
