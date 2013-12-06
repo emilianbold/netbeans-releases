@@ -76,25 +76,37 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author  Martin Adamek
  */
 public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel implements AncestorListener {
+    private final RequestProcessor RP = new RequestProcessor(PersistenceUnitWizardPanelDS.class.getSimpleName(), 2);
     
     public PersistenceUnitWizardPanelDS(Project project, ChangeListener changeListener, boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
     }
     
-    public PersistenceUnitWizardPanelDS(Project project, ChangeListener changeListener,
+    public PersistenceUnitWizardPanelDS(final Project project, ChangeListener changeListener,
             boolean editName, TableGeneration tg) {
 
         super(project);
         initComponents();
         setTableGeneration(tg);
        
+        providerCombo.setEnabled(false);
 
+        RP.post(new Runnable() {
+           @Override
+           public void run() {
+                PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
+                comboHelper.connect(providerCombo);
+                providerCombo.setEnabled(true);
+                checkValidity();
+           } 
+        });
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(providerCombo);
@@ -246,10 +258,15 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel imp
     
     @Override
     public boolean isValidPanel() {
-        Sources sources=ProjectUtils.getSources(project);
+         setErrorMessage("");
+       Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if(groups == null || groups.length == 0) {
             setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_JavaSourceGroup")); //NOI18N
+            return false;
+        }
+        if( !providerCombo.isEnabled() ) {
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardPanelDS.class,"LBL_Wait")); //NOI18N
             return false;
         }
         try{
@@ -278,6 +295,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel imp
     
     public void setErrorMessage(String msg){
         errorMessage.setText(msg);
+        errorMessage.setVisible(msg!=null && msg.length()>0);
     }
     
     /** This method is called from within the constructor to

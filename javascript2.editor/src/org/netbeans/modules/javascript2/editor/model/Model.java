@@ -288,6 +288,10 @@ public final class Model {
                     if (fqn.length() > 0) {
                         DeclarationScope ds = ModelUtils.getDeclarationScope(with);
                         JsObject fromExpression = ModelUtils.findJsObjectByName((JsObject)ds, fqn.toString());
+                        if (fromExpression == null) { 
+                            fromExpression = new JsObjectImpl(visitor.getGlobalObject(), new IdentifierImpl(type.getType(), offset), new OffsetRange(offset, offset + type.getType().length()), false, null, null);
+                            visitor.getGlobalObject().addProperty(type.getType(), fromExpression);
+                        }
                         if (fromExpression != null) {
                             for (IndexedElement indexedElement : properties) {
                                 JsObject jsWithProperty = with.getProperty(indexedElement.getName());
@@ -296,7 +300,7 @@ public final class Model {
                                     }
                             }
                             processWithExpressionOccurrences(fromExpression, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
-                        }
+                        } 
                     }
                         
                 }
