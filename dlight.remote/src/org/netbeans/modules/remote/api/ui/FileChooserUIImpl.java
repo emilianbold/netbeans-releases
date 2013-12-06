@@ -483,7 +483,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         });
         
         filenameTextField.addKeyListener(new TextFieldKeyListener());
-        
+
         fnl.setLabelFor(filenameTextField);
         filenameTextField.addFocusListener(
                 new FocusAdapter() {
@@ -2327,7 +2327,11 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     
                     if(!node.isLeaf()) {
                         newFolderAction.enable(file);
-                        setDirectorySelected(true);
+                        // see BasicFileChooserUI.valueChanged and issue #239192
+                        if (getFileChooser().getFileSelectionMode() == JFileChooser.FILES_ONLY) {
+                            setDirectorySelected(true);
+                            setDirectory(file);
+                        }
                     }
                 }
             }
