@@ -49,7 +49,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import javax.tools.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -60,6 +61,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.junit.output.antutils.AntProject;
 import org.netbeans.modules.junit.output.antutils.TestCounter;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -89,6 +91,7 @@ public final class JUnitAntLogger extends AntLogger {
             "org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner";//NOI18N
     private static final String XML_FORMATTER_CLASS_NAME =
             "org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter";//NOI18N
+    private static final Logger LOGGER = Logger.getLogger(JUnitAntLogger.class.getName());
     
     /** default constructor for lookup */
     public JUnitAntLogger() { }
@@ -381,6 +384,9 @@ public final class JUnitAntLogger extends AntLogger {
                     File pd = new File(projectDir);
                     File f = FileUtil.normalizeFile(pd); // #182715
                     project = FileOwnerQuery.getOwner(FileUtil.toFileObject(f));
+                    if (project == null) {
+                        LOGGER.log(Level.INFO, "Project was null for project dir: " + f.getPath()); //NOI18N
+                    }
                 }
             }catch(Exception e){}
             Properties props = new Properties();
@@ -392,6 +398,14 @@ public final class JUnitAntLogger extends AntLogger {
                 String val = event.getProperty(prop);
                 if (val!=null) {
                     props.setProperty(prop, val);
+                }
+            }
+            if(project == null) {
+                File antScript = FileUtil.normalizeFile(session.getOriginatingScript());
+                FileObject fileObj = FileUtil.toFileObject(antScript);
+                project = FileOwnerQuery.getOwner(fileObj);
+                if (project == null) {
+                    LOGGER.log(Level.WARNING, "Project was null for ant script: " + antScript.getPath()); //NOI18N
                 }
             }
             outputReader = new JUnitOutputReader(
