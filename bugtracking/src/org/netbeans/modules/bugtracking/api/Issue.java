@@ -44,7 +44,7 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 
 /**

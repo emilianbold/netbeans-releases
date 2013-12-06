@@ -39,13 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.commons;
+package org.netbeans.modules.team.commons;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 
 /**
  *
@@ -215,7 +216,9 @@ public final class LogUtils {
         if(psswd == null) {
             return ""; // NOI18N
         }
-        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false"))) { // NOI18N
+        if("true".equals(System.getProperty("org.netbeans.modules.bugtracking.logPasswords", "false")) || // NOI18N
+           "true".equals(System.getProperty("org.netbeans.modules.team.logPasswords", "false")))          // NOI18N
+        {
             return new String(psswd); 
         }
         return "******"; // NOI18N
