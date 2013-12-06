@@ -43,7 +43,7 @@
 package org.netbeans.modules.jira.kenai;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.query.JiraQuery;

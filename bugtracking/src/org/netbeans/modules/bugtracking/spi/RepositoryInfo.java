@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 
 /**
  * Represents information related to one particular repository. 

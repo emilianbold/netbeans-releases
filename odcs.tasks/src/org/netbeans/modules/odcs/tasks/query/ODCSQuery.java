@@ -64,7 +64,7 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;

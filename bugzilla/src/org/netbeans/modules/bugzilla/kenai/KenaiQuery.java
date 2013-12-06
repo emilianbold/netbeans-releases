@@ -43,7 +43,7 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.commons.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
