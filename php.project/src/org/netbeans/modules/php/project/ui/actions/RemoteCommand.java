@@ -371,16 +371,17 @@ public abstract class RemoteCommand extends Command {
             }
             this.progressHandle = progressHandle;
             workUnits = getWorkUnits(forFiles);
+            // #237847
+            if (workUnits < 0) {
+                LOGGER.log(Level.WARNING, "Negative number of workunits {0} for transfer files {1}", new Object[] {workUnits, forFiles});
+                workUnits = forFiles.size();
+            }
         }
 
         @Override
         public void operationStart(Operation operation, Collection<TransferFile> forFiles) {
             if (operations.isEmpty()) {
-                // #237847
-                if (workUnits < 0) {
-                    LOGGER.log(Level.WARNING, "Negative number of workunits {0} for transfer files {1}", new Object[] {workUnits, forFiles});
-                    workUnits = forFiles.size();
-                }
+                assert workUnits >= 0 : workUnits + " :: " + forFiles;
                 progressHandle.start(workUnits);
             }
             operations.offerFirst(operation);
