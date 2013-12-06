@@ -58,7 +58,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.server.DirectoryReaderFS;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,13 +70,16 @@ public class RefreshManager {
     private final ExecutionEnvironment env;
     private final RemoteFileObjectFactory factory;
     private final RequestProcessor.Task updateTask;
+
+    /** one the task was scheduled, this should be true */
+    private volatile boolean updateTaskScheduled = false;
     
     private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
     private final Object queueLock = new Object();
     
-    private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
-    public static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", !DirectoryReaderFS.USE_FS_SERVER); //NOI18N
+    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
+    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;
@@ -87,40 +90,40 @@ public class RefreshManager {
         public void run() {
             long time = System.currentTimeMillis();
             int cnt = 0;
-            while (true) {
-                RemoteFileObjectBase fo;
-                synchronized (queueLock) {
-                   fo = queue.poll();
-                   if (fo == null) {
-                       break;
-                   }
-                   cnt++;
-                   set.remove(fo);
-                }
-                try {
-                    fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
-                } catch (ConnectException ex) {
-                    clear();
-                    break;
-                } catch (InterruptedException ex) {
-                    RemoteLogger.finest(ex, fo);
-                    break;
-                } catch (CancellationException ex) {
-                    RemoteLogger.finest(ex, fo);
-                    break;
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (ExecutionException ex) {
-                    if (!permissionDenied(ex)) {
-                        System.err.println("Exception on file "+fo.getPath());
-                        ex.printStackTrace(System.err);
+                while (true) {
+                    RemoteFileObjectBase fo;
+                    synchronized (queueLock) {
+                        fo = queue.poll();
+                        if (fo == null) {
+                            break;
+                        }
+                        cnt++;
+                        set.remove(fo);
                     }
-                }
+                    try {
+                        fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
+                    } catch (ConnectException ex) {
+                        clear();
+                        break;
+                    } catch (InterruptedException ex) {
+                        RemoteLogger.finest(ex, fo);
+                        break;
+                    } catch (CancellationException ex) {
+                        RemoteLogger.finest(ex, fo);
+                        break;
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    } catch (ExecutionException ex) {
+                        if (!permissionDenied(ex)) {
+                        System.err.println("Exception on file "+fo.getPath());
+                            ex.printStackTrace(System.err);
+                        }
+                    }
+                }                
+                time = System.currentTimeMillis() - time;
+                RemoteLogger.getInstance().log(Level.FINEST, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
             }
-            time = System.currentTimeMillis() - time;
-            RemoteLogger.getInstance().log(Level.FINE, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
         }
-    }
     
     private boolean permissionDenied(ExecutionException e) {
         Throwable ex = e;
@@ -239,17 +242,12 @@ public class RefreshManager {
             }
         }
         updateTask.schedule(0);
+        updateTaskScheduled = true;
     }
-    
-    private static boolean getBoolean(String name, boolean result) {
-        String text = System.getProperty(name);
-        if (text != null) {
-            result = Boolean.parseBoolean(text);
-        }
-        return result;
-    }
-    
+
     /*package*/ void testWaitLastRefreshFinished() {
-        updateTask.waitFinished();
+        if (updateTaskScheduled) {
+            updateTask.waitFinished();
+        }
     }
 }

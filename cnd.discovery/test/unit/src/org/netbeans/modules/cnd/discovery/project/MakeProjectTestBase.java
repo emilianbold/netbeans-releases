@@ -69,8 +69,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -78,8 +76,8 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -87,7 +85,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
@@ -100,12 +97,14 @@ import org.openide.util.Utilities;
  */
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";
-    private static final boolean TRACE = true;
+    private static final boolean TRACE = false;
+    private Logger logger1;
 
     public MakeProjectTestBase(String name) {
         super(name);
         if (TRACE) {
             System.setProperty("cnd.discovery.trace.projectimport", "true"); // NOI18N
+            System.setProperty("org.netbeans.modules.cnd.test.CndTestIOProvider.traceout","true"); // NOI18N
         }
         //System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
 //        System.setProperty("cnd.modelimpl.assert.notfound", "true");
@@ -115,7 +114,8 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
         System.setProperty("parser.report.include.failures","true"); // NOI18N
         //System.setProperty("cnd.modelimpl.timing.per.file.flat","true"); // NOI18N
         //System.setProperty("cnd.dump.native.file.item.paths","true"); // NOI18N
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
+        logger1 = Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils");
+        logger1.setLevel(Level.SEVERE);
         //System.setProperty("org.netbeans.modules.cnd.apt.level","WARNING"); // NOI18N
         //Logger.getLogger("org.netbeans.modules.cnd.apt").setLevel(Level.WARNING);
         //MockServices.setServices(MakeProjectType.class);
@@ -154,7 +154,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     private void startupModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.startup();
-        RepositoryUtils.cleanCashes();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
     }
 
     @Override
@@ -166,8 +166,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         model.shutdown();
-        RepositoryUtils.cleanCashes();
-        RepositoryUtils.debugClear();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
     }
 
     protected File detectConfigure(String path){
@@ -466,7 +465,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                System.err.println("Not found required tool: "+entry.getKey());
                res =false;
            } else {
-               System.err.println("Found required tool: "+entry.getKey()+"="+entry.getValue());
+              if (TRACE) {
+                   System.err.println("Found required tool: "+entry.getKey()+"="+entry.getValue());
+              }
            }
         }
         return res;
@@ -564,7 +565,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             buf.append(' ');
             buf.append(arg);
         }
-        System.err.println(folder+"#"+command+buf.toString());
+        if (TRACE) {
+            System.err.println(folder+"#"+command+buf.toString());
+        }
         NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
         .setWorkingDirectory(folder)
         .setExecutable(command)
@@ -580,7 +583,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                 String command = s.substring(0,i);
                 String arguments = s.substring(i+1);
                 command = tools.get(command);
-                System.err.println(createdFolder+"#"+command+" "+arguments);
+                if (TRACE) {
+                    System.err.println(createdFolder+"#"+command+" "+arguments);
+                }
                 //NativeExecutor ne = new NativeExecutor(createdFolder, tools.get(command), arguments, new String[0], command, "run", false, false);
                 NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
                 .setWorkingDirectory(createdFolder)
@@ -604,7 +609,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                             if (line == null) {
                                 break;
                             } else {
-                                System.out.println(line);
+                                if (TRACE) {
+                                  System.out.println(line);
+                                }
                             }
                         }
                     } catch (IOException ex) {

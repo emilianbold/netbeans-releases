@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -82,7 +81,7 @@ public class Project_65_Test extends CndBaseTestCase {
         return makeProject;
     }
     
-    public void testMakeProj65() throws Exception {
+    public void testMakeProj65() throws Throwable {
         if (Utilities.isWindows()) {
             return;
         }
@@ -92,7 +91,7 @@ public class Project_65_Test extends CndBaseTestCase {
         assertNotNull("Null ConfigurationDescriptorProvider", cdp);
         cdp.getConfigurationDescriptor();
         assertTrue("cdp.gotDescriptor returned false", cdp.gotDescriptor());
-        Exception lastAssertion = CndUtils.getLastAssertion();
+        Throwable lastAssertion = CndUtils.getLastAssertion();
         if (lastAssertion != null) {
             throw lastAssertion;
         }

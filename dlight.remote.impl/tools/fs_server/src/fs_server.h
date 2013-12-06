@@ -19,29 +19,23 @@ extern "C" {
 enum fs_request_kind {
     FS_REQ_LS = 'l',
     FS_REQ_RECURSIVE_LS = 'r',
-    FS_REQ_STAT = 's',
+    FS_REQ_STAT = 'S',
+    FS_REQ_LSTAT = 's',
     FS_REQ_CANCEL = 'c',
     FS_REQ_QUIT = 'q',
-    FS_REQ_SLEEP = 's'
+    FS_REQ_SLEEP = 'P',
+    FS_REQ_ADD_WATCH = 'W',
+    FS_REQ_REMOVE_WATCH = 'w'
 };
 
 enum fs_response_kind {
     FS_RSP_LS = 'l',
     FS_RSP_RECURSIVE_LS = 'r',
-    FS_RSP_STAT = 's',
     FS_RSP_ENTRY = 'e',
     FS_RSP_END = 'x',
-    FS_RSP_CHANGE = 'c'
+    FS_RSP_CHANGE = 'c',
+    FS_RSP_ERROR = 'E'
 };
-
-/**
- * Request in text mode (as it is passed via stream).
- */
-typedef struct fs_raw_request {    
-    enum fs_request_kind kind : 8;
-    char gap;
-    char data[];
-} fs_raw_request;
 
 typedef struct fs_request {
     int size;

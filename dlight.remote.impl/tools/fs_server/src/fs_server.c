@@ -24,22 +24,33 @@
 #include <getopt.h>
 #include <sys/stat.h> 
 #include <fcntl.h>
+#include <signal.h>
 
-#define MAX_RP_THREADS 32
-static int rp_thread_count = 4;
-static pthread_t rp_threads[MAX_RP_THREADS];
-static pthread_t refresh_thread;
+#define MAX_THREAD_COUNT 32
+#define DEFAULT_THREAD_COUNT 4
+
+typedef struct {
+    int no;
+    pthread_t id;    
+} thread_info;
+
+static int rp_thread_count = DEFAULT_THREAD_COUNT;
+static thread_info rp_threads[MAX_THREAD_COUNT];
 
 static blocking_queue req_queue;
 
+static bool clear_persistence = false;
 static bool log_flag = false;
 static bool persistence = false;
 static bool refresh = false;
+static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
+//static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MINOR_VERSION 7
+#define FS_SERVER_MID_VERSION 0
+#define FS_SERVER_MINOR_VERSION 15
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -58,6 +69,58 @@ static struct {
     pthread_mutex_t mutex;
     bool proceed;
 } state;
+
+static __thread struct {
+    int err_no;
+    char* errmsg;
+    char* strerr;
+} err_info;
+
+static const int thread_emsg_bufsize = PATH_MAX * 2 + 128; // should it be less?
+static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?    
+
+static void err_init() {
+    err_info.err_no = 0;
+    err_info.errmsg = malloc(thread_emsg_bufsize);
+    err_info.strerr = malloc(strerr_bufsize);
+    *err_info.errmsg = 0; // just in case
+}
+
+static void err_shutdown() {
+    err_info.err_no = 0;
+    free(err_info.errmsg);
+    err_info.errmsg = NULL;
+    free(err_info.strerr);
+    err_info.strerr = NULL;
+}
+
+static int err_get_code() {
+    return err_info.err_no;
+}
+
+static const char* err_get_message() {
+    return err_info.errmsg;
+}
+
+static const char* err_to_string(int err_no) {
+#if __linux__
+    return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
+#else    
+    if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
+        return "";
+    } else {
+        return err_info.strerr;
+    }
+#endif
+}
+
+static void err_set(int code, const char *format, ...) {
+    err_info.err_no = code;
+    va_list args;
+    va_start (args, format);
+    vsnprintf(err_info.errmsg, thread_emsg_bufsize, format, args);
+    va_end (args);    
+}
 
 static bool state_get_proceed() {    
     bool proceed;
@@ -124,39 +187,46 @@ static bool is_prohibited(const char* abspath) {
 /** 
  * Decodes in-place fs_raw_request into fs_request
  */
-static fs_request* decode_request(char* raw_request, fs_request* request, int request_size) {
-    const char* p = raw_request + 2;
+static fs_request* decode_request(char* raw_request, fs_request* request, int request_max_size) {
+    request->kind = raw_request[0];
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
     //p++;
     int id;
-    p = decode_int(p, &id);
-    if (p == NULL) {
-        return NULL;
-    }
-    //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-    int len;
-    p = decode_int(p, &len);
-    if (p == NULL) {
-        return NULL;
-    }   
-    if (!len && *raw_request != FS_REQ_QUIT) {
-        report_error("wrong (zero path) request: %s", raw_request);
-        return NULL;
-    }
-    if (len > (request_size - sizeof(fs_request) - 1)) {
-        report_error("wrong (too long path) request: %s", raw_request);
-        return NULL;
+    int path_len;
+    const char* p;
+    if (*raw_request == FS_REQ_QUIT) {
+        id = 0;
+        path_len = 0;
+        p = "";
+    } else {
+        p = raw_request + 2;
+        p = decode_int(p, &id);
+        if (p == NULL) {
+            return NULL;
+        }
+        //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+        p = decode_int(p, &path_len);
+        if (p == NULL) {
+            return NULL;
+        }
+        if (!path_len && *raw_request != FS_REQ_QUIT) {
+            report_error("wrong (zero path) request: %s", raw_request);
+            return NULL;
+        }
+        if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
+            report_error("wrong (too long path) request: %s", raw_request);
+            return NULL;
+        }
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-    request->kind = raw_request[0];
-    strncpy(request->path, p, len);
-    request->path[len] = 0;
+    strncpy(request->path, p, path_len);
+    request->path[path_len] = 0;
     unescape_strcpy(request->path, request->path);
-    len = strlen(request->path);
+    path_len = strlen(request->path);
     request->id = id;
-    request->len = len;
-    request->size = offsetof(fs_request, path)+len+1; //(request->path-&request)+len+1;
+    request->len = path_len;
+    request->size = offsetof(fs_request, path)+path_len+1; //(request->path-&request)+len+1;
     return request;
 }
 
@@ -188,7 +258,7 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
  * Creates a fs_entry on heap.
  * NB: modifies buf: can unescape and zero-terminate strings
  */
-static fs_entry *decode_entry_response(char* buf) {
+static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
     // format: name_len name uid gid mode size mtime link_len link
     fs_entry tmp; // a temporary one since we don't know names size
@@ -197,6 +267,10 @@ static fs_entry *decode_entry_response(char* buf) {
     if (!p) { return NULL; }; // decode_int already printed error message
     
     tmp.name = (char*) p;
+    if (p + tmp.name_len >= buf + buf_size) {
+        report_error("wrong entry format: too long (%i) name: %s", tmp.name_len, buf);
+        return NULL;
+    }        
     tmp.name[tmp.name_len] = 0;
     unescape_strcpy(tmp.name, tmp.name);
     p += tmp.name_len + 1;
@@ -220,8 +294,12 @@ static fs_entry *decode_entry_response(char* buf) {
     p = decode_int(p, &tmp.link_len);
     if (!p) { return NULL; };
 
-    if (tmp.link_len) {
+    if (tmp.link_len) {        
         tmp.link = (char*) p;
+        if (p + tmp.link_len >= buf + buf_size) {
+            report_error("wrong entry format: too long (%i) link name: %s", tmp.link_len, buf);
+            return NULL;
+        }        
         tmp.link[tmp.link_len] = 0;
         unescape_strcpy(tmp.link, tmp.link);
         tmp.link_len = strlen(tmp.link);
@@ -239,113 +317,63 @@ static fs_entry *decode_entry_response(char* buf) {
     return create_fs_entry(&tmp);
 }
 
-static void read_entries_from_cache(array/*<fs_entry>*/ *entries, FILE *cache_fp, const char* path) {
+static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cache_fp, 
+        const char *cache_path, char *buf, int buf_size, const char* path) {
+
+    if (!fgets(buf, buf_size, cache_fp)) {            
+        if (feof(cache_fp)) {
+            report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
+        } else {
+            report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+        }        
+        return false;
+    }
+
+    unescape_strcpy(buf, buf);
+    if (strncmp(path, buf, strlen(path)) != 0) {
+        report_error("error: first line in cache %s for %s is not '%s', but is '%s'", cache_path, path, path, buf);
+            return false;
+    }
+
+    bool success = true;
+    while (fgets(buf, buf_size, cache_fp)) {
+        trace(TRACE_FINEST, "\tread entry: %s", buf);
+        if (*buf == '\n' || *buf == 0) {
+            trace(TRACE_FINEST, "an empty one; continuing...");
+            continue;
+        }
+        fs_entry *entry = decode_entry_response(buf, buf_size);
+        if (entry) {
+            array_add(entries, entry);
+        } else {
+            report_error("error reading entry from cache (%s): %s\n", cache_path, buf);
+            success = false;
+            break;
+        }
+    }
+
+    if (success && !feof(cache_fp)) { // we got here because fgets returned NULL, which means EOF or error
+        report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+        success = false;
+    }
+
+    return success;
+}
+    
+static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el, const char* path) {
+    const char *cache_path = dirtab_get_element_cache_path(el);
+    FILE* cache_fp = fopen(cache_path, "r");
     array_init(entries, 100);
+    bool success = false;
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        if (!fgets(buf, buf_size, cache_fp)) {
-            report_error("error reading cache for %s: %s\n", path, strerror(errno));
-        }
-        unescape_strcpy(buf, buf);
-        if (strncmp(path, buf, strlen(path)) != 0) {
-            report_error("error: first line in cache for %s is not '%s', but is '%s'", path, path, buf);
-        }
-        while (fgets(buf, buf_size, cache_fp)) {
-            trace("\tread entry: %s", buf);
-            if (*buf == '\n' || *buf == 0) {
-                trace("an empty one; continuing...");
-                continue;
-            }
-            fs_entry *entry = decode_entry_response(buf);
-            if (entry) {
-                array_add(entries, entry);
-            } else {
-                report_error("error reading entry from cache: %s\n", buf);
-            }
-        }
-        if (!feof(cache_fp)) {
-            report_error("error reading cache for %s: %s\n", path, strerror(errno));
-        }
+        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, buf_size, path);
         free(buf);
-        // do not close cache_fp, it's caller's responsibility
+        fclose(cache_fp);
     }
-    array_truncate(entries);
-}
-
-static bool visit_dir_entries(const char* path, 
-        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
-    DIR *d = d = opendir(path);
-    if (d) {
-        union {
-            struct dirent d;
-            char b[MAXNAMLEN];
-        } entry_buf;
-        entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
-        int buf_size = PATH_MAX;
-        char *abspath = malloc(buf_size);
-        char *link = malloc(buf_size);
-        // TODO: error processing (malloc() can return null)
-        int base_len = strlen(path);
-        strcpy(abspath, path);
-        abspath[base_len] = '/';
-        struct dirent *entry;
-        while (true) {
-            if (readdir_r(d, &entry_buf.d, &entry)) {
-                report_error("error reading directory %s: %s\n", path, strerror(errno));
-                break;
-            }
-            if (!entry) {
-                break;
-            }
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-                continue;
-            }
-            strcpy(abspath + base_len + 1, entry->d_name);
-            struct stat stat_buf;
-            if (lstat(abspath, &stat_buf) == 0) {
-                bool is_link = S_ISLNK(stat_buf.st_mode);
-                if (is_link) {
-                    ssize_t sz = readlink(abspath, link, buf_size);
-                    if (sz == -1) {
-                        report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                        strcpy(link, "?");
-                    } else {
-                        link[sz] = 0;
-                    }
-                }
-                if (!visitor(entry->d_name, &stat_buf, link, abspath, data)) {
-                    break;
-                }
-            } else {
-                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));                
-            }
-        }
-        free(abspath);
-        free(link);
-        closedir(d);
-        return true; // TODO: error processing: what some of them has errors?
-    } else {
-        report_error("error opening directory '%s': %s\n", path, strerror(errno));
-        return false;
-    }
-}
-
-static long long get_mtime(struct stat *stat_buf) {
-    long long  result = stat_buf->st_mtime;
-    result *= 1000;
-#if __FreeBSD__
-    #if __BSD_VISIBLE
-        result += stat_buf->st_mtimespec.tv_nsec/1000000;
-    #else
-        result += stat_buf->__st_mtimensec/1000000;
-    #endif
-#elif __APPLE__
-    result += stat_buf->st_mtimespec.tv_nsec/1000000;
-#else
-    result +=  stat_buf->st_mtim.tv_nsec/1000000;    
-#endif
-    return result;
+    array_truncate(entries);    
+    return success;
 }
 
 static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
@@ -369,23 +397,23 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     return true;
 }
 
-static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
+static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {    
     array_init(entries, 100);
     visit_dir_entries(path, fs_entry_creating_visitor, entries);
     array_truncate(entries);
 }
 
-static bool form_entry_response(char* response_buf, const int response_buf_size, 
-        const char *abspath, const struct dirent *entry, 
-        char* work_buf, int work_buf_size) {
+static bool response_entry_create(buffer response_buf, 
+        const char *abspath, const char *basename, 
+        buffer work_buf) {
     struct stat stat_buf;
     if (lstat(abspath, &stat_buf) == 0) {
         
         //int escaped_name_size = escape_strlen(entry->d_name);
-        escape_strcpy(work_buf, entry->d_name);
-        char *escaped_name = work_buf;
+        escape_strcpy(work_buf.data, basename);
+        char *escaped_name = work_buf.data;
         int escaped_name_size = strlen(escaped_name);
-        work_buf_size -= (escaped_name_size + 1);
+        int work_buf_size = work_buf.size - (escaped_name_size + 1);
         
         bool link_flag = S_ISLNK(stat_buf.st_mode);
 
@@ -393,24 +421,26 @@ static bool form_entry_response(char* response_buf, const int response_buf_size,
         char* escaped_link = "";
         
         if (link_flag) {
-            char* link = work_buf + escaped_name_size + 1; 
+            char* link = work_buf.data + escaped_name_size + 1; 
             ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                strcpy(work_buf, "?");
+                err_set(errno, "error performing readlink for %s: %s\n", abspath, err_to_string(errno));
+                strcpy(work_buf.data, "?");
             } else {
                 link[sz] = 0;
                 escaped_link_size = escape_strlen(link);
                 work_buf_size -= (sz + escaped_link_size + 1);
                 if (work_buf_size < 0) {
                     report_error("insufficient space in buffer for %s\n", abspath);
+                    err_set(-1, "insufficient space in buffer for %s\n", abspath);
                     return false;
                 }
                 escaped_link = link + sz + 1;
                 escape_strcpy(escaped_link, link);
             }
         }
-        snprintf(response_buf, response_buf_size, "%i %s %li %li %li %lu %lli %i %s\n",
+        snprintf(response_buf.data, response_buf.size, "%i %s %li %li %li %lu %lli %i %s\n",
                 escaped_name_size,
                 escaped_name,
                 (long) stat_buf.st_uid,
@@ -422,154 +452,184 @@ static bool form_entry_response(char* response_buf, const int response_buf_size,
                 escaped_link);
         return true;
     } else {
-        report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));
+        report_error("error getting lstat for '%s': %s\n", abspath, strerror(errno));
+        err_set(errno, "error getting lstat for '%s': %s\n", abspath, err_to_string(errno));
         return false;
     }
 }
 
-static void response_ls(int request_id, const char* path, bool recursive, int nesting_level) {
+typedef struct {
+    const int request_id;
+    buffer response_buf;
+    buffer work_buf;
+    FILE *cache_fp;
+} response_ls_data;
 
-    if (is_prohibited(path)) {
-        trace("ls: skipping %s\n", path);
-        return;
-    }
+static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
+static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
+
+static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
+
+    fprintf(stdout, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
+            request_id, (long) strlen(path), path);
+
+    buffer response_buf = buffer_alloc(PATH_MAX * 2); // TODO: accurate size calculation
+    buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
     
-    DIR *d = NULL;
     FILE *cache_fp = NULL;
-    struct dirent *entry;
-    
-    union {
-        struct dirent d;
-        char b[MAXNAMLEN];
-    } entry_buf;    
-    entry_buf.d.d_reclen = MAXNAMLEN + sizeof(struct dirent);
-    
-    int response_buf_size = PATH_MAX * 2; // TODO: accurate size calculation
-    char* response_buf = malloc(response_buf_size); 
-    char* child_abspath = malloc(PATH_MAX);
-    int work_buf_size = (PATH_MAX + MAXNAMLEN) * 2 + 2;
-    char* work_buf = malloc(work_buf_size);
-    d = opendir(path);
-    if (d) {
-        dirtab_element *el = NULL;
-        if (persistence) {
-            el = dirtab_get_element(path);
-            cache_fp = dirtab_get_element_cache(el, true);
-            if (!cache_fp) {
-                report_error("error opening cache file for %s: %s\n", path, strerror(errno));
-            }
-            escape_strcpy(work_buf, path);
-            fprintf(cache_fp, "%s\n", work_buf);
-        }        
-        int cnt = 0;
-        while (true) {
-            if (readdir_r(d, &entry_buf.d, &entry)) {
-                report_error("error reading directory %s: %s\n", path, strerror(errno));
-                break;
-            }
-            if (!entry) {
-                break;
-            }
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-                continue;
-            }
-            // see comment on NFS entries below
-            if (strchr(entry->d_name, '/')) {
-                continue;
-            }
-            cnt++;
-        }
-        rewinddir(d);
-        fprintf(stdout, "%c %d %li %s %d\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
-                request_id, (long) strlen(path), path, cnt);
-        int base_len = strlen(path);
-        strcpy(child_abspath, path);
-        child_abspath[base_len] = '/';
-        while (true) {
-            if (readdir_r(d, &entry_buf.d, &entry)) {
-                report_error("error reading directory %s: %s\n", path, strerror(errno));
-                break;
-            }
-            if (!entry) {
-                break;
-            }
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-                continue;
-            }
-            //trace("\tentry: '%s'\n", entry->d_name);            
-            // on NFS entry->d_name may contain '/' or even be absolute!
-            // for example, "/ws" directory can contain 
-            // "bb-11u1", /ws/bb-11u1/packages" and "bb-11u1/packages" entries!
-            // TODO: investigate how to process this properly
-            // for now just ignoring such entries
-            if (strchr(entry->d_name, '/')) {
-                report_error("skipping entry %s\n", entry->d_name);
-                continue;
-            }
-            strcpy(child_abspath + base_len + 1, entry->d_name);
-            if (form_entry_response(response_buf, response_buf_size, child_abspath, entry, work_buf, work_buf_size)) {
-                fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf);
-                if (cache_fp) {
-                    fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
-                }
-            } else {
-                report_error("error forming entry response for '%s'\n", child_abspath);
-            }
-        }
-        fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
-        fflush(stdout);
-        if (recursive) {
-            rewinddir(d);
-            while (true) {
-                if (readdir_r(d, &entry_buf.d, &entry)) {
-                    report_error("error reading directory %s: %s\n", path, strerror(errno));
-                    break;
-                }
-                if (!entry) {
-                    break;
-                }
-                if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-                    continue;
-                }
-                strcpy(child_abspath + base_len + 1, entry->d_name);
-                struct stat stat_buf;
-                if (lstat(child_abspath, &stat_buf) == 0) {
-                    if (S_ISDIR(stat_buf.st_mode)) {
-                        response_ls(request_id, child_abspath, true, nesting_level+1);
-                    }
-                }
-            }
-            if (nesting_level == 0) {
-                fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
-                fflush(stdout);
-            }
-        }
+    dirtab_element *el = NULL;
+    if (persistence) {
+        el = dirtab_get_element(path);
+        dirtab_lock(el);
+        dirtab_set_watch_state(el, DE_WSTATE_POLL);
+        cache_fp = fopen600(dirtab_get_element_cache_path(el));
         if (cache_fp) {
-            dirtab_release_element_cache(el);
+            escape_strcpy(response_buf.data, path);
+            fprintf(cache_fp, "%s\n", response_buf.data);
+        } else {
+            report_error("error opening cache file for %s: %s\n", path, strerror(errno));
+            dirtab_unlock(el);
         }
-    } else {
-        report_error("error opening directory '%s': %s\n", path, strerror(errno));
     }
-    closedir_if_not_null(d);
-    free(work_buf);
-    free(child_abspath);
-    free(response_buf);
+        
+    response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
+    visit_dir_entries(path, response_ls_plain_visitor, &data);
+
+    fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
+    fflush(stdout);
+    
+    if (el) {
+        if (cache_fp) {
+            fclose(cache_fp);
+        }
+        dirtab_set_state(el, DE_STATE_LS_SENT);
+        dirtab_unlock(el);
+    }
+
+    if (recursive) {
+        visit_dir_entries(path, response_ls_recursive_visitor, &data);
+        if (!inner) {
+            fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
+            fflush(stdout);
+        }
+    }
+
+    buffer_free(&response_buf);    
+    buffer_free(&work_buf);    
 }
 
-static void response_stat(int request_id, const char* path) {
+static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
     
+    response_ls_data *data = p;
+    //trace("\tentry: '%s'\n", entry->d_name);            
+    // on NFS entry->d_name may contain '/' or even be absolute!
+    // for example, "/ws" directory can contain 
+    // "bb-11u1", /ws/bb-11u1/packages" and "bb-11u1/packages" entries!
+    // TODO: investigate how to process this properly
+    // for now just ignoring such entries
+    if (strchr(name, '/')) {
+        report_error("skipping entry %s\n", name);
+        return true;
+    }
+    if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf)) {
+        fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
+        if (data->cache_fp) {
+            fprintf(data->cache_fp, "%s", data->response_buf.data); // trailing '\n' already there, added by form_entry_response
+        }
+    } else {
+        report_error("error formatting response for '%s'\n", child_abspath);
+    }
+    
+    return true;
+}
+
+static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
+    response_ls_data *data = p;
+    if (S_ISDIR(stat_buf->st_mode)) {
+        response_ls(data->request_id, child_abspath, true, true);
+    }
+    return true;
+}
+
+
+static void response_stat(int request_id, const char* path) {  
+    struct stat stat_buf;    
+    if (stat(path, &stat_buf) == 0) {
+        int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
+        char* escaped_name = malloc(buf_size);
+        const char* basename = get_basename(path);
+        escape_strcpy(escaped_name, basename);
+        int escaped_name_size = strlen(escaped_name);
+        fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
+                FS_RSP_ENTRY,
+                request_id,
+                escaped_name_size,
+                escaped_name,
+                (long) stat_buf.st_uid,
+                (long) stat_buf.st_gid,
+                (long) stat_buf.st_mode,
+                (unsigned long) stat_buf.st_size,
+                get_mtime(&stat_buf),
+                0, "");
+        fflush(stdout);
+        free(escaped_name);        
+    }  else {
+        int err_code = errno;
+        char* strerr = strerror(err_code);
+        report_error("error getting stat for '%s': %s\n", path, strerr);
+        fprintf(stdout, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
+        fflush(stdout);
+    }
+}
+
+static void response_lstat(int request_id, const char* path) {    
+    buffer response_buf = buffer_alloc(PATH_MAX * 2); // *2 because of escaping. TODO: accurate size calculation
+    buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
+    const char* basename = get_basename(path);
+    if (response_entry_create(response_buf, path, basename, work_buf)) {
+        fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf.data);
+        fflush(stdout);
+//        if (cache_fp) {
+//            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
+//        }
+    } else {
+        report_error("error formatting response for '%s'\n", path);
+        //TODO: pass error message from response_entry_create
+        fprintf(stdout, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
+        fflush(stdout);
+    }
+    buffer_free(&response_buf);
+    buffer_free(&work_buf);
+}
+
+static void response_add_or_remove_watch(int request_id, const char* path, bool add) {
+    dirtab_element *el = dirtab_get_element(path);
+    dirtab_lock(el);
+    dirtab_set_watch_state(el, add ? DE_WSTATE_POLL : DE_WSTATE_NONE);
+    dirtab_set_state(el, DE_STATE_INITIAL);
+    dirtab_unlock(el);
 }
 
 static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_LS:
-            response_ls(request->id, request->path, false, 0);
+            response_ls(request->id, request->path, false, false);
             break;
         case FS_REQ_RECURSIVE_LS:
-            response_ls(request->id, request->path, true, 0);
+            response_ls(request->id, request->path, true, false);
             break;
         case FS_REQ_STAT:
             response_stat(request->id, request->path);
+            break;
+        case FS_REQ_LSTAT:
+            response_lstat(request->id, request->path);
+            break;
+        case FS_REQ_ADD_WATCH:
+            response_add_or_remove_watch(request->id, request->path, true);
+            break;
+        case FS_REQ_REMOVE_WATCH:
+            response_add_or_remove_watch(request->id, request->path, false);
+            break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
     }
@@ -586,80 +646,93 @@ static int entry_comparator(const void *element1, const void *element2) {
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (is_prohibited(path)) {
-        trace("refresh manager: skipping %s\n", path);
+        trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
         return true;
     }
-    trace("refresh manager: visiting %s\n", path);
+    if (dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
+        trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
+        return true;
+    }
+    trace(TRACE_FINER, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
-    FILE* cache_fp = dirtab_get_element_cache(el, false);
-    if (cache_fp) {
-        read_entries_from_cache(&old_entries, cache_fp, path);
-        dirtab_release_element_cache(el);
-    } else {
-        report_error("error refreshing %s: can't open cache\n", path);
+    dirtab_lock(el);
+    dirtab_state state = dirtab_get_state(el);
+    if (state == DE_STATE_REFRESH_SENT) {
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
         return true;
     }
-    read_entries_from_dir(&new_entries, path);
-
-    array_qsort(&old_entries, entry_comparator);
-    array_qsort(&new_entries, entry_comparator);
+    bool success = read_entries_from_cache(&old_entries, el, path);
+    bool differs;
+    if (success) {
+        read_entries_from_dir(&new_entries, path);
+        array_qsort(&old_entries, entry_comparator);
+        array_qsort(&new_entries, entry_comparator);
+        differs = false;
+    } else {
+        array_init(&new_entries, 4);
+        report_error("error refreshing %s: error reading cache\n", path);
+        differs = true;
+    }
     
-    bool differs = array_size(&new_entries) != array_size(&old_entries);
+    if (!differs) {
+        differs = array_size(&new_entries) != array_size(&old_entries);
+    }
     if (!differs) {
         for (int i = 0; i < new_entries.size; i++) {
             fs_entry *new_entry = array_get(&new_entries, i);
             fs_entry *old_entry = array_get(&old_entries, i);
             if (new_entry->name_len != old_entry->name_len) {
                 differs = true;
-                trace("refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             if (strcmp(new_entry->name, old_entry->name) != 0) {
                 differs = true;
-                trace("refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+                trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
             }
             // names are same; check types (modes))
             if (new_entry->mode != old_entry->mode) {
                 differs = true;
-                trace("refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
+                trace(TRACE_FINE, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
                 break;
             }
             // if links, then check links
             if (S_ISLNK(new_entry->mode)) {
                 if (new_entry->link_len != old_entry->link_len) {
                     differs = true;
-                    trace("refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }
                 if (strcmp(new_entry->link, old_entry->link) != 0) {
                     differs = true;
-                    trace("refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+                    trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
                     break;
                 }                
             }
             // names, modes and link targets are same
             if (new_entry->uid != old_entry->uid) {
                 differs = true;
-                trace("refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
+                trace(TRACE_FINE, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
                 break;
             }
             if (new_entry->gid != old_entry->gid) {
                 differs = true;
-                trace("refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
+                trace(TRACE_FINE, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
                 break;
             }
             if (S_ISREG(new_entry->mode)) {
                 if (new_entry->size != old_entry->size) {
                     differs = true;
-                    trace("refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+                    trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
                     break;
                 }
                 if (new_entry->mtime != old_entry->mtime) {
                     differs = true;
-                    trace("refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+                    trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
                     break;
                 }
             }
@@ -667,45 +740,64 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     }
 
     if (differs) {
-        trace("refresh manager: sending notification for %s\n", path);
+        trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
         fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
         fflush(stdout);
-    }     
+        dirtab_set_state(el, DE_STATE_REFRESH_SENT);
+    }
+    dirtab_unlock(el);
     array_free(&old_entries);
     array_free(&new_entries);
     return true;        
 }
 
-static void *refresh_loop(void *data) {    
-    trace("refresh manager started; sleep interval is %d\n", refresh_sleep);
+static void thread_init() {
+    err_init();
+    sigset_t set;
+    sigfillset(&set);
+    sigdelset(&set, SIGUSR1);
+    int res = pthread_sigmask(SIG_BLOCK, &set, NULL);
+    if (res) {
+        report_error("error blocking signals for thread: %s\n", strerror(res));
+    }
+}
+static void thread_shutdown() {
+    err_shutdown();
+}
+
+static void *refresh_loop(void *data) {
+    trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
+    thread_init();    
     int pass = 0;
-    while (dirtab_is_empty()) { //TODO: replace with notification?
+    while (dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
     while (state_get_proceed()) {
         pass++;
-        trace("refresh manager, pass %d\n", pass);
+        trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
         dirtab_flush(); // TODO: find the appropriate place
         stopwatch_start();
         dirtab_visit(refresh_visitor);
-        stopwatch_stop("refresh cycle");
+        stopwatch_stop(TRACE_FINE, "refresh cycle");
         if (refresh_sleep) {
             sleep(refresh_sleep);
         }
     }
-    trace("refresh manager stopped\n");
+    trace(TRACE_INFO, "Refresh manager stopped\n");
+    thread_shutdown();
     return NULL;
 }
 
 static void *rp_loop(void *data) {
-    int thread_num = *((int*) data);
-    trace("Thread #%d started\n", thread_num);
+    thread_info *ti = (thread_info*) data;
+    trace(TRACE_FINE, "Thread #%d started\n", ti->no);
+    thread_init();
     while (true) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
-            trace("thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
-                    thread_num, request->id, request->size, request->kind, request->len, request->path);
+            trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
+                    ti->no, request->id, request->size, request->kind, request->len, request->path);
             process_request(request);
             free(request);
         } else {
@@ -714,11 +806,15 @@ static void *rp_loop(void *data) {
             }
         }
     }
-    trace("Thread #%d done\n", thread_num);
+    trace(TRACE_FINE    , "Thread #%d done\n", ti->no);
+    thread_shutdown();
     return NULL;
 }
 
-static void lock_or_unloock(bool lock) {
+static void lock_or_unlock(bool lock) {
+    if (!persistence) {
+        return;
+    }
     const char* lock_file_name = "lock";
     static int lock_fd = -1;
     if (lock) {
@@ -742,41 +838,20 @@ static void lock_or_unloock(bool lock) {
 
 static void exit_function() {
     dirtab_flush();
-    lock_or_unloock(false);    
+    lock_or_unlock(false);    
 }
 
 static void main_loop() {
     //TODO: handshake with version    
-    
-    if (rp_thread_count > 1) {
-        blocking_queue_init(&req_queue);
-        trace("Staring %d threads\n", rp_thread_count);
-        int thread_num[rp_thread_count];
-        for (int i = 0; i < rp_thread_count; i++) {
-            trace("Starting thread #%d...\n", i);
-            thread_num[i] = i;
-            pthread_create(&rp_threads[i], NULL, &rp_loop, &thread_num[i]);
-        }
-    } else {
-        trace("Starting in single-thread mode\n");
-    }
-
-    if (refresh) {
-        pthread_create(&refresh_thread, NULL, &refresh_loop, NULL);
-    }
-    if (atexit(exit_function)) {
-        report_error("error setting exit function: %s\n", strerror(errno));
-    }
-
     int buf_size = 256 + PATH_MAX;
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(fgets(raw_req_buffer, buf_size, stdin)) {
-        trace("raw request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
+        trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
         if (request) {
-            trace("decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
+            trace(TRACE_FINEST, "decoded request #%d sz=%d kind=%c len=%d path=%s\n", request->id, request->size, request->kind, request->len, request->path);
             if (request->kind == FS_REQ_QUIT) {
                 break;
             }
@@ -810,37 +885,51 @@ static void main_loop() {
     }
     free(req_buffer);
     free(raw_req_buffer);
-    state_set_proceed(false);
-    blocking_queue_shutdown(&req_queue);
-    trace("Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
-    if (statistics) {
-        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
-    }
-    trace("Shutting down. Joining threads...\n");
-    for (int i = 0; i < rp_thread_count; i++) {
-        trace("Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i]);
-        pthread_join(rp_threads[i], NULL);
-    }
 }
 
 static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
     fprintf(stderr, 
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
-            "   -t nthreads response processing threads count (default is %d)\n"
-            "   -p persisnence\n"
-            "   -r nsec  set refresh ON and sets refresh interval in seconds\n"
-            "   -v verbose: print trace messages\n"
-            "   -l log: log all requests into log file\n"
-            "   -s statistics: orint some statistics output to stderr\n"
-            , prog_name ? prog_name : argv[0], rp_thread_count);
+            "   -t <nthreads> response processing threads count (default is %d)\n"
+            "   -p log responses into persisnence\n"
+            "   -r <nsec>  set refresh ON and sets refresh interval in seconds\n"
+            "   -R <i|e>  refresh mode: i - implicit, e - explicit\n"
+            "   -v <verbose-level>: print trace messages\n"
+            "   -l log all requests into log file\n"
+            "   -s statistics: print some statistics output to stderr\n"
+            "   -d persistence directory: where to log responses (valid only if -p is set)\n"
+            "   -c cleanup persistence upon startup\n"
+            , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
 void process_options(int argc, char* argv[]) {
     int opt;
-    int new_thread_count, new_refresh_sleep;
-    while ((opt = getopt(argc, argv, "r:pvt:ls")) != -1) {
+    int new_thread_count, new_refresh_sleep, new_trace_level;
+    TraceLevel default_trace_leve = TRACE_INFO;    
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:")) != -1) {
         switch (opt) {
+            case 'R':
+                if (optarg) {
+                    if (*optarg == 'i') {
+                        refresh_explicit = false;
+                    } else if (*optarg == 'e') {
+                        refresh_explicit = true;
+                    } else {
+                        report_error("incorrect value of -R flag: %s\n", optarg);
+                        usage(argv);
+                        exit(WRONG_ARGUMENT);
+                    }
+                }
+                break;
+            case 'd':
+                if (optarg) {
+                    dirtab_set_persistence_dir(optarg);
+                }
+                break;
+            case 'c':
+                clear_persistence = true;
+                break;
             case 's':
                 statistics = true;
                 break;
@@ -858,14 +947,28 @@ void process_options(int argc, char* argv[]) {
                 persistence  = true;
                 break;
             case 'v':
-                set_trace(true);
+                new_trace_level = atoi(optarg);
+                switch (new_trace_level) {
+                    case TRACE_NONE:
+                    case TRACE_INFO:
+                    case TRACE_FINE:
+                    case TRACE_FINER:
+                    case TRACE_FINEST:
+                        set_trace(new_trace_level);
+                        break;
+                    default:
+                        report_error("incorrect value of -v flag: %d. Defaulting to %d\n", 
+                                new_trace_level, default_trace_leve);
+                        set_trace(new_trace_level);
+                        break;
+                }
                 break;
             case 't':
                 new_thread_count = atoi(optarg);
                 if (new_thread_count > 0) {
-                    if (new_thread_count > MAX_RP_THREADS) {
-                        report_error("incorrect value of -t flag: %d. Should not exceed %d.\n", new_thread_count, MAX_RP_THREADS);
-                        rp_thread_count = MAX_RP_THREADS;
+                    if (new_thread_count > MAX_THREAD_COUNT) {
+                        report_error("incorrect value of -t flag: %d. Should not exceed %d.\n", new_thread_count, MAX_THREAD_COUNT);
+                        rp_thread_count = MAX_THREAD_COUNT;
                     } else {
                         rp_thread_count = new_thread_count;
                     }
@@ -885,32 +988,135 @@ void process_options(int argc, char* argv[]) {
 }
 
 static bool print_visitor(const char* path, int index, dirtab_element* el) {
-    trace("%d %s\n", index, path);
+    trace(TRACE_INFO, "%d %s\n", index, path);
     return true;
 }
 
-int main(int argc, char* argv[]) {
-    process_options(argc, argv);
-    trace("Version %d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
-    dirtab_init();
+static void sigaction_wrapper(int sig, const struct sigaction* new_action, struct sigaction *old_action) {
+    int rc = sigaction(sig, new_action, old_action);
+    if (rc) {
+        report_error("error setting signal handler\n");
+        exit(FAILURE_SETTING_SIGNAL_HANDLER);
+    }
+}
+
+static void shutdown();
+
+static void signal_handler(int signal) {
+    trace(TRACE_INFO, "exiting by signal %s (%d)\n", signal_name(signal), signal);
+    shutdown();
+}
+
+static void signal_empty_handler(int signal) {
+    trace(TRACE_FINE, "got signal %s (%d)\n", signal_name(signal), signal);
+}
+
+//static void sigpipe_handler(int signal) {
+//    log_print("exiting by signal %s (%d)\n", signal_name(signal), signal);
+//////    if (!shutting_down) {
+//////        shutting_down = false;
+//////        shutdown();
+//////    }
+//}
+
+static void startup() {
+    err_init();
+    dirtab_init(clear_persistence, refresh_explicit ? DE_WSTATE_NONE : DE_WSTATE_POLL);
     const char* basedir = dirtab_get_basedir();
     if (chdir(basedir)) {
         report_error("cannot change current directory to %s: %s\n", basedir, strerror(errno));
         exit(FAILED_CHDIR);
     }
-    lock_or_unloock(true);
+    if (persistence) {
+        trace(TRACE_INFO, "Cache location: %s\n", dirtab_get_basedir());
+    } else {
+        trace(TRACE_INFO, "peristence is OFF\n");
+    }
+    lock_or_unlock(true);
     state_init();
-    if (get_trace() && ! dirtab_is_empty()) {
-        trace("loaded dirtab:\n");
+    if (is_traceable(TRACE_FINER) && ! dirtab_is_empty()) {
+        trace(TRACE_INFO, "loaded dirtab\n");
         dirtab_visit(print_visitor);
     }
+    int curr_thread = 0;
+    if (rp_thread_count > 1) {
+        blocking_queue_init(&req_queue);
+        for (curr_thread = 0; curr_thread < rp_thread_count; curr_thread++) {
+            trace(TRACE_FINE, "Starting thread #%d...\n", curr_thread);
+            rp_threads[curr_thread].no = curr_thread;
+            pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
+        }
+        trace(TRACE_INFO, "Started %d response threads\n", rp_thread_count);        
+    } else {
+        trace(TRACE_INFO, "Starting in single-thread mode\n");
+    }
+
+    if (refresh) {
+        pthread_create(&rp_threads[curr_thread].id, NULL, &refresh_loop, &rp_threads[curr_thread]);
+    }
+    if (atexit(exit_function)) {
+        report_error("error setting exit function: %s\n", strerror(errno));
+        exit(FAILURE_SETTING_EXIT_FUNCTION);
+    }
+    
+    struct sigaction new_sigaction;
+    new_sigaction.sa_handler = signal_handler;
+    new_sigaction.sa_flags = SA_RESTART;
+    sigemptyset(&new_sigaction.sa_mask);
+    sigaction_wrapper(SIGHUP, &new_sigaction, NULL);
+    sigaction_wrapper(SIGQUIT, &new_sigaction, NULL);
+    sigaction_wrapper(SIGINT, &new_sigaction, NULL);    
+        
+    new_sigaction.sa_handler = signal_empty_handler;
+    new_sigaction.sa_flags = SA_RESTART;
+    sigemptyset(&new_sigaction.sa_mask);
+    sigaction_wrapper(SIGUSR1, &new_sigaction, NULL);    
+            
+//    new_sigaction.sa_handler = sigpipe_handler;
+//    new_sigaction.sa_flags = SA_RESTART;
+//    sigemptyset(&new_sigaction.sa_mask);
+//    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
+}
+
+static void shutdown() {
+    state_set_proceed(false);
+    blocking_queue_shutdown(&req_queue);
+    trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    if (statistics) {
+        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+    }
+    trace(TRACE_INFO, "Shutting down. Joining threads...\n");
+    // NB: we aren't joining refresh thread; it's safe
+    for (int i = 0; i < rp_thread_count; i++) {
+        trace(TRACE_FINE, "Shutting down. Joining thread #%i [%ui]\n", i, rp_threads[i].id);
+        pthread_join(rp_threads[i].id, NULL);
+    }
+    if (refresh) {
+        int refresh_thread_idx = rp_thread_count;
+        pthread_kill(rp_threads[refresh_thread_idx].id, SIGUSR1);
+        trace(TRACE_FINE, "Shutting down. Joining refresh thread #%i [%ui]\n", refresh_thread_idx, rp_threads[refresh_thread_idx].id);
+        pthread_join(rp_threads[refresh_thread_idx].id, NULL);
+    }
+    
+    if (!dirtab_flush()) {
+        report_error("error storing dirtab\n");
+    }
+    dirtab_free();
+    log_close();
+    err_shutdown();
+    trace(TRACE_INFO, "Shut down.\n");
+    exit(0);
+}
+
+static void log_header(int argc, char* argv[]) {
     if (log_flag) {
        log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server started  ");
+       log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ", 
+               FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
        time_t t = time(NULL);
        struct tm *tt = localtime(&t);
        if (tt) {
-           log_print("%d/%02d/%02d %02d:%02d:%02d\n", 
+           log_print("%d/%02d/%02d at %02d:%02d:%02d\n", 
                    tt->tm_year+1900, tt->tm_mon + 1, tt->tm_mday, 
                    tt->tm_hour, tt->tm_min, tt->tm_sec);
        } else {
@@ -920,12 +1126,16 @@ int main(int argc, char* argv[]) {
            log_print("%s ", argv[i]);
        }
        log_print("\n");
-    }
-    main_loop();
-    if (!dirtab_flush()) {
-        report_error("error storing dirtab\n");
-    }
-    dirtab_free();
-    log_close();
+    }    
+}
+
+int main(int argc, char* argv[]) {    
+    process_options(argc, argv);
+    trace(TRACE_INFO, "Version %d.%d.%d (%s %s)\n", FS_SERVER_MAJOR_VERSION, 
+            FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
+    startup();
+    log_header(argc, argv);
+    main_loop();    
+    shutdown();
     return 0;
 }

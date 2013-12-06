@@ -12,16 +12,18 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <signal.h>
+#include <limits.h>
 
-static bool trace_flag = false;
+static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
 
-void set_trace(bool on_off) {
-    trace_flag= on_off;
+void set_trace(TraceLevel new_level) {
+    trace_level= new_level;
 }
 
-bool get_trace() {
-    return trace_flag;
+bool is_traceable(TraceLevel level) {
+    return (trace_level >= level);
 }
 
 void report_error(const char *format, ...) {
@@ -32,8 +34,8 @@ void report_error(const char *format, ...) {
     va_end (args);
 }
 
-void trace(const char *format, ...) {
-    if (trace_flag) {
+void trace(TraceLevel level, const char *format, ...) {
+    if (trace_level >= level) {
         va_list args;
         va_start(args, format);
         fprintf(stderr, "fs_server[%li]: ", (long) getpid());
@@ -66,6 +68,7 @@ void log_close() {
     if (log_file) {
         fclose(log_file);
     }
+    log_file = NULL;
 }
 
 void soft_assert(int condition, char* format, ...) {
@@ -79,7 +82,7 @@ void soft_assert(int condition, char* format, ...) {
 
 void mutex_lock(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
-        report_error("error unlocking mutex: %s\n", strerror(errno));
+        report_error("error locking mutex: %s\n", strerror(errno));
         exit(FAILURE_LOCKING_MUTEX);
     }
 }
@@ -105,6 +108,14 @@ bool file_exists(const char* path) {
     return true;
 }
 
+bool dir_exists(const char* path) {
+    struct stat stat_buf;
+    if (stat(path, &stat_buf) == -1 ) {
+        return errno != ENOENT;        
+    }
+    return S_ISDIR(stat_buf.st_mode);
+}
+
 int fclose_if_not_null(FILE* f) {
     return f ? fclose(f) : 0;
 }
@@ -114,22 +125,22 @@ int closedir_if_not_null(DIR *d) {
 }
 
 
-static int __thread long stopwatch_start_time;
+static __thread long stopwatch_start_time;
 
 void stopwatch_start() {
-    if (trace_flag) {
+    if (trace_level) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
         stopwatch_start_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
     }
 }
 
-void stopwatch_stop(const char* message) {
-    if (trace_flag) {
+void stopwatch_stop(TraceLevel level, const char* message) {
+    if (trace_level >= level) {
         struct timeval curr_time;
         gettimeofday(&curr_time, 0);
         long end_time = curr_time.tv_sec * 1000 + curr_time.tv_usec / 1000;
-        trace("%s took %d ms\n", message, end_time - stopwatch_start_time);
+        trace(level, "%s took %d ms\n", message, end_time - stopwatch_start_time);
     }    
 }
 
@@ -144,7 +155,7 @@ char *replace_first(char *s, char c, char replacement) {
 }
 
 FILE* fopen600(const char* path) {
-    int fd = open(path, O_WRONLY | O_CREAT, 0600);
+    int fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
     if (fd == -1) {
         return NULL;
     } else {
@@ -227,4 +238,174 @@ char *unescape_strcpy(char *dst, const char *src) {
     }
     *d = 0;
     return dst;
+}
+
+long long get_mtime(struct stat *stat_buf) {
+    long long  result = stat_buf->st_mtime;
+    result *= 1000;
+#if __FreeBSD__
+    #if __BSD_VISIBLE
+        result += stat_buf->st_mtimespec.tv_nsec/1000000;
+    #else
+        result += stat_buf->__st_mtimensec/1000000;
+    #endif
+#elif __APPLE__
+    result += stat_buf->st_mtimespec.tv_nsec/1000000;
+#else
+    result +=  stat_buf->st_mtim.tv_nsec/1000000;    
+#endif
+    return result;
+}
+
+char* signal_name(int signal) {
+    switch (signal) {
+        case SIGHUP:    return "SIGHUP";
+        case SIGINT:    return "SIGINT";
+        case SIGQUIT:   return "SIGQUIT";
+        case SIGILL:    return "SIGILL";
+        case SIGTRAP:   return "SIGTRAP";
+        case SIGABRT:   return "SIGABRT";
+//        case SIGIOT:    return "SIGIOT";
+        case SIGBUS:    return "SIGBUS";
+        case SIGFPE:    return "SIGFPE";
+        case SIGKILL:   return "SIGKILL";
+        case SIGUSR1:   return "SIGUSR1";
+        case SIGSEGV:   return "SIGSEGV";
+        case SIGUSR2:   return "SIGUSR2";
+        case SIGPIPE:   return "SIGPIPE";
+        case SIGALRM:   return "SIGALRM";
+        case SIGTERM:   return "SIGTERM";
+#if __linux__        
+        case SIGSTKFLT: return "SIGSTKFLT";
+#endif        
+//        case SIGCLD:    return "SIGCLD"; // dup
+        case SIGCHLD:   return "SIGCHLD";
+        case SIGCONT:   return "SIGCONT";
+        case SIGSTOP:   return "SIGSTOP";
+        case SIGTSTP:   return "SIGTSTP";
+        case SIGTTIN:   return "SIGTTIN";
+        case SIGTTOU:   return "SIGTTOU";
+        case SIGURG:    return "SIGURG";
+        case SIGXCPU:   return "SIGXCPU";
+        case SIGXFSZ:   return "SIGXFSZ";
+        case SIGVTALRM: return "SIGVTALRM";
+        case SIGPROF:   return "SIGPROF";
+        case SIGWINCH:  return "SIGWINCH";
+//        case SIGPOLL:   return "SIGPOLL"; // dup
+        case SIGIO:     return "SIGIO (SIGPOLL)";
+#if __linux__ || __sun__        
+        case SIGPWR:    return "SIGPWR";
+#endif        
+#if __FreeBSD__
+        case SIGINFO:    return "SIGINFO";
+#endif        
+        default:        return "SIG???";
+    }
+}
+
+static bool removing_visitor(char* name, struct stat *stat_buf, char* link, const char* path, void *p) {
+    bool *success = p;
+    if (S_ISDIR(stat_buf->st_mode)) {
+        if (clean_dir(path)) {
+            if (rmdir(path)) {
+                report_error("error deleting '%s': %s\n", path, strerror(errno));
+                *success = false;
+            }
+        } else {
+            *success = false;
+        }
+    } else {
+        if (unlink(path)) {
+            report_error("error deleting '%s': %s\n", path, strerror(errno));
+            *success = false;
+        }
+    }
+    return true;    
+}
+
+bool clean_dir(const char* path) {
+    char* child_abspath = malloc(PATH_MAX);
+    bool res = true;
+    visit_dir_entries(path, removing_visitor, &res);
+    free(child_abspath);
+    return res;
+}
+
+buffer buffer_alloc(int size) {
+    buffer result = { size, malloc(size) };
+    return result;
+}
+
+void buffer_free(buffer* buf) {
+    if (buf) {
+        free(buf->data);
+    }
+}
+
+bool visit_dir_entries(const char* path, 
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
+    DIR *d = d = opendir(path);
+    if (d) {
+        union {
+            struct dirent d;
+            char b[MAXNAMLEN];
+        } entry_buf;
+        entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
+        int buf_size = PATH_MAX;
+        char *abspath = malloc(buf_size);
+        char *link = malloc(buf_size);
+        // TODO: error processing (malloc() can return null)
+        int base_len = strlen(path);
+        strcpy(abspath, path);
+        abspath[base_len] = '/';
+        struct dirent *entry;
+        while (true) {
+            if (readdir_r(d, &entry_buf.d, &entry)) {
+                report_error("error reading directory %s: %s\n", path, strerror(errno));
+                break;
+            }
+            if (!entry) {
+                break;
+            }
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
+            }
+            strcpy(abspath + base_len + 1, entry->d_name);
+            struct stat stat_buf;
+            if (lstat(abspath, &stat_buf) == 0) {
+                bool is_link = S_ISLNK(stat_buf.st_mode);
+                if (is_link) {
+                    ssize_t sz = readlink(abspath, link, buf_size);
+                    if (sz == -1) {
+                        report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
+                        strcpy(link, "?");
+                    } else {
+                        link[sz] = 0;
+                    }
+                }
+                if (!visitor(entry->d_name, &stat_buf, link, abspath, data)) {
+                    break;
+                }
+            } else {
+                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));                
+            }
+        }
+        free(abspath);
+        free(link);
+        closedir(d);
+        return true; // TODO: error processing: what some of them has errors?
+    } else {
+        report_error("error opening directory '%s': %s\n", path, strerror(errno));
+        return false;
+    }
+}
+
+const char* get_basename(const char *path) {
+    const char* basename = strrchr(path, '/');
+    if (basename) {
+        basename++; // next after '/'
+    } else {
+        basename = path;
+    }    
+    return basename;
 }

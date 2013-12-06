@@ -46,12 +46,12 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Request and response kind 
  */
  public enum FSSResponseKind {
-    LS('l'), 
-    RECURSE('r'), 
-    STAT('s'), 
-    ENTRY('e'), 
-    END('x'),
-    CHANGE('c');
+    FS_RSP_LS('l'), 
+    FS_RSP_RECURSIVE_LS('r'), 
+    FS_RSP_ENTRY('e'), 
+    FS_RSP_END('x'),
+    FS_RSP_CHANGE('c'),
+    FS_RSP_ERROR('E');
 
     private final char letter;
 

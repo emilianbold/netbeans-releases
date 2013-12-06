@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class FSSRequest {
     
-    private static final AtomicInteger nextId = new AtomicInteger(1);
+    private static final AtomicInteger nextId = new AtomicInteger(0);
     
     private final int id;
     private final FSSRequestKind kind;
@@ -72,5 +72,10 @@ public final class FSSRequest {
 
     public String getPath() {
         return path;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + kind + ' ' + id + path; //NOI18N
     }
 }

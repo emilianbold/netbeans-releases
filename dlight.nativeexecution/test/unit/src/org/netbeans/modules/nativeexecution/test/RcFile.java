@@ -114,6 +114,16 @@ public final class RcFile {
         return (sect == null) ? defaultValue : sect.get(key, defaultValue);
     }
 
+    public synchronized int get(String section, String key, int defaultValue) {
+        String stringValue = get(section, key, "" + defaultValue); //NOI18N
+        return Integer.parseInt(stringValue);
+    }
+
+    public boolean get(String section, String key, boolean defaultValue) {
+        String stringValue = get(section, key, "" + defaultValue); //NOI18N
+        return Boolean.valueOf(stringValue);
+    }
+
     public String get(String section, String key) {
         return get(section, key, null);
     }

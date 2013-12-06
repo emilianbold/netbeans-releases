@@ -44,7 +44,8 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.repository.RepositoryCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -54,7 +55,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class MemoryCacheTest extends ModelImplBaseTestCase {
+public class MemoryCacheTest extends NbTestCase {
 
     private static final boolean TRACE = false;
     private static final int K = 1000;
@@ -82,7 +83,7 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
     }
 
     public void testCache() throws Exception {
-        MemoryCache cache = new MemoryCache();
+        RepositoryCache cache = new RepositoryCache();
         final AtomicBoolean stopFlag = new AtomicBoolean();
         RequestProcessor processor = new RequestProcessor("processor", NUMBER_OF_THREADS + 1);
         List<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>(NUMBER_OF_THREADS);
@@ -114,12 +115,12 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
         private static final int CASES = 10;
         private final int max_loop;
         private final int max_key;
-        private final MemoryCache cache;
+        private final RepositoryCache cache;
         private final int process;
         private final boolean onlySoft;
         private final AtomicBoolean stopFlag;
 
-        private MyProcess(MemoryCache cache, int process, int max_loop, int max_key, boolean onlySoft, AtomicBoolean stopFlag) {
+        private MyProcess(RepositoryCache cache, int process, int max_loop, int max_key, boolean onlySoft, AtomicBoolean stopFlag) {
             this.cache = cache;
             this.process = process;
             this.max_loop = max_loop;
@@ -157,8 +158,7 @@ public class MemoryCacheTest extends ModelImplBaseTestCase {
                         cache.hang(myKey, new MyPersistent(d));
                         break;
                     case 3:
-                        cache.markRemoved(myKey);
-                        cache.removePhysically(myKey);
+                        cache.remove(myKey);
                         break;
                     default:
                         cache.get(myKey);

@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -72,8 +73,20 @@ public class CndTestIOProvider extends IOProvider {
     }
 
     private static final Reader in = new BufferedReader(new InputStreamReader(System.in));
-    private static final PrintStream out = System.out;
-    private static final PrintStream err = System.err;
+    private static final PrintStream out;
+    private static final PrintStream err;
+    static {
+        if ("true".equals(System.getProperty("org.netbeans.modules.cnd.test.CndTestIOProvider.traceout"))) {
+            out = System.out;
+        } else {
+            out = new PrintStream(new OutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                }
+            });
+        }
+        err = System.err;
+    }
     private List<Listener> listeners = new ArrayList();
 
     public CndTestIOProvider() {

@@ -52,6 +52,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,10 +60,14 @@ import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -71,8 +76,7 @@ import org.openide.util.RequestProcessor;
  */
 public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
 
-    private final RequestProcessor RP = new RequestProcessor(null, 20);
-    //private Server server;
+    private final RequestProcessor RP = new RequestProcessor(null, 100);
 
     public FsServerLocalTestBase(String name) {
         super(name, ExecutionEnvironmentFactory.getLocal());
@@ -91,25 +95,27 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         System.out.printf("========== %s.tearDown() ==========\n", getName());
     }
     
-    protected final String getServerPath() {
-        return "/tmp/fs_server";
+    protected final File getServerFile() throws IOException, ConnectionManager.CancellationException {
+        return FSSDispatcher.testGetOriginalFSServerFile(getTestExecutionEnvironment());
     }
-    
+
     protected void ensureBinaries() throws Exception {
-        String serverPath = getServerPath();
-        File serverFile = new File(serverPath);
-        assertTrue("Can not find " + serverPath,serverFile.exists());
-        assertTrue("Can not execute " + serverPath, serverFile.canExecute());
+        File serverFile = getServerFile();
+        assertTrue("Can not find " + serverFile.getAbsolutePath(), serverFile.exists());
+        if (!serverFile.canExecute()) {
+            serverFile.setExecutable(true, true);
+        }
+        assertTrue("Can not execute " + serverFile.getAbsolutePath(), serverFile.canExecute());
     }
     
     protected File getHome() {
         return new File(System.getProperty("user.home"));
     }
-    
+
     protected void doSimpleTest(File dir, int lapCount, String... params) throws Exception {
-        Server server = new Server(params);
+        FSServer server = new FSServer(params);
         sleep(200);
-        postProcessInputReader(server.getProcess(), System.out);
+        RP.post(new LoggingStreamReader(server.getProcess().getInputStream(), System.out, null));
         List<File> dirs = findDirectories(dir);
         String title = String.format("Requesting ls for all %d subdirectories of %s (recursively) %d times\n", 
                 dirs.size(), dir.getAbsolutePath(), lapCount);
@@ -127,7 +133,7 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         PrintWriter writer = new PrintWriter(new File(getWorkDir(), getName() + ".requests"));
         try {
             for (File d : dirs) {
-                FSSDispatcher.sendRequest(writer, new FSSRequest(FSSRequestKind.LS, d.getAbsolutePath()));
+                FSSDispatcher.sendRequest(writer, new FSSRequest(FSSRequestKind.FS_REQ_LS, d.getAbsolutePath()));
             }
         } finally {
             writer.close();
@@ -210,27 +216,55 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         }        
     }
     
-    protected void postProcessInputReader(Process process, PrintStream out) {
-        RP.post(new SimpleStreamReader(process.getInputStream(), out));
+    protected enum Mode {
+        DEFAULT,
+        TIME,
+        COLLECT
     }
+    
+    protected final class FSServer implements ChangeListener {
 
-    protected final class Server implements ChangeListener {
-
-        private final String serverPath;
+        private final File serverFile;
         private final PrintWriter writer;
         private final BufferedReader reader;
         private final NativeProcess process;
+        private final CyclicStringBuffer errBuffer;
 
-        public Server(String... params) throws IOException {
-            this.serverPath = getServerPath();
+        public FSServer(String... params) throws IOException, ConnectionManager.CancellationException {
+            this(Mode.DEFAULT, params);
+        }
+
+        public FSServer(Mode mode, String... params) throws IOException, ConnectionManager.CancellationException {
+            this.errBuffer = new CyclicStringBuffer(100);
+            this.serverFile = getServerFile();
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(getTestExecutionEnvironment());
             processBuilder.addNativeProcessListener(this);
-            processBuilder.setExecutable(serverPath);
-            processBuilder.setArguments(params);
+            
+            switch (mode) {
+                case DEFAULT:
+                    processBuilder.setExecutable(serverFile.getAbsolutePath());            
+                    processBuilder.setArguments(params);                    
+                    break;
+                case TIME:
+                    processBuilder.setExecutable("/usr/bin/time");
+                    List<String> args = new ArrayList<String>(params.length + 2);
+                    if (HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getOSFamily() == OSFamily.LINUX) {
+                        args.add("--portability");
+                    }
+                    args.add(serverFile.getAbsolutePath());
+                    args.addAll(Arrays.asList(params));
+                    processBuilder.setArguments(args.toArray(new String[args.size()]));
+                    break;
+                case COLLECT:
+                    throw new NotImplementedException();
+                    //break;
+                default:
+                    throw new IllegalArgumentException("Unexpected mode: " + mode);
+            }            
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            RP.post(new SimpleStreamReader(process.getErrorStream(), System.err));
+            RP.post(new LoggingStreamReader(process.getErrorStream(), System.err, errBuffer));
         }
 
         @Override
@@ -261,18 +295,70 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
         }
         
         public void requestLs(String path) {
-            FSSDispatcher.sendRequest(getWriter(), new FSSRequest(FSSRequestKind.LS, path));
+            FSSDispatcher.sendRequest(getWriter(), new FSSRequest(FSSRequestKind.FS_REQ_LS, path));
+        }
+        
+        public List<String> getStdErr() {
+            return errBuffer.getLines();
         }
     }
 
-    private class SimpleStreamReader implements Runnable {
+    private static class CyclicStringBuffer {
+        
+        private final List<String> lines;
+        private final int capacity;
+        private final Object lock = new Object();
+        private int last;
+        private int total;
+
+        public CyclicStringBuffer(int capacity) {
+            this.lines = new ArrayList<String>(capacity);
+            this.capacity = capacity;
+            this.last = -1;
+        }
+        
+        public void add(String line) {
+            synchronized (lock) {
+                total++;
+                last++;
+                if (last >= capacity) {
+                    last = 0;
+                }
+                if (last < lines.size()) {
+                    lines.set(last, line);
+                } else {
+                    lines.add(line);
+                    assert lines.size() == last +1 ;
+                }
+            }
+        }
+        
+        public List<String> getLines() {           
+            synchronized (lock) {
+                List<String> result = new ArrayList<String>(Math.max(total, lines.size()));
+                if (total > lines.size()) { // wrapped
+                    for (int i = last + 1; i < lines.size(); i++) {
+                        result.add(lines.get(i));
+                    }
+                }
+                for (int i = 0; i <= last; i++) {
+                    result.add(lines.get(i));                    
+                }
+                return result;
+            }
+        }        
+    }
+    
+    private class LoggingStreamReader implements Runnable {
         
         private final InputStream inputStream;
         private final PrintStream outputStream;
+        private final CyclicStringBuffer buffer;
 
-        public SimpleStreamReader(InputStream inputStream, PrintStream outputStream) {
+        public LoggingStreamReader(InputStream inputStream, PrintStream outputStream, CyclicStringBuffer buffer) {
             this.inputStream = inputStream;
             this.outputStream = outputStream;
+            this.buffer = buffer;
         }
         
         @Override
@@ -285,6 +371,9 @@ public class FsServerLocalTestBase extends NativeExecutionBaseTestCase {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         outputStream.printf("%s\n", line); //NOI18N
+                        if (buffer != null) {
+                            buffer.add(line);
+                        }
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

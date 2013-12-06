@@ -3,8 +3,6 @@
 #include "util.h"
 #include "blocking_queue.h"
 
-#include <errno.h>
-
 /** Initializes list. A list must be initialized before use */
 void blocking_queue_init(blocking_queue *q) {
     pthread_mutex_init(&q->mutex, NULL);

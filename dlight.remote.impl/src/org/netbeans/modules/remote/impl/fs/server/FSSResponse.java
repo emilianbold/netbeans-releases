@@ -51,7 +51,7 @@ import org.openide.util.NotImplementedException;
  * @author vkvashin
  */
 /*package*/ final class FSSResponse {
-    
+
     public static class Package {
 
         private final FSSResponseKind kind;
@@ -83,15 +83,17 @@ import org.openide.util.NotImplementedException;
     private final int requestId;
     private final FSSRequestKind requestKind;
     private final String requestPath;
+    private final Disposer<FSSResponse> disposer;
     
     private final Object lock = new Object();
     private final LinkedList<Package> packages = new LinkedList<Package>();
     private ExecutionException exception = null;
 
-    public FSSResponse(FSSRequest request) {
+    public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer) {
         this.requestId = request.getId();
         this.requestKind = request.getKind();
         this.requestPath = request.getPath();
+        this.disposer = disposer;
     }
     
     public boolean hasPackages() {
@@ -99,7 +101,11 @@ import org.openide.util.NotImplementedException;
             return ! packages.isEmpty();
         }
     }
-    
+
+    public int getId() {
+        return requestId;
+    }
+
     public Package getNextPackage() throws InterruptedException, ExecutionException {
         return getNextPackage(0);
     }
@@ -159,6 +165,16 @@ import org.openide.util.NotImplementedException;
     }
 
     public void cancel() {
-        throw new NotImplementedException();
+        new NotImplementedException().printStackTrace();
     }
+
+    void dispose() {
+        disposer.dispose(this);
+    }
+
+    @Override
+    public String toString() {
+        return  getClass().getSimpleName() + ' ' + requestKind + " #" + requestId + //NOI18N
+                ' ' + requestPath + " pkg.count=" + packages.size(); //NOI18N
+    }    
 }

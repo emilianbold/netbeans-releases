@@ -6,12 +6,17 @@
         <in>array.c</in>
         <in>array.h</in>
         <in>blocking_queue.c</in>
+        <in>blocking_queue.h</in>
         <in>dirtab.c</in>
+        <in>dirtab.h</in>
         <in>exitcodes.h</in>
         <in>fs_common.h</in>
         <in>fs_server.c</in>
+        <in>fs_server.h</in>
         <in>queue.c</in>
+        <in>queue.h</in>
         <in>util.c</in>
+        <in>util.h</in>
       </df>
       <df name="test">
         <in>test_main.c</in>
@@ -26,6 +31,7 @@
       <itemPath>nbproject/launcher.properties</itemPath>
       <itemPath>make</itemPath>
       <itemPath>nbproject/project.xml</itemPath>
+      <itemPath>../../release</itemPath>
       <itemPath>todo.txt</itemPath>
     </logicalFolder>
   </logicalFolder>
@@ -63,15 +69,31 @@
       </makefileType>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -116,15 +138,29 @@
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -165,17 +201,33 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -223,17 +275,33 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -284,15 +352,29 @@
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -316,6 +398,7 @@
           <cTool>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>TEST</Elem>
               <Elem>_GNU_SOURCE</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
             </preprocessorList>
@@ -329,52 +412,39 @@
           </incDir>
         </cTool>
       </folder>
-      <folder path="0/test">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
-      </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <preprocessorList>
-            <Elem>TEST</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
-      <item path="test/test_main.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
     <conf name="Solaris-SPARC" type="0">
@@ -411,17 +481,33 @@
       </folder>
       <item path="src/array.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -458,33 +544,29 @@
       </item>
       <item path="src/array.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="9">
-        <cTool>
-        </cTool>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Debug_Linux32" type="0">
@@ -517,25 +599,41 @@
         <cTool>
         </cTool>
       </item>
+      <item path="src/array.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -578,9 +676,13 @@
         <cTool>
         </cTool>
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -590,13 +692,19 @@
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -645,21 +753,35 @@
         <cTool>
         </cTool>
       </item>
+      <item path="src/blocking_queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/dirtab.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/dirtab.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/exitcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_common.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/fs_server.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/fs_server.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/queue.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
       </item>
+      <item path="src/queue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="9">
         <cTool>
         </cTool>
+      </item>
+      <item path="src/util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>

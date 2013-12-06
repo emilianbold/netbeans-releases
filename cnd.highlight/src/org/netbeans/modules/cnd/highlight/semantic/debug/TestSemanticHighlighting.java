@@ -48,7 +48,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
-import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.text.NbDocument;
@@ -60,7 +59,7 @@ import org.openide.text.NbDocument;
 public class TestSemanticHighlighting {
     private static final String MIME_TYPE = "text/x-c++"; // NOI18N
     
-    public static List<Highlight> gethighlightsBagForTests(Document doc, Interrupter interrupter) {
+    public static List<Highlight> gethighlightsBagForTests(Document doc, InterrupterImpl interrupter) {
         List<Highlight> ret = new ArrayList<Highlight>();
         
         PositionsBag fastBag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter, true);

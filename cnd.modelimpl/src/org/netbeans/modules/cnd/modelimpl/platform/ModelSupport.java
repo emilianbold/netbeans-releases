@@ -158,9 +158,6 @@ public class ModelSupport implements PropertyChangeListener {
         modifiedListener.clean();
         DataObject.getRegistry().addChangeListener(modifiedListener);
 
-        synchronized (openedProjects) {
-            closed = false;
-        }
         if (!isStandalone()) {
             openedProjects.clear();
             if (TRACE_STARTUP) {
@@ -194,7 +191,6 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
-    private volatile boolean closed = false;
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
         modifiedListener.clean();
@@ -240,9 +236,6 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void openProjectsIfNeeded() {
         synchronized (openedProjects) {
-            if (closed) {
-                return;
-            }
             Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
             if (TRACE_STARTUP) {
                 System.out.println("Model support: openProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N
@@ -261,9 +254,6 @@ public class ModelSupport implements PropertyChangeListener {
 
     private void closeProjectsIfNeeded() {
         synchronized (openedProjects) {
-            if (closed) {
-                return;
-            }
             Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
             if (TRACE_STARTUP) {
                 System.out.println("Model support: closeProjects size=" + projects.size() + " modelState=" + CsmModelAccessor.getModelState()); // NOI18N

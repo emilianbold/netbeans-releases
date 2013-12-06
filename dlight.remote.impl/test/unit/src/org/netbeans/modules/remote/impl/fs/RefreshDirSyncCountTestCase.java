@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -97,9 +98,9 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             int cacheSize = cachedFileObjects.size();
 
             RefreshManager refreshManager = fs.getRefreshManager();
-            refreshManager.scheduleRefreshOnFocusGained(cachedFileObjects);
+            refreshManager.scheduleRefresh(filterDirectories(cachedFileObjects), false);
             refreshManager.testWaitLastRefreshFinished();
-
+            
             int dirSyncCount_2 = fs.getDirSyncCount();
 
             System.err.printf("Cache size: %d   Dir sync count during refresh: %d\n", cacheSize, dirSyncCount_2 - dirSyncCount_1);
@@ -114,6 +115,21 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             }
         }        
     }
+    
+    private static Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
+        Collection<RemoteFileObjectBase> result = new HashSet<RemoteFileObjectBase>();
+        for (RemoteFileObjectBase fo : fileObjects) {
+            // Don't call isValid() or isFolder() - they might be SLOW!
+            if (isDirectoryXXX(fo)) {
+                result.add(fo);
+            }
+        }
+        return result;
+    }
+    
+    private static boolean isDirectoryXXX(RemoteFileObjectBase fo) {
+        return fo != null && (/*(fo instanceof RemoteLinkBase) || */ (fo instanceof RemoteDirectory));
+    }    
     
     public static Test suite() {
         return RemoteApiTest.createSuite(RefreshDirSyncCountTestCase.class);

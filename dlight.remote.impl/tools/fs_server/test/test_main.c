@@ -8,7 +8,7 @@
 
 #include "../src/fs_common.h"
 #include "../src/queue.h"
-#include "../src/dirtab.c"
+#include "../src/dirtab.h"
 #include "../src/array.h"
 
 static void _assert_true(bool condition, const char* conditionText) {
@@ -68,7 +68,8 @@ static void test_list() {
 static void test_dirtab_get_cache(const char* path, const char* reference_cache_path, int passes) {
     int i;
     for (i = 0; i < passes; i++) {
-        const char *cache_path = get_cache_path(path);
+        dirtab_element* el = dirtab_get_element(path);
+        const char *cache_path = dirtab_get_element_cache_path(el);
         fprintf(stdout, "%s -> %s\n", path, cache_path);
         assert_true(strcmp(cache_path, reference_cache_path) == 0);        
     }
@@ -77,7 +78,7 @@ static void test_dirtab_get_cache(const char* path, const char* reference_cache_
 
 static void test_dirtab_2() {
     fprintf(stdout, "testing dirtab persistence...\n");
-    dirtab_init();
+    dirtab_init(false, DE_WSTATE_NONE);
     assert_true(chdir(dirtab_get_basedir())== 0);
     test_dirtab_get_cache("/home/xxx123", "cache/1024", 3);
 }
@@ -85,7 +86,7 @@ static void test_dirtab_2() {
 static void test_dirtab_1() {
     assert_true(system("rm -rf ~/.netbeans/remotefs") == 0);        
     fprintf(stdout, "testing dirtab...\n");
-    dirtab_init();
+    dirtab_init(false, DE_WSTATE_NONE);
     assert_true(chdir(dirtab_get_basedir())== 0);
     test_dirtab_get_cache("/home", "cache/0", 2);
     
@@ -211,18 +212,7 @@ static void test_escape_unescape(const char *unescaped, const char* escaped) {
     }
 }
 
-static void test_secapes() {
-//    assert_true(escape_strlen("ab\ncd") == 6);
-//    assert_true(escape_strlen("") == 0);
-//    assert_true(escape_strlen(NULL) == 0);
-//    assert_true(escape_strlen("\n") == 2);
-//    assert_true(escape_strlen("xx\n") == 4);
-//    assert_true(escape_strlen("\nyy") == 4);
-//    assert_true(escape_strlen("\\") == 2);
-//    assert_true(escape_strlen("\\\\") == 4);
-//    assert_true(escape_strlen("123\\") == 5);
-//    char buf[2048];
-    
+static void test_escapes() {
     test_escape_unescape("ab\ncd", "ab\\ncd");
     test_escape_unescape("", "");
     test_escape_unescape("qwe", "qwe");
@@ -235,7 +225,7 @@ static void test_secapes() {
 }
 
 int main(int argc, char** argv) {
-    test_secapes();
+    test_escapes();
     test_array();
     test_list();
     test_dirtab_1();
