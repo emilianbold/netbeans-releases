@@ -55,8 +55,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -77,6 +80,7 @@ import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -84,8 +88,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author vkvashin
  */
-/*package*/ final class FSSDispatcher {
+/*package*/ final class FSSDispatcher implements Disposer<FSSResponse> {
 
+    private static final boolean SUPPRESS_STDERR = Boolean.parseBoolean(System.getProperty("remote.fs_server.suppress.stderr", "true"));
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
             new HashMap<ExecutionEnvironment, FSSDispatcher>();
     private static final Object instanceLock = new Object();
@@ -95,9 +100,9 @@ import org.openide.util.RequestProcessor;
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
-    public static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
-    public static final boolean VERBOSE = Boolean.getBoolean("remote.fs_server.verbose");
-    public static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
+    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
+    private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
+    private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -114,10 +119,62 @@ import org.openide.util.RequestProcessor;
     private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3); // NOI18N
     
     private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
+    
+    private final Set<String> refreshSet = new TreeSet<String>();
+    private final LinkedList<String> refreshQueue = new LinkedList<String>();
+    private final Object refreshLock = new Object();
+    private final RequestProcessor refreshRp = new RequestProcessor(getClass().getSimpleName() + "_Refresh"); //NOI18N
+    private final RequestProcessor.Task refreshTask = refreshRp.create(new RefreshRunnable());
 
-    public FSSDispatcher(ExecutionEnvironment env) {
+    private volatile boolean cleanupUponStart = false;
+    
+    private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
+    }
+    
+    public void setCleanupUponStart(boolean cleanup) {
+        cleanupUponStart = cleanup;
+    }
+    
+    private class RefreshRunnable implements Runnable {
+        @Override
+        public void run() {
+            while (true) {
+                List<String> paths = new ArrayList<String>();
+                synchronized (refreshLock) {
+                    if (refreshQueue.isEmpty()) {
+                        try {
+                            refreshLock.wait(1000);
+                        } catch (InterruptedException ex) {
+                            //nothing
+                        }
+                    } else {
+                        paths.addAll(refreshQueue);
+                        refreshQueue.clear();
+                        refreshSet.clear();
+                    }
+                }
+                for (String path : paths) {
+                    RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
+                    if (fo != null) {
+                        RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
+                        refreshManager.scheduleRefresh(Arrays.asList(fo.getImplementor()), false);
+                    }
+                }
+            }
+        }        
+    }
+    
+    private void addToRefresh(String path) {
+        synchronized (refreshLock) {
+            if (!refreshSet.contains(path)) {
+                refreshSet.add(path);
+                refreshQueue.add(path);
+                refreshLock.notifyAll();
+            }
+        }
+        refreshTask.schedule(0);
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -163,6 +220,7 @@ import org.openide.util.RequestProcessor;
     private class MainLoop implements Runnable {
         @Override
         public void run() {
+            int exceptionsCount = 0;
             String oldThreadName = Thread.currentThread().getName();
             try {
                 Thread.currentThread().setName("fs_server dispatcher for " + env); // NOI18N
@@ -184,14 +242,10 @@ import org.openide.util.RequestProcessor;
                     int respId = buf.getInt();
                     if (respId == 0) {
                         RemoteLogger.finest("got fs_server notification: {0}", line);
-                        if (respKind == FSSResponseKind.CHANGE.getChar()) {                            
+                        if (respKind == FSSResponseKind.FS_RSP_CHANGE.getChar()) {                            
                             // example: "c 0 8 /tmp/tmp"
                             String path = buf.getString();
-                            RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
-                            if (fo != null) {
-                                RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-                                refreshManager.scheduleRefresh(Arrays.asList(fo.getImplementor()), false);
-                            }
+                            addToRefresh(path);
                         } else {
                             RemoteLogger.info("wrong response #0: {1}", line);
                         }
@@ -207,8 +261,19 @@ import org.openide.util.RequestProcessor;
                         }
                     }
                 }
+                NativeProcess process = server.getProcess();
+                if (!ProcessUtils.isAlive(process)) {
+                    int rc = process.waitFor();                    
+                    RemoteLogger.finest("fs_server (pid {0} at {1}) exited with rc = {2}", process.getPID(), env, rc);//NOI18N
+                    
+                }
             } catch (IOException ioe) {
                 ioe.printStackTrace(System.err);
+            } catch (Throwable thr) { // too wide, but we need to guarantee dispatcher is alive
+                thr.printStackTrace(System.err);
+                if (exceptionsCount++ > 1000) {
+                    setInvalid(true);
+                }
             } finally {
                 try {
                     checkValid();
@@ -244,7 +309,7 @@ import org.openide.util.RequestProcessor;
                 if (!ProcessUtils.isAlive(process)) {
                     try {
                         int rc = process.waitFor();
-                        if (rc != 0) {
+                        if (rc != 0 && rc != -1) { // -1 most likely means just disconnect
                             setInvalid(false);
                         }
                         ExecutionException exception = new ExecutionException(lastErrorMessage.get(), null);
@@ -262,9 +327,16 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    @Override
+    public void dispose(FSSResponse response) {
+        synchronized (responseLock) {
+            responses.remove(response.getId());
+        }
+    }
+
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
-        FSSResponse response = new FSSResponse(request);
+        FSSResponse response = new FSSResponse(request, this);
         synchronized (responseLock) {
             RemoteLogger.assertNull(responses.get(request.getId()),
                     "response should be null for id {0}", request.getId()); // NOI18N
@@ -292,8 +364,10 @@ import org.openide.util.RequestProcessor;
     
     /*package*/ static void sendRequest(PrintWriter writer, FSSRequest request) {
         String escapedPath = escape(request.getPath());
-        writer.printf("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
+        String buffer = String.format("%c %d %d %s\n", request.getKind().getChar(), // NOI18N
                 request.getId(), escapedPath.length(), escapedPath);
+        RemoteLogger.finest("### sending request {0}", buffer);
+        writer.print(buffer);
         writer.flush();   
     }
 
@@ -303,8 +377,8 @@ import org.openide.util.RequestProcessor;
         }
     }
     
-    private boolean isFreeBSD() {
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "uname"); // NOI18N
+    private static boolean isFreeBSD(ExecutionEnvironment execEnv) {
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
         if (res.isOK()) {
             if (res.output.equals("FreeBSD")) { // NOI18N
                 return true;
@@ -313,26 +387,27 @@ import org.openide.util.RequestProcessor;
         return false;
     }
     
-    private String checkServerSetup() throws ConnectException, IOException, 
-            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
-
-        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException();
-        }
-
-        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+    /*package*/ static File testGetOriginalFSServerFile(ExecutionEnvironment execEnv) 
+            throws IOException, ConnectionManager.CancellationException {
+        String path = getOriginalFSServerPath(execEnv);
+        return InstalledFileLocator.getDefault().locate(
+                path, "org.netbeans.modules.remote.impl", false); // NOI18N
+   }
+    
+    private static String getOriginalFSServerPath(ExecutionEnvironment execEnv) 
+            throws IOException, ConnectionManager.CancellationException {
 
         String toolPath = "";
-        MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(env);
+        MacroExpanderFactory.MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         try {
             String platformPath;
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             if (osFamily == HostInfo.OSFamily.UNKNOWN) {
-                if (isFreeBSD()) {
+                if (isFreeBSD(execEnv)) {
                     platformPath = "FreeBSD-x86"; // NOI18N
-                } else {
-                    setInvalid(true);
-                    throw new IOException("Unsupported platform on " + env.getDisplayName()); //NOI18N
+                } else {                    
+                    throw new IOException("Unsupported platform on " + execEnv.getDisplayName()); //NOI18N
                 }
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
@@ -343,6 +418,24 @@ import org.openide.util.RequestProcessor;
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return toolPath;
+    }
+    
+    private String checkServerSetup() throws ConnectException, IOException, 
+            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            throw new ConnectException();
+        }
+
+        String toolPath;
+        try {
+            toolPath = getOriginalFSServerPath(env);
+        } catch (IOException ioe) {
+            setInvalid(true);
+            throw ioe;
+        }
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
 
         String remotePath = USER_DEFINED_SERVER_PATH;
         if (remotePath == null) {
@@ -425,7 +518,9 @@ import org.openide.util.RequestProcessor;
                 try {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.err.printf("%s\n", line); //NOI18N
+                        if (!SUPPRESS_STDERR) {
+                            System.err.printf("%s %s\n", env, line); //NOI18N
+                        }
                         lastErrorMessage.set(line);
                     }
                 } catch (IOException ex) {
@@ -458,20 +553,32 @@ import org.openide.util.RequestProcessor;
             args.add("-t"); // NOI18N
             args.add("4"); // NOI18N
             args.add("-p"); // NOI18N
+            args.add("-d"); // NOI18N
+            args.add(getSubdir());
             if (REFRESH_INTERVAL > 0) {
                 args.add("-r"); // NOI18N
                 args.add("" + REFRESH_INTERVAL);
             }
-            if (VERBOSE) {
+            if (VERBOSE > 0) {
                 args.add("-v"); // NOI18N
+                args.add("" + VERBOSE); // NOI18N
             }
             if (LOG) {
                 args.add("-l"); // NOI18N
+            }
+            if (cleanupUponStart) {
+                args.add("-c"); // NOI18N
             }
             processBuilder.setArguments(args.toArray(new String[args.size()]));
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        }
+        
+        private String getSubdir() {
+            assert HostInfoUtils.isHostInfoAvailable(env);
+            String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
+            return Integer.toString(tmp.hashCode()).replace('-', '0');
         }
 
         public PrintWriter getWriter() {

@@ -58,7 +58,7 @@ import java.nio.BufferUnderflowException;
         curr = 0;
     }
     
-    public String getString() throws BufferUnderflowException {
+    public String getString() {
         int len = getInt();
         StringBuilder sb = new StringBuilder(len);
         int limit = curr + len;
@@ -68,14 +68,18 @@ import java.nio.BufferUnderflowException;
         skipSpaces();
         return sb.toString();
     }
+    
+    public String getRest() {
+        return text.subSequence(curr, text.length()).toString();
+    }
 
     char getChar() {
         return text.charAt(curr++);
     }
 
-    public int getInt() throws BufferUnderflowException {
+    public int getInt() {
         skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
+        //StringBuilder sb = new StringBuilder(16);
         int result = 0;
         while (curr < text.length()) {
             char c = text.charAt(curr++);
@@ -89,9 +93,9 @@ import java.nio.BufferUnderflowException;
         return result;
     }
 
-    public long getLong() throws BufferUnderflowException {
+    public long getLong() {
         skipSpaces();
-        StringBuilder sb = new StringBuilder(16);
+        //StringBuilder sb = new StringBuilder(16);
         long result = 0;
         while (curr < text.length()) {
             char c = text.charAt(curr++);
@@ -110,5 +114,9 @@ import java.nio.BufferUnderflowException;
             curr++;
         }
     }
-    
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ' ' + text;
+    }
 }

@@ -58,6 +58,7 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
@@ -109,6 +110,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     private MimePath mimePath3;
     private MimePath mimePath4;
     private MimePath mimePath5;
+    private Logger logger1;
+    private Logger logger2;
+    private Logger logger3;
+    private Logger logger4;
+    private Logger logger5;
     
     /** Creates a new instance of BaseTestCase */
     public CndBaseTestCase(String testName) {
@@ -136,9 +142,17 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
             System.err.println("Start " + name);
         }
         
-        Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
-        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager").setLevel(Level.SEVERE);
-        Logger.getLogger("org.openide.filesystems.FileUtil").setLevel(Level.OFF);
+        logger1 = Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils");
+        logger1.setLevel(Level.SEVERE);
+        logger2 = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager");
+        logger2.setLevel(Level.SEVERE);
+        logger3 = Logger.getLogger("org.openide.filesystems.FileUtil");
+        logger3.setLevel(Level.OFF);
+        logger4 = Logger.getLogger("org.netbeans.modules.settings.RecognizeInstanceObjects");
+        logger4.setLevel(Level.SEVERE);
+        logger5 = Logger.getLogger("org.netbeans.ui.indexing");
+        logger5.setLevel(Level.SEVERE);
+        System.setProperty("RepositoryUpdate.increasedLogLevel", "SEVERE");
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
         List<Class<?>> list = new ArrayList<Class<?>>();
@@ -188,6 +202,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         // TODO: add needed dependency in all dependant test cases to use real asm editor kit
         //MockMimeLookup.setInstances(mimePath5, new AsmEditorKit());
         MockMimeLookup.setInstances(mimePath5, new AsmStub());
+        //Main.getModuleSystem();
     }
 
     private static final class AsmStub extends NbEditorKit {

@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import java.awt.event.InputEvent;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -70,7 +72,7 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1000),
     @ServiceProvider(service=CsmErrorProvider.class, position=20)
 })
-public class IncludeErrorProvider extends CsmErrorProvider {
+public final class IncludeErrorProvider extends CsmErrorProvider {
 
     @Override
     public String getName() {
@@ -87,11 +89,16 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         return NbBundle.getMessage(IncludeErrorProvider.class, "Show-include-errors-AD"); //NOI18N
     }
 
+    @Override
+    public Set<EditorEvent> supportedEvents() {
+        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+    }
+
     private static abstract class OffsetableErrorInfo implements CsmErrorInfo {
 
-        private int start;
-        private int end;
-        private CsmErrorInfo.Severity severity;
+        private final int start;
+        private final int end;
+        private final CsmErrorInfo.Severity severity;
         
         public OffsetableErrorInfo(CsmOffsetable offsetable, CsmErrorInfo.Severity severity) {
             start = offsetable.getStartOffset();
@@ -123,7 +130,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
     private static final class IncludeErrorInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
-        private String message;
+        private final String message;
         
         public IncludeErrorInfo(CsmInclude incl) {
             super(incl, Severity.ERROR);
@@ -150,7 +157,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
     private static final class IncludeWarningInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
-        private String message;
+        private final String message;
 
         public IncludeWarningInfo(CsmInclude incl) {
             super(incl, Severity.WARNING);
@@ -173,7 +180,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
 
     private static final class ErrorDirectiveInfo extends OffsetableErrorInfo implements CsmErrorInfo {
 
-        private String message;
+        private final String message;
 
         public ErrorDirectiveInfo(CsmErrorDirective error) {
             super(error, Severity.ERROR);
@@ -191,9 +198,12 @@ public class IncludeErrorProvider extends CsmErrorProvider {
         CsmFile file = request.getFile();
         Thread currentThread = Thread.currentThread();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        if (request.isCancelled()) {
+            return;
+        }
         for(CsmInclude incl : CsmFileInfoQuery.getDefault().getBrokenIncludes(file)) {
             if (request.isCancelled()) {
-                break;
+                return;
             }
             if (incl.getIncludeState() == IncludeState.Recursive) {
                 response.addError(new IncludeErrorInfo(incl));
@@ -201,11 +211,23 @@ public class IncludeErrorProvider extends CsmErrorProvider {
                 response.addError(new IncludeErrorInfo(incl));
             }
         }
+        if (request.isCancelled()) {
+            return;
+        }
         for (CsmErrorDirective error : file.getErrors()) {
+            if (request.isCancelled()) {
+                return;
+            }
             response.addError(new ErrorDirectiveInfo(error));
+        }
+        if (request.isCancelled()) {
+            return;
         }
         Collection<CsmFile> visited = new HashSet<CsmFile>();
         for (CsmInclude incl : file.getIncludes()) {
+            if (request.isCancelled()) {
+                return;
+            }
             CsmFile newFile = incl.getIncludeFile();
             if (newFile != null && hasBrokenIncludes(newFile, visited)) {
                 response.addError(new IncludeWarningInfo(incl));

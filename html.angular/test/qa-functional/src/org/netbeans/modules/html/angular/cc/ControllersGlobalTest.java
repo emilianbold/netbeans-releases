@@ -259,7 +259,6 @@ public class ControllersGlobalTest extends GeneralAngular {
         ed.setCaretPosition(1, 1);
         int expectedPosition = ed.txtEditorPane().getCaretPosition();
         assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
-        ed.close();
     }
 
     public void testGoToController() {

@@ -56,7 +56,10 @@ import java.util.Collection;
 public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope {
 
     CsmNamespace getParent();
+    
     Collection<CsmNamespace> getNestedNamespaces();
+    
+    Collection<CsmNamespace> getInlinedNamespaces();
 
     /** Gets top-level objects */
     //TODO: what is the common ancestor for the namespace objects?
@@ -73,6 +76,11 @@ public interface CsmNamespace extends CsmQualifiedNamedElement, CsmScope {
     
     /** returns true if this is default namespace */
     boolean isGlobal();
+    
+    /**
+     * returns true if it is inline namespace (C++11)
+     */
+    boolean isInline();
     
     /** the project where the namespace (or it's particular part) is defined */
     CsmProject getProject();

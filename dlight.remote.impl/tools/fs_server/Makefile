@@ -5,6 +5,10 @@ ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
 
+ifeq (Darwin,$(OS))
+  OS = MacOSX
+endif
+
 ifdef 64BITS
     CONF=$(OS)-x86_64
 else
@@ -17,8 +21,8 @@ PNAME=fs_server
 CC_COMMON=gcc
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
-CC_Darwin-x86     = clang --sysroot  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-CC_Darwin-x86_64  = clang --sysroot  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+CC_MacOSX-x86     = clang 
+CC_MacOSX-x86_64  = clang 
 CC_SunOS-sparc    = $(CC_COMMON)
 CC_SunOS-sparc_64 = $(CC_COMMON)
 CC_SunOS-x86      = $(CC_COMMON)
@@ -28,6 +32,10 @@ CC_Windows-x86_64 = $(CC_COMMON)
 CC_FreeBSD-x86    = $(CC_COMMON)
 CC_FreeBSD-x86_64 = $(CC_COMMON)
 CC=$(CC_$(CONF))
+
+ifdef PARFAIT
+   CC=parfait-gcc
+endif
 
 SOURCES=\
 	$(ROOT_DIR)/src/fs_server.c \
@@ -53,8 +61,8 @@ EXEC=$(DIST_DIR)/$(PNAME)
 CF_COMMON         = --std=c99 -g -Wall -Werror
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
-CF_Darwin-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
-CF_Darwin-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
+CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
+CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
 CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS  -m32
 CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m32
@@ -80,6 +88,10 @@ all: $(EXEC)
 	@FILE=`(ls /bin/file || ls /usr/bin/file) 2>/dev/null`; \
 	   if [ -n "$${FILE}" ]; then $${FILE} ${EXEC} | sed "s#$(EXEC):.##"; fi
 	@$(LINE) =
+
+parfait: all
+	@echo Processing parfait output. This can take a while...
+	@parfait --enable=all $(OBJ_DIRS)/*.bc
 
 include $(ROOT_DIR)/make/Makefile.$(MAKEFILE)
 

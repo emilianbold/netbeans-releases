@@ -58,7 +58,7 @@ public class DLightLibsCommonLogger {
     private static boolean assertionsEnabled = false;
     
     /** for test purposes */
-    private static volatile Exception lastAssertion;
+    private static volatile Throwable lastAssertion;
     private static final Set<StackElementArray> toStringStacks;
 
     static {
@@ -66,7 +66,7 @@ public class DLightLibsCommonLogger {
         toStringStacks = assertionsEnabled ? StackElementArray.createSet() : null;
     }
     
-    public static Exception getLastAssertion() {
+    public static Throwable getLastAssertion() {
         return lastAssertion;
     }
     
@@ -111,6 +111,18 @@ public class DLightLibsCommonLogger {
         if (assertionsEnabled && value) {
             instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
+    }
+    
+    public static void printStackTraceOnce(Throwable cause, Level level, boolean once, int stackCompareSize) {
+        if (assertionsEnabled) {
+            if (!once || StackElementArray.addStackIfNew(cause.getStackTrace(), toStringStacks, stackCompareSize)) {
+                instance.log(level, cause.getMessage(), lastAssertion = cause);
+            }
+        }
+    }    
+    
+    public static void printStackTraceOnce(Throwable cause, Level level, boolean once) {
+        printStackTraceOnce(cause, level, once, 6);
     }
 
     public static void assertNonUiThread(String message, Level level, boolean once) {

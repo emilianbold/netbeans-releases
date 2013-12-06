@@ -44,59 +44,28 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.text.Document;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Sergey Grinev
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=20)
-public final class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory implements PropertyChangeListener {
-
-    public SemanticHighlighterFactory(){
-        super();
-        SemanticHighlightingOptions.instance().addPropertyChangeListener(this);
-    }
-
+@MimeRegistrations({
+    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
+})
+public final class SemanticHighlighterFactory extends TaskFactory {
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
-            reschedule(file);
-        }
-    }
-
-    @Override
-    protected PhaseRunner createTask(final FileObject fo) {
-        PhaseRunner pr = null;
-        try {
-            DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            Document doc = ec.getDocument();
-            if (doc != null) {
-                pr = new SemanticHighlighter(doc);
-            }
-        } catch (DataObjectNotFoundException ex)  {
-            ex.printStackTrace();
-        }
-        return pr != null ? pr : lazyRunner();
-    }
-
-    @Override
-    protected int taskDelay() {
-        return ModelUtils.SEMANTIC_DELAY;
-    }
-
-    @Override
-    protected int rescheduleDelay() {
-        return ModelUtils.RESCHEDULE_SEMANTIC_DELAY;
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singletonList(new SemanticHighlighter(snapshot.getSource().getDocument(true), new InterrupterImpl()));
     }
 }

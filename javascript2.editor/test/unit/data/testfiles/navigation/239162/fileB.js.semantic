@@ -1,8 +1,8 @@
-with(|>GLOBAL:cls1|>GLOBAL:<|) {
-<|    |>GLOBAL:console<|.log(firstName);
+with(|>GLOBAL:cls1<|) {
+    |>GLOBAL:console<|.log(firstName);
     
-    with(|>GLOBAL:cls2|>GLOBAL:<|) {
-<|        |>GLOBAL:console<|.log(foo);
+    with(|>GLOBAL:cls2<|) {
+        |>GLOBAL:console<|.log(foo);
         firstName;
         secondName;
     }

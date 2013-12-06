@@ -159,11 +159,12 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         FileObject privProjectStorage = RemoteProjectSupport.getPrivateStorage(pae.getProject());
         MakeConfiguration conf = pae.getConfiguration();
         AtomicReference<String> runDir = new AtomicReference<String>();
-        FSPath[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
+        List<FSPath> sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf, runDir);
 
         RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
         final RemoteSyncWorker worker = (syncFactory == null) ? null : 
-                syncFactory.createNew(execEnv, out, err, privProjectStorage, runDir.get(), sourceDirs);
+                syncFactory.createNew(execEnv, out, err, privProjectStorage, runDir.get(), sourceDirs, 
+                        RemoteProjectSupport.getBuildResults(conf));
         CndUtils.assertTrue(worker != null, "RemoteSyncWorker shouldn't be null"); //NOI18N
         if (worker == null) {
             delegate.execute(io);

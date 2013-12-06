@@ -43,25 +43,21 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.keys.PersistentFactoryListener;
+import org.netbeans.modules.cnd.repository.keys.TestValuePersistentFactory;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * Tests Repository.tryGet()
+ *
  * @author Vladimir Kvashin
  */
-public abstract class GetPutTestBase extends CndBaseTestCase {
+public abstract class GetPutTestBase extends CndBaseTestCase implements PersistentFactoryListener {
 
-    private static final int TEST_UNIT_ID = RepositoryAccessor.getTranslator().getUnitId("Repository_Test_Unit", CacheLocation.DEFAULT);
      public static final int SMALL_KEY_HANDLER = 657;
      public static final int LARGE_KEY_HANDLER = 658;
     
@@ -69,199 +65,25 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         super(testName);
     }
     
-    protected abstract class BaseKey implements Key {
 
-
-        private final String key;
-        private final CharSequence unitName;
-
-        public BaseKey(String key) {
-            this.key = key;
-            this.unitName = RepositoryAccessor.getTranslator().getUnitName(TEST_UNIT_ID);
-        }
-
-        @Override
-        public int getSecondaryAt(int level) {
-            return 0;
-        }
-
-        @Override
-        public String getAt(int level) {
-            return key;
-        }
-
-        @Override
-        public CharSequence getUnit() {
-            return unitName;
-        }
-
-        @Override
-        public int getUnitId() {
-            return TEST_UNIT_ID;
-        }
-
-        @Override
-        public int getSecondaryDepth() {
-            return 0;
-        }
-
-        @Override
-        public PersistentFactory getPersistentFactory() {
-            return factory;
-        }
-
-        @Override
-        public int getDepth() {
-            return 1;
-        }
-        @Override
-        public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
-            if (object == null || (this.getClass() != object.getClass())) {
-                return false;
-            }
-            final BaseKey other = (BaseKey) object;
-            if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
-                return false;
-            }
-            if (this.unitName != other.unitName && (this.unitName == null || !this.unitName.equals(other.unitName))) {
-                return false;
-            }
-            return true;
-        }
-
-        abstract protected short getHandler();
-        
-        @Override
-        public final boolean equals(Object obj) {
-            if (obj == null || (this.getClass() != obj.getClass())) {
-                return false;
-            }
-            final BaseKey other = (BaseKey) obj;
-            return this.getUnitId() == other.getUnitId();
-        }
-
-        @Override
-        public final int hashCode(int unitID) {
-            int hash = this.key != null ? this.key.hashCode() : 0;
-            hash = 59 * hash + (this.unitName != null ? this.unitName.hashCode() : 0);
-            return hash + unitID;
-        }
-
-        @Override
-        public final int hashCode() {
-            return hashCode(getUnitId());
-        }
-
-    }
-
-    protected class SmallKey extends BaseKey {
-
-        public SmallKey(String key) {
-            super(key);
-        }
-
-        @Override
-        public Key.Behavior getBehavior() {
-            return Key.Behavior.Default;
-        }
-
-        @Override
-        public boolean hasCache() {
-            return false;
-        }
-
-        @Override
-        protected short getHandler() {
-            return GetPutTestBase.SMALL_KEY_HANDLER;
-        }
-    }
-
-    protected class LargeKey extends BaseKey {
-
-        public LargeKey(String key) {
-            super(key);
-        }
-
-        @Override
-        public Key.Behavior getBehavior() {
-            return Key.Behavior.LargeAndMutable;
-        }
-
-        @Override
-        public boolean hasCache() {
-            return false;
-        }
-
-        @Override
-        protected short getHandler() {
-            return GetPutTestBase.LARGE_KEY_HANDLER;
-        }
-    }
-
-    protected static class Value implements Persistent {
-
-        private final String value;
-
-        public Value(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return value + " @" + hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Value) {
-                return value.equals(((Value) obj).value);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return value.hashCode();
-        }
-    }
-
-    protected class Factory implements PersistentFactory {
-
-        @Override
-        public void write(RepositoryDataOutput out, Persistent obj) throws IOException {
-            assert obj instanceof Value;
-            out.writeUTF(((Value) obj).value);
-            onWriteHook(this, obj);
-        }
-
-        @Override
-        public Persistent read(RepositoryDataInput in) throws IOException {
-            String value = in.readUTF();
-            Value out = new Value(value);
-            onReadHook(this, out);
-            return out;
-        }
-
-    }
-    protected PersistentFactory factory;
-    protected Repository repository;
+    protected int getUnitID() {
+        return Repository.getUnitId(
+                new UnitDescriptor("Repository_Test_Unit",
+                CndFileUtils.getLocalFileSystem()));
+    }    
 
     @Override
     protected void setUp() throws Exception {
-        repository = RepositoryAccessor.getRepository();
-        factory = new Factory();
+        RepositoryTestUtils.deleteDefaultCacheLocation();
         super.setUp();
+        Repository.startup(0);
+        TestValuePersistentFactory.getInstance().addPersistentFactoryListener(this);
     }
 
     @Override
     protected void tearDown() throws Exception {
+        TestValuePersistentFactory.getInstance().removePersistentFactoryListener(this);
         super.tearDown();
-    }
-
-    protected void onReadHook(Factory factory, Persistent obj) {
-    }
-
-    protected void onWriteHook(Factory factory, Persistent obj) {
-
+        Repository.shutdown();
     }
 }

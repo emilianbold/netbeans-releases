@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -71,7 +72,7 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1100),
     @ServiceProvider(service=CsmErrorProvider.class, position=30)
 })
-public class IdentifierErrorProvider extends CsmErrorProvider {
+public final class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED = CndUtils.getBoolean("cnd.identifier.error.provider", true); //NOI18N
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
@@ -103,6 +104,11 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     public Object getDefaultValue() {
         return true;//!CndUtils.isReleaseMode();
+    }
+
+    @Override
+    public Set<EditorEvent> supportedEvents() {
+        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
     }
     
     @Override

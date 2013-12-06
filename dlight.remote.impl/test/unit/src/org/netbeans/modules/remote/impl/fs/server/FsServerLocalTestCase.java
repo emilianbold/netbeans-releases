@@ -53,8 +53,8 @@ public class FsServerLocalTestCase extends FsServerLocalTestBase {
     }
     
     public void testSecondServerFails() throws Exception {
-        Server server1 = new Server("-v");
-        Server server2 = new Server("-v");
+        FSServer server1 = new FSServer("-v");
+        FSServer server2 = new FSServer("-v");
         server2.requestQuit();
         int rc2 = timedWait(server1.getProcess(), 2000);
         assertNotSame("Return value of the 2-nd server should not be 0", 0, rc2);        

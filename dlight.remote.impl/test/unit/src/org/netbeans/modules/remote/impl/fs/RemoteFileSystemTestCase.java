@@ -64,11 +64,13 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
-    static {
-//        System.setProperty("remote.fs_server.verbose", "true");
+    static { 
+//        System.setProperty("remote.fs_server", "true");
+//        System.setProperty("remote.fs_server.verbose", "0");
 //        System.setProperty("remote.fs_server.log", "true");
 //        System.setProperty("remote.fs_server.verbose.response", "true");
-        System.setProperty("remote.fs_server.refresh", "0");
+//        System.setProperty("remote.fs_server.refresh", "1");
+//        RemoteLogger.getInstance().setLevel(Level.FINEST);
     }
 
     public RemoteFileSystemTestCase(String testName) {
@@ -120,10 +122,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         Pair[] pairs = new Pair[] {
             new Pair(null, "/usr/include/stdlib.h"),
             new Pair("/usr", "include/stdlib.h"),
-            new Pair("/usr/include", "stdlib.h"),
-            new Pair("/usr/lib", "libc" + sharedLibExt),
-            new Pair("/usr", "lib/libc" + sharedLibExt),
-            new Pair(null, "/usr/lib/libc" + sharedLibExt)
+            new Pair("/usr/include", "stdlib.h"),            
+//            new Pair("/usr/lib", "libc" + sharedLibExt),
+//            new Pair("/usr", "lib/libc" + sharedLibExt),
+//            new Pair(null, "/usr/lib/libc" + sharedLibExt)
         };
         for (int i = 0; i < pairs.length; i++) {
             Pair pair = pairs[i];

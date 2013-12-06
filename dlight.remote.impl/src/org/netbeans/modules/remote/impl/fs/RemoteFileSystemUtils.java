@@ -357,8 +357,10 @@ public class RemoteFileSystemUtils {
                 return true;
             }
             if (ex instanceof SftpIOException) {
-                if (((SftpIOException)ex).getId() == SftpIOException.SSH_FX_NO_SUCH_FILE) {
-                    return true;
+                switch (((SftpIOException) ex).getId()) {
+                    case SftpIOException.SSH_FX_NO_SUCH_FILE:
+                    case SftpIOException.SSH_FX_PERMISSION_DENIED:
+                        return true;
                 }
             }
             ex = ex.getCause();
@@ -366,7 +368,15 @@ public class RemoteFileSystemUtils {
         return false;
     }
     
-    // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil">
+    public static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }
+    
+    // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
 
    /** Copy-paste from FileObject.copy */
     public static FileObject copy(FileObject source, FileObject target, String name, String ext) throws IOException {
@@ -429,5 +439,5 @@ public class RemoteFileSystemUtils {
         return dest;
     }
     
-    // <editor-fold>
+    // </editor-fold>
 }

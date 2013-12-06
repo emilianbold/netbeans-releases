@@ -106,6 +106,16 @@ public class SyncUtils {
         DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(message, DialogDescriptor.ERROR_MESSAGE));
     }
 
+    public static List<File> toFiles(List<FSPath> paths) {
+        List<File> l = new ArrayList<>(paths.size());
+        for (FSPath path : paths) {
+            if (FileSystemProvider.getExecutionEnvironment(path.getFileSystem()).isLocal()) {
+                l.add(new File(path.getPath()));
+            }
+        }
+        return l;
+    }
+    
     public static File[] toFiles(FSPath[] paths) {
         List<File> l = new ArrayList<File>(paths.length);
         for (FSPath path : paths) {
@@ -116,7 +126,7 @@ public class SyncUtils {
         return l.toArray(new File[l.size()]);
     }
 
-    public static FileSystem getSingleFileSystem(FSPath[] paths) {
+    public static FileSystem getSingleFileSystem(List<FSPath> paths) {
         FileSystem fs = null;
         for (FSPath fsp : paths) {
             if (fs == null) {

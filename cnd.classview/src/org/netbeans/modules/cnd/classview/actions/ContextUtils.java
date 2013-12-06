@@ -71,13 +71,11 @@ public class ContextUtils {
     
     private static CsmOffsetableDeclaration findInnerFileDeclaration(CsmFile file, int offset) {
         CsmOffsetableDeclaration innerDecl = null;
-        if (innerDecl == null) {
-            for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
-                if (isInObject(decl, offset)) {
-                    innerDecl = findInnerDeclaration(decl, offset);
-                    innerDecl = innerDecl != null ? innerDecl : decl;
-                    break;
-                }
+        for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
+            if (isInObject(decl, offset)) {
+                innerDecl = findInnerDeclaration(decl, offset);
+                innerDecl = innerDecl != null ? innerDecl : decl;
+                break;
             }
         }
         return innerDecl;

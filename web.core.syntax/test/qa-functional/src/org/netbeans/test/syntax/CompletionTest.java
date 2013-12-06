@@ -668,11 +668,18 @@ public class CompletionTest extends J2eeTestCase {
         if (GENERATE_GOLDEN_FILES) {
             generateGoldenFiles(this);
         } else {
-            if (CompletionTest.isJDK8 && (getGoldenFile(this.getName() + "_jdk8.pass")).exists()) {
+            if (CompletionTest.isJDK8 && this.alternativeGoldenFileExists(this.getName() + "_jdk8.pass")) {
                 compareReferenceFiles(this.getName() + ".ref", this.getName() + "_jdk8.pass", this.getName() + ".diff");
             } else {
                 compareReferenceFiles();
             }
         }
+    }
+    
+    protected boolean alternativeGoldenFileExists(String filename){
+        String fullClassName = this.getClass().getName();
+        String goldenFileName = fullClassName.replace('.', '/')+"/"+filename;
+        File goldenFile = new File(getDataDir()+"/goldenfiles/"+goldenFileName);
+        return goldenFile.exists();
     }
 }

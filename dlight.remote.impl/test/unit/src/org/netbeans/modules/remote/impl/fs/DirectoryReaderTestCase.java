@@ -49,9 +49,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransportTestAccessor;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 
 /**
@@ -106,40 +106,57 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
         super.setUp();
         String user;
         String group;
-        if (execEnv != null) {
-            user = execEnv.getUser();
-            if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX) {
-                group = "wheel"; // don't know the reason, but mac isn't supported, so it's mostly for my own convenien
-            } else {
-                group = execute("groups").split(" ")[0];
-            }
-            remoteDir = mkTempAndRefreshParent(true);
-            ProcessUtils.execute(execEnv, "umask", "0002");
-            script =
-                "cd " + remoteDir + "\n" +
-                "echo \"123\" > just_a_file\n" +
-                "echo \"123\" > \"file with a space\"\n" +
-                "mkdir -p \"dir with a space\"\n" +
-                "mkdir -p dir_1\n" +
-                "ln -s just_a_file just_a_link\n" +
-                "ln -s dir_1 link_to_dir\n" +
-                "ln -s \"file with a space\" link_to_file_with_a_space\n" +
-                "ln -s \"file with a space\" \"link with a space to file with a space\"\n" +
-                "mkfifo fifo\n";
+        assertNotNull(execEnv);
+        user = execEnv.getUser();
+        if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX) {
+            group = "wheel"; // don't know the reason, but mac isn't supported, so it's mostly for my own convenien
         } else {
-            user = "user_1563";
-            group = "staff";
+            group = execute("groups").split(" ")[0];
         }
+        remoteDir = mkTempAndRefreshParent(true);
+
+        final String dir_1 = "dir_1";
+        final String fifo = "fifo";
+        final String dir_with_a_space = "dir with a space";
+        final String file_with_a_space = "file with a space";
+        final String just_a_file = "just_a_file";
+        final String just_a_link = "just_a_link";
+        final String link_to_dir = "link_to_dir";
+        final String link_with_a_space_to_file_with_a_space = "link with a space to file with a space";
+        final String link_to_file_with_a_space = "link_to_file_with_a_space";
+
+        script =
+            "umask 0022\n" +
+            "cd " + remoteDir + "\n" +
+            "echo \"123\" > " + just_a_file + "\n" +
+            "echo \"123\" > \""+ file_with_a_space + "\"\n" +
+            "mkdir -p \"" + dir_with_a_space + "\"\n" +
+            "mkdir -p " + dir_1 + "\n" +
+            "ln -s just_a_file "+ just_a_link + "\n" +
+            "ln -s dir_1 " + link_to_dir + "\n" +
+            "ln -s \"file with a space\" " + link_to_file_with_a_space + "\n" +
+            "ln -s \"file with a space\" \"" + link_with_a_space_to_file_with_a_space + "\"\n" +
+            "mkfifo " + fifo + "\n";           
+//            "chmod 755 " + dir_1 + "\n" +
+//            "chmod 644 " + fifo + "\n" +
+//            "chmod 755 " + dir_with_a_space + "\n" +
+//            "chmod 644 " + file_with_a_space + "\n" +
+//            "chmod 644 " + just_a_file + "\n" +
+//            "chmod 777 " + just_a_link + "\n" +
+//            "chmod 777 " + link_to_dir + "\n" +
+//            "chmod 777 " + link_with_a_space_to_file_with_a_space + "\n" +
+//            "chmod 777 " + link_to_file_with_a_space + "\n";
+
         referenceEntries = new RefEntry[] {
-            new RefEntry('d', "rwxr-xr-x", user, group, 0, "dir_1", null),
-            new RefEntry('p', "rw-r--r--", user, group, 0, "fifo", null),
-            new RefEntry('d', "rwxr-xr-x", user, group, 4, "dir with a space", null),
-            new RefEntry('-', "rw-r--r--", user, group, 4, "file with a space", null),
-            new RefEntry('-', "rw-r--r--", user, group, 4, "just_a_file", null),
-            new RefEntry('l', "rwxrwxrwx", user, group, 0, "just_a_link", "just_a_file"),
-            new RefEntry('l', "rwxrwxrwx", user, group, 0, "link_to_dir", "dir_1"),
-            new RefEntry('l', "rwxrwxrwx", user, group, 0, "link with a space to file with a space", "file with a space"),
-            new RefEntry('l', "rwxrwxrwx", user, group, 0, "link_to_file_with_a_space", "file with a space")
+            new RefEntry('d', "rwxr-xr-x", user, group, 0, dir_1, null),
+            new RefEntry('p', "rw-r--r--", user, group, 0, fifo, null),
+            new RefEntry('d', "rwxr-xr-x", user, group, 4, dir_with_a_space, null),
+            new RefEntry('-', "rw-r--r--", user, group, 4, file_with_a_space, null),
+            new RefEntry('-', "rw-r--r--", user, group, 4, just_a_file, null),
+            new RefEntry('l', "rwxrwxrwx", user, group, 0, just_a_link, "just_a_file"),
+            new RefEntry('l', "rwxrwxrwx", user, group, 0, link_to_dir, "dir_1"),
+            new RefEntry('l', "rwxrwxrwx", user, group, 0, link_with_a_space_to_file_with_a_space, "file with a space"),
+            new RefEntry('l', "rwxrwxrwx", user, group, 0, link_to_file_with_a_space, "file with a space")
         };
     }
 
@@ -169,7 +186,14 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testDirectoryReaderSftp() throws Exception {
         prepareDirectory();
-        List<DirEntry> entries = DirectoryReaderSftp.getInstance(execEnv).readDirectory(remoteDir);
+        List<DirEntry> entries = SftpTransport.getInstance(execEnv).readDirectory(remoteDir);
+        assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
+    }
+
+    @ForAllEnvironments
+    public void testDirectoryReaderFSServer() throws Exception {
+        prepareDirectory();
+        List<DirEntry> entries = FSSTransportTestAccessor.readDirectory(execEnv, remoteDir);
         assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
     }
 
