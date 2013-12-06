@@ -393,11 +393,7 @@ dirtab_element *dirtab_get_element(const char* abspath) {
         el = *found;
     } else {
         el = add_path(abspath);
-        if (table.dirty) {
-            if (flush_impl()) {
-                table.dirty = false;
-            }
-        }
+        // table gets dirty; it will be flushed in refresh cycle (or in exit function)
     }
 
     mutex_unlock(&table.mutex);
