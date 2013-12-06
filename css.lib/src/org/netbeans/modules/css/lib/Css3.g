@@ -1652,20 +1652,20 @@ LESS_REST       : '@rest...';
 // Literal strings. Delimited by either ' or "
 //
 fragment    INVALID :;
-STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
+STRING          : '\'' ( ~('\r'|'\f'|'\'') )*
                     (
                           '\''
                         | { $type = INVALID; }
                     )
 
-                | '"' ( ~('\n'|'\r'|'\f'|'"') )*
+                | '"' ( ~('\r'|'\f'|'"') )*
                     (
                           '"'
                         | { $type = INVALID; }
                     )
                 ;
 
-LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )*
+LESS_JS_STRING  : '`' ( ~('\r'|'\f'|'`') )*
                     (
                           '`'
                         | { $type = INVALID; }
