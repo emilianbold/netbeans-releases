@@ -48,6 +48,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import javax.swing.Icon;
+import javax.swing.UIManager;
 import junit.framework.*;
 
 /**
@@ -200,5 +201,25 @@ public class ImageUtilitiesTest extends TestCase {
         Icon icon = ImageUtilities.loadImageIcon("org/openide/util/nonexisting.png", false);
         assertNull(image);
         assertNull(icon);
+    }
+    
+    public void testLoadDarkImage() {
+        UIManager.put("nb.dark.theme", Boolean.FALSE);
+        Image img = ImageUtilities.loadImage("org/openide/util/darkimage.png");
+        assertEquals("The default image is 16x16 pixels", 16, img.getWidth(null));
+        Icon icon = ImageUtilities.loadImageIcon("org/openide/util/darkicon.png", true);
+        assertEquals("The default icon is 16x16 pixels", 16, icon.getIconWidth());
+        
+        UIManager.put("nb.dark.theme", Boolean.TRUE);
+        img = ImageUtilities.loadImage("org/openide/util/darkimage.png");
+        assertEquals("The special image for dark l&f is 8x8 pixels", 8, img.getWidth(null));
+        icon = ImageUtilities.loadImageIcon("org/openide/util/darkicon.png", true);
+        assertEquals("The special icon for dark l&f is 8x8 pixels", 8, icon.getIconWidth());
+
+        UIManager.put("nb.dark.theme", Boolean.FALSE);
+        img = ImageUtilities.loadImage("org/openide/util/darkimage.png");
+        assertEquals("The default image is 16x16 pixels", 16, img.getWidth(null));
+        icon = ImageUtilities.loadImageIcon("org/openide/util/darkicon.png", true);
+        assertEquals("The default icon is 16x16 pixels", 16, icon.getIconWidth());
     }
 }
