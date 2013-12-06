@@ -96,6 +96,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.modules.j2me.project.J2MEProjectUtils;
+import org.netbeans.modules.j2me.project.ui.SourceLevelComboBoxModel;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -190,8 +191,7 @@ public final class J2MEProjectProperties {
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
-    ComboBoxModel JAVAC_SOURCE_MODEL;
-    ComboBoxModel JAVAC_PROFILE_MODEL;
+    ComboBoxModel SOURCE_LEVEL_MODEL;
 
     // CustomizerLibraries
     DefaultListModel JAVAC_CLASSPATH_MODEL;
@@ -203,8 +203,6 @@ public final class J2MEProjectProperties {
     ComboBoxModel PLATFORM_MODEL;
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
-    ListCellRenderer JAVAC_SOURCE_RENDERER;
-    ListCellRenderer JAVAC_PROFILE_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
 
     //J2MEObfuscatingPanel
@@ -320,7 +318,7 @@ public final class J2MEProjectProperties {
         if (!isPropertiesSave()) {
             throw new IllegalStateException("Not in properties save");  //NOI18N
         }
-        List<Runnable> l = postSaveAction.get();        
+        List<Runnable> l = postSaveAction.get();
         l.add(action);
     }
 
@@ -357,10 +355,6 @@ public final class J2MEProjectProperties {
         PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE))
                 : PlatformUiSupport.createPlatformComboBoxModel(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(ProjectProperties.JAVAC_SOURCE), evaluator.getProperty(ProjectProperties.JAVAC_TARGET));
-        JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer();
-        JAVAC_PROFILE_MODEL = PlatformUiSupport.createProfileComboBoxModel(JAVAC_SOURCE_MODEL, evaluator.getProperty(ProjectProperties.JAVAC_PROFILE), null);
-        JAVAC_PROFILE_RENDERER = PlatformUiSupport.createProfileListCellRenderer();
 
         SHARED_LIBRARIES_MODEL = new PlainDocument();
         try {
@@ -471,6 +465,9 @@ public final class J2MEProjectProperties {
         JAVADOC_PREVIEW_MODEL = ModelHelper.createToggleButtonModel(evaluator, ProjectProperties.JAVADOC_PREVIEW, kind);
         javadocPreviewBooleanKind = kind[0];
         JAVADOC_ADDITIONALPARAM_MODEL = projectGroup.createStringDocument(evaluator, ProjectProperties.JAVADOC_ADDITIONALPARAM);
+
+        //Source Level model (Sources panel)
+        SOURCE_LEVEL_MODEL = new SourceLevelComboBoxModel(JDK_PLATOFRM_MODEL, J2ME_PLATFORM_MODEL, evaluator.getProperty(ProjectProperties.JAVAC_SOURCE));
     }
 
     void collectData() {
@@ -503,8 +500,8 @@ public final class J2MEProjectProperties {
                     return null;
                 }
             });
-            // and save the project            
-            ProjectManager.getDefault().saveProject(project);            
+            // and save the project
+            ProjectManager.getDefault().saveProject(project);
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException) e.getException());
         } catch (IOException ex) {
@@ -629,15 +626,11 @@ public final class J2MEProjectProperties {
         projectProperties.setProperty(ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp);
         projectProperties.setProperty(ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp);
 
-        //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform(
-                projectProperties,
-                project.getUpdateHelper(),
-                J2MEProject.PROJECT_CONFIGURATION_NAMESPACE,
-                PLATFORM_MODEL.getSelectedItem(),
-                JAVAC_SOURCE_MODEL.getSelectedItem(),
-                JAVAC_PROFILE_MODEL.getSelectedItem(),
-                true);
+        if (SOURCE_LEVEL_MODEL.getSelectedItem() != null) {
+            String sourceLevel = ((SourceLevelComboBoxModel.SourceLevel) SOURCE_LEVEL_MODEL.getSelectedItem()).getSourceLevel();
+            projectProperties.put(ProjectProperties.JAVAC_SOURCE, sourceLevel);
+            projectProperties.put(ProjectProperties.JAVAC_TARGET, sourceLevel);
+        }
 
         // Handle other special cases
         if (NO_DEPENDENCIES_MODEL.isSelected()) { // NOI18N

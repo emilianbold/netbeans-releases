@@ -61,6 +61,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.project.ui.PlatformsComboBoxModel;
+import org.netbeans.modules.j2me.project.ui.SourceLevelComboBoxModel.SourceLevelListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
@@ -261,5 +262,9 @@ public class J2MEProjectUtils {
             }
         }
         return path.toString();
+    }
+
+    public static SourceLevelListCellRenderer createSourceLevelListCellRenderer() {
+        return new SourceLevelListCellRenderer();
     }
 }

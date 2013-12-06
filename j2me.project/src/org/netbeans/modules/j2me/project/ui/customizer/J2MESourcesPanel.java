@@ -53,13 +53,11 @@ import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.*;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.j2me.project.J2MEProjectUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
-import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
@@ -67,7 +65,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -76,8 +73,8 @@ import org.openide.util.NbBundle;
  * @author  Theofanis Oikonomou
  */
 public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Provider {
-    
-    
+
+
     private String originalEncoding;
     private boolean notified;
 
@@ -88,86 +85,68 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
         initComponents();
         jScrollPane1.getViewport().setBackground( sourceRoots.getBackground() );
 //        jScrollPane2.getViewport().setBackground( testRoots.getBackground() );
-        
+
         sourceRoots.setModel( uiProperties.SOURCE_ROOTS_MODEL );
 //        testRoots.setModel( uiProperties.TEST_ROOTS_MODEL );
         sourceRoots.getTableHeader().setReorderingAllowed(false);
-//        testRoots.getTableHeader().setReorderingAllowed(false);                        
-        
+//        testRoots.getTableHeader().setReorderingAllowed(false);
+
         FileObject projectFolder = uiProperties.getProject().getProjectDirectory();
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
-        
-        
+
+
         SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getSourceRoots(),
             sourceRoots,
             addSourceRoot,
-            removeSourceRoot, 
-            upSourceRoot, 
+            removeSourceRoot,
+            upSourceRoot,
             downSourceRoot,
             new LabelCellEditor(sourceRoots, testRoots),
             true);
-        
+
         SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getTestRoots(),
             testRoots,
             addTestRoot,
-            removeTestRoot, 
-            upTestRoot, 
+            removeTestRoot,
+            upTestRoot,
             downTestRoot,
             new LabelCellEditor(sourceRoots, testRoots),
             true);
-        
+
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );
         this.sourceLevel.setEditable(false);
-        this.sourceLevel.setModel(uiProperties.JAVAC_SOURCE_MODEL);
-        this.sourceLevel.setRenderer(uiProperties.JAVAC_SOURCE_RENDERER);
-        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
-            public void intervalAdded(ListDataEvent e) {
-                enableSourceLevel ();
-//                enableProfiles();
-            }
-
-            public void intervalRemoved(ListDataEvent e) {
-                enableSourceLevel ();
-//                enableProfiles();
-            }
-
-            public void contentsChanged(ListDataEvent e) {
-                enableSourceLevel ();
-//                enableProfiles();
-            }                                    
-        });
-//        this.profile.setEditable(false);
-//        this.profile.setModel(uiProperties.JAVAC_PROFILE_MODEL);
-//        this.profile.setRenderer(uiProperties.JAVAC_PROFILE_RENDERER);
-        enableSourceLevel ();
-//        enableProfiles();
+        this.sourceLevel.setModel(uiProperties.SOURCE_LEVEL_MODEL);
+        this.sourceLevel.setRenderer(J2MEProjectUtils.createSourceLevelListCellRenderer());
+        enableSourceLevel();
         this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(ProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
-        
+
         this.encoding.setModel(ProjectCustomizer.encodingModel(originalEncoding));
         this.encoding.setRenderer(ProjectCustomizer.encodingRenderer());
         final String lafid = UIManager.getLookAndFeel().getID();
         if (!"Aqua".equals(lafid)) { //NOI18N
             this.encoding.putClientProperty ("JComboBox.isTableCellEditor", Boolean.TRUE);    //NOI18N
-            this.encoding.addItemListener(new java.awt.event.ItemListener(){ 
-                public void itemStateChanged(java.awt.event.ItemEvent e){ 
-                    javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource(); 
-                    combo.setPopupVisible(false); 
-                } 
+            this.encoding.addItemListener(new java.awt.event.ItemListener(){
+                @Override
+                public void itemStateChanged(java.awt.event.ItemEvent e){
+                    javax.swing.JComboBox combo = (javax.swing.JComboBox)e.getSource();
+                    combo.setPopupVisible(false);
+                }
             });
         }
         this.encoding.addActionListener(new ActionListener () {
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 handleEncodingChange();
-            }            
+            }
         });
         initTableVisualProperties(sourceRoots);
 //        initTableVisualProperties(testRoots);
@@ -184,19 +163,20 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
 //                }
             }
         });
-        
+
         testRootsPanel.setVisible(false);
         jLabel6.setVisible(false);
         profile.setVisible(false);
     }
-    
+
     private class TableColumnSizeComponentAdapter extends ComponentAdapter {
         private JTable table = null;
-        
+
         public TableColumnSizeComponentAdapter(JTable table){
             this.table = table;
         }
-        
+
+        @Override
         public void componentResized(ComponentEvent evt){
             double pw = table.getParent().getParent().getSize().getWidth();
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -208,17 +188,17 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
             column.setPreferredWidth( ((int)pw/2) - 1 );
         }
     }
-    
+
     private void initTableVisualProperties(JTable table) {
 
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.setIntercellSpacing(new java.awt.Dimension(0, 0));
         // set the color of the table's JViewport
         table.getParent().setBackground(table.getBackground());
-        
+
         //we'll get the parents width so we can use that to set the column sizes.
         double pw = table.getParent().getParent().getPreferredSize().getWidth();
-        
+
         //#88174 - Need horizontal scrollbar for library names
         //ugly but I didn't find a better way how to do it
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -234,7 +214,7 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
         column.setMinWidth(75);
         this.addComponentListener(new TableColumnSizeComponentAdapter(table));
     }
-    
+
     private void handleEncodingChange () {
             Charset enc = (Charset) encoding.getSelectedItem();
             String encName;
@@ -256,24 +236,15 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("org.netbeans.modules.j2me.project.ui.customizer.J2MESourcesPanel"); //NOI18N
     }
-    
+
     private void enableSourceLevel () {
         this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
     }
 
-//    private void enableProfiles() {
-//        final Object si = this.sourceLevel.getSelectedItem();
-//        final boolean pe = si != null &&
-//              PlatformUiSupport.getSourceLevel(si) != null &&
-//              new SpecificationVersion("1.8").compareTo(PlatformUiSupport.getSourceLevel(si)) <= 0; //NOI18N
-//        this.profile.setEnabled(pe);
-//        this.jLabel6.setEnabled(pe);
-//    }
-    
     private static class ResizableRowHeightTable extends JTable {
 
         private boolean needResize = true;
-        
+
         @Override
         public void setFont(Font font) {
             needResize = true;
@@ -288,20 +259,20 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
             }
             super.paint(g);
         }
-        
+
     }
-    
+
     private static class LabelCellEditor extends DefaultCellEditor {
-        
-        private JTable sourceRoots;
-        private JTable testRoots;
-        
+
+        private final JTable sourceRoots;
+        private final JTable testRoots;
+
         public LabelCellEditor(JTable sourceRoots, JTable testRoots) {
             super(new JTextField());
             this.sourceRoots = sourceRoots;
             this.testRoots = testRoots;
         }
-        
+
         @Override
         public boolean stopCellEditing() {
             JTextField field = (JTextField) getComponent();
@@ -323,12 +294,12 @@ public class J2MESourcesPanel extends javax.swing.JPanel implements HelpCtx.Prov
                     validCell = false;
                 }
             }
-            
+
             return validCell == false ? validCell : super.stopCellEditing();
         }
-        
+
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -711,8 +682,8 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
         uiProperties.storeIncludesExcludes(v);
     }
 }//GEN-LAST:event_includeExcludeButtonActionPerformed
-    
-   
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSourceRoot;
     private javax.swing.JButton addTestRoot;
@@ -742,5 +713,5 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JButton upSourceRoot;
     private javax.swing.JButton upTestRoot;
     // End of variables declaration//GEN-END:variables
-    
+
 }
