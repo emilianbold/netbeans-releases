@@ -79,7 +79,8 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
 
     private final class ErrorsHighlighter extends ParserResultTask<CndParserResult> {
 
-        private InterrupterImpl interrupter = new InterrupterImpl();;
+        private InterrupterImpl interrupter = new InterrupterImpl();
+        private CndParserResult lastParserResult;
 
         public ErrorsHighlighter() {
         }
@@ -87,6 +88,10 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         @Override
         public void run(CndParserResult result, SchedulerEvent event) {
             synchronized(this) {
+                if (lastParserResult == result) {
+                    return;
+                }
+                this.lastParserResult = result;
                 this.interrupter = new InterrupterImpl();
             }
             try {
@@ -109,6 +114,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         @Override
         public synchronized void cancel() {
             interrupter.cancel();
+            lastParserResult = null;
         }
 
         @Override
