@@ -77,8 +77,7 @@ public final class Installer {
         @Override
         public void run() {
             CndUtils.assertNonUiThread();
-            ProgressUtils.showProgressDialogAndRun(new Runnable() {
-
+            final Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     if (TraceFlags.TRACE_MODEL_STATE) {
@@ -87,8 +86,12 @@ public final class Installer {
                     ModelSupport.instance().shutdown();
 
                 }
-            }, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
-
+            };
+            if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+                runnable.run();
+            } else {
+                ProgressUtils.showProgressDialogAndRun(runnable, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N
+            }
         }
     }
 }
