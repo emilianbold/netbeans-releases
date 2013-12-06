@@ -2,404 +2,140 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard EJB Module Project Properties Dialog Box: Web Services</title>
+<title>Standard EJB Module Project Properties Dialog Box: Sources</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
 <p>Beta Draft: 2013-12-05</p>
-<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref615" name="sthref615"></a>
-<h1>Standard EJB Module Project Properties Dialog Box: Web Services</h1>
+<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarCustomizer"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref616" name="sthref616"></a>
+<h1>Standard EJB Module Project Properties Dialog Box: Sources</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Web Services page lets you preconfigure the features that are used by the <code>wscompile</code> tool to compile a web service:</p>
-<ul>
-<li>
-<p>If you are implementing an existing WSDL file, the wscompile tool will create a service end-point interface and implementation class for your web service. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2795">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</li>
-<li>
-<p>If you are creating a web service from scratch, the wscompile tool creates a WSDL file. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2795">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</li>
-</ul>
-<a id="sthref616" name="sthref616"></a>
-<p><b>Features</b></p>
-<p>If you are implementing an existing WSDL file, you can check or type one or more of the following <code>wscompile</code> tool features:</p>
+<p>The Libraries page lets you set up the libraries that the project contains on its classpath.</p>
 
-<table summary="User Interface Features and Effect on Web Services" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="21%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t23">Feature</th>
-<th align="left" valign="bottom" id="r1c2-t23">Effect on Web Service</th>
+<th align="left" valign="bottom" id="r1c1-t23">Element</th>
+<th align="left" valign="bottom" id="r1c2-t23">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t23" headers="r1c1-t23">
-<p>datahandleronly</p>
+<p>Java Platform</p>
 </td>
 <td align="left" headers="r2c1-t23 r1c2-t23">
-<p>Maps attachments to the DataHandler type.</p>
+<p>You can use the Java Platform drop-down list to set the specific JDK installation that the IDE uses to compile and run your project. The IDE adds the selected platform's libraries to the classpath and uses the platform's executables (such as <code>javac</code> and <code>java</code>) to run and build the project. The default platform for all projects is the platform on which the IDE is running. To register additional platforms and attach Javadoc and source files to a platform, click<b>Manage Platforms</b>.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t23" headers="r1c1-t23">
-<p>donotoverride</p>
+<p>Libraries Folder</p>
 </td>
 <td align="left" headers="r3c1-t23 r1c2-t23">
-<p>No regeneration of classes that already exist on the classpath.</p>
+<p>To make it easier to share libraries among different users and projects, you can set a folder to hold those libraries (or references to those libraries). You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>To specify the folder, click Browse. If there is already a libraries folder, a file chooser opens. If there is not a libraries folder, the New Libraries wizard opens. In the New Libraries wizard, you set a libraries folder and then specify how to reference each library. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager.</p>
+<p>Each standard EJB module project maintains a separate classpath for compilation, compiling tests, and running tests. Use the buttons on the right of the dialog box to add, remove, and change the order of classpath elements. You can add any of the following:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t23" headers="r1c1-t23">
-<p>donotunwrap</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;JAR file or folder</p>
 </td>
 <td align="left" headers="r4c1-t23 r1c2-t23">
-<p>Disables unwrapping of document/literal wrapper elements in WSI mode (default).</p>
+<p>A JAR file or folder containing compiled class files and other resources.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t23" headers="r1c1-t23">
-<p>explicitcontext</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Library</p>
 </td>
 <td align="left" headers="r5c1-t23 r1c2-t23">
-<p>Turns on explicit service context mapping.</p>
+<p>A collection of JAR files, source code, and Javadoc that has been registered in the Ant Library Manager.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t23" headers="r1c1-t23">
-<p>jaxbenumtype</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Project</p>
 </td>
 <td align="left" headers="r6c1-t23 r1c2-t23">
-<p>Maps anonymous enumeration to its base type.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t23" headers="r1c1-t23">
-<p>nodatabinding</p>
-</td>
-<td align="left" headers="r7c1-t23 r1c2-t23">
-<p>Turns off data binding for literal encoding.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t23" headers="r1c1-t23">
-<p>noencodedtypes</p>
-</td>
-<td align="left" headers="r8c1-t23 r1c2-t23">
-<p>Turns off encoding type information.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t23" headers="r1c1-t23">
-<p>nomultirefs</p>
-</td>
-<td align="left" headers="r9c1-t23 r1c2-t23">
-<p>Turns off support for multiple references.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t23" headers="r1c1-t23">
-<p>norpcstructures</p>
-</td>
-<td align="left" headers="r10c1-t23 r1c2-t23">
-<p>No generation of RPC structures (-import only).</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t23" headers="r1c1-t23">
-<p>novalidation</p>
-</td>
-<td align="left" headers="r11c1-t23 r1c2-t23">
-<p>Turns off full validation of imported WSDL documents.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t23" headers="r1c1-t23">
-<p>resolveidref</p>
-</td>
-<td align="left" headers="r12c1-t23 r1c2-t23">
-<p>Resolve xsd:IDREF.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r13c1-t23" headers="r1c1-t23">
-<p>searchschema</p>
-</td>
-<td align="left" headers="r13c1-t23 r1c2-t23">
-<p>Searches schema aggressively for types.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r14c1-t23" headers="r1c1-t23">
-<p>serializeinterfaces</p>
-</td>
-<td align="left" headers="r14c1-t23 r1c2-t23">
-<p>Turns on direct serialization of interface types.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r15c1-t23" headers="r1c1-t23">
-<p>strict</p>
-</td>
-<td align="left" headers="r15c1-t23 r1c2-t23">
-<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r16c1-t23" headers="r1c1-t23">
-<p>unwrap</p>
-</td>
-<td align="left" headers="r16c1-t23 r1c2-t23">
-<p>Enables unwrapping of document/literal wrapper elements in WSI mode.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r17c1-t23" headers="r1c1-t23">
-<p>wsi</p>
-</td>
-<td align="left" headers="r17c1-t23 r1c2-t23">
-<p>Checks for compliance with the WSI-Basic Profile, which is a specification for improved interoperability. For example, the WS-I Basic Profile prohibits the use of rpc/encoded. Therefore, if you set the wsi feature, a warning will be generated when you build a web service that uses a WSDL file that uses rpc/encoded.</p>
+<p>The build output, source files, and Javadoc files of another IDE project.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>If you want to compile a document-style web service, you can check or type one or more of the following wscompile tool features:</p>
-
-<table summary="Feature descriptions for document style web services." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="25%" />
-<col width="*" />
-<col width="13%" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t24">Feature</th>
-<th align="left" valign="bottom" id="r1c2-t24">Description</th>
-<th align="left" valign="bottom" id="r1c3-t24">Required?</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t24" headers="r1c1-t24">
-<p>documentliteral</p>
-</td>
-<td align="left" headers="r2c1-t24 r1c2-t24">
-<p>Use this to specify in the WSDL file that the web service is of style "document". By default, all web services that do not have at least one operation are compiled as document-style web services.</p>
-</td>
-<td align="left" headers="r2c1-t24 r1c3-t24">
-<p>Yes</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t24" headers="r1c1-t24">
-<p>donotoverride</p>
-</td>
-<td align="left" headers="r3c1-t24 r1c2-t24">
-<p>No regeneration of classes that already exist on the classpath.</p>
-</td>
-<td align="left" headers="r3c1-t24 r1c3-t24">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t24" headers="r1c1-t24">
-<p>noencodedtypes</p>
-</td>
-<td align="left" headers="r4c1-t24 r1c2-t24"><a id="e&lt;" name="e&lt;"></a><a id="novalue&gt;" name="novalue&gt;"></a>
-<p>Not applicable.</p>
-</td>
-<td align="left" headers="r4c1-t24 r1c3-t24">
-<p>-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t24" headers="r1c1-t24">
-<p>nomultirefs</p>
-</td>
-<td align="left" headers="r5c1-t24 r1c2-t24">
-<p>Turns off support for multiple references.</p>
-</td>
-<td align="left" headers="r5c1-t24 r1c3-t24">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t24" headers="r1c1-t24">
-<p>rpcliteral</p>
-</td>
-<td align="left" headers="r6c1-t24 r1c2-t24">
-<p>Not applicable.</p>
-</td>
-<td align="left" headers="r6c1-t24 r1c3-t24">
-<p>-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t24" headers="r1c1-t24">
-<p>serializeinterfaces</p>
-</td>
-<td align="left" headers="r7c1-t24 r1c2-t24">
-<p>Turns on direct serialization of interface types.</p>
-</td>
-<td align="left" headers="r7c1-t24 r1c3-t24">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t24" headers="r1c1-t24">
-<p>strict</p>
-</td>
-<td align="left" headers="r8c1-t24 r1c2-t24">
-<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
-</td>
-<td align="left" headers="r8c1-t24 r1c3-t24">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t24" headers="r1c1-t24">
-<p>useonewayoperations</p>
-</td>
-<td align="left" headers="r9c1-t24 r1c2-t24">
-<p>Not applicable.</p>
-</td>
-<td align="left" headers="r9c1-t24 r1c3-t24">
-<p>-</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>If you want to compile a RPC-style web service, you can check or type one or more of the following wscompile tool features:</p>
-
-<table summary="User Interface Feature Descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="25%" />
-<col width="*" />
-<col width="14%" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t25">Feature</th>
-<th align="left" valign="bottom" id="r1c2-t25">Elenent</th>
-<th align="left" valign="bottom" id="r1c3-t25">Required?</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t25" headers="r1c1-t25">
-<p>documentliteral</p>
-</td>
-<td align="left" headers="r2c1-t25 r1c2-t25">
-<p>Not applicable</p>
-</td>
-<td align="left" headers="r2c1-t25 r1c3-t25">
-<p>-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t25" headers="r1c1-t25">
-<p>donotoverride</p>
-</td>
-<td align="left" headers="r3c1-t25 r1c2-t25">
-<p>No regeneration of classes that already exist on the classpath.</p>
-</td>
-<td align="left" headers="r3c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t25" headers="r1c1-t25">
-<p>noencodedtypes</p>
-</td>
-<td align="left" headers="r4c1-t25 r1c2-t25">
-<p>Encoding rules are defined in the XML Schema.</p>
-<p>By default, RPC-style web services have their encoding rules defined in the SOAP 1.1 Specification. With this feature, it uses the XML Schema defined in the types element for encoding purposes instead.</p>
-</td>
-<td align="left" headers="r4c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t25" headers="r1c1-t25">
-<p>nomultirefs</p>
-</td>
-<td align="left" headers="r5c1-t25 r1c2-t25">
-<p>Turns off support for multiple references.</p>
-</td>
-<td align="left" headers="r5c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t25" headers="r1c1-t25">
-<p>rpcliteral</p>
-</td>
-<td align="left" headers="r6c1-t25 r1c2-t25">
-<p>By default, all web services that have at least one operation are compiled as RPC-style web services.</p>
-</td>
-<td align="left" headers="r6c1-t25 r1c3-t25">
-<p>Yes</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t25" headers="r1c1-t25">
-<p>serializeinterfaces</p>
-</td>
-<td align="left" headers="r7c1-t25 r1c2-t25">
-<p>Turns on direct serialization of interface types.</p>
-</td>
-<td align="left" headers="r7c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t25" headers="r1c1-t25">
-<p>strict</p>
-</td>
-<td align="left" headers="r8c1-t25 r1c2-t25">
-<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
-</td>
-<td align="left" headers="r8c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t25" headers="r1c1-t25">
-<p>useonewayoperations</p>
-</td>
-<td align="left" headers="r9c1-t25 r1c2-t25">
-<p>Methods with void return types are mapped as one-way operations.</p>
-</td>
-<td align="left" headers="r9c1-t25 r1c3-t25">
-<p>No</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>If you want to compile a document-style web service, you can check or type one or more of the following <code>wscompile</code> tool features.</p>
+<p><b>Notes:</b></p>
+<ul>
+<li>By default, if the EJB module is deployed as a stand-alone module, the IDE does not include the library JAR files in the EJB module JAR file. If the EJB module is deployed as part of an enterprise application, the IDE includes the JAR files that are on the classpath of the EJB module in the application EAR file. Deselect the Package checkbox for each classpath item that you want to exclude from the EAR file.</li>
+<li>If a JAR file is registered in the Ant Library Manager and has attached source code and Javadoc documentation, you can just add the JAR file to the classpath and the IDE finds the Javadoc documentation and source code automatically. You should use the Add Library button if you want to add a library that contains several JAR files. Adding a library that is managed in the Ant Library Manager also makes it easier for other developers with which you share the project to fix broken references to Javadoc documentation and source code.</li>
+<li>Adding a free-form project to the classpath of a standard project does nothing unless you have declared the free-form project's build outputs in the Output page of its Project Properties dialog box.</li>
+</ul>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
 <param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG406">
+<param name="text" value="<html><u>&quot;Creating Free-Form Projects&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2719">
+<param name="text" value="<html><u>&quot;Building and Deploying an EJB Module&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2103">
+<param name="text" value="<html><u>&quot;Working with Javadoc Documentation&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG822">
+<param name="text" value="<html><u>&quot;Using the Debugger Windows&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
+<param name="text" value="<html><u>Sharing Libraries with Other Users&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2115">
+<param name="text" value="<html><u>&quot;Working with Ant&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
