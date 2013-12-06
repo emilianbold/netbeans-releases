@@ -72,26 +72,37 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author  Martin Adamek
  */
 public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
-    
+    private final RequestProcessor RP = new RequestProcessor(PersistenceUnitWizardPanelJdbc.class.getSimpleName(), 2);
+
     public PersistenceUnitWizardPanelJdbc(Project project, ChangeListener changeListener,  boolean editName) {
         this(project, changeListener, editName, TableGeneration.CREATE);
     }
     
-    public PersistenceUnitWizardPanelJdbc(Project project, ChangeListener changeListener,
+    public PersistenceUnitWizardPanelJdbc(final Project project, ChangeListener changeListener,
             boolean editName, TableGeneration tg) {
             
         super(project);
         initComponents();
         setTableGeneration(tg);
+        libraryCombo.setEnabled(false);
         
-        PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
-        comboHelper.connect(libraryCombo);
+        RP.post(new Runnable() {
+           @Override
+           public void run() {
+                PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
+                comboHelper.connect(libraryCombo);
+                libraryCombo.setEnabled(true);
+                checkValidity();
+           } 
+        });
+
         
         unitNameTextField.setText(Util.getCandidateName(project));
         unitNameTextField.selectAll();
@@ -177,10 +188,15 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     }
     
     public boolean isValidPanel() {
+        setErrorMessage("");
        Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if(groups == null || groups.length == 0) {
             setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_JavaSourceGroup")); //NOI18N
+            return false;
+        }
+        if( !libraryCombo.isEnabled() ) {
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardPanelJdbc.class,"LBL_Wait")); //NOI18N
             return false;
         }
         if (!(libraryCombo.getSelectedItem() instanceof Provider)) {
@@ -210,6 +226,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
     
     public void setErrorMessage(String msg) {
         errorMessage.setText(msg);
+        errorMessage.setVisible(msg!=null && msg.length()>0);
     }
     private void updateWarning() {
         Object provObj = libraryCombo.getSelectedItem();
