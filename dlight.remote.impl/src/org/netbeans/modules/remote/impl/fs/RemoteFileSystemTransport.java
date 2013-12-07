@@ -43,7 +43,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -60,10 +59,10 @@ public abstract class RemoteFileSystemTransport {
         return !FSSTransport.USE_FS_SERVER;
     }
 
-    public static List<DirEntry> readDirectory(ExecutionEnvironment execEnv, String path) 
+    public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
             throws IOException, InterruptedException, CancellationException, ExecutionException {
 
-        List<DirEntry> entries = null;
+        DirEntryList entries = null;
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport != null && transport.isValid()) {
             try {
@@ -118,7 +117,7 @@ public abstract class RemoteFileSystemTransport {
     protected abstract FileInfoProvider.StatInfo lstat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
 
-    protected abstract List<DirEntry> readDirectory(String path) 
+    protected abstract DirEntryList readDirectory(String path) 
             throws IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean isValid();

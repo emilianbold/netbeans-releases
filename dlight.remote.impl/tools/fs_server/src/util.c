@@ -295,6 +295,12 @@ long long get_mtime(struct stat *stat_buf) {
     return result;
 }
 
+long long get_curretn_time_millis() {
+    struct timeval tm;
+    gettimeofday(&tm, 0);
+    return tm.tv_sec * 1000 + tm.tv_usec / 1000;
+}
+
 char* signal_name(int signal) {
     switch (signal) {
         case SIGHUP:    return "SIGHUP";

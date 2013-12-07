@@ -40,24 +40,29 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.remote.impl.fs;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.impl.fs.DirEntry;
 
 /**
  *
  * @author vkvashin
  */
-public class FSSTransportTestAccessor {
- 
-    public static List<DirEntry> readDirectory(ExecutionEnvironment execEnv, String path) 
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+public class DirEntryList {
+    private final List<DirEntry> entries;
+    private final long timestamp;
 
-        return FSSTransport.getInstance(execEnv).readDirectory(path).getEntries();
+    public DirEntryList(List<DirEntry> entries, long timestamp) {
+        this.entries = Collections.unmodifiableList(entries);
+        this.timestamp = timestamp;
     }
+
+    public List<DirEntry> getEntries() {
+        return entries;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }    
 }

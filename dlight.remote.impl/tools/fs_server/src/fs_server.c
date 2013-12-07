@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 16
+#define FS_SERVER_MINOR_VERSION 17
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -532,7 +532,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
     visit_dir_entries(path, response_ls_plain_visitor, &data);
 
-    fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
+    fprintf(stdout, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) strlen(path), path, get_curretn_time_millis());
     fflush(stdout);
     
     if (el) {

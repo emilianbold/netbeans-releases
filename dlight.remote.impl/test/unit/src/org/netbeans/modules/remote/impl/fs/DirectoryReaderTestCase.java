@@ -186,7 +186,7 @@ public class DirectoryReaderTestCase extends RemoteFileTestBase {
     @ForAllEnvironments
     public void testDirectoryReaderSftp() throws Exception {
         prepareDirectory();
-        List<DirEntry> entries = SftpTransport.getInstance(execEnv).readDirectory(remoteDir);
+        List<DirEntry> entries = SftpTransport.getInstance(execEnv).readDirectory(remoteDir).getEntries();
         assertEntriesEqual(referenceEntries, entries, false); // sftp directory reader doesn't recognize FIFO, etc.
     }
 
