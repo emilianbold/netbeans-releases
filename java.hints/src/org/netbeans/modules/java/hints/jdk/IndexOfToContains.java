@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.java.hints.jdk;
 
-import com.sun.source.tree.Tree.Kind;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -50,31 +49,47 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author lahvac
+ * @author sdedic
  */
-@Messages({
+@NbBundle.Messages({
     "DN_containsForIndexOf=String.indexOf can be replaced with String.contains",
     "DESC_containsForIndexOf=Finds usages of String.indexOf that can be replaced with String.contains",
     "ERR_containsForIndexOf=String.indexOf can be replaced with String.contains",
     "FIX_containsForIndexOf=String.indexOf can be replaced with String.contains",
 })
-public class Tiny {
+@Hint(displayName="#DN_containsForIndexOf", description="#DESC_containsForIndexOf", category="rules15", suppressWarnings="IndexOfReplaceableByContains")
+public class IndexOfToContains {
     
-    @Hint(displayName="#DN_containsForIndexOf", description="#DESC_containsForIndexOf", category="rules15", suppressWarnings="IndexOfReplaceableByContains")
     @TriggerPatterns({
-        @TriggerPattern(value="$site.indexOf($substring) == (-1)"),
-        @TriggerPattern(value="$site.indexOf($substring) != (-1)")
+        @TriggerPattern(value="$site.indexOf($substring) != (-1)"),
+        @TriggerPattern(value="$site.indexOf($substring) >= (0)"),
+        @TriggerPattern(value="$site.indexOf($substring) > (-1)"),
+        @TriggerPattern(value="$site.indexOf($substring) != -1"),
+        @TriggerPattern(value="$site.indexOf($substring) >= 0"),
+        @TriggerPattern(value="$site.indexOf($substring) > -1")
     })
     public static ErrorDescription containsForIndexOf(HintContext ctx) {
         String target = "$site.contains($substring)";
         
-        if (ctx.getPath().getLeaf().getKind() == Kind.EQUAL_TO) {
-            target = "!" + target;
-        }
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_containsForIndexOf(), ctx.getPath(), target);
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_containsForIndexOf(), fix);
+    }
+
+    @TriggerPatterns({
+        @TriggerPattern(value="$site.indexOf($substring) == (-1)"),
+        @TriggerPattern(value="$site.indexOf($substring) <= (-1)"),
+        @TriggerPattern(value="$site.indexOf($substring) < (0)"),
+        @TriggerPattern(value="$site.indexOf($substring) == -1"),
+        @TriggerPattern(value="$site.indexOf($substring) <= -1"),
+        @TriggerPattern(value="$site.indexOf($substring) < 0"),
+    })
+    public static ErrorDescription notContainsForIndexOf(HintContext ctx) {
+        String target = "!$site.contains($substring)";
         
         Fix fix = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_containsForIndexOf(), ctx.getPath(), target);
         
