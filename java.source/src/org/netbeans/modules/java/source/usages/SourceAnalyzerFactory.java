@@ -486,6 +486,13 @@ public final class SourceAnalyzerFactory {
             return ret;
         }
 
+        @Override
+        public Void visitMemberReference(MemberReferenceTree node, Map<Pair<String, String>, UsagesData<String>> p) {
+            final Symbol sym = ((JCTree.JCMemberReference)node).sym;
+            handleVisitIdentSelect(sym, node.getName(), p);
+            return super.visitMemberReference(node, p);
+        }
+
         private void handleVisitIdentSelect (
                 @NullAllowed final Symbol sym,
                 @NonNull final CharSequence name,

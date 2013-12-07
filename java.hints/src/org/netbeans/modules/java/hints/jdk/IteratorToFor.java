@@ -51,6 +51,8 @@ import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -63,10 +65,13 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CodeStyle;
@@ -100,6 +105,9 @@ public class IteratorToFor {
 
     @TriggerPattern("java.util.Iterator $it = $coll.iterator(); while ($it.hasNext()) {$type $elem = ($type) $it.next(); $rest$;}")
     public static ErrorDescription whileIdiom(HintContext ctx) {
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
+            return null;
+        }
         if (uses(ctx, ctx.getMultiVariables().get("$rest$"), ctx.getVariables().get("$it"))) {
             return null;
         }
@@ -120,6 +128,9 @@ public class IteratorToFor {
         @TriggerPattern("for (java.util.Iterator<$typaram> $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = $it.next(); $rest$;}")
     })
     public static ErrorDescription forIdiom(HintContext ctx) {
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
+            return null;
+        }
         if (uses(ctx, ctx.getMultiVariables().get("$rest$"), ctx.getVariables().get("$it"))) {
             return null;
         }
@@ -130,28 +141,122 @@ public class IteratorToFor {
                 JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : $coll) {$rest$;}"));
     }
     
+    private static class AccessAndVarVisitor extends CancellableTreePathScanner<Void, Void> {
+        protected final HintContext ctx;
+        protected final Set<String> definedVariables = new HashSet<>();
+        
+        private boolean insideClass;
+        protected boolean unsuitable;
+        protected final List<TreePath> toReplace = new ArrayList<>();
+
+        public AccessAndVarVisitor(HintContext ctx) {
+            this.ctx = ctx;
+        }
+        
+        protected void unsuitable() {
+            unsuitable = true;
+            cancel();
+        }
+        
+        @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+            if (MatcherUtilities.matches(ctx, getCurrentPath(), "$index")) { // NOI18N
+                unsuitable();
+                return null;
+            }
+            return super.visitIdentifier(node, p);
+        }
+        @Override public Void visitVariable(VariableTree node, Void p) {
+            if (!insideClass) {
+                definedVariables.add(node.getName().toString());
+            }
+            return super.visitVariable(node, p);
+        }
+        @Override public Void visitClass(ClassTree node, Void p) {
+            boolean origInsideClass = insideClass;
+            try {
+                insideClass = true;
+                return super.visitClass(node, p);
+            } finally {
+                insideClass = origInsideClass;
+            }
+        }
+        @Override protected boolean isCanceled() {
+            return ctx.isCanceled() || super.isCanceled();
+        }
+    }
+    
+    /**
+     * Names of methods that can be safely called on Collection (List) while iterating through the contents.
+     */
+    static final Set<String> SAFE_COLLECTION_METHODS = new HashSet<String>();
+    static {
+        SAFE_COLLECTION_METHODS.add("size"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("isEmpty"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("contains"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("containsAll"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("iterator"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("listIterator"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("indexOf"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("lastIndexOf"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("subList"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("toArray"); // NOI18N
+        SAFE_COLLECTION_METHODS.add("get"); // NOI18N
+    }
+    
+    @TriggerPattern(value = "for (int $index = 0; $index < $col.size(); $index++) $statement;", constraints = @ConstraintVariableType(variable = "$col", type = "java.util.List"))
+    public static ErrorDescription forListCollection(final HintContext ctx) {
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
+            return null;
+        }
+        AccessAndVarVisitor v = new AccessAndVarVisitor(ctx) {
+            @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+                ExpressionTree select = node.getMethodSelect();
+                if (select.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    MemberSelectTree msel = (MemberSelectTree)select;
+                    if (MatcherUtilities.matches(ctx, new TreePath(new TreePath(getCurrentPath(), select), msel.getExpression()), "$col")) { // NOI18N
+                        String name = msel.getIdentifier().toString();
+                        if ("get".equals(name)) {
+                            if (MatcherUtilities.matches(ctx, getCurrentPath(), "$col.get($index)")) { // NOI18N
+                                toReplace.add(getCurrentPath());
+                                // skip the super visitor
+                                return null;
+                            } else {
+                                unsuitable();
+                            }
+                        }
+                        if (!SAFE_COLLECTION_METHODS.contains(name)) {
+                            unsuitable();
+                        }
+                    }
+                }
+                return super.visitMethodInvocation(node, p);
+            }
+        };
+        v.scan(ctx.getVariables().get("$statement"), null); // NOI18N
+        if (v.unsuitable) return null;
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToForArray(), 
+                new ReplaceIndexedForEachLoop(ctx.getInfo(), ctx.getPath(), ctx.getVariables().get("$col"),  // NOI18N
+                v.toReplace, v.definedVariables).toEditorFix());
+    }
+    
     @TriggerPattern(value="for (int $index = 0; $index < $arr.length; $index++) $statement;", constraints=@ConstraintVariableType(variable="$arr", type="Object[]"))
     public static ErrorDescription forIndexedArray(final HintContext ctx) {
-        final List<TreePath> toReplace = new ArrayList<>();
-        final boolean[] unsuitable = new boolean[1];
-        final Set<String> definedVariables = new HashSet<>();
-        new CancellableTreePathScanner<Void, Void>() {
-            private boolean insideClass;
+        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
+            return null;
+        }
+        AccessAndVarVisitor v = new AccessAndVarVisitor(ctx) {
             @Override public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-                TreePath path = getCurrentPath();
-                if (MatcherUtilities.matches(ctx, path, "$arr[$index]")) {
+            TreePath path = getCurrentPath();
+                if (MatcherUtilities.matches(ctx, path, "$arr[$index]")) { // NOI18N
                     if (path.getParentPath() != null) {
                         if (   path.getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT
                             && ((AssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
-                            unsuitable[0] = true;
-                            cancel();
-                            return null;
+                            unsuitable();
                         }
                         if (CompoundAssignmentTree.class.isAssignableFrom(path.getParentPath().getLeaf().getKind().asInterface())
                             && ((CompoundAssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
-                            unsuitable[0] = true;
-                            cancel();
-                            return null;
+                            unsuitable();
                         }
                     }
                     toReplace.add(path);
@@ -159,37 +264,13 @@ public class IteratorToFor {
                 }
                 return super.visitArrayAccess(node, p);
             }
-            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                if (MatcherUtilities.matches(ctx, getCurrentPath(), "$index")) {
-                    unsuitable[0] = true;
-                    cancel();
-                    return null;
-                }
-                return super.visitIdentifier(node, p);
-            }
-            @Override public Void visitVariable(VariableTree node, Void p) {
-                if (!insideClass) {
-                    definedVariables.add(node.getName().toString());
-                }
-                return super.visitVariable(node, p);
-            }
-            @Override public Void visitClass(ClassTree node, Void p) {
-                boolean origInsideClass = insideClass;
-                try {
-                    insideClass = true;
-                    return super.visitClass(node, p);
-                } finally {
-                    insideClass = origInsideClass;
-                }
-            }
-            @Override protected boolean isCanceled() {
-                return ctx.isCanceled() || super.isCanceled();
-            }
-        }.scan(ctx.getVariables().get("$statement"), null);
+        };
+        v.scan(ctx.getVariables().get("$statement"), null); // NOI18N
+        if (v.unsuitable) return null;
         
-        if (unsuitable[0]) return null;
-        
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToForArray(), new ReplaceIndexedForEachLoop(ctx.getInfo(), ctx.getPath(), ctx.getVariables().get("$arr"), toReplace, definedVariables).toEditorFix());
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToForArray(), 
+                new ReplaceIndexedForEachLoop(ctx.getInfo(), ctx.getPath(), ctx.getVariables().get("$arr"), 
+                v.toReplace, v.definedVariables).toEditorFix());
     }
 
     // adapted from org.netbeans.modules.java.hints.declarative.conditionapi.Matcher.referencedIn
@@ -236,13 +317,13 @@ public class IteratorToFor {
     
     private static final class ReplaceIndexedForEachLoop extends JavaFix {
 
-        private final TreePathHandle arr;
+        private final TreePathHandle arrHandle;
         private final List<TreePathHandle> toReplace;
         private final Set<String> definedVariables;
         
         public ReplaceIndexedForEachLoop(CompilationInfo info, TreePath tp, TreePath arr, List<TreePath> toReplace, Set<String> definedVariables) {
             super(info, tp);
-            this.arr = TreePathHandle.create(arr, info);
+            this.arrHandle = TreePathHandle.create(arr, info);
             this.toReplace = new ArrayList<>();
             
             for (TreePath tr : toReplace) {
@@ -282,21 +363,41 @@ public class IteratorToFor {
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
             Tree loop = GeneratorUtilities.get(ctx.getWorkingCopy()).importComments(ctx.getPath().getLeaf(), ctx.getPath().getCompilationUnit());
-            TreePath $arr = arr.resolve(ctx.getWorkingCopy());
+            TreePath arr = arrHandle.resolve(ctx.getWorkingCopy());
             
-            if ($arr == null) {
+            if (arr == null) {
                 //TODO: why? what can be done?
                 return;
             }
             
-            TypeMirror arrType = ctx.getWorkingCopy().getTrees().getTypeMirror($arr);
+            TypeMirror arrType = ctx.getWorkingCopy().getTrees().getTypeMirror(arr);
             
-            if (arrType.getKind() != TypeKind.ARRAY) {
+            TypeMirror variableType;
+            
+            if (arrType.getKind() == TypeKind.ARRAY) {
+                variableType = ((ArrayType) arrType).getComponentType();
+            } else if (arrType.getKind() != TypeKind.ARRAY) {
                 //TODO: can happen?
-                return ;
+                TypeElement listEl = ctx.getWorkingCopy().getElements().getTypeElement("java.util.Collection"); // NOI18N
+                if (listEl == null) {
+                    return;
+                }
+                TypeMirror listType = ctx.getWorkingCopy().getTypes().erasure(listEl.asType());
+                if (listType.getKind() == TypeKind.ERROR) {
+                    return;
+                }
+                if (!ctx.getWorkingCopy().getTypes().isAssignable(arrType, listType)) {
+                    return;
+                }
+                Element addEl = ctx.getWorkingCopy().getElementUtilities().findElement("java.util.Collection.add(java.lang.Object)"); // NOI18N
+                assert addEl != null;
+                TypeMirror addType = ctx.getWorkingCopy().getTypes().asMemberOf(((DeclaredType)arrType), addEl);
+                variableType = ((ExecutableType)addType).getParameterTypes().get(0);
+            } else {
+                return;
             }
 
-            TypeMirror variableType = ((ArrayType) arrType).getComponentType();
+             
             StatementTree statement = ((ForLoopTree) ctx.getPath().getLeaf()).getStatement();
             List<TreePath> convertedToReplace = new ArrayList<>();
 
@@ -312,9 +413,9 @@ public class IteratorToFor {
 
             if (variableName != null) {
                 BlockTree block = (BlockTree) statement;
-                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) $arr.getLeaf(), make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) arr.getLeaf(), make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
             } else {
-                String treeName = Utilities.getName($arr.getLeaf());
+                String treeName = Utilities.getName(arr.getLeaf());
                 variableName = treeName;
 
                 if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);
@@ -333,7 +434,7 @@ public class IteratorToFor {
 
                 variableName = Utilities.makeNameUnique(ctx.getWorkingCopy(), ctx.getWorkingCopy().getTrees().getScope(ctx.getPath()), variableName, definedVariables, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix());
 
-                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) $arr.getLeaf(), statement);
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) arr.getLeaf(), statement);
             }
             
             ctx.getWorkingCopy().rewrite(loop, newLoop);

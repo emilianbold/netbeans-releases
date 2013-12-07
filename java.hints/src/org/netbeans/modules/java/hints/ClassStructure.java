@@ -65,6 +65,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -300,16 +301,24 @@ public class ClassStructure {
         @Override
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
+            GeneratorUtilities gu = GeneratorUtilities.get(wc);
             TreePath path = ctx.getPath();
             final ClassTree cls = (ClassTree) path.getLeaf();
+            gu.importComments(cls, wc.getCompilationUnit());
             final TreeMaker treeMaker = wc.getTreeMaker();
             ModifiersTree mods = cls.getModifiers();
             if (mods.getFlags().contains(Modifier.ABSTRACT)) {
                 Set<Modifier> modifiers = EnumSet.copyOf(mods.getFlags());
                 modifiers.remove(Modifier.ABSTRACT);
-                mods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
+                ModifiersTree nmods = treeMaker.Modifiers(modifiers, mods.getAnnotations());
+                gu.copyComments(mods, nmods, true);
+                gu.copyComments(mods, nmods, false);
+                mods = nmods;
             }
-            wc.rewrite(path.getLeaf(), treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers()));
+            Tree nue = treeMaker.Interface(mods, cls.getSimpleName(), cls.getTypeParameters(), cls.getImplementsClause(), cls.getMembers());
+            gu.copyComments(cls, nue, true);
+            gu.copyComments(cls, nue, false);
+            wc.rewrite(path.getLeaf(), nue);
         }
     }
 }

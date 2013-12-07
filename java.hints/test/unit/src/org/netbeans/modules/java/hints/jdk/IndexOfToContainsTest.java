@@ -48,9 +48,9 @@ import org.netbeans.modules.java.hints.test.api.HintTest;
  *
  * @author lahvac
  */
-public class TinyTest extends NbTestCase {
+public class IndexOfToContainsTest extends NbTestCase {
     
-    public TinyTest(String name) {
+    public IndexOfToContainsTest(String name) {
         super(name);
     }
     
@@ -62,7 +62,7 @@ public class TinyTest extends NbTestCase {
                        "        return str.indexOf(\"sub\") == (-1);\n" +
                        "    }\n" +
                        "}\n")
-                .run(Tiny.class)
+                .run(IndexOfToContains.class)
                 .findWarning("3:15-3:41:verifier:" + Bundle.FIX_containsForIndexOf())
                 .applyFix()
                 .assertCompilable()

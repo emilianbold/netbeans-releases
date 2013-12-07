@@ -171,6 +171,7 @@ public class MalformedXPathExpression {
         Object o = ArithmeticUtilities.compute(ctx.getInfo(), exprPath, true, true);
         if (!(o instanceof String)) {
             // not a constant, or not a known String value
+            return null;
         }
         XPathFactory f = XPathFactory.newInstance();
         try {

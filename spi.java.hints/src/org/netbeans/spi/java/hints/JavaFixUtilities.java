@@ -94,6 +94,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -450,6 +451,7 @@ public class JavaFixUtilities {
             }
             
             Map<Tree, Tree> rewriteFromTo = new IdentityHashMap<Tree, Tree>();
+            List<Tree> order = new ArrayList<Tree>(7);
             Tree original;
 
             if (Utilities.isFakeBlock(parsed)) {
@@ -519,6 +521,7 @@ public class JavaFixUtilities {
                     tp = tp.getParentPath();
                 rewriteFromTo.put(original = tp.getLeaf(), parsed);
             }
+            order.add(original);
 
             //prevent generating QualIdents inside import clauses - might be better to solve that inside ImportAnalysis2,
             //but that seems not to be straightforward:
@@ -541,7 +544,7 @@ public class JavaFixUtilities {
                 }
             }.scan(original, null);
             
-            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, extraParamsData, parametersMulti, parameterNames, rewriteFromTo, originalTrees).scan(new TreePath(tp.getParentPath(), rewriteFromTo.get(original)), null);
+            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, extraParamsData, parametersMulti, parameterNames, rewriteFromTo, order, originalTrees).scan(new TreePath(tp.getParentPath(), rewriteFromTo.get(original)), null);
 
             if (inPackage) {
                 String newPackage = wc.getTreeUtilities().translate(wc.getCompilationUnit().getPackageName(), new IdentityHashMap<Tree, Tree>(rewriteFromTo))./*XXX: not correct*/toString();
@@ -555,12 +558,38 @@ public class JavaFixUtilities {
                     Logger.getLogger(JavaFix.class.getName()).log(Level.WARNING, "{0} not on its source path ({1})", new Object[] {FileUtil.getFileDisplayName(wc.getFileObject()), source.toString(PathConversionMode.PRINT)});
                 }
             }
-            
-            for (Entry<Tree, Tree> e : rewriteFromTo.entrySet()) {
-                gen.copyComments(e.getKey(), e.getValue(), true);
-                gen.copyComments(e.getKey(), e.getValue(), false);
-                wc.rewrite(e.getKey(), e.getValue());
+            for (Tree from : order) {
+                Tree to = rewriteFromTo.get(from);
+                gen.copyComments(from, to, true);
+                gen.copyComments(from, to, false);
+                wc.rewrite(from, to);
             }
+        }
+    }
+    
+    private static class IK {
+        private final Object o;
+
+        public IK(Object o) {
+            this.o = o;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            if (o != null) {
+                hash = 59 * hash + System.identityHashCode(o);
+            }
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof IK)) {
+                return false;
+            }
+            final IK other = (IK) obj;
+            return other.o == this.o;
         }
     }
 
@@ -578,8 +607,9 @@ public class JavaFixUtilities {
         private final Map<String, String> parameterNames;
         private final Map<Tree, Tree> rewriteFromTo;
         private final Set<Tree> originalTrees;
+        private final List<Tree> order;
 
-        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Object> extraParamsData, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo, Set<Tree> originalTrees) {
+        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Object> extraParamsData, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo, List<Tree> order, Set<Tree> originalTrees) {
             this.parameters = parameters;
             this.info = wc;
             this.make = wc.getTreeMaker();
@@ -589,6 +619,7 @@ public class JavaFixUtilities {
             this.parametersMulti = parametersMulti;
             this.parameterNames = parameterNames;
             this.rewriteFromTo = rewriteFromTo;
+            this.order = order;
             this.originalTrees = originalTrees;
         }
 
@@ -1264,6 +1295,7 @@ public class JavaFixUtilities {
         private void rewrite(Tree from, Tree to) {
             if (originalTrees.contains(from)) return ;
             rewriteFromTo.put(from, to);
+            order.add(from);
         }
     }
 
