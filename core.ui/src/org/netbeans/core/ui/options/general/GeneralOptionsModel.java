@@ -278,13 +278,17 @@ class GeneralOptionsModel {
                     testingProxy = Proxy.NO_PROXY;
                 } else {
                     String host = ProxySettings.getTestSystemHttpHost();
-                    int port = 0;
-                    try {
-                        port = Integer.valueOf(ProxySettings.getTestSystemHttpPort());
-                    } catch (NumberFormatException ex) {
-                        LOGGER.log(Level.INFO, "Cannot parse port number", ex); //NOI18N
+                    if (host == null || host.isEmpty()) {
+                        testingProxy = Proxy.NO_PROXY;
+                    } else {
+                        int port = 0;
+                        try {
+                            port = Integer.valueOf(ProxySettings.getTestSystemHttpPort());
+                        } catch (NumberFormatException ex) {
+                            LOGGER.log(Level.INFO, "Cannot parse port number", ex); //NOI18N
+                        }
+                        testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
                     }
-                    testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
                 }
                 break;
             case ProxySettings.MANUAL_SET_PROXY:
