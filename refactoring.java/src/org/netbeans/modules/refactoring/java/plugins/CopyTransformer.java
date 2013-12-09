@@ -147,7 +147,8 @@ public class CopyTransformer extends RefactoringVisitor {
             return;
         }
         
-        if ((el.getKind().isClass() || el.getKind().isInterface()) && ((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)) { // NOI18N
+        if ((el.getKind().isClass() || el.getKind().isInterface()) && (((TypeElement) el).getQualifiedName().toString().equals(newPackage+"."+oldName)
+                                                                   || ((TypeElement) el).getQualifiedName().toString().equals(oldPackage+"."+oldName))){ // NOI18N
             Tree nju = make.setLabel(tree, newName);
             rewrite(tree, nju);
         }
