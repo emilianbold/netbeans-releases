@@ -623,7 +623,7 @@ abstract class FieldInjectionPointLogic {
         if (!(typeElement instanceof TypeElement)) {
             return Collections.emptySet();
         }
-        if (((TypeElement) typeElement).getTypeParameters().size() != 0) {
+        if (!((TypeElement) typeElement).getTypeParameters().isEmpty()) {
             return getAssignables(  elementType, (TypeElement)typeElement, 
                     element );
         }
