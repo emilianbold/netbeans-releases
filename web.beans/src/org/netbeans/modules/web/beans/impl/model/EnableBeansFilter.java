@@ -106,9 +106,10 @@ class EnableBeansFilter {
         PackagingFilter filter = new PackagingFilter(getWebBeansModel());
         Set<TypeElement> typeElements = getResult().getTypeElements();
         
-        // remove elements defined in compile class path which doesn't have beans.xml 
-        filter.filter( typeElements );
+        TypeElement firstElement = typeElements.size()>0 ? typeElements.iterator().next() : null;
         
+        // remove elements defined in compile class path which doesn't have beans.xml
+        filter.filter( typeElements );
         for (TypeElement typeElement : typeElements) {
             if ( getResult().isAlternative(typeElement)){
                 myAlternatives.add( typeElement );
@@ -149,6 +150,18 @@ class EnableBeansFilter {
             return new InjectableResultImpl( getResult(), injectable, enabledTypes ); 
         }
         if ( commonSize ==0 ){
+            //no implementation on classpath/sources or it's fileterd by common logic(for usual beans)
+            //first check if we have a class in white list (i.e. must be implemented in ee7 environment)
+            String nm = myResult.getVariableType().toString();
+            if (nm.indexOf('<')>0) {
+                nm = nm.substring(0,nm.indexOf('<'));
+            }
+            if(nm.startsWith("javax.")) {//NOI18N
+                if(EventInjectionPointLogic.EVENT_INTERFACE.equals(nm)) {
+                    return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+                }
+            }
+            //
             if ( typeElements.size() == 0 && productions.size() == 0 ){
                 return new ErrorImpl(getResult().getVariable(), 
                         getResult().getVariableType(), NbBundle.getMessage(
