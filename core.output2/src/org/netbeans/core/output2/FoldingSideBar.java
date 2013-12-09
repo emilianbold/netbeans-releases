@@ -134,7 +134,7 @@ public class FoldingSideBar extends JComponent {
         int offset = 0;
         try {
             Rectangle modelToView = textView.modelToView(0);
-            offset = modelToView.y;
+            offset = modelToView == null ? 0 : modelToView.y;
         } catch (BadLocationException ex) {
             LOG.log(Level.INFO, null, ex);
         }
@@ -179,7 +179,7 @@ public class FoldingSideBar extends JComponent {
         int offset = 0;
         try {
             Rectangle modelToView = textView.modelToView(0);
-            offset = modelToView.y;
+            offset = modelToView == null ? 0 : modelToView.y;
         } catch (BadLocationException ex) {
             LOG.log(Level.INFO, null, ex);
         }
