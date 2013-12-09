@@ -42,7 +42,6 @@ package org.netbeans.modules.remote.impl.fs.server;
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -62,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
+import org.netbeans.modules.remote.impl.fs.DirEntryList;
 import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
@@ -84,7 +84,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
 
     private final ExecutionEnvironment env;
 
-    private final Map<String, List<DirEntry>> cache = new HashMap<String, List<DirEntry>>();
+    private final Map<String, DirEntryList> cache = new HashMap<String, DirEntryList>();
     private final Object cacheLock = new Object();
     private final Object lock = new Object();
 
@@ -160,7 +160,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
                     int respId = buf.getInt();
                     assert respId == request.getId();
                     String serverPath = buf.getString();
-                    List<DirEntry> entries = readEntries(response, serverPath, request.getId(), realCnt);
+                    DirEntryList entries = readEntries(response, serverPath, request.getId(), realCnt);
                     cache.put(serverPath, entries);
                     paths.add(serverPath);
                 }
@@ -283,12 +283,12 @@ public class FSSTransport extends RemoteFileSystemTransport {
     }
     
     @Override
-    protected List<DirEntry> readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
         synchronized (cacheLock) {
-            List<DirEntry> entries = cache.get(path);
+            DirEntryList entries = cache.get(path);
             if (entries != null) {
                 RemoteLogger.fine("Got entries from fs_server cache for {0}", path);
                 return entries;
@@ -324,7 +324,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
         }
     }
 
-    private List<DirEntry> readEntries(FSSResponse response, String path, long reqId, AtomicInteger realCnt) 
+    private DirEntryList readEntries(FSSResponse response, String path, long reqId, AtomicInteger realCnt) 
             throws IOException, InterruptedException, ExecutionException {
         try {
             RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
@@ -374,7 +374,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
                     thr.printStackTrace(System.err);
                 }
             }
-            return result;
+            return new DirEntryList(result, System.currentTimeMillis());
         } finally {
         }
     }

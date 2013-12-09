@@ -4,15 +4,23 @@ ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
+ARCH = $(shell arch)
+ARCH:sh = arch
 
 ifeq (Darwin,$(OS))
   OS = MacOSX
 endif
 
+ifeq (sun4, $(ARCH))
+  OS_ARCH = $(OS)-sparc
+else { #i86pc
+  OS_ARCH = $(OS)-x86
+endif
+
 ifdef 64BITS
-    CONF=$(OS)-x86_64
+    CONF=$(OS_ARCH)_64
 else
-    CONF=$(OS)-x86
+    CONF=$(OS_ARCH)
 endif
 
 
