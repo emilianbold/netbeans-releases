@@ -112,7 +112,7 @@ public class VerticalGridLayout implements LayoutManager2 {
                     x += cellWidth;
                     y = 0;
                 }
-                c.setBounds(x, y, cellWidth, d.height);
+                c.setBounds(x + 1, y + 1, cellWidth, d.height);
                 y += d.height;
             }
         }
@@ -148,7 +148,7 @@ public class VerticalGridLayout implements LayoutManager2 {
         } else {
             height = getMenuItemsHeight();
         }
-        return new Dimension(cols * getMaxCellWidth(), height);
+        return new Dimension(cols * getMaxCellWidth() + 2, height + 4);
     }
 
     @Override
