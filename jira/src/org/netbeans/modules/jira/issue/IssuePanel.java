@@ -266,6 +266,7 @@ public class IssuePanel extends javax.swing.JPanel {
         
         dueDatePicker = UIUtils.createDatePickerComponent();
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDueField, dueDatePicker.getComponent());
+        dueLabel.setLabelFor(dueDatePicker.getComponent());
         attachFieldStatusListeners();
         attachHideStatusListener();
         
