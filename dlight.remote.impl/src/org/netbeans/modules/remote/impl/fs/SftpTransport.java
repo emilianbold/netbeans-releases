@@ -43,7 +43,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -92,7 +91,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
     
     @Override
-    protected List<DirEntry> readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
             remotePath = "/"; //NOI18N
         } else  {
@@ -113,7 +112,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
             // filtering of "." and ".." is up to provider now
             newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
         }
-        return Collections.<DirEntry>unmodifiableList(newEntries);
+        return new DirEntryList(newEntries, System.currentTimeMillis());
     }
     
     @Override

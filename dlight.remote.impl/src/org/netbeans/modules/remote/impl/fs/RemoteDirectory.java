@@ -526,8 +526,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            List<DirEntry> entries = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());            
-            for (DirEntry entry : entries) {
+            DirEntryList entryList = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());            
+            for (DirEntry entry : entryList.getEntries()) {
                 newEntries.put(entry.getName(), entry);
             }
             
