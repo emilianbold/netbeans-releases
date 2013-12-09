@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.junit;
 
 import java.io.File;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -148,7 +149,14 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 forkCount = forkCount.substring(0, index);
                 cpuCores = Runtime.getRuntime().availableProcessors();
             }
-            int forks = Integer.parseInt(forkCount);
+            float forks;
+            try {
+                // example values: "1.5C", "4". http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#forkCount
+                forks = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(forkCount).floatValue();
+            } catch (ParseException ex) {
+                LOG.log(Level.INFO, null, ex);
+                forks = 1;
+            }
             if (forks * cpuCores > 1) {
                 return true;
             }
