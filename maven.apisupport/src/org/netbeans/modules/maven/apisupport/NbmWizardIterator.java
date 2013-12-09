@@ -149,7 +149,8 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
             String nbm_artifactId = (String) wiz.getProperty(NBM_ARTIFACTID);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
             String version = (String) wiz.getProperty(NB_VERSION);
-            Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
+            assert version != null;
+            Map<String,String> additional = Collections.singletonMap("netbeansVersion", version); // NOI18N
             
             if (archetype == NB_MODULE_ARCH) {
                 NBMNativeMWI.instantiate(vi, projFile, version, Boolean.TRUE.equals(wiz.getProperty(OSGIDEPENDENCIES)), null);
