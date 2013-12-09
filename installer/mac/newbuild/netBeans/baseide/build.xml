@@ -105,7 +105,7 @@ GLASSFISHV3_ID="${glassfish.v3.id}"
 TOMCAT_ID="${tomcat.id}"
 ]]></echo>
 
-<copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
+        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
             <filterset>
                 <filter token="APPVERSION" value="${baseide.version}"/> 
                 <filter token="INSTALLDIR" value="${install.dir}"/>

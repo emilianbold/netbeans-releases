@@ -214,7 +214,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-module">
 
         <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
-        <property name="scriptsdir" value="${module.builddir}/scripts"/>
 
         <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
@@ -231,14 +230,19 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>
 
+        <property name="scriptsdir" value="${module.builddir}/scripts"/>
+        <mkdir dir="${scriptsdir}"/>
 
-        <copy  todir="${scriptsdir}">
+        <copy  todir="${scriptsdir}" failonerror="false">
             <fileset dir="${basedir}/netBeans/${module.name}/pkg/scripts"/>
         </copy>
         
         <copy file="${basedir}/netBeans/baseide/build/scripts/env.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/netBeans/baseide/build/scripts/get_current_jdk.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/get_current_jdk.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/unpack200.sh" todir="${scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/postupgrade_generic" tofile="${target.scriptsdir}/postupgrade" overwrite="false"/>
+        <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${target.scriptsdir}/postinstall" overwrite="false"/>
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
@@ -268,7 +272,9 @@ Microsystems, Inc. All Rights Reserved.
         <property name="source.scriptsdir" value="${pkgdir}/scripts"/>
         <property name="target.scriptsdir" value="${basedir}/build/${package.name}-${nb.id}.pkg/Contents/Resources"/>
 
-        <copy todir="${target.scriptsdir}" verbose="true" overwrite="true">
+        <mkdir dir="${target.scriptsdir}"/>
+        
+        <copy todir="${target.scriptsdir}" failonerror="false" verbose="true" overwrite="true">
             <fileset dir="${source.scriptsdir}"/>
         </copy>
         
@@ -276,6 +282,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" todir="${target.scriptsdir}"/>
         <copy file="${basedir}/commonfiles/get_current_jdk.sh" todir="${target.scriptsdir}"/>
         <copy file="${basedir}/commonfiles/unpack200.sh" todir="${target.scriptsdir}"/>
+        <copy file="${basedir}/commonfiles/postupgrade_generic" tofile="${target.scriptsdir}/postupgrade" overwrite="false"/>
+        <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${target.scriptsdir}/postinstall" overwrite="false"/>
 
         <chmod dir="${target.scriptsdir}" perm="ugo+x" includes="**/*"/>
         

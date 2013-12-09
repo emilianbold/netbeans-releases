@@ -25,8 +25,6 @@ jdk_home=`"$dirname"/get_current_jdk.sh`
 
 . "$dirname"/env.sh
 
-"$dirname"/unpack200.sh "$NETBEANS_INSTALL_DIR/Contents/Resources/NetBeans" "$jdk_home"
-
 "$dirname"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR"
 
 "$dirname"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_V3_INSTALL_DIR/javadb"
@@ -40,7 +38,6 @@ fi
 "$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"
 exit_code=$?
 echo Result of populate_caches.sh : $exit_code
-
 
 #fix for 114656
 cd "$NETBEANS_INSTALL_DIR"

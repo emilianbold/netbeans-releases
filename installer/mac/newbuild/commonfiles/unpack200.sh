@@ -45,16 +45,21 @@ jdk_home=$2
 set -e
 
 echo Calling unpack200 in $unpack_dir
-cd "$unpack_dir"
-for x in `find . -name \*.jar.pack` ; do
-    jar=`echo $x | sed 's/jar.pack/jar/'`
-    if [ -f "$jar" ] ; then
-        continue
-    fi
-    "$jdk_home/bin/unpack200" $x $jar
-    chmod `stat -f %Lp $x` $jar && touch -r $x $jar
-    echo DEBUG: Skipping chown "$ownership" "$jar"
-    rm $x
-done
+if [ -d "$unpack_dir" ]; then
+    cd "$unpack_dir"
+    for x in `find . -name \*.jar.pack` ; do
+        jar=`echo $x | sed 's/jar.pack/jar/'`
+        if [ -f "$jar" ] ; then
+            continue
+        fi
+        "$jdk_home/bin/unpack200" $x $jar
+        touch -r $x $jar
+        #echo XXX: Skipping chmod `stat -f %Lp $x` $jar && touch -r $x $jar
+        #echo XXX: Skipping chown "$ownership" "$jar"
+        rm $x
+    done
+else
+    echo "$unpack_dir" does not exist.
+fi
 
 exit 0
