@@ -284,6 +284,11 @@ public abstract class CsmErrorProvider extends NamedOption {
     public static final void getAllErrors(Request request, Response response) {
         DEFAULT.getErrors(request, response);
     }
+
+    // for testing only
+    public static CsmErrorProvider getDefault() {
+        return DEFAULT;
+    }    
     
     /**
      * Determines whether this file contains part of some declaration,

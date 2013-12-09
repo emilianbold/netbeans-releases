@@ -184,7 +184,7 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testFileOperations() throws Exception {
-        List<DirEntry> entries = RemoteFileSystemTransport.readDirectory(execEnv, remoteDir);
+        List<DirEntry> entries = RemoteFileSystemTransport.readDirectory(execEnv, remoteDir).getEntries();
         for(DirEntry entry : entries) {
             String name = entry.getName();
             String path = remoteDir+"/"+name;
@@ -431,9 +431,9 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         assertEquals(file == null , fo == null);
         if (file != null) {
             assertEquals(file.length, fo.length);
-            loop:for(int i = 0; i < file.length; i++) {
-                for(int j = 0; j < fo.length; j++) {
-                    if (file[i].equals(fo[j])) {
+            loop:for (String file1 : file) {
+                for (String fo1 : fo) {
+                    if (file1.equals(fo1)) {
                         continue loop;
                     }
                 }
