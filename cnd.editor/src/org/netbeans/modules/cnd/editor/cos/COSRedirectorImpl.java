@@ -46,12 +46,14 @@ package org.netbeans.modules.cnd.editor.cos;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
@@ -365,12 +367,21 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     }
     
     private static long getINode(DataObject dao) {
-        Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dao.getPrimaryFile()));
+        if (!dao.isValid()) {
+            return INVALID_INODE;
+        }
         BasicFileAttributes attrs = null;
         try {
+            Path path = FileSystems.getDefault().getPath(FileUtil.getFileDisplayName(dao.getPrimaryFile()));
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
+        } catch (FileNotFoundException ex) {
+            // it is OK for file to be deleted
+            LOG.log(Level.FINE, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
+        } catch (NoSuchFileException ex) {
+            // it is OK for file to be deleted
+            LOG.log(Level.FINE, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
         }
         Object key = null;
         if (attrs != null) {
