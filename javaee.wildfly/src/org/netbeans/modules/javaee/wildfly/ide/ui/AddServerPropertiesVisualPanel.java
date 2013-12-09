@@ -51,8 +51,8 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
@@ -162,8 +162,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         String path = model.getCurrentPath();
         domainPathField.setText(path);
         portField.setText(JBPluginUtils.getHTTPConnectorPort(path));
-       
-    //    serverChanged();
         fireChangeEvent(); 
     }
     
@@ -199,9 +197,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     }
     
     private void init(){
-        
-        // Object[] domainsList = WLPluginUtils.getRegisteredDomains().keySet().toArray(new String[WLPluginUtils.getRegisteredDomains().keySet().size()]);
-        
         java.awt.GridBagConstraints gridBagConstraints;
         
         label1 = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "TXT_PROPERTY_TEXT")); //NOI18N
@@ -437,10 +432,13 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     
     class SomeChangesListener implements KeyListener{
         
+        @Override
         public void keyTyped(KeyEvent e){}
         
+        @Override
         public void keyPressed(KeyEvent e){}
         
+        @Override
         public void keyReleased(KeyEvent e){ somethingChanged();}
         
     }      
@@ -477,6 +475,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     
     private static class dirFilter extends javax.swing.filechooser.FileFilter {
         
+        @Override
         public boolean accept(File f) {
             if(!f.exists() || !f.canRead() || !f.isDirectory() ) {
                 return false;
@@ -485,6 +484,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             }
         }
         
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DirType"); //NOI18N
         }
@@ -512,24 +512,24 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         
     }
     
-    public DomainComboModel(Hashtable domains){
+    public DomainComboModel(Map domains){
         setDomains(domains);
     }
     
-    public void setDomains(Hashtable domains) {
+    public void setDomains(Map domains) {
         
         current = -1;
         this.domains = null;
         
         int len = domains.size();
         this.domains = new String[len][2];
-        Enumeration en = domains.keys();
+        Set en = domains.keySet();
         
         if (len > 0) current = 0;
         
         int i = 0;
-        while(en.hasMoreElements()){
-            this.domains[i][0] = (String)en.nextElement();
+        for(Object key : en) {
+            this.domains[i][0] = (String)key;
             this.domains[i][1] = (String)domains.get(this.domains[i][0]);
             if(this.domains[i][0].equalsIgnoreCase("default")) //NOI18N
                 current=i;
@@ -537,12 +537,14 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         }
     }
     
+    @Override
     public Object  getSelectedItem() {
         if (current ==-1 )
             return "";
         return domains[current][0];
     }
     
+    @Override
     public void setSelectedItem(Object anItem) {
         for (int i = 0; i < getSize(); i++){
             if (domains[i][0].equals(anItem)){
@@ -556,10 +558,12 @@ class DomainComboModel extends AbstractListModel implements ComboBoxModel{
         fireContentsChanged(this, -1, -1);
     }
     
+    @Override
     public Object getElementAt(int index){
         return domains[index][0];
     }
     
+    @Override
     public int 	getSize(){
         return domains.length;
     }

@@ -78,6 +78,7 @@ public class JBEjbModuleNode extends AbstractNode {
         }
     }
     
+    @Override
     public Action[] getActions(boolean context){
         if(getParentNode() instanceof JBEarApplicationNode)
             return new SystemAction[] {};
@@ -87,10 +88,12 @@ public class JBEjbModuleNode extends AbstractNode {
             };
     }
     
+    @Override
     public Image getIcon(int type) {
         return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }

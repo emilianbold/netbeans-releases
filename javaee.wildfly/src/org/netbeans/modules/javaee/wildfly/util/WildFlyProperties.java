@@ -122,6 +122,10 @@ public class WildFlyProperties {
         ip = manager.getInstanceProperties();
         version = JBPluginUtils.getServerVersion(new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR)));
     }
+    
+    public String getServerProfile() {
+        return this.ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE);
+    }
 
     public Version getServerVersion() {
         return version;

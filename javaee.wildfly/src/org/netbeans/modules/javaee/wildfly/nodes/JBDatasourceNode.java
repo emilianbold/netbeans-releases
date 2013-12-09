@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,30 +34,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
+import java.awt.Image;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
+ * @author ehugonnet
  */
-public class JBTargetNode extends AbstractNode {
+public class JBDatasourceNode extends AbstractNode {
 
-    public JBTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new JBItemNode(new JBApplicationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Apps")), 
-            new JBItemNode(new JBResourcesChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Resources"))});
+    public JBDatasourceNode(String name, Datasource ds, Lookup lookup) {
+        super(Children.LEAF);
+        getCookieSet().add(new UndeployModuleCookieImpl(ds.getDisplayName(), lookup));
+        setDisplayName(ds.getJndiName());
+        setName(name);
+        setShortDescription(ds.getDisplayName());
     }
-    
+
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public Action[] getActions(boolean context) {
+        return new SystemAction[]{
+            SystemAction.get(UndeployModuleAction.class)
+        };
     }
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(Util.JDBC_RESOURCE_ICON);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return ImageUtilities.loadImage(Util.JDBC_RESOURCE_ICON);
+    }
+
+    /*  @Override
+     public Image getIcon(int type) {
+     return UISupport.getIcon(UISupport.ServerIcon.EJB_ARCHIVE);
+     }
+
+     @Override
+     public Image getOpenedIcon(int type) {
+     return getIcon(type);
+     }*/
 }

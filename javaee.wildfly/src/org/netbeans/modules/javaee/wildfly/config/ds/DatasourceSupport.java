@@ -56,8 +56,10 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
 import org.netbeans.modules.javaee.wildfly.config.ResourceConfigurationHelper;
+import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
-import org.netbeans.modules.javaee.wildfly.config.gen.LocalTxDatasource;
+import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
+import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -133,14 +135,14 @@ public class DatasourceSupport {
         HashSet<Datasource> projectDS = new HashSet<Datasource>();
         Datasources dss = getDatasourcesGraph(false);
         if (dss != null) {
-            LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
+            DatasourceType ltxds[] = datasources.getDatasource();
             for (int i = 0; i < ltxds.length; i++) {
                 if (ltxds[i].getJndiName().length() > 0) {
                     projectDS.add(new JBossDatasource(
                                     ltxds[i].getJndiName(),
                                     ltxds[i].getConnectionUrl(),
-                                    ltxds[i].getUserName(),
-                                    ltxds[i].getPassword(),
+                                    ltxds[i].getSecurity().getUserName(),
+                                    ltxds[i].getSecurity().getPassword(),
                                     ltxds[i].getDriverClass()));
                 }
             }
@@ -209,7 +211,7 @@ public class DatasourceSupport {
         JBossDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
             JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
                
-                LocalTxDatasource ltxds[] = datasources.getLocalTxDatasource();
+                DatasourceType ltxds[] = datasources.getDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
                     String jndiName = ltxds[i].getJndiName();
                     if (rawName.equals(JBossDatasource.getRawName(jndiName))) {
@@ -217,25 +219,28 @@ public class DatasourceSupport {
                         JBossDatasource ds = new JBossDatasource(
                                 jndiName,
                                 ltxds[i].getConnectionUrl(),
-                                ltxds[i].getUserName(),
-                                ltxds[i].getPassword(),
+                                ltxds[i].getSecurity().getUserName(),
+                                ltxds[i].getSecurity().getPassword(),
                                 ltxds[i].getDriverClass());
                         
                         throw new DatasourceAlreadyExistsException(ds);
                     }
                 }
                 
-                LocalTxDatasource lds = new LocalTxDatasource();
+                DatasourceType lds = new DatasourceType();
                 lds.setJndiName(rawName);
                 lds.setConnectionUrl(url);
                 lds.setDriverClass(driver);
-                lds.setUserName(username);
-                lds.setPassword(password);
-                lds.setMinPoolSize("5");
-                lds.setMaxPoolSize("20");
-                lds.setIdleTimeoutMinutes("5");
+                DsSecurityType security = new DsSecurityType();
+                security.setUserName(username);
+                security.setPassword(password);
+                lds.setSecurity(security);
+                PoolType pool = new PoolType();
+                pool.setMinPoolSize(5L);
+                pool.setMaxPoolSize(20L);
+                lds.setPool(pool);
 
-                datasources.addLocalTxDatasource(lds);
+                datasources.addDatasource(lds);
                 
                 return new JBossDatasource(rawName, url, username, password, driver);
            }

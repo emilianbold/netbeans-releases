@@ -44,87 +44,44 @@
 
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import javax.enterprise.deploy.shared.ModuleType;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * It describes children nodes of the Web Applications node. Implements
- * Refreshable interface and due to it can be refreshed via
- * ResreshModulesAction.
+ * It describes children nodes of the Applications node
  *
  * @author Michal Mocnak
  */
-public class JBWebApplicationsChildren extends JBAsyncChildren implements Refreshable {
-
-    private static final Logger LOGGER = Logger.getLogger(JBWebApplicationsChildren.class.getName());
-
-    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
-    static {
-        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
-                "jbossws-context", "jmx-console", "jbossws", "jbossws",
-                "web-console", "invoker", "jbossmq-httpil");
+public class JBResourcesChildren extends Children.Keys {
+    
+    JBResourcesChildren(Lookup lookup) {
+        setKeys(new Object[] {createDatasourcesNode(lookup)});
     }
-
-    private final Lookup lookup;
-
-    public JBWebApplicationsChildren(Lookup lookup) {
-        this.lookup = lookup;
-    }
-
-    @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7WebNodeUpdater(), 0);
-    }
-
-    class JBoss7WebNodeUpdater implements Runnable {
-
-        List keys = new ArrayList();
-
-        @Override
-        public void run() {
-
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listWebModules(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-
-            setKeys(keys);
-        }
-    }
-
+    
     @Override
     protected void addNotify() {
-        updateKeys();
     }
-
+    
     @Override
     protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
     }
-
+    
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBWebModuleNode){
-            return new Node[]{(JBWebModuleNode)key};
+        if (key instanceof AbstractNode){
+            return new Node[]{(AbstractNode)key};
         }
-
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
-            return new Node[]{Util.createWaitNode()};
-        }
-
         return null;
     }
-
+    
+    /*
+     * Creates an EAR Applications parent node
+     */
+    public static JBItemNode createDatasourcesNode(Lookup lookup) {
+        return new JBItemNode(new JBDatasourcesChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Resources_Datasources"));
+    }
 }

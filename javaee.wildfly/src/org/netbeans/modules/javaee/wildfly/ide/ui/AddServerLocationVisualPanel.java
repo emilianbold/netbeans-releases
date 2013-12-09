@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,12 +69,15 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         initComponents();
         setName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_ServerLocation"));
         locationTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 locationChanged();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 locationChanged();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 locationChanged();
             }                    
@@ -82,6 +86,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     
     public String getInstallLocation() {
         return locationTextField.getText();
+    }
+    
+    public String getConfigurationLocation() {
+        return configurationTextField.getText();
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -123,6 +131,18 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         return insLocation;
     }
     
+    private String browseConfiguration(){
+        String insLocation = null;
+        JFileChooser chooser = getConfigJFileChooser();
+        int returnValue = chooser.showDialog(SwingUtilities.getWindowAncestor(this),
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooseButton")); //NOI18N
+        
+        if(returnValue == JFileChooser.APPROVE_OPTION){
+            insLocation = chooser.getSelectedFile().getAbsolutePath();
+        }
+        return insLocation;
+    }
+    
     private JFileChooser getJFileChooser(){
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ChooserName")); //NOI18N
@@ -140,16 +160,50 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         chooser.setSelectedFile(new File(locationTextField.getText().trim()));
 
         return chooser;
-    }
+    }    
     
+      private JFileChooser getConfigJFileChooser(){
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigChooserName")); //NOI18N
+        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
+
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public boolean accept(File file) {
+                return file.isDirectory() || (file.isFile() && file.getName().endsWith(".xml"));
+            }
+
+            @Override
+            public String getDescription() {
+               return "";
+            }
+        });
+        chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setApproveButtonToolTipText(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigChooserName")); //NOI18N
+
+        chooser.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigChooserName")); //NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigChooserName")); //NOI18N
+
+        // set the current directory
+        chooser.setSelectedFile(new File(configurationTextField.getText().trim()));
+
+        return chooser;
+    }
+     
     
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        locationTextField = new javax.swing.JTextField();
+        locationTextField = new javax.swing.JTextField();        
         jButton1 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        configurationTextField = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton(); 
         jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -172,20 +226,58 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(locationTextField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
+        
+         org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jButton1, gridBagConstraints);
         jButton1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
+        
+        jLabel2.setLabelFor(configurationTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigurationLocation"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        add(jLabel2, gridBagConstraints);
+        configurationTextField.setColumns(15);
+        configurationTextField.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigurationLocation"));
+        configurationTextField.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_ConfigurationLocation"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(configurationTextField, gridBagConstraints);          
+
+       
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(jButton2, gridBagConstraints);
+        jButton2.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
+        jButton2.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
+        
+        
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -195,7 +287,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
         jPanel1.getAccessibleContext().setAccessibleName("TITLE_AddServerLocationPanel");
-       // jPanel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddServerLocationVisualPanel.class, "TITLE_AddServerLocationPanel"));
         jPanel1.getAccessibleContext().setAccessibleDescription("AddServerLocationPanel_Desc");
 
         if (JBPluginProperties.getInstance().getInstallLocation()!=null){
@@ -211,13 +302,23 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         }
     }
     
+     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+        String newLoc = browseConfiguration();
+        if (newLoc != null && !"".equals(newLoc)) {
+            configurationTextField.setText(newLoc);
+        }
+    }
+    
     // Variables declaration - do not modify
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel1;    
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField locationTextField;
+    private javax.swing.JTextField configurationTextField;
     // End of variables declaration
     
 }

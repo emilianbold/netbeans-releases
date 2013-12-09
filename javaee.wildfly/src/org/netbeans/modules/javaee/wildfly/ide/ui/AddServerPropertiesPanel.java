@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -71,6 +72,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         this.instantiatingIterator = instantiatingIterator;
     }
     
+    @Override
     public boolean isValid() {
         AddServerPropertiesVisualPanel panel = (AddServerPropertiesVisualPanel)getComponent();
         
@@ -154,13 +156,13 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         instantiatingIterator.setPort(port);
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());
-        instantiatingIterator.setDeployDir(JBPluginUtils.getDeployDir( panel.getDomainPath()));
-        
-        JBPluginProperties.getInstance().setDomainLocation(panel.getDomainPath());
+        instantiatingIterator.setDeployDir(JBPluginUtils.getDeployDir( panel.getDomainPath()));        
         
         return true;
-    }
+    } 
+
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new AddServerPropertiesVisualPanel();
@@ -169,6 +171,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         return component;
     }
     
+    @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
@@ -183,27 +186,32 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         }
     }
     
-    private transient Set listeners = new HashSet(1);
+    private final transient Set listeners = new HashSet(1);
+    @Override
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null)
             wizard = (WizardDescriptor)settings;
     }
     
+    @Override
     public void storeSettings(Object settings) {
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("j2eeplugins_registering_app_server_jboss_properties"); //NOI18N
     }

@@ -60,16 +60,17 @@ import org.openide.util.NbBundle;
  */
 public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeListener {
     
-    private JBInstantiatingIterator instantiatingIterator;
+    private final JBInstantiatingIterator instantiatingIterator;
     
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient Set listeners = new HashSet(1);
+    private final transient Set listeners = new HashSet(1);
     
     public AddServerLocationPanel(JBInstantiatingIterator instantiatingIterator){
         this.instantiatingIterator = instantiatingIterator;
     }
     
+    @Override
     public void stateChanged(ChangeEvent ev) {
         fireChangeEvent(ev);
     }
@@ -84,6 +85,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         }
     }
     
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new AddServerLocationVisualPanel();
@@ -92,10 +94,12 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("j2eeplugins_registering_app_server_jboss_location"); //NOI18N
     }
     
+    @Override
     public boolean isValid() {
         String locationStr = component.getInstallLocation();
         if (locationStr == null || locationStr.trim().length() < 1) {
@@ -113,31 +117,39 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         JBPluginProperties.getInstance().setInstallLocation(component.getInstallLocation());
+        JBPluginProperties.getInstance().setConfigLocation(component.getConfigurationLocation());
+        JBPluginProperties.getInstance().setDomainLocation(component.getConfigurationLocation());
         JBPluginProperties.getInstance().saveProperties();
         instantiatingIterator.setInstallLocation(locationStr);
         return true;
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
     
+    @Override
     public void readSettings(Object settings) {
         if (wizard == null) {
             wizard = (WizardDescriptor) settings;
         }
     }
     
+    @Override
     public void storeSettings(Object settings) {
         instantiatingIterator.setInstallLocation(
                 ((AddServerLocationVisualPanel) getComponent()).getInstallLocation());
+        instantiatingIterator.setConfigFile(
+                ((AddServerLocationVisualPanel) getComponent()).getConfigurationLocation());
     }
 }

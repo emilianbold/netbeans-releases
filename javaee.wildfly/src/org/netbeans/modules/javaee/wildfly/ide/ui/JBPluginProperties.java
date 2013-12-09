@@ -65,10 +65,12 @@ public class JBPluginProperties {
     public static final String PROPERTY_HOST = "host";//NOI18N
     public static final String PROPERTY_PORT = "port";//NOI18N
     public static final String PROPERTY_JAVA_OPTS = "java_opts"; // NOI18N
+    public static final String PROPERTY_CONFIG_FILE = "config_file"; // NOI18N
     
     private static JBPluginProperties pluginProperties = null;
     private String installLocation;
     private String domainLocation;
+    private String configLocation;
     
     
     public static JBPluginProperties getInstance(){
@@ -183,6 +185,17 @@ public class JBPluginProperties {
 
     public String getInstallLocation() {
         return this.installLocation;
+    }
+
+    public String getConfigLocation() {
+        return configLocation;
+    }
+
+    public void setConfigLocation(String configLocation) {
+         if (configLocation.endsWith(File.separator)) {
+            configLocation = configLocation.substring(0, configLocation.length() - 1);
+        }
+        this.configLocation = configLocation;
     }
 
     public void setDomainLocation(String domainLocation) {

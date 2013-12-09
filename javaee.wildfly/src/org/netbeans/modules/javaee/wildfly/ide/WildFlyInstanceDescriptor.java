@@ -57,14 +57,17 @@ public class WildFlyInstanceDescriptor implements ServerInstanceDescriptor {
         this.manager = manager;
     }
 
+    @Override
     public String getHostname() {
         return manager.getHost();
     }
 
+    @Override
     public int getHttpPort() {
         return manager.getPort();
     }
 
+    @Override
     public boolean isLocal() {
         return true;
     }

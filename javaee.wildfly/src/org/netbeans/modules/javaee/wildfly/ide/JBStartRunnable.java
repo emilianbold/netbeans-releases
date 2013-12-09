@@ -262,10 +262,7 @@ class JBStartRunnable implements Runnable {
     }
 
     private boolean checkPorts(final InstanceProperties ip) {
-
         try {
-            String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-
             String strHTTPConnectorPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
             int httpConnectorPort = Integer.parseInt(strHTTPConnectorPort);
             if (httpConnectorPort <= 0) {
@@ -276,35 +273,6 @@ class JBStartRunnable implements Runnable {
                 fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", strHTTPConnectorPort));
                 return false;
             }
-
-            String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-
-            // port -1 means the service is not binded at all
-
-            String strJNPServicePort = JBPluginUtils.getJnpPort(serverDir);
-            int JNPServicePort = Integer.parseInt(strJNPServicePort);
-            if (JNPServicePort >= 0 && !JBPluginUtils.isPortFree(JNPServicePort)) {
-                fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_JNP_PORT_IN_USE", strJNPServicePort));//NOI18N
-                return false;
-            }
-
-            String strRMINamingServicePort = JBPluginUtils.getRMINamingServicePort(serverDir);
-            int RMINamingServicePort = Integer.parseInt(strRMINamingServicePort);
-            if (RMINamingServicePort >= 0 && !JBPluginUtils.isPortFree(RMINamingServicePort)) {
-                fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_RMI_PORT_IN_USE", strRMINamingServicePort));//NOI18N
-                return false;
-            }
-
-            String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
-            if (!"minimal".equals(server)) { // NOI18N
-                String strRMIInvokerPort = JBPluginUtils.getRMIInvokerPort(serverDir);
-                int RMIInvokerPort = Integer.parseInt(strRMIInvokerPort);
-                if (RMIInvokerPort >= 0 && !JBPluginUtils.isPortFree(RMIInvokerPort)) {
-                    fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_INVOKER_PORT_IN_USE", strRMIInvokerPort));//NOI18N
-                    return false;
-                }
-            }
-
         } catch (NumberFormatException nfe) {
             // continue and let server to report the problem
         }
@@ -321,8 +289,12 @@ class JBStartRunnable implements Runnable {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_FNF"));//NOI18N
             return null;
         }
-
-        return new NbProcessDescriptor(serverRunFileName, "");
+        String args = "";
+        if(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE) != null && ! "".equals(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE))) {
+            String configFile = ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE);
+            args = "-c " + configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1);
+        }
+        return new NbProcessDescriptor(serverRunFileName, args);
     }
     
     private String getRunFileName( InstanceProperties ip, String[] envp ){

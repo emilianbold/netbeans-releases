@@ -52,8 +52,9 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,30 +75,27 @@ import org.w3c.dom.NodeList;
 public class JBPluginUtils {
 
     public static final String SERVER_4_XML = File.separator + "deploy" + File.separator + // NOI18N
-                "jbossweb-tomcat55.sar" + File.separator + "server.xml"; // NOI18N
+            "jbossweb-tomcat55.sar" + File.separator + "server.xml"; // NOI18N
 
     public static final String SERVER_4_2_XML = File.separator + "deploy" + File.separator + // NOI18N
-                "jboss-web.deployer" + File.separator + "server.xml"; // NOI18N
+            "jboss-web.deployer" + File.separator + "server.xml"; // NOI18N
 
-//    public static final String SERVER_5_XML = File.separator + "deployers" + File.separator + // NOI18N
-//                "jbossweb.deployer" + File.separator + "server.xml"; // NOI18N
-
-     public static final String SERVER_5_XML = File.separator + "deploy" + File.separator + // NOI18N
-                "jbossweb.sar" + File.separator + "server.xml"; // NOI18N
+    public static final String SERVER_5_XML = File.separator + "deploy" + File.separator + // NOI18N
+            "jbossweb.sar" + File.separator + "server.xml"; // NOI18N
 
     public static final Version JBOSS_5_0_0 = new Version("5.0.0"); // NOI18N
-    
+
     public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
 
     public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
 
     public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
-    
+
+    public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
     public static final String LIB = "lib" + File.separator;
-
-    public static final String MODULES_BASE = "modules" + File.separator;
 
     public static final String MODULES_BASE_7 = "modules" + File.separator + "system"
             + File.separator + "layers" + File.separator + "base" + File.separator;
@@ -107,25 +105,21 @@ public class JBPluginUtils {
     public static final String COMMON = "common" + File.separator;
 
     //--------------- checking for possible domain directory -------------
-
     private static List<String> domainRequirements7x;
 
     private static synchronized List<String> getDomainRequirements8x() {
         if (domainRequirements7x == null) {
             domainRequirements7x = new ArrayList<String>(11);
             Collections.addAll(domainRequirements7x,
-                    "configuration", // NOI18N
-                    "deployments", // NOI18N
-                    "lib" // NOI18N
-                    );
+                    "configuration"// NOI18N
+            );
         }
         return domainRequirements7x;
     }
 
-
     //--------------- checking for possible server directory -------------
-
     private static List<String> serverRequirements7x;
+
     private static synchronized List<String> getServerRequirements8x() {
         if (serverRequirements7x == null) {
             serverRequirements7x = new ArrayList<String>(6);
@@ -139,38 +133,27 @@ public class JBPluginUtils {
 
     @NonNull
     public static String getModulesBase(String serverRoot) {
-        File file = new File(serverRoot, MODULES_BASE_7);
-        if (file.isDirectory()) {
-            return MODULES_BASE_7;
-        }
-        return MODULES_BASE;
+        return MODULES_BASE_7;
     }
 
     //------------  getting exists servers---------------------------
     /**
-     * returns Hashmap
-     * key = server name
-     * value = server folder full path
+     * returns Hashmap key = server name value = server folder full path
      */
-    public static Hashtable getRegisteredDomains(String serverLocation){
-        Hashtable result = new Hashtable();
-        //  String domainListFile = File.separator+"common"+File.separator+"nodemanager"+File.separator+"nodemanager.domains";  // NOI18N
-
+    public static Map getRegisteredDomains(String serverLocation) {
+        Map result = new HashMap();
         File serverDirectory = new File(serverLocation);
 
         if (isGoodJBServerLocation(serverDirectory)) {
-            Version version = getServerVersion(serverDirectory);            
-            File file;
-            String[] files;
-            files = new String[]{"standalone", "domain"};
-            file = serverDirectory;
+            Version version = getServerVersion(serverDirectory);
+            String[] files = new String[]{"standalone", "domain"};
+            File file = serverDirectory;
 
             if (files != null) {
-                for (int i = 0; i<files.length; i++) {
-                    String path = file.getAbsolutePath() + File.separator + files[i];
-
+                for (String file1 : files) {
+                    String path = file.getAbsolutePath() + File.separator + file1;
                     if (isGoodJBInstanceLocation(serverDirectory, new File(path))) {
-                        result.put(files[i], path);
+                        result.put(file1, path);
                     }
                 }
             }
@@ -178,49 +161,43 @@ public class JBPluginUtils {
         return result;
     }
 
-    private static boolean isGoodJBInstanceLocation(File candidate, List<String> requirements){
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, requirements)) {
-            return false;
-        }
-        return true;
+    private static boolean isGoodJBInstanceLocation(File candidate, List<String> requirements) {
+        return null != candidate && candidate.exists() && candidate.canRead() 
+                && candidate.isDirectory()
+                && hasRequiredChildren(candidate, requirements);
     }
 
-    private static boolean isGoodJBInstanceLocation8x(File serverDir, File candidate){
+    private static boolean isGoodJBInstanceLocation8x(File serverDir, File candidate) {
         return isGoodJBInstanceLocation(candidate, getDomainRequirements8x());
     }
 
-    public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){
+    public static boolean isGoodJBInstanceLocation(File serverDir, File candidate) {
         Version version = getServerVersion(serverDir);
         if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
             return JBPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate);
         }
-
         return ("8".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate)); // NOI18N
     }
 
-    private static boolean isGoodJBServerLocation(File candidate, List<String> requirements){
-        if (null == candidate ||
-                !candidate.exists() ||
-                !candidate.canRead() ||
-                !candidate.isDirectory()  ||
-                !hasRequiredChildren(candidate, requirements)) {
+    private static boolean isGoodJBServerLocation(File candidate, List<String> requirements) {
+        if (null == candidate
+                || !candidate.exists()
+                || !candidate.canRead()
+                || !candidate.isDirectory()
+                || !hasRequiredChildren(candidate, requirements)) {
             return false;
         }
         return true;
     }
 
-    private static boolean isGoodJBServerLocation8x(File candidate){
+    private static boolean isGoodJBServerLocation8x(File candidate) {
         return isGoodJBServerLocation(candidate, getServerRequirements8x());
     }
 
     public static boolean isGoodJBServerLocation(File candidate) {
         Version version = getServerVersion(candidate);
         if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
-            return  JBPluginUtils.isGoodJBServerLocation8x(candidate);
+            return JBPluginUtils.isGoodJBServerLocation8x(candidate);
         }
 
         return ("8".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
@@ -228,10 +205,11 @@ public class JBPluginUtils {
 
     /**
      * Checks whether the given candidate has all required childrens. Children
-     * can be both files and directories. Method does not distinguish between them.
+     * can be both files and directories. Method does not distinguish between
+     * them.
      *
-     * @return true if the candidate has all files/directories named in requiredChildren,
-     *             false otherwise
+     * @return true if the candidate has all files/directories named in
+     * requiredChildren, false otherwise
      */
     private static boolean hasRequiredChildren(File candidate, List<String> requiredChildren) {
         if (null == candidate || null == candidate.list()) {
@@ -251,12 +229,11 @@ public class JBPluginUtils {
     }
 
     //--------------------------------------------------------------------
-
     /**
      *
      *
      */
-    public static String getDeployDir(String domainDir){
+    public static String getDeployDir(String domainDir) {
         return domainDir + File.separator + "deployments"; //NOI18N
     }
 
@@ -323,154 +300,9 @@ public class JBPluginUtils {
         return defaultPort;
     }
 
-    public static int getJnpPortNumber(String domainDir) {
-        String jnpPort = getJnpPort(domainDir);
-        if(jnpPort != null) {
-            jnpPort = jnpPort.trim();
-            if (jnpPort.length() > 0) {
-                try {
-                    return Integer.parseInt(jnpPort);
-                } catch(NumberFormatException e) {
-                    // pass through to default
-                }
-            }
-        }  
-        return 1099;
-    }
-
-    public static String getJnpPort(String domainDir) {
-
-        String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
-        File xmlFile = new File(serviceXml);
-        if (!xmlFile.exists()) return "";
-
-        InputStream inputStream = null;
-        Document document = null;
-        try {
-            inputStream = new FileInputStream(xmlFile);
-            try {
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-            } finally {
-                inputStream.close();
-            }
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeName().equals("mbean")) {  // NOI18N
-                    NodeList nl = child.getChildNodes();
-                    if (!child.getAttributes().getNamedItem("name").getNodeValue().equals("jboss:service=Naming")) //NOI18N
-                        continue;
-                    for (int j = 0; j < nl.getLength(); j++){
-                        Node ch = nl.item(j);
-
-                        if (ch.getNodeName().equals("attribute")) {  // NOI18N
-                            if (!ch.getAttributes().getNamedItem("name").getNodeValue().equals("Port")) //NOI18N
-                                continue;
-                             return ch.getFirstChild().getNodeValue();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-        return "";
-    }
-
-    public static String getRMINamingServicePort(String domainDir){
-
-        String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
-        File xmlFile = new File(serviceXml);
-        if (!xmlFile.exists()) return "";
-
-        InputStream inputStream = null;
-        Document document = null;
-        try {
-            inputStream = new FileInputStream(xmlFile);
-            try {
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-            } finally {
-                inputStream.close();
-            }
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeName().equals("mbean")) {  // NOI18N
-                    NodeList nl = child.getChildNodes();
-                    if (!child.getAttributes().getNamedItem("name").getNodeValue().equals("jboss:service=Naming")) //NOI18N
-                        continue;
-                    for (int j = 0; j < nl.getLength(); j++){
-                        Node ch = nl.item(j);
-
-                        if (ch.getNodeName().equals("attribute")) {  // NOI18N
-                            if (!ch.getAttributes().getNamedItem("name").getNodeValue().equals("RmiPort")) //NOI18N
-                                continue;
-                             return ch.getFirstChild().getNodeValue();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-        return "";
-    }
-
-    public static String getRMIInvokerPort(String domainDir){
-
-        String serviceXml = domainDir+File.separator+"conf"+File.separator+"jboss-service.xml"; //NOI18N
-        File xmlFile = new File(serviceXml);
-        if (!xmlFile.exists()) return "";
-
-        InputStream inputStream = null;
-        Document document = null;
-        try {
-            inputStream = new FileInputStream(xmlFile);
-            try {
-                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-            } finally {
-                inputStream.close();
-            }
-
-            // get the root element
-            Element root = document.getDocumentElement();
-
-            // get the child nodes
-            NodeList children = root.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node child = children.item(i);
-                if (child.getNodeName().equals("mbean")) {  // NOI18N
-                    NodeList nl = child.getChildNodes();
-                    if (!child.getAttributes().getNamedItem("name").getNodeValue().equals("jboss:service=invoker,type=jrmp")) //NOI18N
-                        continue;
-                    for (int j = 0; j < nl.getLength(); j++){
-                        Node ch = nl.item(j);
-
-                        if (ch.getNodeName().equals("attribute")) {  // NOI18N
-                            if (!ch.getAttributes().getNamedItem("name").getNodeValue().equals("RMIObjectPort")) //NOI18N
-                                continue;
-                             return ch.getFirstChild().getNodeValue();
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
-        }
-        return "";
-    }
-
-      /** Return true if the specified port is free, false otherwise. */
+    /**
+     * Return true if the specified port is free, false otherwise.
+     */
     public static boolean isPortFree(int port) {
         ServerSocket soc = null;
         try {
@@ -478,16 +310,20 @@ public class JBPluginUtils {
         } catch (IOException ioe) {
             return false;
         } finally {
-            if (soc != null)
-                try { soc.close(); } catch (IOException ex) {} // noop
+            if (soc != null) {
+                try {
+                    soc.close();
+                } catch (IOException ex) {
+                } // noop
+            }
         }
 
         return true;
     }
 
     /**
-     * Return the version of the server located at the given path.
-     * If the server version can't be determined returns <code>null</code>.
+     * Return the version of the server located at the given path. If the server
+     * version can't be determined returns <code>null</code>.
      *
      * @param serverPath path to the server directory
      * @return specification version of the server
@@ -502,7 +338,7 @@ public class JBPluginUtils {
         if (files != null) {
             for (File jarFile : files) {
                 version = getVersion(jarFile);
-                if(version != null) {
+                if (version != null) {
                     break;
                 }
             }
@@ -540,7 +376,7 @@ public class JBPluginUtils {
             return null;
         }
     }
-    
+
     /**
      * Class representing the JBoss version.
      * <p>
@@ -559,11 +395,11 @@ public class JBPluginUtils {
         private String update = "";
 
         /**
-         * Constructs the version from the spec version string.
-         * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>.
+         * Constructs the version from the spec version string. Expected format
+         * is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>.
          *
          * @param version spec version string with the following format:
-         *             <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
+         * <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
          */
         public Version(String version) {
             assert version != null : "Version can't be null"; // NOI18N
@@ -619,7 +455,8 @@ public class JBPluginUtils {
         }
 
         /**
-         * {@inheritDoc}<p>
+         * {@inheritDoc}
+         * <p>
          * Two versions are equal if and only if they have same major, minor,
          * micro number and update.
          */
@@ -652,7 +489,8 @@ public class JBPluginUtils {
         }
 
         /**
-         * {@inheritDoc}<p>
+         * {@inheritDoc}
+         * <p>
          * The implementation consistent with {@link #equals(Object)}.
          */
         @Override
@@ -666,7 +504,8 @@ public class JBPluginUtils {
         }
 
         /**
-         * {@inheritDoc}<p>
+         * {@inheritDoc}
+         * <p>
          * Compares the versions based on its major, minor, micro and update.
          * Major number is the most significant. Implementation is consistent
          * with {@link #equals(Object)}.

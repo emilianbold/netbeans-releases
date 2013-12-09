@@ -42,14 +42,20 @@
 package org.netbeans.modules.javaee.wildfly;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -61,9 +67,13 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
+import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
+import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -74,6 +84,9 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     private static final Version JBOSS_8_0_0 = new Version("8.0.0"); // NOI18N
 
     private static final int DEBUGGING_PORT = 8787;
+    private static final int CONTROLLER_PORT = 9999;
+
+    private final WildflyClient client;
 
     /**
      * Stores information about running instances. instance is represented by
@@ -82,28 +95,35 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
      * server instance bcs instance properties are also removed along with
      * instance.
      */
-    private static final Map<InstanceProperties, Boolean> PROPERTIES_TO_IS_RUNNING =
-            Collections.synchronizedMap(new WeakHashMap());
+    private static final Map<InstanceProperties, Boolean> PROPERTIES_TO_IS_RUNNING
+            = Collections.synchronizedMap(new WeakHashMap());
 
     private final DeploymentFactory df;
 
     private final String realUri;
 
-    /** <i>GuardedBy("this")</i> */
-    private InstanceProperties instanceProperties;
+    private final InstanceProperties instanceProperties;
 
-    /** <i>GuardedBy("this")</i> */
+    /**
+     * <i>GuardedBy("this")</i>
+     */
     private boolean needsRestart;
 
     public WildFlyDeploymentManager(DeploymentFactory df, String realUri,
             String jbUri, String username, String password) {
         this.df = df;
         this.realUri = realUri;
+        this.instanceProperties = InstanceProperties.getInstanceProperties(realUri);
+        if (username != null && password != null) {
+            this.client = new WildflyClient(instanceProperties, realUri, getHost(), CONTROLLER_PORT, username, password);
+        } else {
+            this.client = new WildflyClient(instanceProperties, realUri, getHost(), CONTROLLER_PORT);
+        }
     }
 
     /**
-     * Returns true if the given instance properties are present in the map and value equals true.
-     * Otherwise return false.
+     * Returns true if the given instance properties are present in the map and
+     * value equals true. Otherwise return false.
      */
     public static boolean isRunningLastCheck(InstanceProperties ip) {
         return PROPERTIES_TO_IS_RUNNING.containsKey(ip) && PROPERTIES_TO_IS_RUNNING.get(ip).equals(Boolean.TRUE);
@@ -121,8 +141,19 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        throw new UnsupportedOperationException("Not supported yet.");
+        final WildflyProgressObject progress = new WildflyProgressObject(tmids);
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.RUNNING, ""));
+        try {
+            if (this.getClient().deploy(deployment)) {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED, ""));
+            } else {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ""));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ex.getMessage()));
+        }
+        return progress;
     }
 
     @Override
@@ -130,8 +161,23 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<TargetModuleID> moduleIds = new ArrayList<TargetModuleID>(targets.length);
+        for (Target target : targets) {
+            moduleIds.add(new JBTargetModuleID(target, deployment.getModuleFile().getName()));
+        }
+        final WildflyProgressObject progress = new WildflyProgressObject(moduleIds.toArray(new TargetModuleID[targets.length]));
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
+        try {
+            if (this.getClient().deploy(deployment)) {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+            } else {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
+        }
+        return progress;
     }
 
     @Override
@@ -189,11 +235,20 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
 
     @Override
     public ProgressObject start(TargetModuleID[] tmids) throws IllegalStateException {
-        if (df == null) {
-            throw new IllegalStateException("Deployment manager is disconnected");
+        final WildflyProgressObject progress = new WildflyProgressObject(tmids);
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                ActionType.EXECUTE, CommandType.START, StateType.RUNNING, null));
+        try {
+            if (client.startModule(tmids[0].getModuleID())) {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                    ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
         }
-        // XXX WILDFLY IMPLEMENT
-        throw new UnsupportedOperationException("Not supported yet.");
+        return progress;
     }
 
     @Override
@@ -207,11 +262,20 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
 
     @Override
     public ProgressObject undeploy(TargetModuleID[] tmids) throws IllegalStateException {
-        if (df == null) {
-            throw new IllegalStateException("Deployment manager is disconnected");
+        final WildflyProgressObject progress = new WildflyProgressObject(tmids);
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
+        try {
+            if (client.undeploy(tmids[0].getModuleID())) {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, null));
         }
-        // XXX WILDFLY IMPLEMENT
-        throw new UnsupportedOperationException("Not supported yet.");
+        return progress;
     }
 
     @Override
@@ -261,10 +325,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         return DEBUGGING_PORT;
     }
 
-    public synchronized InstanceProperties getInstanceProperties() {
-        if (instanceProperties == null) {
-            instanceProperties = InstanceProperties.getInstanceProperties(realUri);
-        }
+    public InstanceProperties getInstanceProperties() {
         return instanceProperties;
     }
 
@@ -277,19 +338,23 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Mark the server with a needs restart flag. This may be needed
-     * for instance when JDBC driver is deployed to a running server.
+     * Mark the server with a needs restart flag. This may be needed for
+     * instance when JDBC driver is deployed to a running server.
      */
     public synchronized void setNeedsRestart(boolean needsRestart) {
         this.needsRestart = needsRestart;
     }
 
     /**
-     * Returns true if the server needs to be restarted. This may occur
-     * for instance when JDBC driver was deployed to a running server
+     * Returns true if the server needs to be restarted. This may occur for
+     * instance when JDBC driver was deployed to a running server
      */
     public synchronized boolean getNeedsRestart() {
         return needsRestart;
+    }
+
+    public WildflyClient getClient() {
+        return client;
     }
 
     @Override

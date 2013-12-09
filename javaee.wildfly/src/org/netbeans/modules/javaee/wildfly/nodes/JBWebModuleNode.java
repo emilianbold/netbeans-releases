@@ -79,6 +79,7 @@ public class JBWebModuleNode extends AbstractNode {
         }
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         if (getParentNode() instanceof JBEarApplicationNode) {
             return new SystemAction[] {
@@ -98,22 +99,25 @@ public class JBWebModuleNode extends AbstractNode {
         }
     }
     
+    @Override
     public Image getIcon(int type) {
         return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
     
     private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
         
-        private String url;
+        private final String url;
         
         public OpenURLActionCookieImpl(String url) {
             this.url = url;
         }
         
+        @Override
         public String getWebURL() {
             return url;
         }

@@ -41,74 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- * It describes children nodes of the EJB Modules node. Implements
- * Refreshable interface and due to it can be refreshed via ResreshModulesAction.
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
  */
 public class JBEjbModulesChildren extends JBAsyncChildren implements Refreshable {
 
     private static final Logger LOGGER = Logger.getLogger(JBEjbModulesChildren.class.getName());
-    
+
     private final Lookup lookup;
-    
+
     public JBEjbModulesChildren(Lookup lookup) {
         this.lookup = lookup;
     }
-    
-    public void updateKeys(){
-        setKeys(new Object[] {Util.WAIT_NODE});
-        
+
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
         getExecutorService().submit(new JBoss7EjbApplicationNodeUpdater(), 0);
-        
+
     }
 
-    class  JBoss7EjbApplicationNodeUpdater implements Runnable {
-
-         List keys = new ArrayList();
-
+    class JBoss7EjbApplicationNodeUpdater implements Runnable {
+        List keys = new ArrayList();
         @Override
         public void run() {
             try {
-                // XXX add JBEjbModuleNode(s) to keys
-                // XXX WILDFLY IMPLEMENT
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listEJBModules(lookup));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
-
             setKeys(keys);
         }
     }
+
+    @Override
     protected void addNotify() {
         updateKeys();
     }
-    
+
+    @Override
     protected void removeNotify() {
         setKeys(java.util.Collections.EMPTY_SET);
     }
-    
+
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBEjbModuleNode){
-            return new Node[]{(JBEjbModuleNode)key};
+        if (key instanceof JBEjbModuleNode) {
+            return new Node[]{(JBEjbModuleNode) key};
         }
-        
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
             return new Node[]{Util.createWaitNode()};
         }
-        
+
         return null;
     }
-    
+
 }

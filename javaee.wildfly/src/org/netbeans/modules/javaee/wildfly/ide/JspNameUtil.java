@@ -44,8 +44,9 @@
 
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
+import java.util.List;
 
 /** Various utilities copied over from org.apache.jasper.JspUtil.
  */
@@ -78,7 +79,7 @@ public class JspNameUtil {
      */
     public static final String makeJavaPackage(String path) {
         String classNameComponents[] = split(path,"/");
-        StringBuffer legalClassNames = new StringBuffer();
+        StringBuilder legalClassNames = new StringBuilder();
         for (int i = 0; i < classNameComponents.length; i++) {
             legalClassNames.append(makeJavaIdentifier(classNameComponents[i]));
             if (i < classNameComponents.length - 1) {
@@ -95,7 +96,7 @@ public class JspNameUtil {
      * @return the components of the path
      */
     private static final String [] split(String path, String pat) {
-        Vector comps = new Vector();
+        List<String> comps = new ArrayList<String>();
         int pos = path.indexOf(pat);
         int start = 0;
         while( pos >= 0 ) {
@@ -109,11 +110,7 @@ public class JspNameUtil {
         if( start < path.length()) {
             comps.add(path.substring(start));
         }
-        String [] result = new String[comps.size()];
-        for(int i=0; i < comps.size(); i++) {
-            result[i] = (String)comps.elementAt(i);
-        }
-        return result;
+        return comps.toArray(new String[comps.size()]);
     }
     
     /**
@@ -124,8 +121,7 @@ public class JspNameUtil {
      * @return Legal Java identifier corresponding to the given identifier
      */
     public static final String makeJavaIdentifier(String identifier) {
-        StringBuffer modifiedIdentifier =
-        new StringBuffer(identifier.length());
+        StringBuilder modifiedIdentifier = new StringBuilder(identifier.length());
         if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
             modifiedIdentifier.append('_');
         }

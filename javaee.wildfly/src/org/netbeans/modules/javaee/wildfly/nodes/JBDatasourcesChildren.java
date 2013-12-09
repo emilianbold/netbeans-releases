@@ -41,14 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
@@ -57,45 +53,37 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- * It describes children nodes of the Web Applications node. Implements
- * Refreshable interface and due to it can be refreshed via
- * ResreshModulesAction.
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
  */
-public class JBWebApplicationsChildren extends JBAsyncChildren implements Refreshable {
+public class JBDatasourcesChildren extends JBAsyncChildren implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(JBWebApplicationsChildren.class.getName());
-
-    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
-    static {
-        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
-                "jbossws-context", "jmx-console", "jbossws", "jbossws",
-                "web-console", "invoker", "jbossmq-httpil");
-    }
+    private static final Logger LOGGER = Logger.getLogger(JBDatasourcesChildren.class.getName());
 
     private final Lookup lookup;
 
-    public JBWebApplicationsChildren(Lookup lookup) {
+    public JBDatasourcesChildren(Lookup lookup) {
         this.lookup = lookup;
     }
 
     @Override
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7WebNodeUpdater(), 0);
+        getExecutorService().submit(new JBoss7DatasourcesNodeUpdater(), 0);
+
     }
 
-    class JBoss7WebNodeUpdater implements Runnable {
+    class JBoss7DatasourcesNodeUpdater implements Runnable {
 
-        List keys = new ArrayList();
+        List<JBDatasourceNode> keys = new ArrayList<JBDatasourceNode>();
 
         @Override
         public void run() {
-
             try {
                 WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listWebModules(lookup));
+                keys.addAll(dm.getClient().listDatasources(lookup));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -116,14 +104,13 @@ public class JBWebApplicationsChildren extends JBAsyncChildren implements Refres
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBWebModuleNode){
-            return new Node[]{(JBWebModuleNode)key};
+        if (key instanceof JBDatasourceNode) {
+            return new Node[]{(JBDatasourceNode) key};
         }
 
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
             return new Node[]{Util.createWaitNode()};
         }
-
         return null;
     }
 

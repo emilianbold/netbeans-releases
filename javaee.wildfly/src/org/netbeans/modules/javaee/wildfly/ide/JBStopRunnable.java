@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.javaee.wildfly.ide;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -57,10 +56,7 @@ import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -117,55 +113,21 @@ class JBStopRunnable implements Runnable {
         }
 
         String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-
-        String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-        String serverStopFileName = serverLocation + (Utilities.isWindows() ? JBOSS_CLI_BAT : JBOSS_CLI_SH);
-
-        File serverStopFile = new File(serverStopFileName);
-        if (!serverStopFile.exists()){
-            startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED_FNF", serverName)));//NOI18N
-            return;
-        }
-
-        StringBuilder additionalParams = new StringBuilder(32);
-        int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
-        NbProcessDescriptor pd = new NbProcessDescriptor(serverStopFileName, "--connect --command=:shutdown"); // NOI18N
-
-        Process stoppingProcess = null;
         try {
-            String envp[] = createEnvironment();
-            stoppingProcess = pd.exec(null, envp, true, null);
+         dm.getClient().shutdownServer();
         } catch (java.io.IOException ioe) {
             LOGGER.log(Level.INFO, null, ioe);
-
             startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
-                    NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED_PD", serverName, serverStopFileName)));//NOI18N
+                    NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED_PD", serverName)));//NOI18N
 
             return;
         }
-
         startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                 NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));
-
         LOGGER.log(Level.FINER, "Entering the loop"); // NOI18N
 
         int elapsed = 0;
         while (elapsed < TIMEOUT) {
-            // check whether the stopping process did not fail
-            try {
-                int processExitValue = stoppingProcess.exitValue();
-                if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.log(Level.FINER, "The stopping process has terminated with the exit value " + processExitValue); // NOI18N
-                }
-                if (processExitValue != 0) {
-                    // stopping process failed
-                    String msg = NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_FAILED", serverName);
-                    startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, msg));
-                    return;
-                }
-            } catch (IllegalThreadStateException e) {
-                // process is still running
-            }
             if (startServer.isRunning()) {
                 startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStopRunnable.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
@@ -209,10 +171,6 @@ class JBStopRunnable implements Runnable {
 
         startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
                 NbBundle.getMessage(JBStopRunnable.class, "MSG_StopServerTimeout")));
-        if (stoppingProcess != null) {
-            stoppingProcess.destroy();
-        }
-
         LOGGER.log(Level.FINER, "TIMEOUT expired"); // NOI18N
     }
 }

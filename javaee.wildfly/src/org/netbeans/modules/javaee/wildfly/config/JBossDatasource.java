@@ -67,11 +67,23 @@ public final class JBossDatasource implements Datasource {
     private String maxPoolSize = "20"; // NOI18N
     private String idleTimeoutMinutes = "5"; // NOI18N
     private String description;
+    private String name;
     
     private volatile int hash = -1;
     
+    public JBossDatasource(String name, String jndiName, String url, String username, String password,
+            String driverClassName) {
+        this.name = name;
+        this.rawName = jndiName;
+        this.url = url;
+        this.username = username;
+        this.password = password;
+        this.driverClassName = driverClassName;
+    }
+    
     public JBossDatasource(String jndiName, String url, String username, String password,
             String driverClassName) {
+        this.name = jndiName;
         this.rawName = jndiName;
         this.url = url;
         this.username = username;
@@ -79,6 +91,11 @@ public final class JBossDatasource implements Datasource {
         this.driverClassName = driverClassName;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public String getJndiName() {
         return getJndiName(rawName);
     }
@@ -131,18 +148,22 @@ public final class JBossDatasource implements Datasource {
         return jndiName;
     }
     
+    @Override
     public String getUrl() {
         return url;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
 
+    @Override
     public String getDriverClassName() {
         return driverClassName;
     }
@@ -159,14 +180,15 @@ public final class JBossDatasource implements Datasource {
         return idleTimeoutMinutes;
     }
     
+    @Override
     public String getDisplayName() {
         if (description == null) {
-            //TODO implement some meaningful description
             description = getJndiName() + " [" + getUrl() + "]";
         }
         return description;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;

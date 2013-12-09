@@ -44,9 +44,6 @@
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import java.util.Collections;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import java.io.IOException;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import javax.enterprise.deploy.shared.ActionType;
@@ -75,11 +72,17 @@ import org.openide.util.NbBundle;
  *
  * @author Kirill Sorokin
  */
-public class JBStartServer extends StartServer implements ProgressObject{
-    
-    static enum MODE { RUN, DEBUG, PROFILE };
-    
-    static enum ACTION_STATUS { SUCCESS, FAILURE, UNKNOWN };
+public class JBStartServer extends StartServer implements ProgressObject {
+
+    static enum MODE {
+
+        RUN, DEBUG, PROFILE
+    };
+
+    static enum ACTION_STATUS {
+
+        SUCCESS, FAILURE, UNKNOWN
+    };
 
     private static final Logger LOGGER = Logger.getLogger(JBStartServer.class.getName());
 
@@ -89,28 +92,28 @@ public class JBStartServer extends StartServer implements ProgressObject{
             AVERAGE_SERVER_INSTANCES);
 
     private MODE mode;
-    
+
     private final WildFlyDeploymentManager dm;
 
     private static final Set<String> IS_DEBUG_MODE_URI = Collections.synchronizedSet(
             new HashSet<String>(AVERAGE_SERVER_INSTANCES));
-    
+
     public JBStartServer(DeploymentManager dm) {
         this.dm = (WildFlyDeploymentManager) dm;
     }
-    
+
     private void addDebugModeUri() {
         IS_DEBUG_MODE_URI.add(dm.getUrl());
     }
-    
+
     private void removeDebugModeUri() {
         IS_DEBUG_MODE_URI.remove(dm.getUrl());
     }
-    
+
     private boolean existsDebugModeUri() {
         return IS_DEBUG_MODE_URI.contains(dm.getUrl());
     }
-    
+
     public ProgressObject startDebugging(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
@@ -119,7 +122,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         addDebugModeUri();
         return this;
     }
-    
+
     public boolean isDebuggable(Target target) {
         if (!existsDebugModeUri()) {
             return false;
@@ -129,23 +132,23 @@ public class JBStartServer extends StartServer implements ProgressObject{
         }
         return true;
     }
-    
+
     public boolean supportsStartDebugging(Target target) {
         return true;
     }
-    
+
     public boolean supportsStartProfiling(Target target) {
-        return false;
+        return true;
     }
-    
+
     public boolean isAlsoTargetServer(Target target) {
         return true;
     }
-    
+
     public ServerDebugInfo getDebugInfo(Target target) {
         return new ServerDebugInfo("localhost", dm.getDebuggingPort());
     }
-    
+
     /**
      * Starts the server in profiling mode.
      */
@@ -157,20 +160,21 @@ public class JBStartServer extends StartServer implements ProgressObject{
         removeDebugModeUri();
         return this;
     }
-    
-    
+
     /**
      * Indicates whether this server supports start/stop.
      *
      * @return true/false - supports/does not support
      */
+    @Override
     public boolean supportsStartDeploymentManager() {
         return true;
     }
-    
+
     /**
      * Stops the server.
      */
+    @Override
     public ProgressObject stopDeploymentManager() {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
@@ -178,7 +182,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
         removeDebugModeUri();
         return this;
     }
-    
+
     /**
      * Starts the server
      */
@@ -190,20 +194,19 @@ public class JBStartServer extends StartServer implements ProgressObject{
         removeDebugModeUri();
         return this;
     }
-    
-    
+
     public boolean needsStartForTargetList() {
         return false;
     }
-    
+
     public boolean needsStartForConfigure() {
         return false;
     }
-    
+
     public boolean needsStartForAdminConfig() {
         return false;
     }
-    
+
     private boolean isReallyRunning() {
         final InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
@@ -212,52 +215,37 @@ public class JBStartServer extends StartServer implements ProgressObject{
         // this should prevent the thread from getting stuck if the server is in suspended state
         SafeTrueTest test = new SafeTrueTest() {
 
+            @Override
             public void run() {
-                final String checkingConfigName = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
-                String checkingServerDir = null;
-
                 try {
-                    String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-                    String rootDir = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-
-                    // FIXME this seems to be a workaround for the bad api
-                    // as you can't register the server atomically with all required properties
-                    if (serverDir == null || rootDir == null) {
-                        result = false;
-                        return;
-                    }
-
-                    checkingServerDir = new File(serverDir).getCanonicalPath();
-                } catch (IllegalStateException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                    result = false;
-                } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                    result = false;
+                    result = dm.getClient().isServerRunning();
+                } catch(Throwable t) {
+                    LOGGER.log(Level.INFO, null, t);
                 }
-
-                final String localCheckingServerDir = checkingServerDir;
-                // XXX WILDFLY IMPLEMENT
-                // XXX set result to true if running
-
             }
         };
-        
+
         return safeTrueTest(test, 10000);
     }
-    
-    /** Safe true/false test useful. */
+
+    /**
+     * Safe true/false test useful.
+     */
     private abstract static class SafeTrueTest implements Runnable {
+
         protected boolean result = false;
-        
+
+        @Override
         public abstract void run();
-        
+
         public final boolean result() {
             return result;
         }
     };
-    
-    /** Return the result of the test or false if the given time-out ran out. */
+
+    /**
+     * Return the result of the test or false if the given time-out ran out.
+     */
     private boolean safeTrueTest(SafeTrueTest test, int timeout) {
         try {
             new RequestProcessor().post(test).waitFinished(timeout);
@@ -266,79 +254,91 @@ public class JBStartServer extends StartServer implements ProgressObject{
         }
         return test.result();
     }
-    
+
+    @Override
     public boolean isRunning() {
-        
+
         InstanceProperties ip = dm.getInstanceProperties();
         if (ip == null) {
             return false; // finish, it looks like this server instance has been unregistered
         }
-        
-        if (!isReallyRunning()){
-            dm.setRunningLastCheck(ip, Boolean.FALSE);
+
+        if (!isReallyRunning()) {
+            WildFlyDeploymentManager.setRunningLastCheck(ip, Boolean.FALSE);
             return false;
         }
-        
-        dm.setRunningLastCheck(ip, Boolean.TRUE);
+
+        WildFlyDeploymentManager.setRunningLastCheck(ip, Boolean.TRUE);
         return true;
     }
-    
+
     // ----------  Implementation of ProgressObject interface
     private Vector listeners = new Vector();
     private DeploymentStatus deploymentStatus;
-    
+
+    @Override
     public void addProgressListener(ProgressListener pl) {
         listeners.add(pl);
     }
-    
+
+    @Override
     public void removeProgressListener(ProgressListener pl) {
         listeners.remove(pl);
     }
-    
+
+    @Override
     public void stop() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("");
     }
-    
+
+    @Override
     public boolean isStopSupported() {
-        return false;
+        return true;
     }
-    
+
+    @Override
     public void cancel() throws OperationUnsupportedException {
         throw new OperationUnsupportedException("");
     }
-    
+
+    @Override
     public boolean isCancelSupported() {
         return false;
     }
-    
+
+    @Override
     public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
         return null;
     }
-    
+
+    @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
         return new TargetModuleID[]{};
     }
-    
+
+    @Override
     public DeploymentStatus getDeploymentStatus() {
         return deploymentStatus;
     }
-    
-    /** Report event to any registered listeners. */
+
+    /**
+     * Report event to any registered listeners.
+     */
     public void fireHandleProgressEvent(TargetModuleID targetModuleID, DeploymentStatus deploymentStatus) {
         ProgressEvent evt = new ProgressEvent(this, targetModuleID, deploymentStatus);
-        
+
         this.deploymentStatus = deploymentStatus;
-        
+
         java.util.Vector targets = null;
         synchronized (this) {
             if (listeners != null) {
                 targets = (java.util.Vector) listeners.clone();
             }
         }
-        
+
         if (targets != null) {
             for (int i = 0; i < targets.size(); i++) {
-                ProgressListener target = (ProgressListener)targets.elementAt(i);
+                ProgressListener target = (ProgressListener) targets.elementAt(i);
                 target.handleProgressEvent(evt);
             }
         }
@@ -347,6 +347,5 @@ public class JBStartServer extends StartServer implements ProgressObject{
     MODE getMode() {
         return mode;
     }
-    
-    
+
 }

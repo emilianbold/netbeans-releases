@@ -63,31 +63,37 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  */
 public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
 
+    @Override
     public StartServer getStartServer(DeploymentManager dm) {
         return new JBStartServer(dm);
     }
 
+    @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
         return null;
     }
 
+    @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
         return new WildFlyFindJSPServlet((WildFlyDeploymentManager) dm);
     }
 
+    @Override
     public InstantiatingIterator getAddInstanceIterator() {
         return new JBInstantiatingIterator();
     }
 
+    @Override
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
         if (!(dm instanceof WildFlyDeploymentManager)) {
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
         WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
-        return new JBossDatasourceManager(jbdm.getUrl());
+        return new JBossDatasourceManager(jbdm);
     }
 
+    @Override
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
         if (!(dm instanceof WildFlyDeploymentManager)) {
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);

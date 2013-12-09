@@ -160,18 +160,11 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
 
             Version jbossVersion = JBPluginUtils.getServerVersion(new File (serverRoot));
 
-            // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
-            File domFile = new File(serverRoot , JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
-            if (!domFile.exists()) {
-                // dom4j.jar library for JBoss Application Server 4.0.5
-                domFile = new File(domainRoot, JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
-            }
-
             String sep = File.separator;
-            if (!domFile.exists() && jbossVersion != null && "8".equals(jbossVersion.getMajorNumber())) {
-                domFile = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot)
-                        + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
-            }
+
+            File domFile = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot)
+                    + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
+
             if (!domFile.exists()) {
                 domFile = null;
                 LOGGER.log(Level.INFO, "No dom4j.jar availabale on classpath"); // NOI18N
@@ -184,6 +177,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
             }
 
             File org = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot) + "org");
+
             File jboss = new File(org, "jboss");
             File as = new File(jboss, "as");
 
@@ -192,20 +186,20 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
             }
 
             urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
-            urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+            urlList.add(new File(serverRoot, "bin" + sep + "client" + sep + "jboss-client.jar").toURI().toURL());
 
+            addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
             addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
+            addUrl(urlList, jboss, "marshalling" + sep + "main", Pattern.compile("jboss-marshalling-.*.jar"));
+            addUrl(urlList, jboss, "marshalling" + sep + "river" + sep + "main", Pattern.compile("jboss-marshalling-river-.*.jar"));
+            addUrl(urlList, jboss, "remoting" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
+            addUrl(urlList, jboss, "sals" + sep + "main", Pattern.compile("jboss-sasl-.*.jar"));
             addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
-            addUrl(urlList, jboss, "remoting3" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
+            addUrl(urlList, as, "controller" + sep + "main", Pattern.compile("wildfly-controller-.*.jar"));
+            addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("wildfly-controller-client-.*.jar"));
+            addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("wildfly-protocol-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
-            addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
-            addUrl(urlList, jboss, "msc" + sep + "main", Pattern.compile("jboss-msc-.*.jar"));
-            addUrl(urlList, jboss, "common-core" + sep + "main", Pattern.compile("jboss-common-core-.*.jar"));
-            addUrl(urlList, as, "ee" + sep + "deployment" + sep + "main", Pattern.compile("jboss-as-ee-deployment-.*.jar"));
-            addUrl(urlList, as, "naming" + sep + "main", Pattern.compile("jboss-as-naming-.*.jar"));
-            addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
-            addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
 
             WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildFlyDeploymentFactory.class.getClassLoader());
             return loader;
@@ -368,16 +362,16 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
                 if (ip != null) {
                     jbossFactory = (DeploymentFactory) factoryCache.get(ip);
                 }
-                if (jbossFactory == null) {
-//                    Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
-//                    URLClassLoader loader = (ip != null) ? getWildFlyClassLoader(ip) : createWildFlyClassLoader(jbossRoot, domainRoot);
-//                    if(version!= null && "7".equals(version.getMajorNumber())) {
-//                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
-//                        c.getMethod("register").invoke(null);
-//                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
-//                    } else {
-//                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
-//                    }
+               if (jbossFactory == null) {
+                    /*Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
+                    URLClassLoader loader = (ip != null) ? getWildFlyClassLoader(ip) : createWildFlyClassLoader(jbossRoot, domainRoot);
+                    if(version!= null && "7".equals(version.getMajorNumber())) {
+                        Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
+                        c.getMethod("register").invoke(null);
+                        jbossFactory = (DeploymentFactory) c.newInstance();//NOI18N
+                    } else {
+                        jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
+                    }*/
 
                     // XXX is this ok ?
                     jbossFactory = this;

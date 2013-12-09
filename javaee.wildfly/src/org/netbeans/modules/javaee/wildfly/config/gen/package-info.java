@@ -62,8 +62,8 @@
         java5=true
     ),
     @Schema2Beans(
-        schema="../../resources/jboss-ds_1_5.dtd",
-        schemaType=SchemaType.DTD,
+        schema="../../resources/datasources_1_1.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
         outputType=OutputType.TRADITIONAL_BASEBEAN,
         validate=true,
         attrProp=true,

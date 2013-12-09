@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,30 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
+package org.netbeans.modules.javaee.wildfly.config.xml;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.io.File;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.openide.util.Exceptions;
+import org.xml.sax.SAXException;
 
 /**
  *
- * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
+ * @author ehugonnet
  */
-public class JBTargetNode extends AbstractNode {
+public class XMLDocumentRepository {
 
-    public JBTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new JBItemNode(new JBApplicationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Apps")), 
-            new JBItemNode(new JBResourcesChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Resources"))});
+    private static final String LOAD_EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+
+    public Document loadDocument(File xmlFile) {
+        try {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            SAXParser sp = spf.newSAXParser();
+            sp.getXMLReader().setFeature(LOAD_EXTERNAL_DTD_FEATURE, false);
+            SAXReader reader = new SAXReader(false);
+            return reader.read(xmlFile);
+        } catch (SAXException ex) {
+
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (DocumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public void query(Document document, String query) {
+       // document.createXPath(query)
     }
 }

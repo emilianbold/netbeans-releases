@@ -75,6 +75,15 @@ import org.xml.sax.SAXException;
 public class Util {
     public static final String WAIT_NODE = "wait_node"; //NOI18N
     public static final String INFO_NODE = "info_node"; //NOI18N
+    
+    public static final String JDBC_RESOURCE_ICON = 
+            "org/netbeans/modules/javaee/wildfly/resources/jdbc.gif"; // NOI18N
+    public static final String CONNECTOR_ICON =
+            "org/netbeans/modules/javaee/wildfly/resources/connector.gif"; // NOI18N
+    public static final String APPCLIENT_ICON =
+            "org/netbeans/modules/javaee/wildfly/resources/appclient.gif"; // NOI18N
+    public static final String JAVAMAIL_ICON =
+            "org/netbeans/modules/javaee/resources/javamail.gif";
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 

@@ -41,10 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 import java.io.File;
+import java.io.IOException;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
@@ -52,6 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -67,7 +68,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
 
     private static final int POLLING_INTERVAL = 2000;
 
-    private static final RequestProcessor PROCESSOR = new RequestProcessor ("JBoss undeploy", 1); // NOI18N
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("JBoss undeploy", 1); // NOI18N
 
     private final String fileName;
 
@@ -88,6 +89,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
         this.isRunning = false;
     }
 
+    @Override
     public Task undeploy() {
         final WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
         final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -97,59 +99,15 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
         Runnable r = new Runnable() {
             public void run() {
                 isRunning = true;
-                String deployDir = dm.getInstanceProperties().getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
-                File file = new File(deployDir, fileName);
-
-                if (file.exists() && file.canWrite()) {
-                    // FIXME we can use JMX to check/udeploy deployed apps
-                    // jboss.as:deployment=WarName.war
-                    long start = System.currentTimeMillis();
-                    file.delete();
-
-                    File statusFile = new File(file.getAbsolutePath() + ".undeployed");
-                    int time = 0;
-                    do {
-                        try {
-                            Thread.sleep(POLLING_INTERVAL);
-                            time += POLLING_INTERVAL;
-                        } catch (InterruptedException ex) {
-                            // Nothing to do
-                        }
-                    } while ((!statusFile.exists() || statusFile.lastModified() < start) && time < TIMEOUT);
-
-                    boolean wait = true;
-                    while (wait && time < TIMEOUT) {
-                        try {
-                            wait = false;
-                            TargetModuleID[] ids = dm.getAvailableModules(type, dm.getTargets());
-                            if (ids != null) {
-                                for (TargetModuleID id : ids) {
-                                    if (fileName.equals(id.getModuleID())) {
-                                        wait = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        } catch (TargetException ex) {
-                        } catch (IllegalStateException ex) {
-                            // Nothing to do
-                        }
-                        if (wait) {
-                            try {
-                                Thread.sleep(POLLING_INTERVAL);
-                                time += POLLING_INTERVAL;
-                            } catch (InterruptedException ex) {
-                                // Nothing to do
-                            }
-                        }
-                    }
+                try {
+                    dm.getClient().undeploy(fileName);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-
                 handle.finish();
                 isRunning = false;
             }
         };
-
         handle.start();
         return PROCESSOR.post(r);
     }

@@ -107,6 +107,7 @@ public class JBItemNode extends AbstractNode {
         return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
     
+    @Override
     public javax.swing.Action[] getActions(boolean context) {
         if(getChildren() instanceof Refreshable)
             return new SystemAction[] {
@@ -126,6 +127,7 @@ public class JBItemNode extends AbstractNode {
             this.children = children;
         }
         
+        @Override
         public void refresh() {
             children.updateKeys();
         }

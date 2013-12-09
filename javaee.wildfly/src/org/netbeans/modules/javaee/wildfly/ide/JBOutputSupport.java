@@ -56,6 +56,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.enterprise.deploy.shared.StateType;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -87,6 +88,8 @@ public final class JBOutputSupport {
     private static final ExecutorService LOG_FILE_SERVICE = Executors.newCachedThreadPool();
 
     private static final Pattern JBOSS_7_STARTED_ML = Pattern.compile(".*JBoss AS 7(\\..*)* \\d+ms .*");
+    private static final Pattern WILDFLY_STARTED_ML = Pattern.compile(".*JBAS015874: WildFly 8(\\..*)* \"WildFly\" started in \\d+ms .*");
+    private static final Pattern WILDFLY_STARTING_ML = Pattern.compile(".*JBAS015899: WildFly 8(\\..*)* \"WildFly\" starting");
 
     private final InstanceProperties props;
 
@@ -309,7 +312,8 @@ public final class JBOutputSupport {
 
             if (line.indexOf("Starting JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
                     || line.indexOf("Starting JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
-                    || line.indexOf("Starting JBossAS") > -1) { // JBoss 6.0 message // NOI18N
+                    || line.indexOf("Starting JBossAS") > -1
+                    || WILDFLY_STARTING_ML.matcher(line).matches()) { // JBoss 6.0 message // NOI18N
                 LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
             } else if ( ((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
@@ -319,7 +323,8 @@ public final class JBOutputSupport {
                     && (line.indexOf("Started in") > -1) // NOI18N
                         || line.indexOf("started in") > -1 // NOI18N
                         || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
-                        || JBOSS_7_STARTED_ML.matcher(line).matches()) {
+                        || JBOSS_7_STARTED_ML.matcher(line).matches()
+                        || WILDFLY_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
                 synchronized (JBOutputSupport.this) {

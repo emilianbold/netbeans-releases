@@ -93,41 +93,49 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     
     // private InstallPanel panel;
-    private transient Set listeners = new HashSet(1);
+    private final transient Set listeners = new HashSet(1);
+    @Override
     public void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
     }
     
+    @Override
     public void previousPanel() {
         index--;
     }
     
+    @Override
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
     
+    @Override
     public String name() {
         return "JBoss Server AddInstanceIterator";  // NOI18N
     }
     
     public static void showInformation(final String msg,  final String title) {
         Runnable info = new Runnable() {
+            @Override
             public void run() {
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 d.setTitle(title);
@@ -142,6 +150,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         }
     }
     
+    @Override
     public Set instantiate() throws IOException {
         Set result = new HashSet();
         
@@ -165,6 +174,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
             initialProperties.put(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
             initialProperties.put(JBPluginProperties.PROPERTY_HOST, host);
             initialProperties.put(JBPluginProperties.PROPERTY_PORT, port);
+            initialProperties.put(JBPluginProperties.PROPERTY_CONFIG_FILE, configFile);
 
             if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
                 initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
@@ -184,10 +194,12 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         return result;
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
         return index < getPanels().length - 1;
     }
@@ -257,6 +269,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         return index;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         WizardDescriptor.Panel result = getPanels()[index];
         JComponent component = (JComponent)result.getComponent();
@@ -265,6 +278,7 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         return result;
     }
     
+    @Override
     public void stateChanged(javax.swing.event.ChangeEvent changeEvent) {
         fireChangeEvent();
     }
@@ -288,6 +302,11 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     private String installLocation;
     private String deployDir;
     private String serverPath;
+    private String configFile="standalone-full.xml";
+    
+     public void setConfigFile(String configFile){
+        this.configFile = configFile.trim();
+    }
     
     public void setPassword(String password) {
         this.password = password;

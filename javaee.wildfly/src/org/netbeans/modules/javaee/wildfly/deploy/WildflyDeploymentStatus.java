@@ -41,90 +41,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.deploy;
 
-package org.netbeans.modules.javaee.wildfly.nodes;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
- * It describes children nodes of the Web Applications node. Implements
- * Refreshable interface and due to it can be refreshed via
- * ResreshModulesAction.
+ * An implementation of the DeploymentStatus interface used to track the server
+ * start/stop progress.
  *
- * @author Michal Mocnak
+ * @author Kirill Sorokin
  */
-public class JBWebApplicationsChildren extends JBAsyncChildren implements Refreshable {
+public final class WildflyDeploymentStatus implements DeploymentStatus {
 
-    private static final Logger LOGGER = Logger.getLogger(JBWebApplicationsChildren.class.getName());
+    private final ActionType action;
 
-    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
-    static {
-        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
-                "jbossws-context", "jmx-console", "jbossws", "jbossws",
-                "web-console", "invoker", "jbossmq-httpil");
-    }
+    private final CommandType command;
 
-    private final Lookup lookup;
+    private final StateType state;
 
-    public JBWebApplicationsChildren(Lookup lookup) {
-        this.lookup = lookup;
-    }
+    private final String message;
 
-    @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7WebNodeUpdater(), 0);
-    }
+    public WildflyDeploymentStatus(ActionType action, CommandType command,
+            StateType state, String message) {
+        this.action = action;
+        this.command = command;
+        this.state = state;
 
-    class JBoss7WebNodeUpdater implements Runnable {
-
-        List keys = new ArrayList();
-
-        @Override
-        public void run() {
-
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listWebModules(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-
-            setKeys(keys);
-        }
+        this.message = message;
     }
 
     @Override
-    protected void addNotify() {
-        updateKeys();
+    public String getMessage() {
+        return message;
     }
 
     @Override
-    protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
+    public StateType getState() {
+        return state;
     }
 
     @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBWebModuleNode){
-            return new Node[]{(JBWebModuleNode)key};
-        }
+    public CommandType getCommand() {
+        return command;
+    }
 
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
-            return new Node[]{Util.createWaitNode()};
-        }
+    @Override
+    public ActionType getAction() {
+        return action;
+    }
 
-        return null;
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
+    }
+
+    @Override
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
+    }
+
+    @Override
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
     }
 
 }
