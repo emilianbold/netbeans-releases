@@ -396,33 +396,6 @@ public class EditorTestCase extends JellyTestCase {
         return clipboardValueResolver;
     }
 
-    public boolean FIX_STATE_WHEN_FAILURE = true;
-
-    public void setEditorStateWithGoldenFile(EditorOperator editor, String goldenFile, int caretLine, int caretColumn, String errMessage) {
-        try {
-            if (FIX_STATE_WHEN_FAILURE) {
-                JEditorPaneOperator txtOper = editor.txtEditorPane();
-                StringBuffer fileData = new StringBuffer(1000);
-                BufferedReader reader = new BufferedReader(new FileReader(getGoldenFile(goldenFile)));
-                char[] buf = new char[1024];
-                int numRead = 0;
-                while ((numRead = reader.read(buf)) != -1) {
-                    fileData.append(buf, 0, numRead);
-                }
-                reader.close();
-                txtOper.removeAll();
-                txtOper.setText(fileData.toString());
-                txtOper.pushKey(KeyEvent.VK_BACK_SPACE); // replace the last NL...
-                editor.setCaretPosition(caretLine, caretColumn);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("[ERROR] !!! Exception thrown while workaround was executed. This may cause subsequent tests to fail.");
-        } finally {
-            fail(errMessage);
-        }
-    }
-
     protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){
         Transferable oldClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
         log("");
