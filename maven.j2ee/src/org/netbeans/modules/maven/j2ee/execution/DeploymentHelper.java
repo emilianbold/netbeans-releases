@@ -281,6 +281,7 @@ public final class DeploymentHelper {
             }
         } catch (Deployment.DeploymentException | MalformedURLException ex) {
             LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
+            return DeploymentResult.FAILED;
         }
 
         // Reset the value of the one-time server

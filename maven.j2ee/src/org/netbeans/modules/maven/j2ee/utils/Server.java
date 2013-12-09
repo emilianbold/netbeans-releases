@@ -118,7 +118,7 @@ public final class Server implements Comparable<Server> {
     })
     @Override
     public String toString() {
-        if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
+        if (serverInstanceId == null || ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
             return MSG_No_Server();
         }
 
