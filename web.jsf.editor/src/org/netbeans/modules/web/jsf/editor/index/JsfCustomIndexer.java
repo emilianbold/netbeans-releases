@@ -69,27 +69,26 @@ public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
     static final int INDEXER_VERSION = 5;
-
     public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
         for (Indexable i : files) {
             URL indexableURL = i.getURL();
-            if(indexableURL == null) {
+            if (indexableURL == null) {
                 continue;
             }
             FileObject file = URLMapper.findFileObject(indexableURL);
             if (file == null) {
                 continue;
             }
-            
+
             if (JsfIndexSupport.isFaceletsLibraryDescriptor(file)) {
                 LOGGER.log(Level.FINE, "indexing {0}", file); //NOI18N
 
                 try {
                     String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
-                    if(namespace != null) {
+                    if (namespace != null) {
                         JsfIndexSupport.indexFaceletsLibraryDescriptor(context, file, namespace);
                         LOGGER.log(Level.FINE, "The file {0} indexed as a Facelets Library Descriptor", file); //NOI18N
                     }
@@ -102,7 +101,7 @@ public class JsfCustomIndexer extends CustomIndexer {
 
                 try {
                     String namespace = FaceletsLibraryDescriptor.parseNamespace(file.getInputStream());
-                    if(namespace != null) {
+                    if (namespace != null) {
                         JsfIndexSupport.indexTagLibraryDescriptor(context, file, namespace);
                         LOGGER.log(Level.FINE, "The file {0} indexed as a Tag Library Descriptor", file); //NOI18N
                     }
@@ -112,7 +111,7 @@ public class JsfCustomIndexer extends CustomIndexer {
 
             }
         }
-        
+
         //notify the FaceletsLibrarySupport that the libraries might have changed.
         if (context.getRoot() != null) {  //looks like can be null
             for (Project p : LibraryUtils.getOpenedJSFProjects()) {
@@ -124,7 +123,7 @@ public class JsfCustomIndexer extends CustomIndexer {
                 }
             }
         }
-        
+
     }
 
     public static class Factory extends CustomIndexerFactory {
@@ -140,19 +139,19 @@ public class JsfCustomIndexer extends CustomIndexer {
         }
 
         @Override
-	public boolean scanStarted(Context context) {
+        public boolean scanStarted(Context context) {
             try {
                 return IndexingSupport.getInstance(context).isValid();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 return false;
             }
-	}
+        }
 
         @Override
-	public void scanFinished(Context context) {
-	    super.scanFinished(context);
-	}
+        public void scanFinished(Context context) {
+            super.scanFinished(context);
+        }
 
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {

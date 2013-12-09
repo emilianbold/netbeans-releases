@@ -117,8 +117,8 @@ public class JsfIndexer extends EmbeddingIndexer {
             }
         }
 
-	@Override
-	public boolean scanStarted(Context context) {
+        @Override
+        public boolean scanStarted(Context context) {
             try {
                 LOG.log(Level.FINE, "scanning of {0} started", context.getRoot()); //NOI18N
                 return IndexingSupport.getInstance(context).isValid();
@@ -126,9 +126,9 @@ public class JsfIndexer extends EmbeddingIndexer {
                 Exceptions.printStackTrace(ex);
                 return false;
             }
-	}
+        }
 
-	@Override
+        @Override
         public void scanFinished(Context context) {
             //notify the FaceletsLibrarySupport that the libraries might have changed.
             if (context.getRoot() != null) {  //looks like can be null
@@ -145,7 +145,7 @@ public class JsfIndexer extends EmbeddingIndexer {
             LOG.log(Level.FINE, "scanning of {0} finished", context.getRoot()); //NOI18N
 
         }
-	
+
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             //no-op
@@ -172,6 +172,5 @@ public class JsfIndexer extends EmbeddingIndexer {
             String sourceFileMimeType = fo.getMIMEType();
             return JsfUtils.XHTML_MIMETYPE.equals(sourceFileMimeType);
         }
-        
     } //end of Factory class
 }
