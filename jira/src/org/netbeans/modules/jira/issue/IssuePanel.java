@@ -1293,7 +1293,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                updateFieldStatuses();
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run () {
+                        updateFieldStatuses();
+                    }
+                });
             }
         }
     };
