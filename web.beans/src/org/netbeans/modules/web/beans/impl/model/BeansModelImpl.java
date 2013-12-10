@@ -418,7 +418,7 @@ public class BeansModelImpl implements BeansModel {
 
     private BeanArchiveType detectArchiveType(FileObject beans) {
         WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
-        if (model == null) {
+        if (model == null || model.getRootComponent()==null) {
             return BeanArchiveType.IMPLICIT;
         }
 
