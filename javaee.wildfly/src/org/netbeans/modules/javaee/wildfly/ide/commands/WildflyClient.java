@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -400,33 +401,42 @@ public class WildflyClient {
     }
 
     public Set<Datasource> listDatasources() throws IOException {
-//        try {
-//            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-//            Set<Datasource> listedDatasources = new HashSet<Datasource>();
-//            // ModelNode
-//            final Object readDatasources = createModelNode(cl);
-//            readDatasources.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
-//            readDatasources.get(ADDRESS).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, DATASOURCES_SUBSYSTEM)).toModelNode());
-//            readDatasources.get(RECURSIVE_DEPTH).set(0);
-//            readDatasources.get(CHILD_TYPE).set(DATASOURCE_TYPE);
-//            ModelNode response = executeOnModelNode(readDatasources);
-//            if (isSuccessfulOutcome(cl, response)) {
-//                List<ModelNode> names = Operations.readResult(response).asList();
-//                for (ModelNode datasourceName : names) {
-//                    listedDatasources.add(getDatasource(cl, datasourceName.asString()));
-//                }
-//            }
-//            return listedDatasources;
-//        } catch (ClassNotFoundException ex) {
-//            throw new IOException(ex);
-//        } catch (NoSuchMethodException ex) {
-//            throw new IOException(ex);
-//        } catch (InvocationTargetException ex) {
-//            throw new IOException(ex);
-//        } catch (IllegalAccessException ex) {
-//            throw new IOException(ex);
-//        }
-        return Collections.emptySet();
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            Set<Datasource> listedDatasources = new HashSet<Datasource>();
+            // ModelNode
+            final Object readDatasources = createModelNode(cl);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), DATASOURCES_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "CHILD_TYPE")), DATASOURCE_TYPE);
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDatasources);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object datasourceName : names) {
+                    listedDatasources.add(getDatasource(cl, modelNodeAsString(cl, datasourceName)));
+                }
+            }
+            return listedDatasources;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
     }
 
     private JBossDatasource getDatasource(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws IOException {
