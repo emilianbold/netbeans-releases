@@ -241,8 +241,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/netBeans/baseide/build/scripts/addproduct_id.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/commonfiles/get_current_jdk.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/commonfiles/unpack200.sh" todir="${scriptsdir}"/>
-        <copy file="${basedir}/commonfiles/postupgrade_generic" tofile="${target.scriptsdir}/postupgrade" overwrite="false"/>
-        <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${target.scriptsdir}/postinstall" overwrite="false"/>
+        <copy file="${basedir}/commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
+        <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
