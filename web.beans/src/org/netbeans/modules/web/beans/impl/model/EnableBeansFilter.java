@@ -56,6 +56,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -153,12 +154,10 @@ class EnableBeansFilter {
             //no implementation on classpath/sources or it's fileterd by common logic(for usual beans)
             //first check if we have a class in white list (i.e. must be implemented in ee7 environment)
             String nm = myResult.getVariableType().toString();
-            if (nm.indexOf('<')>0) {
-                nm = nm.substring(0,nm.indexOf('<'));
-            }
             if(nm.startsWith("javax.")) {//NOI18N
-                if(EventInjectionPointLogic.EVENT_INTERFACE.equals(nm)) {
-                    return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+                InjectableResultImpl res = handleEESpecificImplementations(getResult(), firstElement, enabledTypes);
+                if(res != null) {
+                    return res;
                 }
             }
             //
@@ -550,6 +549,11 @@ class EnableBeansFilter {
     private WebBeansModelImplementation getWebBeansModel(){
         return myModel;
     }
+    
+    private boolean handleSpecialImplementationsByAnnotation(VariableElement element, TypeElement annotationElement) {
+        return annotationElement.getQualifiedName().contentEquals( 
+                    "javax.faces.flow.builder.FlowBuilderParameter" );//NOI18N;
+    }
 
     private Set<Element> myAlternatives;
     private Set<Element> myEnabledAlternatives;
@@ -558,4 +562,27 @@ class EnableBeansFilter {
     private final BeansModel myBeansModel;
     private WebBeansModelImplementation myModel;
     private boolean isProgrammatic;
+
+
+
+    private InjectableResultImpl handleEESpecificImplementations(ResultImpl result, TypeElement firstElement, Set<Element> enabledTypes) {
+        if(result.getVariable() != null) {
+            String nm = result.getVariable().asType().toString();
+            int c = nm.indexOf('<');
+            if(c>0) {
+                nm = nm.substring(0,c);
+            }
+            if(EventInjectionPointLogic.EVENT_INTERFACE.equals(nm)) {
+                        return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+            }
+            if("javax.faces.flow.builder.FlowBuilder".equals(nm)) {//NOI18N
+                for(AnnotationMirror am:result.getVariable().getAnnotationMirrors()) {
+                    if("javax.faces.flow.builder.FlowBuilderParameter".equals(am.getAnnotationType().toString())) {//NOI18N
+                        return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
