@@ -116,6 +116,8 @@ TOMCAT_ID="${tomcat.id}"
 
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../../commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
+        <copy file="${basedir}/../../commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
 
         <copy todir="${scriptsdir}" verbose="yes">
             <fileset dir="${basedir}/pkg/scripts"/>
