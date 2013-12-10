@@ -3744,12 +3744,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
     /**
      * Auto-boxes or un-boxes arguments of a method.
      */
-    private static void autoboxArguments(List<Type> types, List<Value> argVals,
-                                         ThreadReference evaluationThread,
-                                         EvaluationContext evaluationContext) throws InvalidTypeException,
-                                                                                     ClassNotLoadedException,
-                                                                                     IncompatibleThreadStateException,
-                                                                                     InvocationException {
+    static void autoboxArguments(List<Type> types, List<Value> argVals,
+                                 ThreadReference evaluationThread,
+                                 EvaluationContext evaluationContext) throws InvalidTypeException,
+                                                                             ClassNotLoadedException,
+                                                                             IncompatibleThreadStateException,
+                                                                             InvocationException {
         if (types.size() != argVals.size()) {
             return ;
         }
