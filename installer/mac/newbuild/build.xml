@@ -415,7 +415,6 @@ Microsystems, Inc. All Rights Reserved.
     
         
     <target name="build-dmg">   
-        <delete dir="${basedir}/dist" failonerror="false"/>                          
         <mkdir dir="dist"/>
         <property file="${basedir}/build/sizes.pro"/>         
         <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
