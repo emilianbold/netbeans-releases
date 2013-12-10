@@ -80,6 +80,8 @@ public class StableSuite {
                 //.addTest(SurroundTest.class)
                 .addTest(MembersViewTest.class)
                 .addTest(ParserTest.class)
+                .enableModules(".*")
+                .clusters(".*")
                 );
     }
 }
