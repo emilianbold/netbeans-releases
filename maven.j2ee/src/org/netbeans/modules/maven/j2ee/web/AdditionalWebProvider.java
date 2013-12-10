@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
  */
 @ProjectServiceProvider(service = {EjbJarProvider.class, EjbJarsInProject.class}, projectType = {
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
@@ -80,11 +81,9 @@ public class AdditionalWebProvider implements EjbJarProvider, EjbJarsInProject {
         Profile profile = moduleProvider.getModuleImpl().getJ2eeProfile();
         
         boolean javaEE6profile = profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB);
-        boolean webSupported = MavenProjectSupport.isWebSupported(project, packaging);
         
-        if (javaEE6profile && webSupported) {
-            WebEjbJarImpl webEjbJarImpl = new WebEjbJarImpl(moduleProvider.getModuleImpl(), project);
-            return EjbJarFactory.createEjbJar(webEjbJarImpl);
+        if (javaEE6profile) {
+            return EjbJarFactory.createEjbJar(new WebEjbJarImpl(moduleProvider.getModuleImpl(), project));
         } else {
             return null;
         }
