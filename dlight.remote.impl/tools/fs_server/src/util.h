@@ -137,6 +137,10 @@ bool visit_dir_entries(
 
 const char* get_basename(const char *path);
 
+int utf8_bytes_count(const char *buffer, int char_count);
+int utf8_char_count(const char *buffer, int byte_count);
+int utf8_strlen(const char *buffer);
+
 #ifdef	__cplusplus
 }
 #endif
