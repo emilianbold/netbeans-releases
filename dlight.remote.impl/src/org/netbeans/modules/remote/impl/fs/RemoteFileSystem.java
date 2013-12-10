@@ -78,6 +78,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.openide.actions.FileSystemRefreshAction;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
@@ -642,11 +643,24 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     @Override
     public final SystemAction[] getActions(final Set<FileObject> foSet) {
-        SystemAction[] some = status.getActions (foSet);
-        if (some != null) {
-            return some;
+        SystemAction[] result = status.getActions (foSet);
+        SystemAction refreshAction = isManualRefresh() ? null :  FileSystemRefreshAction.get(FileSystemRefreshAction.class);                 
+        if (result == null) {
+            return (refreshAction == null) ? result : append(result, refreshAction);
+        } else {
+            return (refreshAction == null) ? new SystemAction[] {} : new SystemAction[] { refreshAction };
         }        
-        return new SystemAction[] {};
+    }
+
+    private static boolean isManualRefresh() {
+        return NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
+    }
+
+    private static SystemAction[] append(SystemAction[] actions, SystemAction actionToAppend) {
+        SystemAction[] result = new SystemAction[actions.length + 1];
+        System.arraycopy(actions, 0, result, 0, actions.length);
+        result[actions.length] = actionToAppend;
+        return result;
     }
 
     @Override
