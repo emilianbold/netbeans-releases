@@ -464,6 +464,7 @@
           <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
+            <standard>3</standard>
             <incDir>
               <pElem>.</pElem>
             </incDir>
