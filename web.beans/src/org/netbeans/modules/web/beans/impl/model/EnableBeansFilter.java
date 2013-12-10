@@ -101,6 +101,9 @@ class EnableBeansFilter {
          predefinedBeans.add("javax.jms.JMSContext");//NOI18N
          predefinedBeans.add(AnnotationUtil.INJECTION_POINT);//NOI18N
          predefinedBeans.add("javax.enterprise.inject.spi.BeanManager");//NOI18N
+         predefinedBeans.add("javax.transaction.UserTransaction");//NOI18N
+         predefinedBeans.add("java.security.Principal");//NOI18N
+         predefinedBeans.add("javax.validation.ValidatorFactory");//NOI18N
     };
      
      private final HashMap<String, String> predefinedBeanAnnotationPairs;
