@@ -49,14 +49,19 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -367,6 +372,86 @@ public class OpenProjectListTest extends NbTestCase {
         //the same for a previously opened project:
         OpenProjectList.getDefault().setMainProject(prj1);
     }
+
+    public void testProjectClosedRace() throws Exception {
+
+        final class POHImpl extends ProjectOpenedHook {
+
+            private final AtomicInteger opened = new AtomicInteger();
+            private final AtomicInteger closed = new AtomicInteger();
+
+            private final Collection<Runnable> openActions;
+            private final Collection<Runnable> closeActions;
+
+
+            POHImpl(
+                Runnable[] openActions,
+                Runnable[] closeActions) {
+                this.openActions = new ArrayList<Runnable>(openActions.length);
+                this.closeActions = new ArrayList<Runnable>(closeActions.length);
+                Collections.addAll(this.openActions, openActions);
+                Collections.addAll(this.closeActions, closeActions);
+            }
+
+
+            @Override
+            protected void projectOpened() {
+                try {
+                    for (Runnable a : openActions) {
+                        a.run();
+                    }
+                } finally {
+                    opened.incrementAndGet();
+                }
+            }
+            @Override
+            protected void projectClosed() {
+                try {
+                    for (Runnable a : closeActions) {
+                        a.run();
+                    }
+                }finally {
+                    closed.incrementAndGet();
+                }
+            }
+        }
+        final CountDownLatch barrier = new CountDownLatch(1);
+        final POHImpl poh = new POHImpl(
+            new Runnable[0],
+            new Runnable[]{
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            barrier.await();
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            });
+        ((TestSupport.TestProject) project1).setLookup(Lookups.singleton(poh));
+        OpenProjectList.getDefault().open(project1);
+        Future<Project[]> becomesProjects = OpenProjectList.getDefault().openProjectsAPI();
+        Project[] projects = becomesProjects.get();
+        assertTrue("Open done", becomesProjects.isDone());          //NOI18N
+        assertEquals("projectOpened called", 1, poh.opened.get());      //NOI18N
+        assertEquals("No projectClosed called", 0, poh.closed.get());   //NOI18N
+        assertEquals("One project opened", 1, projects.length);         //NOI18N
+
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        assertEquals("no projectClosed called yet", 0, poh.closed.get());   //NOI18N
+        becomesProjects = OpenProjectList.getDefault().openProjectsAPI();
+        assertFalse("Close not yet done", becomesProjects.isDone());        //NOI18N
+        barrier.countDown();
+        projects = becomesProjects.get();
+        assertTrue("Close done", becomesProjects.isDone());          //NOI18N
+        assertEquals("projectClosed called", 1, poh.closed.get());   //NOI18N
+        assertEquals("No projects", 0, projects.length);            //NOI18N
+
+
+    }
+
     // helper code
 
     private static class MySubprojectProvider implements SubprojectProvider {
