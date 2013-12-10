@@ -527,11 +527,13 @@ made subject to such option by the copyright holder.
     <folder name="OptionsExport">
         <!-- category -->
         <folder name="Projects">
+            <attr name="position" intvalue="317"/>
             <!-- category display name -->
             <attr name="displayName"
               bundlevalue="org.netbeans.modules.project.ui.Bundle#Export_Category_Display_Name"/>
             <!-- item -->
             <file name="Basic">
+                <attr name="position" intvalue="100"/>
                 <attr name="include"
                   stringvalue="config/Preferences/org/netbeans/modules/projectui/.*|config/Preferences/org/netbeans/modules/projectui.properties"/>
                 <attr name="exclude" 
@@ -540,6 +542,7 @@ made subject to such option by the copyright holder.
                   bundlevalue="org.netbeans.modules.project.ui.Bundle#Export_Display_Name"/>
             </file>
             <file name="Groups">
+                <attr name="position" intvalue="200"/>
                 <attr name="include"
                   stringvalue="config/Preferences/org/netbeans/modules/projectui/groups/.*|config/Preferences/org/netbeans/modules/projectui/groups.properties"/>
                 <attr name="displayName"
