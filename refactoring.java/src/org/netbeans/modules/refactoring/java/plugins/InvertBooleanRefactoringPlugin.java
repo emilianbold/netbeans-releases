@@ -39,31 +39,36 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.java.hints.support.TransformationSupport;
-import org.netbeans.spi.java.hints.support.TransformationSupport.Transformer;
 import org.openide.util.Exceptions;
 import org.openide.util.MapFormat;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 /**
  *
@@ -75,15 +80,97 @@ public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //ext
     
     protected final AtomicBoolean cancel = new AtomicBoolean();
     
-    public InvertBooleanRefactoringPlugin(InvertBooleanRefactoring replaceConstructorRefactoring) {
-        this.invertBooleanRefactoring = replaceConstructorRefactoring;
+    public InvertBooleanRefactoringPlugin(InvertBooleanRefactoring invertBooleanRefactoring) {
+        this.invertBooleanRefactoring = invertBooleanRefactoring;
     }
-
+    
     @Override
+    @NbBundle.Messages({"ERR_InvertMethodPolymorphic=Cannot invert polymorphic method.",
+        "ERR_InvertMethodInInterface=Cannot invert method from interface.",
+        "ERR_InvertMethodAbstract=Cannot invert abstract method."})
     public Problem preCheck() {
-        return null;
+        final TreePathHandle treePathHandle = this.invertBooleanRefactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        JavaSource js = JavaSource.forFileObject(treePathHandle.getFileObject());
+        if (js == null) {
+            return null;
+        }
+        final Problem preCheckProblem[] = {null};
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController javac) throws Exception {
+                    javac.toPhase(JavaSource.Phase.RESOLVED);
+                    Element element = treePathHandle.resolveElement(javac);
+                    preCheckProblem[0] = isElementAvail(treePathHandle, javac);
+                    if (preCheckProblem[0] != null) {
+                        return;
+                    }
+
+                    preCheckProblem[0] = JavaPluginUtils.isSourceElement(element, javac);
+                    if (preCheckProblem[0] != null) {
+                        return;
+                    }
+
+                    switch (element.getKind()) {
+                        case METHOD:
+                            // Method can not be in annotation or interface
+
+                            if (element.getEnclosingElement().getKind().isInterface()) {
+                                preCheckProblem[0] = createProblem(preCheckProblem[0], true, ERR_InvertMethodInInterface());
+                                return;
+                            }
+                            if (element.getModifiers().contains(Modifier.ABSTRACT)) {
+                                preCheckProblem[0] = createProblem(preCheckProblem[0], true, ERR_InvertMethodAbstract());
+                                return;
+                            }
+                            // Method can not be polymorphic
+                            Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
+                            Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac, new AtomicBoolean());
+                            if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
+                                preCheckProblem[0] = createProblem(preCheckProblem[0], true, ERR_InvertMethodPolymorphic());
+                                return;
+                            }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        return preCheckProblem[0];
+    }
+    
+    /**
+     * Copy from JavaRefactoringPlugin.
+     */
+    private Problem createProblem(Problem result, boolean isFatal, String message) {
+        Problem problem = new Problem(isFatal, message);
+        return JavaPluginUtils.chainProblems(result, problem);
     }
 
+    /**
+     * Copy from JavaRefactoringPlugin.
+     */
+    private Problem isElementAvail(TreePathHandle e, CompilationInfo info) {
+        if (e==null) {
+            //element is null or is not valid.
+            return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
+        } else {
+            Element el = e.resolveElement(info);
+            String elName = el != null ? el.getSimpleName().toString() : null;
+            if (el == null || el.asType().getKind() == TypeKind.ERROR || "<error>".equals(elName)) { // NOI18N
+                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElementNotResolved"));
+            }
+            
+            if ("this".equals(elName) || "super".equals(elName)) { // NOI18N
+                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "ERR_CannotRefactorThis", el.getSimpleName()));
+            }
+            
+            // element is still available
+            return null;
+        }
+    }
+    
     @Override
     public Problem checkParameters() {
         return null;
@@ -93,11 +180,8 @@ public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //ext
     public Problem fastCheckParameters() {
         String name = invertBooleanRefactoring.getNewName();
         
-        if (name == null || name.length() == 0) {
-            return new Problem(true, "No factory method name specified.");
-        }
-        if (!SourceVersion.isIdentifier(name)) {
-            return new Problem(true, name + " is not an identifier.");
+        if (name == null || name.length() == 0 || !SourceVersion.isIdentifier(name)) {
+            return new Problem(true, NbBundle.getMessage(InvertBooleanRefactoringPlugin.class, "ERR_InvalidIdentifier", name));
         }
         return null;
     }
