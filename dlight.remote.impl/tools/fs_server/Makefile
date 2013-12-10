@@ -13,7 +13,7 @@ endif
 
 ifeq (sun4, $(ARCH))
   OS_ARCH = $(OS)-sparc
-else { #i86pc
+else
   OS_ARCH = $(OS)-x86
 endif
 
