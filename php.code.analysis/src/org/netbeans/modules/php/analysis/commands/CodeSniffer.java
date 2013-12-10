@@ -158,6 +158,11 @@ public final class CodeSniffer {
             if (result == null) {
                 return null;
             }
+            // #239232
+            if (!XML_LOG.isFile()
+                    && result == 0) {
+                return Collections.emptyList();
+            }
             return CodeSnifferReportParser.parse(XML_LOG);
         } catch (CancellationException ex) {
             // cancelled
