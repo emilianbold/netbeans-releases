@@ -59,6 +59,19 @@ public class SessionSynchImplementedBySFSBOnlyTest extends TestBase {
             + "  public void beforeCompletion() throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
             + "  public void afterCompletion(boolean bln) throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean implements " + EJBAPIAnnotations.SESSION_SYNCHRONIZATION + " {\n"
+            + "  public void afterBegin() throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "  public void beforeCompletion() throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "  public void afterCompletion(boolean bln) throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 implements " + EJBAPIAnnotations.SESSION_SYNCHRONIZATION + " {\n"
+            + "  public void afterBegin() throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "  public void beforeCompletion() throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "  public void afterCompletion(boolean bln) throws javax.ejb.EJBException, java.rmi.RemoteException { } \n"
+            + "}";
 
     public SessionSynchImplementedBySFSBOnlyTest(String name) {
         super(name);
@@ -71,5 +84,15 @@ public class SessionSynchImplementedBySFSBOnlyTest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(SessionSynchImplementedBySFSBOnly.class)
                 .assertWarnings("2:13-2:21:error:" + Bundle.SessionSynchImplementedBySFSBOnly_err());
+    }
+
+    public void testSessionSynchImplementedBySFSBOnlyMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(SessionSynchImplementedBySFSBOnly.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.SessionSynchImplementedBySFSBOnly_err(),
+                                        "8:6-8:15:error:" + Bundle.SessionSynchImplementedBySFSBOnly_err());
     }
 }
