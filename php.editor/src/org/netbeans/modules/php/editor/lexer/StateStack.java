@@ -44,13 +44,17 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-public class StateStack {
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+public class StateStack {
+    private static final Logger LOGGER = Logger.getLogger(StateStack.class.getName());
+    private static final byte SIZE = 4;
     public byte[] stack;
     private int lastIn = -1;
 
     public StateStack() {
-        this(5);
+        this(SIZE);
     }
 
     public StateStack(int stackSize) {
@@ -78,7 +82,8 @@ public class StateStack {
 
     private void multiplySize() {
         int length = stack.length;
-        byte[] temp = new byte[length * 2];
+        LOGGER.log(Level.INFO, "PHP_STATE_STACK - increasing size: {0} by {1}", new Object[]{length, SIZE});
+        byte[] temp = new byte[length + SIZE];
         System.arraycopy(stack, 0, temp, 0, length);
         stack = temp;
     }
