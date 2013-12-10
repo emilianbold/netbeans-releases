@@ -49,11 +49,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +68,6 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBWebModuleNode;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -87,7 +84,6 @@ public class WildflyClient {
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
 
-    private final String realUri;
     private final String serverAddress;
     private final int serverPort;
     private final CallbackHandler handler;
@@ -116,19 +112,17 @@ public class WildflyClient {
         return serverAddress;
     }
 
-    public WildflyClient(InstanceProperties ip, String realUri, String serverAddress, int serverPort) {
+    public WildflyClient(InstanceProperties ip, String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
-        this.realUri = realUri;
         this.ip = ip;
         handler = new Authentication().getCallbackHandler();
     }
 
-    public WildflyClient(InstanceProperties ip, String realUri, String serverAddress, int serverPort, String login,
+    public WildflyClient(InstanceProperties ip, String serverAddress, int serverPort, String login,
             String password) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
-        this.realUri = realUri;
         this.ip = ip;
         handler = new Authentication(login, password.toCharArray()).getCallbackHandler();
     }
@@ -162,7 +156,7 @@ public class WildflyClient {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
             Object shutdownOperation = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, shutdownOperation, getModelDescriptionConstant(cl, "OP")), getModelDescriptionConstant(cl, "SHUTDOWN"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, shutdownOperation, getModelDescriptionConstant(cl, "OP")), getModelDescriptionConstant(cl, "SHUTDOWN"));
             executeAsync(cl, shutdownOperation, null);
             close();
         } catch (ClassNotFoundException ex) {
@@ -183,9 +177,9 @@ public class WildflyClient {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
             Object statusOperation = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_ATTRIBUTE_OPERATION"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_ATTRIBUTE_OPERATION"));
             setModelNodeChildEmptyList(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "OP_ADDR")));
-            setModelNodeChild(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "NAME")), SERVER_STATE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "NAME")), SERVER_STATE);
             // ModelNode
             Object response = executeOnModelNode(cl, statusOperation);
             return getClientConstant(cl, "SUCCESS").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getClientConstant(cl, "OUTCOME"))))
@@ -329,7 +323,7 @@ public class WildflyClient {
 
             // ModelNode
             final Object undeploy = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, undeploy, getClientConstant(cl, "OP")), getClientConstant(cl, "COMPOSITE"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, undeploy, getClientConstant(cl, "OP")), getClientConstant(cl, "COMPOSITE"));
             setModelNodeChildEmptyList(cl, getModelNodeChild(cl, undeploy, getModelDescriptionConstant(cl, "ADDRESS")));
             // ModelNode
             Object steps = getModelNodeChild(cl, undeploy, getClientConstant(cl, "STEPS"));
@@ -360,16 +354,16 @@ public class WildflyClient {
 
             // ModelNode
             final Object deploy = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, deploy, getClientConstant(cl, "OP")), getClientConstant(cl, "COMPOSITE"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, deploy, getClientConstant(cl, "OP")), getClientConstant(cl, "COMPOSITE"));
             setModelNodeChildEmptyList(cl, getModelNodeChild(cl, deploy, getModelDescriptionConstant(cl, "ADDRESS")));
             // ModelNode
             Object steps = getModelNodeChild(cl, deploy, getClientConstant(cl, "STEPS"));
             // ModelNode
             Object addModule = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "OP")), getClientConstant(cl, "ADD"));
-            setModelNodeChild(cl, getModelNodeChildAtPath(cl, addModule,
+            setModelNodeChildString(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "OP")), getClientConstant(cl, "ADD"));
+            setModelNodeChildString(cl, getModelNodeChildAtPath(cl, addModule,
                     new Object[] {getModelDescriptionConstant(cl, "ADDRESS"), getClientConstant(cl, "DEPLOYMENT")}), fileName);
-            setModelNodeChild(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "RUNTIME_NAME")), fileName);
+            setModelNodeChildString(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "RUNTIME_NAME")), fileName);
             setModelNodeChildBytes(cl, getModelNodeChild(cl, getModelNodeChildAtIndex(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "CONTENT")), 0),
                     getModelDescriptionConstant(cl, "BYTES")), deployment.getModule().getArchive().asBytes());
 
@@ -406,7 +400,7 @@ public class WildflyClient {
             Set<Datasource> listedDatasources = new HashSet<Datasource>();
             // ModelNode
             final Object readDatasources = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
 
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
             values.put(getClientConstant(cl, "SUBSYSTEM"), DATASOURCES_SUBSYSTEM);
@@ -414,7 +408,7 @@ public class WildflyClient {
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getModelDescriptionConstant(cl, "ADDRESS")), path);
             setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
-            setModelNodeChild(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "CHILD_TYPE")), DATASOURCE_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readDatasources, getClientConstant(cl, "CHILD_TYPE")), DATASOURCE_TYPE);
 
             // ModelNode
             Object response = executeOnModelNode(cl, readDatasources);
@@ -443,7 +437,7 @@ public class WildflyClient {
         try {
             // ModelNode
             final Object readDatasource = createModelNode(cl);
-            setModelNodeChild(cl, getModelNodeChild(cl, readDatasource, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_RESOURCE_OPERATION"));
+            setModelNodeChildString(cl, getModelNodeChild(cl, readDatasource, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_RESOURCE_OPERATION"));
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
             values.put(getClientConstant(cl, "SUBSYSTEM"), DATASOURCES_SUBSYSTEM);
             values.put(DATASOURCE_TYPE, name);
@@ -598,10 +592,19 @@ public class WildflyClient {
     }
 
     // ModelNode
-    private static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
+    private static Object setModelNodeChildString(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         assert value != null;
         Method method = modelNode.getClass().getMethod("set", String.class);
+        return method.invoke(modelNode, value);
+    }
+
+    // ModelNode
+    private static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
+            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        assert value != null;
+        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
+        Method method = modelNode.getClass().getMethod("set", modelClazz);
         return method.invoke(modelNode, value);
     }
 

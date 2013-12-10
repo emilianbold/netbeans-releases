@@ -115,9 +115,9 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         this.realUri = realUri;
         this.instanceProperties = InstanceProperties.getInstanceProperties(realUri);
         if (username != null && password != null) {
-            this.client = new WildflyClient(instanceProperties, realUri, getHost(), CONTROLLER_PORT, username, password);
+            this.client = new WildflyClient(instanceProperties, getHost(), CONTROLLER_PORT, username, password);
         } else {
-            this.client = new WildflyClient(instanceProperties, realUri, getHost(), CONTROLLER_PORT);
+            this.client = new WildflyClient(instanceProperties, getHost(), CONTROLLER_PORT);
         }
     }
 
