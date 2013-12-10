@@ -210,12 +210,14 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
             getObjects();
         Set<String> existingStereotypes = new HashSet<String>(namedStereotypes.size());
         for (NamedStereotype namedStereotype : namedStereotypes) {
-            String name = namedStereotype.getTypeElement().getQualifiedName().
-                toString();
-            if ( !stereotypes.contains( name)){
-                getStereotypedManager(name);
+            if( namedStereotype!=null && namedStereotype.getTypeElement()!=null) {
+                String name = namedStereotype.getTypeElement().getQualifiedName().
+                    toString();
+                if ( !stereotypes.contains( name)){
+                    getStereotypedManager(name);
+                }
+                existingStereotypes.add( name );
             }
-            existingStereotypes.add( name );
         }
         if ( existingStereotypes.size() == getStereotypedManagers().keySet().size()){
             return existingStereotypes;

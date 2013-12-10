@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,7 +57,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -67,6 +67,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
@@ -90,6 +91,27 @@ class EnableBeansFilter {
     
     static String SCOPE = "javax.inject.Scope";                             // NOI18N
     
+     private final HashSet<String> predefinedBeans;
+     {
+         predefinedBeans = new HashSet<>();
+         predefinedBeans.add(EventInjectionPointLogic.EVENT_INTERFACE);
+         predefinedBeans.add("javax.servlet.http.HttpServletRequest");//NOI18N
+         predefinedBeans.add("javax.servlet.http.HttpSession");//NOI18N
+         predefinedBeans.add("javax.servlet.ServletContext");//NOI18N
+         predefinedBeans.add("javax.jms.JMSContext");//NOI18N
+         predefinedBeans.add(AnnotationUtil.INJECTION_POINT);//NOI18N
+         predefinedBeans.add("javax.enterprise.inject.spi.BeanManager");//NOI18N
+         predefinedBeans.add("javax.transaction.UserTransaction");//NOI18N
+         predefinedBeans.add("java.security.Principal");//NOI18N
+         predefinedBeans.add("javax.validation.ValidatorFactory");//NOI18N
+    };
+     
+     private final HashMap<String, String> predefinedBeanAnnotationPairs;
+     {
+         predefinedBeanAnnotationPairs = new HashMap<>();
+         predefinedBeanAnnotationPairs.put("javax.faces.flow.builder.FlowBuilder","javax.faces.flow.builder.FlowBuilderParameter");//NOI18N
+     };
+     
     EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model ,
             boolean programmatic )
     {
@@ -549,12 +571,7 @@ class EnableBeansFilter {
     private WebBeansModelImplementation getWebBeansModel(){
         return myModel;
     }
-    
-    private boolean handleSpecialImplementationsByAnnotation(VariableElement element, TypeElement annotationElement) {
-        return annotationElement.getQualifiedName().contentEquals( 
-                    "javax.faces.flow.builder.FlowBuilderParameter" );//NOI18N;
-    }
-
+   
     private Set<Element> myAlternatives;
     private Set<Element> myEnabledAlternatives;
     private ResultImpl myResult;
@@ -572,12 +589,13 @@ class EnableBeansFilter {
             if(c>0) {
                 nm = nm.substring(0,c);
             }
-            if(EventInjectionPointLogic.EVENT_INTERFACE.equals(nm)) {
+            if(predefinedBeans.contains(nm)) {
                         return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
             }
-            if("javax.faces.flow.builder.FlowBuilder".equals(nm)) {//NOI18N
+            String ann = predefinedBeanAnnotationPairs.get(nm);
+            if(ann != null) {//NOI18N
                 for(AnnotationMirror am:result.getVariable().getAnnotationMirrors()) {
-                    if("javax.faces.flow.builder.FlowBuilderParameter".equals(am.getAnnotationType().toString())) {//NOI18N
+                    if(ann.equals(am.getAnnotationType().toString())) {//NOI18N
                         return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
                     }
                 }
