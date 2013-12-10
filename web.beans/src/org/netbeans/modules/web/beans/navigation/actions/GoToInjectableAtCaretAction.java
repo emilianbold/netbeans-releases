@@ -162,17 +162,19 @@ public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
         if (result.getKind() == DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED) {
             Element injectable = ((DependencyInjectionResult.InjectableResult) result)
                     .getElement();
-            final ElementHandle<Element> handle = ElementHandle
-                    .create(injectable);
-            final ClasspathInfo classpathInfo = model
-                    .getCompilationController().getClasspathInfo();
-            SwingUtilities.invokeLater(new Runnable() {
+            if(injectable != null) {//may be null for ee specific implemantations, which may not be present on classpath and may not have sources
+                final ElementHandle<Element> handle = ElementHandle
+                        .create(injectable);
+                final ClasspathInfo classpathInfo = model
+                        .getCompilationController().getClasspathInfo();
+                SwingUtilities.invokeLater(new Runnable() {
 
-                @Override
-                public void run() {
-                    ElementOpen.open(classpathInfo, handle);
-                }
-            });
+                    @Override
+                    public void run() {
+                        ElementOpen.open(classpathInfo, handle);
+                    }
+                });
+            }
         }
         else if (result.getKind() == DependencyInjectionResult.ResultKind.RESOLUTION_ERROR) {
             final CompilationController controller = model

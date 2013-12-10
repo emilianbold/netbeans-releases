@@ -287,4 +287,12 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new WrongParamNameHint(), "testWrongParamNameHint.php");
     }
 
+    public void testIssue239277_01() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue239277.php", "Foo::ahoj(^);");
+    }
+
+    public void testIssue239277_02() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue239277.php", "Bat::$bar^z;");
+    }
+
 }
