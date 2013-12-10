@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>  
+<dict>
 	<key>CFBundleGetInfoString</key>
 	<string>@BASEVERSION@</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.netbeans.ide.baseide.@NB_ID@</string>
 	<key>CFBundleShortVersionString</key>
 	<string>@APPVERSION@</string>
-	<key>IFMajorVersion</key>
-	<integer>6</integer>
-	<key>IFMinorVersion</key>
-	<integer>8</integer>
 	<key>IFPkgFlagAllowBackRev</key>
 	<false/>
 	<key>IFPkgFlagAuthorizationAction</key>
@@ -41,23 +37,8 @@
 	<key>IFPkgFlagUpdateInstalledLanguages</key>
 	<false/>
 	<key>IFPkgFormatVersion</key>
-	<real>0.10000000149011612</real>
-	<key>IFRequirementDicts</key>
-	<array>
-		<dict>
-			<key>Level</key>
-			<string>requires</string>
-			<key>SpecArgument</key>
-			<string>/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0</string>
-			<key>SpecType</key>
-			<string>file</string>
-			<key>TestObject</key>
-			<true/>
-			<key>TestOperator</key>
-			<string>eq</string>
-		</dict>
-	</array>
-    <key>NSHighResolutionCapable</key>
-    <true/>
+	<real>0.1000000014901161</real>
+	<key>NSHighResolutionCapable</key>
+	<true/>
 </dict>
 </plist>
