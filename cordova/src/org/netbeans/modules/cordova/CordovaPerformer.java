@@ -131,8 +131,8 @@ public class CordovaPerformer implements BuildPerformer {
         "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
             "NetBeans might require restart for changes to take effect.\n",
         "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device.",
-        "ERR_NOT_Cordova=Create Cordova Resources and rename site root to 'www'?"
-            
+        "ERR_NOT_Cordova=Create Cordova Resources and rename site root to 'www'?",
+        "ERR_SiteRootNotDefined=Project Site Root Folder must be located in project directory"    
     })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
@@ -160,6 +160,17 @@ public class CordovaPerformer implements BuildPerformer {
                 return null;
             }
        }
+        
+        final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+        if (siteRoot == null || FileUtil.getRelativePath(project.getProjectDirectory(), siteRoot) == null) {
+            DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor.Message(
+                    Bundle.ERR_SiteRootNotDefined()));
+            CustomizerProvider2 cust = project.getLookup().lookup(CustomizerProvider2.class);
+            cust.showCustomizer("SOURCES", null);
+            return null;
+        }
+        
 
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException(Bundle.ERR_NO_Cordova());
@@ -266,7 +277,7 @@ public class CordovaPerformer implements BuildPerformer {
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
         if (siteRoot != null) {
             final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
-            props.put(PROP_SITE_ROOT, siteRootRelative);
+                props.put(PROP_SITE_ROOT, siteRootRelative);
         } else {
             props.put(PROP_SITE_ROOT, WWW_NB_TEMP);
         }
