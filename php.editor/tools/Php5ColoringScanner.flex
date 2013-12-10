@@ -160,17 +160,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             /** and the lenght of */
             final int heredoc_len;
 
-            final boolean shortTag;
-            final boolean aspTag;
-
-            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len, boolean shortTag, boolean aspTag) {
+            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len) {
                 this.stack = stack;
                 this.zzState = zzState;
                 this.zzLexicalState = zzLexicalState;
                 this.heredoc = heredoc;
                 this.heredoc_len = heredoc_len;
-                this.shortTag = shortTag;
-                this.aspTag = aspTag;
             }
 
             @Override
@@ -188,8 +183,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                     && (this.zzState == state.zzState)
                     && (this.zzLexicalState == state.zzLexicalState)
                     && (this.heredoc_len == state.heredoc_len)
-                    && (this.shortTag == state.shortTag)
-                    && (this.aspTag == state.aspTag)
                     && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
             }
 
@@ -210,7 +203,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         }
 
         public LexerState getState() {
-            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len, short_tags_allowed, asp_tags);
+            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len);
         }
 
         public void setState(LexerState state) {
