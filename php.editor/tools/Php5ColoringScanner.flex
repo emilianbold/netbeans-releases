@@ -88,145 +88,107 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %{
 
-    protected String heredoc = null;
-    protected int heredoc_len = 0;
-    private boolean asp_tags = false;
-    private StateStack stack = new StateStack();
-
-    private boolean short_tags_allowed;
-
+    private final StateStack stack = new StateStack();
+    private String heredoc = null;
+    private int hereocLength = 0;
+    private boolean aspTagsAllowed;
+    private boolean shortTagsAllowed;
     private LexerInput input;
-    private boolean haltedCompiler = false;
 
-    /*public PhpLexer5(int state){
-        initialize(state);
-    }*/
-    /*public void reset(char array[], int offset, int length) {
-        this.zzBuffer = array;
-        this.zzCurrentPos = offset;
-        this.zzMarkedPos = offset;
-        this.zzPushbackPos = offset;
-        this.yychar = offset;
-        this.zzEndRead = offset + length;
-        this.zzStartRead = offset;
-        this.zzAtEOF = zzCurrentPos >= zzEndRead;
-        this.firstPos = offset;
-    }
+    public PHP5ColoringLexer(LexerRestartInfo info, boolean shortTagsAllowed, boolean aspTagsAllowed, boolean inPHP) {
+        this.input = info.input();
+        this.aspTagsAllowed = aspTagsAllowed;
+        this.shortTagsAllowed = shortTagsAllowed;
 
-
-
-    public void reset(java.io.Reader  reader, char[] buffer, int[] parameters){
-    	this.zzReader = reader;
-    	this.zzBuffer = buffer;
-    	this.zzMarkedPos = parameters[0];
-    	this.zzPushbackPos = parameters[1];
-    	this.zzCurrentPos = parameters[2];
-    	this.zzStartRead = parameters[3];
-    	this.zzEndRead = parameters[4];
-    	this.yyline = parameters[5];
-    	initialize(parameters[6]);
-    }
-    */
-        public PHP5ColoringLexer(LexerRestartInfo info, boolean short_tags_allowed, boolean asp_tags_allowed, boolean inPHP) {
-            this.input = info.input();
-            this.asp_tags = asp_tags_allowed;
-            this.short_tags_allowed = short_tags_allowed;
-
-            if(info.state() != null) {
-                //reset state
-                setState((LexerState)info.state());
+        if (info.state() != null) {
+            //reset state
+            setState((LexerState) info.state());
+        } else {
+            //initial state
+            stack.pushStack(YYINITIAL);
+            if (inPHP) {
+                stack.pushStack(ST_PHP_IN_SCRIPTING);
+                zzState = ST_PHP_IN_SCRIPTING;
+                zzLexicalState = ST_PHP_IN_SCRIPTING;
             } else {
-                //initial state
-                stack.pushStack(YYINITIAL);
-                if (inPHP) {
-                    stack.pushStack(ST_PHP_IN_SCRIPTING);
-                    zzState = zzLexicalState = ST_PHP_IN_SCRIPTING;
-                }
-                else {
-                    zzState = zzLexicalState = YYINITIAL;
-                }
-            }
-
-        }
-
-        public static final class LexerState  {
-            final StateStack stack;
-            /** the current state of the DFA */
-            final int zzState;
-            /** the current lexical state */
-            final int zzLexicalState;
-            /** remember the heredoc */
-            final String heredoc;
-            /** and the lenght of */
-            final int heredoc_len;
-
-            final boolean shortTag;
-            final boolean aspTag;
-
-            LexerState (StateStack stack, int zzState, int zzLexicalState, String heredoc, int heredoc_len, boolean shortTag, boolean aspTag) {
-                this.stack = stack;
-                this.zzState = zzState;
-                this.zzLexicalState = zzLexicalState;
-                this.heredoc = heredoc;
-                this.heredoc_len = heredoc_len;
-                this.shortTag = shortTag;
-                this.aspTag = aspTag;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (this == obj) {
-			return true;
-		}
-
-		if (obj == null || obj.getClass() != this.getClass()) {
-			return false;
-		}
-
-                LexerState state = (LexerState) obj;
-                return (this.stack.equals(state.stack)
-                    && (this.zzState == state.zzState)
-                    && (this.zzLexicalState == state.zzLexicalState)
-                    && (this.heredoc_len == state.heredoc_len)
-                    && (this.shortTag == state.shortTag)
-                    && (this.aspTag == state.aspTag)
-                    && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
-            }
-
-            @Override
-            public int hashCode() {
-                int hash = 11;
-                hash = 31 * hash + this.zzState;
-                hash = 31 * hash + this.zzLexicalState;
-                if (stack != null) {
-                    hash = 31 * hash + this.stack.hashCode();
-                }
-                hash = 31 * hash + this.heredoc_len;
-                if (heredoc != null) {
-                    hash = 31 * hash + this.heredoc.hashCode();
-                }
-                return hash;
+                zzState = YYINITIAL;
+                zzLexicalState = YYINITIAL;
             }
         }
 
-        public LexerState getState() {
-            return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, heredoc_len, short_tags_allowed, asp_tags);
-        }
-
-        public void setState(LexerState state) {
-            this.stack.copyFrom(state.stack);
-            this.zzState = state.zzState;
-            this.zzLexicalState = state.zzLexicalState;
-            this.heredoc = state.heredoc;
-            this.heredoc_len = state.heredoc_len;
-        }
-
-     protected boolean isHeredocState(int state){
-    	    	return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC || state == ST_PHP_NOWDOC;
     }
 
-    public int[] getParamenters(){
-    	return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline, zzLexicalState};
+    public static final class LexerState  {
+        final StateStack stack;
+        /* the current state of the DFA */
+        final int zzState;
+        /* the current lexical state */
+        final int zzLexicalState;
+        /* remember the heredoc */
+        final String heredoc;
+        /* and the lenght of */
+        final int hereocLength;
+
+        LexerState(StateStack stack, int zzState, int zzLexicalState, String heredoc, int hereocLength) {
+            this.stack = stack;
+            this.zzState = zzState;
+            this.zzLexicalState = zzLexicalState;
+            this.heredoc = heredoc;
+            this.hereocLength = hereocLength;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj == null || obj.getClass() != this.getClass()) {
+                return false;
+            }
+
+            LexerState state = (LexerState) obj;
+            return (this.stack.equals(state.stack)
+                && (this.zzState == state.zzState)
+                && (this.zzLexicalState == state.zzLexicalState)
+                && (this.hereocLength == state.hereocLength)
+                && ((this.heredoc == null && state.heredoc == null) || (this.heredoc != null && state.heredoc != null && this.heredoc.equals(state.heredoc))));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 11;
+            hash = 31 * hash + this.zzState;
+            hash = 31 * hash + this.zzLexicalState;
+            if (stack != null) {
+                hash = 31 * hash + this.stack.hashCode();
+            }
+            hash = 31 * hash + this.hereocLength;
+            if (heredoc != null) {
+                hash = 31 * hash + this.heredoc.hashCode();
+            }
+            return hash;
+        }
+    }
+
+    public LexerState getState() {
+        return new LexerState(stack.createClone(), zzState, zzLexicalState, heredoc, hereocLength);
+    }
+
+    public void setState(LexerState state) {
+        this.stack.copyFrom(state.stack);
+        this.zzState = state.zzState;
+        this.zzLexicalState = state.zzLexicalState;
+        this.heredoc = state.heredoc;
+        this.hereocLength = state.hereocLength;
+    }
+
+    protected boolean isHeredocState(int state) {
+        return state == ST_PHP_HEREDOC || state == ST_PHP_START_HEREDOC || state == ST_PHP_END_HEREDOC || state == ST_PHP_NOWDOC;
+    }
+
+    public int[] getParamenters() {
+        return new int[]{zzMarkedPos, zzPushbackPos, zzCurrentPos, zzStartRead, zzEndRead, yyline, zzLexicalState};
     }
 
     protected int getZZLexicalState() {
@@ -246,25 +208,25 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
     }
 
     protected int getZZStartRead() {
-    	return this.zzStartRead;
+        return this.zzStartRead;
     }
 
     protected int getZZPushBackPosition() {
-    	return this.zzPushbackPos;
+        return this.zzPushbackPos;
     }
 
-        protected void pushBack(int i) {
-		yypushback(i);
-	}
+    protected void pushBack(int i) {
+        yypushback(i);
+    }
 
-        protected void popState() {
-		yybegin(stack.popStack());
-	}
+    protected void popState() {
+        yybegin(stack.popStack());
+    }
 
-	protected void pushState(final int state) {
-		stack.pushStack(getZZLexicalState());
-		yybegin(state);
-	}
+    protected void pushState(final int state) {
+        stack.pushStack(getZZLexicalState());
+        yybegin(state);
+    }
 
 
  // End user code
@@ -288,7 +250,6 @@ DOUBLE_QUOTES_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\"\\{]|("\\"{ANY_CHAR})))
 BACKQUOTE_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$`\\{]|("\\"{ANY_CHAR})))
 
 HEREDOC_LITERAL_DOLLAR=("$"+([^a-zA-Z_\x7f-\xff$\n\r\\{]|("\\"[^\n\r])))
-HEREDOC_NEWLINE=((({LABEL}";"?((("{"+|"$"+)"\\"?)|"\\"))|(("{"*|"$"*)"\\"?)){NEWLINE})
 HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR=(("{"+[^$\n\r\\{])|("{"*"\\"[^\n\r])|{HEREDOC_LITERAL_DOLLAR})
 HEREDOC_NON_LABEL=([^a-zA-Z_\x7f-\xff$\n\r\\{]|{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})
 HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{])|(";"?{HEREDOC_CURLY_OR_ESCAPE_OR_DOLLAR})))
@@ -317,7 +278,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <YYINITIAL>"<?" {
-    if (short_tags_allowed ) {
+    if (shortTagsAllowed ) {
         //yybegin(ST_PHP_IN_SCRIPTING);
         pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
@@ -330,7 +291,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <YYINITIAL>"<%="|"<?=" {
     String text = yytext();
-    if ((text.charAt(1)=='%' && asp_tags)
+    if ((text.charAt(1)=='%' && aspTagsAllowed)
         || (text.charAt(1)=='?')) {
         //yybegin(ST_PHP_IN_SCRIPTING);
         pushState(ST_PHP_IN_SCRIPTING);
@@ -343,7 +304,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <YYINITIAL>"<%" {
-    if (asp_tags) {
+    if (aspTagsAllowed) {
         //yybegin(ST_PHP_IN_SCRIPTING);
         pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_OPENTAG;
@@ -499,7 +460,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"goto" {
- 	return PHPTokenId.PHP_GOTO;
+    return PHPTokenId.PHP_GOTO;
 }
 
 <ST_PHP_IN_SCRIPTING>"print" {
@@ -548,11 +509,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LOOKING_FOR_PROPERTY>{WHITESPACE}+ {
-	return PHPTokenId.WHITESPACE;
+    return PHPTokenId.WHITESPACE;
 }
 
 <ST_PHP_LOOKING_FOR_PROPERTY>"->" {
-	return PHPTokenId.PHP_OBJECT_OPERATOR;
+    return PHPTokenId.PHP_OBJECT_OPERATOR;
 }
 
 <ST_PHP_LOOKING_FOR_PROPERTY>{LABEL} {
@@ -582,7 +543,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"\\" {
-	return PHPTokenId.PHP_NS_SEPARATOR;
+    return PHPTokenId.PHP_NS_SEPARATOR;
 }
 <ST_PHP_IN_SCRIPTING>"new" {
     return PHPTokenId.PHP_NEW;
@@ -609,7 +570,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"("{TABS_AND_SPACES}"binary"{TABS_AND_SPACES}")" {
-	return PHPTokenId.PHP_CASTING;
+    return PHPTokenId.PHP_CASTING;
 }
 
 <ST_PHP_IN_SCRIPTING>"("{TABS_AND_SPACES}"array"{TABS_AND_SPACES}")" {
@@ -670,7 +631,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_IN_SCRIPTING>"__halt_compiler" {
     pushState(ST_HALTED_COMPILER);
-	return PHPTokenId.PHP_HALT_COMPILER;
+    return PHPTokenId.PHP_HALT_COMPILER;
 }
 
 <ST_HALTED_COMPILER> {ANY_CHAR}+ {
@@ -773,11 +734,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_VAR_OFFSET>0|([1-9][0-9]*) {
-	return PHPTokenId.PHP_NUMBER;
+    return PHPTokenId.PHP_NUMBER;
 }
 
 <ST_PHP_VAR_OFFSET>{LNUM}|{HNUM} {
-	return PHPTokenId.PHP_NUMBER;
+    return PHPTokenId.PHP_NUMBER;
 }
 
 <ST_PHP_IN_SCRIPTING>{DNUM}|{EXPONENT_DNUM} {
@@ -805,11 +766,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"__DIR__" {
- 	return PHPTokenId.PHP__DIR__;
+    return PHPTokenId.PHP__DIR__;
 }
 
 <ST_PHP_IN_SCRIPTING>"__NAMESPACE__" {
-	return PHPTokenId.PHP__NAMESPACE__;
+    return PHPTokenId.PHP__NAMESPACE__;
 }
 
 <ST_PHP_IN_SCRIPTING>"$"{LABEL} {
@@ -822,27 +783,27 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_DOUBLE_QUOTES,ST_PHP_HEREDOC,ST_PHP_BACKQUOTE>"$"{LABEL}"[" {
-	yypushback(1);
-	pushState(ST_PHP_VAR_OFFSET);
-	return PHPTokenId.PHP_VARIABLE;
+    yypushback(1);
+    pushState(ST_PHP_VAR_OFFSET);
+    return PHPTokenId.PHP_VARIABLE;
 }
 
 <ST_PHP_VAR_OFFSET>"]" {
-	popState();
-	return PHPTokenId.PHP_TOKEN;
+    popState();
+    return PHPTokenId.PHP_TOKEN;
 }
 
 <ST_PHP_VAR_OFFSET>"[" {
-	return PHPTokenId.PHP_TOKEN;
+    return PHPTokenId.PHP_TOKEN;
 }
 
 <ST_PHP_VAR_OFFSET>{TOKENS}|[;{}\"`] {//the difference from the original rules comes from the fact that we took ';' out out of tokens
-	return  PHPTokenId.UNKNOWN_TOKEN;
+    return  PHPTokenId.UNKNOWN_TOKEN;
 }
 
 <ST_PHP_VAR_OFFSET>[ \n\r\t\\'#] {
-	yypushback(1);
-	popState();
+    yypushback(1);
+    popState();
         if (yylength() > 0)
             return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
@@ -861,16 +822,16 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_LINE_COMMENT>[^\n\r?%]*{ANY_CHAR} {
-	String yytext = yytext();
-	switch (yytext.charAt(yytext.length() - 1)) {
-		case '?':
-		case '%':
-			yypushback(1);
-			break;
-		default:
-			popState();
-	}
-	 return PHPTokenId.PHP_LINE_COMMENT;
+    String yytext = yytext();
+    switch (yytext.charAt(yytext.length() - 1)) {
+        case '?':
+        case '%':
+            yypushback(1);
+            break;
+        default:
+            popState();
+    }
+     return PHPTokenId.PHP_LINE_COMMENT;
 }
 
 <ST_PHP_LINE_COMMENT>{NEWLINE} {
@@ -937,34 +898,34 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
             yypushback(yylength()-2);
         }
         stack.clear();
-	return PHPTokenId.PHP_CLOSETAG;
+    return PHPTokenId.PHP_CLOSETAG;
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"</script>"{WHITESPACE}? {
         popState();
-	return PHPTokenId.T_INLINE_HTML;
+    return PHPTokenId.T_INLINE_HTML;
 }
 
 <ST_PHP_IN_SCRIPTING>"%>"{WHITESPACE}? {
-	if (asp_tags) {
+    if (aspTagsAllowed) {
             yybegin(YYINITIAL);
             stack.clear();
-	    return PHPTokenId.PHP_CLOSETAG;
-	}
-	return  PHPTokenId.UNKNOWN_TOKEN;
+        return PHPTokenId.PHP_CLOSETAG;
+    }
+    return  PHPTokenId.UNKNOWN_TOKEN;
 }
 
 <ST_PHP_LINE_COMMENT>"%>"{WHITESPACE}? {
-	if (asp_tags) {
+    if (aspTagsAllowed) {
             yybegin(YYINITIAL);
             stack.clear();
-	    return PHPTokenId.PHP_CLOSETAG;
-	}
-	String text = yytext();
-	if(text.indexOf('\r') != -1 || text.indexOf('\n') != -1 ){
-		popState();
-	}
-	return PHPTokenId.PHP_LINE_COMMENT;
+        return PHPTokenId.PHP_CLOSETAG;
+    }
+    String text = yytext();
+    if(text.indexOf('\r') != -1 || text.indexOf('\n') != -1 ){
+        popState();
+    }
+    return PHPTokenId.PHP_LINE_COMMENT;
 }
 
 <ST_PHP_IN_SCRIPTING>(b?[\"]{DOUBLE_QUOTES_CHARS}*("{"*|"$"*)[\"]) {
@@ -981,24 +942,24 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}[']{LABEL}[']{NEWLINE} {
-	int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
+    int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
         int startString=3+bprefix;
         /* 3 is <<<, 2 is quotes, 1 is newline */
-        heredoc_len = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+        hereocLength = yylength()-bprefix-3-2-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
         while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
             startString++;
-            heredoc_len--;
+            hereocLength--;
         }
         // first quate
         startString++;
-        heredoc = yytext().substring(startString, heredoc_len+startString);
+        heredoc = yytext().substring(startString, hereocLength+startString);
         yybegin(ST_PHP_START_NOWDOC);
         return PHPTokenId.PHP_NOWDOC_TAG;
 }
 
 <ST_PHP_START_NOWDOC>{ANY_CHAR} {
-	yypushback(1);
-	yybegin(ST_PHP_NOWDOC);
+    yypushback(1);
+    yybegin(ST_PHP_NOWDOC);
 }
 
 <ST_PHP_START_NOWDOC>{LABEL}";"?[\r\n] {
@@ -1008,9 +969,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
         label_len--;
     }
 
-    if (label_len==heredoc_len && yytext().substring(0,label_len).equals(heredoc)) {
+    if (label_len==hereocLength && yytext().substring(0,label_len).equals(heredoc)) {
         heredoc=null;
-        heredoc_len=0;
+        hereocLength=0;
         yybegin(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.PHP_NOWDOC_TAG;
     } else {
@@ -1024,11 +985,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     int back = 1;
 
     if (yytext().charAt(label_len-1)==';') {
-	   label_len--;
+       label_len--;
            back++;
     }
-    if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-        back = back + heredoc_len;
+    if (label_len > hereocLength && yytext().substring(label_len - hereocLength,label_len).equals(heredoc)) {
+        back = back + hereocLength;
         yypushback(back);
         yybegin(ST_PHP_END_NOWDOC);
     }
@@ -1039,12 +1000,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_END_NOWDOC>{LABEL}";"?[\n\r] {
-    heredoc=null; heredoc_len=0;
+    heredoc=null; hereocLength=0;
     yybegin(ST_PHP_IN_SCRIPTING);
     int back = 1;
     // mark just the label
     if (yytext().charAt(yylength() - 2)==';') {
-	    back++;
+        back++;
     }
     yypushback(back);
     return PHPTokenId.PHP_NOWDOC_TAG;
@@ -1053,17 +1014,17 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
     int bprefix = (yytext().charAt(0) != '<') ? 1 : 0;
     int startString=3+bprefix;
-    heredoc_len = yylength()-bprefix-3-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
+    hereocLength = yylength()-bprefix-3-1-(yytext().charAt(yylength()-2)=='\r'?1:0);
     while ((yytext().charAt(startString) == ' ') || (yytext().charAt(startString) == '\t')) {
         startString++;
-        heredoc_len--;
+        hereocLength--;
     }
     // HEREDOC PHP 5.3
     if (yytext().charAt(startString) == '"') {
-        heredoc_len -= 2;
+        hereocLength -= 2;
         startString ++;
     }
-    heredoc = yytext().substring(startString,heredoc_len+startString);
+    heredoc = yytext().substring(startString,hereocLength+startString);
     yybegin(ST_PHP_START_HEREDOC);
     return PHPTokenId.PHP_HEREDOC_TAG;
 }
@@ -1078,8 +1039,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
            label_len--;
            back++;
         }
-        if (label_len == heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-            back = back + heredoc_len;
+        if (label_len == hereocLength && yytext().substring(label_len - hereocLength,label_len).equals(heredoc)) {
+            back = back + hereocLength;
             yypushback(back);
             yybegin(ST_PHP_END_HEREDOC);
         } else {
@@ -1103,8 +1064,8 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
            label_len--;
            back++;
         }
-        if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-            back = back + heredoc_len;
+        if (label_len > hereocLength && yytext().substring(label_len - hereocLength,label_len).equals(heredoc)) {
+            back = back + hereocLength;
             yypushback(back);
             yybegin(ST_PHP_END_HEREDOC);
         } else {
@@ -1141,12 +1102,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_END_HEREDOC>{LABEL}";"?[\n\r] {
     heredoc=null;
-    heredoc_len=0;
+    hereocLength=0;
     yybegin(ST_PHP_IN_SCRIPTING);
     int back = 1;
     // mark just the label
     if (yytext().charAt(yylength() - 2)==';') {
-	    back++;
+        back++;
     }
     yypushback(back);
     return PHPTokenId.PHP_HEREDOC_TAG;
@@ -1159,7 +1120,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_DOUBLE_QUOTES>{DOUBLE_QUOTES_CHARS}+ {
-	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 /*
@@ -1180,8 +1141,8 @@ The original parsing rule was {BACKQUOTE_CHARS}*("{"{2,}|"$"{2,}|(("{"+|"$"+)[`]
 but jflex doesn't support a{n,} so we changed a{2,} to aa+
 */
 <ST_PHP_BACKQUOTE>{BACKQUOTE_CHARS}*("{""{"+|"$""$"+|(("{"+|"$"+)[`])) {
-	yypushback(1);
-	return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    yypushback(1);
+    return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
 }
 
 <ST_PHP_DOUBLE_QUOTES>[\"] {
@@ -1207,7 +1168,7 @@ but jflex doesn't support a{n,} so we changed a{2,} to aa+
    After we find a whitespace we go the the prev state and try again from the next token.
    ============================================ */
 <ST_PHP_HIGHLIGHTING_ERROR> {
-	{WHITESPACE}	{popState();return PHPTokenId.WHITESPACE;}
+    {WHITESPACE}	{popState();return PHPTokenId.WHITESPACE;}
     .   	        {return  PHPTokenId.UNKNOWN_TOKEN;}
 }
 
