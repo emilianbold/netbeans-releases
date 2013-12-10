@@ -64,6 +64,13 @@ public class SBSuperClassNotSBTest extends TestBase {
             + "@javax.ejb.Stateless\n"
             + "public class TestBean extends SuperTestBean {\n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean extends SuperTestBean {\n"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 extends SuperTestBean {\n"
+            + "}";
 
     public SBSuperClassNotSBTest(String name) {
         super(name);
@@ -83,5 +90,16 @@ public class SBSuperClassNotSBTest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(SBSuperClassNotSB.class)
                 .assertWarnings("2:13-2:21:error:" + Bundle.SBSuperClassNotSB_err());
+    }
+
+    public void testSBSuperClassNotSBMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createSuperclass(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(SBSuperClassNotSB.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.SBSuperClassNotSB_err(),
+                                        "5:6-5:15:error:" + Bundle.SBSuperClassNotSB_err());
     }
 }

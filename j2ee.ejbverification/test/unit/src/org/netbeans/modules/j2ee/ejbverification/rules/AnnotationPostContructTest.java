@@ -135,6 +135,16 @@ public class AnnotationPostContructTest extends TestBase {
                 "    }"
             + "}";
 
+    private static final String TEST_BEAN_MORE_ERRORS = "package test;\n"
+            + "public class TestBean {\n"
+            + "  @javax.annotation.PostConstruct\n"
+            + "  public String businessMethod() {return null;}\n"
+            + "}"
+            + "class TestBean2 {\n"
+            + "  @javax.annotation.PostConstruct\n"
+            + "  public String businessMethod() {return null;}\n"
+            + "}";
+
     public AnnotationPostContructTest(String name) {
         super(name);
     }
@@ -154,7 +164,7 @@ public class AnnotationPostContructTest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN_CHECKED_EXCEPTION)
                 .run(AnnotationPostContruct.class)
-                .findWarning("5:14-5:28:error:" + Bundle.AnnotationPostContruct_thrown_checked_exceptions());
+                .assertWarnings("5:14-5:28:error:" + Bundle.AnnotationPostContruct_thrown_checked_exceptions());
     }
 
     public void testAnnotationPostContructThowringRuntimeException() throws Exception {
@@ -172,7 +182,7 @@ public class AnnotationPostContructTest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN_RETURN_TYPE)
                 .run(AnnotationPostContruct.class)
-                .findWarning("5:16-5:30:error:" + Bundle.AnnotationPostContruct_wrong_return_type());
+                .assertWarnings("5:16-5:30:error:" + Bundle.AnnotationPostContruct_wrong_return_type());
     }
 
     public void testAnnotationPostContructWrongParameter() throws Exception {
@@ -181,7 +191,7 @@ public class AnnotationPostContructTest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN_WRONG_PARAM)
                 .run(AnnotationPostContruct.class)
-                .findWarning("5:14-5:28:error:" + Bundle.AnnotationPostContruct_wrong_parameters());
+                .assertWarnings("5:14-5:28:error:" + Bundle.AnnotationPostContruct_wrong_parameters());
     }
 
     public void testAnnotationPostContructCorrectParameter() throws Exception {
@@ -199,10 +209,16 @@ public class AnnotationPostContructTest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN_TO_MANY_ANNOTATIONS)
                 .run(AnnotationPostContruct.class)
-                .findWarning("5:14-5:28:error:" + Bundle.AnnotationPostContruct_too_much_annotations());
+                .assertWarnings("5:14-5:28:error:" + Bundle.AnnotationPostContruct_too_much_annotations(), "7:14-7:29:error:" + Bundle.AnnotationPostContruct_too_much_annotations());
+    }
+
+    public void testAnnotationPostContructMoreClasses() throws Exception {
+        TestBase.TestModule testModule = createEjb32Module();
+        assertNotNull(testModule);
         HintTestBase.create(testModule.getSources()[0])
-                .input("test/TestBean.java", TEST_BEAN_TO_MANY_ANNOTATIONS)
+                .input("test/TestBean.java", TEST_BEAN_MORE_ERRORS)
                 .run(AnnotationPostContruct.class)
-                .findWarning("7:14-7:29:error:" + Bundle.AnnotationPostContruct_too_much_annotations());
+                .assertWarnings("3:16-3:30:error:" + Bundle.AnnotationPostContruct_wrong_return_type(),
+                                        "6:16-6:30:error:" + Bundle.AnnotationPostContruct_wrong_return_type());
     }
 }

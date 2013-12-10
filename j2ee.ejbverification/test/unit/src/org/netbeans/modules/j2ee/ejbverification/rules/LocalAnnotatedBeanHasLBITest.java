@@ -62,6 +62,18 @@ public class LocalAnnotatedBeanHasLBITest extends TestBase {
             + "  public void anything() { }"
             + "}";
 
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Local\n"
+            + "public class TestBean {\n"
+            + "  public void anything() { }"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Local\n"
+            + "class TestBean2 {\n"
+            + "  public void anything() { }"
+            + "}";
+
     public void testLocalAnnotatedBeanHasLBI() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
         assertNotNull(testModule);
@@ -69,5 +81,15 @@ public class LocalAnnotatedBeanHasLBITest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(LocalAnnotatedBeanHasLBI.class)
                 .assertWarnings("3:13-3:21:error:" + Bundle.LocalAnnotatedBeanHasLBI_err());
+    }
+
+    public void testLocalAnnotatedBeanHasLBIMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(LocalAnnotatedBeanHasLBI.class)
+                .assertWarnings("3:13-3:21:error:" + Bundle.LocalAnnotatedBeanHasLBI_err(),
+                                        "7:6-7:15:error:" + Bundle.LocalAnnotatedBeanHasLBI_err());
     }
 }
