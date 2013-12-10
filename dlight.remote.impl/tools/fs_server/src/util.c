@@ -480,3 +480,33 @@ const char* get_basename(const char *path) {
     }    
     return basename;
 }
+
+int utf8_bytes_count(const char *buffer, int char_count) {
+    unsigned const char* p = (unsigned const char*) buffer;
+    // 0x80 - middle byte
+    while (char_count > 0 ) {
+        char_count -= (*p++ & 0xC0) != 0x80;
+    }
+    while ((*p & 0xC0) == 0x80) {
+        p++;
+    }
+    return (const char*) p - buffer;
+}
+
+int utf8_char_count(const char *buffer, int byte_count) {
+    unsigned const char* p = (unsigned const char*) buffer;
+    int len = 0;
+    for (int i = 0; i < byte_count; i++) {
+        len += (p[i] & 0xc0) != 0x80;
+    }
+    return len;
+}
+
+int utf8_strlen(const char *buffer) {
+    int len = 0;
+    unsigned const char* p = (unsigned const char*) buffer;
+    while (*p) {
+        len += (*p++ & 0xc0) != 0x80;    
+    }
+    return len;
+}

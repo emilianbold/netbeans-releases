@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
@@ -143,8 +144,12 @@ public class DirectoryStorage {
                 if (line.length() == 0) {
                     continue; // just in case, ignore empty lines
                 }
-                DirEntry entry = DirEntrySftp.fromExternalForm(line);
-                loadedEntries.add(entry);
+                try {
+                    DirEntry entry = DirEntrySftp.fromExternalForm(line);
+                    loadedEntries.add(entry);
+                } catch (FormatException fe) {
+                    RemoteLogger.getInstance().log(Level.INFO, "Error loading cache file " + storageFile.getAbsolutePath(), fe);
+                }
             }
             return new DirectoryStorage(storageFile, loadedEntries);
          } finally {
