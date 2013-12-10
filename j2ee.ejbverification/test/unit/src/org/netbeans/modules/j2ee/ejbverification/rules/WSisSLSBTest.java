@@ -55,6 +55,13 @@ public class WSisSLSBTest extends TestBase {
             + "@javax.jws.WebService\n"
             + "public class TestBean {\n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.jws.WebService\n"
+            + "public class TestBean {\n"
+            + "}\n"
+            + "@javax.jws.WebService\n"
+            + "class TestBean2 {\n"
+            + "}";
 
     public WSisSLSBTest(String name) {
         super(name);
@@ -67,5 +74,15 @@ public class WSisSLSBTest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(WSisSLSB.class)
                 .assertWarnings("2:13-2:21:error:" + Bundle.WSisSLSB_err());
+    }
+
+    public void testWSisSLSBMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(WSisSLSB.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.WSisSLSB_err(),
+                                        "5:6-5:15:error:" + Bundle.WSisSLSB_err());
     }
 }

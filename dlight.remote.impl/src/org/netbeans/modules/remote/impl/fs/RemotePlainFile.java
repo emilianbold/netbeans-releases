@@ -503,8 +503,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                     pathToUpload = PathUtilities.getDirName(pathToRename) +
                             "/#" + PathUtilities.getBaseName(pathToRename) + "#"; //NOI18N
                 } else {
-                    if (!ConnectionManager.getInstance().isConnectedTo(file.getExecutionEnvironment())) {
-                        throw new ConnectException();
+                    ExecutionEnvironment env = file.getExecutionEnvironment();
+                    if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                        throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                     }
                     pathToRename = null;
                     pathToUpload = file.getPath(); //NOI18N

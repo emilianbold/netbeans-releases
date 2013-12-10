@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 18
+#define FS_SERVER_MINOR_VERSION 19
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -250,13 +250,17 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
             report_error("wrong (zero path) request: %s", raw_request);
             return NULL;
         }
-        if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
-            report_error("wrong (too long path) request: %s", raw_request);
-            return NULL;
-        }
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+    
+    path_len = utf8_bytes_count(p, path_len);
+
+    if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
+        report_error("wrong (too long path) request: %s", raw_request);
+        return NULL;
+    }
+    
     strncpy(request->path, p, path_len);
     request->path[path_len] = 0;
     unescape_strcpy(request->path, request->path);
@@ -478,14 +482,14 @@ static bool response_entry_create(buffer response_buf,
             }
         }
         snprintf(response_buf.data, response_buf.size, "%i %s %li %li %li %lu %lli %i %s\n",
-                escaped_name_size,
+                utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
-                escaped_link_size,
+                utf8_char_count(escaped_link, escaped_link_size),
                 escaped_link);
         return true;
     } else {
@@ -508,7 +512,7 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
 
     my_fprintf(STDOUT, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
-            request_id, (long) strlen(path), path);
+            request_id, (long) utf8_strlen(path), path);
 
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
@@ -532,7 +536,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
     visit_dir_entries(path, response_ls_plain_visitor, &data);
 
-    my_fprintf(STDOUT, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) strlen(path), path, get_curretn_time_millis());
+    my_fprintf(STDOUT, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path, get_curretn_time_millis());
     my_fflush(STDOUT);
     
     if (el) {
@@ -546,7 +550,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     if (recursive) {
         visit_dir_entries(path, response_ls_recursive_visitor, &data);
         if (!inner) {
-            my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
+            my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path);
             my_fflush(STDOUT);
         }
     }
@@ -600,7 +604,7 @@ static void response_stat(int request_id, const char* path) {
         my_fprintf(STDOUT, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
                 FS_RSP_ENTRY,
                 request_id,
-                escaped_name_size,
+                utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
@@ -779,7 +783,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (differs) {
         trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        my_fprintf(STDOUT, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
+        my_fprintf(STDOUT, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) utf8_strlen(path), path);
         my_fflush(STDOUT);
         dirtab_set_state(el, DE_STATE_REFRESH_SENT);
     }
@@ -880,7 +884,7 @@ static void exit_function() {
 
 static void main_loop() {
     //TODO: handshake with version    
-    int buf_size = 256 + PATH_MAX;
+    int buf_size = 256 + PATH_MAX * 2;
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
     while(!is_broken_pipe() &&fgets(raw_req_buffer, buf_size, stdin)) {

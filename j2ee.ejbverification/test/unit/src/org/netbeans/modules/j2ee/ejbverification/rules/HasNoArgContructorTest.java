@@ -60,6 +60,15 @@ public class HasNoArgContructorTest extends TestBase {
             + "public class TestBean {\n"
             + "  private TestBean() { }"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean {\n"
+            + "  private TestBean() { }"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 {\n"
+            + "  private TestBean2() { }"
+            + "}";
 
     public void testHasNoArgContructor() throws Exception {
         TestModule testModule = createEjb31Module();
@@ -68,5 +77,15 @@ public class HasNoArgContructorTest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(HasNoArgContructor.class)
                 .assertWarnings("2:13-2:21:error:" + Bundle.HasNoArgContructor_err());
+    }
+
+    public void testHasNoArgContructorMoreBeansInFile() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(HasNoArgContructor.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.HasNoArgContructor_err(),
+                                        "5:6-5:15:error:" + Bundle.HasNoArgContructor_err());
     }
 }

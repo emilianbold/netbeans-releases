@@ -514,6 +514,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.javaee.beanvalidation</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
+                <friend>org.netbeans.modules.javaee.wildfly</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
