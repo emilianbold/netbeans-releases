@@ -293,7 +293,7 @@ public class IntroduceSuggestion extends SuggestionRule {
                         if (allFields.isEmpty()) {
                             assert type != null;
                             FileObject fileObject = type.getFileObject();
-                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
                             if (document != null && fileObject.canWrite() && type instanceof ClassScope) {
                                 fix = new IntroduceStaticFieldFix(document, fieldAccess, (ClassScope) type);
                             }
