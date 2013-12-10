@@ -41,13 +41,11 @@
 # Portions Copyrighted 2013 Sun Microsystems, Inc.
 
 changedir=$1
-echo DO: Changing XXX permissions in "$changedir"
 
-echo Changing ownership for $unpack_dir
 #Fix for 177872 (alternative: change Auth="None" for GF, but problem with existing root:admin dirs)
 ownership=`ls -nlda ~ | awk ' { print $3 ":admin" } ' 2>/dev/null`
-echo XXX: JIRKA: DO: chown -R -v "$ownership" "$changedir"
+
+echo Changing ownership for $changedir to $ownership
+
 chown -R "$ownership" "$changedir"
 chmod -R ug+w "$changedir"
-echo XXX: JIRKA: DONE chown -R -v "$ownership" "$changedir"
-

@@ -54,8 +54,6 @@ if [ -d "$unpack_dir" ]; then
         fi
         "$jdk_home/bin/unpack200" $x $jar
         touch -r $x $jar
-        #echo XXX: Skipping chmod `stat -f %Lp $x` $jar && touch -r $x $jar
-        #echo XXX: Skipping chown "$ownership" "$jar"
         rm $x
     done
 else
