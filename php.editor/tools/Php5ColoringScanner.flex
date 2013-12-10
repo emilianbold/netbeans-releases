@@ -743,7 +743,6 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"{" {
-    pushState(ST_PHP_IN_SCRIPTING);
     return PHPTokenId.PHP_CURLY_OPEN;
 }
 
@@ -753,14 +752,12 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"}" {
-             //  if (!stack.isEmpty()) {
-
-            //we are pushing state when we enter the PHP code,
-            //so we need to ensure we do not pop the top most state
-            if(stack.size() > 1) {
-                popState();
+    int lastState = stack.get(stack.size() - 1);
+    if (lastState != ST_PHP_IN_SCRIPTING && lastState != YYINITIAL) {
+        // probably in some sub state -> "{$" or "${"
+        popState();
     }
-    return  PHPTokenId.PHP_CURLY_CLOSE;
+    return PHPTokenId.PHP_CURLY_CLOSE;
 }
 
 <ST_PHP_IN_SCRIPTING>{BNUM} {
