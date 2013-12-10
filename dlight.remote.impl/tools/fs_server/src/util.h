@@ -53,6 +53,17 @@
 extern "C" {
 #endif
 
+bool is_broken_pipe();
+void set_broken_pipe();
+
+typedef enum  {
+    STDOUT,
+    STDERR
+} std_stream;
+
+void my_fflush(std_stream stream);
+void my_fprintf(std_stream stream, const char *format, ...);
+
 typedef enum TraceLevel {
     TRACE_NONE = 0,
     TRACE_INFO = 1,
@@ -125,6 +136,10 @@ bool visit_dir_entries(
         void *data);
 
 const char* get_basename(const char *path);
+
+int utf8_bytes_count(const char *buffer, int char_count);
+int utf8_char_count(const char *buffer, int byte_count);
+int utf8_strlen(const char *buffer);
 
 #ifdef	__cplusplus
 }

@@ -79,6 +79,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
@@ -425,7 +426,7 @@ import org.openide.util.RequestProcessor;
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException();
+            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
 
         String toolPath;
@@ -490,7 +491,7 @@ import org.openide.util.RequestProcessor;
             }
             if (server == null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                    throw new ConnectException();
+                    throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);

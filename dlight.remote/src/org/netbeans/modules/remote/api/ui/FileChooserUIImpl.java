@@ -2929,7 +2929,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         public void updateTree(final File file) {
             validationParams = new ValidationParams(file);
             handleValidationParamasChanges();
-                        
+
         }
 
         public void attachFileChooser(final FileChooserUIImpl ui) {
@@ -2988,7 +2988,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
             final FileNode node = new FileNode(file);
             node.loadChildren(fileChooser, true);
-            return new ValidationResult(Boolean.TRUE, node, true, file);
+            return new ValidationResult(Boolean.TRUE, node, directoryChanged, file);
         }
         
 
