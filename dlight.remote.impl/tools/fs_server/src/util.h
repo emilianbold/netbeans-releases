@@ -53,6 +53,17 @@
 extern "C" {
 #endif
 
+bool is_broken_pipe();
+void set_broken_pipe();
+
+typedef enum  {
+    STDOUT,
+    STDERR
+} std_stream;
+
+void my_fflush(std_stream stream);
+void my_fprintf(std_stream stream, const char *format, ...);
+
 typedef enum TraceLevel {
     TRACE_NONE = 0,
     TRACE_INFO = 1,
