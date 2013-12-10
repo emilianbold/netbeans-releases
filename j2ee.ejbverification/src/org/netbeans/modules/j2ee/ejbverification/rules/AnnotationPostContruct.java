@@ -46,15 +46,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
+import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
@@ -78,7 +82,7 @@ import org.openide.util.NbBundle.Messages;
     "AnnotationPostContruct_too_much_annotations=There cannot be more than one method annotated @PostConstruct",
     "AnnotationPostContruct_wrong_return_type=Return type of @PostConstruct annotated method must be void.",
     "AnnotationPostContruct_thrown_checked_exceptions=@PostConstruct annotated method must not throw a checked exception.",
-    "AnnotationPostContruct_wrong_parameters=@PostConstruct annotated method must not have any parameters except in the case of EJB interceptors in which case it takes an InvocationContext."
+    "AnnotationPostContruct_wrong_parameters=@PostConstruct annotated method must not have any parameters except in the case of EJB interceptors in which case it takes an InvocationContext subclasses."
 })
 public final class AnnotationPostContruct {
 
@@ -87,7 +91,7 @@ public final class AnnotationPostContruct {
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static List<ErrorDescription> run(HintContext hintCtx) {
         EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintCtx);
-        if (ctx != null && ctx.getEjb() instanceof Session) {
+        if (ctx != null) {
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
 
@@ -125,7 +129,7 @@ public final class AnnotationPostContruct {
                             Bundle.AnnotationPostContruct_wrong_return_type()));
                 }
                 // cannot throw unchecked exceptions
-                if (!method.getThrownTypes().isEmpty()) {
+                if (!method.getThrownTypes().isEmpty() && throwsCheckedException(ctx.getComplilationInfo(), method.getThrownTypes())) {
                     problems.add(HintsUtils.createProblem(
                             method,
                             ctx.getComplilationInfo(),
@@ -134,7 +138,7 @@ public final class AnnotationPostContruct {
                 // no parameter except in the case of EJB interceptor
                 List<? extends VariableElement> parameters = method.getParameters();
                 if (!parameters.isEmpty()
-                        && (parameters.size() > 1 || !isEjbInterceptor(method))) {
+                        && (parameters.size() > 1 || !isEjbInterceptor(ctx.getComplilationInfo(), method))) {
                     problems.add(HintsUtils.createProblem(
                             method,
                             ctx.getComplilationInfo(),
@@ -147,13 +151,29 @@ public final class AnnotationPostContruct {
         return Collections.emptyList();
     }
 
-    private static boolean isEjbInterceptor(ExecutableElement method) {
+    private static boolean isEjbInterceptor(CompilationInfo info, ExecutableElement method) {
         VariableElement parameter = method.getParameters().get(0);
-        if ("javax.interceptor.InvocationContext".equals(parameter.asType().toString())) { //NOI18N
-            for (AnnotationMirror am : method.getAnnotationMirrors()) {
-                if (EJBAPIAnnotations.AROUND_INVOKE.equals(am.getAnnotationType().asElement().toString())) {
-                    return true;
+        String paramType = parameter.asType().toString();
+        TypeElement element = info.getElements().getTypeElement(paramType);
+        if (element != null) { //NOI18N
+            if (JavaUtils.isTypeOf(info, element, "javax.interceptor.InvocationContext")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean throwsCheckedException(CompilationInfo info, List<? extends TypeMirror> thrownTypes) {
+        for (TypeMirror typeMirror : thrownTypes) {
+            boolean runtimeException = false;
+            TypeElement element = info.getElements().getTypeElement(typeMirror.toString());
+            if (element != null) { //NOI18N
+                if (JavaUtils.isTypeOf(info, element, "java.lang.RuntimeException")) { //NOI18N
+                    runtimeException = true;
                 }
+            }
+            if (!runtimeException) {
+                return true;
             }
         }
         return false;
