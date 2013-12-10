@@ -66,6 +66,7 @@ import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBWebModuleNode;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -309,30 +310,31 @@ public class WildflyClient {
     }
 
     public boolean undeploy(String fileName) throws IOException {
-//        try {
-//            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-//            //PathAddress deploymentAddress = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, fileName));
-//            // ModelNode
-//            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, fileName);
-//
-//            // ModelNode
-//            final Object undeploy = createModelNode(cl);
-//            undeploy.get(OP).set(COMPOSITE);
-//            undeploy.get(ADDRESS).setEmptyList();
-//            ModelNode steps = undeploy.get(STEPS);
-//            steps.add(createOperation(cl, getClientConstant(cl, "DEPLOYMENT_UNDEPLOY_OPERATION"), deploymentAddressModelNode));
-//            steps.add(Operations.createRemoveOperation(deploymentAddressModelNode));
-//            return isSuccessfulOutcome(cl, executeOnModelNode(cl, undeploy));
-//        } catch (ClassNotFoundException ex) {
-//            throw new IOException(ex);
-//        } catch (NoSuchMethodException ex) {
-//            throw new IOException(ex);
-//        } catch (InvocationTargetException ex) {
-//            throw new IOException(ex);
-//        } catch (IllegalAccessException ex) {
-//            throw new IOException(ex);
-//        }
-        return true;
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, fileName);
+
+            // ModelNode
+            final Object undeploy = createModelNode(cl);
+            setModelNodeChild(cl, getModelNodeChild(cl, undeploy, getClientConstant(cl, "OP")), getClientConstant(cl, "COMPOSITE"));
+            setModelNodeChildEmptyList(cl, getModelNodeChild(cl, undeploy, getModelDescriptionConstant(cl, "ADDRESS")));
+            // ModelNode
+            Object steps = getModelNodeChild(cl, undeploy, getClientConstant(cl, "STEPS"));
+            addModelNodeChild(cl, steps, createOperation(cl, getClientConstant(cl, "DEPLOYMENT_UNDEPLOY_OPERATION"), deploymentAddressModelNode));
+            addModelNodeChild(cl, steps, createRemoveOperation(cl, deploymentAddressModelNode));
+            return isSuccessfulOutcome(cl, executeOnModelNode(cl, undeploy));
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public boolean deploy(DeploymentContext deployment) throws IOException {
@@ -484,6 +486,14 @@ public class WildflyClient {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Method method = clazz.getDeclaredMethod("createOperation", new Class[]{String.class, modelClazz});
         return method.invoke(null, name, modelNode);
+    }
+
+    // ModelNode
+    private static Object createRemoveOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
+        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
+        Method method = clazz.getDeclaredMethod("createRemoveOperation", new Class[]{modelClazz});
+        return method.invoke(null, modelNode);
     }
 
     // ModelNode
