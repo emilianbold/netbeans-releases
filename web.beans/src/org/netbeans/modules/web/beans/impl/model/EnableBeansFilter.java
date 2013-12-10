@@ -67,6 +67,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
@@ -98,6 +99,8 @@ class EnableBeansFilter {
          predefinedBeans.add("javax.servlet.http.HttpSession");//NOI18N
          predefinedBeans.add("javax.servlet.ServletContext");//NOI18N
          predefinedBeans.add("javax.jms.JMSContext");//NOI18N
+         predefinedBeans.add(AnnotationUtil.INJECTION_POINT);//NOI18N
+         predefinedBeans.add("javax.enterprise.inject.spi.BeanManager");//NOI18N
     };
      
      private final HashMap<String, String> predefinedBeanAnnotationPairs;
