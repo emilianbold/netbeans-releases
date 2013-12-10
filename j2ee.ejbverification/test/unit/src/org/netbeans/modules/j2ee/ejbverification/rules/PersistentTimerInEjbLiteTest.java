@@ -64,6 +64,20 @@ public class PersistentTimerInEjbLiteTest extends TestBase {
             + "}";
     }
 
+    private String getTestBeanMoreClassesContent(boolean persistent) {
+        return "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean {\n"
+            + "  @javax.ejb.Schedule(persistent = " + String.valueOf(persistent) + ")\n"
+            + "  public void myTimer() {}\n"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 {\n"
+            + "  @javax.ejb.Schedule(persistent = " + String.valueOf(persistent) + ")\n"
+            + "  public void myTimer() {}\n"
+            + "}";
+    }
+
     public void testNonPersistentTimerEE6Lite() throws Exception {
         TestBase.TestModule testModule = createWeb30Module();
         assertNotNull(testModule);
@@ -80,6 +94,16 @@ public class PersistentTimerInEjbLiteTest extends TestBase {
                 .input("test/TestBean.java", getTestBeanContent(true))
                 .run(PersistentTimerInEjbLite.class)
                 .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite());
+    }
+
+    public void testPersistentTimerEE7LiteMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createWeb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", getTestBeanMoreClassesContent(true))
+                .run(PersistentTimerInEjbLite.class)
+                .assertWarnings("4:14-4:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite(),
+                                        "9:14-9:21:error:" + Bundle.PersistentTimerInEjbLite_err_nonpersistent_timer_in_ee7lite());
     }
 
     public void testNonPersistentTimerEE6Full() throws Exception {

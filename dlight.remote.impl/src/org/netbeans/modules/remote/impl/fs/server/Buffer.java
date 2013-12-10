@@ -62,6 +62,10 @@ import java.nio.BufferUnderflowException;
         int len = getInt();
         StringBuilder sb = new StringBuilder(len);
         int limit = curr + len;
+        if (limit > text.length()) {
+            new IllegalStateException("Wrong buffer format: " + text).printStackTrace(System.err);
+            limit = text.length();
+        }
         while (curr < limit) {
             sb.append(text.charAt(curr++));
         }

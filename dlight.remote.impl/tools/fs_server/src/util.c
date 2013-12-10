@@ -56,6 +56,31 @@
 static TraceLevel trace_level = TRACE_NONE;
 static FILE *log_file = NULL;
 
+static volatile bool broken_pipe = false;
+
+bool is_broken_pipe() {
+    return broken_pipe;
+}
+
+void set_broken_pipe() {
+    broken_pipe = true;
+}
+
+void my_fflush(std_stream stream) {
+    if (!is_broken_pipe()) {
+        fflush(stream == STDERR ? stderr : stdout);
+    }
+}
+
+void my_fprintf(std_stream stream, const char *format, ...) {
+    if (!is_broken_pipe()) {
+        va_list args;
+        va_start(args, format);
+        vfprintf(stream == STDERR ? stderr : stdout, format, args);
+        va_end(args);  
+    }
+}
+
 void set_trace(TraceLevel new_level) {
     trace_level= new_level;
 }
@@ -65,15 +90,17 @@ bool is_traceable(TraceLevel level) {
 }
 
 void report_error(const char *format, ...) {
-    va_list args;
-    va_start (args, format);
-    fprintf(stderr, "fs_server[%li]: ", (long) getpid());
-    vfprintf(stderr, format, args);
-    va_end (args);
+    if (!is_broken_pipe()) {
+        va_list args;
+        va_start (args, format);
+        fprintf(stderr, "fs_server[%li]: ", (long) getpid());
+        vfprintf(stderr, format, args);
+        va_end (args);
+    }
 }
 
 void trace(TraceLevel level, const char *format, ...) {
-    if (trace_level >= level) {
+    if (trace_level >= level && !is_broken_pipe()) {
         va_list args;
         va_start(args, format);
         fprintf(stderr, "fs_server[%li]: ", (long) getpid());
@@ -110,7 +137,7 @@ void log_close() {
 }
 
 void soft_assert(int condition, char* format, ...) {
-    if (! condition) {
+    if (!condition && !is_broken_pipe()) {
         va_list args;
         va_start(args, format);
         vfprintf(stderr, format, args);
@@ -452,4 +479,34 @@ const char* get_basename(const char *path) {
         basename = path;
     }    
     return basename;
+}
+
+int utf8_bytes_count(const char *buffer, int char_count) {
+    unsigned const char* p = (unsigned const char*) buffer;
+    // 0x80 - middle byte
+    while (char_count > 0 ) {
+        char_count -= (*p++ & 0xC0) != 0x80;
+    }
+    while ((*p & 0xC0) == 0x80) {
+        p++;
+    }
+    return (const char*) p - buffer;
+}
+
+int utf8_char_count(const char *buffer, int byte_count) {
+    unsigned const char* p = (unsigned const char*) buffer;
+    int len = 0;
+    for (int i = 0; i < byte_count; i++) {
+        len += (p[i] & 0xc0) != 0x80;
+    }
+    return len;
+}
+
+int utf8_strlen(const char *buffer) {
+    int len = 0;
+    unsigned const char* p = (unsigned const char*) buffer;
+    while (*p) {
+        len += (*p++ & 0xc0) != 0x80;    
+    }
+    return len;
 }

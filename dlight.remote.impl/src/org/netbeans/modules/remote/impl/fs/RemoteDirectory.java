@@ -883,7 +883,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
             //force = false;
-            throw new ConnectException();
+            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
         }
 
         DirectoryStorage storage;
@@ -1261,7 +1261,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addPendingFile(fo);
             if (throwConnectException) {
-                throw new ConnectException();
+                throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
             }
         }
     }

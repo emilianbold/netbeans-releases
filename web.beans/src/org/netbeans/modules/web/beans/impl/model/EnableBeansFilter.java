@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -66,6 +67,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
@@ -89,6 +91,27 @@ class EnableBeansFilter {
     
     static String SCOPE = "javax.inject.Scope";                             // NOI18N
     
+     private final HashSet<String> predefinedBeans;
+     {
+         predefinedBeans = new HashSet<>();
+         predefinedBeans.add(EventInjectionPointLogic.EVENT_INTERFACE);
+         predefinedBeans.add("javax.servlet.http.HttpServletRequest");//NOI18N
+         predefinedBeans.add("javax.servlet.http.HttpSession");//NOI18N
+         predefinedBeans.add("javax.servlet.ServletContext");//NOI18N
+         predefinedBeans.add("javax.jms.JMSContext");//NOI18N
+         predefinedBeans.add(AnnotationUtil.INJECTION_POINT);//NOI18N
+         predefinedBeans.add("javax.enterprise.inject.spi.BeanManager");//NOI18N
+         predefinedBeans.add("javax.transaction.UserTransaction");//NOI18N
+         predefinedBeans.add("java.security.Principal");//NOI18N
+         predefinedBeans.add("javax.validation.ValidatorFactory");//NOI18N
+    };
+     
+     private final HashMap<String, String> predefinedBeanAnnotationPairs;
+     {
+         predefinedBeanAnnotationPairs = new HashMap<>();
+         predefinedBeanAnnotationPairs.put("javax.faces.flow.builder.FlowBuilder","javax.faces.flow.builder.FlowBuilderParameter");//NOI18N
+     };
+     
     EnableBeansFilter(ResultImpl result, WebBeansModelImplementation model ,
             boolean programmatic )
     {
@@ -153,12 +176,10 @@ class EnableBeansFilter {
             //no implementation on classpath/sources or it's fileterd by common logic(for usual beans)
             //first check if we have a class in white list (i.e. must be implemented in ee7 environment)
             String nm = myResult.getVariableType().toString();
-            if (nm.indexOf('<')>0) {
-                nm = nm.substring(0,nm.indexOf('<'));
-            }
             if(nm.startsWith("javax.")) {//NOI18N
-                if(EventInjectionPointLogic.EVENT_INTERFACE.equals(nm)) {
-                    return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+                InjectableResultImpl res = handleEESpecificImplementations(getResult(), firstElement, enabledTypes);
+                if(res != null) {
+                    return res;
                 }
             }
             //
@@ -550,7 +571,7 @@ class EnableBeansFilter {
     private WebBeansModelImplementation getWebBeansModel(){
         return myModel;
     }
-
+   
     private Set<Element> myAlternatives;
     private Set<Element> myEnabledAlternatives;
     private ResultImpl myResult;
@@ -558,4 +579,28 @@ class EnableBeansFilter {
     private final BeansModel myBeansModel;
     private WebBeansModelImplementation myModel;
     private boolean isProgrammatic;
+
+
+
+    private InjectableResultImpl handleEESpecificImplementations(ResultImpl result, TypeElement firstElement, Set<Element> enabledTypes) {
+        if(result.getVariable() != null) {
+            String nm = result.getVariable().asType().toString();
+            int c = nm.indexOf('<');
+            if(c>0) {
+                nm = nm.substring(0,c);
+            }
+            if(predefinedBeans.contains(nm)) {
+                        return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+            }
+            String ann = predefinedBeanAnnotationPairs.get(nm);
+            if(ann != null) {//NOI18N
+                for(AnnotationMirror am:result.getVariable().getAnnotationMirrors()) {
+                    if(ann.equals(am.getAnnotationType().toString())) {//NOI18N
+                        return new InjectableResultImpl( getResult(), firstElement, enabledTypes );
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

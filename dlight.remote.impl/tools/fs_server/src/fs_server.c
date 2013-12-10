@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 17
+#define FS_SERVER_MINOR_VERSION 19
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -250,13 +250,17 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
             report_error("wrong (zero path) request: %s", raw_request);
             return NULL;
         }
-        if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
-            report_error("wrong (too long path) request: %s", raw_request);
-            return NULL;
-        }
     }
     //fs_request->kind = request->kind;
     //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+    
+    path_len = utf8_bytes_count(p, path_len);
+
+    if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
+        report_error("wrong (too long path) request: %s", raw_request);
+        return NULL;
+    }
+    
     strncpy(request->path, p, path_len);
     request->path[path_len] = 0;
     unescape_strcpy(request->path, request->path);
@@ -478,14 +482,14 @@ static bool response_entry_create(buffer response_buf,
             }
         }
         snprintf(response_buf.data, response_buf.size, "%i %s %li %li %li %lu %lli %i %s\n",
-                escaped_name_size,
+                utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
                 (long) stat_buf.st_mode,
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
-                escaped_link_size,
+                utf8_char_count(escaped_link, escaped_link_size),
                 escaped_link);
         return true;
     } else {
@@ -507,8 +511,8 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
 
-    fprintf(stdout, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
-            request_id, (long) strlen(path), path);
+    my_fprintf(STDOUT, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
+            request_id, (long) utf8_strlen(path), path);
 
     buffer response_buf = buffer_alloc(PATH_MAX * 2); // TODO: accurate size calculation
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
@@ -532,8 +536,8 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
     visit_dir_entries(path, response_ls_plain_visitor, &data);
 
-    fprintf(stdout, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) strlen(path), path, get_curretn_time_millis());
-    fflush(stdout);
+    my_fprintf(STDOUT, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path, get_curretn_time_millis());
+    my_fflush(STDOUT);
     
     if (el) {
         if (cache_fp) {
@@ -546,8 +550,8 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     if (recursive) {
         visit_dir_entries(path, response_ls_recursive_visitor, &data);
         if (!inner) {
-            fprintf(stdout, "%c %d %li %s\n", FS_RSP_END, request_id, (long) strlen(path), path);
-            fflush(stdout);
+            my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path);
+            my_fflush(STDOUT);
         }
     }
 
@@ -569,7 +573,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
         return true;
     }
     if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf)) {
-        fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
+        my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
         if (data->cache_fp) {
             fprintf(data->cache_fp, "%s", data->response_buf.data); // trailing '\n' already there, added by form_entry_response
         }
@@ -597,10 +601,10 @@ static void response_stat(int request_id, const char* path) {
         const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
-        fprintf(stdout, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
+        my_fprintf(STDOUT, "%c %i %i %s %li %li %li %lu %lli %d %s\n",
                 FS_RSP_ENTRY,
                 request_id,
-                escaped_name_size,
+                utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 (long) stat_buf.st_uid,
                 (long) stat_buf.st_gid,
@@ -608,14 +612,14 @@ static void response_stat(int request_id, const char* path) {
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
                 0, "");
-        fflush(stdout);
+        my_fflush(STDOUT);
         free(escaped_name);        
     }  else {
         int err_code = errno;
         char* strerr = strerror(err_code);
         report_error("error getting stat for '%s': %s\n", path, strerr);
-        fprintf(stdout, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
-        fflush(stdout);
+        my_fprintf(STDOUT, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
+        my_fflush(STDOUT);
     }
 }
 
@@ -624,16 +628,16 @@ static void response_lstat(int request_id, const char* path) {
     buffer work_buf = buffer_alloc((PATH_MAX + MAXNAMLEN) * 2 + 2);
     const char* basename = get_basename(path);
     if (response_entry_create(response_buf, path, basename, work_buf)) {
-        fprintf(stdout, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf.data);
-        fflush(stdout);
+        my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, request_id, response_buf.data);
+        my_fflush(STDOUT);
 //        if (cache_fp) {
 //            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
 //        }
     } else {
         report_error("error formatting response for '%s'\n", path);
         //TODO: pass error message from response_entry_create
-        fprintf(stdout, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
-        fflush(stdout);
+        my_fprintf(STDOUT, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
+        my_fflush(STDOUT);
     }
     buffer_free(&response_buf);
     buffer_free(&work_buf);
@@ -779,8 +783,8 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (differs) {
         trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        fprintf(stdout, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) strlen(path), path);
-        fflush(stdout);
+        my_fprintf(STDOUT, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) utf8_strlen(path), path);
+        my_fflush(STDOUT);
         dirtab_set_state(el, DE_STATE_REFRESH_SENT);
     }
     dirtab_unlock(el);
@@ -807,10 +811,10 @@ static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
     thread_init();    
     int pass = 0;
-    while (dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
+    while (!is_broken_pipe() && dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
-    while (state_get_proceed()) {
+    while (!is_broken_pipe() && state_get_proceed()) {
         pass++;
         trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
         dirtab_flush(); // TODO: find the appropriate place
@@ -830,7 +834,7 @@ static void *rp_loop(void *data) {
     thread_info *ti = (thread_info*) data;
     trace(TRACE_FINE, "Thread #%d started\n", ti->no);
     thread_init();
-    while (true) {
+    while (!is_broken_pipe()) {
         fs_request* request = blocking_queue_poll(&req_queue);
         if (request) {
             trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n", 
@@ -880,10 +884,10 @@ static void exit_function() {
 
 static void main_loop() {
     //TODO: handshake with version    
-    int buf_size = 256 + PATH_MAX;
+    int buf_size = 256 + PATH_MAX * 2;
     char *raw_req_buffer = malloc(buf_size);
     char *req_buffer = malloc(buf_size);
-    while(fgets(raw_req_buffer, buf_size, stdin)) {
+    while(!is_broken_pipe() &&fgets(raw_req_buffer, buf_size, stdin)) {
         trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow 
         log_print(raw_req_buffer);
         fs_request* request = decode_request(raw_req_buffer, (fs_request*) req_buffer, buf_size);
@@ -903,9 +907,9 @@ static void main_loop() {
                     }
                 }
                 if (interval) {
-                    fprintf(stderr, "fs_server: sleeping %i seconds\n", interval);
+                    my_fprintf(STDERR, "fs_server: sleeping %i seconds\n", interval);
                     sleep(interval);
-                    fprintf(stderr, "fs_server: awoke\n");
+                    my_fprintf(STDERR, "fs_server: awoke\n");
                 }
                 continue;
             }
@@ -926,7 +930,7 @@ static void main_loop() {
 
 static void usage(char* argv[]) {
     char *prog_name = strrchr(argv[0], '/');
-    fprintf(stderr, 
+    my_fprintf(STDERR, 
             "Usage: %s [-t nthreads] [-v] [-p] [-r]\n"
             "   -t <nthreads> response processing threads count (default is %d)\n"
             "   -p log responses into persisnence\n"
@@ -1048,13 +1052,10 @@ static void signal_empty_handler(int signal) {
     trace(TRACE_FINE, "got signal %s (%d)\n", signal_name(signal), signal);
 }
 
-//static void sigpipe_handler(int signal) {
-//    log_print("exiting by signal %s (%d)\n", signal_name(signal), signal);
-//////    if (!shutting_down) {
-//////        shutting_down = false;
-//////        shutdown();
-//////    }
-//}
+static void sigpipe_handler(int signal) {
+    set_broken_pipe();
+    log_print("exiting by signal %s (%d)\n", signal_name(signal), signal);
+}
 
 static void startup() {
     err_init();
@@ -1109,10 +1110,10 @@ static void startup() {
     sigemptyset(&new_sigaction.sa_mask);
     sigaction_wrapper(SIGUSR1, &new_sigaction, NULL);    
             
-//    new_sigaction.sa_handler = sigpipe_handler;
-//    new_sigaction.sa_flags = SA_RESTART;
-//    sigemptyset(&new_sigaction.sa_mask);
-//    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
+    new_sigaction.sa_handler = sigpipe_handler;
+    new_sigaction.sa_flags = 0;
+    sigemptyset(&new_sigaction.sa_mask);
+    sigaction_wrapper(SIGPIPE, &new_sigaction, NULL);    
 }
 
 static void shutdown() {
@@ -1120,7 +1121,7 @@ static void shutdown() {
     blocking_queue_shutdown(&req_queue);
     trace(TRACE_INFO, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     if (statistics) {
-        fprintf(stderr, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
+        my_fprintf(STDERR, "Max. requests queue size: %d\n", blocking_queue_max_size(&req_queue));
     }
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe

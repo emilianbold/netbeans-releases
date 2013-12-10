@@ -65,6 +65,7 @@
 //#define DIRTAB_SET_PERSIST_INEXISTENT               220
 #define FAILURE_SETTING_SIGNAL_HANDLER              221
 #define FAILURE_SETTING_EXIT_FUNCTION               222
+#define FAILURE_ILLEGAL_ARGUMENT                    223
 
 #endif	/* EXITCODES_H */
 
