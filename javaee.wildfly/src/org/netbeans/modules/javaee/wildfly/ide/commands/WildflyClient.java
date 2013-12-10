@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -428,33 +430,40 @@ public class WildflyClient {
     }
 
     private JBossDatasource getDatasource(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws IOException {
-//        try {
-//            // ModelNode
-//            final Object readDatasource = createModelNode(cl);
-//            readDatasource.get(OP).set(READ_RESOURCE_OPERATION);
-//            readDatasource.get(ADDRESS).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, DATASOURCES_SUBSYSTEM),
-//                    PathElement.pathElement(DATASOURCE_TYPE, name)).toModelNode());
-//            readDatasource.get(RECURSIVE_DEPTH).set(0);
-//            ModelNode response = executeOnModelNode(readDatasource);
-//            if (isSuccessfulOutcome(cl, response)) {
-//                ModelNode datasource = Operations.readResult(response);
-//                return new JBossDatasource(name, datasource.get("jndi-name").asString(),
-//                        datasource.get("connection-url").asString(),
-//                        datasource.get("user-name").asString(),
-//                        datasource.get("password").asString(),
-//                        datasource.get("driver-class").asString());
-//            }
-//            return null;
-//        } catch (ClassNotFoundException ex) {
-//            throw new IOException(ex);
-//        } catch (NoSuchMethodException ex) {
-//            throw new IOException(ex);
-//        } catch (InvocationTargetException ex) {
-//            throw new IOException(ex);
-//        } catch (IllegalAccessException ex) {
-//            throw new IOException(ex);
-//        }
-        return null;
+        try {
+            // ModelNode
+            final Object readDatasource = createModelNode(cl);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasource, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_RESOURCE_OPERATION"));
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), DATASOURCES_SUBSYSTEM);
+            values.put(DATASOURCE_TYPE, name);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasource, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readDatasource, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDatasource);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object datasource = readResult(cl, response);
+                return new JBossDatasource(name, modelNodeAsString(cl, getModelNodeChild(cl, datasource, "jndi-name")),
+                        modelNodeAsString(cl, getModelNodeChild(cl, datasource, "connection-url")),
+                        modelNodeAsString(cl, getModelNodeChild(cl, datasource, "user-name")),
+                        modelNodeAsString(cl, getModelNodeChild(cl, datasource, "password")),
+                        modelNodeAsString(cl, getModelNodeChild(cl, datasource, "driver-class")));
+            }
+            return null;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
     }
 
     private Object createClient(WildFlyDeploymentFactory.WildFlyClassLoader cl) throws ClassNotFoundException, NoSuchMethodException,
@@ -483,6 +492,27 @@ public class WildflyClient {
 
         Object array = Array.newInstance(peClazz, 1);
         Array.set(array, 0, pe);
+        Method paFactory = paClazz.getDeclaredMethod("pathAddress", array.getClass()); // NOI18N
+        Object pa = paFactory.invoke(null, array);
+
+        Method toModelNode = pa.getClass().getMethod("toModelNode", (Class<?>[]) null); // NOI18N
+        return toModelNode.invoke(pa, (Object[]) null);
+    }
+
+    // ModelNode
+    private Object createPathAddressAsModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl, LinkedHashMap<Object, Object> elements)
+            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Class paClazz = cl.loadClass("org.jboss.as.controller.PathAddress"); // NOI18N
+        Class peClazz = cl.loadClass("org.jboss.as.controller.PathElement"); // NOI18N
+
+        Method peFactory = peClazz.getDeclaredMethod("pathElement", new Class[] {String.class, String.class});
+        Object array = Array.newInstance(peClazz, elements.size());
+        int i = 0;
+        for (Map.Entry<Object, Object> entry : elements.entrySet()) {
+            Array.set(array, i, peFactory.invoke(null, new Object[] {entry.getKey(), entry.getValue()}));
+            i++;
+        }
+
         Method paFactory = paClazz.getDeclaredMethod("pathAddress", array.getClass()); // NOI18N
         Object pa = paFactory.invoke(null, array);
 
@@ -562,6 +592,13 @@ public class WildflyClient {
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         assert value != null;
         Method method = modelNode.getClass().getMethod("set", String.class);
+        return method.invoke(modelNode, value);
+    }
+
+    // ModelNode
+    private static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int value) throws IllegalAccessException,
+            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("set", int.class);
         return method.invoke(modelNode, value);
     }
 
