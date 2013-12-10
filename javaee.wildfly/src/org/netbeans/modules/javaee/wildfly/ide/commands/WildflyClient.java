@@ -265,34 +265,38 @@ public class WildflyClient {
     }
 
     public Collection<JBEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
-//        try {
-//            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-//            List<JBEjbModuleNode> modules = new ArrayList<JBEjbModuleNode>();
-//            // ModelNode
-//            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
-//            ModelNode readDeployments = Operations.createReadResourceOperation(deploymentAddressModelNode, true);
-//            ModelNode response = executeOnModelNode(readDeployments);
-//            if (isSuccessfulOutcome(cl, response)) {
-//                ModelNode result = Operations.readResult(response);
-//                List<ModelNode> ejbs = result.asList();
-//                for (ModelNode ejb : ejbs) {
-//                    ModelNode deployment = Operations.readResult(ejb).get(ClientConstants.SUBSYSTEM).get(EJB3_SUBSYSTEM);
-//                    if (deployment.isDefined()) {
-//                        modules.add(new JBEjbModuleNode(Operations.readResult(ejb).get(NAME).asString(), lookup, true));
-//                    }
-//                }
-//            }
-//            return modules;
-//        } catch (ClassNotFoundException ex) {
-//            throw new IOException(ex);
-//        } catch (NoSuchMethodException ex) {
-//            throw new IOException(ex);
-//        } catch (InvocationTargetException ex) {
-//            throw new IOException(ex);
-//        } catch (IllegalAccessException ex) {
-//            throw new IOException(ex);
-//        }
-        return Collections.emptyList();
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBEjbModuleNode> modules = new ArrayList<JBEjbModuleNode>();
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
+            // ModelNode
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object result = readResult(cl, response);
+                // List<ModelNode>
+                List ejbs = modelNodeAsList(cl, result);
+                for (Object ejb : ejbs) {
+                    // ModelNode
+                    Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "SUBSYSTEM")), EJB3_SUBSYSTEM);
+                    if (modelNodeIsDefined(cl, deployment)) {
+                        modules.add(new JBEjbModuleNode(modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "NAME"))), lookup, true));
+                    }
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public boolean startModule(String moduleName) throws IOException {
