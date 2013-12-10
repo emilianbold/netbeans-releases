@@ -178,7 +178,7 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     }
 
     private static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
-        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2);
+        TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
 
         for ( ; tp != null; tp = tp.getParentPath()) {
             Tree leaf = tp.getLeaf();
