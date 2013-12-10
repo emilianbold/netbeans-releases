@@ -48,6 +48,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.TestChecker;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig.ReactorStyle;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
@@ -79,7 +80,14 @@ public class SanityBuildAction implements ProjectProblemResolver {
             public ProjectProblemsProvider.Result call() throws Exception {
                 BeanRunConfig config = new BeanRunConfig();
                 config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
-                config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
+                NbMavenProject mavenPrj = nbproject.getLookup().lookup(NbMavenProject.class);
+                if (mavenPrj != null
+                        && mavenPrj.getMavenProject().getVersion() != null 
+                        && mavenPrj.getMavenProject().getVersion().endsWith("SNAPSHOT")) {
+                    config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
+                } else {
+                    config.setGoals(Arrays.asList("--fail-at-end", "package")); // NOI18N
+                }
                 config.setReactorStyle(ReactorStyle.ALSO_MAKE);
                 config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
                 config.setProject(nbproject);

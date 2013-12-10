@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -153,11 +154,13 @@ public class BatchProblemNotifier {
         cfg.setExecutionName(label);
         cfg.setTaskDisplayName(label);
         cfg.setExecutionDirectory(reactor);
+        NbMavenProject mavenPrj = null;
         try {
             FileObject reactorFO = FileUtil.toFileObject(reactor);
             if (reactorFO != null && reactorFO.isFolder()) {
                 Project reactorP = ProjectManager.getDefault().findProject(reactorFO);
                 if (reactorP != null) {
+                    mavenPrj = reactorP.getLookup().lookup(NbMavenProject.class);
                     cfg.setProject(reactorP);
                     // Similar to ReactorChecker, except there can be multiple submodules to build.
                     M2Configuration m2c = reactorP.getLookup().lookup(M2ConfigProvider.class).getActiveConfiguration();
@@ -177,7 +180,13 @@ public class BatchProblemNotifier {
             pl.append(project);
         }
         // validate, test-compile, dependency:go-offline also possible
-        cfg.setGoals(Arrays.asList("--fail-at-end", "--also-make", "--projects", pl.toString(), "install"));
+        if (mavenPrj != null
+            && mavenPrj.getMavenProject().getVersion() != null 
+            && mavenPrj.getMavenProject().getVersion().endsWith("SNAPSHOT")) {
+            cfg.setGoals(Arrays.asList("--fail-at-end", "--also-make", "--projects", pl.toString(), "install"));
+        } else {
+            cfg.setGoals(Arrays.asList("--fail-at-end", "--also-make", "--projects", pl.toString(), "package"));
+        }
         cfg.setUpdateSnapshots(true);
         cfg.setProperty(TestChecker.PROP_SKIP_TEST, "true");
 //        pnl.readConfig(cfg);

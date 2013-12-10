@@ -293,11 +293,12 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
         dueDatePicker = UIUtils.createDatePickerComponent();
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDueDateField, dueDatePicker.getComponent());
+        dueDateLabel.setLabelFor(dueDatePicker.getComponent());
         GroupLayout layout = (GroupLayout) privatePanel.getLayout();
         privateDueDatePicker = UIUtils.createDatePickerComponent();
         scheduleDatePicker = new SchedulePicker();
         layout.replace(dummyPrivateDueDateField, privateDueDatePicker.getComponent());
-        dueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
+        privateDueDateLabel.setLabelFor(privateDueDatePicker.getComponent());
         layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
         scheduleDateLabel.setLabelFor(scheduleDatePicker.getComponent());
         initSpellChecker();
@@ -1288,7 +1289,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                updateFieldStatuses();
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run () {
+                        updateFieldStatuses();
+                    }
+                });
             }
         }
     };
