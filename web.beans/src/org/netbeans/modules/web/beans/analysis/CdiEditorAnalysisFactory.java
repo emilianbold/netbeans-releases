@@ -198,10 +198,11 @@ public class CdiEditorAnalysisFactory extends CdiEditorAwareJavaSourceTaskFactor
         }
         if (tree != null){
             List<Integer> position = getElementPosition(info, tree);
-
-            return ErrorDescriptionFactory.createErrorDescription(
-                    severity, description, fixes, 
-                    info.getFileObject(), position.get(0), position.get(1));
+            if(position.get(1) > position.get(0)) {
+                return ErrorDescriptionFactory.createErrorDescription(
+                        severity, description, fixes, 
+                        info.getFileObject(), position.get(0), position.get(1));
+            }
         }
         return null;
     }
