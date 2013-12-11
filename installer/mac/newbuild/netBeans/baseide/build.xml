@@ -47,6 +47,18 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="cp -RPp ${builddir}/netbeans '${appdir}/Contents/Resources/NetBeans'"/>
         </exec>
         
+        <echo message="Generating Info.plist for top-level Contents directory" />
+        <copy file="Info.plist" filtering="true" tofile="${appdir}/Contents/Info.plist">
+            <filterset>
+                <filter token="APPNAME" value="${appname}"/>
+                <filter token="APPVERSION" value="${appversion}"/>
+                <filter token="VERSION" value="${baseide.version}"/>
+                <filter token="EXENAME" value="netbeans"/>
+                <filter token="ICONFILENAME" value="netbeans.icns"/>
+                <filter token="NB_ID" value="${nb.id}"/>
+            </filterset>
+        </copy>
+        
         <echo message="Delete launchers for another platforms"/>
         <delete>
             <fileset dir="${appdir}/Contents/Resources/NetBeans/bin" includes="*.exe"/>
