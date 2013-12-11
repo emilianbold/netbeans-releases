@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer;
 
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -194,6 +195,11 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return tokenList.modCount();
     }
 
+    @Override
+    public Language<T> language() {
+        return tokenList.language();
+    }
+    
     @Override
     public LanguagePath languagePath() {
         return tokenList.languagePath();

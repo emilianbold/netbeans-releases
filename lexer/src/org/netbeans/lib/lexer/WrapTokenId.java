@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.lexer.token;
+package org.netbeans.lib.lexer;
 
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.WrapTokenId;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
- * Token with associated properties. It may also act as a token part but without
- * a reference to a complete token e.g. suitable for java's incomplete block comment.
+ * Wrapping token id that allows to carry information about unsuccessful language embeddings
+ * attempted on a token that carries the wrap token id.
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
-
-public class PropertyToken<T extends TokenId> extends DefaultToken<T> {
-
-    private final TokenPropertyProvider<T> propertyProvider; // 28 bytes (24-super + 4)
+public final class WrapTokenId<T extends TokenId> {
     
-    public PropertyToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
-        super(wid, length);
-        assert (partType != null);
-        this.propertyProvider = (propertyProvider != null)
-                ? PartTypePropertyProvider.createDelegating(partType, propertyProvider)
-                : PartTypePropertyProvider.<T>get(partType);
+    private final T id;
+    
+    private final LanguageIds languageIds;
+    
+    
+    public WrapTokenId(T id) {
+        this(id, LanguageIds.EMPTY);
     }
 
-    @Override
-    public boolean hasProperties() {
-        return (propertyProvider != null);
+    public WrapTokenId(T id, LanguageIds languageIds) {
+        this.id = id;
+        this.languageIds = languageIds;
     }
 
-    @Override
-    public Object getProperty(Object key) {
-        return (propertyProvider != null) ? propertyProvider.getValue(this, key) : null;
+    public T id() {
+        return id;
     }
 
-    @Override
-    public PartType partType() {
-        return (PartType) getProperty(PartType.class);
+    /**
+     * Ids of languages for which an unsuccessful embedding attempts were done.
+     *
+     * @return language ids or null.
+     */
+    public LanguageIds languageIds() {
+        return languageIds;
     }
-
-    @Override
-    protected String dumpInfoTokenType() {
-        return "ProT"; // NOI18N
-    }
-
+    
 }

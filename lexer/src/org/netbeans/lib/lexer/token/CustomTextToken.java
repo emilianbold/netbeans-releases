@@ -45,6 +45,7 @@
 package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.WrapTokenId;
 
 /**
  * Token with a custom text and the token length likely different
@@ -61,16 +62,13 @@ public class CustomTextToken<T extends TokenId> extends TextToken<T> {
     
     private int length; // 28 bytes (24-super + 4)
     
-    private static final int BIT_31 = 1 << 31;
-    private static final int MASK_31 = ~BIT_31;
-    
     /**
      * @param id non-null identification of the token.
      * @param text non-null text of the token.
      * @param length length of the token.
      */
-    public CustomTextToken(T id, CharSequence text, int length) {
-        super(id, text);
+    public CustomTextToken(WrapTokenId<T> wid, CharSequence text, int length) {
+        super(wid, text);
         this.length = length;
     }
     
@@ -81,18 +79,7 @@ public class CustomTextToken<T extends TokenId> extends TextToken<T> {
 
     @Override
     public final int length() {
-        return length & MASK_31;
-    }
-    
-    @Override
-    public boolean isNoDefaultEmbedding() {
-        return (length & BIT_31) != 0;
-    }
-
-    @Override
-    public AbstractToken<T> markNoDefaultEmbedding() {
-        length |= BIT_31;
-        return null;
+        return length;
     }
     
     @Override

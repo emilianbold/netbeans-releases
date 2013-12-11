@@ -47,6 +47,7 @@ package org.netbeans.lib.lexer.inc;
 import java.util.Set;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -78,7 +79,13 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         this.languagePath = languagePath;
         this.tokenOrEmbeddings = tokensOrBranches;
     }
-    
+
+    @Override
+    public Language<T> language() {
+        return LexerUtilsConstants.innerLanguage(languagePath);
+
+    }
+
     @Override
     public LanguagePath languagePath() {
         return languagePath;

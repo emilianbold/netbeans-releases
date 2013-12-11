@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.StackElementArray;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.WrapTokenId;
 
 /**
  * Default token which by default obtains text from its background storage.
@@ -71,9 +72,6 @@ import org.netbeans.lib.lexer.TokenList;
 
 public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
 
-    private static final int BIT_31 = 1 << 31;
-    private static final int MASK_31 = ~BIT_31;
-    
     // -J-Dorg.netbeans.lib.lexer.token.DefaultToken.level=FINE
     private static final Logger LOG = Logger.getLogger(DefaultToken.class.getName());
     
@@ -101,8 +99,8 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
     /**
      * Construct new default token.
      */
-    public DefaultToken(T id, int length) {
-        super(id);
+    public DefaultToken(WrapTokenId<T> wid, int length) {
+        super(wid);
         assert (length > 0) : "Token length=" + length + " <= 0"; // NOI18N
         this.tokenLength = length;
     }
@@ -110,27 +108,16 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
     /**
      * Construct a special zero-length token.
      */
-    public DefaultToken(T id) {
-        super(id);
+    public DefaultToken(WrapTokenId<T> wid) {
+        super(wid);
         this.tokenLength = 0;
     }
 
     @Override
     public int length() {
-        return tokenLength & MASK_31;
+        return tokenLength;
     }
 
-    @Override
-    public boolean isNoDefaultEmbedding() {
-        return (tokenLength & BIT_31) != 0;
-    }
-
-    @Override
-    public AbstractToken<T> markNoDefaultEmbedding() {
-        tokenLength |= BIT_31;
-        return null;
-    }
-    
     @Override
     protected String dumpInfoTokenType() {
         return "DefT"; // NOI18N "TextToken" or "FlyToken"

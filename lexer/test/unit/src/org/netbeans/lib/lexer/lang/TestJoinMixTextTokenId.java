@@ -42,70 +42,81 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.token;
+package org.netbeans.lib.lexer.lang;
 
-import org.netbeans.api.lexer.PartType;
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
-import org.netbeans.lib.lexer.WrapTokenId;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Part of a {@link JoinToken}.
+ * Embedded language for join sections testing.
  *
- * @author Miloslav Metelka
- * @version 1.00
+ * @author mmetelka
  */
-
-public final class PartToken<T extends TokenId> extends PropertyToken<T> {
-
-    private TokenOrEmbedding<T> joinTokenOrEmbedding; // 32 bytes (28-super + 4)
+public enum TestJoinMixTextTokenId implements TokenId {
     
-    private final int partTokenIndex; // Index of this part inside 
-    
-    private final int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
+    /**
+     * Word separated by whitespace.
+     */
+    WORD(),
+    /**
+     * Whitespace between words.
+     */
+    WHITESPACE();
 
-    public PartToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
-            TokenOrEmbedding<T> joinToken, int partTokenIndex, int partTextOffset
-    ) {
-        super(wid, length, propertyProvider, partType);
-        setJoinTokenOrEmbedding(joinToken);
-        this.partTokenIndex = partTokenIndex;
-        this.partTextOffset = partTextOffset;
-    }
-
-    @Override
-    public JoinToken<T> joinToken() {
-        return (JoinToken<T>)joinTokenOrEmbedding.token();
+    private TestJoinMixTextTokenId() {
     }
     
-    public boolean isLastPart() {
-        return (joinToken().lastPart() == this);
-    }
-    
-    public TokenOrEmbedding<T> joinTokenOrEmbedding() {
-        return joinTokenOrEmbedding;
-    }
-    
-    public void setJoinTokenOrEmbedding(TokenOrEmbedding<T> joinTokenOrEmbedding) {
-        this.joinTokenOrEmbedding = joinTokenOrEmbedding;
+    public String primaryCategory() {
+        return null;
     }
 
-    public int partTokenIndex() {
-        return partTokenIndex;
-    }
+    public static final Language<TestJoinMixTextTokenId> language
+            = new LH("text/x-join-text").language();
+            
+    private static final class LH extends LanguageHierarchy<TestJoinMixTextTokenId> {
 
-    public int partTextOffset() {
-        return partTextOffset;
-    }
+        private String mimeType;
+        
+        LH(String mimeType) {
+            this.mimeType = mimeType;
+        }
 
-    public int partTextEndOffset() {
-        return partTextOffset + length();
-    }
+        @Override
+        protected String mimeType() {
+            return mimeType;
+        }
 
-    @Override
-    protected String dumpInfoTokenType() {
-        return "ParT[" + (partTokenIndex+1) + "/" + joinToken().joinedParts().size() + "]"; // NOI18N
-    }
+        @Override
+        protected Collection<TestJoinMixTextTokenId> createTokenIds() {
+            return EnumSet.allOf(TestJoinMixTextTokenId.class);
+        }
 
+        @Override
+        protected Lexer<TestJoinMixTextTokenId> createLexer(LexerRestartInfo<TestJoinMixTextTokenId> info) {
+            return new TestJoinMixTextLexer(info);
+        }
+        
+        @Override
+        public LanguageEmbedding<?> embedding(
+        Token<TestJoinMixTextTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+            // Test language embedding in the block comment
+            switch (token.id()) {
+                case WORD:
+                    return null;
+                case WHITESPACE:
+                    return null;
+            }
+            return null; // No embedding
+        }
+
+    }
 }

@@ -42,70 +42,78 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.token;
+package org.netbeans.lib.lexer.lang;
 
-import org.netbeans.api.lexer.PartType;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.TokenOrEmbedding;
-import org.netbeans.lib.lexer.WrapTokenId;
-import org.netbeans.spi.lexer.TokenPropertyProvider;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerInput;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Part of a {@link JoinToken}.
  *
  * @author Miloslav Metelka
- * @version 1.00
  */
+final class TestJoinMixTagLexer implements Lexer<TestJoinMixTagTokenId> {
 
-public final class PartToken<T extends TokenId> extends PropertyToken<T> {
+    // Copy of LexerInput.EOF
+    private static final int EOF = LexerInput.EOF;
 
-    private TokenOrEmbedding<T> joinTokenOrEmbedding; // 32 bytes (28-super + 4)
+    private final LexerInput input;
     
-    private final int partTokenIndex; // Index of this part inside 
+    private final TokenFactory<TestJoinMixTagTokenId> tokenFactory;
     
-    private final int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
-
-    public PartToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
-            TokenOrEmbedding<T> joinToken, int partTokenIndex, int partTextOffset
-    ) {
-        super(wid, length, propertyProvider, partType);
-        setJoinTokenOrEmbedding(joinToken);
-        this.partTokenIndex = partTokenIndex;
-        this.partTextOffset = partTextOffset;
+    TestJoinMixTagLexer(LexerRestartInfo<TestJoinMixTagTokenId> info) {
+        this.input = info.input();
+        this.tokenFactory = info.tokenFactory();
+        assert (info.state() == null); // never set to non-null value in state()
     }
 
-    @Override
-    public JoinToken<T> joinToken() {
-        return (JoinToken<T>)joinTokenOrEmbedding.token();
+    public Object state() {
+        return null; // always in default state after token recognition
+    }
+
+    public Token<TestJoinMixTagTokenId> nextToken() {
+        int c = input.read();
+        switch (c) {
+            case '<':
+                if (input.readLength() > 1) {
+                    input.backup(1);
+                    return token(TestJoinMixTagTokenId.TEXT);
+                }
+                while (true) {
+                    switch ((c = input.read())) {
+                        case '>':
+                            return (input.readLength() == 2)
+                                    ? token(TestJoinMixTagTokenId.TEXT) // Empty "<>" is TEXT
+                                    : token(TestJoinMixTagTokenId.TAG);
+                        case EOF:
+                            return token(TestJoinMixTagTokenId.TEXT);
+                    }
+                }
+                // break;
+
+            case EOF: // no more chars on the input
+                return null; // the only legal situation when null can be returned
+
+            default:
+                while (true) {
+                    switch ((c = input.read())) {
+                        case '<':
+                        case EOF:
+                            input.backup(1);
+                            return token(TestJoinMixTagTokenId.TEXT);
+                    }
+                }
+                // break;
+        }
+    }
+        
+    private Token<TestJoinMixTagTokenId> token(TestJoinMixTagTokenId id) {
+        return tokenFactory.createToken(id);
     }
     
-    public boolean isLastPart() {
-        return (joinToken().lastPart() == this);
-    }
-    
-    public TokenOrEmbedding<T> joinTokenOrEmbedding() {
-        return joinTokenOrEmbedding;
-    }
-    
-    public void setJoinTokenOrEmbedding(TokenOrEmbedding<T> joinTokenOrEmbedding) {
-        this.joinTokenOrEmbedding = joinTokenOrEmbedding;
-    }
-
-    public int partTokenIndex() {
-        return partTokenIndex;
-    }
-
-    public int partTextOffset() {
-        return partTextOffset;
-    }
-
-    public int partTextEndOffset() {
-        return partTextOffset + length();
-    }
-
-    @Override
-    protected String dumpInfoTokenType() {
-        return "ParT[" + (partTokenIndex+1) + "/" + joinToken().joinedParts().size() + "]"; // NOI18N
+    public void release() {
     }
 
 }
