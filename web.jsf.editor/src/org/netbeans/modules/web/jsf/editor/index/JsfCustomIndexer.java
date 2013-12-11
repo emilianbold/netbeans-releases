@@ -82,7 +82,7 @@ public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
     static final int INDEXER_VERSION = 6;
-    public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getName());
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
