@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
@@ -179,6 +180,7 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                             cs = CodeStyle.getDefault(info.getFileObject());
                         }
                         final String parameterName = JavaPluginUtils.makeNameUnique(info, scope, name, cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+                        final boolean variableRewrite = path.getLeaf().getKind() == Tree.Kind.VARIABLE;
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
@@ -200,6 +202,10 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                                 }
 
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(nameChangedListener);
+                                if(variableRewrite) {
+                                    chkIsReplaceAll.setEnabled(false);
+                                    chkIsReplaceAll.setSelected(false);
+                                }
                                 initialized = true;
                             }});
                     }

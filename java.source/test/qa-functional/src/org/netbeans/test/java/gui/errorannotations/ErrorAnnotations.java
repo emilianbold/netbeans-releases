@@ -90,71 +90,38 @@ public class ErrorAnnotations extends JavaTestCase {
 
     // name of sample class
     private static final String TEST_CLASS_NAME = "TestClass";
-
-    /**
-     * error log
-     */
-    protected static PrintStream err;
-
-    /**
-     * standard log
-     */
-    protected static PrintStream log;
-
-    // workdir, default /tmp, changed to NBJUnit workdir during test
-    private String workDir = "/tmp";
-
-    // actual directory with project
-    private static String projectDir;
-
+    
+    private EditorOperator editor = null;
+    
     /**
      * Needs to be defined because of JUnit
      * @param name test name
      */
     public ErrorAnnotations(String name) {
         super(name);
-    }
-
-    /**
-     * Main method for standalone execution.
-     * @param args the command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
+    }   
 
     /**
      * Sets up logging facilities.
      */
     public void setUp() {
-        System.out.println("########  " + getName() + "  #######");
-        err = getLog();
-        log = getRef();
-        JemmyProperties.getProperties().setOutput(new TestOut(null, new PrintWriter(err, true), new PrintWriter(err, false), null));
-        try {
-            File wd = getWorkDir();
-            workDir = wd.toString();
-        } catch (IOException e) {
-        }
+        System.out.println("########  " + getName() + "  #######");        
         openDefaultProject();
+        String path = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME;
+        openFile(path, TEST_CLASS_NAME+".java");
+        editor = new EditorOperator(TEST_CLASS_NAME);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        if(editor!=null) editor.closeDiscard();
+    }
+    
     /**
      * Simple annotations tests - tries a simple error.
      */
-    public void testAnnotationsSimple() {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
-        pn.select();
-
-        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME + "|" + TEST_CLASS_NAME);
-
-        n.select();
-        new OpenAction().perform();
-
-        // test a simple error - a space in public keyword
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
-        editor.insert(" ", 11, 3);
+    public void testAnnotationsSimple() {        
+        editor.insert(" ", 45, 3);
 
         Utilities.takeANap(ACTION_TIMEOUT);
 
@@ -164,15 +131,13 @@ public class ErrorAnnotations extends JavaTestCase {
         assertEquals(1, annots.length);
         assertEquals("org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
         assertEquals("class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[0]));
-    }
+    }    
 
     /**
      * Tests undo after simple annotations test.
      */
     public void testUndo() {
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
-        editor.requestFocus();
+        editor.insert(" ", 45, 3);
         Utilities.takeANap(ACTION_TIMEOUT);
         // undo
         new ActionNoBlock("Edit|Undo", null).perform();
@@ -189,53 +154,26 @@ public class ErrorAnnotations extends JavaTestCase {
     /**
      * Simple annotations tests - tries a simple error.
      */
-    public void testAnnotationsSimple2() {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
-        pn.select();
-
-        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME + "|" + TEST_CLASS_NAME);
-
-        n.select();
-        new OpenAction().perform();
-
-        // change class to klasa
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
+    public void testAnnotationsSimple2() {        
+        // change class to klasa        
         editor.replace("class", "klasa");
 
         Utilities.takeANap(ACTION_TIMEOUT);
         log(editor.getText());
         // check error annotations
-        Object[] annots = editor.getAnnotations();
-        try {
-            assertNotNull("There are not any annotations.", annots);
-            assertEquals("There are not one annotation", 2, annots.length);
-            assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
-            assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[0]));
-            assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[1]));
-            assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[1]));
-        } finally {
-            new ActionNoBlock("Edit|Undo", null).perform();
-            Utilities.takeANap(ACTION_TIMEOUT);
-            ewo.closeDiscard();
-        }
+        Object[] annots = editor.getAnnotations();        
+        assertNotNull("There are not any annotations.", annots);
+        assertEquals("There are not one annotation", 2, annots.length);
+        assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
+        assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[0]));
+        assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[1]));
+        assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[1]));
     }
 
     /**
      * Simple annotations tests - tries a simple error.
      */
-    public void testAnnotationsSimple3() {        
-        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
-        pn.select();
-
-        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME + "|" + TEST_CLASS_NAME);
-
-        n.select();
-        new OpenAction().perform();
-
-        // add xxx string to ctor
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
+    public void testAnnotationsSimple3() {               
         editor.replace(TEST_CLASS_NAME, TEST_CLASS_NAME + "xxx", 3);
 
         Utilities.takeANap(ACTION_TIMEOUT);
@@ -245,45 +183,22 @@ public class ErrorAnnotations extends JavaTestCase {
         assertNotNull("There are not any annotations.", annots);
         assertEquals("There are more than  one annotation: " + String.valueOf(annots.length), 1, annots.length);
         assertEquals("Wrong annotation type: " + EditorOperator.getAnnotationType(annots[0]), "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
-        assertEquals("Wrong annotation short description.","invalid method declaration; return type required", EditorOperator.getAnnotationShortDescription(annots[0]));        
-        new ActionNoBlock("Edit|Undo", null).perform();
-        Utilities.takeANap(ACTION_TIMEOUT);
-        ewo.closeDiscard();
+        assertEquals("Wrong annotation short description.","invalid method declaration; return type required", EditorOperator.getAnnotationShortDescription(annots[0]));                
     }
 
-    public void testChangeCloseDiscart() {
-        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
-        pn.select();
-
-        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME + "|" + TEST_CLASS_NAME);
-
-        n.select();
-        new OpenAction().perform();
-
-
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
-        String context = "" + "/*\n" + " * TestClass.java               \n" + " *\n" + " */\n" + "\n" + "package org.netbeans.test.java.gui.errorannotations.test;\n" + "\n" + "/**\n" + " *\n" + " */\n" + "public class TestClass {\n" + "   \n" + "    /** Creates a new instance of TestClass */\n" + "    public TestClass() {\n" + "    }\n" + "   \n" + "}\n";
-
-        editor.delete(0, editor.getText().length());
-        editor.insert(context); //setting right content of file to avoid dependency between tests
-        new EventTool().waitNoEvent(1000);
-        new SaveAction().perform();
-
-        editor.insert(" ", 11, 3);
+    public void testChangeCloseDiscart() {                                
+        editor.insert(" ", 45, 3);
         Utilities.takeANap(ACTION_TIMEOUT);
         log(editor.getText());
         Object[] annots = editor.getAnnotations();
         assertNotNull("There are not any annotations.", annots);
         assertEquals("There are annotations: " + String.valueOf(annots.length), 1, annots.length);
-        ewo.closeDiscard();
-        n.select();
-        new OpenAction().perform();
-        new EventTool().waitNoEvent(500);
-        editor = ewo.getEditor(TEST_CLASS_NAME);
+        editor.closeDiscard();
+        String path = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME;
+        openFile(path, TEST_CLASS_NAME+".java");                
+        editor = new EditorOperator(TEST_CLASS_NAME);
         annots = editor.getAnnotations();
-        assertEquals(0, annots.length); //there should be no annotations
-        ewo.closeDiscard();
+        assertEquals(0, annots.length); //there should be no annotations        
     }
     
     public static Test suite() {

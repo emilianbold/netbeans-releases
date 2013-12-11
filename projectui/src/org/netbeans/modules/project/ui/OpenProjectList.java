@@ -937,11 +937,16 @@ public final class OpenProjectList {
                 recentProjects.save();
             }
             //#125750 not necessary to call notifyClosed() under synchronized lock.
+            LOAD.enter();
             OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
                 @Override
                 public void run() {
-                    for (Project closed : notifyList) {
-                        notifyClosed(closed);
+                    try {
+                        for (Project closed : notifyList) {
+                            notifyClosed(closed);
+                        }
+                    } finally {
+                        LOAD.exit();
                     }
                 }
             });

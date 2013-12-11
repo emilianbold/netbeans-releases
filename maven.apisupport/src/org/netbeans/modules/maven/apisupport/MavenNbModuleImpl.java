@@ -123,7 +123,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     public static final String GROUPID_MOJO = "org.codehaus.mojo";
     public static final String NBM_PLUGIN = "nbm-maven-plugin";
-    public static final String LATEST_NBM_PLUGIN_VERSION = "3.11.1";
+    public static final String LATEST_NBM_PLUGIN_VERSION = "3.12";
     
     public static final String NETBEANSAPI_GROUPID = "org.netbeans.api";  
     

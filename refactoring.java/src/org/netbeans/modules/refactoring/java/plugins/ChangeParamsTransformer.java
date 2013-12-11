@@ -380,6 +380,27 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return arguments;
     }
     
+    private List<VariableTree> getNewParameters(List<? extends VariableTree> currentParameters) {
+        List<VariableTree> arguments = new ArrayList<>();
+        boolean skipType = currentParameters.size() > 0 && currentParameters.get(0).getType() == null;
+        ParameterInfo[] pi = paramInfos;
+        for (int i = 0; i < pi.length; i++) {
+            int originalIndex = pi[i].getOriginalIndex();
+            VariableTree vt;
+            if (originalIndex < 0) {
+                boolean isVarArgs = i == pi.length -1 && pi[i].getType().endsWith("..."); // NOI18N
+                vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()),
+                        pi[i].getName(),
+                        skipType? null : make.Identifier(isVarArgs? pi[i].getType().replace("...", "") : pi[i].getType()), // NOI18N
+                        null);
+            } else {
+                vt = currentParameters.get(originalIndex);
+            }
+            arguments.add(vt);
+        }
+        return arguments;
+    }
+    
     private List<ExpressionTree> getNewArguments(List<? extends ExpressionTree> currentArguments, boolean passThrough, ExecutableElement method) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = paramInfos;
@@ -455,6 +476,23 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             }
         }
         return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Tree visitLambdaExpression(LambdaExpressionTree tree, Element p) {
+        if (!compatible && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+            ExecutableElement method = (ExecutableElement) p;
+            TypeMirror tm = workingCopy.getTrees().getTypeMirror(getCurrentPath());
+            if (tm != null && workingCopy.getTypes().isSameType(tm, method.getEnclosingElement().asType())) {
+                if(newModifiers != null) {
+                    checkNewModifier(getCurrentPath(), method);
+                }
+                List<VariableTree> params = getNewParameters(tree.getParameters());
+                LambdaExpressionTree nju = make.LambdaExpression(params, tree.getBody());
+                rewrite(tree, nju);
+            }
+        }
+        return super.visitLambdaExpression(tree, p);
     }
 
     /** workaround to rewrite synthetic super(); statement */

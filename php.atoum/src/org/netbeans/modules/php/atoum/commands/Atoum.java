@@ -235,7 +235,6 @@ public final class Atoum {
             }
             params.add(FILTER_PARAM);
             params.add(buffer.toString());
-            runInfo.resetCustomTests();
         }
         if (runInfo.getSessionType() == TestRunInfo.SessionType.DEBUG) {
             params.add(XDEBUG_CONFIG_PARAM);

@@ -39,24 +39,51 @@
  */
 package org.netbeans.test.java.editor.actions;
 
-import org.netbeans.test.java.editor.actions.EditorActionsTestCase;
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.test.java.editor.lib.JavaEditorTestCase;
-
 
 /**
  *
- * @author mato
+ * @author Jiri.Prox@oracle.com
  */
-public class JavaEditorActionsTestCase extends EditorActionsTestCase{
-    
-    /** Creates a new instance of JavaCodeFoldingTest */
+public class JavaEditorActionsTestCase extends EditorActionsTestCase {
+
+    EditorOperator editor;
+
+    /**
+     * Creates a new instance of JavaCodeFoldingTest
+     */
     public JavaEditorActionsTestCase(String testMethodName) {
         super(testMethodName);
     }
-    
+
     @Override
     protected String getDefaultProjectName() {
         return JavaEditorTestCase.PROJECT_NAME;
     }
-    
+
+    public void setEditorState(EditorOperator editor, String goldenFile, int caretLine, int caretColumn) {
+        JEditorPaneOperator txtOper = editor.txtEditorPane();
+        StringBuilder fileData = new StringBuilder(1000);
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(getGoldenFile(goldenFile)));
+            char[] buf = new char[1024];
+            int numRead;
+            while ((numRead = reader.read(buf)) != -1) {
+                fileData.append(buf, 0, numRead);
+            }
+        } catch (IOException ex) {
+            fail(ex);
+        }
+        txtOper.removeAll();
+        txtOper.setText(fileData.toString());
+        txtOper.pushKey(KeyEvent.VK_BACK_SPACE); // replace the last NL...
+        editor.setCaretPosition(caretLine, caretColumn);
+    }
+
 }

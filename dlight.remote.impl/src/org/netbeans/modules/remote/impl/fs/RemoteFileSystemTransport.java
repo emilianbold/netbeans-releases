@@ -55,8 +55,16 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
  */
 public abstract class RemoteFileSystemTransport {
 
-    public static boolean needsClientSidePollingRefresh() {
-        return !FSSTransport.USE_FS_SERVER;
+    public static boolean needsClientSidePollingRefresh(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).needsClientSidePollingRefresh();
+    }
+
+    public static void registerDirectory(RemoteDirectory directory) {
+        getInstance(directory.getExecutionEnvironment()).registerDirectoryImpl(directory);
+    }
+
+    public static void unregisterDirectory(ExecutionEnvironment execEnv, String path) {
+        getInstance(execEnv).unregisterDirectoryImpl(path);
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
@@ -94,23 +102,23 @@ public abstract class RemoteFileSystemTransport {
     public static FileInfoProvider.StatInfo stat(ExecutionEnvironment execEnv, String path) 
             throws InterruptedException, CancellationException, ExecutionException {
 
-        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
-        if (transport == null || ! transport.isValid()) {
-            transport = SftpTransport.getInstance(execEnv);
-        }
-        return transport.stat(path);
+        return getInstance(execEnv).stat(path);
     }
     
     public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
             throws InterruptedException, CancellationException, ExecutionException {
 
+        return getInstance(execEnv).stat(path);
+     }
+
+    private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport == null || ! transport.isValid()) {
             transport = SftpTransport.getInstance(execEnv);
         }
-        return transport.stat(path);
-     }
-
+        return transport;
+    }
+    
     protected abstract FileInfoProvider.StatInfo stat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
     
@@ -121,4 +129,10 @@ public abstract class RemoteFileSystemTransport {
             throws IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean isValid();
+    
+    protected abstract boolean needsClientSidePollingRefresh();
+    
+    protected abstract void registerDirectoryImpl(RemoteDirectory directory);
+
+    protected abstract void unregisterDirectoryImpl(String path);
 }

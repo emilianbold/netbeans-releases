@@ -78,6 +78,7 @@ import org.netbeans.spi.gototest.TestLocator.LocationListener;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.GenericSources;
@@ -94,6 +95,12 @@ public class RefactoringTestBase extends NbTestCase {
 
     public RefactoringTestBase(String name) {
         super(name);
+        sourcelevel = "1.6";
+    }
+
+    public RefactoringTestBase(String name, String sourcelevel) {
+        super(name);
+        this.sourcelevel = sourcelevel;
     }
 
     protected static void writeFilesAndWaitForScan(FileObject sourceRoot, File... files) throws Exception {
@@ -199,6 +206,7 @@ public class RefactoringTestBase extends NbTestCase {
     protected FileObject test;
     protected Project prj;
     private ClassPath sourcePath;
+    private final String sourcelevel;
 
     @Override
     protected void setUp() throws Exception {
@@ -322,9 +330,19 @@ public class RefactoringTestBase extends NbTestCase {
                             }
                             return buf.toString();
                         }
+                    },
+                    new SourceLevelQueryImplementation() {
+
+                        @Override
+                        public String getSourceLevel(FileObject javaFile) {
+                            return sourcelevel;
+                        }
                     }});
         Main.initializeURLFactory();
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+        
+        org.netbeans.modules.java.source.TreeLoader.DISABLE_CONFINEMENT_TEST = true;
+        
         prepareTest();
         org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj = ProjectManager.getDefault().findProject(src.getParent())}, false);
         MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));

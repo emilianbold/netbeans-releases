@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
@@ -63,7 +64,50 @@ import org.openide.filesystems.FileObject;
 public class InlineTest extends RefactoringTestBase {
 
     public InlineTest(String name) {
-        super(name);
+        super(name, "1.8");
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+    }
+    
+    public void test238831() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public boolean kkk(int x) {\n"
+                        + "        return true;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public void test() {\n"
+                        + "        method(this::kkk);\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public void method(FIface in) {\n"
+                        + "        \n"
+                        + "    }\n"
+                        + "\n"
+                        + "    interface FIface {\n"
+                        + "        boolean test(int a);\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public void test() {    \n"
+                        + "        method((int x) -> { return true; });\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public void method(FIface in) {\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    interface FIface {\n"
+                        + "        boolean test(int a);\n"
+                        + "    }\n"
+                        + "}\n"));
     }
     
     public void test231631a() throws Exception {
