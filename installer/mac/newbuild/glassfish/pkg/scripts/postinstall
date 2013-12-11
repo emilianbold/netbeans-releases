@@ -50,6 +50,6 @@ jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 . "$script_dir"/env.sh
 
-if [ -n "$GLASSFISH_V3_INSTALL_DIR" ]; then
-   sh "$script_dir"/unpack200.sh "$GLASSFISH_V3_INSTALL_DIR" "$jdk_home"
+if [ -n "$GLASSFISH_INSTALL_DIR" ]; then
+   sh "$script_dir"/unpack200.sh "$GLASSFISH_INSTALL_DIR" "$jdk_home"
 fi

@@ -25,9 +25,9 @@ Microsystems, Inc. All Rights Reserved.
     <import file="${basedir}/build.pro"/>
     <property file="${basedir}/Bundle.properties"/>
 
-    <target name="build-glassfish-v3-pkg" >
-        <echo message="Building ${glassfish-v3-title} into ${basedir}/glassfish-v3"/>
-        <ant dir="glassfish-v3"/>      
+    <target name="build-glassfish-pkg" >
+        <echo message="Building ${glassfish-title} into ${basedir}/glassfish"/>
+        <ant dir="glassfish"/>      
     </target>
 
     <target name="build-tomcat-pkg">
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean">
         <delete dir="${basedir}/build" failonerror="no"/>
         <delete dir="${basedir}/dist" failonerror="no"/>
-        <ant dir="${basedir}/glassfish-v3" target="clean"/>
+        <ant dir="${basedir}/glassfish" target="clean"/>
         <ant dir="${basedir}/tomcat" target="clean"/>
         <ant dir="${basedir}/netBeans/baseide" target="clean"/>
         <delete dir="${basedir}/netBeans/ruby/build" failonerror="no"/>
@@ -290,9 +290,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>          
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg),
-                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                              -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-${glassfish.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                               -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
                                               -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                           "/>
@@ -311,7 +311,7 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         
     </target>
-    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-v3-pkg,build-tomcat-pkg,init-bundles">
+    <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_dmg" failonerror="false"/>                          
             <ant target="build-dmg">
@@ -430,7 +430,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
-                <filter token="GLASSFISHV3_ID" value="${glassfish.v3.id}"/>
+                <filter token="GLASSFISH_ID" value="${glassfish.id}"/>
                 <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
                 <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number}"/>
                 <filter token="JDK_BUILD_NUMBER" value="${jdk.build.number}"/>
@@ -444,7 +444,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <filter token="SIZE_GROOVY" value="${sizeof.groovy}"/>
                 <filter token="SIZE_ERGONOMICS" value="${sizeof.ergonomics}"/>
-                <filter token="SIZE_GLASSFISHV3" value="${sizeof.glassfish.v3}"/>
+                <filter token="SIZE_GLASSFISH" value="${sizeof.glassfish}"/>
                 <filter token="SIZE_TOMCAT" value="${sizeof.tomcat}"/>                
                 <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    

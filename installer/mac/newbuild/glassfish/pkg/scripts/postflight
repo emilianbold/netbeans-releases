@@ -28,7 +28,7 @@ jdk_home=`"$script_dir"/get_current_jdk.sh`
 
 . "$script_dir"/env.sh
 
-"$script_dir"/add_gfv3.sh "$NETBEANS_INSTALL_DIR" "$target_dir"
+"$script_dir"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$target_dir"
 
 "$script_dir"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$target_dir/javadb"
 

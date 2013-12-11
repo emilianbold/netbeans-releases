@@ -27,12 +27,12 @@
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
-    <!-- GlassFish V3 properties   -->   
-    <property name="glassfish.v3.build.type"      value=""/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.0/promoted"/>
+    <!-- GlassFish 4 properties   -->   
+    <property name="glassfish.build.type"      value=""/>
+    <property name="glassfish.location.prefix" value="${gf_builds_host}/java/re/glassfish/4.0/promoted"/>
     
-    <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/latest/archive/bundles"/>
+    <loadresource property="glassfish.build.number">
+          <url url="${glassfish.location.prefix}/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -41,13 +41,13 @@
           </filterchain>
     </loadresource>
     
-    <property name="glassfish.v3.display.version" value="4.0"/>
-    <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-4.0"/>
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-4.0-${glassfish.v3.version}.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-4.0-${glassfish.v3.version}-ml.zip"/>
-    <property name="glassfish.v3.subdir"       value="glassfish4"/>
+    <property name="glassfish.display.version" value="4.0"/>
+    <property name="glassfish.version"      value="b${glassfish.build.number}"/>
+    <property name="glassfish.id"           value="${glassfish.display.version}"/>
+    <property name="glassfish.install.dir"  value="${install.dir}/glassfish-4.0"/>
+    <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.0-${glassfish.version}.zip"/>
+    <property name="glassfish_location_ml"  value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.0-${glassfish.version}-ml.zip"/>
+    <property name="glassfish.subdir"       value="glassfish4"/>
     
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

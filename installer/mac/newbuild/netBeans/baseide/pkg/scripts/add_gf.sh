@@ -26,9 +26,9 @@ then
   val=$?
 
   if [ $val -eq 0 ] ; then
-     echo "GlassFish V3 installed at $gf_dir integrated with NetBeans installed at $nb_dir"
+     echo "GlassFish installed at $gf_dir integrated with NetBeans installed at $nb_dir"
   else
-     echo "GlassFish V3 installed at $gf_dir was not integrated with NetBeans installed at $nb_dir, error code is $val"
+     echo "GlassFish installed at $gf_dir was not integrated with NetBeans installed at $nb_dir, error code is $val"
   fi
 fi
 

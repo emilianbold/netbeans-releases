@@ -98,10 +98,10 @@ NETBEANS_BUILDNUMBER="${buildnumber}"
 NETBEANS_CHECK_BUILDNUMBER=${nb.check.build.number}
 TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
 NB_CLUSTER_DIR="${nbClusterDir}"
-GLASSFISH_V3_INSTALL_DIR="${glassfish.v3.install.dir}"
+GLASSFISH_INSTALL_DIR="${glassfish.install.dir}"
 DEFAULT_JDK7_HOME="${default.jdk7.home}"
 NB_ID="${nb.id}"
-GLASSFISHV3_ID="${glassfish.v3.id}"
+GLASSFISH_ID="${glassfish.id}"
 TOMCAT_ID="${tomcat.id}"
 ]]></echo>
 
