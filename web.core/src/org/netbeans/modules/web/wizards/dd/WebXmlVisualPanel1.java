@@ -72,22 +72,23 @@ public final class WebXmlVisualPanel1 extends JPanel {
         fileNameText.setText(WEB_XML);
         projectText.setText(ProjectUtils.getInformation(project).getDisplayName());
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        assert wm != null;
-        FileObject webInf = wm.getWebInf();
-        try {
-            if (webInf !=null) {
-                targetFolder = webInf;
-                locationText.setText(FileUtil.getFileDisplayName(webInf));
-            } else {
-                FileObject docBase = wm.getDocumentBase();
-                if (docBase != null) {
-                    targetFolder = docBase;
-                    locationText.setText(FileUtil.getFileDisplayName(docBase)+File.separator+"WEB-INF");  //NOI18N
+        if (wm != null) {
+            FileObject webInf = wm.getWebInf();
+            try {
+                if (webInf !=null) {
+                    targetFolder = webInf;
+                    locationText.setText(FileUtil.getFileDisplayName(webInf));
+                } else {
+                    FileObject docBase = wm.getDocumentBase();
+                    if (docBase != null) {
+                        targetFolder = docBase;
+                        locationText.setText(FileUtil.getFileDisplayName(docBase)+File.separator+"WEB-INF");  //NOI18N
+                    }
                 }
+            } catch (NullPointerException npe ) {
+                locationText.setText("");   //NOI18N
+                Logger.global.log(Level.WARNING, NbBundle.getMessage(WebXmlVisualPanel1.class, "NO_SOURCES_FOUND"), npe);
             }
-        } catch (NullPointerException npe ) {
-            locationText.setText("");   //NOI18N
-            Logger.global.log(Level.WARNING, NbBundle.getMessage(WebXmlVisualPanel1.class, "NO_SOURCES_FOUND"), npe);
         }
         refreshLocation();
     }

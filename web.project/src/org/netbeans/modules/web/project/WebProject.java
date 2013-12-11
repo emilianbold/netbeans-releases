@@ -1304,7 +1304,7 @@ public final class WebProject implements Project {
             try {
                 ProjectManager.getDefault().saveProject(WebProject.this);
             } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                LOGGER.log(Level.WARNING, "Project cannot be saved.", e);
             }
 
             // Unregister copy on save support

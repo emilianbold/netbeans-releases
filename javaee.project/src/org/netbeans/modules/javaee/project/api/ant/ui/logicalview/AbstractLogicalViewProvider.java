@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -131,6 +132,7 @@ import org.w3c.dom.Element;
 public abstract class AbstractLogicalViewProvider implements LogicalViewProvider2 {
 
     private static final RequestProcessor RP = new RequestProcessor("AbstractLogicalViewProvider.RP"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(AbstractLogicalViewProvider.class.getName());
     
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     
@@ -855,7 +857,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
                 }
                 testBroken();
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+                LOGGER.log(Level.WARNING, "Error occured while trying to save project.", ioe);
             }
         }
 
