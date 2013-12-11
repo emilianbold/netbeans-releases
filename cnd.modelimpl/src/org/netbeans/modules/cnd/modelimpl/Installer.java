@@ -46,9 +46,11 @@ package org.netbeans.modules.cnd.modelimpl;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +89,7 @@ public final class Installer {
 
                 }
             };
-            if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+            if (CndUtils.isStandalone() || CndUtils.isUnitTestMode() || !ModelSupport.instance().hasOpenedProjects()) {
                 runnable.run();
             } else {
                 ProgressUtils.showProgressDialogAndRun(runnable, NbBundle.getMessage(Installer.class, "CLOSE_PROJECT_DIALOG_MESSAGE")); //NOI18N

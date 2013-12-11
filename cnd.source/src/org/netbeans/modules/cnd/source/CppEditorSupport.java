@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -66,6 +66,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.source.spi.CndPaneProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
@@ -74,6 +75,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
@@ -266,10 +269,39 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             // try to setup document's extra properties during non-EDT load if needed
             PropertiesProviders.addProperty(getDataObject(), doc);
             doc.putProperty(EXTRA_DOCUMENT_PROPERTIES, Boolean.TRUE);
+            rebuildDocumentControls(doc);
         }
         return doc;
     }
 
+    private static void rebuildDocumentControls(final StyledDocument doc) {
+        // rebuild all controls managing document:
+        //  - rebuild token hierarchy
+        //  - anything else?
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                BaseDocument bdoc = (BaseDocument) doc;
+                try {
+                    if (bdoc != null) {
+                        bdoc.extWriteLock();
+                        MutableTextInput mti = (MutableTextInput) bdoc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            TokenHierarchyControl thc = mti.tokenHierarchyControl();
+                            if (thc != null) {
+                                thc.rebuild();
+                            }
+                        }
+                    }
+                } finally {
+                    if (bdoc != null) {
+                        bdoc.extWriteUnlock();
+                    }
+                }
+            }
+        });
+    }
+    
     private final static class PropertiesProviders {
 
         private final static Collection<? extends CndSourcePropertiesProvider> providers = Lookups.forPath(CndSourcePropertiesProvider.REGISTRATION_PATH).lookupAll(CndSourcePropertiesProvider.class);
