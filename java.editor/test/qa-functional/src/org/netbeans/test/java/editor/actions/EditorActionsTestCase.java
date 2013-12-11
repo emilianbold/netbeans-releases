@@ -51,6 +51,7 @@ import java.io.PrintStream;
 import java.util.Hashtable;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.Manager;
@@ -143,59 +144,9 @@ public class EditorActionsTestCase extends EditorTestCase {
         }
     }
 
-    protected void compareToGoldenFile(Document testDoc) {
-        //waitForMilis(150);
-        try {
-            ref(testDoc.getText(0, testDoc.getLength()));
-            compareReferenceFiles(getRefFileName(), getGoldenFileName(), getDiffFileName());
-            index++;
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail();
-        }
-    }
-
-    protected String compareToGoldenFile(Document testDoc, String RefFileName, String GoldenFileName, String DiffFileName) {
-        try {
-            ref(testDoc.getText(0, testDoc.getLength()));
-            //compareReferenceFiles(RefFileName + ".ref", GoldenFileName + ".pass", DiffFileName + ".diff");
-            if (!getRef().equals(systemOutPSWrapper)) {
-                // better flush the reference file
-                getRef().flush();
-                getRef().close();
-            }
-            File goldenFile = getGoldenFile(GoldenFileName + ".pass");
-            File testFile = new File(getWorkDir(), RefFileName + ".ref");
-            File diffFile = new File(getWorkDir(), DiffFileName + ".diff");
-            String message = "Files differ";
-            if (System.getProperty("xtest.home") == null) {
-                // show location of diff file only when run without XTest (run file in IDE)
-                message += "; check " + diffFile;
-            }
-            //assertFile(message, testFile, goldenFile, diffFile);
-            Diff diffImpl = Manager.getSystemDiff();
-
-            if (null == diffImpl) {
-                return "[ERROR] diff is not available";
-            } else {
-                if (null == diffFile) {
-                    if (diffImpl.diff(testFile, goldenFile, null)) {
-                        return "[ERROR] " + message;
-                    }
-                } else {
-                    if (diffImpl.diff(testFile.getAbsolutePath(), goldenFile.getAbsolutePath(), diffFile.getAbsolutePath())) {
-                        return "[ERROR] " + message;
-                    }
-                }
-            }
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            return "[ERROR] (BLE) " + e.getMessage();
-        } catch (IOException e) {
-            e.printStackTrace(getLog());
-            return "[ERROR] (IOE) " + e.getMessage();
-        }
-        return null;
+    protected void compareToGoldenFile(EditorOperator editor, String RefFileName, String GoldenFileName, String DiffFileName) {
+            ref(editor.getText());
+            compareReferenceFiles(RefFileName + ".ref", GoldenFileName + ".pass", DiffFileName + ".diff");
     }
 
     protected void waitForMilis(int maxMiliSeconds) {

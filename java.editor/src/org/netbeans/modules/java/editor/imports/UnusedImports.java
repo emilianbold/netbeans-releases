@@ -65,12 +65,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -120,7 +121,6 @@ public class UnusedImports {
         
         private final Map<Element, ImportTree> element2Import = new HashMap<Element, ImportTree>();
         private final Set<Element> importedBySingleImport = new HashSet<Element>();
-        private final Map<String, ImportTree> method2Import = new HashMap<String, ImportTree>();
         private final Map<String, Collection<ImportTree>> simpleName2UnresolvableImports = new HashMap<String, Collection<ImportTree>>();
         private final Set<ImportTree> unresolvablePackageImports = new HashSet<ImportTree>();
         private final Map<ImportTree, TreePath/*ImportTree*/> import2Highlight = new HashMap<ImportTree, TreePath>();
@@ -214,93 +214,69 @@ public class UnusedImports {
             return !SourceVersion.isName(fqn);
         }
         
+        public boolean isErroneous(@NullAllowed Element e) {
+            if (e == null) {
+                return true;
+            }
+            final TypeMirror type = e.asType();
+            if (type == null) {
+                return false;
+            }
+            return type.getKind() == TypeKind.ERROR || type.getKind() == TypeKind.OTHER;
+        }
+
         @Override
         public Void visitImport(ImportTree tree, Void d) {
             if (parseErrorInImport(tree)) {
                 return super.visitImport(tree, null);
             }
-            if (!tree.isStatic()) {
-                if (isStar(tree)) {
-                    MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
-                    Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
-                    
-                    if (decl != null && decl.getKind() == ElementKind.PACKAGE) {
-                        if (!ElementFilter.typesIn(decl.getEnclosedElements()).isEmpty()) {
-                            for (TypeElement te : ElementFilter.typesIn(decl.getEnclosedElements())) {
-                                if (!importedBySingleImport.contains(te)) {
-                                    element2Import.put(te, tree);
-                                }
+            if (tree.getQualifiedIdentifier() == null ||
+                tree.getQualifiedIdentifier().getKind() != Tree.Kind.MEMBER_SELECT) {
+                return super.visitImport(tree, null);
+            }
+            MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
+            boolean assign = false;
+            
+            // static imports and star imports only use the qualifier part
+            boolean star = isStar(tree);
+            TreePath tp = tree.isStatic() || star ?
+                    new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()) :
+                    new TreePath(getCurrentPath(), tree.getQualifiedIdentifier());
+            Element decl = info.getTrees().getElement(tp);
+            
+            import2Highlight.put(tree, getCurrentPath());
+            if (decl != null && !isErroneous(decl)) {
+                if (!tree.isStatic()) {
+                    if (star) {
+                        List<TypeElement> types = ElementFilter.typesIn(decl.getEnclosedElements());
+                        for (TypeElement te : types) {
+                            assign = true;
+                            if (!element2Import.containsKey(te)) {
+                                element2Import.put(te, tree);
                             }
-                            import2Highlight.put(tree, getCurrentPath());
-                        } else {
-                            unresolvablePackageImports.add(tree);
-                            import2Highlight.put(tree, getCurrentPath());
                         }
+                    } else {
+                        element2Import.put(decl, tree);
+                        importedBySingleImport.add(decl);
                     }
-                } else {
-                    Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
+                } else if (decl.getKind().isClass() || decl.getKind().isInterface()) {
+                    Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
 
-                    if (decl != null) {
-                        if (decl.asType().getKind() != TypeKind.ERROR) {
-                            element2Import.put(decl, tree);
-                            importedBySingleImport.add(decl);
-                            import2Highlight.put(tree, getCurrentPath());
-                        } else {
-                            if (tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
-                                addUnresolvableImport(((MemberSelectTree) tree.getQualifiedIdentifier()).getIdentifier(), tree);
-                                import2Highlight.put(tree, getCurrentPath());
-                            }
+                    for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
+                        if (!e.getModifiers().contains(Modifier.STATIC)) continue;
+                        if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
+                            continue;
                         }
+                        element2Import.put(e, tree);
+                        assign = true;
                     }
                 }
-            } else {
-                if (tree.getQualifiedIdentifier() != null && tree.getQualifiedIdentifier().getKind() == Kind.MEMBER_SELECT) {
-                    MemberSelectTree qualIdent = (MemberSelectTree) tree.getQualifiedIdentifier();
-                    Element decl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), qualIdent), qualIdent.getExpression()));
-
-                    if (   decl != null
-                        && (decl.getKind().isClass() || decl.getKind().isInterface())) {
-                        if (decl.asType().getKind() != TypeKind.ERROR) {
-                            Name simpleName = isStar(tree) ? null : qualIdent.getIdentifier();
-                            boolean assign = false;
-
-                            for (Element e : info.getElements().getAllMembers((TypeElement) decl)) {
-                                if (!e.getModifiers().contains(Modifier.STATIC)) continue;
-                                if (simpleName != null && !e.getSimpleName().equals(simpleName)) {
-                                    continue;
-                                }
-                                if (e.getKind() == ElementKind.METHOD) {
-                                    method2Import.put(e.getSimpleName().toString() + e.asType().toString(), tree);
-                                    assign = true;
-                                    continue;
-                                }
-
-                                if (e.getKind().isField()) {
-                                    element2Import.put(e, tree);
-                                    assign = true;
-                                    continue;
-                                }
-
-                                if (e.getKind().isClass() || e.getKind().isInterface()) {
-                                    element2Import.put(e, tree);
-                                    assign = true;
-                                    continue;
-                                }
-                            }
-
-                            if (!assign) {
-                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
-                            }
-                            import2Highlight.put(tree, getCurrentPath());
-                        } else {
-                            if (!isStar(tree)) {
-                                addUnresolvableImport(qualIdent.getIdentifier(), tree);
-                            } else {
-                                unresolvablePackageImports.add(tree);
-                            }
-                            import2Highlight.put(tree, getCurrentPath());
-                        }
-                    }
+            }
+            if (!assign) {
+                if (!tree.isStatic() && star) {
+                    unresolvablePackageImports.add(tree);
+                } else {
+                    addUnresolvableImport(qualIdent.getIdentifier(), tree);
                 }
             }
             super.visitImport(tree, null);
@@ -321,15 +297,16 @@ public class UnusedImports {
         
         private void typeUsed(Element decl, TreePath expr, boolean methodInvocation) {
             if (decl != null && (expr == null || expr.getLeaf().getKind() == Kind.IDENTIFIER || expr.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE)) {
-                if (decl.asType() != null && decl.asType().getKind() != TypeKind.ERROR) {
-                    ImportTree imp = decl.getKind() != ElementKind.METHOD ? element2Import.remove(decl) : method2Import.remove(decl.getSimpleName().toString() + decl.asType().toString());
+                if (!isErroneous(decl)) {
+                    ImportTree imp = element2Import.get(decl);
 
                     if (imp != null) {
+                        import2Highlight.remove(imp);
+
                         if (isStar(imp)) {
                             //TODO: explain
                             handleUnresolvableImports(decl, methodInvocation, false);
                         }
-                        import2Highlight.remove(imp);
                     }
                 } else {
                     handleUnresolvableImports(decl, methodInvocation, true);

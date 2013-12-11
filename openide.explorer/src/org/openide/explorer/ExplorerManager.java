@@ -482,12 +482,22 @@ public final class ExplorerManager extends Object implements Serializable, Clone
         }
 
         synchronized (LOCK) {
+            // a quick check if the context changes, in that case it's not necessary 
+            // to acquire Children.MUTEX read lock
             if (rootContext.equals(value)) {
                 return;
             }
+        }
 
-            class SetRootContext implements Runnable {
-                public void run() {
+        // now lock first Children.MUTEX and the private lock afterwards, someone
+        // might already have locked the Children.MUTEX
+        class SetRootContext implements Runnable {
+            @Override
+            public void run() {
+                synchronized (LOCK) {
+                    if (rootContext.equals(value)) {
+                        return;
+                    }
                     addRemoveListeners(false);
                     Node oldValue = rootContext;
                     rootContext = value;
@@ -505,10 +515,10 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     setExploredContext(rootContext, newselection);
                 }
             }
-
-            SetRootContext run = new SetRootContext();
-            Children.MUTEX.readAccess(run);
         }
+
+        SetRootContext run = new SetRootContext();
+        Children.MUTEX.readAccess(run);
     }
 
     /** @return true iff all nodes are under the target node */

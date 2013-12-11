@@ -6,16 +6,16 @@ CLASS      $context                        [PRIVATE]  index.html
 CLASS      $parentContext                  [PRIVATE]  index.html
 CLASS      ko                              [PUBLIC]   Knockout
 CLASS      viewModel                       [PUBLIC]   index.html
-VARIABLE   $data: ko.$bindings@with;_L86.  [PRIVATE]  index.html
+VARIABLE   $data                           [PRIVATE]  index.html
 VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $index: Number                  [PRIVATE]  index.html
-VARIABLE   $parent: ko.$bindings@with;_L8  [PRIVATE]  index.html
+VARIABLE   $parent                         [PRIVATE]  index.html
 VARIABLE   $parents: Array                 [PRIVATE]  index.html
 VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
 VARIABLE   arguments: Arguments            [PRIVATE]  index.html
 VARIABLE   categories                      [PUBLIC]   index.html
-VARIABLE   category: ko.$bindings@with;_L  [PRIVATE]  index.html
-VARIABLE   item: ko.$bindings@with;_L86.W  [PRIVATE]  index.html
+VARIABLE   category                        [PRIVATE]  index.html
+VARIABLE   item                            [PRIVATE]  index.html
 VARIABLE   items                           [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   index.html
 KEYWORD    break                                      null

@@ -110,7 +110,9 @@ public final class CustomizerBrowser extends JPanel {
 
     void setReloadVisible() {
         WebBrowser browser = browserModel.getSelectedBrowser();
-        reloadOnSaveCheckBox.setVisible(browser != null && browser.hasNetBeansIntegration());
+        boolean visible = browser != null && browser.hasNetBeansIntegration();
+        reloadOnSaveCheckBox.setVisible(visible);
+        reloadInfoLabel.setVisible(visible);
     }
 
     /**
@@ -123,10 +125,13 @@ public final class CustomizerBrowser extends JPanel {
         browserLabel = new JLabel();
         browserComboBox = createBrowserComboBox();
         reloadOnSaveCheckBox = new JCheckBox();
+        reloadInfoLabel = new JLabel();
 
         Mnemonics.setLocalizedText(browserLabel, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.browserLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(reloadOnSaveCheckBox, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.reloadOnSaveCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(reloadInfoLabel, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.reloadInfoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -138,7 +143,11 @@ public final class CustomizerBrowser extends JPanel {
                 .addComponent(browserComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addComponent(reloadOnSaveCheckBox))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(reloadInfoLabel))
+                    .addComponent(reloadOnSaveCheckBox)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -147,13 +156,17 @@ public final class CustomizerBrowser extends JPanel {
                     .addComponent(browserLabel)
                     .addComponent(browserComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(reloadOnSaveCheckBox))
+                .addComponent(reloadOnSaveCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(reloadInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JComboBox<WebBrowser> browserComboBox;
     private JLabel browserLabel;
+    private JLabel reloadInfoLabel;
     private JCheckBox reloadOnSaveCheckBox;
     // End of variables declaration//GEN-END:variables
 

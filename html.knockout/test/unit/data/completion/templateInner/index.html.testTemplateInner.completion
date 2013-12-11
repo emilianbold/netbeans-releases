@@ -8,14 +8,14 @@ CLASS      ko                              [PUBLIC]   Knockout
 CLASS      viewModel                       [PUBLIC]   index.html
 FIELD      months                          [PUBLIC]   index.html
 FIELD      name                            [PUBLIC]   index.html
-VARIABLE   $data: ko.$bindings@with;_L17.  [PRIVATE]  index.html
+VARIABLE   $data                           [PRIVATE]  index.html
 VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $index: Number                  [PRIVATE]  index.html
 VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html
 VARIABLE   $parents: Array                 [PRIVATE]  index.html
 VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
 VARIABLE   arguments: Arguments            [PRIVATE]  index.html
-VARIABLE   season: ko.$bindings@with;_L17  [PRIVATE]  index.html
+VARIABLE   season                          [PRIVATE]  index.html
 VARIABLE   seasons                         [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   index.html
 KEYWORD    break                                      null

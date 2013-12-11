@@ -58,6 +58,17 @@ public class CopyClassTest extends RefactoringTestBase {
     public CopyClassTest(String name) {
         super(name);
     }
+    
+    public void test239213() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } static class Inner { void m() { CopyClass.Inner.this.m(); } } }"));
+        performCopyClass(src.getFileObject("copypkg/CopyClass.java"), new URL(src.getURL(), "copypkgdst/"), "CopyClassRen");
+        verifyContent(src,
+                new File("copypkgdst/package-info.java", "package copypkgdst;"),
+                new File("copypkgdst/CopyClassRen.java", "package copypkgdst; import copypkg.*; public class CopyClassRen { public CopyClassRen() { } static class Inner { void m() { CopyClassRen.Inner.this.m(); } } }"),
+                new File("copypkg/CopyClass.java", "package copypkg; public class CopyClass { public CopyClass() { } static class Inner { void m() { CopyClass.Inner.this.m(); } } }"));
+    }
 
     public void test179333() throws Exception {
         writeFilesAndWaitForScan(src,

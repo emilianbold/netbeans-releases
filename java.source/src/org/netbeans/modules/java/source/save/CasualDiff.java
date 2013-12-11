@@ -1063,11 +1063,20 @@ public class CasualDiff {
         if (diffContext.syntheticTrees.contains(oldT.vartype)) {
             if (!diffContext.syntheticTrees.contains(newT.vartype)) {
                 copyTo(localPointer, localPointer = oldT.pos);
+                printer.suppressVariableType = suppressParameterTypes;
+                int l = printer.out.length();
                 printer.print(newT.vartype);
-                printer.print(" ");
+                printer.suppressVariableType = false;
+                if (l < printer.out.length()) {
+                    printer.print(" ");
+                }
             }
         } else {
-            if (newT.vartype == null) {
+            if (suppressParameterTypes) {
+                int[] vartypeBounds = getBounds(oldT.vartype);
+                // skip the old vartype, if present
+                localPointer = vartypeBounds[1];
+            } else if (newT.vartype == null) {
                 throw new UnsupportedOperationException();
             } else {
                 int[] vartypeBounds = getBounds(oldT.vartype);
@@ -2390,7 +2399,9 @@ public class CasualDiff {
             parameterPrint = true;
             Name oldEnclClassName = printer.enclClassName;
             printer.enclClassName = null;
+            suppressParameterTypes = newT.paramKind == JCLambda.ParameterKind.IMPLICIT;
             localPointer = diffParameterList(oldT.params, newT.params, null, posHint, Measure.MEMBER);
+            suppressParameterTypes = false;
             printer.enclClassName = oldEnclClassName;
             parameterPrint = false;
             printer.setPrec(old);
@@ -2833,6 +2844,11 @@ public class CasualDiff {
         return diffParameterList(oldList, newList, null, makeAround, pos, measure, spaceBefore, spaceAfter, isEnum, separator);
     }
     
+    /**
+     * Suppresses print out of parameter types; used for diff of parameters of an IMPLICIT param kind lambda expression.
+     */
+    private boolean suppressParameterTypes;
+    
     private int diffParameterList(
             List<? extends JCTree> oldList,
             List<? extends JCTree> newList,
@@ -2911,7 +2927,9 @@ public class CasualDiff {
                             printer.print(" ");
                         }
                     }
+                    printer.suppressVariableType = suppressParameterTypes;
                     printer.print(item.element);
+                    printer.suppressVariableType = false;
                     wasLeadingDelete = false;
                     break;
                 }

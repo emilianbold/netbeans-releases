@@ -161,6 +161,21 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return utils;
     }
 
+    @CheckForNull
+    public static APTUtils getIfExist(@NullAllowed final FileObject root) {
+        if (root == null) {
+            return null;
+        }
+        final URL rootUrl = root.toURL();
+        APTUtils res = knownSourceRootsMap.get(rootUrl);
+        if (res != null) {
+            return res;
+        }
+        final Reference<APTUtils> utilsRef = auxiliarySourceRootsMap.get(root);
+        res = utilsRef != null ? utilsRef.get() : null;
+        return res;
+    }
+
     public static void sourceRootRegistered(FileObject root, URL rootURL) {
         if (   root == null
             || knownSourceRootsMap.containsKey(rootURL)
@@ -199,6 +214,11 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     public boolean aptEnabledInEditor() {
         return aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.IN_EDITOR);
+    }
+
+    @CheckForNull
+    public URL sourceOutputDirectory() {
+        return aptOptions.sourceOutputDirectory();
     }
 
     public Collection<? extends Processor> resolveProcessors(boolean onScan) {

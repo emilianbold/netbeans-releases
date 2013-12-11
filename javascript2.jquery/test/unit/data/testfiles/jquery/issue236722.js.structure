@@ -1,4 +1,4 @@
-pluginWithoutElementName:METHOD:[PUBLIC]:ESCAPED{pluginWithoutElementName}ESCAPED{(}ESCAPED{settings}ESCAPED{)}<font color="#999999">ESCAPED{ : }pluginWithoutElementName.publicObj</font>:
+pluginWithoutElementName:METHOD:[PUBLIC]:ESCAPED{pluginWithoutElementName}ESCAPED{(}ESCAPED{settings}ESCAPED{)}:
   _globals:CLASS:[PRIVATE]:ESCAPED{_globals}:
     dependencies:CLASS:[PUBLIC]:ESCAPED{dependencies}:
       jquery1.6+:METHOD:[PUBLIC]:ESCAPED{jquery1.6+}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:

@@ -1475,7 +1475,7 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
          *
          */
         private List<File> filterRelativePaths(List<File> list) {
-            List<File> absOnly = new ArrayList<File>(list.size());
+            List<File> absOnly = new ArrayList<File>();
             for (File f : list) {
                 if (f.isAbsolute()) {
                     absOnly.add(f);
