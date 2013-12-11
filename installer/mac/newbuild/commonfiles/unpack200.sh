@@ -49,9 +49,6 @@ if [ -d "$unpack_dir" ]; then
     cd "$unpack_dir"
     for x in `find . -name \*.jar.pack` ; do
         jar=`echo $x | sed 's/jar.pack/jar/'`
-        if [ -f "$jar" ] ; then
-            continue
-        fi
         "$jdk_home/bin/unpack200" $x $jar
         touch -r $x $jar
         rm $x
