@@ -63,6 +63,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.DirEntry;
 import org.netbeans.modules.remote.impl.fs.DirEntryList;
 import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
+import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
@@ -425,5 +426,20 @@ public class FSSTransport extends RemoteFileSystemTransport {
         @Override
         public void disconnected(ExecutionEnvironment env) {
         }
+    }
+    
+    @Override
+    protected boolean needsClientSidePollingRefresh() {
+        return false;
+    }
+    
+    @Override
+    protected void registerDirectoryImpl(RemoteDirectory directory) {
+        
+    }
+
+    @Override
+    protected void unregisterDirectoryImpl(String path) {
+        
     }
 }

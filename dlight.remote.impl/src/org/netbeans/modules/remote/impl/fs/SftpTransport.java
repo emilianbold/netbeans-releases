@@ -43,11 +43,13 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 
@@ -119,4 +121,22 @@ public class SftpTransport extends RemoteFileSystemTransport {
     public boolean isValid() {
         return true;
     }
+    
+    @Override
+    protected boolean needsClientSidePollingRefresh() {
+        return true;        
+    }
+    
+    @Override
+    protected void registerDirectoryImpl(RemoteDirectory directory) {
+        if (RefreshManager.REFRESH_ON_CONNECT && directory.getCache().exists() && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            // see issue #210125 Remote file system does not refresh directory that wasn't instantiated at connect time
+            directory.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.<RemoteFileObjectBase>asList(directory), false);
+        }        
+    }
+
+    @Override
+    protected void unregisterDirectoryImpl(String path) {
+        
+    }    
 }
