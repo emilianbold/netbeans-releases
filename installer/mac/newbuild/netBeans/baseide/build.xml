@@ -55,18 +55,6 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Copying the icon into the correct place" />
         <copy file="${appdir}/Contents/Resources/NetBeans/${nbClusterDir}/netbeans.icns" todir="${appdir}/Contents/Resources"/>
         
-        <echo message="Generating Info.plist" />
-        <copy file="Info.plist" filtering="true" tofile="${appdir}/Contents/Info.plist">
-            <filterset>
-                <filter token="APPNAME" value="${appname}"/>
-                <filter token="APPVERSION" value="${appversion}"/>
-                <filter token="VERSION" value="${baseide.version}"/>
-                <filter token="EXENAME" value="netbeans"/>
-                <filter token="ICONFILENAME" value="netbeans.icns"/>
-                <filter token="NB_ID" value="${nb.id}"/>
-            </filterset>
-        </copy>
-        
         <echo message="Creating launch script symlink ${appdir}/Contents/MacOS/netbeans"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
