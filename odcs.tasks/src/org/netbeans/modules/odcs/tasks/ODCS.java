@@ -42,6 +42,7 @@
 package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
@@ -181,22 +182,27 @@ public class ODCS {
                 @Override
                 public IssuePriorityInfo[] getPriorityInfos() {
                     if(infos == null) {
-                        List<Priority> priorities = repository.getRepositoryConfiguration(false).getPriorities();
-                        Collections.sort(priorities, new Comparator<Priority>() {
-                            @Override
-                            public int compare(Priority p1, Priority p2) {
-                                if(p1 == null && p2 == null) return 0;
-                                if(p1 == null) return -1;
-                                if(p2 == null) return 1;
-                                return p1.getSortkey().compareTo(p2.getSortkey());
+                        RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
+                        if(rc != null) {
+                            List<Priority> priorities = rc.getPriorities();
+                            Collections.sort(priorities, new Comparator<Priority>() {
+                                @Override
+                                public int compare(Priority p1, Priority p2) {
+                                    if(p1 == null && p2 == null) return 0;
+                                    if(p1 == null) return -1;
+                                    if(p2 == null) return 1;
+                                    return p1.getSortkey().compareTo(p2.getSortkey());
+                                }
+                            });
+                            infos = new IssuePriorityInfo[priorities.size()];
+                            for (int i = 0; i < priorities.size(); i++) {
+                                Priority priority = priorities.get(i);
+                                infos[i] = new IssuePriorityInfo(priority.getId().toString(), priority.getValue());
                             }
-                        });
-                        infos = new IssuePriorityInfo[priorities.size()];
-                        for (int i = 0; i < priorities.size(); i++) {
-                            Priority priority = priorities.get(i);
-                            infos[i] = new IssuePriorityInfo(priority.getId().toString(), priority.getValue());
+                        } else {
+                            infos = new IssuePriorityInfo[0];
                         }
-                    }
+                    } 
                     return infos;
                 }
             };

@@ -327,6 +327,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     logPopulate("Starting populate query controller{0}"); // NOI18N
                     repository.ensureCredentials();
                     final RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
+                    if(rc == null) {
+                        return;
+                    }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -885,6 +888,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void populateProductDetails(RepositoryConfiguration rc) {
+        if(rc == null) {
+            return;
+        }
         Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<>();
         Set<Iteration> newIterations = new HashSet<>();
         Set<Milestone> newMilestones = new HashSet<>();

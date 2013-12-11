@@ -411,14 +411,16 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private void initWikiPanels(){
         RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
-        wikiLanguage = rc.getMarkupLanguage();
-        addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
-        ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, addCommentPanel);
+        if(rc != null) {
+            wikiLanguage = rc.getMarkupLanguage();
+            addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
+            ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, addCommentPanel);
 
-        commentsPanel.setWikiLanguage(wikiLanguage);
+            commentsPanel.setWikiLanguage(wikiLanguage);
 
-        descriptionPanel = WikiUtils.getWikiPanel(wikiLanguage, false, true);
-        ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDescriptionPanel, descriptionPanel);
+            descriptionPanel = WikiUtils.getWikiPanel(wikiLanguage, false, true);
+            ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDescriptionPanel, descriptionPanel);
+        }
     }
 
     ODCSIssue getIssue() {
@@ -490,12 +492,16 @@ public class IssuePanel extends javax.swing.JPanel {
         initWikiPanels();
 //        initCustomFields(); XXX
         
-        Collection<Keyword> kws = issue.getRepository().getRepositoryConfiguration(false).getKeywords();
-        keywords.clear();
-        for (Keyword keyword : kws) {
-            keywords.add(keyword.getName());
+        final RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
+        
+        if(rc != null) {
+            Collection<Keyword> kws = rc.getKeywords();
+            keywords.clear();
+            for (Keyword keyword : kws) {
+                keywords.add(keyword.getName());
+            }
+            setupListeners();
         }
-        setupListeners();
 
         // Hack to "link" the width of both columns
 //        Dimension dim = ccField.getPreferredSize();
@@ -549,31 +555,33 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initCombos() {
         RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         
-        productCombo.setModel(toComboModel(rc.getProducts()));
-        productCombo.setRenderer(new ClientDataRenderer());
-        
-        // componentCombo, versionCombo, targetMilestoneCombo are filled
-        // automatically when productCombo is set/changed
+        if(rc != null) {
+            productCombo.setModel(toComboModel(rc.getProducts()));
+            productCombo.setRenderer(new ClientDataRenderer());
 
-        // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
-        resolutionCombo.setModel(toComboModel(rc.getResolutions()));
-        resolutionCombo.setRenderer(new ClientDataRenderer());
-        
-        initPriorityCombo(rc);
-        
-        initSeverityCombo(rc);
+            // componentCombo, versionCombo, targetMilestoneCombo are filled
+            // automatically when productCombo is set/changed
 
-        ownerCombo.setModel(toComboModel(rc.getUsers()));
-        ownerCombo.setRenderer(new ClientDataRenderer());
-        
-        iterationCombo.setModel(toComboModel(new ArrayList<Iteration>(issue.isNew() 
-                ? rc.getActiveIterations()
-                : rc.getIterations())));
-        iterationCombo.setRenderer(new ClientDataRenderer());
+            // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
+            resolutionCombo.setModel(toComboModel(rc.getResolutions()));
+            resolutionCombo.setRenderer(new ClientDataRenderer());
 
-        issueTypeCombo.setModel(toComboModel(new ArrayList<String>(rc.getTaskTypes())));
-        
-        // statusCombo and resolution fields are filled in reloadForm
+            initPriorityCombo(rc);
+
+            initSeverityCombo(rc);
+
+            ownerCombo.setModel(toComboModel(rc.getUsers()));
+            ownerCombo.setRenderer(new ClientDataRenderer());
+
+            iterationCombo.setModel(toComboModel(new ArrayList<Iteration>(issue.isNew() 
+                    ? rc.getActiveIterations()
+                    : rc.getIterations())));
+            iterationCombo.setRenderer(new ClientDataRenderer());
+
+            issueTypeCombo.setModel(toComboModel(new ArrayList<String>(rc.getTaskTypes())));
+
+            // statusCombo and resolution fields are filled in reloadForm
+        }
     }
 
     private ComboBoxModel toComboModel(List items) {
@@ -617,7 +625,9 @@ public class IssuePanel extends javax.swing.JPanel {
         dummySubtaskPanel.setVisible(false);
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         descriptionLabel.setVisible(!isNew);
-        descriptionPanel.setVisible(!isNew);
+        if(descriptionPanel != null) {
+            descriptionPanel.setVisible(!isNew);
+        }
         
         final String parentId = issue.getParentId();
         boolean hasParent = (parentId != null) && (parentId.trim().length() > 0);
@@ -1116,25 +1126,27 @@ public class IssuePanel extends javax.swing.JPanel {
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
         RepositoryConfiguration rc = issue.getRepository().getRepositoryConfiguration(false);
         
-        String initialStatus = issue.getLastSeenFieldValue(IssueField.STATUS);
-        if (initialStatus.isEmpty()) {
-            initialStatus = status;
-        }
-        List<TaskStatus> statuses = rc.computeValidStatuses(ODCSUtil.getStatusByValue(rc, initialStatus));
-        
-        // XXX evaluate statuses for open and active
-        resolvedIndex = statuses.size(); // if there is no RESOLVED
-        for (int i = 0; i < statuses.size(); i++) {
-            TaskStatus s = statuses.get(i);
-            if(s.getValue().equals(RESOLUTION_RESOLVED)) {
-                resolvedIndex = i;
-                break;
+        if (rc != null) {
+            String initialStatus = issue.getLastSeenFieldValue(IssueField.STATUS);
+            if (initialStatus.isEmpty()) {
+                initialStatus = status;
             }
+            List<TaskStatus> statuses = rc.computeValidStatuses(ODCSUtil.getStatusByValue(rc, initialStatus));
+
+            // XXX evaluate statuses for open and active
+            resolvedIndex = statuses.size(); // if there is no RESOLVED
+            for (int i = 0; i < statuses.size(); i++) {
+                TaskStatus s = statuses.get(i);
+                if (s.getValue().equals(RESOLUTION_RESOLVED)) {
+                    resolvedIndex = i;
+                    break;
+                }
+            }
+            
+            statusCombo.setModel(toComboModel(statuses));
+            statusCombo.setRenderer(new ClientDataRenderer());
+            selectInCombo(statusCombo, ODCSUtil.getStatusByValue(rc, status), false);
         }
-        
-        statusCombo.setModel(toComboModel(statuses));
-        statusCombo.setRenderer(new ClientDataRenderer());
-        selectInCombo(statusCombo, ODCSUtil.getStatusByValue(rc, status), false);
     }    
     
     private void updateReadOnlyField(JTextField field) {
@@ -3266,12 +3278,14 @@ public class IssuePanel extends javax.swing.JPanel {
             return;
         }
         TaskResolution duplicate = ODCSUtil.getResolutionByValue(issue.getRepository().getRepositoryConfiguration(false), RESOLUTION_DUPLICATE);
-        boolean shown = resolutionCombo.isVisible() && duplicate.equals(resolutionCombo.getSelectedItem());
-        duplicateField.setVisible(shown);
-        duplicateLabel.setVisible(shown);
-        duplicateButton.setVisible(shown && duplicateField.isEditable());
-        duplicateWarning.setVisible(shown);
-        updateNoDuplicateId();
+        if(duplicate != null) {
+            boolean shown = resolutionCombo.isVisible() && duplicate.equals(resolutionCombo.getSelectedItem());
+            duplicateField.setVisible(shown);
+            duplicateLabel.setVisible(shown);
+            duplicateButton.setVisible(shown && duplicateField.isEditable());
+            duplicateWarning.setVisible(shown);
+            updateNoDuplicateId();
+        }
     }//GEN-LAST:event_resolutionComboActionPerformed
 
     private void ccButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ccButtonActionPerformed
