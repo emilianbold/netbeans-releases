@@ -15,7 +15,7 @@
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
-    <property name="nb.id" value="${buildnumber}"/>
+    <property name="nb.id" value="${baseide.version}"/>
 
     <property name="appversion" value="Development Version"/>
     <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
