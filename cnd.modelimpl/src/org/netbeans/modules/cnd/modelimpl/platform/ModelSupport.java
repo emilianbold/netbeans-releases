@@ -53,6 +53,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -101,6 +102,7 @@ import org.openide.windows.WindowManager;
  */
 public class ModelSupport implements PropertyChangeListener {
 
+    private static final AtomicBoolean hasOpenedProjects = new AtomicBoolean(false);
     private static final ModelSupport instance = new ModelSupport();
     /*package*/volatile ModelImpl theModel;
     private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
@@ -145,10 +147,22 @@ public class ModelSupport implements PropertyChangeListener {
             }
         }
     }
+    /** copy pasted version from CndUtils to prevent load of CndUtils during startup */
+    private static boolean getBoolean(String name, boolean result) {
+        String text = System.getProperty(name);
+        if (text != null) {
+            result = Boolean.parseBoolean(text);
+        }
+        return result;
+    }
 
     /** copy pasted version from CndUtils to prevent load of CndUtils during startup */
     public static boolean isStandalone() {
         if ("true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
+            return true;
+        }
+        // headless is the same as standalone
+        if (getBoolean("java.awt.headless", false)) { // NOI18N
             return true;
         }
         return !ModelSupport.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
@@ -160,6 +174,7 @@ public class ModelSupport implements PropertyChangeListener {
 
         if (!isStandalone()) {
             openedProjects.clear();
+            hasOpenedProjects.set(true);
             if (TRACE_STARTUP) {
                 System.out.println("Model support: Inited"); // NOI18N
             }
@@ -191,6 +206,10 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    public boolean hasOpenedProjects() {
+        return hasOpenedProjects.get();
+    }
+
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
         modifiedListener.clean();
@@ -210,6 +229,7 @@ public class ModelSupport implements PropertyChangeListener {
                     }
                 }
             }
+            hasOpenedProjects.set(false);
             model.shutdown();
         }
     }
@@ -277,6 +297,7 @@ public class ModelSupport implements PropertyChangeListener {
             for (Lookup.Provider project : toClose) {
                 closeProject(project);
             }
+            hasOpenedProjects.set(!openedProjects.isEmpty());
             openedProjects.notifyAll();
         }
     }
@@ -379,6 +400,7 @@ public class ModelSupport implements PropertyChangeListener {
             }
 
             openedProjects.add(project);
+            hasOpenedProjects.set(true);
             if (TraceFlags.DEBUG) {
                 dumpProjectFiles(nativeProject);
             }
