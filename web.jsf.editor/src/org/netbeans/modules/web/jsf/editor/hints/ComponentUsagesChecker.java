@@ -91,7 +91,7 @@ public class ComponentUsagesChecker extends HintsProvider {
     // - whether the tag exists
     // - if it has all the required attributes
     // - if all used attributes are allowed
-    public static List<Hint> checkCCCalls(final HtmlParserResult result) {
+    private static List<Hint> checkCCCalls(final HtmlParserResult result) {
         final List<Hint> hints = new ArrayList<>();
         final Snapshot snapshot = result.getSnapshot();
         CharSequence documentContent = null;

@@ -43,10 +43,12 @@ package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -66,6 +68,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
@@ -82,7 +85,7 @@ public class JsfCustomIndexer extends CustomIndexer {
 
     static final String INDEXER_NAME = "jsfCustomIndexer"; //NOI18N
     static final int INDEXER_VERSION = 6;
-    private static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(JsfCustomIndexer.class.getName());
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
@@ -91,6 +94,8 @@ public class JsfCustomIndexer extends CustomIndexer {
             return;
         }
 
+        boolean[] usesComposites = new boolean[1];
+        List<URL> toRescan = new ArrayList<>();
         for (Indexable i : files) {
             URL indexableURL = i.getURL();
             if (indexableURL == null) {
@@ -106,8 +111,13 @@ public class JsfCustomIndexer extends CustomIndexer {
             } else if (JsfIndexSupport.isTagLibraryDescriptor(file)) {
                 processTlds(file, context);
             } else if (JsfUtils.XHTML_MIMETYPE.equals(file.getMIMEType())) {
-                processFaceletsCompositeLibraries(file, context);
+                processFaceletsCompositeLibraries(file, context, toRescan, usesComposites);
             }
+        }
+
+        // issue #226968 - rescan files which could contain composites
+        if (usesComposites[0] && !toRescan.isEmpty() && !context.isSupplementaryFilesIndexing()) {
+            context.addSupplementaryFiles(context.getRootURI(), toRescan);
         }
     }
 
@@ -139,7 +149,7 @@ public class JsfCustomIndexer extends CustomIndexer {
         }
     }
 
-    private void processFaceletsCompositeLibraries(final FileObject file, final Context context) {
+    private void processFaceletsCompositeLibraries(final FileObject file, final Context context, final List<URL> toRescan, final boolean[] usesComposites) {
         try {
             Source source = Source.create(file);
             ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -152,9 +162,17 @@ public class JsfCustomIndexer extends CustomIndexer {
                             List<IndexDocument> documents = new LinkedList<>();
                             IndexingSupport support = IndexingSupport.getInstance(context);
 
+                            // file could contain and use composite component library
+                            if (containsNonStandardNamespaces(parserResult.getNamespaces())) {
+                                toRescan.add(fo.toURL());
+                            }
+
                             //get JSF models and index them
                             Collection<JsfPageModel> models = JsfPageModelFactory.getModels(parserResult);
                             for (JsfPageModel model : models) {
+                                if (model instanceof CompositeComponentModel) {
+                                    usesComposites[0] = true;
+                                }
                                 IndexDocument document = support.createDocument(file);
                                 model.storeToIndex(document);
                                 documents.add(document);
@@ -168,10 +186,20 @@ public class JsfCustomIndexer extends CustomIndexer {
                         }
                     }
                 }
+
             });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static boolean containsNonStandardNamespaces(Map<String, String> namespaces) {
+        for (String ns : namespaces.keySet()) {
+            if (DefaultLibraryInfo.forNamespace(ns) == null && !"http://www.w3.org/1999/xhtml".equals(ns)) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
     public static class Factory extends CustomIndexerFactory {
