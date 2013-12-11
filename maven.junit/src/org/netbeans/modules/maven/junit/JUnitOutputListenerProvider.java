@@ -154,7 +154,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 // example values: "1.5C", "4". http://maven.apache.org/surefire/maven-surefire-plugin/test-mojo.html#forkCount
                 forks = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(forkCount).floatValue();
             } catch (ParseException ex) {
-                LOG.log(Level.INFO, null, ex);
+                LOG.log(Level.FINE, null, ex);
                 forks = 1;
             }
             if (forks * cpuCores > 1) {
