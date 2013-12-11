@@ -646,6 +646,8 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     }
 
     protected static<T> void postObjectCreateRegistration(boolean register, OffsetableDeclarationBase<T> obj) {
+        // IZ#237907 initialize FQN
+        obj.getUniqueName();
         if (register) {
             if (!obj.registerInProject()) {
                 RepositoryUtils.put(obj);
