@@ -159,6 +159,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private final WidthEstimator widthEstimator;
     private final DanglingElseChecker danglingElseChecker;
 
+    /**
+     * Suppresses printing of variable type. Used when printing parameters for IMPLICIT-param lambdas
+     */
+    public boolean suppressVariableType;
     public Name enclClassName; // the enclosing class name.
     private int indentSize;
     private int prec; // visitor argument: the current precedence level.
@@ -848,19 +852,21 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printAnnotations(tree.mods.annotations);
         if (notEnumConst) {
             printFlags(tree.mods.flags);
-            if ((tree.mods.flags & VARARGS) != 0) {
-                // Variable arity method. Expecting  ArrayType, print ... instead of [].
-                if (Kind.ARRAY_TYPE == tree.vartype.getKind()) {
-                    printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+            if (!suppressVariableType) {
+                if ((tree.mods.flags & VARARGS) != 0) {
+                    // Variable arity method. Expecting  ArrayType, print ... instead of [].
+                    if (Kind.ARRAY_TYPE == tree.vartype.getKind()) {
+                        printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+                    } else {
+                        printExpr(tree.vartype);
+                    }
+                    print("...");
                 } else {
-                    printExpr(tree.vartype);
+                    print(tree.vartype);
                 }
-                print("...");
-            } else {
-                print(tree.vartype);
             }
         }
-        if (tree.vartype != null) //should also check the flags?
+        if (tree.vartype != null && !suppressVariableType) //should also check the flags?
             needSpace();
         if (!ERROR.contentEquals(tree.name))
             print(tree.name);
@@ -1029,9 +1035,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         print(cs.spaceWithinLambdaParens() && tree.params.nonEmpty() ? "( " : "(");
         boolean oldPrintingMethodParams = printingMethodParams;
         printingMethodParams = true;
+        suppressVariableType = tree.paramKind == JCLambda.ParameterKind.IMPLICIT;
         wrapTrees(tree.params, cs.wrapLambdaParams(), cs.alignMultilineLambdaParams()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
                   true);
+        suppressVariableType = false;
         printingMethodParams = oldPrintingMethodParams;
         if (cs.spaceWithinLambdaParens() && tree.params.nonEmpty())
             needSpace();
