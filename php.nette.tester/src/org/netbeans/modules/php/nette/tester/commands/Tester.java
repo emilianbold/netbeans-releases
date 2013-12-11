@@ -208,7 +208,6 @@ public final class Tester {
                 assert location != null : testInfo;
                 params.add(new File(location).getAbsolutePath());
             }
-            runInfo.resetCustomTests();
         }
         tester.additionalParameters(params);
         try {

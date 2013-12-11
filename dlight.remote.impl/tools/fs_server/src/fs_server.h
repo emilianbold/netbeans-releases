@@ -63,7 +63,8 @@ enum fs_request_kind {
     FS_REQ_QUIT = 'q',
     FS_REQ_SLEEP = 'P',
     FS_REQ_ADD_WATCH = 'W',
-    FS_REQ_REMOVE_WATCH = 'w'
+    FS_REQ_REMOVE_WATCH = 'w',
+    FS_REQ_REFRESH = 'R'
 };
 
 enum fs_response_kind {
@@ -72,7 +73,8 @@ enum fs_response_kind {
     FS_RSP_ENTRY = 'e',
     FS_RSP_END = 'x',
     FS_RSP_CHANGE = 'c',
-    FS_RSP_ERROR = 'E'
+    FS_RSP_ERROR = 'E',
+    FS_RSP_REFRESH = 'R'
 };
 
 typedef struct fs_request {

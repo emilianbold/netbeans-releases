@@ -8,7 +8,7 @@ CLASS      $parentContext                  [PRIVATE]  index.html
 CLASS      ko                              [PUBLIC]   Knockout
 FIELD      credits                         [PUBLIC]   index.html
 FIELD      name                            [PUBLIC]   index.html
-VARIABLE   $data: ko.$bindings@with;_L19.  [PRIVATE]  index.html
+VARIABLE   $data                           [PRIVATE]  index.html
 VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $index: Number                  [PRIVATE]  index.html
 VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html

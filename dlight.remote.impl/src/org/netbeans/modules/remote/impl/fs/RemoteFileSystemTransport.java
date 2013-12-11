@@ -94,23 +94,23 @@ public abstract class RemoteFileSystemTransport {
     public static FileInfoProvider.StatInfo stat(ExecutionEnvironment execEnv, String path) 
             throws InterruptedException, CancellationException, ExecutionException {
 
-        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
-        if (transport == null || ! transport.isValid()) {
-            transport = SftpTransport.getInstance(execEnv);
-        }
-        return transport.stat(path);
+        return getInstance(execEnv).stat(path);
     }
     
     public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
             throws InterruptedException, CancellationException, ExecutionException {
 
+        return getInstance(execEnv).stat(path);
+     }
+
+    private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport == null || ! transport.isValid()) {
             transport = SftpTransport.getInstance(execEnv);
         }
-        return transport.stat(path);
-     }
-
+        return transport;
+    }
+    
     protected abstract FileInfoProvider.StatInfo stat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
     
