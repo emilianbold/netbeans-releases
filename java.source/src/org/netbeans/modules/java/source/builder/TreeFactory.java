@@ -1518,6 +1518,9 @@ public class TreeFactory {
                 c(method.getParameters(), index, parameter, op),
                 method.getBody()
         );
+        // issue #239256: Attr may had replaced the originall null type with the inferred one, so
+        // Lambda factory method initializes the lambda parameter kind incorrectly to EXPLICIT
+        ((JCLambda)copy).paramKind = ((JCLambda)method).paramKind;
         return copy;
     }
     

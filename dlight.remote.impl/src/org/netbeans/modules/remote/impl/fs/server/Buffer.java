@@ -63,7 +63,7 @@ import java.nio.BufferUnderflowException;
         StringBuilder sb = new StringBuilder(len);
         int limit = curr + len;
         if (limit > text.length()) {
-            new IllegalStateException("Wrong buffer format: " + text).printStackTrace(System.err);
+            new IllegalStateException("Wrong buffer format: " + text).printStackTrace(System.err); // NOI18N
             limit = text.length();
         }
         while (curr < limit) {
