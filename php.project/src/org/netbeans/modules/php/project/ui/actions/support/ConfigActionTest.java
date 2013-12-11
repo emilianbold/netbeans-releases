@@ -238,7 +238,7 @@ class ConfigActionTest extends ConfigAction {
         Pair<String, String> method = CommandUtils.decodeMethod(singleMethod.getMethodName());
         TestRunInfo.TestInfo testInfo = new TestRunInfo.TestInfo(TestRunInfo.TestInfo.UNKNOWN_TYPE, method.second(), method.first(),
                 FileUtil.toFile(file).getAbsolutePath());
-        testRunInfo.setCustomTests(Collections.singleton(testInfo));
+        testRunInfo.setInitialTests(Collections.singleton(testInfo));
         return testRunInfo;
     }
 
@@ -292,7 +292,7 @@ class ConfigActionTest extends ConfigAction {
 
     private final class RerunUnitTestHandler implements ControllableRerunHandler {
 
-        private final TestRunInfo info;
+        final TestRunInfo info;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         private volatile boolean enabled = false;
@@ -309,7 +309,12 @@ class ConfigActionTest extends ConfigAction {
             PhpActionProvider.submitTask(new Runnable() {
                 @Override
                 public void run() {
-                    ConfigActionTest.this.run(info);
+                    try {
+                        ConfigActionTest.this.run(info);
+                    } finally {
+                        info.setRerun(false);
+                        info.resetCustomTests();
+                    }
                 }
             });
         }
