@@ -74,16 +74,18 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
         ActionListener, AlwaysEnable {
     private static final Logger LOG = Logger.getLogger(
             BlobFieldTableCellEditor.class.getName());
+    private static final String EDIT = "edit";
 
-    protected static final String EDIT = "edit";
-    protected Blob currentValue;
-    protected JButton button;
-    protected JPopupMenu popup;
-    protected JTable table;
-    protected JMenuItem saveContentMenuItem;
-    protected JMenuItem miOpenImageMenuItem;
-    protected JMenuItem miLobLoadAction;
-    protected JMenuItem miLobNullAction;
+    private static File lastFile;
+
+    private Blob currentValue;
+    private JButton button;
+    private JPopupMenu popup;
+    private JTable table;
+    private JMenuItem saveContentMenuItem;
+    private JMenuItem miOpenImageMenuItem;
+    private JMenuItem miLobLoadAction;
+    private JMenuItem miLobNullAction;
 
     @SuppressWarnings("LeakingThisInConstructor")
     public BlobFieldTableCellEditor() {
@@ -208,9 +210,11 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
             return;
         }
         JFileChooser c = new JFileChooser();
+        c.setCurrentDirectory(lastFile);
         int fileDialogState = c.showSaveDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
+            lastFile = f;
             InputStream is;
             FileOutputStream fos;
             try {
@@ -231,10 +235,12 @@ public class BlobFieldTableCellEditor extends AbstractCellEditor
 
     private Blob loadLobFromFile() {
         JFileChooser c = new JFileChooser();
+        c.setCurrentDirectory(lastFile);
         Blob result = null;
         int fileDialogState = c.showOpenDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
+            lastFile = f;
             FileInputStream fis;
             try {
                 fis = new FileInputStream(f);

@@ -75,6 +75,11 @@ public class StatusAction extends GitAction {
     public StatusAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected final void performContextAction (Node[] nodes) {

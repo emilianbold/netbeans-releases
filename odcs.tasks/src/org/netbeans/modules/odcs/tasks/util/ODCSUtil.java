@@ -210,6 +210,9 @@ public class ODCSUtil {
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }
         List<TaskResolution> resolutions = rc.getResolutions();
         for (TaskResolution r : resolutions) {
             if(r.getValue().equals(value)) {
@@ -220,6 +223,9 @@ public class ODCSUtil {
     }
     
     public static TaskStatus getStatusByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }        
         List<TaskStatus> statuses = rc.getStatuses();
         for (TaskStatus taskStatus : statuses) {
             if(taskStatus.getValue().equals(value)) {
@@ -230,6 +236,9 @@ public class ODCSUtil {
     }
     
     public static Priority getPriorityByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }        
         List<Priority> priorities = rc.getPriorities();
         for (Priority p : priorities) {
             if(p.getValue().equals(value)) {
@@ -240,6 +249,9 @@ public class ODCSUtil {
     }
     
     public static TaskSeverity getSeverityByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }        
         List<TaskSeverity> severities = rc.getSeverities();
         for (TaskSeverity s : severities) {
             if(s.getValue().equals(value)) {
@@ -250,6 +262,9 @@ public class ODCSUtil {
     }
 
     public static Iteration getIterationByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }        
         List<Iteration> iterations = rc.getIterations();
         for (Iteration i : iterations) {
             if(i.getValue().equals(value)) {
@@ -261,6 +276,9 @@ public class ODCSUtil {
 
 
     public static Milestone getMilestoneByValue(RepositoryConfiguration rc, String value) {
+        if(rc == null) {
+            return null;
+        }        
         List<Milestone> milestones = rc.getMilestones();
         for (Milestone m : milestones) {
             if(m.getValue().equals(value)) {

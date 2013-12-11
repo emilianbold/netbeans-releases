@@ -589,17 +589,14 @@ public class ODCSRepository implements PropertyChangeListener {
 
     public synchronized RepositoryConfiguration getRepositoryConfiguration(boolean forceRefresh) {
         CloudDevClient client = ODCS.getInstance().getCloudDevClient(taskRepository);
-        RepositoryConfiguration configuration;
+        RepositoryConfiguration configuration = null;
         try {
             configuration = client.getRepositoryConfiguration(forceRefresh, new NullProgressMonitor());
         } catch (CoreException ex) {
-            // XXX
-            Exceptions.printStackTrace(ex);
-            return null;
+            ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", ex);
         } catch (NullPointerException npe) {
             // see issue #238231
             ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", npe);
-            throw npe;
         }
         return configuration;
     }

@@ -75,6 +75,11 @@ public class AddAction extends ContextAction {
     public AddAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected boolean enable (Node[] nodes) {

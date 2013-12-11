@@ -269,6 +269,15 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     // parent implementation ////////////////////////////////////////////////////////
+    @Override
+    public boolean isSystem64Bit() {
+        String arch = System.getenv("PROCESSOR_ARCHITECTURE");
+        String wow64Arch = System.getenv("PROCESSOR_ARCHITEW6432");
+
+        return arch.endsWith("64") || wow64Arch != null && wow64Arch.endsWith("64");
+    }
+    
+    @Override
     public boolean isCurrentUserAdmin() throws NativeException {
         if(isUserAdminSet) {
             return isUserAdmin;
@@ -281,10 +290,12 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     
+    @Override
     protected OnExitCleanerHandler newDeleteOnExitCleanerHandler() {
         return new WindowsProcessOnExitCleanerHandler(CLEANER_FILENAME);
     }
     
+    @Override
     public File getDefaultApplicationsLocation() throws NativeException {
         if (defaultApplicationsLocation == null) {
             defaultApplicationsLocation = SystemUtils.getUserHomeDirectory();
@@ -301,6 +312,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return defaultApplicationsLocation;
     }
     
+    @Override
     public long getFreeSpace(File file) throws NativeException {
         if ((file == null) || !isPathValid(file.getPath())) {
             return 0;
@@ -309,6 +321,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public boolean isUNCPath(String path) {
         // for windows UNC is smth like \\servername\folder...
         return path.matches("^\\\\\\\\.+(\\\\|/).+");
@@ -338,6 +351,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public boolean isPathValid(String path) {
         // there is a max length limitation
         if (path.length() > 256) {
@@ -369,6 +383,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return true;
     }
     
+    @Override
     public File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException {        
         if (shortcut.getPath() != null) {
             return new File(shortcut.getPath());
@@ -450,6 +465,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
         if(shortcut instanceof FileShortcut) {
@@ -461,6 +477,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return shortcutFile;
     }
     
+    @Override
     public void removeShortcut(Shortcut shortcut, LocationType locationType, boolean cleanupParents) throws NativeException {
         File shortcutFile = getShortcutLocation(shortcut, locationType);
         
@@ -483,6 +500,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public FilesList addComponentToSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
         final FilesList list = new FilesList();
         
@@ -557,6 +575,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return list;
     }
     
+    @Override
     public void removeComponentFromSystemInstallManager(ApplicationDescriptor descriptor) throws NativeException {
         String properUid = getProperUninstallUid(
                 descriptor.getUid(),
@@ -567,6 +586,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean expand) throws NativeException {
         String value = null;
         
@@ -600,6 +620,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return value;
     }
     
+    @Override
     public void setEnvironmentVariable(String name, String value, EnvironmentScope scope, boolean expand) throws NativeException {
         if ((name != null) && (scope != null)) {
             if (scope == EnvironmentScope.PROCESS) {
@@ -634,6 +655,7 @@ public class WindowsNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
     public List<File> findIrrelevantFiles(File parent) throws IOException {
         List<File> files = new LinkedList<File>();
         
@@ -675,6 +697,7 @@ public class WindowsNativeUtils extends NativeUtils {
         return files;
     }
     
+    @Override
     public List<File> findExecutableFiles(File parent) throws IOException {
         List<File> files = new LinkedList<File>();
         
@@ -702,10 +725,12 @@ public class WindowsNativeUtils extends NativeUtils {
         return files;
     }
     
+    @Override
     public void correctFilesPermissions(File parent) {
         // does nothing, as there is no such thing as execute permissions
     }
     
+    @Override
     public void setPermissions(
             final File file,
             final int mode,
@@ -713,11 +738,13 @@ public class WindowsNativeUtils extends NativeUtils {
         // does nothing
     }
     
+    @Override
     public int getPermissions(
             final File file) throws IOException {
         return 0;
     }
     
+    @Override
     public List<File> getFileSystemRoots(String... files) throws IOException {
         return Arrays.asList(File.listRoots());
     }

@@ -71,6 +71,11 @@ public final class SvnPropertiesAction extends ContextAction {
     public SvnPropertiesAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
