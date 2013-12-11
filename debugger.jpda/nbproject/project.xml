@@ -288,6 +288,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.debugger.jpda.actions</package>
                 <package>org.netbeans.modules.debugger.jpda.breakpoints</package>
                 <package>org.netbeans.modules.debugger.jpda.expr</package>
+                <package>org.netbeans.modules.debugger.jpda.expr.formatters</package>
                 <package>org.netbeans.modules.debugger.jpda.jdi</package>
                 <package>org.netbeans.modules.debugger.jpda.jdi.event</package>
                 <package>org.netbeans.modules.debugger.jpda.jdi.request</package>

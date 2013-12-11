@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui;
+package org.netbeans.modules.debugger.jpda.expr.formatters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Entlicher
  */
-public class VariablesFormatter implements Cloneable {
+public final class VariablesFormatter implements Cloneable {
 
     private String name;
     private boolean enabled = true;
@@ -316,8 +316,15 @@ public class VariablesFormatter implements Cloneable {
     }
 
 
+    @NbBundle.Messages({"# VariablesFormatter",
+                        "MSG_CharSequenceFormatter=Default CharSequence Formatter",
+                        "MSG_CollectionFormatter=Default Collection Formatter",
+                        "MSG_MapFormatter=Default Map Formatter",
+                        "MSG_MapEntryFormatter=Default Map.Entry Formatter",
+                        "MSG_EnumFormatter=Default Enum Formatter",
+                        })
     private static VariablesFormatter[] createDefaultFormatters() {
-        VariablesFormatter charSequence = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CharSequenceFormatter"));
+        VariablesFormatter charSequence = new VariablesFormatter(Bundle.MSG_CharSequenceFormatter());
         charSequence.setClassTypes("java.lang.CharSequence");
         charSequence.setIncludeSubTypes(true);
         charSequence.setChildrenFormatCode("");
@@ -325,21 +332,21 @@ public class VariablesFormatter implements Cloneable {
         charSequence.setValueFormatCode("toString()");
         charSequence.isDefault = true;
 
-        VariablesFormatter collection = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_CollectionFormatter"));
+        VariablesFormatter collection = new VariablesFormatter(Bundle.MSG_CollectionFormatter());
         collection.setClassTypes("java.util.Collection");
         collection.setIncludeSubTypes(true);
         collection.setChildrenFormatCode("toArray()");
         collection.setValueFormatCode("\"size = \"+size()");
         collection.isDefault = true;
 
-        VariablesFormatter map = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapFormatter"));
+        VariablesFormatter map = new VariablesFormatter(Bundle.MSG_MapFormatter());
         map.setClassTypes("java.util.Map");
         map.setIncludeSubTypes(true);
         map.setChildrenFormatCode("entrySet()");
         map.setValueFormatCode("\"size = \"+size()");
         map.isDefault = true;
 
-        VariablesFormatter mapEntry = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_MapEntryFormatter"));
+        VariablesFormatter mapEntry = new VariablesFormatter(Bundle.MSG_MapEntryFormatter());
         mapEntry.setClassTypes("java.util.Map$Entry");
         mapEntry.setIncludeSubTypes(true);
         mapEntry.setUseChildrenVariables(true);
@@ -350,7 +357,7 @@ public class VariablesFormatter implements Cloneable {
         mapEntry.setValueFormatCode("getKey()+\" => \"+getValue()");
         mapEntry.isDefault = true;
 
-        VariablesFormatter enumFormatter = new VariablesFormatter(NbBundle.getMessage(VariablesFormatter.class, "MSG_EnumFormatter"));
+        VariablesFormatter enumFormatter = new VariablesFormatter(Bundle.MSG_EnumFormatter());
         enumFormatter.setClassTypes("java.lang.Enum");
         enumFormatter.setIncludeSubTypes(true);
         enumFormatter.setValueFormatCode("toString()");
@@ -363,9 +370,13 @@ public class VariablesFormatter implements Cloneable {
 
     @DebuggerServiceRegistration(types=Properties.Reader.class)
     public static class ReaderWriter implements Properties.Reader {
+        
+        private static final String OLD_VariablesFormatter_CLASS_NAME =
+                "org.netbeans.modules.debugger.jpda.ui.VariablesFormatter";     // NOI18N
 
         public String[] getSupportedClassNames() {
-            return new String[] { VariablesFormatter.class.getName() };
+            return new String[] { OLD_VariablesFormatter_CLASS_NAME,
+                                  VariablesFormatter.class.getName() };
         }
 
         public Object read(String className, Properties properties) {
