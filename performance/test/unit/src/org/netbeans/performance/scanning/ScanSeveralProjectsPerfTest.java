@@ -72,6 +72,9 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
     @Override
     protected void setUp() throws IOException {
         System.out.println("###########  " + getName() + " ###########");
+        Logger.getLogger(RepositoryUpdater.class.getName()).setLevel(Level.INFO);
+        Logger.getLogger("org.netbeans.api.java.source.ClassIndex").setLevel(Level.WARNING);
+        Logger.getLogger("SpringBinaryIndexer").setLevel(Level.WARNING);
         Utilities.setCacheFolder(getWorkDir());
     }
 
@@ -91,7 +94,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
         repositoryUpdater.addHandler(handler);
 
         Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");
-        log.setLevel(Level.FINE);
+        log.setLevel(Level.WARNING);
         Utilities.ReadingHandler readHandler = new Utilities.ReadingHandler();
         log.addHandler(readHandler);
 
@@ -102,6 +105,10 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
         Utilities.waitScanningFinished(projectsDir);
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
         repositoryUpdater.removeHandler(handler);
+        // wait for scanning of unowned roots after all projects are closed
+        synchronized(this) {
+            this.wait(10000);
+    }
     }
 
     @Override
