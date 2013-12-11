@@ -186,7 +186,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     @CheckForNull
-    private static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
+    static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
         if (!longLiving) {
             return null;
         }
@@ -196,11 +196,8 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
         return null;        
     }
-    public DependencyNode(NbMavenProjectImpl project, Artifact art, FileObject fo, boolean isLongLiving) {
-        this(project, art, fo, isLongLiving, createNodeDelegate(art, fo, isLongLiving));
-    }
 
-    private DependencyNode(
+    public DependencyNode(
             NbMavenProjectImpl project,
             final Artifact art,
             final FileObject fo,
