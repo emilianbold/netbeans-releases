@@ -55,8 +55,16 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
  */
 public abstract class RemoteFileSystemTransport {
 
-    public static boolean needsClientSidePollingRefresh() {
-        return !FSSTransport.USE_FS_SERVER;
+    public static boolean needsClientSidePollingRefresh(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).needsClientSidePollingRefresh();
+    }
+
+    public static void registerDirectory(RemoteDirectory directory) {
+        getInstance(directory.getExecutionEnvironment()).registerDirectoryImpl(directory);
+    }
+
+    public static void unregisterDirectory(ExecutionEnvironment execEnv, String path) {
+        getInstance(execEnv).unregisterDirectoryImpl(path);
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
@@ -121,4 +129,10 @@ public abstract class RemoteFileSystemTransport {
             throws IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean isValid();
+    
+    protected abstract boolean needsClientSidePollingRefresh();
+    
+    protected abstract void registerDirectoryImpl(RemoteDirectory directory);
+
+    protected abstract void unregisterDirectoryImpl(String path);
 }
