@@ -47,6 +47,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
@@ -54,6 +57,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring;
 import org.openide.filesystems.FileObject;
@@ -113,7 +117,7 @@ public class InvertBooleanTest extends RefTestBase {
                                  new File("test/Test.java", "package test; public class Test { public boolean someMethod() { return true; } public int returnInt() { return 1099; } }")
                                  );
 
-        performMethodTest();
+        performMethodTest(1);
 
         assertContent(src,
                       new File("test/Test.java", "package test; public class Test { public boolean c() { return false; } public int returnInt() { return 1099; } }")
@@ -140,7 +144,7 @@ public class InvertBooleanTest extends RefTestBase {
                                  new File("test/Use.java", "package test; public class Use { { if (!new Test().b()) System.err.println(1);\n } }")
                                  );
 
-        performMethodTest();
+        performMethodTest(1);
 
         assertContent(src,
                       new File("test/Test.java", "package test;\n public class Test {\n public boolean c() { if (true) return !Boolean.getBoolean(\"\"); else return true; } { if (!c()) System.err.println(1); \n } }\n"),
@@ -148,13 +152,39 @@ public class InvertBooleanTest extends RefTestBase {
                       new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")*/
                      );
     }
+    
+    public void testInvertMethodInterface() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("test/Test.java", "package test;\n public interface Test { boolean test(int a); }\n"),
+                new File("test/Iface.java", "package test;"
+                        + "public class Iface implements Test {\n"
+                        + "    @Override\n"
+                        + "    public boolean test(int a) {\n"
+                        + "        return false;\n"
+                        + "    }\n"
+                        + "}\n"));
+
+        performMethodTest(0, new Problem(true, "ERR_InvertMethodInInterface"));
+
+        assertContent(src,
+                new File("test/Test.java", "package test;\n public interface Test { boolean test(int a); }\n"),
+                new File("test/Iface.java", "package test;"
+                        + "public class Iface implements Test {\n"
+                        + "    @Override\n"
+                        + "    public boolean test(int a) {\n"
+                        + "        return false;\n"
+                        + "    }\n"
+                        + "}\n")/*,
+         new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")*/
+        );
+    }
 
     public void testInvertMethodStaticTypeParam() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("test/Test.java", "package test;\n public class Test {\n public static <T> boolean b(T t) { return true; } { if (Test.<String>b(null)) System.err.println(1); \n } }\n")
                                  );
 
-        performMethodTest();
+        performMethodTest(1);
 
         assertContent(src,
                       new File("test/Test.java", "package test;\n public class Test {\n public static <T> boolean c(T t) { return false; } { if (!Test.<String>c(null)) System.err.println(1); \n } }\n")/*,
@@ -194,7 +224,7 @@ public class InvertBooleanTest extends RefTestBase {
         performFieldTest("c");
     }
 
-    private void performMethodTest() throws Exception {
+    private void performMethodTest(final int position, Problem... expectedProblems) throws Exception {
         final InvertBooleanRefactoring[] r = new InvertBooleanRefactoring[1];
         FileObject testFile = src.getFileObject("test/Test.java");
 
@@ -204,7 +234,7 @@ public class InvertBooleanTest extends RefTestBase {
                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = parameter.getCompilationUnit();
 
-                MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(1);
+                MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
 
                 TreePath tp = TreePath.getPath(cut, var);
                 r[0] = new InvertBooleanRefactoring(TreePathHandle.create(tp, parameter));
@@ -214,8 +244,17 @@ public class InvertBooleanTest extends RefTestBase {
 
         RefactoringSession rs = RefactoringSession.create("Session");
         Thread.sleep(1000);
-        r[0].prepare(rs);
-        rs.doRefactoring(true);
+        List<Problem> problems = new LinkedList<>();
+
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
 
         IndexingManager.getDefault().refreshIndex(src.getURL(), null);
         SourceUtils.waitScanFinished();
