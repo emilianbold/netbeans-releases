@@ -56,6 +56,11 @@ public class CndFileUtilsTest extends NbTestCase {
         super(name);
         System.setProperty("cnd.modelimpl.assert.notfound", "true");
     }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
     
     @Test
     public void testLocalUrlToFileObject() throws IOException {

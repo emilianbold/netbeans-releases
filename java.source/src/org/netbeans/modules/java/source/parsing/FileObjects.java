@@ -73,6 +73,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -709,7 +710,8 @@ public class FileObjects {
         if (extension == null) {
             return JavaFileObject.Kind.OTHER;
         }
-        final String lcextension = extension.toLowerCase();
+        // see defect #236861, prevent weird conversion of I > i in Turkish
+        final String lcextension = extension.toLowerCase(Locale.ENGLISH);
         if (FileObjects.JAVA.equals(lcextension)) {
                 return JavaFileObject.Kind.SOURCE;
         }

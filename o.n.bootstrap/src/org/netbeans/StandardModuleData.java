@@ -102,16 +102,28 @@ final class StandardModuleData extends ModuleData {
             StringTokenizer tok = new StringTokenizer(classPath);
             while (tok.hasMoreTokens()) {
                 String ext = tok.nextToken().replace("%20", " "); // NOI18N
-                if (new File(ext).isAbsolute()) { // NOI18N
-                    Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[]{ext, jar});
+                File extfile;
+                if (ext.equals("${java.home}/lib/ext/jfxrt.jar")) { // NOI18N
+                    // special handling on JDK7
+                    File jre = new File(System.getProperty("java.home")); // NOI18N
+                    File jdk8 = new File(new File(new File(jre, "lib"), "ext"), "jfxrt.jar"); // NOI18N
+                    if (jdk8.exists()) {
+                        // jdk8 has the classes on bootclasspath
+                        continue;
+                    }
+                    extfile = new File(new File(jre, "lib"), "jfxrt.jar"); // NOI18N
+                } else {
+                    if (new File(ext).isAbsolute()) { // NOI18N
+                        Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[]{ext, jar});
+                    }
+                    File base = jar.getParentFile();
+                    while (ext.startsWith("../")) {
+                        // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
+                        ext = ext.substring(3);
+                        base = base.getParentFile();
+                    }
+                    extfile = new File(base, ext.replace('/', File.separatorChar));
                 }
-                File base = jar.getParentFile();
-                while (ext.startsWith("../")) {
-                    // cannot access FileUtil.normalizeFile from here, and URI.normalize might be unsafe for UNC paths
-                    ext = ext.substring(3);
-                    base = base.getParentFile();
-                }
-                File extfile = new File(base, ext.replace('/', File.separatorChar));
                 //No need to sync on extensionOwners - we are in write mutex
                 Set<File> owners = extensionOwners.get(extfile);
                 if (owners == null) {

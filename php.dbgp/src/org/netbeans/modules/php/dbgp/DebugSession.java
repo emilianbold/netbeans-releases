@@ -86,8 +86,9 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class DebugSession extends SingleThread {
-    private static final Logger LOGGER =  Logger.getLogger(DebugSession.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DebugSession.class.getName());
     private static final int SLEEP_TIME = 100;
+    private static final AtomicInteger TRANSACTION_ID = new AtomicInteger(0);
     private final DebuggerOptions options;
     private final BackendLauncher backendLauncher;
     private final AtomicReference<Status> status;
@@ -99,10 +100,8 @@ public class DebugSession extends SingleThread {
     private final List<DbgpCommand> commands;
     private AtomicReference<SessionId> sessionId;
     private AtomicReference<DebuggerEngine> engine;
-    private static final AtomicInteger transactionId = new AtomicInteger(0);
     private IDESessionBridge myBridge;
     private AtomicReference<String> myFileName;
-    //private final ProgressHandle h;
 
     DebugSession(DebuggerOptions options, BackendLauncher backendLauncher) {
         commands = new LinkedList<>();
@@ -130,9 +129,7 @@ public class DebugSession extends SingleThread {
             }
         }
     }
-    /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
-     */
+
     @Override
     public void run() {
         preprocess();
@@ -156,6 +153,7 @@ public class DebugSession extends SingleThread {
             postprocess();
         }
     }
+
     private void preprocess() {
         detachRequest.set(false);
         stopRequest.set(false);
@@ -183,8 +181,7 @@ public class DebugSession extends SingleThread {
 
     public void initConnection(InitMessage message) {
         setSessionFile(message.getFileUri());
-        DebuggerEngine[] engines =
-                DebuggerManager.getDebuggerManager().getDebuggerEngines();
+        DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine nextEngine : engines) {
             SessionId id = (SessionId) nextEngine.lookupFirst(null, SessionId.class);
             if (id != null && id.getId().equals(message.getSessionId())) {
@@ -230,7 +227,6 @@ public class DebugSession extends SingleThread {
                 return;
             }
             addCommand(command);
-            //getSessionThread().interrupt();
         }
     }
 
@@ -343,7 +339,7 @@ public class DebugSession extends SingleThread {
             processBreakStatus();
         } else if (status.isStopping()) {
             processStoppingStatus();
-        } else if (status.isStopped()/* && reason.isOK()*/) {
+        } else if (status.isStopped()) {
             processStoppedStatus();
         }
     }
@@ -402,7 +398,7 @@ public class DebugSession extends SingleThread {
     }
 
     public String getTransactionId() {
-        return transactionId.getAndIncrement() + "";
+        return TRANSACTION_ID.getAndIncrement() + "";
     }
 
     public SessionId getSessionId() {
@@ -464,9 +460,11 @@ public class DebugSession extends SingleThread {
     private void log(IOException e) {
         log(e, Level.SEVERE);
     }
+
     private void log(Throwable e, Level level) {
-        LOGGER.log( level, null, e);
+        LOGGER.log(level, null, e);
     }
+
     private void log(SocketException e) {
         log(e, Level.INFO);
         warnUserInCaseOfSocketException();
@@ -527,18 +525,12 @@ public class DebugSession extends SingleThread {
      * cooperation with IDE UI.
      */
     public class IDESessionBridge extends AbstractIDEBridge {
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getEngine()
-         */
 
         @Override
         protected DebuggerEngine getEngine() {
             return engine.get();
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.php.dbgp.models.AbstractIDEBridge#getDebugSession()
-         */
         @Override
         protected DebugSession getDebugSession() {
             return DebugSession.this;
@@ -577,5 +569,7 @@ public class DebugSession extends SingleThread {
                 watchesModel.clearModel();
             }
         }
+
     }
+
 }

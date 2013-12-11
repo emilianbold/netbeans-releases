@@ -204,6 +204,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         comBinaries.addActionListener(listener);
         comJavadoc.addActionListener(listener);
         comSource.addActionListener(listener);
+        cbOutputTabShowConfig.addActionListener(listener);
+        rbOutputTabId.addActionListener(listener);
+        rbOutputTabName.addActionListener(listener);
+        cbDisableIndex.addActionListener(listener);
         txtOptions.getDocument().addDocumentListener(new DocumentListenerImpl());
         txtProjectNodeNameCustomPattern.setVisible(false);
         txtProjectNodeNameCustomPattern.getDocument().addDocumentListener(new DocumentListenerImpl());
@@ -377,7 +381,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
-        comDisableIndex = new javax.swing.JCheckBox();
+        cbDisableIndex = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstCategory = new javax.swing.JList();
         lblCategory = new javax.swing.JLabel();
@@ -626,10 +630,10 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(comDisableIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.comDisableIndex.text")); // NOI18N
-        comDisableIndex.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(cbDisableIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbDisableIndex.text")); // NOI18N
+        cbDisableIndex.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comDisableIndexActionPerformed(evt);
+                cbDisableIndexActionPerformed(evt);
             }
         });
 
@@ -640,7 +644,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlIndexLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(comDisableIndex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cbDisableIndex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(pnlIndexLayout.createSequentialGroup()
                         .addComponent(lblIndex)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -658,7 +662,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
                 .addGap(18, 18, 18)
-                .addComponent(comDisableIndex)
+                .addComponent(cbDisableIndex)
                 .addContainerGap(259, Short.MAX_VALUE))
         );
 
@@ -768,9 +772,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         cl.show(pnlCards, (String) lstCategory.getSelectedValue());
     }//GEN-LAST:event_lstCategoryValueChanged
 
-    private void comDisableIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comDisableIndexActionPerformed
+    private void cbDisableIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDisableIndexActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_comDisableIndexActionPerformed
+    }//GEN-LAST:event_cbDisableIndexActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -780,12 +784,12 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox cbAlwaysShow;
     private javax.swing.JCheckBox cbCollapseSuccessFolds;
+    private javax.swing.JCheckBox cbDisableIndex;
     private javax.swing.JCheckBox cbOutputTabShowConfig;
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comBinaries;
-    private javax.swing.JCheckBox comDisableIndex;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JComboBox comJavadoc;
     private javax.swing.JComboBox comMavenHome;
@@ -917,7 +921,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         
         comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
-        comDisableIndex.setSelected(!RepositoryPreferences.isIndexRepositories());
+        cbDisableIndex.setSelected(!RepositoryPreferences.isIndexRepositories());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
@@ -988,7 +992,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             EmbedderFactory.setMavenHome(null);
         }
         RepositoryPreferences.setIndexUpdateFrequency(comIndex.getSelectedIndex());
-        RepositoryPreferences.setIndexRepositories(!comDisableIndex.isSelected());
+        RepositoryPreferences.setIndexRepositories(!cbDisableIndex.isSelected());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());

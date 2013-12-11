@@ -45,6 +45,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -55,9 +56,12 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,6 +112,25 @@ import org.openide.util.Union2;
  * @author sdedic
  */
 public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
+    
+    private static ScanStatement createAndRunScanner(CompilationInfo info, TreePath method, StatementTree from, StatementTree to, AtomicBoolean cancel) {
+        Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
+        List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
+        IntroduceHint.prepareTypeVars(method, info, typeVar2Def, typeVars);
+        Flow.FlowResult flow = Flow.assignmentsForUse(info, method, cancel);
+        if (flow == null || cancel.get()) {
+            return null;
+        }
+        Map<Tree, Iterable<? extends TreePath>> assignmentsForUse = flow.getAssignmentsForUse();
+        ScanStatement scanner = new ScanStatement(info, from, to, typeVar2Def, assignmentsForUse, cancel);
+        Element methodEl = info.getTrees().getElement(method);
+        if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
+            ExecutableElement ee = (ExecutableElement) methodEl;
+            scanner.localVariables.addAll(ee.getParameters());
+        }
+        scanner.scan(method, null);
+        return scanner;
+    }
 
     static Fix computeIntroduceMethod(CompilationInfo info, int start, int end, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         int[] statements = new int[2];
@@ -126,27 +149,20 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             errorMessage.put(IntroduceKind.CREATE_METHOD, "ERR_Invalid_Selection");
             return null;
         }
-        Map<TypeMirror, TreePathHandle> typeVar2Def = new HashMap<TypeMirror, TreePathHandle>();
-        List<TreePathHandle> typeVars = new LinkedList<TreePathHandle>();
-        IntroduceHint.prepareTypeVars(method, info, typeVar2Def, typeVars);
         Element methodEl = info.getTrees().getElement(method);
         List<? extends StatementTree> parentStatements = IntroduceHint.getStatements(block);
         List<? extends StatementTree> statementsToWrap = parentStatements.subList(statements[0], statements[1] + 1);
-        Flow.FlowResult flow = Flow.assignmentsForUse(info, method, cancel);
-        if (flow == null || cancel.get()) {
+        ScanStatement scanner = createAndRunScanner(info, method, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), cancel);
+        if (scanner == null) {
             return null;
         }
-        Map<Tree, Iterable<? extends TreePath>> assignmentsForUse = flow.getAssignmentsForUse();
-        ScanStatement scanner = new ScanStatement(info, statementsToWrap.get(0), statementsToWrap.get(statementsToWrap.size() - 1), typeVar2Def, assignmentsForUse, cancel);
         Set<TypeMirror> exceptions = new HashSet<TypeMirror>();
         int index = 0;
         TypeMirror methodReturnType = info.getTypes().getNoType(TypeKind.VOID);
         if (methodEl != null && (methodEl.getKind() == ElementKind.METHOD || methodEl.getKind() == ElementKind.CONSTRUCTOR)) {
             ExecutableElement ee = (ExecutableElement) methodEl;
-            scanner.localVariables.addAll(ee.getParameters());
             methodReturnType = ee.getReturnType();
         }
-        scanner.scan(method, null);
         List<TreePath> pathsOfStatementsToWrap = new LinkedList<TreePath>();
         for (StatementTree s : parentStatements) {
             TreePath path = new TreePath(block, s);
@@ -163,15 +179,20 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             return null;
         }
         Map<VariableElement, Boolean> mergedVariableUse = new LinkedHashMap<VariableElement, Boolean>(scanner.usedLocalVariables);
-        for (Map.Entry<VariableElement, Boolean> e : scanner.usedAfterSelection.entrySet()) {
+        if (!scanner.usedAfterSelection.isEmpty()) {
+            VariableElement el = scanner.usedAfterSelection.entrySet().iterator().next().getKey();
+            
+        }
+        for (Map.Entry<VariableElement, Boolean> e : scanner.usedLocalVariables.entrySet()) {
             if (cancel.get()) {
                 return null;
             }
-            Boolean usedLocal = mergedVariableUse.get(e.getKey());
+            Boolean usedLocal = e.getValue();
             if (usedLocal == null && Flow.definitellyAssigned(info, e.getKey(), pathsOfStatementsToWrap, cancel)) {
                 mergedVariableUse.put(e.getKey(), true);
             } else {
-                mergedVariableUse.put(e.getKey(), !(usedLocal == Boolean.FALSE) && e.getValue());
+                Boolean def = scanner.usedAfterSelection.get(e.getKey());
+                mergedVariableUse.put(e.getKey(), !(usedLocal == Boolean.FALSE) && (def != Boolean.FALSE));
             }
         }
         if (cancel.get()) {
@@ -180,7 +201,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         Set<VariableElement> additionalLocalVariables = new LinkedHashSet<VariableElement>();
         Set<VariableElement> paramsVariables = new LinkedHashSet<VariableElement>();
         for (Map.Entry<VariableElement, Boolean> e : mergedVariableUse.entrySet()) {
-            if (e.getValue() == null || e.getValue()) {
+            if (e.getValue() == null ||  e.getValue()) {
                 additionalLocalVariables.add(e.getKey());
             } else {
                 paramsVariables.add(e.getKey());
@@ -269,9 +290,9 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         for (TypeMirror tm : exceptions) {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
-        typeVars.retainAll(scanner.usedTypeVariables);
         List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel);
-        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars, end, targets);
+        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
+                duplicatesCount, scanner.getUsedTypeVars(), end, targets);
     }
 
     static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -374,7 +395,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
     private final TreePathHandle returnAssignTo;
     private final boolean declareVariableForReturnValue;
     private final Set<TypeMirrorHandle> thrownTypes;
-    private final List<TreePathHandle> exists;
+    private final List<TreePathHandle> exits;
     private final boolean exitsFromAllBranches;
     private final int from;
     private final int to;
@@ -390,7 +411,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         this.returnAssignTo = returnAssignTo;
         this.declareVariableForReturnValue = declareVariableForReturnValue;
         this.thrownTypes = thrownTypes;
-        this.exists = exists;
+        this.exits = exists;
         this.exitsFromAllBranches = exitsFromAllBranches;
         this.from = from;
         this.to = to;
@@ -405,7 +426,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
     public String toDebugString(CompilationInfo info) {
         return "[IntroduceMethod:" + from + ":" + to + "]"; // NOI18N
     }
-
+    
     public ChangeInfo implement() throws Exception {
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
@@ -420,214 +441,418 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         final Set<Modifier> access = panel.getAccess();
         final boolean replaceOther = panel.getReplaceOther();
         final TargetDescription target = panel.getSelectedTarget();
-        js.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy copy) throws Exception {
-                copy.toPhase(JavaSource.Phase.RESOLVED);
-                TreePath firstStatement = handle.resolve(copy);
-                TypeMirror returnType = IntroduceMethodFix.this.returnType.resolve(copy);
-                if (firstStatement == null || returnType == null) {
-                    return; //TODO...
-                }
-                GeneratorUtilities.get(copy).importComments(firstStatement.getParentPath().getLeaf(), copy.getCompilationUnit());
-                List<? extends StatementTree> statements = IntroduceHint.getStatements(firstStatement);
-                List<StatementTree> nueStatements = new LinkedList<StatementTree>();
-                nueStatements.addAll(statements.subList(0, from));
-                final TreeMaker make = copy.getTreeMaker();
-                List<VariableElement> parameters = IntroduceHint.resolveVariables(copy, IntroduceMethodFix.this.parameters);
-                List<ExpressionTree> realArguments = IntroduceHint.realArguments(make, parameters);
-                List<StatementTree> methodStatements = new LinkedList<StatementTree>();
-                Iterator<TypeMirrorHandle> additionalType = additionalLocalTypes.iterator();
-                Iterator<String> additionalName = additionalLocalNames.iterator();
-                while (additionalType.hasNext() && additionalName.hasNext()) {
-                    TypeMirror tm = additionalType.next().resolve(copy);
-                    if (tm == null) {
-                        //XXX:
-                        return;
-                    }
-                    Tree type = make.Type(tm);
-                    methodStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), additionalName.next(), type, null));
-                }
-                if (from == to && statements.get(from).getKind() == Tree.Kind.BLOCK) {
-                    methodStatements.addAll(((BlockTree) statements.get(from)).getStatements());
-                } else {
-                    methodStatements.addAll(statements.subList(from, to + 1));
-                }
-                Tree returnTypeTree = make.Type(returnType);
-                ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
-                boolean alreadyInvoked = false;
-                Callable<ReturnTree> ret = null;
-                final VariableElement returnAssignTo;
-                if (IntroduceMethodFix.this.returnAssignTo != null) {
-                    returnAssignTo = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
-                    if (returnAssignTo == null) {
-                        return; //TODO...
-                    }
-                } else {
-                    returnAssignTo = null;
-                }
-                if (returnAssignTo != null) {
-                    ret = new Callable<ReturnTree>() {
-                        @Override
-                        public ReturnTree call() throws Exception {
-                            return make.Return(make.Identifier(returnAssignTo.getSimpleName()));
-                        }
-                    };
-                    if (declareVariableForReturnValue) {
-                        nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
-                        alreadyInvoked = true;
-                    } else {
-                        invocation = make.Assignment(make.Identifier(returnAssignTo.getSimpleName()), invocation);
-                    }
-                }
-                if (!exists.isEmpty()) {
-                    TreePath handle = null;
-                    handle = exists.iterator().next().resolve(copy);
-                    if (handle == null) {
-                        return; //TODO...
-                    }
-                    assert handle != null;
-                    if (exitsFromAllBranches && handle.getLeaf().getKind() == Tree.Kind.RETURN && returnAssignTo == null && returnType.getKind() != TypeKind.VOID) {
-                        nueStatements.add(make.Return(invocation));
-                    } else {
-                        if (ret == null) {
-                            ret = new Callable<ReturnTree>() {
-                                @Override
-                                public ReturnTree call() throws Exception {
-                                    if (exitsFromAllBranches) {
-                                        return make.Return(null);
-                                    } else {
-                                        return make.Return(make.Literal(true));
-                                    }
-                                }
-                            };
-                        }
-                        for (TreePathHandle h : exists) {
-                            TreePath resolved = h.resolve(copy);
-                            if (resolved == null) {
-                                return; //TODO...
-                            }
-                            ReturnTree r = ret.call();
-                            GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, false);
-                            GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, true);
-                            copy.rewrite(resolved.getLeaf(), r);
-                        }
-                        StatementTree branch = null;
-                        switch (handle.getLeaf().getKind()) {
-                            case BREAK:
-                                branch = make.Break(((BreakTree) handle.getLeaf()).getLabel());
-                                break;
-                            case CONTINUE:
-                                branch = make.Continue(((ContinueTree) handle.getLeaf()).getLabel());
-                                break;
-                            case RETURN:
-                                branch = make.Return(((ReturnTree) handle.getLeaf()).getExpression());
-                                break;
-                        }
-                        if (returnAssignTo != null || exitsFromAllBranches) {
-                            nueStatements.add(make.ExpressionStatement(invocation));
-                            nueStatements.add(branch);
-                        } else {
-                            nueStatements.add(make.If(make.Parenthesized(invocation), branch, null));
-                            methodStatements.add(make.Return(make.Literal(false)));
-                        }
-                    }
-                    alreadyInvoked = true;
-                } else {
-                    if (ret != null) {
-                        methodStatements.add(ret.call());
-                    }
-                }
-                if (!alreadyInvoked) {
-                    nueStatements.add(make.ExpressionStatement(invocation));
-                }
-                nueStatements.addAll(statements.subList(to + 1, statements.size()));
-                Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>();
-                IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
-                TypeElement targetType = target.type.resolve(copy);
-                TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
-                if (pathToClass == null) {
-                    pathToClass = TreeUtils.findClass(firstStatement);
-                }
-                assert pathToClass != null;
-                boolean isStatic = IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstStatement);
-                if (replaceOther) {
-                    //handle duplicates
-                    Document doc = copy.getDocument();
-                    List<TreePath> statementsPaths = new LinkedList<TreePath>();
-                    for (StatementTree t : statements.subList(from, to + 1)) {
-                        statementsPaths.add(new TreePath(firstStatement.getParentPath(), t));
-                    }
-                    Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
-                    for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
-                        TreePath firstLeaf = desc.getOccurrenceRoot();
-                        List<? extends StatementTree> parentStatements = IntroduceHint.getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), IntroduceHint.resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
-                        int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
-                        int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), parentStatements.get(dupeStart));
-                        int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), parentStatements.get(dupeStart + statementsPaths.size() - 1));
-                        if (!IntroduceHint.shouldReplaceDuplicate(doc, startOff, endOff)) {
-                            continue;
-                        }
-                        List<StatementTree> newStatements = new LinkedList<StatementTree>();
-                        newStatements.addAll(parentStatements.subList(0, dupeStart));
-                        //XXX:
-                        List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
-                        for (VariableElement ve : parameters) {
-                            if (desc.getVariablesRemapToTrees().containsKey(ve)) {
-                                dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(desc.getVariablesRemapToTrees().get(ve)));
-                            } else {
-                                dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
-                            }
-                        }
-                        List<ExpressionTree> dupeRealArguments = IntroduceHint.realArgumentsForTrees(make, dupeParameters);
-                        ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
-                        if (returnAssignTo != null) {
-                            TreePath remappedTree = desc.getVariablesRemapToTrees().containsKey(returnAssignTo) ? desc.getVariablesRemapToTrees().get(returnAssignTo) : null;
-                            VariableElement remappedElement = desc.getVariablesRemapToElement().containsKey(returnAssignTo) ? (VariableElement) desc.getVariablesRemapToElement().get(returnAssignTo) : null;
-                            //                                VariableElement dupeReturnAssignTo = mdd.variablesRemapToTrees.containsKey(returnAssignTo) ? (VariableElement) mdd.variablesRemapToTrees.get(returnAssignTo) : returnAssignTo;
-                            if (declareVariableForReturnValue) {
-                                assert remappedElement != null || remappedTree == null;
-                                Name name = remappedElement != null ? remappedElement.getSimpleName() : returnAssignTo.getSimpleName();
-                                newStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, returnTypeTree, invocation));
-                                dupeInvocation = null;
-                            } else {
-                                ExpressionTree sel = remappedTree != null ? (ExpressionTree) remappedTree.getLeaf() : remappedElement != null ? make.Identifier(remappedElement.getSimpleName()) : make.Identifier(returnAssignTo.getSimpleName());
-                                dupeInvocation = make.Assignment(sel, dupeInvocation);
-                            }
-                        }
-                        if (dupeInvocation != null) {
-                            newStatements.add(make.ExpressionStatement(dupeInvocation));
-                        }
-                        newStatements.addAll(parentStatements.subList(dupeStart + statementsPaths.size(), parentStatements.size()));
-                        IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstLeaf, newStatements);
-                        isStatic |= IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstLeaf);
-                    }
-                    IntroduceHint.introduceBag(doc).clear();
-                    //handle duplicates end
-                }
-                Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-                if (isStatic) {
-                    modifiers.add(Modifier.STATIC);
-                }
-                modifiers.addAll(access);
-                ModifiersTree mods = make.Modifiers(modifiers);
-                List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters);
-                if (formalArguments == null) {
-                    return; //XXX
-                }
-                List<ExpressionTree> thrown = IntroduceHint.typeHandleToTree(copy, thrownTypes);
-                if (thrownTypes == null) {
-                    return; //XXX
-                }
-                List<TypeParameterTree> typeVars = new LinkedList<TypeParameterTree>();
-                for (TreePathHandle tph : IntroduceMethodFix.this.typeVars) {
-                    typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
-                }
-                MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
-                ClassTree nueClass = IntroduceHint.INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree) pathToClass.getLeaf(), method, offset);
-                copy.rewrite(pathToClass.getLeaf(), nueClass);
-            }
-        }).commit();
+        js.runModificationTask(new TaskImpl(access, name, target, replaceOther)).commit();
         return null;
     }
     
+    static class OccurrencePositionComparator implements Comparator<Occurrence> {
+        final CompilationUnitTree cut;
+        final SourcePositions positions;
+
+        public OccurrencePositionComparator(CompilationUnitTree cut, SourcePositions positions) {
+            this.cut = cut;
+            this.positions = positions;
+        }
+
+        @Override
+        public int compare(Occurrence o1, Occurrence o2) {
+            Tree r1 = o1.getOccurrenceRoot().getLeaf();
+            Tree r2 = o2.getOccurrenceRoot().getLeaf();
+            int p1 = (int)positions.getStartPosition(cut, r1);
+            int p2 = (int)positions.getStartPosition(cut, r2);
+            return p1 - p2;
+        }
+        
+    }
+
+    private class TaskImpl implements Task<WorkingCopy> {
+        private final Set<Modifier> access;
+        private final String name;
+        private final TargetDescription target;
+        private final boolean replaceOther;
+
+        WorkingCopy copy;
+        TreeMaker   make;
+        /**
+         * Anchor statement, should correspond to the first statement in the selection.
+         */
+        TreePath firstStatement;
+        /**
+         * Variable that holds the outcome of the extracted code; null, if no return value is required
+         */
+        VariableElement outcomeVariable;
+        /**
+         * Statement list enclosing the original selection, the entire block/case/etc
+         */
+        List<? extends StatementTree> statements;
+        /**
+         * Parameters of the extracted method
+         */
+        List<VariableElement> parameters;
+        /**
+         * Return type of the extracted method
+         */
+        TypeMirror returnType;
+        /**
+         * One of the exits from the extracted method. All exits have to be of the same type (ensured by the caller).
+         */
+        TreePath branchExit;
+        /**
+         * Tree for the return type of the extracted method. Used when generating the method and when
+         * creating local variables to assign method's result to.
+         */
+        Tree returnTypeTree;
+        /**
+         * List of resolved exits
+         */
+        List<TreePath> resolvedExits;
+
+        public TaskImpl(Set<Modifier> access, String name, TargetDescription target, boolean replaceOther) {
+            this.access = access;
+            this.name = name;
+            this.target = target;
+            this.replaceOther = replaceOther;
+        }
+
+        private void generateMethodContents(List<StatementTree> methodStatements) {
+            Iterator<TypeMirrorHandle> additionalType = additionalLocalTypes.iterator();
+            Iterator<String> additionalName = additionalLocalNames.iterator();
+            while (additionalType.hasNext() && additionalName.hasNext()) {
+                TypeMirror tm = additionalType.next().resolve(copy);
+                if (tm == null) {
+                    //XXX:
+                    return;
+                }
+                Tree type = make.Type(tm);
+                methodStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), additionalName.next(), type, null));
+            }
+            if (from == to && statements.get(from).getKind() == Tree.Kind.BLOCK) {
+                methodStatements.addAll(((BlockTree) statements.get(from)).getStatements());
+            } else {
+                methodStatements.addAll(statements.subList(from, to + 1));
+            }
+        }
+
+        private MethodTree createMethodDefinition(boolean mustStatic) {
+            List<VariableTree> formalArguments = IntroduceHint.createVariables(copy, parameters);
+            if (formalArguments == null) {
+                return null; //XXX
+            }
+            List<ExpressionTree> thrown = IntroduceHint.typeHandleToTree(copy, thrownTypes);
+            if (thrown == null) {
+                return null; //XXX
+            }
+            List<TypeParameterTree> typeVars = new LinkedList<TypeParameterTree>();
+            for (TreePathHandle tph : IntroduceMethodFix.this.typeVars) {
+                typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
+            }
+            List<StatementTree> methodStatements = new ArrayList<StatementTree>();
+            generateMethodContents(methodStatements);
+            makeReturnsFromExtractedMethod(methodStatements);
+            
+            Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+            modifiers.addAll(access);
+            if (mustStatic) {
+                modifiers.add(Modifier.STATIC);
+            }
+            ModifiersTree mods = make.Modifiers(modifiers);
+            MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
+            
+            return method;
+        }
+        /**
+         * True, if all exit points returns the computed value.
+         */
+        private boolean returnSingleValue;
+
+        /**
+         * Generates method invocation at the end of `nueStatements'.
+         */
+        private void generateMethodInvocation(List<StatementTree> nueStatements, List<ExpressionTree> realArguments,
+                Occurrence desc) {
+            boolean alreadyInvoked = false;
+            ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
+            VariableElement remappedReturn = outcomeVariable;
+            
+            if (outcomeVariable != null) {
+                ExpressionTree sel = null;
+                
+                if (desc != null) {
+                    TreePath remappedTree = desc.getVariablesRemapToTrees().get(outcomeVariable);
+                    VariableElement remappedElement = (VariableElement) desc.getVariablesRemapToElement().get(outcomeVariable);
+                    
+                    if (remappedElement != null) {
+                        remappedReturn = remappedElement;
+                    }
+                    if (remappedTree != null) {
+                        sel = (ExpressionTree)remappedTree.getLeaf();
+                    }
+                }
+                if (sel == null) {
+                    // also reached if des != null & remappedTree == null, uses fallback to returnAssignTo if remappedElement == null
+                    sel = make.Identifier(remappedReturn.getSimpleName());
+                }
+                
+                if (declareVariableForReturnValue) {
+                    nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), remappedReturn.getSimpleName(), returnTypeTree, invocation));
+                    alreadyInvoked = true;
+                } else if (!returnSingleValue) {
+                    invocation = make.Assignment(sel, invocation);
+                }
+            }
+            if (branchExit != null) {
+                if (returnSingleValue) {
+                    nueStatements.add(make.Return(invocation));
+                } else {
+                    StatementTree branch = null;
+                    switch (branchExit.getLeaf().getKind()) {
+                        case BREAK:
+                            branch = make.Break(((BreakTree) branchExit.getLeaf()).getLabel());
+                            break;
+                        case CONTINUE:
+                            branch = make.Continue(((ContinueTree) branchExit.getLeaf()).getLabel());
+                            break;
+                        case RETURN:
+                            branch = make.Return(((ReturnTree) branchExit.getLeaf()).getExpression());
+                            break;
+                    }
+                    if (remappedReturn != null || exitsFromAllBranches) {
+                        nueStatements.add(make.ExpressionStatement(invocation));
+                        nueStatements.add(branch);
+                    } else {
+                        nueStatements.add(make.If(make.Parenthesized(invocation), branch, null));
+                    }
+                }
+                alreadyInvoked = true;
+            }
+            if (!alreadyInvoked) {
+                nueStatements.add(make.ExpressionStatement(invocation));
+            }
+        }
+
+        /**
+         * Creates a return statement tree from the extracted method, depending on return type and/or branching
+         */
+        private ReturnTree makeExtractedReturn(boolean forceReturn) {
+            if (outcomeVariable != null) {
+                return make.Return(make.Identifier(outcomeVariable.getSimpleName()));
+            } else if (forceReturn) {
+                return make.Return(exitsFromAllBranches ? null : make.Literal(true));
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * Replaces former exit points by returns and/or adds a return with value at the end of the method
+         */
+        private void makeReturnsFromExtractedMethod(List<StatementTree> methodStatements) {
+            if (returnSingleValue) {
+                return;
+            }
+            if (resolvedExits != null) {
+                for (TreePath resolved : resolvedExits) {
+                    ReturnTree r = makeExtractedReturn(true);
+                    GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, false);
+                    GeneratorUtilities.get(copy).copyComments(resolved.getLeaf(), r, true);
+                    copy.rewrite(resolved.getLeaf(), r);
+                }
+                // the default exit path, should return false
+                if (outcomeVariable == null && !exitsFromAllBranches) {
+                    methodStatements.add(make.Return(make.Literal(false)));
+                }
+            } else {
+                ReturnTree ret = makeExtractedReturn(false);
+                if (ret != null) {
+                    methodStatements.add(ret);
+                }
+            }
+        }
+
+        /**
+         * Resolves the handles, returns false if some handle does not resolve.
+         */
+        private boolean resolveAndInitialize() {
+            firstStatement = handle.resolve(copy);
+            returnType = IntroduceMethodFix.this.returnType.resolve(copy);
+            if (firstStatement == null || returnType == null) {
+                return false;
+            }
+            parameters = IntroduceHint.resolveVariables(copy, IntroduceMethodFix.this.parameters);
+            if (IntroduceMethodFix.this.returnAssignTo != null) {
+                outcomeVariable = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
+                if (outcomeVariable == null) {
+                    return false;
+                }
+            }
+            if (exits != null && !exits.isEmpty()) {
+                branchExit = exits.iterator().next().resolve(copy);
+                if (branchExit == null) {
+                    return false;
+                }
+                resolvedExits = new ArrayList<TreePath>(exits.size());
+                for (TreePathHandle h : exits) {
+                    TreePath resolved = h.resolve(copy);
+                    if (resolved == null) {
+                        return false;
+                    }
+                    if (resolvedExits.isEmpty()) {
+                        branchExit = resolved;
+                    }
+                    resolvedExits.add(resolved);
+                }
+                
+                returnSingleValue = exitsFromAllBranches && branchExit.getLeaf().getKind() == Tree.Kind.RETURN && outcomeVariable == null && returnType.getKind() != TypeKind.VOID;
+            }
+            // initialization
+            make = copy.getTreeMaker();
+            returnTypeTree = make.Type(returnType);
+            statements = IntroduceHint.getStatements(firstStatement);
+            GeneratorUtilities.get(copy).importComments(firstStatement.getParentPath().getLeaf(), copy.getCompilationUnit());
+            return true;
+        }
+        /**
+         * List of replacements. Key is the parent Tree of the replaced portion; values contain start/end trees of
+         * the match.
+         */
+        Map<Tree, List<Integer>> replacements = new HashMap<Tree, List<Integer>>();
+
+        /**
+         * Adds a replacement to the check list
+         */
+        void addReplacement(Tree parent, int start, int end) {
+            List<Integer> rr = replacements.get(parent);
+            if (rr == null) {
+                rr = new ArrayList<Integer>();
+                replacements.put(parent, rr);
+            }
+            rr.add(start); rr.add(end);
+        }
+
+        /**
+         * Checks whether a duplicate intersects with some of the replacements already made
+         */
+        boolean isDuplicateValid(TreePath duplicateRoot) {
+            TreePath parent = duplicateRoot.getParentPath();
+            List<Integer> repls = replacements.get(parent.getLeaf());
+            if (repls == null) {
+                return true;
+            }
+            List<? extends StatementTree> stmts = IntroduceHint.getStatements(duplicateRoot);
+            int o = stmts.indexOf(duplicateRoot.getLeaf());
+            int l = repls.size();
+            for (int idx = 0; idx < l; idx += 2) {
+                if (o < repls.get(idx)) {
+                    continue;
+                }
+                if (o <= repls.get(idx + 1)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Translates original variables passed to the extracted method to the duplicate's variable space.
+         */
+        List<ExpressionTree> makeArgumentsForDuplicate(Occurrence desc) {
+            List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
+            for (VariableElement ve : parameters) {
+                if (desc.getVariablesRemapToTrees().containsKey(ve)) {
+                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(desc.getVariablesRemapToTrees().get(ve)));
+                } else {
+                    dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
+                }
+            }
+            List<ExpressionTree> dupeRealArguments = IntroduceHint.realArgumentsForTrees(make, dupeParameters);
+            return dupeRealArguments;
+        }
+
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            this.copy = copy;
+            
+            if (!resolveAndInitialize()) {
+                return;
+            }
+            final Map<Tree, Tree> rewritten = new IdentityHashMap<Tree, Tree>(); 
+            
+            // generate new version of the statement list, with the method invocation.
+            List<StatementTree> nueStatements = new LinkedList<StatementTree>();
+            nueStatements.addAll(statements.subList(0, from));
+            generateMethodInvocation(nueStatements, IntroduceHint.realArguments(make, parameters), null);
+            nueStatements.addAll(statements.subList(to + 1, statements.size()));
+            IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
+            addReplacement(firstStatement.getParentPath().getLeaf(), from, to);
+            TypeElement targetType = target.type.resolve(copy);
+            TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+            if (pathToClass == null) {
+                pathToClass = TreeUtils.findClass(firstStatement);
+            }
+            assert pathToClass != null;
+            
+            boolean isStatic = IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstStatement);
+            if (replaceOther) {
+                //handle duplicates
+                Document doc = copy.getDocument();
+                List<TreePath> statementsPaths = new LinkedList<TreePath>();
+                for (StatementTree t : statements.subList(from, to + 1)) {
+                    statementsPaths.add(new TreePath(firstStatement.getParentPath(), t));
+                }
+                Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
+                List<? extends Occurrence> occurrences = new ArrayList<Occurrence>(Matcher.create(copy).setCancel(new AtomicBoolean()).match(p));
+                Collections.sort(occurrences, new OccurrencePositionComparator(copy.getCompilationUnit(), copy.getTrees().getSourcePositions()));
+                for (Occurrence desc :occurrences ) {
+                    TreePath firstLeaf = desc.getOccurrenceRoot();
+                    if (!isDuplicateValid(firstLeaf)) {
+                        // the duplicate intersects with some replacement already made.
+                        continue;
+                    }
+                    // FIXME - does this really work, in case of `case' contents ? Check on case X: stmt; and case X: { stmts; }
+                    List<? extends StatementTree> parentStatements = IntroduceHint.getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), IntroduceHint.resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
+                    int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
+                    assert dupeStart > -1;
+                    int dupeLast = dupeStart + statementsPaths.size() - 1;
+                    StatementTree firstSt = (StatementTree)firstLeaf.getLeaf();
+                    StatementTree lastSt = parentStatements.get(dupeLast);
+                    final TreePath enclosingMethod = TreeUtils.findMethod(firstLeaf);
+                    if (enclosingMethod == null) {
+                        continue;
+                    }
+                    ScanStatement scanner = createAndRunScanner(copy, enclosingMethod, firstSt, lastSt, new AtomicBoolean(false));
+                    boolean usedAfter = false;
+                    if (!scanner.usedAfterSelection.isEmpty()) {
+                        usedAfter = true;
+                        if (scanner.usedAfterSelection.size() == 1 && outcomeVariable != null) {
+                            VariableElement usedVar = scanner.usedAfterSelection.keySet().iterator().next();
+                            Element remapped = desc.getVariablesRemapToElement().get(outcomeVariable);
+                            if (remapped == null || remapped == usedVar) {
+                                // the return value is used, no other escapes.
+                                usedAfter = false;
+                            }
+                        }
+                    }
+                    int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), firstSt);
+                    int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), lastSt);
+                    
+                    if (usedAfter || !IntroduceHint.shouldReplaceDuplicate(doc, startOff, endOff)) {
+                        continue;
+                    }
+                    List<StatementTree> newStatements = new LinkedList<StatementTree>();
+                    newStatements.addAll(parentStatements.subList(0, dupeStart));
+                    generateMethodInvocation(newStatements, makeArgumentsForDuplicate(desc), desc);
+                    newStatements.addAll(parentStatements.subList(dupeStart + statementsPaths.size(), parentStatements.size()));
+                    IntroduceHint.doReplaceInBlockCatchSingleStatement(copy, rewritten, firstLeaf, newStatements);
+                    addReplacement(firstLeaf.getParentPath().getLeaf(), dupeStart, dupeLast);
+                    
+                    isStatic |= IntroduceHint.needsStaticRelativeTo(copy, pathToClass, firstLeaf);
+                }
+                IntroduceHint.introduceBag(doc).clear();
+                //handle duplicates end
+            }
+            MethodTree method = createMethodDefinition(isStatic);
+            ClassTree nueClass = IntroduceHint.INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree) pathToClass.getLeaf(), method, offset);
+            copy.rewrite(pathToClass.getLeaf(), nueClass);
+        }
+    }
 }

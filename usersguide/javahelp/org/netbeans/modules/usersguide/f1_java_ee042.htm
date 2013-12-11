@@ -2,16 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Specify Mail Resource Dialog Box</title>
+<title>New Enterprise Application Wizard: Server and Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" name="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref623" name="sthref623"></a>
-<h1>Specify Mail Resource Dialog Box</h1>
+<p>Beta Draft: 2013-12-05</p>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref628" name="sthref628"></a>
+<h1>New Enterprise Application Wizard: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this dialog box to automatically generate code that sends an e-mail from a Java file. The file must be in an EJB module project or a standard web application project. You cannot generate e-mail code in a free-form web application project.</p>
+<p>This wizard creates a new standard project&nbsp; containing an enterprise application client module. You open the wizard by opening the New Project wizard and selecting the Enterprise Application Client template from the Java EE category.</p>
+<p>In the Server and Settings page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -25,44 +27,95 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t35" headers="r1c1-t35">
-<p>JNDI Name</p>
+<p>Add to Enterprise Application</p>
 </td>
 <td align="left" headers="r2c1-t35 r1c2-t35">
-<p>The JNDI name of the resource.</p>
+<p>Lets you add the application client to any open enterprise application project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t35" headers="r1c1-t35">
-<p>Service Locator Strategy</p>
+<p>Server</p>
 </td>
 <td align="left" headers="r3c1-t35 r1c2-t35">
-<p>Choose to generate inline lookup code or use an existing service locator. You can click <b>Browse</b> to search for the existing service locator class name. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2709">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Specifies the server to which the application client's enterprise application is deployed. To register servers, choose <b>Tools</b> &gt; <b>Servers</b>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t35" headers="r1c1-t35">
+<p>Java EE Version</p>
+</td>
+<td align="left" headers="r4c1-t35 r1c2-t35">
+<p>Specifies the level of the Java EE specification that is used for the application client. If you set the Java EE version to 1.4, you should also set the source level to 1.4 in the drop-down list that appears.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t35" headers="r1c1-t35">
+<p>Source Level Recommendations</p>
+</td>
+<td align="left" headers="r5c1-t35 r1c2-t35">
+<p>One of the following checkboxes will appear if the Java EE Version is set to J2EE 1.4 and JDK 1.5 or JDK 1.6 is set as the default platform in the Java Platform Manager. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t35" headers="r1c1-t35">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r6c1-t35 r1c2-t35">
+<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t35" headers="r1c1-t35">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r7c1-t35 r1c2-t35">
+<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t35" headers="r1c1-t35">
+<p>Create EJB Module</p>
+</td>
+<td align="left" headers="r8c1-t35 r1c2-t35">
+<p>Sets whether an EJB module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-ejb</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create an EJB Module Project later.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t35" headers="r1c1-t35">
+<p>Create Web Application Module</p>
+</td>
+<td align="left" headers="r9c1-t35 r1c2-t35">
+<p>Sets whether a web application module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-war</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create a Web Application project later.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>You use the dialog box as follows:</p>
-<p>The IDE creates two methods:</p>
-<ul>
-<li><b>getSession</b>. Looks up the mail resource and creates a mail session.</li>
-<li><b>sendMail</b>. Constructs and send the e-mail.</li>
-</ul>
-<p>The IDE also registers the resource reference in your module's general deployment descriptor. In your code, call the sendMail method and pass the e-mail address, subject, and body as parameters.</p>
-<p><b>Note</b>: You have to configure the mail resource on the application server yourself. If your project's target server is the GlassFish server, the IDE automatically configures the resource reference in the application-specific deployment descriptor. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors yourself.</p>
+<p>When you click <b>Finish</b>, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p><b>Note</b>: If you are creating an application client with existing sources, you must click <b>Next</b> to specify existing sources and libraries.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2700">
-<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2901">
+<param name="text" value="<html><u>&quot;Creating Application Clients&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
+<param name="text" value="<html><u>&quot;Sharing Libraries with Other Users&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

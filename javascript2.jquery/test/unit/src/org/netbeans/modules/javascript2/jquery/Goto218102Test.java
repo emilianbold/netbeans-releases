@@ -64,9 +64,9 @@ public class Goto218102Test extends JsTestBase {
         super(testName);
     }
     // TODO disable, because it's failing in teh continues build: server. Should be corrected.
-//    public void testIssue218102_01() throws Exception {
+    public void testIssue218102_01() throws Exception {
 //        checkOffsetRange("testfiles/jquery/218102/issue218102.js", "jQuery(\".do^g\").get(1);", 8, 12);
-//    }
+    }
     
     protected void checkOffsetRange(String file, String caretLine, int start, int end) throws Exception {
         OffsetRange computed = findReferenceSpan(file, caretLine);

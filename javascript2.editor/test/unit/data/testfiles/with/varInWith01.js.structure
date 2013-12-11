@@ -1,4 +1,4 @@
-myDataVarInWith:VARIABLE:[PUBLIC]:ESCAPED{myDataVarInWith}<font color="#999999">ESCAPED{ : }MyContext.okno@with;With$0.truhlik</font>:
+myDataVarInWith:VARIABLE:[PUBLIC]:ESCAPED{myDataVarInWith}:
 MyContext:CLASS:[PUBLIC]:ESCAPED{MyContext}:
   okno:CLASS:[PUBLIC]:ESCAPED{okno}:
     material:FIELD:[PUBLIC]:ESCAPED{material}<font color="#999999">ESCAPED{ : }String</font>:

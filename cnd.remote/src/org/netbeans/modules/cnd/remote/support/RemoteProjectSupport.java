@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -107,29 +108,47 @@ public class RemoteProjectSupport {
         }
     }
 
-    public static FSPath[] getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
+    public static List<FSPath> getBuildResults(Project project) {
+        MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (mcd != null) {
+            MakeConfiguration conf = mcd.getActiveConfiguration();
+            return getBuildResults(conf);
+        }
+        return Collections.<FSPath>emptyList();
+    }
+
+    public static List<FSPath> getBuildResults(MakeConfiguration conf) {
+        String binaryPath = (conf == null) ? null : conf.getAbsoluteOutputValue();
+        if (binaryPath != null) {
+            return Collections.singletonList(new FSPath(conf.getFileSystem(), binaryPath));
+        } else {
+            return Collections.<FSPath>emptyList();
+        }
+    }
+    
+    public static List<FSPath> getProjectSourceDirs(Project project, AtomicReference<String> runDir) {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
         FileSystem fs;
         try {
             fs = project.getProjectDirectory().getFileSystem();
         } catch (FileStateInvalidException ex) {
             Exceptions.printStackTrace(ex);
-            return new FSPath[0];
+            return Collections.<FSPath>emptyList();
         }
         if (conf == null) {
-            return new FSPath[] { FSPath.toFSPath(project.getProjectDirectory()) };
+            return Collections.singletonList(FSPath.toFSPath(project.getProjectDirectory()));
         } else {
             return getProjectSourceDirs(project, conf, runDir);
         }
     }
 
-    public static FSPath[] getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
+    public static List<FSPath> getProjectSourceDirs(Project project, MakeConfiguration conf, AtomicReference<String> runDir) {
         FileObject baseDir = project.getProjectDirectory();
         if (baseDir == null) {
-            return new FSPath[0];
+            return Collections.<FSPath>emptyList();
         }
         if (conf == null) {
-            return new FSPath[] { FSPath.toFSPath(baseDir) };
+            return Collections.singletonList(FSPath.toFSPath(baseDir));
         }
         if (runDir != null) {
             String d = conf.getMakefileConfiguration().getBuildCommandWorkingDirValue();
@@ -141,18 +160,18 @@ public class RemoteProjectSupport {
             runDir.set(d);
         }
         // the project itself
-        Set<FSPath> sourceFilesAndDirs = new HashSet<FSPath>();
+        Set<FSPath> sourceFilesAndDirs = new HashSet<>();
         if (!conf.isMakefileConfiguration()) {
             sourceFilesAndDirs.add(FSPath.toFSPath(baseDir));
         }
 
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         if (mcs == null) {
-            return new FSPath[0];
+            return Collections.<FSPath>emptyList();
         }
         if (!mcs.getBaseDirFileObject().isValid()) {
             // no disk files
-            return sourceFilesAndDirs.toArray(new FSPath[sourceFilesAndDirs.size()]);
+            return new ArrayList<>(sourceFilesAndDirs);
         }
         for(String soorceRoot : mcs.getSourceRoots()) {
             // not sure whether they are absolute and normalized, so:
@@ -162,7 +181,7 @@ public class RemoteProjectSupport {
             }
         }
         addExtraFiles(mcs, sourceFilesAndDirs);
-        List<Project> subProjects = new ArrayList<Project>(conf.getSubProjects());
+        List<Project> subProjects = new ArrayList<>(conf.getSubProjects());
         // required projects are different - see #194997
         for (ProjectItem requiredProject : conf.getRequiredProjectsConfiguration().getValue() ) {
             Project p = requiredProject.getProject(conf.getBaseFSPath());
@@ -185,7 +204,7 @@ public class RemoteProjectSupport {
                 addExtraFiles(subMcs, sourceFilesAndDirs);
             }
         }
-        return sourceFilesAndDirs.toArray(new FSPath[sourceFilesAndDirs.size()]);
+        return new ArrayList<>(sourceFilesAndDirs);
     }
 
     private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<FSPath> filesToSync) {

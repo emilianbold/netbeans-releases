@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.libs.javafx
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/javafx/Bundle.properties
+OpenIDE-Module-Specification-Version: 2.2
+Class-Path: ${java.home}/lib/ext/jfxrt.jar
+

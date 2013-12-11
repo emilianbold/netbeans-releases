@@ -50,40 +50,35 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.php.dbgp.actions.KillActionProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 
-
 /**
  * @author ads
  *
  */
 public class SessionListener extends DebuggerManagerAdapter {
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.DebuggerManagerAdapter#sessionAdded(org.netbeans.api.debugger.Session)
-     */
+
     @Override
-    public void sessionAdded( Session session ) {
-        if ( session.lookupFirst( null , SessionId.class ) == null ){
+    public void sessionAdded(Session session) {
+        if (session.lookupFirst(null, SessionId.class) == null) {
             return;
         }
-	SessionProgress progress = SessionProgress.forSession(session);
-	progress.start();
-        List list = session.lookup( null , ActionsProvider.class );
+        SessionProgress progress = SessionProgress.forSession(session);
+        progress.start();
+        List list = session.lookup(null, ActionsProvider.class);
         boolean found = false;
         for (Object object : list) {
-            if ( object instanceof KillActionProvider ) {
-                ((KillActionProvider)object).setEnabled( true );
+            if (object instanceof KillActionProvider) {
+                ((KillActionProvider) object).setEnabled(true);
                 found = true;
             }
         }
         assert found;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.api.debugger.DebuggerManagerAdapter#sessionRemoved(org.netbeans.api.debugger.Session)
-     */    
     @Override
     public void sessionRemoved(Session session) {
-	super.sessionRemoved(session);
-	SessionProgress progress = SessionProgress.forSession(session);
-	progress.finish();	
-    }    
+        super.sessionRemoved(session);
+        SessionProgress progress = SessionProgress.forSession(session);
+        progress.finish();
+    }
+
 }

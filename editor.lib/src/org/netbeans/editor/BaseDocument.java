@@ -142,7 +142,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + "-listener");
 
     // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
-    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + "-EDT");
+//    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + "-EDT");
     
     /**
      * Mime type of the document. This property can be used for determining
@@ -738,13 +738,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Inserts string into document */
     public @Override void insertString(int offset, String text, AttributeSet attrs)
     throws BadLocationException {
-        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-            // Disabled due to failing OpenEditorEnablesEditMenuFactoryTest
+//        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+//            // Disabled due to failing OpenEditorEnablesEditMenuFactoryTest
 //            if (!SwingUtilities.isEventDispatchThread()) {
 //                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
 //                        offset + ", text=" + org.netbeans.lib.editor.util.CharSequenceUtilities.debugText(text)); // NOI18N
 //            }
-        }
+//        }
         
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();
@@ -921,12 +921,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Removes portion of a document */
     public @Override void remove(int offset, int length) throws BadLocationException {
-        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-            if (!SwingUtilities.isEventDispatchThread()) {
-                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
-                        offset + ", len=" + length); // NOI18N
-            }
-        }
+//        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+//            if (!SwingUtilities.isEventDispatchThread()) {
+//                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
+//                        offset + ", len=" + length); // NOI18N
+//            }
+//        }
 
         // Always acquire atomic lock (it simplifies processing and improves readability)
         atomicLockImpl();

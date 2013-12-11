@@ -63,7 +63,7 @@ final class IgnoredFilesPreferences {
      */
     private static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
     /** Default ignored files pattern. Pattern \.(cvsignore|svn|DS_Store) is covered by ^\..*$ **/
-    static final String DEFAULT_IGNORED_FILES = "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!(htaccess|gitignore|hgignore)$).*$"; //NOI18N
+    static final String DEFAULT_IGNORED_FILES = "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!(htaccess|git.+|hgignore)$).*$"; //NOI18N
     static private String syntaxError;
 
     private IgnoredFilesPreferences() {

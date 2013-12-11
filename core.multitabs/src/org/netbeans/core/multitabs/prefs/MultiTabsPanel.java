@@ -45,14 +45,14 @@ package org.netbeans.core.multitabs.prefs;
 
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
-import org.netbeans.core.windows.options.WinSysPanel;
+import org.netbeans.core.windows.options.TabsPanel;
 
 /**
  * 
  * @author S. Aubrecht
  */
 //@OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
-final class MultiTabsPanel extends WinSysPanel {
+final class MultiTabsPanel extends TabsPanel {
 
     private InnerTabsPanel tabsPanel;
 
@@ -77,6 +77,8 @@ final class MultiTabsPanel extends WinSysPanel {
 
     @Override
     protected boolean store() {
+        if( null == tabsPanel )
+            return false;
         boolean changed = super.store();
         changed |= tabsPanel.store();
         return changed;

@@ -59,8 +59,14 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(NbJiraIssue issue);
+    public void notifyDataAdded(NbJiraIssue issue);
 
+    /**
+     *
+     * @param issue
+     */
+    public void notifyDataRemoved(NbJiraIssue issue);
+            
     /**
      * Query execution was finished
      */

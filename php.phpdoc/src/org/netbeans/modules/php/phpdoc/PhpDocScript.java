@@ -80,7 +80,8 @@ public final class PhpDocScript {
 
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-    public static final String OPTIONS_SUB_PATH = "PhpDoc"; // NOI18N
+    public static final String OPTIONS_ID = "PhpDoc"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+OPTIONS_ID; // NOI18N
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
 
@@ -106,7 +107,7 @@ public final class PhpDocScript {
     }
 
     public static String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
+        return UiUtils.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
     }
 
     public static String validate(String composerPath) {

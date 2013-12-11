@@ -623,6 +623,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
             pane.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+            pane.getDocument().putProperty(SimpleValueNames.SPACES_PER_TAB, prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
             pane.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
             pane.setText(previewText);
             

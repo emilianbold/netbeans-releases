@@ -75,5 +75,7 @@ public abstract class CommonSettingsProvider {
     public abstract void setGenerateClassSetUp(boolean newVal);
     public abstract boolean isGenerateClassTearDown();
     public abstract void setGenerateClassTearDown(boolean newVal);
+    public abstract boolean isGenerateIntegrationTests();
+    public abstract void setGenerateIntegrationTests(boolean newVal);
     
 }

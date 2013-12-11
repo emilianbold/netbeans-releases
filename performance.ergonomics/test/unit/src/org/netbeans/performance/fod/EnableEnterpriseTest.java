@@ -62,4 +62,9 @@ public final class EnableEnterpriseTest extends EnablementSpeedBase {
     protected String featureName() {
         return "enterprise";
     }
+
+    @Override
+    protected long threshold() {
+        return 20000;
+    }
 }

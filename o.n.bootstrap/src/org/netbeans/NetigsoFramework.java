@@ -44,11 +44,15 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.Instrumentation;
 import java.net.URL;
+import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.logging.Level;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /** This class contains abstracted calls to OSGi provided by core.netigso
@@ -186,4 +190,26 @@ public abstract class NetigsoFramework {
     protected final Module findModule(String cnb) {
         return mgr.get(cnb);
     }
+    
+    /** Gives OSGi support access to NetBeans bytecode manipulation libraries.
+     * They are built over {@link Instrumentation} specification 
+     * read more at <a href="@TOP@architecture-overview.html#usecase-bytecode.patching">
+     * architecture document</a>.
+     * 
+     * @param l the classloader that is loading the class
+     * @param className the class name
+     * @param pd protection domain to use
+     * @param arr bytecode (must not be modified)
+     * @return same or alternative bytecode for the class
+     * @throws IllegalStateException if the byte code is not valid
+     * @since 2.65
+     */
+    protected final byte[] patchByteCode(ClassLoader l, String className, ProtectionDomain pd, byte[] arr) {
+        try {
+            return NbInstrumentation.patchByteCode(l, className, null, arr);
+        } catch (IllegalClassFormatException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
 }

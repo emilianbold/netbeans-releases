@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -143,7 +142,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -153,15 +152,11 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
-import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -173,12 +168,12 @@ import org.openide.util.Parameters;
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
         CndFileSystemProvider.CndFileSystemProblemListener {
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, NativeProject platformProject, CharSequence name) {
-        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject));
+    protected ProjectBase(ModelImpl model, NativeProject platformProject, CharSequence name) {
+        this(model, platformProject.getFileSystem(), (Object) platformProject, name, createProjectKey(platformProject));
     }
 
-    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, CacheLocation cacheLocation) {
-        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, cacheLocation));
+    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int sourceUnitId) {
+        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, sourceUnitId));
     }
 
     /** Creates a new instance of CsmProjectImpl */
@@ -187,7 +182,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         this.uniqueName = getUniqueName(fs, platformProject);
         RepositoryUtils.openUnit(key);
         unitId = key.getUnitId();
-        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
@@ -204,7 +198,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         weakGraphContainer = new WeakContainer<GraphContainer>(this, graphStorageKey);
         includedFileContainer = new IncludedFileContainer(this);
         initFields();
-        libraryManager = LibraryManager.getInstance(this);
+        libraryManager = LibraryManager.getInstance(getUnitId());
     }
 
     /*package*/final void initFields() {
@@ -363,30 +357,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         status = newStatus;
     }
 
-    protected static void cleanRepository(FileSystem fs, NativeProject platformProject, boolean articicial) {
-        Key key = createProjectKey(fs, platformProject);
+    protected static void cleanRepository(NativeProject platformProject, boolean articicial) {
+        Key key = createProjectKey(platformProject);
         RepositoryUtils.closeUnit(key, null, true);
     }
 
-    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, CacheLocation cacheLocation) {
-        Key key = createProjectKey(fs, platformProject, cacheLocation);
+    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, int sourceUnitId) {
+        Key key = createProjectKey(fs, platformProject, sourceUnitId);
         RepositoryUtils.closeUnit(key, null, true);
     }
 
-    private static Key createProjectKey(FileSystem fs, NativeProject platfProj) {
-        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), ProjectBase.getCacheLocation(platfProj));
+    private static Key createProjectKey(NativeProject platfProj) {
+         return KeyUtilities.createProjectKey(platfProj);
     }
 
-    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, CacheLocation cacheLocation) {
-        return KeyUtilities.createProjectKey(getUniqueName(fs, platfProj), cacheLocation);
+    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, int sourceUnitId) {
+        return KeyUtilities.createProjectKey(KeyUtilities.createUnitDescriptor(platfProj, fs), sourceUnitId);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
-        return readInstance(model, createProjectKey(fs, platformProject), platformProject, name);
+    protected static ProjectBase readInstance(ModelImpl model, NativeProject platformProject, String name) {
+        return readInstance(model, createProjectKey(platformProject), platformProject, name);
     }
 
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, CacheLocation cacheLocation) {
-        ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, cacheLocation), platformProject, name);
+    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int sourceUnitId) {
+        ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, sourceUnitId), platformProject, name);
         return instance;
     }
 
@@ -447,35 +441,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static CharSequence getUniqueName(NativeProject platformProject) {
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
-
-    public final CacheLocation getCacheLocation() {
-        return cacheLocation;
-    }
     
     public final LibraryManager getLibraryManager() {
         return libraryManager;
-    }
-
-    public static CacheLocation getCacheLocation(NativeProject project) {
-        assert project != null;
-        Provider lp = project.getProject();
-        if (lp != null) {
-            CacheDirectoryProvider loc = lp.getLookup().lookup(CacheDirectoryProvider.class);
-            if (loc != null) {
-                try {
-                    FileObject cacheDir = loc.getCacheDirectory();
-                    if (cacheDir != null) {
-                        File cacheDirFile = FileUtil.toFile(cacheDir);
-                        if (cacheDirFile != null) {
-                            return new CacheLocation(new File(cacheDirFile, "cnd/model")); //NOI18N
-                        }
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
-                }
-            }
-        }
-        return CacheLocation.DEFAULT;
     }
 
     @Override
@@ -494,6 +462,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else {
             return NbBundle.getMessage(getClass(), "ProjectHtmlDisplayName", name, fileSystem.getDisplayName());
         }
+    }
+
+    public static CharSequence getRepositoryUnitName(FileSystem fs, NativeProject nativeProject) {
+        Parameters.notNull("FileSystem", fs); //NOI18N
+        String result = ((NativeProject) nativeProject).getProjectRoot() + "/N/"; // NOI18N
+        return ProjectNameCache.getManager().getString(result);
     }
 
     public static CharSequence getUniqueName(FileSystem fs, Object platformProject) {
@@ -519,6 +493,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return platformProject;
     }
 
+    private UnitDescriptor getUnitDescriptor() {
+         if (platformProject instanceof NativeProject) {
+             return KeyUtilities.createUnitDescriptor((NativeProject) platformProject);
+         } else if (platformProject instanceof CharSequence) {
+             return KeyUtilities.createUnitDescriptor((CharSequence) platformProject, fileSystem);
+         } else if (platformProject == null) {
+             return null;
+         } else {
+             throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass()); // NOI18N
+         }
+     }
+
     /** Gets an object, which represents correspondent IDE project */
     protected final void setPlatformProject(CharSequence platformProject) {
         setPlatformProjectImpl(platformProject);
@@ -542,8 +528,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             CharSequence defactoUniqueName = this.uniqueName;
             if (!defactoUniqueName.equals(expectedUniqueName)) {
                 CndUtils.assertTrue(false,
-                        "Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName + //NOI18N
-                        " Cache location " + cacheLocation); //NOI18N
+                        "Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName); //NOI18N
             }
         }
     }
@@ -1424,11 +1409,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         StartEntry startEntry = new StartEntry(getFileSystem(), entryKey, 
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
-        Object aPlatformProject = getPlatformProject();
-        if (aPlatformProject != null){
-            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(
-                    ProjectBase.getUniqueName(fileSystem, aPlatformProject),
-                    getCacheLocation()));
+        UnitDescriptor unitDescriptor = getUnitDescriptor();
+        if (unitDescriptor != null) {
+            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(unitDescriptor, -1));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
@@ -2469,7 +2452,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                     ParserQueue.instance().remove(impl);
                     if (CndTraceFlags.TEXT_INDEX) {
-                        CndTextIndex.remove(impl.getProjectImpl(true).getCacheLocation(), impl.getTextIndexKey());
+                        CndTextIndex.remove(impl.getTextIndexKey());
                     }
                 }
             }
@@ -2755,7 +2738,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<Key> res = new ArrayList<Key>();
         if (platformProject instanceof NativeProject) {
             for (NativeProject nativeLib : ((NativeProject) platformProject).getDependences()) {
-                final Key key = createProjectKey(nativeLib.getFileSystem(), nativeLib);
+                final Key key = createProjectKey(nativeLib);
                 if (key != null) {
                     res.add(key);
                 }
@@ -3047,10 +3030,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             DiagnosticExceptoins.register(e);
         } finally {
             disposeLock.readLock().unlock();
-            ProjectComponent.setStable(declarationsSorageKey);
-            ProjectComponent.setStable(fileContainerKey);
-            ProjectComponent.setStable(graphStorageKey);
-            ProjectComponent.setStable(classifierStorageKey);
+            // Methods below have no any documented effect. 
+            // There are possible side-effects (like creating a unit for a key)
+            // But they seems to be non relevant here
+//            ProjectComponent.setStable(declarationsSorageKey);
+//            ProjectComponent.setStable(fileContainerKey);
+//            ProjectComponent.setStable(graphStorageKey);
+//            ProjectComponent.setStable(classifierStorageKey);
             checkStates(this, libsAlreadyParsed);
 
             if (!libsAlreadyParsed) {
@@ -3556,7 +3542,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
     private final int unitId;
-    private final CacheLocation cacheLocation;
     private final LibraryManager libraryManager;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
@@ -3618,7 +3603,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
         unitId = aStream.readUnitId();
-        cacheLocation = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
@@ -3661,7 +3645,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert classifierStorageKey != null : "classifierStorageKey can not be null";
         weakClassifierContainer = new WeakContainer<ClassifierContainer>(this, classifierStorageKey);
 
-        includedFileContainer = new IncludedFileContainer(this, aStream);
+        includedFileContainer = new IncludedFileContainer(aStream);
         
         uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert uniqueName != null : "uniqueName can not be null";
@@ -3670,7 +3654,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         this.hasFileSystemProblems = aStream.readBoolean();
-        this.libraryManager = LibraryManager.getInstance(this);
+        this.libraryManager = LibraryManager.getInstance(this.getUnitId());
     }
 
     public int getUnitId() {

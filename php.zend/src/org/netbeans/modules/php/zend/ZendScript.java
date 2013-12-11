@@ -87,7 +87,8 @@ public final class ZendScript {
     public static final String SCRIPT_NAME = "zf"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
-    public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
+    public static final String OPTIONS_ID = "Zend"; // NOI18N
+    public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH+"/"+OPTIONS_ID; // NOI18N
 
     static final String COMMANDS_SEPARATOR = ":NB:"; // NOI18N
 
@@ -159,7 +160,7 @@ public final class ZendScript {
      * @return full IDE options Zend path
      */
     public static String getOptionsPath() {
-        return UiUtils.OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
+        return UiUtils.FRAMEWORKS_AND_TOOLS_OPTIONS_PATH + "/" + getOptionsSubPath(); // NOI18N
     }
 
     /**

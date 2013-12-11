@@ -105,7 +105,7 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
                 Image icon = repo.getIcon();
                 if(icon instanceof Icon) {
                     label.setIcon((Icon) icon);
-            } else {
+                } else if(icon instanceof Image) {
                     label.setIcon(new ImageIcon(icon));
                 }
             } else {

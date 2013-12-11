@@ -130,7 +130,7 @@ public abstract class OptionsPanelController {
     public abstract void update ();
 
     /**
-     * This method is called when Options Dialog "OK" button is pressed.
+     * This method is called off EDT when Options Dialog "OK" or "Apply" button is pressed.
      */
     public abstract void applyChanges ();
 
@@ -210,6 +210,18 @@ public abstract class OptionsPanelController {
      * @since 1.8
      */
     protected void setCurrentSubcategory(String subpath) {
+    }
+
+    /**
+     * Enables to handle selection of subcategory. It is meant to be called from
+     * a composite OptionspanelController and  delegates to
+     * {@link #setCurrentSubcategory(java.lang.String)}.
+     * @param subpath path of subcategory to be selected. Path is 
+     * composed from registration names divided by slash.
+     * @since 1.38
+     */
+    public final void setSubcategory(String subpath) {
+        setCurrentSubcategory(subpath);
     }
 
     /**

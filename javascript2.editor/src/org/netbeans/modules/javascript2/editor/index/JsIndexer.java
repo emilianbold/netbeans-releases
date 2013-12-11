@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -87,7 +88,7 @@ public class JsIndexer extends EmbeddingIndexer {
             JsIndex.changeInIndex();
         }
         JsParserResult parserResult = (JsParserResult) result;
-        Model model = parserResult.getModel();
+        Model model = parserResult.getModel(true);
 
         IndexingSupport support;
         try {
@@ -96,6 +97,9 @@ public class JsIndexer extends EmbeddingIndexer {
             LOG.log(Level.WARNING, null, ioe);
             return;
         }
+
+        // we need to remove old documents (document per object, not file)
+        support.removeDocuments(indexable);
 
         JsObject globalObject = model.getGlobalObject();
         for (JsObject object : globalObject.getProperties().values()) {
@@ -128,6 +132,9 @@ public class JsIndexer extends EmbeddingIndexer {
     
     private boolean isInvisibleFunction(JsObject object) {
         if (object.getJSKind().isFunction() && (object.isAnonymous() || object.getModifiers().contains(Modifier.PRIVATE))) {
+            if (object.getParent() != null && object.getParent().getJSKind() == JsElement.Kind.FILE) {
+                return false;
+            }
             Collection<? extends TypeUsage> returnTypes = ((JsFunction) object).getReturnTypes();
             if (returnTypes.size() == 1 && (returnTypes.iterator().next()).getType().equals("undefined")) {
                 return true;

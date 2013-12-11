@@ -74,6 +74,11 @@ public class PropertiesAction extends ContextAction {
     public PropertiesAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {

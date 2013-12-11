@@ -1,8 +1,15 @@
-(function () { // generated function for scope list
-list();
+(function () {
+$scope = list.$scope;
+list;
+with ($scope) { 
 for (var item in items) {
 item.celejmeno();
 }
-(function () { // generated function for scope ();
+(function () {
+$scope = $scope;
+
+with ($scope) { 
+}
 });
+}
 });

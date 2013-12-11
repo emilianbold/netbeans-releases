@@ -20,7 +20,7 @@ RULE       replace:search:replace=''                  Helper
 RULE       replaceRE:pattern:replace=''               Helper
 RULE       strip                                      Helper
 RULE       striptags                                  Helper
-RULE       substr:offset:length=stringLeg             Helper
+RULE       substr:offset:length=stringLen             Helper
 RULE       toAscii                                    Helper
 RULE       trim:charlist=' \t\n\r\0\x0B\x             Helper
 RULE       truncate:length:append='…'                 Helper

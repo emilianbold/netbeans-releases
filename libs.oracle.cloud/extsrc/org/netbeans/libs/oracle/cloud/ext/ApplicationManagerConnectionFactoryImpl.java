@@ -56,7 +56,7 @@ public class ApplicationManagerConnectionFactoryImpl implements ApplicationManag
     }
 
     @Override
-    public ApplicationManager createServiceEndpoint(String url, String user, String password) {
+    public ApplicationManager createServiceEndpoint(String url, String identityDomain, String user, String password) {
         URL u;
         try {
             u = new URL(url);
@@ -68,7 +68,8 @@ public class ApplicationManagerConnectionFactoryImpl implements ApplicationManag
         ClassLoader cl_ = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(classLoader);
         try {
-            am = oracle.cloud.paas.api.ApplicationManagerConnectionFactory.createServiceEndpoint(u, user, password);
+            am = oracle.cloud.paas.api.ApplicationManagerConnectionFactory.createServiceEndpoint(
+                    u, identityDomain, user, password);
         } catch (oracle.cloud.paas.exception.ManagerException ex) {
             throw ApplicationManagerImpl.wrapException(ex);
         } finally {

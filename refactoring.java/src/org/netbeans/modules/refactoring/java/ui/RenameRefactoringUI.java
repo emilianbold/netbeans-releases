@@ -49,11 +49,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +57,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -68,20 +65,20 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.refactoring.java.ui.Bundle.*;
@@ -91,30 +88,29 @@ import static org.netbeans.modules.refactoring.java.ui.Bundle.*;
  * @author Martin Matula
  * @author Jan Becicka
  */
-@NbBundle.Messages("DSC_Rename=Rename <b>{0}</b> to <b>{1}</b>")
-public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable, JavaRefactoringUIFactory {
-    private AbstractRefactoring refactoring;
-    private String oldName = null;
-    private String dispOldName;
-    private String newName;
+@NbBundle.Messages({
+    "# {0} - OldName",
+    "# {1} - NewName",
+    "DSC_Rename=Rename <b>{0}</b> to <b>{1}</b>"})
+public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, Openable {
+    protected RenameRefactoring refactoring;
+    private String newName = null;
+    private final String oldName;
     private RenamePanel panel;
     private boolean fromListener = false;
     private TreePathHandle handle;
+    private DocTreePathHandle docHandle;
+    private ElementKind kind;
     private ElementHandle elementHandle;
     private FileObject byPassFolder;
     private boolean byPassPakageRename;
     private boolean pkgRename = true;
-    private Lookup lookup;
-
-    private RenameRefactoringUI(Lookup lookup) {
-        this.lookup = lookup;
-    }
     
     private RenameRefactoringUI(TreePathHandle handle, String labelName) {
         this.handle = handle;
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
+        newName = labelName;
         oldName = labelName;
-        dispOldName = oldName;
     }
     
     private RenameRefactoringUI(TreePathHandle handle, CompilationInfo info) {
@@ -122,16 +118,14 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         this.refactoring = new RenameRefactoring(Lookups.singleton(handle));
         Element element = handle.resolveElement(info);
         if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
-            elementHandle = ElementHandle.create(element);
+            this.elementHandle = ElementHandle.create(element);
         }
-        oldName = element.getSimpleName().toString();
+        this.oldName = this.newName = element.getSimpleName().toString();
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
-            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(false, handle.getFileObject()));
+            this.refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(false, handle.getFileObject()));
         } else {
-            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(true, true, RefactoringUtils.getFileObject(handle)));
+            this.refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(true, true, RefactoringUtils.getFileObject(handle)));
         }
-        dispOldName = oldName;
-
     }
     
     private RenameRefactoringUI(FileObject file, TreePathHandle handle, CompilationInfo info) {
@@ -140,24 +134,24 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.refactoring = new RenameRefactoring(Lookups.fixed(file, handle));
             Element element = handle.resolveElement(info);
             if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
-                elementHandle = ElementHandle.create(element);
+                this.elementHandle = ElementHandle.create(element);
             }
-            oldName = element.getSimpleName().toString();
+            this.oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
-            oldName = file.getName();
+            this.oldName = file.getName();
         }
-        dispOldName = oldName;
+        this.newName = this.oldName;
         ClasspathInfo cpInfo = handle==null?JavaRefactoringUtils.getClasspathInfoFor(file):RefactoringUtils.getClasspathInfoFor(handle);
-        refactoring.getContext().add(cpInfo);
+        this.refactoring.getContext().add(cpInfo);
     }
 
     private RenameRefactoringUI(NonRecursiveFolder file) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(file));
-        oldName = RefactoringUtils.getPackageName(file.getFolder());
-        refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(file.getFolder()));
-        dispOldName = oldName;
-        pkgRename = true;
+        this.oldName = RefactoringUtils.getPackageName(file.getFolder());
+        this.refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(file.getFolder()));
+        this.newName = this.oldName;
+        this.pkgRename = true;
     }
     
     
@@ -166,23 +160,31 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.refactoring = new RenameRefactoring(Lookups.fixed(fileObject, handle));
             Element element = handle.resolveElement(info);
             if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
-                elementHandle = ElementHandle.create(element);
+                this.elementHandle = ElementHandle.create(element);
             }
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(fileObject));
         }
-        oldName = newName;
-        this.dispOldName = fileObject.getName();
+        this.newName = newName;
+        this.oldName = fileObject.getName();
         ClasspathInfo cpInfo = handle==null?JavaRefactoringUtils.getClasspathInfoFor(fileObject):RefactoringUtils.getClasspathInfoFor(handle);
-        refactoring.getContext().add(cpInfo);
-        fromListener = true;
+        this.refactoring.getContext().add(cpInfo);
+        this.fromListener = true;
+    }
+    
+    public RenameRefactoringUI(RenameRefactoring refactoring, String oldName, String newName, TreePathHandle handle, DocTreePathHandle docHandle) {
+        this.refactoring = refactoring;
+        this.oldName = oldName;
+        this.newName = newName;
+        this.handle = handle;
+        this.docHandle = docHandle;
     }
     
     private RenameRefactoringUI(NonRecursiveFolder jmiObject, String newName) {
         this.refactoring = new RenameRefactoring(Lookups.singleton(jmiObject));
         refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(jmiObject.getFolder()));
-        oldName = newName;
-        this.dispOldName = RefactoringUtils.getPackageName(jmiObject.getFolder());
+        this.newName = newName;
+        this.oldName = RefactoringUtils.getPackageName(jmiObject.getFolder());
         fromListener = true;
         pkgRename = true;
     }
@@ -195,7 +197,6 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            String name = oldName;
             String suffix = "";
             if(handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT) {
                 suffix = getString("LBL_Label");
@@ -215,8 +216,8 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
                     suffix = getString("LBL_Parameter");
                 }
             }
-            suffix = suffix + " " + this.dispOldName; // NOI18N
-            panel = new RenamePanel(handle,  name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
+            suffix = suffix + " " + this.oldName; // NOI18N
+            panel = new RenamePanel(handle, newName, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename") + " " + suffix, !fromListener, fromListener && !byPassPakageRename);
         }
         return panel;
     }
@@ -274,7 +275,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
 
     @Override
     public String getDescription() {
-        return DSC_Rename(dispOldName, newName);
+        return DSC_Rename(oldName, newName);
     }
 
     @Override
@@ -362,7 +363,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         FileObject root = ClassPath.getClassPath(source, ClassPath.SOURCE).findOwnerRoot(source);
 
         name = name.replace('.', '/') + '/';           //NOI18N
-        String oldName = dispOldName.replace('.', '/') + '/';     //NOI18N
+        String oldName = this.oldName.replace('.', '/') + '/';     //NOI18N
         int i;
         for (i = 0; i < oldName.length() && i < name.length(); i++) {
             if (oldName.charAt(i) != name.charAt(i)) {
@@ -414,87 +415,88 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         }
     }
 
-    @Override
-    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        final String n = RefactoringActionsProvider.getName(lookup);
-        if (packages.length == 1) {
-            return n==null?new RenameRefactoringUI(packages[0]):new RenameRefactoringUI(packages[0], n);
-        }
+    public static JavaRefactoringUIFactory factory(final Lookup lookup) {
+        return new JavaRefactoringUIFactory() {
+            @Override
+            public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+                final String n = RefactoringActionsProvider.getName(lookup);
+                if (packages.length == 1) {
+                    return n==null?new RenameRefactoringUI(packages[0]):new RenameRefactoringUI(packages[0], n);
+                }
 
-        if (handles.length == 0 || n != null) {
-            assert files.length == 1;
-            return n==null?new RenameRefactoringUI(files[0], null, null):new RenameRefactoringUI(files[0], n, null, null);
-        }
-        assert handles.length == 1;
-        TreePathHandle selectedElement = handles[0];
-        TreePath resolve = selectedElement.resolve(info);
-        if(resolve != null && EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(resolve.getLeaf().getKind())) {
-            TreePath path = resolve;
-            if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
-                StatementTree tgt = info.getTreeUtilities().getBreakContinueTarget(path);
-                path = tgt != null ? info.getTrees().getPath(info.getCompilationUnit(), tgt) : null;
-            }
-            if (path == null) {
-                logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
-                return null;
-            }
-            LabeledStatementTree label = (LabeledStatementTree) path.getLeaf();
-            return new RenameRefactoringUI(TreePathHandle.create(path, info), label.getLabel().toString());
-        }
-        Element selected = handles[0].resolveElement(info);
-        if (selected == null) {
-            logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
-            return null;
-        }
-        if (selected.getKind() == ElementKind.CONSTRUCTOR) {
-            selected = selected.getEnclosingElement();
-            TreePath path = info.getTrees().getPath(selected);
-            if (path == null) {
-                logger().log(Level.INFO, "doRename: " + selected, new NullPointerException("selected")); // NOI18N
-                return null;
-            }
-            selectedElement = TreePathHandle.create(path, info);
-        }
-        if (selected.getKind() == ElementKind.PACKAGE) {
-            final FileObject pkg = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(selected.toString().replace('.', '/'));
-            if (pkg != null) {
-                NonRecursiveFolder folder = new NonRecursiveFolder() {
-
-                    @Override
-                    public FileObject getFolder() {
-                        return pkg;
+                if (handles.length == 0 || n != null) {
+                    assert files.length == 1;
+                    return n==null?new RenameRefactoringUI(files[0], null, null):new RenameRefactoringUI(files[0], n, null, null);
+                }
+                assert handles.length == 1;
+                TreePathHandle selectedElement = handles[0];
+                TreePath resolve = selectedElement.resolve(info);
+                if(resolve != null && EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(resolve.getLeaf().getKind())) {
+                    TreePath path = resolve;
+                    if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
+                        StatementTree tgt = info.getTreeUtilities().getBreakContinueTarget(path);
+                        path = tgt != null ? info.getTrees().getPath(info.getCompilationUnit(), tgt) : null;
                     }
-                };
-                return new RenameRefactoringUI(folder);
-            } else {
-                if (selected.getSimpleName().length() != 0) {
-                    return new RenameRefactoringUI(selectedElement, info);
-                } else {
-                    TreePath path = selectedElement.resolve(info);
-                    if (path != null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-                        return new RenameRefactoringUI(selectedElement.getFileObject(), null, info);
-                    } else {
+                    if (path == null) {
+                        logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
                         return null;
                     }
+                    LabeledStatementTree label = (LabeledStatementTree) path.getLeaf();
+                    return new RenameRefactoringUI(TreePathHandle.create(path, info), label.getLabel().toString());
+                }
+                Element selected = handles[0].resolveElement(info);
+                if (selected == null) {
+                    logger().log(Level.INFO, "doRename: " + handles[0], new NullPointerException("selected")); // NOI18N
+                    return null;
+                }
+                if (selected.getKind() == ElementKind.CONSTRUCTOR) {
+                    selected = selected.getEnclosingElement();
+                    TreePath path = info.getTrees().getPath(selected);
+                    if (path == null) {
+                        logger().log(Level.INFO, "doRename: " + selected, new NullPointerException("selected")); // NOI18N
+                        return null;
+                    }
+                    selectedElement = TreePathHandle.create(path, info);
+                }
+                if (selected.getKind() == ElementKind.PACKAGE) {
+                    final FileObject pkg = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).findResource(selected.toString().replace('.', '/'));
+                    if (pkg != null) {
+                        NonRecursiveFolder folder = new NonRecursiveFolder() {
+
+                            @Override
+                            public FileObject getFolder() {
+                                return pkg;
+                            }
+                        };
+                        return new RenameRefactoringUI(folder);
+                    } else {
+                        if (selected.getSimpleName().length() != 0) {
+                            return new RenameRefactoringUI(selectedElement, info);
+                        } else {
+                            TreePath path = selectedElement.resolve(info);
+                            if (path != null && path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
+                                return new RenameRefactoringUI(selectedElement.getFileObject(), null, info);
+                            } else {
+                                return null;
+                            }
+                        }
+                    }
+                } else if (selected instanceof TypeElement && !((TypeElement) selected).getNestingKind().isNested()) {
+                    ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement) selected);
+                    FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
+                    if (f != null && selected.getSimpleName().toString().equals(f.getName())) {
+                        return new RenameRefactoringUI(f, selectedElement, info);
+                    } else {
+                        return new RenameRefactoringUI(selectedElement, info);
+                    }
+                } else {
+                    return new RenameRefactoringUI(selectedElement, info);
                 }
             }
-        } else if (selected instanceof TypeElement && !((TypeElement) selected).getNestingKind().isNested()) {
-            ElementHandle<TypeElement> handle = ElementHandle.create((TypeElement) selected);
-            FileObject f = SourceUtils.getFile(handle, info.getClasspathInfo());
-            if (f != null && selected.getSimpleName().toString().equals(f.getName())) {
-                return new RenameRefactoringUI(f == null ? info.getFileObject() : f, selectedElement, info);
-            } else {
-                return new RenameRefactoringUI(selectedElement, info);
-            }
-        } else {
-            return new RenameRefactoringUI(selectedElement, info);
-        }
+        };
     }
     
-    public static JavaRefactoringUIFactory factory(Lookup lookup) {
-        return new RenameRefactoringUI(lookup);
-    }
-            private static Logger logger() {
+    private static Logger logger() {
         return Logger.getLogger(RefactoringActionsProvider.class.getName());
     }
 

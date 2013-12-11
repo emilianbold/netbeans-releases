@@ -50,6 +50,14 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  * @author Alexander Simon
  */
 public class FileOperationsTest extends NativeExecutionBaseTestSuite {
+    
+    static {
+        System.setProperty("remote.fs_server.verbose", "1");
+        System.setProperty("remote.fs_server.log", "true");
+        //System.setProperty("remote.fs_server.suppress.stderr", "false");
+        //System.setProperty("remote.fs_server.refresh", "0");
+    }
+    
     @SuppressWarnings("unchecked")
     public FileOperationsTest() {
         this("FileOperations API", getTestClasses());
@@ -75,7 +83,7 @@ public class FileOperationsTest extends NativeExecutionBaseTestSuite {
         }
         return new FileOperationsTest(testClass.getName(), classes);
     }
-    
+
     public FileOperationsTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
         super(name, "remote.platforms", testClasses);
     }

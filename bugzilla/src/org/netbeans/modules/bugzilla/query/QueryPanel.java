@@ -60,7 +60,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
@@ -116,14 +116,11 @@ public class QueryPanel extends javax.swing.JPanel {
         urlPanel.setVisible(false);
         queryHeaderPanel.setVisible(false);
         tableFieldsPanel.setVisible(false);
-        saveChangesButton.setVisible(false);
         cancelChangesButton.setVisible(false);
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
         noContentPanel.setVisible(false);
         
-        saveChangesButton.setEnabled(false);
-
         bugAssigneeCheckBox.setOpaque(false);
         reporterCheckBox.setOpaque(false);
         ccCheckBox.setOpaque(false);
@@ -171,7 +168,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setQueryRunning(final boolean running) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 modifyButton.setEnabled(!running);
@@ -208,7 +205,6 @@ public class QueryPanel extends javax.swing.JPanel {
         criteriaPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        separatorLabel1 = new javax.swing.JLabel();
         separatorLabel2 = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
         queryHeaderPanel = new javax.swing.JPanel();
@@ -801,7 +797,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(urlTextField)
+                .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 829, Short.MAX_VALUE)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -857,15 +853,6 @@ public class QueryPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(saveChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(saveButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveButton.text")); // NOI18N
-        saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveButtonActionPerformed(evt);
-            }
-        });
-
         gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel1.setLabelFor(idTextField);
@@ -899,9 +886,6 @@ public class QueryPanel extends javax.swing.JPanel {
         idTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.idTextField.AccessibleContext.accessibleDescription")); // NOI18N
         gotoIssueButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.gotoIssueButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(separatorLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel1.text")); // NOI18N
-        separatorLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         org.openide.awt.Mnemonics.setLocalizedText(separatorLabel2, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel2.text")); // NOI18N
         separatorLabel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -923,15 +907,9 @@ public class QueryPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(searchButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(saveChangesButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cancelChangesButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, 65, Short.MAX_VALUE)
-                .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(separatorLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel2)
@@ -954,27 +932,22 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(searchButton)
-                        .addComponent(cancelChangesButton)
-                        .addComponent(saveChangesButton))
+                        .addComponent(cancelChangesButton))
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(urlToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(separatorLabel1)
                         .addComponent(separatorLabel2)
                         .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        searchPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {saveButton, separatorLabel1, separatorLabel2, urlToggleButton, webButton});
+        searchPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {separatorLabel2, urlToggleButton, webButton});
 
         webButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.AccessibleContext.accessibleDescription")); // NOI18N
         urlToggleButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.AccessibleContext.accessibleDescription")); // NOI18N
         searchButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
         cancelChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
-        saveChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
-        saveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshConfigurationButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshConfigurationButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -1146,10 +1119,6 @@ public class QueryPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
 }//GEN-LAST:event_removeButtonActionPerformed
 
-    private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_saveButtonActionPerformed
-
     private void webButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webButtonActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_webButtonActionPerformed
@@ -1199,7 +1168,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JList changedList = new javax.swing.JList();
     final javax.swing.JTextField changedToTextField = new javax.swing.JTextField();
     private javax.swing.JLabel changedWhereLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton cloneQueryButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox commentComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel commentLabel = new javax.swing.JLabel();
     final javax.swing.JTextField commentTextField = new javax.swing.JTextField();
@@ -1229,7 +1198,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JTextField keywordsTextField = new javax.swing.JTextField();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton modifyButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     final javax.swing.JTextField newValueTextField = new javax.swing.JTextField();
     private javax.swing.JLabel noContentLabel;
@@ -1244,19 +1213,16 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JList productList = new javax.swing.JList();
     final javax.swing.JScrollPane productScrollPane = new javax.swing.JScrollPane();
     private javax.swing.JPanel queryHeaderPanel;
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
+    public final org.netbeans.modules.bugtracking.commons.LinkButton removeButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JCheckBox reporterCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
     final javax.swing.JList resolutionList = new javax.swing.JList();
     final javax.swing.JScrollPane resolutionScrollPane = new HackedScrollPane();
-    final org.netbeans.modules.bugtracking.util.LinkButton saveButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
-    final org.netbeans.modules.bugtracking.util.LinkButton seenButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    private javax.swing.JLabel separatorLabel1;
+    final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     private javax.swing.JLabel separatorLabel2;
     private javax.swing.JLabel separatorLabel3;
     final javax.swing.JLabel severityLabel = new javax.swing.JLabel();
@@ -1277,11 +1243,11 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JScrollPane tmScrollPane = new HackedScrollPane();
     final javax.swing.JPanel urlPanel = new javax.swing.JPanel();
     final javax.swing.JTextField urlTextField = new javax.swing.JTextField();
-    final org.netbeans.modules.bugtracking.util.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton urlToggleButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel versionLabel = new javax.swing.JLabel();
     final javax.swing.JList versionList = new javax.swing.JList();
     final javax.swing.JScrollPane versionScrollPane = new HackedScrollPane();
-    final org.netbeans.modules.bugtracking.util.LinkButton webButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.commons.LinkButton webButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JComboBox whiteboardComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel whiteboardLabel = new javax.swing.JLabel();
     final javax.swing.JTextField whiteboardTextField = new javax.swing.JTextField();
@@ -1293,7 +1259,7 @@ public class QueryPanel extends javax.swing.JPanel {
      */
     void enableFields(final boolean enable) {
         
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 summaryLabel.setEnabled(enable);
@@ -1316,7 +1282,6 @@ public class QueryPanel extends javax.swing.JPanel {
                 peopleTextField.setEnabled(enable);
                 
                 searchButton.setEnabled(enable);
-                saveButton.setEnabled(enable);
                 webButton.setEnabled(enable);
                 urlToggleButton.setEnabled(enable);
                 refreshConfigurationButton.setEnabled(enable);
@@ -1331,7 +1296,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void switchQueryFields(final boolean showAdvanced) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 byDetails.setVisible(showAdvanced);
@@ -1350,7 +1315,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showError(final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(true);
@@ -1365,7 +1330,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showSearchingProgress(final boolean on, final String text) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             public void run() {
                 noContentPanel.setVisible(on);
                 tableSummaryLabel.setVisible(!on);
@@ -1379,7 +1344,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 noContentPanel.setVisible(on);
@@ -1400,29 +1365,26 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setModifyVisible(final boolean b) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(b);
                 cancelChangesButton.setVisible(b);
-                saveChangesButton.setVisible(b);
                 
                 webButton.setVisible(b);
                 separatorLabel2.setVisible(b);
                 
                 tableFieldsPanel.setVisible(!b);
                 searchButton.setVisible(!b);
-                saveButton.setVisible(!b);
                 urlToggleButton.setVisible(!b);
                 
-                separatorLabel1.setVisible(!b);
                 separatorLabel3.setVisible(!b);
             }
         });
     }
 
     void setSaved(final String name, final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 searchPanel.setVisible(false);
@@ -1439,7 +1401,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setLastRefresh(final String lastRefresh) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 lastRefreshDateLabel.setText(lastRefresh);
@@ -1448,7 +1410,7 @@ public class QueryPanel extends javax.swing.JPanel {
     }
 
     void setNBFieldsVisible(final boolean visible) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 whiteboardLabel.setVisible(visible);

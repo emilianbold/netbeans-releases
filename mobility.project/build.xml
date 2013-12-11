@@ -47,22 +47,6 @@ made subject to such option by the copyright holder.
     <import file="../nbbuild/templates/projectized.xml"/>
     <property file="nbproject/private.properties"/>
     <target name="nblib" depends="init,jar">
-        <mkdir dir="build/antclasses"/>
-        <javac srcdir="antsrc" destdir="build/antclasses" source="1.6" debug="true" deprecation="true">
-            <classpath>
-                <path refid="cp"/>
-                <pathelement location="${ant.jar}"/>
-                <pathelement location="${tools.jar}"/>
-                <pathelement location="${cluster}/${module.jar}"/>
-            </classpath>
-        </javac>
-        <copy todir="build/antclasses">
-            <fileset dir="antsrc" excludes="**/*.java"/>
-        </copy>
-        <mkdir dir="${cluster}/ant/nblib"/>
-        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
-            <fileset dir="build/antclasses"/>
-        </jar>
         <copy todir="${cluster}/modules/scr">
             <fileset dir="scripts"/>
         </copy>

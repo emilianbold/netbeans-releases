@@ -51,8 +51,7 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 
 /**
  *
@@ -289,7 +288,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     // End of variables declaration//GEN-END:variables
 
     void enableFields(final boolean bl) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 psswdLabel.setEnabled(bl);
@@ -320,7 +319,7 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     }
 
     void setValidateEnabled(final boolean b) {
-        BugzillaUtil.runInAWT(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 validateButton.setEnabled(b);

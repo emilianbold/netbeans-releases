@@ -204,4 +204,16 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion23.xhtml", "#{['word', 4].stream().peek(i->^)}", false, toCheck);
     }
 
+    public void testIssue235971_1() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{bean.myString.toS^tring()}", false);
+    }
+
+    public void testIssue235971_2() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{bean.mySt^ring.toString()}", false);
+    }
+
+    public void testIssue235971_3() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{bean.myL^ist}", false);
+    }
+
 }

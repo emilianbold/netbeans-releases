@@ -70,10 +70,9 @@ import org.openide.util.RequestProcessor;
     private final PrintWriter err;
     private static final RequestProcessor RP = new RequestProcessor("FullRemoteSyncWoker", 1); // NOI18N
     
-    public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
-            FSPath... files) {
+    public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, List<FSPath> files) {
         this.executionEnvironment = executionEnvironment;
-        this.sourceFileSystem = (files.length == 0) ? FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()) : files[0].getFileSystem();
+        this.sourceFileSystem = (files.isEmpty()) ? FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()) : files.get(0).getFileSystem();
         this.out = out;
         this.err = err;
     }

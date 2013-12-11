@@ -65,8 +65,9 @@ public final class ExcludeFromCommitAction extends ContextAction {
     public static final int EXCLUDING = 1;
     public static final int INCLUDING = 2;
 
+    @Override
     protected boolean enable(Node[] nodes) {
-        return getActionStatus(nodes) != UNDEFINED;
+        return isCacheReady() && getActionStatus(nodes) != UNDEFINED;
     }
 
     protected int getFileEnabledStatus() {

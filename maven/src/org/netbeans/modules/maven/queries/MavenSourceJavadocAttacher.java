@@ -58,6 +58,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
@@ -95,32 +96,30 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
             //TODO classifier?
             defined = new NBVersionInfo(null, coordinates[0], coordinates[1], coordinates[2], null, null, null, null, null);
             message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_REPO(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-        } else if (file.isFile()) {
-            RepositoryQueries.Result<NBVersionInfo> res = RepositoryQueries.findBySHA1Result(file, null);
-            List<NBVersionInfo> candidates = res.getResults();
-            for (NBVersionInfo nbvi : candidates) {
-                if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
-                    defined = nbvi;
-                    message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_SHA1(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                    break;
-                }
+        } else if (file.isFile() && file.exists()) {
+            List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(file);
+            if (coordinates != null && coordinates2.size() == 1) { //only when non-shaded?
+                RepositoryForBinaryQueryImpl.Coordinates coord = coordinates2.get(0);
+                defined = new NBVersionInfo(null, coord.groupId, coord.artifactId, coord.version, null, null, null, null, null);
             }
-            if (defined == null && res.isPartial()) {
-                //TODO should we wait?
+            if (defined == null) {
+                RepositoryQueries.Result<NBVersionInfo> res = RepositoryQueries.findBySHA1Result(file, null);
+                List<NBVersionInfo> candidates = res.getResults();
+                for (NBVersionInfo nbvi : candidates) {
+                    if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
+                        defined = nbvi;
+                        message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_SHA1(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+                        break;
+                    }
+                }
+                if (defined == null && res.isPartial()) {
+                    //TODO should we wait?
+                }
             }
         }
 
         if (defined == null) {
-            if (file.exists()) {
-                List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(file);
-                if (coordinates != null && coordinates2.size() == 1) { //only when non-shaded?
-                    RepositoryForBinaryQueryImpl.Coordinates coord = coordinates2.get(0);
-                    defined = new NBVersionInfo(null, coord.groupId, coord.artifactId, coord.version, null, null, null, null, null);
-                }
-            }
-            if (defined == null) {
-                return Collections.emptyList();
-            }
+            return Collections.emptyList();
         }
         if (Boolean.TRUE.equals(cancel.call())) {
             return Collections.emptyList();
@@ -213,7 +212,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
     }
 
     @Override
-    @Messages("DESC_SourceJavadocAttacher=Lookup javadoc/sources in know Maven repositories")
+    @Messages("DESC_SourceJavadocAttacher=Lookup javadoc/sources in known Maven repositories")
     public String getDescription() {
         return Bundle.DESC_SourceJavadocAttacher();
     }

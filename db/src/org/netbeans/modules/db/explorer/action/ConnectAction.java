@@ -286,8 +286,8 @@ public class ConnectAction extends BaseAction {
                     progressComponent.setPreferredSize(new Dimension(350, 20));
                     ConnectProgressDialog panel = new ConnectProgressDialog(progressComponent, null);
                     panel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectAction.class, "ACS_ConnectingDialogTextA11yDesc"));
-                    descriptor = new DialogDescriptor(panel, NbBundle.getMessage (ConnectAction.class, "ConnectingDialogTitle"), true, new Object[] { DialogDescriptor.CANCEL_OPTION },
-                            DialogDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                    descriptor = new DialogDescriptor(panel, NbBundle.getMessage (ConnectAction.class, "ConnectingDialogTitle"), true, new Object[] {},
+                            null, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
                     
                     final PropertyChangeListener connectionListener = new PropertyChangeListener() {

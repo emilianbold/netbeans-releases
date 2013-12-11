@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -48,7 +49,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -60,24 +60,11 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super(testName);
     }
 
-    protected static final File localFilesStorage = new File(getHomeDir(), "cnd-test-files-storage");
+    protected static final File localFilesStorage = new File(System.getProperty("user.home"), "cnd-test-files-storage");
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
     private static String goldenDirectory;
-
-    private static String getHomeDir() {
-        String path;
-        if (Utilities.isWindows()) {
-            path = System.getenv("USERPROFILE");
-        } else {
-            path = System.getenv("HOME");
-        }
-        if (path == null) { // paranoia
-            path = System.getProperty("user.home");
-        }
-        return path;
-    }
 
     @Override
     protected File getTestCaseDataDir() {
@@ -86,18 +73,6 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " setUp");
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " tearDown");
-    }
-    
     @Override
     protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
         super.doTest(args, streamOut, streamErr, params);
@@ -169,7 +144,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     // wget http://pkgconfig.freedesktop.org/releases/pkgconfig-0.18.tar.gz
     // gzip -d pkgconfig-0.18.tar.gz
     // tar xf pkgconfig-0.18.tar
-    private List<String> download() throws IOException{
+   private List<String> download() throws IOException{
         List<String> list = new ArrayList<String>();
         File fileDataPath = CndCoreTestUtils.getDownloadBase();
         String dataPath = fileDataPath.getAbsolutePath();
@@ -208,7 +183,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             File fileFromStorage = new File(localFilesStorage, sqlite+".tar.gz");
             if (fileFromStorage.exists()) {
                 execute("cp", dataPath, fileFromStorage.getAbsolutePath(), dataPath);
-            } else {           
+            } else {
                 execute("wget", dataPath, "-qN", "http://www.sqlite.org/2013/"+sqlite+".tar.gz");
             }
             execute("gzip", dataPath, "-d", sqlite+".tar.gz");

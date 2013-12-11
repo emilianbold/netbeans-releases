@@ -54,6 +54,9 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.cloud.CloudTasks;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
@@ -150,10 +153,19 @@ public class GlassFishAccountDeploymentManager
         }
         GlassFishModuleId moduleID
                 = new GlassFishModuleId(instance, moduleFile);
-        ProgressObjectDeploy progressObject
-                = new ProgressObjectDeploy(this, moduleID);
+        final ProgressObjectDeploy progressObject;
+        progressObject = new ProgressObjectDeploy(this, moduleID);
+        TaskStateListener stateListener = new TaskStateListener() {
+            @Override
+            public void operationStateChanged(final TaskState ts,
+                    final TaskEvent te, final String... strings) {
+                // TODO: Fix, it does not work this way!
+                //progressObject.operationStateChanged(ts, te, strings);
+            }
+        };
         // call deploy
-        CloudTasks.deploy(instance, instance.getAcount(), moduleFile, progressObject);
+        CloudTasks.deploy(
+                instance, instance.getAcount(), moduleFile, stateListener);
         return progressObject;
     }
 

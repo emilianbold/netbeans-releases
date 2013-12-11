@@ -41,60 +41,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbPerformanceTest;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
-    
-    /** Node to be opened/edited */
-    public static Node openNode, openAnotherNode ;
-    /** Folder with data */
+
+    /**
+     * Node to be opened/edited
+     */
+    public static Node openNode, openAnotherNode;
+    /**
+     * Folder with data
+     */
     public static String fileProject;
-    /** Folder with data  */
+    /**
+     * Folder with data
+     */
     public static String filePackage;
-    /** Name of file to open */
+    /**
+     * Name of file to open
+     */
     public static String fileName, anotherFileName;
-    /** Menu item name that opens the editor */
-    public static String menuItem;
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-    private Logger TIMER=null;
-    private boolean next=false;
-    private String[] navigTime;
-    NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
+    private static Logger TIMER;
+    private long measuredTime;
 
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public ShowClassMembersInNavigatorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -103,76 +101,74 @@ public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ShowClassMembersInNavigatorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(ShowClassMembersInNavigatorTest.class)
+                .suite();
     }
 
-    //@Override
-    public void prepare() {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    public void testClassMemberInNavigator() {
+        doMeasurement();
     }
 
-    //@Override
-    public ComponentOperator open() {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return null;
-    }
-
-        class PhaseHandler extends Handler {
-            
-            public boolean published = false;
-
-            public void publish(LogRecord record) {
-
-            if (record.getMessage().startsWith("ClassMemberPanelUI refresh took:")){
-                navigTime=record.getMessage().split(" ");
-                next=true;
-            }
-
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-            
-        }
-
-    PhaseHandler phaseHandler=new PhaseHandler();
-
-    
-    public void testOpening20kBJavaFile(){
-
-        WAIT_AFTER_OPEN = 2000;
+    @Override
+    public void initialize() {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
         anotherFileName = "Main.java";
-        menuItem = OPEN;
 
-        TIMER=Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
+        TIMER = Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
         TIMER.setLevel(Level.FINE);
         TIMER.addHandler(phaseHandler);
         openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
-        openAnotherNode=new Node(new SourcePackagesNode(fileProject), filePackage + '|' + anotherFileName);
+        openAnotherNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + anotherFileName);
+    }
 
-        openNode.select(); while (!next) {};
-        d.name = "Show class members in navigator";
-        d.value = new Long(navigTime[3]);
-        d.unit = "ms";
-        d.threshold=1000;
-
-        long[] result=new long[2];
-        result[1]=d.value;
-        String pass="failed";
-        if (d.value<=1000) pass="passed";
-        CommonUtilities.xmlTestResults(System.getProperty("nbjunit.workdir"), "UI Responsiveness J2SE Actions suite", d.name, "org.netbeans.performance.j2se.actions.ShowClassMembersInNavigatorTest" , "org.netbeans.performance.j2se.MeasureJ2SEActionsTest", d.unit, pass, 1000, result, 1);
+    @Override
+    public void prepare() {
         openAnotherNode.select();
     }
 
+    @Override
+    public ComponentOperator open() {
+        openNode.select();
+        return null;
+    }
+
+    @Override
+    public void shutdown() {
+        TIMER.removeHandler(phaseHandler);
+    }
+
+    @Override
+    public long getMeasuredTime() {
+        return measuredTime;
+    }
+
+    class PhaseHandler extends Handler {
+
+        public boolean published = false;
+
+        @Override
+        public void publish(LogRecord record) {
+
+            if (record.getMessage().startsWith("ClassMemberPanelUI refresh took:")) {
+                measuredTime = Long.valueOf(record.getParameters()[1].toString());
+            }
+
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+    }
+
+    PhaseHandler phaseHandler = new PhaseHandler();
 }

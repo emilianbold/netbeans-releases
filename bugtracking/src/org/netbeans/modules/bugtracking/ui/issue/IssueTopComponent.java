@@ -42,23 +42,21 @@
 
 package org.netbeans.modules.bugtracking.ui.issue;
 
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.UndoRedoSupport;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.ui.repository.RepositoryComboSupport;
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -72,7 +70,6 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.JTextComponent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -82,17 +79,20 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.HyperlinkSupport;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.spi.actions.AbstractSavable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -107,7 +107,7 @@ import org.openide.windows.TopComponent;
  */
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
-    private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
+    private static final Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
     private IssueImpl issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
@@ -117,13 +117,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private DelegatingUndoRedoManager delegatingUndoRedoManager;
 
     private final InstanceContent instanceContent = new InstanceContent();
+    private final UndoRedoSupport undoRedoSupport = new UndoRedoSupport();
     
     /**
      * Creates new {@code IssueTopComponent}.
      */
     public IssueTopComponent() {
         initComponents();
+        instanceContent.add(getActionMap());
         associateLookup(new AbstractLookup(instanceContent));
+        
         RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
@@ -143,6 +146,11 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             delegatingUndoRedoManager = new DelegatingUndoRedoManager();
         }
         return delegatingUndoRedoManager;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return super.getLookup(); //To change body of generated methods, choose Tools | Templates.
     }
     
     /**
@@ -219,6 +227,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         this.issue = issue;
+        instanceContent.add(issue.getIssue());
         preparingLabel.setVisible(false);
         issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         
@@ -236,7 +245,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
         }
         
-        undoRedoListener.register(this, true);
+        registerForIssue();
+    }
+
+    private void registerForIssue() {
+        undoRedoSupport.register(this, true);
+        HyperlinkSupport.getInstance().register(this, issueLinker);
     }
 
     /** This method is called from within the constructor to
@@ -252,7 +266,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         findIssuesLabel = new javax.swing.JLabel();
         repoLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        newButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        newButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
         jSeparator1 = new javax.swing.JSeparator();
         issuePanel = new javax.swing.JPanel();
         preparingLabel = new javax.swing.JLabel();
@@ -381,16 +395,19 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                             controller.closed();
                         }
                         unregisterListeners();
+                        instanceContent.remove(issue.getIssue());
                     }
                     issue = repo.createNewIssue();
                     if (issue == null) {
                         return;
                     }
-                    undoRedoListener.register(IssueTopComponent.this, true);
+                    instanceContent.add(issue.getIssue());
+                    
+                    registerForIssue();
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
+                        OwnerInfo ownerInfo = TeamAccessorUtils.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);
                         }
@@ -456,7 +473,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     private javax.swing.JPanel issuePanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
-    private org.netbeans.modules.bugtracking.util.LinkButton newButton;
+    private org.netbeans.modules.bugtracking.commons.LinkButton newButton;
     private javax.swing.JLabel preparingLabel;
     private javax.swing.JLabel repoLabel;
     private javax.swing.JPanel repoPanel;
@@ -473,7 +490,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.add(this);
         if(issue != null) {
             getController().opened();
-            undoRedoListener.register(this, true);
+            registerForIssue();
         }
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
@@ -482,7 +499,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void componentClosed() {
         openIssues.remove(this);
         if(issue != null) {
-            undoRedoListener.register(this, false);
+            undoRedoSupport.register(this, false);
             unregisterListeners();
             getController().closed();
         }
@@ -513,18 +530,36 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         NotifyDescriptor.INFORMATION_MESSAGE, 
                         new Object[] {save, discard, NotifyDescriptor.CANCEL_OPTION}, null);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
+                boolean canClose = false;
                 if(ret == save) {
-                    return issue.getController().saveChanges();
+                    canClose = issue.getController().saveChanges();
                 } else if(ret == discard) {
-                    return issue.getController().discardUnsavedChanges();
-                } else {
-                    return false;
-                }
+                    canClose = issue.getController().discardUnsavedChanges();
+                } 
+                if(canClose) {
+                    savable.destroy();
+                } 
+                return canClose;
             }
         }
         return super.canClose(); 
     }
     
+    public static void closeFor(RepositoryImpl repo) {
+        for (IssueTopComponent itc : openIssues) {
+            IssueImpl tcIssue = itc.getIssue();
+            if(tcIssue == null) {
+                continue;
+            }
+            RepositoryImpl tcRepo = tcIssue.getRepositoryImpl();
+            if(tcRepo.getId().equals(repo.getId()) && 
+               tcRepo.getConnectorId().equals(repo.getConnectorId()) ) 
+            {
+                itc.closeInAwt();
+            }
+        }
+    }
+
     /**
      * Returns top-component that should display the given issue.
      *
@@ -577,7 +612,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
                 if(issue != null) {
@@ -598,8 +633,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)) {
-            repoPanel.setVisible(false);
-            setNameAndTooltip();
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    repoPanel.setVisible(false);
+                    setNameAndTooltip();
+                }
+            });
+            
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
@@ -613,20 +654,38 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                 }
             });
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_CHANGED)) {
-            if (getLookup().lookup(IssueSavable.class) == null) {
-                instanceContent.add(new IssueSavable(IssueTopComponent.this));
-                setNameAndTooltip();
+        } else if(evt.getPropertyName().equals(IssueController.PROP_CHANGED)) {
+            Object o = evt.getNewValue();
+            boolean changed;
+            if(o instanceof Boolean) {
+                changed = (Boolean) o;
+            } else {
+                changed = getController().isChanged();
             }
-        } else if(evt.getPropertyName().equals(IssueController.PROPERTY_ISSUE_SAVED)) {
-            IssueSavable savable = getSavable();
-            if(savable != null) {
-                savable.destroy();
-                setNameAndTooltip();
+            if(changed) {
+                if (getLookup().lookup(IssueSavable.class) == null) {
+                    instanceContent.add(new IssueSavable(IssueTopComponent.this));
+                    setNameAndTooltip();
+                }            
+            } else {
+                IssueSavable savable = getSavable();
+                if(savable != null) {
+                    savable.destroy();
+                    setNameAndTooltip();
+                }
             }
-        }
+        } 
     }
-
+    
+    private void closeInAwt() {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                close();
+            }
+        });
+    }
+        
     private IssueSavable getSavable() {
         return getLookup().lookup(IssueSavable.class);
     }
@@ -649,7 +708,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
         void init() {
-            delegate = UndoRedoSupport.getUndoRedo(issue);
+            delegate = undoRedoSupport.getUndoRedo();
             synchronized(this) {
                 for (ChangeListener l : listeners) {
                     delegate.addChangeListener(l);
@@ -717,49 +776,6 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
     
-    private final UndoRedoListener undoRedoListener = new UndoRedoListener();
-    private class UndoRedoListener implements ContainerListener {
-        
-        @Override
-        public void componentAdded(ContainerEvent e) {
-            register((Container)e.getComponent(), true);
-        }
-
-        @Override
-        public void componentRemoved(ContainerEvent e) {
-            register((Container)e.getComponent(), false);
-        }
-        
-        void register(Component c, boolean register) {
-            if(c instanceof Container) {
-                register((Container)c, register, issue != null ? UndoRedoSupport.getSupport(issue) : null);
-            }            
-        }
-        
-        private void register(Component c, boolean register, UndoRedoSupport urs) {
-            if(urs != null && c instanceof JTextComponent) {
-                JTextComponent tx = (JTextComponent) c;
-                if(register) {
-                    urs.register(tx);
-                } else {
-                    urs.unregister(tx);
-                }
-            }
-            if(c instanceof Container) {
-                Container container = (Container) c;
-                container.removeContainerListener(this);
-                if(register) {
-                    container.addContainerListener(this);
-                }
-                Component[] components = container.getComponents();
-                for (Component cmp : components) {
-                    register(cmp, register, urs);
-                }
-            }
-        }
-        
-    }
-    
     private static class IssueSavable extends AbstractSavable {
         private final IssueTopComponent tc;
         
@@ -770,7 +786,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
         @Override
         protected String findDisplayName() {
-            return tc.getDisplayName();
+            if(tc.issue != null) {
+                return tc.issue.getDisplayName();
+            }
+            return tc.getName();
         }
 
         @Override
@@ -800,4 +819,40 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     }
     
+    private final HyperlinkSupport.IssueLinker issueLinker = new HyperlinkSupport.IssueLinker() {
+            @Override
+            public void onClick(String linkText) {
+                if(issue == null) {
+                    return;
+                }
+                final RepositoryImpl repo = issue.getRepositoryImpl();
+                IssueFinder ifn = repo.getIssueFinder();
+                if(ifn == null) {
+                    return;
+                }
+                final String issueKey = ifn.getIssueId(linkText);
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Collection<IssueImpl> issues = repo.getIssueImpls(issueKey);
+                        if (issues != null && !issues.isEmpty()) {
+                            issues.iterator().next().open();
+                        }
+                    }
+                });
+            }
+            
+        @Override
+        public int[] getIssueRefSpans(CharSequence text) {
+            if(issue == null) {
+                return new int[0];
+            }
+            final RepositoryImpl repo = issue.getRepositoryImpl();
+            IssueFinder ifn = repo.getIssueFinder();
+            if(ifn == null) {
+                return new int[0];
+            }
+            return ifn.getIssueSpans(text);
+        }            
+    };
 }

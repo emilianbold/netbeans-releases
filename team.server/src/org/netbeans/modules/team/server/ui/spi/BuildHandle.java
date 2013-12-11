@@ -42,8 +42,9 @@
 package org.netbeans.modules.team.server.ui.spi;
 
 import java.awt.Color;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import org.netbeans.modules.team.server.ui.common.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.openide.util.NbBundle;
 
 /**

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.repository.spi;
 
 import java.io.DataInput;
 import java.io.IOException;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -51,4 +52,5 @@ import java.io.IOException;
 public interface RepositoryDataInput extends DataInput {
     CharSequence readCharSequenceUTF() throws IOException;
     int readUnitId() throws IOException;
+    FileSystem readFileSystem() throws IOException;
 }

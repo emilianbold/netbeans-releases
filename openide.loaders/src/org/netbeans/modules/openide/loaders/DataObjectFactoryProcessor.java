@@ -155,7 +155,6 @@ public class DataObjectFactoryProcessor extends LayerGeneratingProcessor {
         if (dfr.mimeType() == null) {
             throw new LayerGenerationException("@DataObject.Factory.Registration mimeType() cannot be null", e, processingEnv, dfr, "mimeTypes");
         }
-        // verify if all mimeType are valid
 
         String aMimeType = dfr.mimeType();
         LayerBuilder.File f = builder.file("Loaders/" + aMimeType + "/Factories/" + factoryId + ".instance");

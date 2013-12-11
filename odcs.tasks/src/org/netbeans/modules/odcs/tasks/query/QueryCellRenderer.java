@@ -97,7 +97,7 @@ public class QueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style;
         if (odcsQuery.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, getQuery(), issueTable, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }

@@ -77,7 +77,6 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -118,7 +117,7 @@ public final class Tester {
     public static Tester getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         if (validatePhpModule(phpModule) != null) {
             if (showCustomizer) {
-                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(TesterCustomizer.IDENTIFIER, null);
+                UiUtils.invalidScriptProvided(phpModule, TesterCustomizer.IDENTIFIER, null);
             }
             return null;
         }
@@ -209,7 +208,6 @@ public final class Tester {
                 assert location != null : testInfo;
                 params.add(new File(location).getAbsolutePath());
             }
-            runInfo.resetCustomTests();
         }
         tester.additionalParameters(params);
         try {
@@ -224,7 +222,12 @@ public final class Tester {
             LOGGER.log(Level.FINE, "Test running cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex, TesterOptionsPanelController.OPTIONS_SUB_PATH);
+            if (TesterPreferences.isTesterEnabled(phpModule)) {
+                // custom tester script
+                UiUtils.processExecutionException(ex, phpModule, TesterCustomizer.IDENTIFIER);
+            } else {
+                UiUtils.processExecutionException(ex, TesterOptionsPanelController.OPTIONS_SUB_PATH);
+            }
             throw new TestRunException(ex);
         }
         return null;

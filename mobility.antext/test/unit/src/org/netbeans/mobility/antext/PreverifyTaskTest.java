@@ -60,6 +60,7 @@ import org.apache.tools.ant.types.Commandline;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.junit.NbTestCase;
 import junit.framework.*;
+import org.netbeans.modules.j2me.common.ant.EMapFormat;
 
 /**
  *

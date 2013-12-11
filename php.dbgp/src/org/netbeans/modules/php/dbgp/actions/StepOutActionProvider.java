@@ -49,39 +49,30 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.packets.StepOutCommand;
 import org.netbeans.spi.debugger.ContextProvider;
 
-
 /**
  * @author ads
  *
  */
 public class StepOutActionProvider extends AbstractActionProvider {
 
-    public StepOutActionProvider( ContextProvider contextProvider ) {
+    public StepOutActionProvider(ContextProvider contextProvider) {
         super(contextProvider);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProviderSupport#doAction(java.lang.Object)
-     */
     @Override
-    public void doAction( Object action )
-    {
+    public void doAction(Object action) {
         DebugSession session = getSession();
-        if ( session == null ){
+        if (session == null) {
             return;
         }
         hideSuspendAnnotations();
-        StepOutCommand command = new StepOutCommand( session.getTransactionId());
+        StepOutCommand command = new StepOutCommand(session.getTransactionId());
         session.sendCommandLater(command);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.ActionsProvider#getActions()
-     */
     @Override
-    public Set getActions()
-    {
-        return Collections.singleton( ActionsManager.ACTION_STEP_OUT );
+    public Set getActions() {
+        return Collections.singleton(ActionsManager.ACTION_STEP_OUT);
     }
 
 }

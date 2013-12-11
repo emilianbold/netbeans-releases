@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.PrintStream;
+import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -445,5 +446,38 @@ public class AstUtil {
         }
         return "<no csm nodes>"; // NOI18N
     }
+    
+    /**
+     * Clones AST until stop node is reached
+     * @param source
+     * @param stopNode - the last AST node to be cloned
+     * @return "cloned" AST
+     */
+    public static AST cloneAST(AST source, AST stopNode) {
+        if (source == null) {
+            return null;
+        }
+        
+        AST firstClonedNode = new FakeAST();
+        AST currentClonedAST = firstClonedNode;
+        AST prevClonedAST = null;
+        
+        while (source != null) {
+            currentClonedAST.initialize(source);
+            currentClonedAST.setFirstChild(source.getFirstChild());
+            if (prevClonedAST != null) {
+                prevClonedAST.setNextSibling(currentClonedAST);
+            }
+            if (source == stopNode) {
+                break;
+            }
+            source = source.getNextSibling();
+            prevClonedAST = currentClonedAST;
+            currentClonedAST = new FakeAST();
+        }
+        
+        return firstClonedNode;
+    }
 }
 
+ 

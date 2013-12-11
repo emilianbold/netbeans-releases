@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
@@ -80,6 +81,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -92,15 +94,16 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     private final FileStatusCache   cache;
 
-    private final Set<File> filesToRefresh = new HashSet<File>();
-    private final Map<File, Set<File>> lockedRepositories = new HashMap<File, Set<File>>(5);
+    private final Set<File> filesToRefresh = new HashSet<>();
+    private final Map<File, Set<File>> lockedRepositories = new HashMap<>(5);
 
-    private RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
+    private final RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
     private final RequestProcessor.Task refreshOwnersTask;
 
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
     private final CommandUsageLogger commandLogger;
+    // not final due to tests
     private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index"; //NOI18N
     private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
@@ -109,7 +112,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
-        refreshTask = rp.create(new RefreshTask());
+        refreshTask = rp.create(new RefreshTask(), true);
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
         commandLogger = new CommandUsageLogger();
@@ -519,13 +522,13 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     Collection<File> getCreatedFolders () {
         synchronized (createdFolders) {
-            return new HashSet<File>(createdFolders.keySet());
+            return new HashSet<>(createdFolders.keySet());
         }
     }
 
     private class CommandUsageLogger {
 
-        private final Map<File, Events> events = new HashMap<File, Events>();
+        private final Map<File, Events> events = new HashMap<>();
 
         private void locked (File file) {
             File gitFolder = getGitFolderFor(file);
@@ -641,7 +644,9 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+    final ProgressMonitor.DefaultProgressMonitor shutdownMonitor = new ProgressMonitor.DefaultProgressMonitor();
     private class RefreshTask implements Runnable {
+        
         @Override
         public void run() {
             Thread.interrupted();
@@ -650,14 +655,17 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
             Collection<File> files;
             synchronized (filesToRefresh) {
-                files = new HashSet<File>(filesToRefresh);
+                files = new HashSet<>(filesToRefresh);
                 filesToRefresh.clear();
+            }
+            if (shutdownMonitor.isCanceled()) {
+                return;
             }
             if (!"false".equals(System.getProperty("versioning.git.delayStatusForLockedRepositories"))) {
                 files = checkLockedRepositories(files, false);
             }
             if (!files.isEmpty()) {
-                cache.refreshAllRoots(files);
+                cache.refreshAllRoots(files, shutdownMonitor);
             }
             if (!lockedRepositories.isEmpty()) {
                 lockedRepositoryRefreshTask.schedule(5000);
@@ -665,14 +673,29 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+    @OnStop
+    public static class ShutdownCallable implements Callable<Boolean> {
+
+        @Override
+        public Boolean call () throws Exception {
+            LOG.log(Level.FINE, "Canceling the auto refresh progress monitor");
+            Git.getInstance().getVCSInterceptor().shutdownMonitor.cancel();
+            try {
+                Git.getInstance().getVCSInterceptor().refreshTask.waitFinished(3000);
+            } catch (InterruptedException ex) {}
+            return true;
+        }
+
+    }
+
     private Collection<File> checkLockedRepositories (Collection<File> additionalFilesToRefresh, boolean keepCached) {
-        List<File> retval = new LinkedList<File>();
+        List<File> retval = new LinkedList<>();
         // at first sort the files under repositories
         Map<File, Set<File>> sortedFiles = GitUtils.sortByRepository(additionalFilesToRefresh);
         for (Map.Entry<File, Set<File>> e : sortedFiles.entrySet()) {
             Set<File> alreadyPlanned = lockedRepositories.get(e.getKey());
             if (alreadyPlanned == null) {
-                alreadyPlanned = new HashSet<File>();
+                alreadyPlanned = new HashSet<>();
                 lockedRepositories.put(e.getKey(), alreadyPlanned);
             }
             alreadyPlanned.addAll(e.getValue());
@@ -711,7 +734,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh, boolean log) {
         // refresh all at once
-        Set<File> filteredFiles = new HashSet<File>(filesToRefresh);
+        Set<File> filteredFiles = new HashSet<>(filesToRefresh);
         for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
             if (GitUtils.isPartOfGitMetadata(it.next())) {
                 it.remove();
@@ -816,14 +839,14 @@ class FilesystemInterceptor extends VCSInterceptor {
     }
 
     private class GitFolderEventsHandler {
-        private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>();
-        private final HashMap<File, GitFolderTimestamps> timestamps = new HashMap<File, GitFolderTimestamps>(5);
-        private final HashMap<File, MetadataMapping> gitToMetadataFolder = new HashMap<File, MetadataMapping>(5);
-        private final HashMap<File, File> metadataToGitFolder = new HashMap<File, File>(5);
-        private final HashMap<File, FileChangeListener> gitFolderRLs = new HashMap<File, FileChangeListener>(5);
-        private final HashSet<File> disabledEvents = new HashSet<File>(5);
+        private final HashMap<File, Set<File>> seenRoots = new HashMap<>();
+        private final HashMap<File, GitFolderTimestamps> timestamps = new HashMap<>(5);
+        private final HashMap<File, MetadataMapping> gitToMetadataFolder = new HashMap<>(5);
+        private final HashMap<File, File> metadataToGitFolder = new HashMap<>(5);
+        private final HashMap<File, FileChangeListener> gitFolderRLs = new HashMap<>(5);
+        private final HashSet<File> disabledEvents = new HashSet<>(5);
 
-        private final HashSet<File> filesToInitialize = new HashSet<File>();
+        private final HashSet<File> filesToInitialize = new HashSet<>();
         private final RequestProcessor.Task initializingTask = rp.create(new Runnable() {
             @Override
             public void run() {
@@ -831,13 +854,13 @@ class FilesystemInterceptor extends VCSInterceptor {
             }
         });
 
-        private final HashSet<File> refreshedRepositories = new HashSet<File>(5);
+        private final HashSet<File> refreshedRepositories = new HashSet<>(5);
         private final RequestProcessor.Task refreshOpenFilesTask = rp.create(new Runnable() {
             @Override
             public void run() {
                 Set<File> repositories;
                 synchronized (refreshedRepositories) {
-                    repositories = new HashSet<File>(refreshedRepositories);
+                    repositories = new HashSet<>(refreshedRepositories);
                     refreshedRepositories.clear();
                 }
                 GitUtils.headChanged(repositories.toArray(new File[repositories.size()]));
@@ -852,7 +875,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
 
         private Set<File> getSeenRoots (File repositoryRoot) {
-            Set<File> retval = new HashSet<File>();
+            Set<File> retval = new HashSet<>();
             Set<File> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
             synchronized (seenRootsForRepository) {
                 retval.addAll(seenRootsForRepository);
@@ -877,7 +900,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             synchronized (seenRoots) {
                  Set<File> seenRootsForRepository = seenRoots.get(repositoryRoot);
                  if (seenRootsForRepository == null) {
-                     seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<File>());
+                     seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<>());
                  }
                  return seenRootsForRepository;
             }
@@ -987,7 +1010,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
 
         private void initializeFiles() {
-            File file = null;
+            File file;
             while ((file = getFileToInitialize()) != null) {
                 Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: {0}", file.getAbsolutePath()); //NOI18N
                 // select repository root for the file and finds it's .git folder
@@ -1165,7 +1188,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         private File getMetadataForReferences (File file) {
             List<File> metadataFolders;
             synchronized (timestamps) {
-                metadataFolders = new ArrayList<File>(metadataToGitFolder.keySet());
+                metadataFolders = new ArrayList<>(metadataToGitFolder.keySet());
             }
             File candidate = null;
             for (File metadataFolder : metadataFolders) {

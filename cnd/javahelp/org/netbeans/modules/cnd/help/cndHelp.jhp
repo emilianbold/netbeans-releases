@@ -107,6 +107,7 @@
 				<file title="TypeView.html"/>
 				<file title="UsagesWindow.html"/>
 				<file title="UsingAbbreviations.html"/>
+				<file title="UsingBreadcrumbs.html"/>
 				<file title="UsingCallGraph.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
@@ -354,6 +355,11 @@
 				<file title="NewBinaryWizardP2.html"/>
 				<file title="NewDynamicLibWizard.html"/>
 				<file title="NewMakeWizardP0.html"/>
+				<file title="NewMakeWizardP1.html"/>
+				<file title="NewMakeWizardP2.html"/>
+				<file title="NewMakeWizardP3.html"/>
+				<file title="NewMakeWizardP4.html"/>
+				<file title="NewMakeWizardP5.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP1.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP2.html"/>
 				<file title="NewRemoteDevelopmentHostWizardP3.html"/>

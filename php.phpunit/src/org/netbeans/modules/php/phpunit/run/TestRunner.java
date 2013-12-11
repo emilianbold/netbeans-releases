@@ -138,7 +138,10 @@ public final class TestRunner {
             TestSuite testSuite = testSession.addTestSuite(suiteVo.getName(), suiteVo.getLocation());
             for (TestCaseVo caseVo : suiteVo.getTestCases()) {
                 TestCase testCase = testSuite.addTestCase(caseVo.getName(), caseVo.getType());
-                testCase.setClassName(caseVo.getClassName());
+                String className = caseVo.getClassName();
+                if (className != null) {
+                    testCase.setClassName(className);
+                }
                 Locations.Line location = caseVo.getLocation();
                 if (location != null) {
                     testCase.setLocation(location);

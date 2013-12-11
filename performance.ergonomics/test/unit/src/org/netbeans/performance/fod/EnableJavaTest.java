@@ -62,4 +62,9 @@ public final class EnableJavaTest extends EnablementSpeedBase {
     protected String featureName() {
         return "java";
     }
+
+    @Override
+    protected long threshold() {
+        return 15000;
+    }
 }

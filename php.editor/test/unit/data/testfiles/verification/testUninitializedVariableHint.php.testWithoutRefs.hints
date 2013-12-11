@@ -22,3 +22,6 @@ HINT:Variable $uninitElseif seems to be uninitialized
      bar($myVar);
           -----
 HINT:Variable $myVar seems to be uninitialized
+    fnc239089("ok", $shouldBeOkInRefs);
+                     ----------------
+HINT:Variable $shouldBeOkInRefs seems to be uninitialized

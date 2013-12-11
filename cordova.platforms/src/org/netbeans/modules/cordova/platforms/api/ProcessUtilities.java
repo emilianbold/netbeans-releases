@@ -48,6 +48,8 @@ import java.util.Arrays;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -59,11 +61,40 @@ public final class ProcessUtilities {
     
     private static RequestProcessor KILLER = new RequestProcessor(ProcessUtilities.class);
 
+    private static InputOutput io;
+    
+    static {
+        boolean logger = Boolean.parseBoolean(System.getProperty("mobile.platforms.logger", "false"));
+        if (logger) {
+            io = IOProvider.getDefault().getIO("Mobile Platforms Logger", false);
+        }
+    }
+    
+    private static void logOut(String s) {
+        if (io!=null) {
+            io.getOut().append(s);
+            io.getOut().flush();
+        }
+    }
+
+    private static void logErr(String s) {
+        if (io!=null) {
+            io.getErr().append(s);
+            io.getErr().flush();
+        }
+    }
+    
+    
     public static String callProcess(final String executable, boolean wait, int timeout, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
         pb.setExecutable(executable);
         pb.setArguments(Arrays.asList(parameters));
         final Process call = pb.call();
+        logOut(">" + executable);
+        for (String parameter:parameters) {
+            logOut(" " + parameter);
+        }
+        logOut("\n");
         if (timeout > 0) {
             KILLER.post(new Runnable() {
                 @Override
@@ -92,6 +123,7 @@ public final class ProcessUtilities {
             inputStreamReader.read(ch);
             error.append(ch);
         }
+        logErr(error.toString());
         if (!error.toString().trim().isEmpty()) {
             LOGGER.warning(error.toString());
         }
@@ -101,6 +133,7 @@ public final class ProcessUtilities {
             inputStreamReader.read(ch);
             avdString.append(ch);
         }
+        logOut(avdString.toString());
         inputStreamReader.close();
         if (avdString.toString().isEmpty()) {
             LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N

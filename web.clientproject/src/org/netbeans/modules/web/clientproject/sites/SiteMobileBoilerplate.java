@@ -109,6 +109,15 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     }
 
     @Override
+    public void cleanup() {
+        if (LIB_FILE.isFile()) {
+            if (!LIB_FILE.delete()) {
+                LIB_FILE.deleteOnExit();
+            }
+        }
+    }
+
+    @Override
     public Collection<String> supportedLibraries() {
         return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(LIB_FILE));
     }

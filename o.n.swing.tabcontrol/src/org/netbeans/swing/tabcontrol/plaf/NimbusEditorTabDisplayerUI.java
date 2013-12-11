@@ -154,7 +154,7 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
             iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/nimbus_scrollright_enabled.png"; // NOI18N
             iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/nimbus_scrollright_disabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/nimbus_scrollright_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/nimbus_scrollright_rollover.png"; // NOI18N
             iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/nimbus_scrollright_pressed.png"; // NOI18N
             buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
 

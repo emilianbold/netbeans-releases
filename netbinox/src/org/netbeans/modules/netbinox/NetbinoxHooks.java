@@ -75,6 +75,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.wiring.BundleWiring;
 
 /**
  *
@@ -96,8 +97,21 @@ BundleFileFactoryHook, FrameworkLog, FrameworkListener, AdaptorHook, LookupListe
 
 
     @Override
-    public byte[] processClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be, ClasspathManager cm) {
-        return bytes;
+    public byte[] processClass(String className, byte[] bytes, ClasspathEntry ce, BundleEntry be, ClasspathManager cm) {
+        final BaseData bd = ce.getBaseData();
+        if (bd == null) {
+            return bytes;
+        }
+        final Bundle b = bd.getBundle();
+        if (b == null) {
+            return bytes;
+        }
+        BundleWiring w = b.adapt(org.osgi.framework.wiring.BundleWiring.class);
+        if (w == null) {
+            return bytes;
+        }
+        ClassLoader loader = w.getClassLoader();
+        return archive.patchByteCode(loader, className, ce.getDomain(), bytes);
     }
 
     @Override

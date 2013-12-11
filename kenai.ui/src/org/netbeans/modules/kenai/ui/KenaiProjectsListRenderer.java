@@ -69,7 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.team.server.ui.common.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;

@@ -73,16 +73,14 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
             int offset = arg1.getOffset();
             if (arg1.getKind() == FunctionArgument.Kind.STRING && arg2.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
                 JsObject parent = globalObject;
-                JsObject oldParent = parent;
                 for (StringTokenizer st = new StringTokenizer((String) arg1.getValue(), "."); st.hasMoreTokens();) {
                     String name = st.nextToken();
                     if (st.hasMoreElements()) {
-                        JsObject jsObject = oldParent.getProperty(name);
+                        JsObject jsObject = parent.getProperty(name);
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                         if (jsObject == null) {
                             jsObject = factory.newObject(parent, name, offsetRange, true);
                             parent.addProperty(name, jsObject);
-                            oldParent = jsObject;
                         }
                         else if (!jsObject.isDeclared()) {
                             JsObject newJsObject = factory.newObject(parent, name, offsetRange, true);
@@ -91,7 +89,6 @@ public class ExtDefineFunctionInterceptor implements FunctionInterceptor {
                                 newJsObject.addOccurrence(occurrence.getOffsetRange());
                             }
                             newJsObject.addOccurrence(jsObject.getDeclarationName().getOffsetRange());
-                            oldParent = jsObject;
                             jsObject = newJsObject;
                         }
                         else {

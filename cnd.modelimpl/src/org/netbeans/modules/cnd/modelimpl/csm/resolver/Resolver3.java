@@ -218,7 +218,7 @@ public final class Resolver3 implements Resolver {
     public CsmFile getStartFile() {
         return startFile;
     }
-
+    
     private CsmNamespace findNamespace(CsmNamespace ns, CharSequence qualifiedNamePart) {
         CsmNamespace result = null;
         if (ns == null) {
@@ -228,7 +228,27 @@ public final class Resolver3 implements Resolver {
             while (containingNs != null && result == null) {
                 String fqn = (containingNs.isGlobal() ? "" : (containingNs.getQualifiedName() + "::")) + qualifiedNamePart; // NOI18N
                 result = findNamespace(fqn);
+                if (result == null) {
+                    result = findNamespaceInInlined(containingNs, qualifiedNamePart);
+                }
                 containingNs = containingNs.getParent();
+            }
+        }
+        return result;
+    }
+    
+    private CsmNamespace findNamespaceInInlined(CsmNamespace ns, CharSequence qualifiedNamePart) {
+        CsmNamespace result = null;
+        if (ns != null) {
+            for (CsmNamespace inlinedNs : ns.getInlinedNamespaces()) {
+                String fqn = (inlinedNs.isGlobal() ? "" : (inlinedNs.getQualifiedName() + "::")) + qualifiedNamePart; // NOI18N
+                result = findNamespace(fqn);
+                if (result == null) {
+                    result = findNamespaceInInlined(inlinedNs, qualifiedNamePart);
+                }
+                if (result != null) {
+                    break;
+                }
             }
         }
         return result;
@@ -414,6 +434,33 @@ public final class Resolver3 implements Resolver {
         return result;
     }
 
+    private CsmObject resolveInInlinedNamespaces(CsmObject result, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
+        return resolveInInlinedNamespacesImpl(result, new HashSet<CharSequence>(), namespace, nameToken, outVisibility);
+    }
+    
+    private CsmObject resolveInInlinedNamespacesImpl(CsmObject result, Set<CharSequence> checked, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
+        if (result == null || !outVisibility.get()) {
+            for (CsmNamespace ns : namespace.getInlinedNamespaces()) {
+                final CharSequence name = ns.getQualifiedName();
+                if (checked.add(name)) {
+                    String fqn = name + "::" + nameToken; // NOI18N
+                    if (fqn.startsWith("::")) { // NOI18N
+                        fqn = fqn.substring(2);
+                    }
+                    
+                    result = findClassifierUsedInFile(fqn, outVisibility);
+                    
+                    result = resolveInInlinedNamespacesImpl(result, checked, ns, nameToken, outVisibility);
+
+                    if (result != null && outVisibility.get()) {
+                        break;
+                    }                            
+                }
+            }
+        }
+        return result;
+    }    
+
     void traceRecursion(){
         System.out.println("Detected recursion in resolver:"); // NOI18N
         System.out.println("\t"+this); // NOI18Nv
@@ -593,6 +640,7 @@ public final class Resolver3 implements Resolver {
             if (!canStop(result, resultIsVisible, backupResult) && containingNS != null) {
                 result = resolveInUsingDirectives(containingNS, name, resultIsVisible);
                 result = resolveInUsingDeclarations(result, containingNS, name, resultIsVisible);
+                result = resolveInInlinedNamespaces(result, containingNS, name, resultIsVisible);
             }
         }
         if (result == null && needNamespaces()) {
@@ -657,6 +705,7 @@ public final class Resolver3 implements Resolver {
                             if (!canStop(result, resultIsVisible, backupResult)) {
                                 result = resolveInUsingDirectives(ns, name, resultIsVisible);
                                 result = resolveInUsingDeclarations(result, ns, name, resultIsVisible);
+                                result = resolveInInlinedNamespaces(result, ns, name, resultIsVisible);
                             }
                         }
                     }
@@ -824,6 +873,7 @@ public final class Resolver3 implements Resolver {
                         }
                         result = resolveInUsingDirectives(ns, sb, resultIsVisible);
                         result = resolveInUsingDeclarations(result, ns, sb, resultIsVisible);
+                        result = resolveInInlinedNamespaces(result, ns, sb, resultIsVisible);
                     }
                 }
             }

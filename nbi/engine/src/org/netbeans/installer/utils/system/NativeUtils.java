@@ -107,6 +107,8 @@ public abstract class NativeUtils {
     }
     
     // abstract /////////////////////////////////////////////////////////////////////
+    public abstract boolean isSystem64Bit();
+    
     public abstract boolean isCurrentUserAdmin() throws NativeException;
     
     public abstract File getDefaultApplicationsLocation() throws NativeException;

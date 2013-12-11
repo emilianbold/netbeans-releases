@@ -49,16 +49,17 @@ import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.openide.util.Cancellable;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManager.FontColorChangeListener {
+public abstract class HighlighterBase extends ParserResultTask<CndParserResult> implements CsmFontColorManager.FontColorChangeListener {
 
     /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
     

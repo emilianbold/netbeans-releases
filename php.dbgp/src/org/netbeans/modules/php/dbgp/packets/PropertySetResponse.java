@@ -47,59 +47,49 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionManager;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class PropertySetResponse extends DbgpResponse {
+    static final String SUCCESS = "success"; // NOI18N
 
-    static final String SUCCESS = "success";            // NOI18N
-
-    PropertySetResponse( Node node ) {
+    PropertySetResponse(Node node) {
         super(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if (!( command instanceof PropertySetCommand )){
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof PropertySetCommand)) {
             return;
         }
         PropertySetCommand setCommand = (PropertySetCommand) command;
         String fullName = setCommand.getName();
-        
+
         /*
          * Retrieve value of property for update it in view.
          * As alternative : request context names and as consequence update all
          * local view.
          */
-        PropertyGetCommand getCommand = new PropertyGetCommand( 
-                session.getTransactionId() );
-        getCommand.setName( fullName );
-        getCommand.setContext( setCommand.getContext() );
-        session.sendSynchronCommand( getCommand );
-        
-        if ( !isSusccess()) {
+        PropertyGetCommand getCommand = new PropertyGetCommand(session.getTransactionId());
+        getCommand.setName(fullName);
+        getCommand.setContext(setCommand.getContext());
+        session.sendSynchronCommand(getCommand);
+        if (!isSusccess()) {
             /*
-             *  TODO : 
+             *  TODO :
              *  Report to user about error in setting value
              */
-        }
-        else {
-            DebugSession currentSession = SessionManager.getInstance()
-                    .getSession(session.getSessionId());
+        } else {
+            DebugSession currentSession = SessionManager.getInstance().getSession(session.getSessionId());
             if (currentSession == session) {
                 StackGetResponse.updateWatchView(session);
             }
         }
     }
-    
-    public boolean isSusccess(){
-        return getBoolean( getNode() , SUCCESS );
+
+    public boolean isSusccess() {
+        return getBoolean(getNode(), SUCCESS);
     }
 
 }

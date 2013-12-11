@@ -56,7 +56,10 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -66,12 +69,18 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
+    private CsmType returnType;
     private Collection<CsmParameter> functionParameters;
     private short functionPointerDepth;
+    
+    private CsmUID<CsmScope> scopeUID;    
+    private transient CsmScope scopeRef;
+    
 
     TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         functionParameters = null;
+        returnType = null;
     }
     
     // package-local - for facory only
@@ -82,6 +91,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         } else {
             functionParameters = null;
         }
+        returnType = type.returnType != null ? type.returnType : null;
         functionPointerDepth = type.functionPointerDepth;
     }
 
@@ -93,6 +103,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         } else {
             functionParameters = null;
         }
+        returnType = type.returnType != null ? type.returnType : null;
         functionPointerDepth = type.functionPointerDepth;
     }
     
@@ -100,10 +111,38 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     TypeFunPtrImpl(CsmClassifier classifier, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters) {
         super(classifier, pointerDepth, reference, arrayDepth, _const, file, startOffset, endOffset);
         functionParameters = parameters;
+        returnType = null;
     }    
     
-    void init(AST ast, boolean inFunctionParameters, boolean inTypedef) {
+    void init(AST ast, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
+        
+        // Initialize scope
+        this.scopeRef = scope;
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert scopeUID != null;
+        }
+        
+        // Initialize return type        
+        AST typeASTStart = ast;
+        AST typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_BUILTIN);
+        if (typeASTEnd != null) {
+            if (CPPTokenTypes.LITERAL_auto == typeASTEnd.getFirstChild().getType()) {
+                typeASTEnd = AstUtil.findSiblingOfType(typeASTEnd.getNextSibling(), CPPTokenTypes.CSM_TYPE_BUILTIN);
+            }
+        }
+        if (typeASTEnd == null) {
+            typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
+            if (typeASTEnd == null) {
+                typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+                typeASTStart = typeASTEnd;
+            }
+        }
+        
+        AST fakeTypeAst = AstUtil.cloneAST(typeASTStart, typeASTEnd);
+        
+        initFunctionReturnType(fakeTypeAst, this, this, getContainingFile());
     }
 
     @Override
@@ -113,6 +152,27 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         } else {
             return Collections.unmodifiableCollection(functionParameters);
         }
+    }
+    
+    @Override
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = new ArrayList<>();
+        l.addAll(getParameters());
+        return l;
+    }    
+
+    @Override
+    public CsmScope getScope() {
+        CsmScope scope = this.scopeRef;
+        if (scope == null) {
+            scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
+        }
+        return scope;
+    }
+
+    @Override
+    public CsmType getReturnType() {
+        return returnType;
     }
 
     @Override
@@ -289,6 +349,16 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         }
     }
     
+    private static void initFunctionReturnType(AST typeAST, TypeFunPtrImpl instance, CsmScope scope, CsmFile file) {
+        if (typeAST != null) {
+            AST fakeParent = new FakeAST();
+            fakeParent.addChild(typeAST);
+            instance.returnType = AstRenderer.FunctionRenderer.createReturnType(fakeParent, scope, file);
+        } else {
+            instance.returnType = TypeFactory.createBuiltinType("int", (AST) null, 0,  null, file); // NOI18N
+        }
+    }
+    
     public static int getEndOffset(AST node) {
         AST ast = node;
         if( ast == null ) {
@@ -297,7 +367,30 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         if (isTypeDefAST(ast)) {
             return OffsetableBase.getEndOffset(ast);
         }
-        ast = getLastNode(ast);
+        
+        AST lparen = AstUtil.findSiblingOfType(ast, CPPTokenTypes.LPAREN), nextlparen;
+        while ((nextlparen = AstUtil.findSiblingOfType(lparen.getNextSibling(), CPPTokenTypes.LPAREN)) != null) {
+            lparen = nextlparen;
+        }
+        
+        if (lparen != null) {
+            AST rparen = AstUtil.findSiblingOfType(lparen, CPPTokenTypes.RPAREN);
+            if (rparen != null) {
+                AST pointerTo = AstUtil.findSiblingOfType(rparen, CPPTokenTypes.POINTERTO);
+                if (pointerTo != null) {
+                    AST type = AstUtil.findSiblingOfType(pointerTo, CPPTokenTypes.CSM_TYPE_BUILTIN);
+                    type = type != null ? type : AstUtil.findSiblingOfType(pointerTo, CPPTokenTypes.CSM_TYPE_COMPOUND);
+                    type = type != null ? type : AstUtil.findSiblingOfType(pointerTo, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+                    if (type != null) {
+                        return OffsetableBase.getEndOffset(type);
+                    }
+                }
+                return OffsetableBase.getEndOffset(rparen);
+            }
+        }
+        
+        // It seems that the code below never should be executed
+        
         if( ast instanceof CsmAST ) {
             return ((CsmAST) ast).getEndOffset();
         }
@@ -344,11 +437,13 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         super.write(output);
         output.writeShort(functionPointerDepth);
         PersistentUtils.writeParameters(functionParameters, output);
+        UIDObjectFactory.getDefaultFactory().writeUID(scopeUID, output);
     }
 
     public TypeFunPtrImpl(RepositoryDataInput input) throws IOException {
         super(input);
         functionPointerDepth = input.readShort();
         functionParameters = PersistentUtils.readParameters(input);
+        scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
 }

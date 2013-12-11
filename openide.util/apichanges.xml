@@ -51,6 +51,25 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="darklaf">
+        <api name="util"/>
+        <summary>Added an option to load different images and icons when using a dark look and feel.</summary>
+        <version major="8" minor="35"/>
+        <date year="2013" month="12" day="6"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                When the IDE is running under a dark look and feel (<code>UIManager.getBoolean("nb.dark.theme")</code>)
+                then <code>ImageUtilities</code> will try to load an image or on icon with a "_dark" suffix.
+                For example "org/netbeans/modulename/toolbaricon<b>_dark</b>.png" or
+                "org/netbeans/modulename/imagewithoutextension<b>_dark</b>". If such
+                resource exists it will be used instead of the default one.
+            </p>
+        </description>
+        <class package="org.openide.util" name="ImageUtilities"/>
+        <issue number="233959"/>
+    </change>
     <change id="pair">
         <api name="util"/>
         <summary>Added a type safe Pair of 2 elements</summary>

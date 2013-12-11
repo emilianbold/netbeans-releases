@@ -49,7 +49,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -130,15 +132,31 @@ public class FlipOperands {
         Tree.Kind.CONDITIONAL_OR,
     })
     public static ErrorDescription equals(HintContext ctx) {
-        Tree.Kind kind = ((BinaryTree) ctx.getPath().getLeaf()).getKind();
+        final BinaryTree bt = (BinaryTree)ctx.getPath().getLeaf();
+        Tree.Kind kind = bt.getKind();
         Tree.Kind targetKind;
         String displayName;
+        final CompilationInfo ci = ctx.getInfo();
+        final boolean unsafe;
         
-        if (SAFE_FLIP.contains(kind)) {
-            displayName = Bundle.FIX_FlipOperands1(OPERATOR_DN.get(kind));
-            targetKind = kind;
-        } else if (UNSAFE_FLIP.contains(kind)) {
+        if (kind == Tree.Kind.PLUS) {
+            // special case: if either of the operands is String, + is not commutative
+            TypeMirror leftType = ci.getTrees().getTypeMirror(new TreePath(ctx.getPath(), bt.getLeftOperand()));
+            if (Utilities.isJavaString(ci, leftType)) {
+                unsafe = true;
+            } else {
+                TypeMirror rightType = ci.getTrees().getTypeMirror(new TreePath(ctx.getPath(), bt.getLeftOperand()));
+                unsafe = Utilities.isJavaString(ci, rightType);
+            }
+        } else {
+            unsafe = false;
+        }
+
+        if (unsafe || UNSAFE_FLIP.contains(kind)) {
             displayName = Bundle.FIX_FlipOperands3(OPERATOR_DN.get(kind));
+            targetKind = kind;
+        } else if (SAFE_FLIP.contains(kind)) {
+            displayName = Bundle.FIX_FlipOperands1(OPERATOR_DN.get(kind));
             targetKind = kind;
         } else {
             targetKind = CONVERT_FLIP.get(kind);

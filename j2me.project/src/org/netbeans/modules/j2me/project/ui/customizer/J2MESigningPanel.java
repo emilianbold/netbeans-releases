@@ -1,0 +1,376 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.j2me.project.ui.customizer;
+
+import java.awt.Color;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.JComboBox;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.ui.EnterPasswordPanel;
+import org.netbeans.modules.j2me.keystore.ui.ExportPanel;
+import org.netbeans.modules.j2me.keystore.ui.KeyAliasCellRenderer;
+import org.netbeans.modules.j2me.keystore.ui.KeystoreCellRenderer;
+import org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author Roman Svitanic
+ */
+public class J2MESigningPanel extends javax.swing.JPanel {
+
+    private final J2MEProjectProperties properties;
+    private final ItemListener keystoreListener;
+    private final ItemListener aliasListener;
+
+    /**
+     * Creates new form J2MESigningPanel
+     */
+    public J2MESigningPanel(final J2MEProjectProperties properties) {
+        initComponents();
+        this.properties = properties;
+
+        cEnabled.setModel(properties.SIGN_ENABLED_MODEL);
+        cKeystore.setRenderer(new KeystoreCellRenderer());
+        cAlias.setRenderer(new KeyAliasCellRenderer());
+        cKeystore.setModel(properties.SIGN_KEYSTORE_MODEL);
+        cAlias.setModel(properties.SIGN_ALIAS_MODEL);
+
+        keystoreListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                loadKeystoreUnlock();
+                loadAliases();
+            }
+        };
+        aliasListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                loadAliasUnlock();
+                loadDetails();
+            }
+        };
+        cEnabled.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                toggleEnabledState();
+                loadDetails();
+            }
+        });
+
+        cKeystore.addItemListener(keystoreListener);
+        cAlias.addItemListener(aliasListener);
+
+        loadDetails();
+        loadKeystoreUnlock();
+        loadAliasUnlock();
+        toggleEnabledState();
+
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(J2MESigningPanel.class, "ACSN_Sign"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MESigningPanel.class, "ACSD_Sign"));
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        bAliasUnlock = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        cEnabled = new javax.swing.JCheckBox();
+        bOpenSecurityManager = new javax.swing.JButton();
+        lAlias = new javax.swing.JLabel();
+        cKeystore = new javax.swing.JComboBox();
+        bKeyStoreUnlock = new javax.swing.JButton();
+        cAlias = new javax.swing.JComboBox();
+        pDetails = new javax.swing.JPanel();
+        lDetails = new javax.swing.JLabel();
+        bExport = new javax.swing.JButton();
+        lKeystore = new javax.swing.JLabel();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(bAliasUnlock, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.bAliasUnlock.text")); // NOI18N
+        bAliasUnlock.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bAliasUnlockActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        add(bAliasUnlock, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(cEnabled, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.cEnabled.text")); // NOI18N
+        cEnabled.setMargin(new java.awt.Insets(0, 0, 0, 2));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 12, 0);
+        jPanel1.add(cEnabled, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(bOpenSecurityManager, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.bOpenSecurityManager.text")); // NOI18N
+        bOpenSecurityManager.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bOpenSecurityManagerActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 0);
+        jPanel1.add(bOpenSecurityManager, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jPanel1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lAlias, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.lAlias.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(lAlias, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
+        add(cKeystore, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(bKeyStoreUnlock, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.bKeyStoreUnlock.text")); // NOI18N
+        bKeyStoreUnlock.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bKeyStoreUnlockActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(bKeyStoreUnlock, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(cAlias, gridBagConstraints);
+
+        pDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.pDetails.border.title"))); // NOI18N
+        pDetails.setEnabled(false);
+        pDetails.setLayout(new java.awt.GridBagLayout());
+
+        lDetails.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        pDetails.add(lDetails, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(bExport, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.bExport.text")); // NOI18N
+        bExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bExportActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        pDetails.add(bExport, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        add(pDetails, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(lKeystore, org.openide.util.NbBundle.getMessage(J2MESigningPanel.class, "J2MESigningPanel.lKeystore.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
+        add(lKeystore, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void bAliasUnlockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAliasUnlockActionPerformed
+        final KeyStoreRepository.KeyStoreBean bean = (KeyStoreRepository.KeyStoreBean) cKeystore.getSelectedItem();
+        final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem();
+        if (EnterPasswordPanel.getAliasPassword(bean, alias) != null) {
+            loadAliasUnlock();
+            loadDetails();
+        }
+    }//GEN-LAST:event_bAliasUnlockActionPerformed
+
+    private void bOpenSecurityManagerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bOpenSecurityManagerActionPerformed
+        SecurityManagerPanel.showSecurityManager((KeyStoreRepository.KeyStoreBean) cKeystore.getSelectedItem(), (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem());
+        loadKeystores();
+    }//GEN-LAST:event_bOpenSecurityManagerActionPerformed
+
+    private void bKeyStoreUnlockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bKeyStoreUnlockActionPerformed
+        final KeyStoreRepository.KeyStoreBean bean = (KeyStoreRepository.KeyStoreBean) cKeystore.getSelectedItem();
+        if (EnterPasswordPanel.getKeystorePassword(bean) != null) {
+            loadKeystoreUnlock();
+            loadAliases();
+        }
+    }//GEN-LAST:event_bKeyStoreUnlockActionPerformed
+
+    private void bExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bExportActionPerformed
+        final KeyStoreRepository.KeyStoreBean bean = (KeyStoreRepository.KeyStoreBean) cKeystore.getSelectedItem();
+        final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem();
+        ExportPanel.showExportKeyIntoPlatform(bean, alias, null, null);
+    }//GEN-LAST:event_bExportActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton bAliasUnlock;
+    private javax.swing.JButton bExport;
+    private javax.swing.JButton bKeyStoreUnlock;
+    private javax.swing.JButton bOpenSecurityManager;
+    private javax.swing.JComboBox cAlias;
+    private javax.swing.JCheckBox cEnabled;
+    private javax.swing.JComboBox cKeystore;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lAlias;
+    private javax.swing.JLabel lDetails;
+    private javax.swing.JLabel lKeystore;
+    private javax.swing.JPanel pDetails;
+    // End of variables declaration//GEN-END:variables
+
+    private boolean isEditEnabled() {
+        return cEnabled.isEnabled() && cEnabled.isSelected();
+    }
+
+    private void toggleEnabledState() {
+        final boolean editEnabled = isEditEnabled();
+        cKeystore.setEnabled(editEnabled);
+        lKeystore.setEnabled(editEnabled);
+        lAlias.setEnabled(editEnabled);
+        cAlias.setEnabled(editEnabled);
+        final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem();
+        bExport.setEnabled(alias != null ? (isEditEnabled() && alias.isValid() && alias.isOpened()) : false);
+    }
+
+    private void loadKeystores() {
+        toggleEnabledState();
+        Object[] items = properties.loadKeystores().toArray();
+        refreshComboboxContent(cKeystore, items);
+        loadKeystoreUnlock();
+        loadAliases();
+    }
+
+    private void loadAliases() {
+        Object[] items = properties.loadAliases().toArray();
+        refreshComboboxContent(cAlias, items);
+        loadAliasUnlock();
+        loadDetails();
+    }
+
+    private void loadKeystoreUnlock() {
+        final KeyStoreRepository.KeyStoreBean bean = (KeyStoreRepository.KeyStoreBean) cKeystore.getSelectedItem();
+        bKeyStoreUnlock.setEnabled(bean != null ? (isEditEnabled() && bean.isValid() && !bean.isOpened()) : false);
+    }
+
+    private void loadAliasUnlock() {
+        final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem();
+        bAliasUnlock.setEnabled(alias != null ? (isEditEnabled() && alias.isValid() && !alias.isOpened()) : false);
+        bExport.setEnabled(alias != null ? (isEditEnabled() && alias.isValid() && alias.isOpened()) : false);
+    }
+
+    private void loadDetails() {
+        final KeyStoreRepository.KeyStoreBean.KeyAliasBean alias = (KeyStoreRepository.KeyStoreBean.KeyAliasBean) cAlias.getSelectedItem();
+        lDetails.setText(alias != null ? KeyAliasCellRenderer.getHtmlFormattedText(alias) : ""); // NOI18N
+        final Color color = UIManager.getDefaults().getColor(isEditEnabled() ? "Label.foreground" : "Label.disabledForeground");
+        lDetails.setForeground(color);
+        final Border b = pDetails.getBorder();
+        if (b instanceof TitledBorder) {
+            ((TitledBorder) b).setTitleColor(color);
+        }
+    }
+
+    private void refreshComboboxContent(JComboBox comboBox, Object[] items) {
+        cKeystore.removeItemListener(keystoreListener);
+        cAlias.removeItemListener(aliasListener);
+        Object currentSelected = comboBox.getSelectedItem();
+        comboBox.removeAllItems();
+        if (items == null) {
+            return;
+        }
+        for (Object item : items) {
+            comboBox.addItem(item);
+            if (item.equals(currentSelected)) {
+                comboBox.setSelectedItem(item);
+            }
+        }
+        cKeystore.addItemListener(keystoreListener);
+        cAlias.addItemListener(aliasListener);
+    }
+}

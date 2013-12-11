@@ -80,7 +80,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-@OptionsPanelController.Keywords(keywords={"php", "symfony", "framework", "sf"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_PHPSymfonyOptionsName")
+@NbBundle.Messages({"Phpoptions.Symfony.keywords.TabTitle=Frameworks & Tools"})
+@OptionsPanelController.Keywords(keywords={"php", "symfony", "framework", "sf"}, 
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#Phpoptions.Symfony.keywords.TabTitle")
 public class SymfonyOptionsPanel extends JPanel {
     private static final long serialVersionUID = -1384645646121L;
     private static final String SYMFONY_LAST_FOLDER_SUFFIX = ".symfony";

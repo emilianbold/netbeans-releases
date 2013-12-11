@@ -100,7 +100,7 @@ public final class APTFileCacheManager {
     }
     
     private ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
-    private final class Lock {}
+    private static final class Lock {}
     private final Object aptCachesLock = new Lock();
 
     @org.netbeans.api.annotations.common.SuppressWarnings("DLS")

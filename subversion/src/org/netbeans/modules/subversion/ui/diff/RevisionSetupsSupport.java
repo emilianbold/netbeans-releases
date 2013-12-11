@@ -54,21 +54,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnFileNode;
+import org.netbeans.modules.subversion.VersionsCache;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -95,6 +100,8 @@ class RevisionSetupsSupport {
     private final boolean base;
     private final Map<String, SVNDiffSummary[]> diffSummaryCache;
     private final Set<String> missingURLs;
+    private static final Logger LOG = Logger.getLogger(RevisionSetupsSupport.class.getName());
+    private boolean logged;
 
     public RevisionSetupsSupport (RepositoryFile repositoryTreeLeft, RepositoryFile repositoryTreeRight,
             SVNUrl repositoryUrl, Context context) {
@@ -103,9 +110,9 @@ class RevisionSetupsSupport {
         this.repositoryUrl = repositoryUrl;
         this.context = context;
         this.cache = Subversion.getInstance().getStatusCache();
-        this.wcSetups = new LinkedHashMap<File, Setup>();
-        this.diffSummaryCache = new LinkedHashMap<String, SVNDiffSummary[]>();
-        this.missingURLs = new LinkedHashSet<String>();
+        this.wcSetups = new LinkedHashMap<>();
+        this.diffSummaryCache = new LinkedHashMap<>();
+        this.missingURLs = new LinkedHashSet<>();
         workingCopy = SVNRevision.WORKING.equals(this.repositoryTreeRight.getRevision());
         base = SVNRevision.BASE.equals(this.repositoryTreeRight.getRevision())
                 || SVNRevision.BASE.equals(this.repositoryTreeLeft.getRevision());
@@ -120,7 +127,7 @@ class RevisionSetupsSupport {
         }
         try {
             SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
-            List<Setup> setups = new ArrayList<Setup>();
+            List<Setup> setups = new ArrayList<>();
             File[] roots = getRoots();
             for (File root : roots) {
                 boolean flatFile = VersioningSupport.isFlat(root);
@@ -132,7 +139,7 @@ class RevisionSetupsSupport {
                         : right.getFileUrl();
                 if (base || workingCopy) {
                     ISVNStatus[] statuses = client.getStatus(root, !flatFile, true, false, true);
-                    Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>(statuses.length);
+                    Map<File, ISVNStatus> statusMap = new HashMap<>(statuses.length);
                     for (ISVNStatus s : statuses) {
                         statusMap.put(s.getFile(), s);
                     }                        
@@ -220,30 +227,29 @@ class RevisionSetupsSupport {
         }
     }
 
-    private boolean checkUrlExistance (SvnClient client, SVNUrl url, SVNRevision revision) throws SVNClientException {
+    private ISVNInfo checkUrlExistance (SvnClient client, SVNUrl url, SVNRevision revision) throws SVNClientException {
         if (url == null) {
             // local file, not yet in the repository
-            return false;
+            return null;
         }
         if (parentMissing(url, revision)) {
-            return false;
+            return null;
         }
         try {
-            client.getInfo(url, revision, revision);
+            return client.getInfo(url, revision, revision);
         } catch (SVNClientException ex) {
             if (SvnClientExceptionHandler.isWrongURLInRevision(ex.getMessage())){
                 cacheParentMissing(url, revision);
-                return false;
+                return null;
             } else {
                 throw ex;
             }
         }
-        return true;
     }
 
     private List<Setup> addPropertySetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision) throws SVNClientException {
-        List<Setup> propSetups = new ArrayList<Setup>();
+        List<Setup> propSetups = new ArrayList<>();
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Map<String, byte[]> leftProps = leftFileUrl == null
@@ -253,7 +259,7 @@ class RevisionSetupsSupport {
                     ? Collections.<String, byte[]>emptyMap()
                     : toMap(client.getProperties(rightFileUrl, rightRevision, rightRevision));
 
-            Set<String> allProps = new TreeSet<String>(leftProps.keySet());
+            Set<String> allProps = new TreeSet<>(leftProps.keySet());
             allProps.addAll(rightProps.keySet());
             for (String key : allProps) {
                 boolean isLeft = leftProps.containsKey(key);
@@ -276,7 +282,7 @@ class RevisionSetupsSupport {
     }
 
     private Map<String, byte[]> toMap (ISVNProperty[] properties) {
-        Map<String, byte[]> map = new LinkedHashMap<String, byte[]>(properties.length);
+        Map<String, byte[]> map = new LinkedHashMap<>(properties.length);
         for (ISVNProperty prop : properties) {
             map.put(prop.getName(), prop.getData());
         }
@@ -346,25 +352,47 @@ class RevisionSetupsSupport {
             Map<File, ISVNStatus> statusMap) throws SVNClientException {
         boolean sameURLs = leftFileUrl != null && leftFileUrl.equals(rightFileUrl)
                 && leftRevision != null && leftRevision.equals(rightRevision);
-        List<Setup> setups = new ArrayList<Setup>();
+        List<Setup> setups = new ArrayList<>();
         if (!sameURLs) {
             SVNDiffSummary[] diffSummaries = getCachedSummaries(leftFileUrl, leftRevision, rightRevision);
-            boolean leftExists = diffSummaries != null || checkUrlExistance(client, leftFileUrl, leftRevision);
-            boolean rightExists = diffSummaries != null || checkUrlExistance(client, rightFileUrl, rightRevision);
+            boolean leftExists, rightExists;
+            ISVNInfo infoLeft = null, infoRight = null;
+            if (diffSummaries == null) {
+                infoLeft = checkUrlExistance(client, leftFileUrl, leftRevision);
+                infoRight = checkUrlExistance(client, rightFileUrl, rightRevision);
+                leftExists = infoLeft != null;
+                rightExists = infoRight != null;
+            } else {
+                leftExists = rightExists = true;
+            }
             if (supp.isCanceled()) {
                 return null;
             }
             if (leftExists && rightExists) {
                 if (diffSummaries == null) {
-                    diffSummaries = client.diffSummarize(
-                            leftFileUrl,
-                            leftRevision,
-                            rightFileUrl,
-                            rightRevision, depth, true);
+                    try {
+                        diffSummaries = client.diffSummarize(
+                                leftFileUrl,
+                                leftRevision,
+                                rightFileUrl,
+                                rightRevision, depth, true);
+                    } catch (NullPointerException ex) {
+                        // workaround for svnkit's bug: #239010
+                        if (SvnClientFactory.isSvnKit() && infoLeft.getNodeKind() == SVNNodeKind.FILE && infoRight.getNodeKind() == SVNNodeKind.FILE) {
+                            LOG.log(logged ? Level.FINE : Level.INFO, "Fallback on workaround for SVNKit bug", ex);
+                            logged = true;
+                            boolean differ = compareContents(repositoryUrl, leftFileUrl, leftRevision, rightFileUrl, rightRevision);
+                            diffSummaries = new SVNDiffSummary[] {
+                                new SVNDiffSummary("", differ ? SVNDiffKind.MODIFIED : SVNDiffKind.NORMAL, false, SVNNodeKind.FILE.toInt())
+                            };
+                        } else {
+                            throw ex;
+                        }
+                    }
                     cacheSummaries(diffSummaries, leftFileUrl, leftRevision, rightRevision);
                 }
-                List<String> skippedPaths = new ArrayList<String>();
-                Set<String> deletedPaths = new HashSet<String>();
+                List<String> skippedPaths = new ArrayList<>();
+                Set<String> deletedPaths = new HashSet<>();
                 for (SVNDiffSummary summary : diffSummaries) {
                     if (summary.getDiffKind() == SVNDiffKind.DELETED) {
                         deletedPaths.add(summary.getPath());
@@ -437,14 +465,14 @@ class RevisionSetupsSupport {
     private void cacheSummaries (SVNDiffSummary[] diffSummaries, SVNUrl leftUrl,
             SVNRevision leftRevision, SVNRevision rightRevision) {
         String revisionString = "@" + leftRevision + ":" + rightRevision;
-        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<String, List<SVNDiffSummary>>();
+        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<>();
         sums.put("", new ArrayList<SVNDiffSummary>(diffSummaries.length));
         for (SVNDiffSummary s : diffSummaries) {
             String path = s.getPath();
             do {
                 List<SVNDiffSummary> list = sums.get(path);
                 if (list == null) {
-                    list = new ArrayList<SVNDiffSummary>();
+                    list = new ArrayList<>();
                     sums.put(path, list);
                 }
                 String suffix = s.getPath().substring(path.length());
@@ -520,6 +548,34 @@ class RevisionSetupsSupport {
 
     protected File[] getRoots () {
         return SvnUtils.getActionRoots(context, false);
+    }
+
+    private boolean compareContents (SVNUrl repositoryUrl, SVNUrl leftFileUrl, SVNRevision leftRevision,
+            SVNUrl rightFileUrl, SVNRevision rightRevision) {
+        VersionsCache versionCache = VersionsCache.getInstance();
+        File leftContent = null;
+        File rightContent = null;
+        try {
+            leftContent = versionCache.getFileRevision(repositoryUrl, leftFileUrl, leftRevision.toString(), "left-file");
+            rightContent = versionCache.getFileRevision(repositoryUrl, rightFileUrl, rightRevision.toString(), "right-file");
+            if (leftContent == null || rightContent == null) {
+                // could not get bot files
+                return false;
+            } else {
+                Difference[] differences = DiffUtils.getDifferences(leftContent, rightContent);
+                return differences != null && differences.length > 0;
+            }
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return false;
+        } finally {
+            if (leftContent != null) {
+                leftContent.delete();
+            }
+            if (rightContent != null) {
+                rightContent.delete();
+            }
+        }
     }
 
     private static class RevisionsFileInformation extends FileInformation {

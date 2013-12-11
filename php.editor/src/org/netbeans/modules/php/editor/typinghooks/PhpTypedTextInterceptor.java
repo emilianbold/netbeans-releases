@@ -96,6 +96,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
     @Override
     public void insert(MutableContext context) throws BadLocationException {
         isAfter = false;
+        codeTemplateEditing = false;
         Document document = context.getDocument();
         BaseDocument doc = (BaseDocument) document;
         int caretOffset = context.getOffset();

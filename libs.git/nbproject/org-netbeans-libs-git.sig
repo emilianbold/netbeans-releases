@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.5.1
+#Version 1.12.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -24,6 +24,7 @@ supr java.lang.Object
 hfds name,ordinal
 
 CLSS public java.lang.Exception
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
@@ -46,11 +47,14 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public java.lang.Throwable
+cons protected init(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public init()
 cons public init(java.lang.String)
 cons public init(java.lang.String,java.lang.Throwable)
 cons public init(java.lang.Throwable)
 intf java.io.Serializable
+meth public final java.lang.Throwable[] getSuppressed()
+meth public final void addSuppressed(java.lang.Throwable)
 meth public java.lang.StackTraceElement[] getStackTrace()
 meth public java.lang.String getLocalizedMessage()
 meth public java.lang.String getMessage()
@@ -63,7 +67,8 @@ meth public void printStackTrace(java.io.PrintStream)
 meth public void printStackTrace(java.io.PrintWriter)
 meth public void setStackTrace(java.lang.StackTraceElement[])
 supr java.lang.Object
-hfds backtrace,cause,detailMessage,serialVersionUID,stackTrace
+hfds CAUSE_CAPTION,EMPTY_THROWABLE_ARRAY,NULL_CAUSE_MESSAGE,SELF_SUPPRESSION_MESSAGE,SUPPRESSED_CAPTION,SUPPRESSED_SENTINEL,UNASSIGNED_STACK,backtrace,cause,detailMessage,serialVersionUID,stackTrace,suppressedExceptions
+hcls PrintStreamOrWriter,SentinelHolder,WrappedPrintStream,WrappedPrintWriter
 
 CLSS public abstract interface java.util.EventListener
 
@@ -87,13 +92,16 @@ hfds active,id,name,remote,trackedBranch
 
 CLSS public final org.netbeans.libs.git.GitClient
 innr public final static !enum DiffMode
+innr public static !enum RebaseOperationType
 innr public static !enum ResetType
 meth public boolean catFile(java.io.File,java.lang.String,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public boolean catIndexEntry(java.io.File,int,java.io.OutputStream,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.io.File[] ignore(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.io.File[] listModifiedIndexEntries(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.io.File[] unignore(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitRevisionInfo$GitFileInfo> getStatus(java.io.File[],java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getConflicts(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getStatus(java.io.File[],java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.io.File,org.netbeans.libs.git.GitStatus> getStatus(java.io.File[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.lang.String,java.lang.String> listRemoteTags(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitBranch> getBranches(boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -104,12 +112,15 @@ meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitTransportUpd
 meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitTransportUpdate> fetch(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitBlameResult blame(java.io.File,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitBranch createBranch(java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitBranch setUpstreamBranch(java.lang.String,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitMergeResult merge(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitPullResult pull(java.lang.String,java.util.List<java.lang.String>,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitPushResult push(java.lang.String,java.util.List<java.lang.String>,java.util.List<java.lang.String>,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRebaseResult rebase(org.netbeans.libs.git.GitClient$RebaseOperationType,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRemoteConfig getRemote(java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRepositoryState getRepositoryState(org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevertResult revert(java.lang.String,java.lang.String,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
+meth public org.netbeans.libs.git.GitRevisionInfo commit(java.io.File[],java.lang.String,org.netbeans.libs.git.GitUser,org.netbeans.libs.git.GitUser,boolean,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo commit(java.io.File[],java.lang.String,org.netbeans.libs.git.GitUser,org.netbeans.libs.git.GitUser,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo getCommonAncestor(java.lang.String[],org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
 meth public org.netbeans.libs.git.GitRevisionInfo getPreviousRevision(java.io.File,java.lang.String,org.netbeans.libs.git.progress.ProgressMonitor) throws org.netbeans.libs.git.GitException
@@ -149,6 +160,16 @@ fld public final static org.netbeans.libs.git.GitClient$DiffMode INDEX_VS_WORKIN
 meth public static org.netbeans.libs.git.GitClient$DiffMode valueOf(java.lang.String)
 meth public static org.netbeans.libs.git.GitClient$DiffMode[] values()
 supr java.lang.Enum<org.netbeans.libs.git.GitClient$DiffMode>
+
+CLSS public static !enum org.netbeans.libs.git.GitClient$RebaseOperationType
+ outer org.netbeans.libs.git.GitClient
+fld public final static org.netbeans.libs.git.GitClient$RebaseOperationType ABORT
+fld public final static org.netbeans.libs.git.GitClient$RebaseOperationType BEGIN
+fld public final static org.netbeans.libs.git.GitClient$RebaseOperationType CONTINUE
+fld public final static org.netbeans.libs.git.GitClient$RebaseOperationType SKIP
+meth public static org.netbeans.libs.git.GitClient$RebaseOperationType valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitClient$RebaseOperationType[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitClient$RebaseOperationType>
 
 CLSS public static !enum org.netbeans.libs.git.GitClient$ResetType
  outer org.netbeans.libs.git.GitClient
@@ -293,6 +314,31 @@ meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitTransportUpd
 meth public java.util.Map<java.lang.String,org.netbeans.libs.git.GitTransportUpdate> getRemoteRepositoryUpdates()
 supr java.lang.Object
 hfds localRepositoryUpdates,remoteRepositoryUpdates
+
+CLSS public final org.netbeans.libs.git.GitRebaseResult
+innr public abstract static !enum RebaseStatus
+meth public java.lang.String getCurrentCommit()
+meth public java.lang.String getCurrentHead()
+meth public java.util.Collection<java.io.File> getConflicts()
+meth public java.util.Collection<java.io.File> getFailures()
+meth public org.netbeans.libs.git.GitRebaseResult$RebaseStatus getRebaseStatus()
+supr java.lang.Object
+hfds conflicts,currentCommit,currentHead,failures,rebaseStatus
+
+CLSS public abstract static !enum org.netbeans.libs.git.GitRebaseResult$RebaseStatus
+ outer org.netbeans.libs.git.GitRebaseResult
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus ABORTED
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus CONFLICTS
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus FAILED
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus FAST_FORWARD
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus NOTHING_TO_COMMIT
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus OK
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus STOPPED
+fld public final static org.netbeans.libs.git.GitRebaseResult$RebaseStatus UP_TO_DATE
+meth public abstract boolean isSuccessful()
+meth public static org.netbeans.libs.git.GitRebaseResult$RebaseStatus valueOf(java.lang.String)
+meth public static org.netbeans.libs.git.GitRebaseResult$RebaseStatus[] values()
+supr java.lang.Enum<org.netbeans.libs.git.GitRebaseResult$RebaseStatus>
 
 CLSS public final !enum org.netbeans.libs.git.GitRefUpdateResult
 fld public final static org.netbeans.libs.git.GitRefUpdateResult AWAITING_REPORT

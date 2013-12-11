@@ -783,7 +783,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;
                         } else if ("c99".equals(lang)) { //NOI18N
-                            res.standard = ItemProperties.LanguageStandard.C89;
+                            res.standard = ItemProperties.LanguageStandard.C99;
+                        } else if ("c11".equals(lang)) { //NOI18N
+                            res.standard = ItemProperties.LanguageStandard.C11;
                         } else if ("c++98".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.CPP;
                         } else if ("c++11".equals(lang)) { //NOI18N

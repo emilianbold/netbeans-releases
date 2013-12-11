@@ -163,7 +163,7 @@ public class DependenciesNode extends AbstractNode {
         
         @Override
         protected Node createNodeForKey(DependencyWrapper wr) {
-            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true);
+            return new DependencyNode(dependencies.project, wr.getArtifact(), wr.getFileObject(), true, wr.getNodeDelegate());
         }
 
         @Override public void stateChanged(ChangeEvent e) {
@@ -171,7 +171,7 @@ public class DependenciesNode extends AbstractNode {
         }
         
         @Override protected boolean createKeys(List<DependencyWrapper> toPopulate) {
-            toPopulate.addAll(dependencies.list());
+            toPopulate.addAll(dependencies.list(true));
             return true;
         }
 
@@ -191,24 +191,24 @@ public class DependenciesNode extends AbstractNode {
             nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
         }
 
-        Collection<DependencyWrapper> list() {
+        Collection<DependencyWrapper> list(boolean longLiving) {
             HashSet<DependencyWrapper> lst = new HashSet<DependencyWrapper>();
             MavenProject mp = project.getOriginalMavenProject();
             Set<Artifact> arts = mp.getArtifacts();
             switch (type) {
             case COMPILE:
-                create(lst, arts, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
+                create(lst, arts, longLiving, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
                 break;
             case TEST:
-                create(lst, arts, Artifact.SCOPE_TEST);
+                create(lst, arts, longLiving, Artifact.SCOPE_TEST);
                 break;
             case RUNTIME:
-                create(lst, arts, Artifact.SCOPE_RUNTIME);
+                create(lst, arts, longLiving, Artifact.SCOPE_RUNTIME);
                 break;
             default:
                 for (Artifact a : arts) {
                     if (!a.getArtifactHandler().isAddedToClasspath()) {
-                        lst.add(new DependencyWrapper(a));
+                        lst.add(new DependencyWrapper(a, longLiving));
                     }
                 }
             }
@@ -232,14 +232,14 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
-        private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, String... scopes) {
+        private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, boolean longLiving, String... scopes) {
             final List<String> scopesList = Arrays.asList(scopes);
             for (Artifact a : arts) {
                 if (!scopesList.contains(a.getScope())) {
                     continue;
                 }
                 if (a.getArtifactHandler().isAddedToClasspath()) {
-                    lst.add(new DependencyWrapper(a));
+                    lst.add(new DependencyWrapper(a, longLiving));
                 }
             }
         }
@@ -251,19 +251,28 @@ public class DependenciesNode extends AbstractNode {
         private Artifact artifact;
         
         private FileObject fileObject;
+        
+        private final Node nodeDelegate;
 
-        public DependencyWrapper(Artifact artifact) {
+        public DependencyWrapper(Artifact artifact, boolean longLiving) {
             this.artifact = artifact;
             assert artifact.getFile() != null : "#200927 Artifact.getFile() is null: " + artifact;
             assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
             assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
             fileObject = FileUtil.toFileObject(artifact.getFile());
+            nodeDelegate = DependencyNode.createNodeDelegate(artifact, fileObject, longLiving);
         }
         
         public FileObject getFileObject() {
             return fileObject;
         }
 
+        public Node getNodeDelegate() {
+            return nodeDelegate;
+        }
+
+        
+        
         public Artifact getArtifact() {
             return artifact;
         }

@@ -66,6 +66,15 @@ public class BeanHasDifferentLBIandRBITest extends TestBase {
             + "public class TestBean implements One, Two {\n"
             + "  public void anything() {}\n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean implements One, Two {\n"
+            + "  public void anything() {}\n"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 implements One, Two {\n"
+            + "  public void anything() {}\n"
+            + "}";
 
     public BeanHasDifferentLBIandRBITest(String name) {
         super(name);
@@ -86,7 +95,18 @@ public class BeanHasDifferentLBIandRBITest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(BeanHasDifferentLBIandRBI.class)
-                .findWarning("2:13-2:21:error:" + Bundle.BeanHasDifferentLBIandRBI_err());
+                .assertWarnings("2:13-2:21:error:" + Bundle.BeanHasDifferentLBIandRBI_err());
+    }
+
+    public void testBMnotPartOfRBIandLBIMoreBeansInFile() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createInterface(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(BeanHasDifferentLBIandRBI.class)
+                .assertWarnings("2:13-2:21:error:" + Bundle.BeanHasDifferentLBIandRBI_err(),
+                                        "6:6-6:15:error:" + Bundle.BeanHasDifferentLBIandRBI_err());
     }
 
 }

@@ -87,6 +87,7 @@ implements LookupListener, FlavorListener, AWTEventListener
     private Reference<Object> lastWindowDeactivatedSource = new WeakReference<Object>(null);
     private volatile Task setContentsTask = Task.EMPTY;
     private volatile Task getContentsTask = Task.EMPTY;
+    private boolean anyWindowIsActivated = true;
 
     public NbClipboard() {
         //for unit testing
@@ -332,6 +333,8 @@ implements LookupListener, FlavorListener, AWTEventListener
 
     @Override
     public void flavorsChanged(FlavorEvent e) {
+        if( !anyWindowIsActivated )
+            return; //#227236 - don't react to system clipboard changes when the IDE window is in the background
         fireChange();
     }
 
@@ -357,8 +360,10 @@ implements LookupListener, FlavorListener, AWTEventListener
         if (ev.getID() == WindowEvent.WINDOW_DEACTIVATED) {
             lastWindowDeactivated = System.currentTimeMillis();
             lastWindowDeactivatedSource = new WeakReference<Object>(ev.getSource());
+            anyWindowIsActivated = false;
         }
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
+            anyWindowIsActivated = true;
             if (System.currentTimeMillis() - lastWindowDeactivated < 100 &&
                 ev.getSource() == lastWindowDeactivatedSource.get()) {
                 activateWindowHack (false);

@@ -110,7 +110,8 @@ public class MeasurementTestCase extends RemoteTestBase {
             //removeDirectoryContent(privProjectStorageDir);
 
             ZipSyncWorker worker = new ZipSyncWorker(execEnv, out, err, privProjectStorageDir,
-                    FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(srcDir))));
+                    Collections.singletonList(FSPath.toFSPath(FileUtil.toFileObject(FileUtil.normalizeFile(srcDir)))),
+                    Collections.<FSPath>emptyList());
             long time = System.currentTimeMillis();
 
             worker.startup(Collections.<String, String>emptyMap());

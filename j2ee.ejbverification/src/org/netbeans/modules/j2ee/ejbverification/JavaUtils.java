@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.j2ee.ejbverification;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -179,6 +182,45 @@ public class JavaUtils {
         // classNameParam1 == null when param1 is not declared type
         if (classNameParam1 != null && classNameParam1.equals(extractClassNameFromType(param2))) {
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * Says whether given element is subtype of the entered type.
+     * @param info compilation info
+     * @param element element to be examined
+     * @param superType type which is looking for
+     * @return {@code true} is the element implements or extends the given superType, {@code false} otherwise
+     */
+    public static boolean isTypeOf(CompilationInfo info, Element element, String superType) {
+        final TypeMirror tm = element.asType();
+        List<Element> types = new ArrayList<>();
+
+        Deque<TypeMirror> deque = new ArrayDeque<>();
+        deque.add(tm);
+        while (!deque.isEmpty()) {
+            TypeMirror mirror = deque.pop();
+            if (mirror.getKind() == TypeKind.DECLARED) {
+                Element el = info.getTypes().asElement(mirror);
+                types.add(el);
+                if (el.getKind() == ElementKind.CLASS) {
+                    TypeElement tel = (TypeElement) el;
+                    deque.add(tel.getSuperclass());
+                    deque.addAll(tel.getInterfaces());
+                } else if (el.getKind() == ElementKind.INTERFACE) {
+                    TypeElement tel = (TypeElement) el;
+                    for (TypeMirror ifaceMirror : tel.getInterfaces()) {
+                        deque.add(ifaceMirror);
+                    }
+                }
+            }
+        }
+
+        for (Element type : types) {
+            if (superType.equals(type.asType().toString())) {
+                return true;
+            }
         }
         return false;
     }

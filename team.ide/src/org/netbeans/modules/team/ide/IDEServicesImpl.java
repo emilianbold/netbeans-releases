@@ -297,10 +297,16 @@ public class IDEServicesImpl implements IDEServices {
     public DatePickerComponent createDatePicker () {
         return new JXDatePickerImpl();
     }
-    
+
     @Override
-    public DatePickerDialog createDatePickerDialog (Date schedule) {
-        return new DatePickerDialogImpl(schedule);
+    public boolean isPluginInstalled(String cnb) {
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        for (UpdateUnit u : units) {
+            if(u.getCodeName().equals(cnb) && u.getInstalled() != null) {
+                return true;
+            }
+        }
+        return false;        
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

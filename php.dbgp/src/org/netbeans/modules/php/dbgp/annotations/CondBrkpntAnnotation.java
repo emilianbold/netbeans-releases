@@ -46,39 +46,26 @@ package org.netbeans.modules.php.dbgp.annotations;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
 public class CondBrkpntAnnotation extends DebuggerAnnotation {
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint"; // NOI18N
+    private static final String BREAKPOINT = "ANTN_CONDITIONAL_BREAKPOINT"; // NOI18N
 
-    public static final String BREAKPOINT_ANNOTATION_TYPE 
-                        = "CondBreakpoint";                     // NOI18N
-    
-    private static final String BREAKPOINT                
-                        = "ANTN_CONDITIONAL_BREAKPOINT";        // NOI18N
-
-    public CondBrkpntAnnotation( Annotatable annotatable ) {
+    public CondBrkpntAnnotation(Annotatable annotatable) {
         super(annotatable);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getAnnotationType()
-     */
     @Override
-    public String getAnnotationType()
-    {
+    public String getAnnotationType() {
         return BREAKPOINT_ANNOTATION_TYPE;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.text.Annotation#getShortDescription()
-     */
     @Override
-    public String getShortDescription()
-    {
-        return NbBundle.getBundle(DebuggerAnnotation.class).getString(BREAKPOINT);
+    public String getShortDescription() {
+        return NbBundle.getMessage(CondBrkpntAnnotation.class, BREAKPOINT);
     }
 
 }

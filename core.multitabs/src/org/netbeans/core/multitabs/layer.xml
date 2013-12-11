@@ -2,9 +2,9 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="Windows.instance">
-                <!--org.netbeans.core.multitabs.prefs.MultiTabsOptionsPanelController-->
+        <folder name="Appearance">
+            <file name="DocumentTabs.instance">
+                org.netbeans.core.multitabs.prefs.MultiTabsOptionsPanelController
                 <attr
                     methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory" name="instanceCreate"/>
                 <attr name="controller" newvalue="org.netbeans.core.multitabs.prefs.MultiTabsOptionsPanelController"/>
@@ -12,7 +12,7 @@
                     bundlevalue="org.netbeans.core.multitabs.prefs.Bundle#AdvancedOption_DisplayName_MultiTabs" name="displayName"/>
                 <attr
                     bundlevalue="org.netbeans.core.multitabs.prefs.Bundle#AdvancedOption_Keywords_MultiTabs" name="keywords"/>
-                <attr name="keywordsCategory" stringvalue="Advanced/MultiTabs"/>
+                <attr name="keywordsCategory" stringvalue="Appearance/Tabs"/>
                 <attr name="weight" intvalue="100"/>
             </file>
         </folder>

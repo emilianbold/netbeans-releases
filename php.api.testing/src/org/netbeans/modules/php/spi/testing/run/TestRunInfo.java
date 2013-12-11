@@ -79,6 +79,7 @@ public final class TestRunInfo {
     private final List<FileObject> startFiles;
     private final String suiteName;
     private final boolean coverageEnabled;
+    private final List<TestInfo> initialTests = new CopyOnWriteArrayList<>();
     private final List<TestInfo> customTests = new CopyOnWriteArrayList<>();
     private final Map<String, Object> parameters = new ConcurrentHashMap<>();
 
@@ -148,15 +149,32 @@ public final class TestRunInfo {
     }
 
     /**
-     * Get custom tests to be run or empty list, never {@code null}.
-     * @return custom tests to be run or empty list, never {@code null}
+     * Set initial tests to be run. These tests are returned if no {@link #getCustomTests() custom tests}
+     * exist.
+     * @param tests initial tests to be run or empty list, never {@code null}
+     * @since 0.12
      */
-    public List<TestInfo> getCustomTests() {
-        return new ArrayList<>(customTests);
+    public void setInitialTests(Collection<TestInfo> tests) {
+        Parameters.notNull("tests", tests); // NOI18N
+        initialTests.clear();
+        initialTests.addAll(tests);
     }
 
     /**
-     * Reset custom tests.
+     * Get custom tests to be run or empty list, never {@code null}. If there are no custom tests.
+     * {@link #setInitialTests(Collection) initial tests} are returned.
+     * @return custom tests to be run or empty list, never {@code null}
+     */
+    public List<TestInfo> getCustomTests() {
+        List<TestInfo> tests = customTests;
+        if (tests.isEmpty()) {
+            tests = initialTests;
+        }
+        return new ArrayList<>(tests);
+    }
+
+    /**
+     * Reset custom tests. Usually, there is no need to call this method.
      * @see #getCustomTests()
      * @see #setCustomTests(java.util.Collection)
      */

@@ -60,7 +60,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;

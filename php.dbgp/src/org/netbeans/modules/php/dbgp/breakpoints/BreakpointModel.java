@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.util.Map;
@@ -62,91 +61,60 @@ import org.openide.util.NbBundle;
  *
  * @author ads
  */
-public class BreakpointModel extends ViewModelSupport
-        implements NodeModel
-{
-
-    public static final String BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint";            // NOI18N
-    public static final String LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint";                   // NOI18N
-    public static final String CURRENT_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpointHit";         // NOI18N
-    public static final String CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit";                // NOI18N
-    public static final String DISABLED_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint";    // NOI18N
-    public static final String DISABLED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint";           // NOI18N
-    public static final String DISABLED_CURRENT_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit"; // NOI18N
-    public static final String DISABLED_CURRENT_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit";        // NOI18N
-    public static final String LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint";        // NOI18N
-    public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit";     // NOI18N
-    public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint";// NOI18N
-    public static final String BROKEN_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint_broken";// NOI18N
-
-    private static final String METHOD                              =
-                                         "TXT_Method";                                          // NOI18N
-
-    private static final String PARENS                              =
-                                         "()";                                                  // NOI18N
+public class BreakpointModel extends ViewModelSupport implements NodeModel {
+    public static final String BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpoint"; // NOI18N
+    public static final String LINE_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint"; // NOI18N
+    public static final String CURRENT_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/NonLineBreakpointHit"; // NOI18N
+    public static final String CURRENT_LINE_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointHit"; // NOI18N
+    public static final String DISABLED_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpoint"; // NOI18N
+    public static final String DISABLED_LINE_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpoint"; // NOI18N
+    public static final String DISABLED_CURRENT_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/DisabledNonLineBreakpointHit"; // NOI18N
+    public static final String DISABLED_CURRENT_LINE_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/DisabledBreakpointHit"; // NOI18N
+    public static final String LINE_CONDITIONAL_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpoint"; // NOI18N
+    public static final String CURRENT_LINE_CONDITIONAL_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/ConditionalBreakpointHit"; // NOI18N
+    public static final String DISABLED_LINE_CONDITIONAL_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/DisabledConditionalBreakpoint"; // NOI18N
+    public static final String BROKEN_LINE_BREAKPOINT = "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint_broken"; // NOI18N
+    private static final String METHOD = "TXT_Method"; // NOI18N
+    private static final String PARENS = "()"; // NOI18N
+    private final Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
 
     public BreakpointModel() {
         myCurrentBreakpoints = new WeakHashMap<>();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.ViewModelSupport#clearModel()
-     */
     @Override
     public void clearModel() {
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
-     */
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof LineBreakpoint) {
-            LineBreakpoint breakpoint = (LineBreakpoint)node;
-            FileObject fileObject = breakpoint.getLine().getLookup().
-                lookup(FileObject.class);
-            return fileObject.getNameExt() + ":" +
-                (breakpoint.getLine().getLineNumber() + 1);
-        }
-        else if ( node instanceof FunctionBreakpoint ) {
-            FunctionBreakpoint breakpoint = (FunctionBreakpoint)node;
-            StringBuilder builder = new StringBuilder(
-                    NbBundle.getMessage( BreakpointModel.class, METHOD ) );
-            builder.append( " ");
-            builder.append( breakpoint.getFunction() );
-            builder.append( PARENS );
-            return builder.toString() ;
+            LineBreakpoint breakpoint = (LineBreakpoint) node;
+            FileObject fileObject = breakpoint.getLine().getLookup().lookup(FileObject.class);
+            return fileObject.getNameExt() + ":" + (breakpoint.getLine().getLineNumber() + 1);
+        } else if (node instanceof FunctionBreakpoint) {
+            FunctionBreakpoint breakpoint = (FunctionBreakpoint) node;
+            StringBuilder builder = new StringBuilder(NbBundle.getMessage(BreakpointModel.class, METHOD));
+            builder.append(" ");
+            builder.append(breakpoint.getFunction());
+            builder.append(PARENS);
+            return builder.toString();
         }
         throw new UnknownTypeException(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getIconBase(java.lang.Object)
-     */
     @Override
     public String getIconBase(Object node) throws UnknownTypeException {
-        synchronized( myCurrentBreakpoints ) {
-            for ( AbstractBreakpoint breakpoint : myCurrentBreakpoints.values()) {
-                if ( node.equals(breakpoint)) {
-                    return getCurrentBreakpointIconBase( breakpoint );
+        synchronized (myCurrentBreakpoints) {
+            for (AbstractBreakpoint breakpoint : myCurrentBreakpoints.values()) {
+                if (node.equals(breakpoint)) {
+                    return getCurrentBreakpointIconBase(breakpoint);
                 }
             }
         }
         if (node instanceof LineBreakpoint) {
-            LineBreakpoint breakpoint = (LineBreakpoint)node;
-            if(!breakpoint.isEnabled()) {
+            LineBreakpoint breakpoint = (LineBreakpoint) node;
+            if (!breakpoint.isEnabled()) {
                 return DISABLED_LINE_BREAKPOINT;
             } else {
                 VALIDITY validity = breakpoint.getValidity();
@@ -156,16 +124,9 @@ public class BreakpointModel extends ViewModelSupport
                     return BROKEN_LINE_BREAKPOINT;
                 }
             }
-            /*Line line = Utils.getCurrentLine();
-            if(line != null &&
-                    line.getLineNumber() == breakpoint.getLine().getLineNumber())
-            {
-                return CURRENT_LINE_BREAKPOINT;
-            }*/
-        }
-        else if ( node instanceof AbstractBreakpoint ){
+        } else if (node instanceof AbstractBreakpoint) {
             AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
-            if(!breakpoint.isEnabled()) {
+            if (!breakpoint.isEnabled()) {
                 return DISABLED_BREAKPOINT;
             }
             return BREAKPOINT;
@@ -173,72 +134,62 @@ public class BreakpointModel extends ViewModelSupport
         throw new UnknownTypeException(node);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
-     */
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node instanceof LineBreakpoint) {
-            return ((LineBreakpoint)node).getLine().getDisplayName();
+            return ((LineBreakpoint) node).getLine().getDisplayName();
         }
-
         throw new UnknownTypeException(node);
     }
 
-    public void setCurrentStack( Stack stack, DebugSession session ) {
-        if ( stack == null ) {
-            synchronized ( myCurrentBreakpoints ) {
-                AbstractBreakpoint breakpoint =
-                    myCurrentBreakpoints.remove(session);
-                fireChangeEvent( new ModelEvent.NodeChanged( this , breakpoint) );
+    public void setCurrentStack(Stack stack, DebugSession session) {
+        if (stack == null) {
+            synchronized (myCurrentBreakpoints) {
+                AbstractBreakpoint breakpoint = myCurrentBreakpoints.remove(session);
+                fireChangeEvent(new ModelEvent.NodeChanged(this, breakpoint));
             }
             return;
         }
         String currentCommand = stack.getCurrentCommandName();
-        if ( !foundLineBreakpoint(stack.getFileName().replace("file:///", "file:/"),  stack.getLine() -1 , session)) { //NOI18N
-            foundFunctionBreakpoint( currentCommand , session );
+        if (!foundLineBreakpoint(stack.getFileName().replace("file:///", "file:/"), stack.getLine() - 1, session)) { //NOI18N
+            foundFunctionBreakpoint(currentCommand, session);
         }
     }
 
-    private String getCurrentBreakpointIconBase( AbstractBreakpoint breakpoint ) {
-        if ( breakpoint instanceof LineBreakpoint ) {
+    private String getCurrentBreakpointIconBase(AbstractBreakpoint breakpoint) {
+        if (breakpoint instanceof LineBreakpoint) {
             return CURRENT_LINE_BREAKPOINT;
-        }
-        else {
+        } else {
             return CURRENT_BREAKPOINT;
         }
     }
 
-    private boolean foundFunctionBreakpoint( String currentCommand,
-            DebugSession session )
-    {
-        return foundBreakpoint( session ,
-                new FunctionBreakpointAcceptor( currentCommand) );
+    private boolean foundFunctionBreakpoint(String currentCommand, DebugSession session) {
+        return foundBreakpoint(session, new FunctionBreakpointAcceptor(currentCommand));
     }
 
-    private boolean foundLineBreakpoint(String fileName, int line, DebugSession session ) {
-        return foundBreakpoint(session, new LineBreakpointAcceptor( fileName, line ));
+    private boolean foundLineBreakpoint(String fileName, int line, DebugSession session) {
+        return foundBreakpoint(session, new LineBreakpointAcceptor(fileName, line));
     }
 
-    private boolean foundBreakpoint( DebugSession session , Acceptor acceptor) {
-        Breakpoint[] breakpoints =
-            DebuggerManager.getDebuggerManager().getBreakpoints();
+    private boolean foundBreakpoint(DebugSession session, Acceptor acceptor) {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint breakpoint : breakpoints) {
-            if ( !( breakpoint instanceof AbstractBreakpoint) ) {
+            if (!(breakpoint instanceof AbstractBreakpoint)) {
                 continue;
             }
-            if ( !((AbstractBreakpoint)breakpoint).isSessionRelated(session)) {
+            if (!((AbstractBreakpoint) breakpoint).isSessionRelated(session)) {
                 continue;
             }
-            if ( acceptor.accept(breakpoint)) {
+            if (acceptor.accept(breakpoint)) {
                 AbstractBreakpoint abpnt = (AbstractBreakpoint) breakpoint;
                 synchronized (myCurrentBreakpoints) {
-                    AbstractBreakpoint bpnt = myCurrentBreakpoints.get( session );
-                    myCurrentBreakpoints.put(session, abpnt );
-                    fireChangeEvents( new ModelEvent[] {
-                            new ModelEvent.NodeChanged(this, bpnt ),
-                            new ModelEvent.NodeChanged(this, abpnt )
-                            });
+                    AbstractBreakpoint bpnt = myCurrentBreakpoints.get(session);
+                    myCurrentBreakpoints.put(session, abpnt);
+                    fireChangeEvents(new ModelEvent[]{
+                        new ModelEvent.NodeChanged(this, bpnt),
+                        new ModelEvent.NodeChanged(this, abpnt)
+                    });
                 }
                 return true;
             }
@@ -247,48 +198,48 @@ public class BreakpointModel extends ViewModelSupport
     }
 
     private interface Acceptor {
-        boolean accept( Breakpoint breakpoint );
+        boolean accept(Breakpoint breakpoint);
+
     }
 
     private static class LineBreakpointAcceptor implements Acceptor {
+        private int myLine;
+        private String myCurrentFilePath;
 
-        LineBreakpointAcceptor( String currentFilePath, int lineNumber ) {
+        LineBreakpointAcceptor(String currentFilePath, int lineNumber) {
             myCurrentFilePath = currentFilePath;
             myLine = lineNumber;
         }
 
         @Override
-        public boolean accept( Breakpoint breakpoint ) {
-            if ( !( breakpoint instanceof LineBreakpoint ) ) {
+        public boolean accept(Breakpoint breakpoint) {
+            if (!(breakpoint instanceof LineBreakpoint)) {
                 return false;
             }
             LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
             return (myLine == lineBreakpoint.getLine().getLineNumber()) && (myCurrentFilePath.equals(lineBreakpoint.getFileUrl()));
         }
 
-        private int myLine;
-        private String myCurrentFilePath;
     }
 
     private static class FunctionBreakpointAcceptor implements Acceptor {
-        FunctionBreakpointAcceptor( String function ){
+        private String myFunction;
+
+        FunctionBreakpointAcceptor(String function) {
             myFunction = function;
         }
 
         @Override
-        public boolean accept( Breakpoint breakpoint ) {
-            if ( !( breakpoint instanceof FunctionBreakpoint )) {
+        public boolean accept(Breakpoint breakpoint) {
+            if (!(breakpoint instanceof FunctionBreakpoint)) {
                 return false;
             }
-            String function = ((FunctionBreakpoint)breakpoint).getFunction();
+            String function = ((FunctionBreakpoint) breakpoint).getFunction();
             // TODO : need more accurate implementation for class methods f.e.
 
-            return function == null ? false : function.equals( myFunction );
+            return function == null ? false : function.equals(myFunction);
         }
-        private String myFunction;
 
     }
-
-    private final Map<DebugSession, AbstractBreakpoint> myCurrentBreakpoints;
 
 }

@@ -68,6 +68,15 @@ public class BusinessMethodExposedTest extends TestBase {
             + "public class TestBean implements One{\n"
             + "  public void anything() { }"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean implements One{\n"
+            + "  public void anything() { }"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 implements One{\n"
+            + "  public void anything() { }"
+            + "}";
 
     public void createInterface(TestBase.TestModule testModule) throws Exception {
         FileObject iface = FileUtil.createData(testModule.getSources()[0], "test/One.java");
@@ -83,5 +92,16 @@ public class BusinessMethodExposedTest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(BusinessMethodExposed.class)
                 .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint());
+    }
+
+    public void testBusinessMethodExposedMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createInterface(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(BusinessMethodExposed.class)
+                .assertWarnings("3:14-3:22:hint:" + Bundle.BusinessMethodExposed_hint(),
+                                        "6:14-6:22:hint:" + Bundle.BusinessMethodExposed_hint());
     }
 }

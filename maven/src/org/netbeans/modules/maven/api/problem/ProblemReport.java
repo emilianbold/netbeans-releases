@@ -49,6 +49,7 @@ import javax.swing.Action;
  * @author mkleint
  * @deprecated see <code>ProjectProblemsProvider</code>
  */
+@Deprecated
 public final class ProblemReport {
     
     public static final int SEVERITY_LOW = 10;

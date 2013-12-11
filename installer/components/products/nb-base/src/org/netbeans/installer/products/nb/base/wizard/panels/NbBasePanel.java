@@ -109,6 +109,8 @@ public class NbBasePanel extends DestinationPanel {
                 DEFAULT_WARNING_INSTALL_INTO_USERDIR);
         setProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION,
                 DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION);
+        setProperty(WARNING_JDK_NOT_RECOMMENDED_ARCHITECTURE,
+                DEFAULT_WARNING_JDK_NOT_RECOMMENDED_ARCHITECTURE);
         
         setProperty(ERROR_CONTAINS_NON_ASCII_CHARS,
                 DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS);
@@ -400,10 +402,16 @@ public class NbBasePanel extends DestinationPanel {
                     jdkLocationField.setText(location);
                     
                     if (!panel.jdkLocationPanel.isJdkVersionRecommended(location)) {
-                        statusLabel.setText(getJdkWarningMessage());
+                        statusLabel.setText(getVersionWarningMessage());
                         if (statusLabel.getHyperlinkListeners().length == 0) {
                             statusLabel.addHyperlinkListener(getHyperlinkListener());
                         }                        
+                        statusLabel.setVisible(true);
+                    } else if (!panel.jdkLocationPanel.isArchitectureMatching(location)) {
+                        statusLabel.setText(getArchitectureWarningMessage());
+                        if (statusLabel.getHyperlinkListeners().length == 0) {
+                            statusLabel.addHyperlinkListener(getHyperlinkListener());
+                        }
                         statusLabel.setVisible(true);
                     } else {
                         statusLabel.clearText();
@@ -481,10 +489,21 @@ public class NbBasePanel extends DestinationPanel {
                     0, 0));                           // padx, pady - ???
         }
         
-        private Text getJdkWarningMessage() {
+        private Text getVersionWarningMessage() {
             if (jdkWarningMessage == null) {
                 String messageContent = StringUtils.format(
                         panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION), 
+                        panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));                
+                jdkWarningMessage = new Text(messageContent, Text.ContentType.HTML);
+            } 
+            
+            return jdkWarningMessage;
+        }
+        
+        private Text getArchitectureWarningMessage() {
+            if (jdkWarningMessage == null) {
+                String messageContent = StringUtils.format(
+                        panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_ARCHITECTURE), 
                         panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));                
                 jdkWarningMessage = new Text(messageContent, Text.ContentType.HTML);
             } 
@@ -520,6 +539,8 @@ public class NbBasePanel extends DestinationPanel {
             "install.into.userdir.storage";
     public static final String WARNING_JDK_NOT_RECOMMENDED_VERSION =
             "jdk.not.recommended.version";
+    public static final String WARNING_JDK_NOT_RECOMMENDED_ARCHITECTURE =
+            "jdk.not.recommended.architecture";
     public static final String ERROR_CONTAINS_NON_ASCII_CHARS =
             "error.contains.non.ascii.chars"; // NOI18N
    
@@ -556,6 +577,9 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.warning.jdk.not.recommended.version"); // NOI18N
+    public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_ARCHITECTURE =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.warning.jdk.not.recommended.architecture"); // NOI18N
     public static final String DEFAULT_ERROR_CONTAINS_NON_ASCII_CHARS =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.error.contains.non.ascii.chars"); // NOI18N

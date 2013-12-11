@@ -43,14 +43,18 @@
  */
 package org.netbeans.performance.j2ee.actions;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import junit.framework.Test;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
 
@@ -62,6 +66,7 @@ import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
 public class DeployTest extends PerformanceTestCase {
 
     private Node node;
+    private static final String PROJECT_NAME = "WebApp" + CommonUtilities.getTimeIndex();
 
     /**
      * Creates a new instance of CreateJ2EEProject
@@ -89,7 +94,6 @@ public class DeployTest extends PerformanceTestCase {
     public static Test suite() {
         return emptyConfiguration()
                 .addTest(J2EEBaseSetup.class)
-                .addTest(CreateJ2EEProjectTest.class, "testCreateWebProject")
                 .addTest(DeployTest.class)
                 .suite();
     }
@@ -102,10 +106,25 @@ public class DeployTest extends PerformanceTestCase {
     public void initialize() {
         new J2eeServerNode("GlassFish").start();
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        node = pto.getProjectRootNode(CreateJ2EEProjectTest.WEB_PROJECT_NAME);
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        wizard.selectCategory("Java Web");
+        wizard.selectProject("Web Application");
+        wizard.next();
+        NewWebProjectNameLocationStepOperator wizardLocation = new NewWebProjectNameLocationStepOperator();
+        if (System.getProperty("os.name", "").contains("Windows")) {
+            // #238007 - wizard too wide
+            wizardLocation.txtProjectLocation().setText("C:\\tmp");
+        } else {
+            wizardLocation.txtProjectLocation().setText(getWorkDirPath());
+        }
+        wizardLocation.txtProjectName().setText(PROJECT_NAME);
+        wizardLocation.next();
+        wizardLocation.finish();
+        node = pto.getProjectRootNode(PROJECT_NAME);
         node.performPopupAction("Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         MainWindowOperator.getDefault().waitStatusText("Finished building " + node.getText() + " (dist)");
+        waitScanFinished();
     }
 
     @Override
@@ -117,9 +136,11 @@ public class DeployTest extends PerformanceTestCase {
         glassFishNode.stop();
     }
 
+    @Override
     public void prepare() {
     }
 
+    @Override
     public ComponentOperator open() {
         node.performPopupAction("Deploy");
         MainWindowOperator.getDefault().waitStatusText("Finished building " + node.getText() + " (run-deploy).");
@@ -132,7 +153,7 @@ public class DeployTest extends PerformanceTestCase {
             URL url = new URL("http://localhost:8080/" + node.getText());
             InputStream stream = url.openStream();
             stream.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException("Deployed application unavailable.", e);
         }
     }

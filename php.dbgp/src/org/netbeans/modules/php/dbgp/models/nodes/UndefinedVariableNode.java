@@ -49,41 +49,31 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class UndefinedVariableNode extends 
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode 
-{
+class UndefinedVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    private static final String TYPE_UNDEF = "TYPE_Undef"; // NOI18N
+    public static final String UNDEF_VARIABLE_ICON = "org/netbeans/modules/php/dbgp/resources/undefined"; // NOI18N
 
-    private static final String TYPE_UNDEF         = "TYPE_Undef";  // NOI18N
-    
-    public static final String UNDEF_VARIABLE_ICON =
-        "org/netbeans/modules/php/dbgp/resources/undefined";        // NOI18N
-
-    protected UndefinedVariableNode( Property property, AbstractModelNode parent )
-    {
+    protected UndefinedVariableNode(Property property, AbstractModelNode parent) {
         super(property, parent);
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode#getIconBase()
-     */
+
     @Override
     public String getIconBase() {
         return UNDEF_VARIABLE_ICON;
     }
-    
+
     @Override
     public String getType() {
-        return NbBundle.getMessage( UndefinedVariableNode.class, TYPE_UNDEF);
+        return NbBundle.getMessage(UndefinedVariableNode.class, TYPE_UNDEF);
     }
-    
+
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.UNINIT );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.UNINIT);
     }
 
 }

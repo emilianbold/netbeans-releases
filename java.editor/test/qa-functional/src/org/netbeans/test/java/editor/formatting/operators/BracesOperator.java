@@ -84,7 +84,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getClassDeclaration() {
         if (classDeclaration == null) {
             classDeclaration = formattingOperator.getComboBoxByLabel("Class Declaration:");
-            storeDefaultValue(Settings.CLASS_DECLARATION);
+            storeDefaultValue(Settings.BRACES_CLASS_DECLARATION);
         }
         return classDeclaration;
     }
@@ -92,7 +92,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getMethodDeclaration() {
         if (methodDeclaration == null) {
             methodDeclaration = formattingOperator.getComboBoxByLabel("Method Declaration:");
-            storeDefaultValue(Settings.METHOD_DECLARATION);
+            storeDefaultValue(Settings.BRACES_METHOD_DECLARATION);
         }
         return methodDeclaration;
     }
@@ -100,7 +100,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getOtherDeclaration() {
         if (otherDeclaration == null) {
             otherDeclaration = formattingOperator.getComboBoxByLabel("Other:");
-            storeDefaultValue(Settings.OTHER);
+            storeDefaultValue(Settings.BRACES_OTHER);
         }
         return otherDeclaration;
     }
@@ -108,7 +108,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JCheckBoxOperator getspecialElseIf() {
         if (specialElseIf == null) {
             specialElseIf = formattingOperator.getCheckboxOperatorByLabel("Special \"else if\" Treatment");
-            storeDefaultValue(Settings.SPECIAL_ELSE_IF);
+            storeDefaultValue(Settings.BRACES_SPECIAL_ELSE_IF);
         }
         return specialElseIf;
     }
@@ -116,7 +116,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getIfBrace() {
         if (ifBrace == null) {
             ifBrace = formattingOperator.getComboBoxByLabel("\"if\":");
-            storeDefaultValue(Settings.IF);
+            storeDefaultValue(Settings.BRACES_IF);
         }
         return ifBrace;
     }
@@ -124,7 +124,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getForBrace() {
         if (forBrace == null) {
             forBrace = formattingOperator.getComboBoxByLabel("\"for\":");
-            storeDefaultValue(Settings.FOR);
+            storeDefaultValue(Settings.BRACES_FOR);
         }
         return forBrace;
     }
@@ -132,7 +132,7 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getWhileBrace() {
         if (whileBrace == null) {
             whileBrace = formattingOperator.getComboBoxByLabel("\"while\":");
-            storeDefaultValue(Settings.WHILE);
+            storeDefaultValue(Settings.BRACES_WHILE);
         }
         return whileBrace;
     }
@@ -140,34 +140,35 @@ public class BracesOperator extends FormattingPanelOperator {
     public JComboBoxOperator getDoWhileBrace() {
         if (doWhileBrace == null) {
             doWhileBrace = formattingOperator.getComboBoxByLabel("\"do ... while\":");
-            storeDefaultValue(Settings.DO_WHILE);
+            storeDefaultValue(Settings.BRACES_DO_WHILE);
         }
         return doWhileBrace;
     }
     
-    private enum Settings implements OperatorGetter {
+    enum Settings implements OperatorGetter {
 
-        CLASS_DECLARATION, METHOD_DECLARATION, OTHER, SPECIAL_ELSE_IF, IF, FOR, WHILE, DO_WHILE;
+        BRACES_CLASS_DECLARATION, BRACES_METHOD_DECLARATION, BRACES_OTHER, 
+        BRACES_SPECIAL_ELSE_IF, BRACES_IF, BRACES_FOR, BRACES_WHILE, BRACES_DO_WHILE;
 
         @Override
         public Operator getOperator(FormattingPanelOperator fpo) {
             BracesOperator bo = (BracesOperator) fpo;
             switch (this) {
-                case CLASS_DECLARATION:
+                case BRACES_CLASS_DECLARATION:
                     return bo.getClassDeclaration();
-                case METHOD_DECLARATION:
+                case BRACES_METHOD_DECLARATION:
                     return bo.getMethodDeclaration();
-                case OTHER:
+                case BRACES_OTHER:
                     return bo.getOtherDeclaration();
-                case SPECIAL_ELSE_IF:
+                case BRACES_SPECIAL_ELSE_IF:
                     return bo.getspecialElseIf();
-                case IF:
+                case BRACES_IF:
                     return bo.getIfBrace();
-                case FOR:
+                case BRACES_FOR:
                     return bo.getForBrace();
-                case WHILE:
+                case BRACES_WHILE:
                     return bo.getWhileBrace();
-                case DO_WHILE:
+                case BRACES_DO_WHILE:
                     return bo.getDoWhileBrace();                        
             }
             return null;            

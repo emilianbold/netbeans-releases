@@ -149,6 +149,8 @@ final class SheetCellRenderer implements TableCellRenderer {
                     lbl.setIcon((Icon) o);
                 } else if (o instanceof Image) {
                     lbl.setIcon(new ImageIcon((Image) o));
+                } else {
+                    lbl.setIcon(null);
                 }
 
                 result = lbl;
