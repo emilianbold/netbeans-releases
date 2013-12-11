@@ -857,5 +857,148 @@ public class LambdaTest extends GeneratorTestMDRCompat {
         return "";
     }
     
+   public void testAddSecondLambdaParamWithType() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e, f) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        VariableTree vt = node.getParameters().get(0);
+                        workingCopy.rewrite(node, make.addLambdaParameter(node, make.Variable(vt.getModifiers(), "f", vt.getType(), vt.getInitializer())));
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }    
+
+    public void testChangeLambdaToImplicit() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (ChangeEvent e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void scan(Tree node, Void p) {
+                        return super.scan(node, p);
+                    }
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        VariableTree vt = node.getParameters().get(0);
+                        workingCopy.rewrite(node, 
+                                make.LambdaExpression(
+                                    Collections.singletonList(
+                                        make.Variable(
+                                            make.Modifiers(Collections.<Modifier>emptySet()),
+                                            vt.getName(), null, null)), 
+                                    node.getBody())
+                        );
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
     
+    public void testChangeLambdaToExplicit() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (e) -> {};\n" + 
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public static void taragui() {\n" +
+            "        ChangeListener l = (ChangeEvent e) -> {};\n" + 
+            "    }\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+
+                    @Override
+                    public Void scan(Tree node, Void p) {
+                        return super.scan(node, p);
+                    }
+                    
+                    @Override public Void visitLambdaExpression(LambdaExpressionTree node, Void p) {
+                        VariableTree vt = node.getParameters().get(0);
+                        workingCopy.rewrite(node, 
+                                make.LambdaExpression(
+                                    Collections.singletonList(
+                                        make.Variable(
+                                            make.Modifiers(Collections.<Modifier>emptySet()),
+                                            vt.getName(), 
+                                            make.Type("ChangeEvent"), null)), 
+                                    node.getBody())
+                        );
+                        return super.visitLambdaExpression(node, p);
+                    }
+                }.scan(workingCopy.getCompilationUnit(), null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 }

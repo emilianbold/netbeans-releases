@@ -49,6 +49,7 @@ import java.util.*;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
+import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -191,21 +192,26 @@ public final class AptSourcePath implements ClassPathImplementation, PropertyCha
 
     @NonNull
     static Set<? extends URL> getAptBuildGeneratedFolders(@NonNull final List<ClassPath.Entry> entries) {
-        final Set<URL> roots = new HashSet<URL>();
-        final Set<URL> aptRoots = new LinkedHashSet<URL>();
+        final Set<URL> roots = new HashSet<>();
         for (ClassPath.Entry entry : entries) {
             roots.add(entry.getURL());
         }
         for (ClassPath.Entry entry : entries) {
             final FileObject fo = entry.getRoot();
             if (fo != null) {
-                final URL aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
+                URL aptRoot;
+                final APTUtils aptUtils = APTUtils.getIfExist(fo);
+                if (aptUtils != null) {
+                    aptRoot = aptUtils.sourceOutputDirectory();
+                } else {
+                    aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
+                }
                 if (roots.contains(aptRoot)) {
-                    aptRoots.add(aptRoot);
+                    return Collections.singleton(aptRoot);
                 }
             }
         }
-        return aptRoots;
+        return Collections.<URL>emptySet();
     }
 
     private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener {
