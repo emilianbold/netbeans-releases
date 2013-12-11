@@ -118,7 +118,6 @@ function checkSystemversion() {
             <line choice="javaee"></line>
             <line choice="javame"></line>
             <line choice="cpp"></line>
-            <!--line choice="ruby"></line>-->
             <line choice="groovy"></line>
             <line choice="php"></line>
             <line choice="ergonomics"></line>
@@ -139,7 +138,7 @@ function checkSystemversion() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>   
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.webcommon"/>
     </choice>
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
@@ -154,11 +153,6 @@ function checkSystemversion() {
     <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.cpp"></pkg-ref>
     </choice>
-    <!--
-    <choice id="ruby" title="ruby-title" description="ruby-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ruby.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
-        <pkg-ref id="ident.pkg.ruby"></pkg-ref>
-    </choice>
-    -->
     <choice id="groovy" title="groovy-title" description="groovy-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.groovy.selected &amp;&amp; choices.javase.selected" enabled="choices.javase.selected">
         <pkg-ref id="ident.pkg.groovy"></pkg-ref>
     </choice>

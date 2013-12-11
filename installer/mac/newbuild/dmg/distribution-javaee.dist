@@ -136,7 +136,7 @@ function checkSystemversion() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice>
-    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommmon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
+    <choice id="webcommon" title="webcommon-title" description="webcommon-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.webcommon.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.webcommon"/>
     </choice>
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
