@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 19
+#define FS_SERVER_MINOR_VERSION 20
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -652,33 +652,6 @@ static void response_add_or_remove_watch(int request_id, const char* path, bool 
     dirtab_unlock(el);
 }
 
-static void process_request(fs_request* request) {
-    switch (request->kind) {
-        case FS_REQ_LS:
-            response_ls(request->id, request->path, false, false);
-            break;
-        case FS_REQ_RECURSIVE_LS:
-            response_ls(request->id, request->path, true, false);
-            break;
-        case FS_REQ_STAT:
-            response_stat(request->id, request->path);
-            break;
-        case FS_REQ_LSTAT:
-            response_lstat(request->id, request->path);
-            break;
-        case FS_REQ_ADD_WATCH:
-            response_add_or_remove_watch(request->id, request->path, true);
-            break;
-        case FS_REQ_REMOVE_WATCH:
-            response_add_or_remove_watch(request->id, request->path, false);
-            break;
-        default:
-            report_error("unexpected mode: '%c'\n", request->kind);
-    }
-    //fflush(stdout);
-    //fflush(stderr);
-}
-
 static int entry_comparator(const void *element1, const void *element2) {
     const fs_entry *e1 = *((fs_entry**) element1);
     const fs_entry *e2 = *((fs_entry**) element2);
@@ -686,12 +659,20 @@ static int entry_comparator(const void *element1, const void *element2) {
     return res;
 }
 
-static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
+static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
+    bool explicit = false;
+    int request_id = 0;
+    if (data) {
+        request_id = ((fs_request*) data)->id;
+        explicit = true;
+    }
     if (is_prohibited(path)) {
         trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
         return true;
     }
-    if (dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
+    dirtab_lock(el);
+    if (!explicit && dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
+        dirtab_unlock(el);
         trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
         return true;
     }
@@ -699,9 +680,8 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
-    dirtab_lock(el);
     dirtab_state state = dirtab_get_state(el);
-    if (state == DE_STATE_REFRESH_SENT) {
+    if (!explicit && state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
         return true;
@@ -784,7 +764,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el) {
     if (differs) {
         trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        my_fprintf(STDOUT, "%c 0 %li %s\n", FS_RSP_CHANGE, (long) utf8_strlen(path), path);
+        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_CHANGE, request_id, (long) utf8_strlen(path), path);
         my_fflush(STDOUT);
         dirtab_set_state(el, DE_STATE_REFRESH_SENT);
     }
@@ -808,6 +788,19 @@ static void thread_shutdown() {
     err_shutdown();
 }
 
+static void refresh_cycle(fs_request* request) {
+    dirtab_flush(); // TODO: find the appropriate place
+    stopwatch_start();
+    if (request) {
+        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_REFRESH, request->id, (long) utf8_strlen(request->path), request->path);
+    }
+    dirtab_visit(refresh_visitor, request);
+    if (request) {
+        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request->id, (long) utf8_strlen(request->path), request->path);
+    }
+    stopwatch_stop(TRACE_FINE, "refresh cycle");    
+}
+
 static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager started; sleep interval is %d\n", refresh_sleep);
     thread_init();    
@@ -818,10 +811,7 @@ static void *refresh_loop(void *data) {
     while (!is_broken_pipe() && state_get_proceed()) {
         pass++;
         trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
-        dirtab_flush(); // TODO: find the appropriate place
-        stopwatch_start();
-        dirtab_visit(refresh_visitor);
-        stopwatch_stop(TRACE_FINE, "refresh cycle");
+        refresh_cycle(NULL);
         if (refresh_sleep) {
             sleep(refresh_sleep);
         }
@@ -829,6 +819,38 @@ static void *refresh_loop(void *data) {
     trace(TRACE_INFO, "Refresh manager stopped\n");
     thread_shutdown();
     return NULL;
+}
+
+static void response_refresh(fs_request* request) {
+    refresh_cycle(request);
+}
+
+static void process_request(fs_request* request) {
+    switch (request->kind) {
+        case FS_REQ_LS:
+            response_ls(request->id, request->path, false, false);
+            break;
+        case FS_REQ_RECURSIVE_LS:
+            response_ls(request->id, request->path, true, false);
+            break;
+        case FS_REQ_STAT:
+            response_stat(request->id, request->path);
+            break;
+        case FS_REQ_LSTAT:
+            response_lstat(request->id, request->path);
+            break;
+        case FS_REQ_ADD_WATCH:
+            response_add_or_remove_watch(request->id, request->path, true);
+            break;
+        case FS_REQ_REMOVE_WATCH:
+            response_add_or_remove_watch(request->id, request->path, false);
+            break;
+        case FS_REQ_REFRESH:
+            response_refresh(request);
+            break;
+        default:
+            report_error("unexpected mode: '%c'\n", request->kind);
+    }
 }
 
 static void *rp_loop(void *data) {
@@ -1029,7 +1051,7 @@ void process_options(int argc, char* argv[]) {
     }
 }
 
-static bool print_visitor(const char* path, int index, dirtab_element* el) {
+static bool print_visitor(const char* path, int index, dirtab_element* el, void *data) {
     trace(TRACE_INFO, "%d %s\n", index, path);
     return true;
 }
@@ -1075,7 +1097,7 @@ static void startup() {
     state_init();
     if (is_traceable(TRACE_FINER) && ! dirtab_is_empty()) {
         trace(TRACE_INFO, "loaded dirtab\n");
-        dirtab_visit(print_visitor);
+        dirtab_visit(print_visitor, NULL);
     }
     int curr_thread = 0;
     if (rp_thread_count > 1) {

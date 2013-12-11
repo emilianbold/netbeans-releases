@@ -70,7 +70,6 @@ typedef enum {
     DE_WSTATE_WATCH = 2
 } dirtab_watch_state;
 
-struct dirtab_element;
 typedef struct dirtab_element dirtab_element;
     
 void dirtab_set_persistence_dir(const char* dir);
@@ -95,7 +94,7 @@ void dirtab_unlock(dirtab_element *el);
 
 const char*  dirtab_get_element_cache_path(dirtab_element *e);
 
-void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el));
+void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el, void *data), void *data);
 
 bool dirtab_is_empty();
 
