@@ -312,7 +312,6 @@ public final class PhpUnit {
             buffer.append("%"); // NOI18N
             params.add(FILTER_PARAM);
             params.add(buffer.toString());
-            runInfo.resetCustomTests();
         }
 
         if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
