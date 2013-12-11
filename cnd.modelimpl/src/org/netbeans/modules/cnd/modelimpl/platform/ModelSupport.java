@@ -174,7 +174,7 @@ public class ModelSupport implements PropertyChangeListener {
 
         if (!isStandalone()) {
             openedProjects.clear();
-            hasOpenedProjects.set(true);
+            hasOpenedProjects.set(false);
             if (TRACE_STARTUP) {
                 System.out.println("Model support: Inited"); // NOI18N
             }
