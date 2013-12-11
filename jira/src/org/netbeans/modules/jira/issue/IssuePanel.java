@@ -266,6 +266,7 @@ public class IssuePanel extends javax.swing.JPanel {
         
         dueDatePicker = UIUtils.createDatePickerComponent();
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDueField, dueDatePicker.getComponent());
+        dueLabel.setLabelFor(dueDatePicker.getComponent());
         attachFieldStatusListeners();
         attachHideStatusListener();
         
@@ -1293,7 +1294,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                updateFieldStatuses();
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run () {
+                        updateFieldStatuses();
+                    }
+                });
             }
         }
     };

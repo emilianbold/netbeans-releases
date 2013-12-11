@@ -524,4 +524,30 @@ made subject to such option by the copyright holder.
             <file name="1.xsd" url="projectui-open-files.xsd"/>
         </folder>
     </folder>
+    <folder name="OptionsExport">
+        <!-- category -->
+        <folder name="Projects">
+            <attr name="position" intvalue="317"/>
+            <!-- category display name -->
+            <attr name="displayName"
+              bundlevalue="org.netbeans.modules.project.ui.Bundle#Export_Category_Display_Name"/>
+            <!-- item -->
+            <file name="Basic">
+                <attr name="position" intvalue="100"/>
+                <attr name="include"
+                  stringvalue="config/Preferences/org/netbeans/modules/projectui/.*|config/Preferences/org/netbeans/modules/projectui.properties"/>
+                <attr name="exclude" 
+                  stringvalue="config/Preferences/org/netbeans/modules/projectui/groups/.*|config/Preferences/org/netbeans/modules/projectui/groups.properties"/>
+                <attr name="displayName"
+                  bundlevalue="org.netbeans.modules.project.ui.Bundle#Export_Display_Name"/>
+            </file>
+            <file name="Groups">
+                <attr name="position" intvalue="200"/>
+                <attr name="include"
+                  stringvalue="config/Preferences/org/netbeans/modules/projectui/groups/.*|config/Preferences/org/netbeans/modules/projectui/groups.properties"/>
+                <attr name="displayName"
+                  bundlevalue="org.netbeans.modules.project.ui.Bundle#Export_Groups_Display_Name"/>
+            </file>
+        </folder>
+    </folder>    
 </filesystem>
