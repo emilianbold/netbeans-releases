@@ -45,8 +45,8 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       _load:METHOD:[PUBLIC]:ESCAPED{_load}ESCAPED{(}ESCAPED{reload}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
         that:CLASS:[PRIVATE]:ESCAPED{that}:
           canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
-            width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.widthESCAPED{|}that.json.width</font>:
-          columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}margin.innerLeftESCAPED{|}margin.innerRightESCAPED{|}margin.leftESCAPED{|}margin.rightESCAPED{|}prv.json.widthESCAPED{|}that.json.widthESCAPED{|}that.weeks</font>:
+            width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }that.json.width</font>:
+          columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}margin.innerLeftESCAPED{|}margin.innerRightESCAPED{|}margin.leftESCAPED{|}margin.rightESCAPED{|}that.json.widthESCAPED{|}that.weeks</font>:
           json:CLASS:[PUBLIC]:ESCAPED{json}:
           weeks:FIELD:[PUBLIC]:ESCAPED{weeks}<font color="#999999">ESCAPED{ : }Number</font>:
       _searchNextValue:METHOD:[PUBLIC]:ESCAPED{_searchNextValue}ESCAPED{(}ESCAPED{index}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
@@ -75,7 +75,7 @@ ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
       json:CLASS:[PUBLIC]:ESCAPED{json}:
       layer:CLASS:[PUBLIC]:ESCAPED{layer}:
         height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
-        width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.layer@pro;json@pro;width</font>:
+        width:FIELD:[PUBLIC]:ESCAPED{width}:
       layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}:
       maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
       minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:

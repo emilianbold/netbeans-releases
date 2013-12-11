@@ -49,8 +49,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
@@ -67,7 +65,6 @@ import org.openide.util.WeakListeners;
  * @author marekfukala
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
-    private static final Logger LOG = Logger.getLogger(CompositeComponentLibrary.class.getName());
 
     /**
      * Name of the folder/s where the composite library components are located. 
@@ -237,13 +234,10 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 if (model == null) {
                     model = cc.getComponentModel();
                     if (model != null) {
-                        LOG.log(Level.FINE, "CompositeComponentModel for {0} not cached yet, loaded from index.", cc.getName());
                         modelsCache.put(cc, model);
                     } else {
                         return;
                     }
-                } else if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Using the cached CompositeComponentModel for component: {0}.", cc.getName());
                 }
                 String relativePath = model.getRelativePath();
 

@@ -228,10 +228,12 @@ static bool flush_impl() {
     }
 }
 
+/** call dirtab_lock() before!  */
 dirtab_state dirtab_get_state(dirtab_element *el) {
     return el->state;
 }
 
+/** call dirtab_lock() before!  */
 void dirtab_set_state(dirtab_element *el, dirtab_state state) {
     el->state = state;
 }
@@ -437,7 +439,7 @@ const char*  dirtab_get_element_cache_path(dirtab_element *el) {
     return el->cache_path;
 }
 
-void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el)) {
+void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* el, void *data), void *data) {
     mutex_lock(&table.mutex);
     int size = table.size;
     int mem_size = size * sizeof(dirtab_element**);
@@ -446,7 +448,7 @@ void dirtab_visit(bool (*visitor) (const char* path, int index, dirtab_element* 
     mutex_unlock(&table.mutex);
     for (int i = 0; i < size; i++) {
         dirtab_element* el = paths[i];
-        bool proceed = visitor(el->abspath, el->index, el);
+        bool proceed = visitor(el->abspath, el->index, el, data);
         if (!proceed) {
             break;
         }
