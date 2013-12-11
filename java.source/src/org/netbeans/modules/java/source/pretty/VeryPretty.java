@@ -1660,10 +1660,25 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         return sb.toString();
     }
+    
+    private static final String[] typeTagNames = new String[TypeTag.values().length];
+    
+    static {
+        for (TypeTag tt : TypeTag.values()) {
+            typeTagNames[tt.ordinal()] = tt.name().toLowerCase(Locale.ENGLISH);
+        }
+    }
+    
+    /**
+     * Workaround for defect #239258. Converts typetag names into lowercase using ENGLISH locale.
+     */
+    static String typeTagName(TypeTag tt) {
+        return typeTagNames[tt.ordinal()];
+    }
 
     @Override
     public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-	print(tree.typetag.name().toLowerCase());
+	print(typeTagName(tree.typetag));
     }
 
     @Override
@@ -2419,13 +2434,41 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
 
     public void printFlags(long flags, boolean addSpace) {
-	print(TreeInfo.flagNames(flags & ~INTERFACE & ~ANNOTATION & ~ENUM));
+	print(flagNames(flags & ~INTERFACE & ~ANNOTATION & ~ENUM));
         if ((flags & StandardFlags) != 0) {
             if (cs.placeNewLineAfterModifiers())
                 toColExactly(out.leftMargin);
             else if (addSpace)
 	        needSpace();
         }
+    }
+    
+    private static final String[] flagLowerCaseNames = new String[Flag.values().length];
+    
+    static {
+        for (Flag flag : Flag.values()) {
+            flagLowerCaseNames[flag.ordinal()] = flag.name().toLowerCase(Locale.ENGLISH);
+        }
+    }
+    
+    /**
+     * Workaround for defect #239258. Prints flag names converted to lowercase in ENGLISH locale to 
+     * avoid weird Turkish I > i-without-dot-above conversion.
+     * 
+     * @param flags flags
+     * @return flag names, space-separated.
+     */
+    public static String flagNames(long flags) {
+        flags = flags & Flags.ExtendedStandardFlags;
+        StringBuilder buf = new StringBuilder();
+        String sep = ""; // NOI18N
+        for (Flag flag : Flags.asFlagSet(flags)) {
+            buf.append(sep);
+            String fname = flagLowerCaseNames[flag.ordinal()];
+            buf.append(fname);
+            sep = " "; // NOI18N
+        }
+        return buf.toString().trim();
     }
 
     public void printBlock(JCTree oldT, JCTree newT, Kind parentKind) {
