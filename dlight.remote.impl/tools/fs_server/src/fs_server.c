@@ -308,6 +308,7 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
     if (!p) { return NULL; }; // decode_int already printed error message
     
     tmp.name = (char*) p;
+    tmp.name_len = utf8_bytes_count(tmp.name, tmp.name_len);
     if (p + tmp.name_len >= buf + buf_size) {
         report_error("wrong entry format: too long (%i) name: %s", tmp.name_len, buf);
         return NULL;
