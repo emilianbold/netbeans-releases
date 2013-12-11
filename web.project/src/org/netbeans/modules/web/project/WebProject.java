@@ -68,10 +68,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
@@ -192,6 +190,9 @@ import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
@@ -908,6 +909,7 @@ public final class WebProject implements Project {
         ProjectOpenedHookImpl() {}
 
         @Override
+        @NbBundle.Messages("ERR_ProjectReadOnly=The project folder is read-only.")
         protected void projectOpened() {
             evaluator().addPropertyChangeListener(WebProject.this.webModule);
 
@@ -927,7 +929,13 @@ public final class WebProject implements Project {
                     }
                 });
             } catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                // #222721 - Provide a better error message in case of read-only location of project.
+                if (!WebProject.this.getProjectDirectory().canWrite()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.ERR_ProjectReadOnly());
+                    DialogDisplayer.getDefault().notify(nd);
+                } else {
+                    Logger.getLogger("global").log(Level.INFO, null, e);
+                }
             }
 
             try {
@@ -1021,7 +1029,13 @@ public final class WebProject implements Project {
                 }
 
             } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);
+                // #222721 - Provide a better error message in case of read-only location of project.
+                if (!WebProject.this.getProjectDirectory().canWrite()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.ERR_ProjectReadOnly());
+                    DialogDisplayer.getDefault().notify(nd);
+                } else {
+                    LOGGER.log(Level.INFO, null, e);
+                }
             }
 
             webModule.getConfigSupport().addLibraryChangeListener(new ChangeListener() {
@@ -1191,7 +1205,13 @@ public final class WebProject implements Project {
             try {
                 ProjectManager.getDefault().saveProject(WebProject.this);
             } catch (IOException e) {
-                Exceptions.printStackTrace(e);
+                // #222721 - Provide a better error message in case of read-only location of project.
+                if (!WebProject.this.getProjectDirectory().canWrite()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.ERR_ProjectReadOnly());
+                    DialogDisplayer.getDefault().notify(nd);
+                } else {
+                    Exceptions.printStackTrace(e);
+                }
             }
         }
 
@@ -1304,7 +1324,13 @@ public final class WebProject implements Project {
             try {
                 ProjectManager.getDefault().saveProject(WebProject.this);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Project cannot be saved.", e);
+                // #222721 - Provide a better error message in case of read-only location of project.
+                if (!WebProject.this.getProjectDirectory().canWrite()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.ERR_ProjectReadOnly());
+                    DialogDisplayer.getDefault().notify(nd);
+                } else {
+                    Exceptions.printStackTrace(e);
+                }
             }
 
             // Unregister copy on save support

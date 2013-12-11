@@ -57,7 +57,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -117,7 +116,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
@@ -838,6 +839,7 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
         }
 
         @Override
+        @NbBundle.Messages("ERR_ProjectReadOnly=The project folder is read-only.")
         public void actionPerformed(ActionEvent e) {
             try {
                 helper.requestUpdate();
@@ -857,7 +859,13 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
                 }
                 testBroken();
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, "Error occured while trying to save project.", ioe);
+                // #222721 - Provide a better error message in case of read-only location of project.
+                if (!project.getProjectDirectory().canWrite()) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.ERR_ProjectReadOnly());
+                    DialogDisplayer.getDefault().notify(nd);
+                } else {
+                    Exceptions.printStackTrace(ioe);
+                }
             }
         }
 
