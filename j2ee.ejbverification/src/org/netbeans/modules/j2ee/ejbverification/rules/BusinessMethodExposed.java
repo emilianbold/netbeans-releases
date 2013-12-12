@@ -44,13 +44,11 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -61,15 +59,12 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
 import org.netbeans.modules.j2ee.ejbverification.fixes.ExposeBusinessMethod;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
@@ -105,30 +100,16 @@ public class BusinessMethodExposed {
         final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx != null && ctx.getEjb() instanceof Session) {
-            final Session session = (Session) ctx.getEjb();
             final Collection<TypeElement> localInterfaces = new ArrayList<>();
             final Collection<TypeElement> remoteInterfaces = new ArrayList<>();
 
             EjbJar ejbModule = ctx.getEjbModule();
             Profile profile = ejbModule.getJ2eeProfile();
             if (profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
-                final int[] intfCount = new int[1];
-                try {
-                    ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
-                        @Override
-                        public Void run(EjbJarMetadata metadata) throws Exception {
-                            intfCount[0] = session.getBusinessLocal().length + session.getBusinessRemote().length;
-                            localInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), session.getBusinessLocal()));
-                            remoteInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), session.getBusinessRemote()));
-                            return null;
-                        }
-                    });
-                } catch (MetadataModelException ex) {
-                    LOG.log(Level.WARNING, ex.getMessage(), ex);
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, ex.getMessage(), ex);
-                }
-                if (intfCount[0] == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)) {
+                int intfCount = ctx.getEjbData().getBusinessLocal().length + ctx.getEjbData().getBusinessRemote().length;
+                localInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessLocal()));
+                remoteInterfaces.addAll(resolveClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessRemote()));
+                if (intfCount == 0 || JavaUtils.hasAnnotation(ctx.getClazz(), EJBAPIAnnotations.LOCAL_BEAN)) {
                     return null;
                 }
             }

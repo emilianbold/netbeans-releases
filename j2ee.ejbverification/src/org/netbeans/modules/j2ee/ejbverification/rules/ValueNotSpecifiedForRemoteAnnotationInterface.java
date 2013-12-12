@@ -44,10 +44,8 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.modules.j2ee.ejbverification.EJBAPIAnnotations;

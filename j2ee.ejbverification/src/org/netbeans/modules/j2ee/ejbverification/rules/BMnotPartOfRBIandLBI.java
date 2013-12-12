@@ -44,7 +44,6 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,19 +51,15 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.ejbverification.JavaUtils;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint;
@@ -106,45 +101,30 @@ public final class BMnotPartOfRBIandLBI {
         List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx != null && ctx.getEjb() instanceof Session) {
-            final Session session = (Session) ctx.getEjb();
-
             final Collection<ExecutableElement> localMethods = new ArrayList<>();
             final Map<String, ExecutableElement> remoteMethods = new HashMap<>();
 
-            try {
-                ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
-                    @Override
-                    public Void run(EjbJarMetadata metadata) throws Exception {
-                        // local methods
-                        localMethods.addAll(getMethodsFromClasses(ctx.getComplilationInfo(), session.getBusinessLocal()));
-                        // remote methods
-                        for (ExecutableElement method : getMethodsFromClasses(ctx.getComplilationInfo(), session.getBusinessRemote())) {
-                            remoteMethods.put(method.getSimpleName().toString(), method);
-                        }
-                        return null;
-                    }
-                });
-
-                for (ExecutableElement localMethod : localMethods) {
-                    ExecutableElement sameNameRemoteMethod = remoteMethods.get(
-                            localMethod.getSimpleName().toString());
-
-                    if (sameNameRemoteMethod != null) {
-                        if (JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
-                                localMethod, sameNameRemoteMethod)) {
-                            ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                                    Bundle.BMnotPartOfRBIandLBI_err(), Severity.WARNING);
-
-                            return Collections.singletonList(err);
-                        }
-                    }
-                }
-            } catch (MetadataModelException ex) {
-                LOG.log(Level.WARNING, ex.getMessage(), ex);
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, ex.getMessage(), ex);
+            // local methods
+            localMethods.addAll(getMethodsFromClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessLocal()));
+            // remote methods
+            for (ExecutableElement method : getMethodsFromClasses(ctx.getComplilationInfo(), ctx.getEjbData().getBusinessRemote())) {
+                remoteMethods.put(method.getSimpleName().toString(), method);
             }
 
+            for (ExecutableElement localMethod : localMethods) {
+                ExecutableElement sameNameRemoteMethod = remoteMethods.get(
+                        localMethod.getSimpleName().toString());
+
+                if (sameNameRemoteMethod != null) {
+                    if (JavaUtils.isMethodSignatureSame(ctx.getComplilationInfo(),
+                            localMethod, sameNameRemoteMethod)) {
+                        ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
+                                Bundle.BMnotPartOfRBIandLBI_err(), Severity.WARNING);
+
+                        return Collections.singletonList(err);
+                    }
+                }
+            }
         }
         return problems;
     }
