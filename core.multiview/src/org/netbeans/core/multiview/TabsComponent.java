@@ -137,6 +137,7 @@ class TabsComponent extends JPanel {
         this.model = model;
 
         cardLayout = new CardLayout();
+        componentPanel.removeAll();
         componentPanel.setLayout(cardLayout);
         if( null != layerUI ) {
             add(new JLayer( componentPanel, layerUI), BorderLayout.CENTER);
@@ -667,6 +668,7 @@ class TabsComponent extends JPanel {
             if (innerbar == null) {
                 innerbar = getEmptyInnerToolBar();
             }
+            innerbar.setOpaque(false);
             innerbar.putClientProperty(TOOLBAR_MARKER, "X"); //NOI18N
             // need to set it to null, because CloneableEditor set's the border for the editor bar part only..
             if (!AQUA) {

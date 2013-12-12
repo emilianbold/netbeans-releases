@@ -110,6 +110,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="Multiview.AddRemoveTabsAtRuntime">
+        <api name="multiview_api"/>
+        <summary>Add/Remove MultiView elements to an existing MultiView TopComponent at runtime.</summary>
+        <version major="1" minor="38"/>
+        <date day="5" month="12" year="2013"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes" semantic="compatible"/>
+        <description>
+	    It is possible to add/remove multiview elements at runtime.
+        </description>
+        <class package="org.netbeans.core.api.multiview" name="MultiViewHandler"/>
+        <issue number="239088"/>
+    </change>
     <change id="Multiview.Spliting">
         <summary>MultiView TopComponent spliting</summary>
         <version major="1" minor="35"/>
