@@ -149,7 +149,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             public void windowGainedFocus(WindowEvent e) {
                 if (e.getOppositeWindow() == null) {
                     if (ConnectionManager.getInstance().isConnectedTo(RemoteFileSystem.this.execEnv)) {
-                        refreshManager.scheduleRefreshOnFocusGained(factory.getCachedFileObjects());
+                        refreshManager.scheduleRefreshOnFocusGained();
                     }
                 }
             }
@@ -178,13 +178,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         readOnlyConnectNotification.compareAndSet(true, false);
         if (execEnv.equals(env)) {
             Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();            
-            refreshManager.scheduleRefreshOnConnect(cachedFileObjects);
+            refreshManager.scheduleRefreshOnConnect();
             for (RemoteFileObjectBase fo : cachedFileObjects) {
                 fo.connectionChanged();
             }
         }
     }
-        
+
     @Override
     public void disconnected(ExecutionEnvironment env) {
         readOnlyConnectNotification.compareAndSet(true, false);

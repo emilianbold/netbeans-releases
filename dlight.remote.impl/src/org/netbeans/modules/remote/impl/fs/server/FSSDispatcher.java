@@ -55,11 +55,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -77,7 +74,6 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
-import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.InstalledFileLocator;
@@ -101,7 +97,7 @@ import org.openide.util.RequestProcessor;
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
-    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
+    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
@@ -121,12 +117,6 @@ import org.openide.util.RequestProcessor;
     
     private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
     
-    private final Set<String> refreshSet = new TreeSet<String>();
-    private final LinkedList<String> refreshQueue = new LinkedList<String>();
-    private final Object refreshLock = new Object();
-    private final RequestProcessor refreshRp = new RequestProcessor(getClass().getSimpleName() + "_Refresh"); //NOI18N
-    private final RequestProcessor.Task refreshTask = refreshRp.create(new RefreshRunnable());
-
     private volatile boolean cleanupUponStart = false;
     
     private FSSDispatcher(ExecutionEnvironment env) {
@@ -138,44 +128,9 @@ import org.openide.util.RequestProcessor;
         cleanupUponStart = cleanup;
     }
     
-    private class RefreshRunnable implements Runnable {
-        @Override
-        public void run() {
-            while (true) {
-                List<String> paths = new ArrayList<String>();
-                synchronized (refreshLock) {
-                    if (refreshQueue.isEmpty()) {
-                        try {
-                            refreshLock.wait(1000);
-                        } catch (InterruptedException ex) {
-                            //nothing
-                        }
-                    } else {
-                        paths.addAll(refreshQueue);
-                        refreshQueue.clear();
-                        refreshSet.clear();
-                    }
-                }
-                for (String path : paths) {
-                    RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
-                    if (fo != null) {
-                        RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-                        refreshManager.scheduleRefresh(Arrays.asList(fo.getImplementor()), false);
-                    }
-                }
-            }
-        }        
-    }
-    
     private void addToRefresh(String path) {
-        synchronized (refreshLock) {
-            if (!refreshSet.contains(path)) {
-                refreshSet.add(path);
-                refreshQueue.add(path);
-                refreshLock.notifyAll();
-            }
-        }
-        refreshTask.schedule(0);
+        RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
+        refreshManager.scheduleRefreshExistent(Arrays.asList(path));
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -189,8 +144,27 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    public boolean isRefreshing() {
+        return REFRESH_INTERVAL > 0;
+    }
+
     public void connected() {
         RP.post(new ConnectTask());
+    }
+
+    void requestRefreshCycle(String path) {
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
+        try {
+            dispatch(req);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (CancellationException ex) {
+            // don't report CancellationException
+        } catch (InterruptedException ex) {
+            // don't report InterruptedException
+        } catch (ExecutionException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     private class ConnectTask implements Runnable {
@@ -337,11 +311,14 @@ import org.openide.util.RequestProcessor;
 
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
-        FSSResponse response = new FSSResponse(request, this);
-        synchronized (responseLock) {
-            RemoteLogger.assertNull(responses.get(request.getId()),
-                    "response should be null for id {0}", request.getId()); // NOI18N
-            responses.put(request.getId(), response);
+        FSSResponse response = null;
+        if (request.needsResponse()) {
+            response = new FSSResponse(request, this);
+            synchronized (responseLock) {
+                RemoteLogger.assertNull(responses.get(request.getId()),
+                        "response should be null for id {0}", request.getId()); // NOI18N
+                responses.put(request.getId(), response);
+            }
         }
         FsServer srv;
         try {

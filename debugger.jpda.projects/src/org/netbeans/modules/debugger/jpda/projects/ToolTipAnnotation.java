@@ -83,6 +83,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -242,8 +243,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             String type = v.getType ();
             if (v instanceof ObjectVariable) {
                 tooltipVariable = (ObjectVariable) v;
+                v = getFormattedValue(d, (ObjectVariable) v);
+            }
+            if (v instanceof ObjectVariable) {
                 try {
-                    String toString = tooltipVariable.getToStringValue();
+                    String toString = ((ObjectVariable) v).getToStringValue();
                     toolTipText = expression + " = " +
                         (type.length () == 0 ?
                             "" :
@@ -313,6 +317,14 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             });
         } else {
             firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
+        }
+    }
+    
+    private Variable getFormattedValue(JPDADebugger d, ObjectVariable ov) {
+        try {
+            return (Variable) d.getClass().getMethod("getFormattedValue", ObjectVariable.class).invoke(d, ov);
+        } catch (Exception ex) {
+            return ov;
         }
     }
     
