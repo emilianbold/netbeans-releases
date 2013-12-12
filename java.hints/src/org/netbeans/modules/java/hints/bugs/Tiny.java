@@ -43,18 +43,23 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,8 +70,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -84,6 +90,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
@@ -99,6 +106,8 @@ import org.openide.util.NbBundle.Messages;
     "DN_indentation=Confusing indentation",
     "DESC_indentation=Warns about indentation that suggests possible missing surrounding block",
     "ERR_indentation=Confusing indentation",
+    "TEXT_MissingSwitchCase=Possibly missing switch `case' statement",
+    "FIX_AddMissingSwitchCase=Replace label with switch case",
 })
 public class Tiny {
 
@@ -315,7 +324,70 @@ public class Tiny {
         
         return indent;
     }
+    
+    @Hint(category = "bugs", displayName = "#DN_MissingSwitchcase", description = "#DESC_MissingSwitchcase", 
+            enabled = true, severity = Severity.VERIFIER)
+//    @TriggerPattern("switch ($expr) { $cases1$; case $c: $stmts1$; $l: $stmt; $stmts2$; $cases2$;")
+    @TriggerPattern("case $c: $stmts1$; $l: $stmt;")
+    public static ErrorDescription switchCaseLabelMismatch(HintContext ctx) {
+        TreePath path = ctx.getPath();
+        if (path.getLeaf().getKind() != Tree.Kind.CASE) {
+            return null;
+        }
+        final CompilationInfo ci = ctx.getInfo();
+        Tree swTree = path.getParentPath().getLeaf();
+        assert swTree.getKind() == Tree.Kind.SWITCH;
+        Tree xp = ((SwitchTree)swTree).getExpression();
+        TypeMirror m = ci.getTrees().getTypeMirror(new TreePath(path.getParentPath(), xp));
+        if (m == null || m.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+        Element e = ((DeclaredType)m).asElement();
+        // check that the switch expression is an enum; enum identifiers can be confused with labels
+        if (e == null || e.getKind() != ElementKind.ENUM) {
+            return null;
+        }
+        
+        // check that the label is not used within its case statement in no break / continue clause
+        // the $l is bound to the label identifier, not to the labeled statement!
+        TreePath stPath = ctx.getVariables().get("$stmt"); // NOI18N
+        TreePath lPath = stPath.getParentPath();
+        LabeledStatementTree lt = (LabeledStatementTree)lPath.getLeaf();
+        final Name l = lt.getLabel();
+        Boolean b = new TreeScanner<Boolean, Void>() {
 
+            @Override
+            public Boolean reduce(Boolean r1, Boolean r2) {
+                if (r1 == null) {
+                    return r2;
+                } else if (r2 == null) {
+                    return r1;
+                } else {
+                    return r1 || r2;
+                }
+            }
+
+            @Override
+            public Boolean visitContinue(ContinueTree node, Void p) {
+                return node.getLabel() == l;
+            }
+
+            @Override
+            public Boolean visitBreak(BreakTree node, Void p) {
+                return node.getLabel() == l;
+            }
+            
+        }.scan(path.getLeaf(), null);
+        if (Boolean.TRUE == b) {
+            // label is a target of a break/continue do not report.
+            return null;
+        }
+        
+        return ErrorDescriptionFactory.forName(ctx, lt, Bundle.TEXT_MissingSwitchCase(), 
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_AddMissingSwitchCase(), lPath, 
+                    "case " + l.toString() + ": $stmt;"));
+    }
+    
     @Hint(
             displayName = "#DN_HashCodeOnArray",
             description = "#DESC_HashCodeOnArray",

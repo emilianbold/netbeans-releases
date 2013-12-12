@@ -118,8 +118,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
         Scope s = info.getTrees().getScope(path);
         for (ExecutableElement ee : lee) {
-            TypeElement tel = info.getElementUtilities().enclosingTypeElement(ee);
-            if (!info.getTrees().isAccessible(s, ee, (DeclaredType)tel.asType())) {
+            if (!info.getTrees().isAccessible(s, ee, (DeclaredType)e.asType())) {
                 data.setData(true);
                 return Bundle.ERR_CannotOverrideAbstractMethods();
                 
