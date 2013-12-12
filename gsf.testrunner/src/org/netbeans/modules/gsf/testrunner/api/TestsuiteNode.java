@@ -78,8 +78,8 @@ public class TestsuiteNode extends AbstractNode {
      * The max line length to display in the messages.
      * 
      * By default, the max line length for the messages in the Test Results
-     * window will be set to 120 for the GTK look and feel, and won't be limited
-     * for other look and feels. For any look and feel a user can change the
+     * window will be set to 120 for the GTK look and feel or JDK8, and won't be limited
+     * for other look and feels or JDKs. For any look and feel or JDK a user can change the
      * default setting via the system property
      * {@code testrunner.max.msg.line.length=MAX_LINE_LENGTH},
      * where  {@code MAX_LINE_LENGTH} is a desired value.
@@ -90,7 +90,7 @@ public class TestsuiteNode extends AbstractNode {
      */
     static final int MAX_MSG_LINE_LENGTH = 
           Integer.getInteger("testrunner.max.msg.line.length", //NOI18N
-                             isGTK() ? 120 : Integer.MAX_VALUE);
+                             isGTK() || isJDK8() ? 120 : Integer.MAX_VALUE);
 
     protected String suiteName;
     protected TestSuite suite;
@@ -433,6 +433,15 @@ public class TestsuiteNode extends AbstractNode {
      */
     private static boolean isGTK() {
         return "GTK".equals(UIManager.getLookAndFeel().getID());
+    }
+    
+    /**
+     * Checks whether the currently used JDK version is 1.8.x_xx
+     *
+     * @return {@code true} if the currently used JDK version is 8, otherwise {@code false}.
+     */
+    private static boolean isJDK8() {
+        return Integer.parseInt(System.getProperty("java.version").split(".")[1]) == 8;
     }
 
 }
