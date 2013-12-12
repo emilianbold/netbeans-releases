@@ -660,18 +660,25 @@ public class Css3ParserLessTest extends CssTestBase {
 
     public void testEscapedString() {
         assertParses("@str: \"hello\";");
-        
+
         assertParses("@var: ~\"xyz\";");
-        
+
         assertParses("@var: ~`\"@{str}\".toUpperCase() + '!'`;");
     }
 
 //    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
 //    public void testMixinCallAsSelector() {
 //        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
-//        
+//
 //        assertParses(".subnav-fixed {\n"
 //                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
 //                + "}");
 //    }
+
+    public void testIssue236388() {
+        assertParses("@media only screen and (min-width: 768px) {\n" +
+                "    @import \"_grid.less\";\n" +
+                "    @import \"_768up.less\";\n" +
+                "}");
+    }
 }
