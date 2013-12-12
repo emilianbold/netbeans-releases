@@ -693,4 +693,12 @@ public class Css3ParserLessTest extends CssTestBase {
                 "  height: auto;\n" +
                 "}");
     }
+
+    public void issue237975_01() {
+        assertParses("@import (less) \"theme\";");
+    }
+
+    public void issue237975_02() {
+        assertParses("@import (css) \"theme\";");
+    }
 }

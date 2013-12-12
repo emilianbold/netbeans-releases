@@ -59,7 +59,7 @@ import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
  * @author Marek Fukala
  */
 public enum CssTokenId implements TokenId {
-        
+
      /* Defined categories:
      * -------------------
      * others
@@ -77,14 +77,14 @@ public enum CssTokenId implements TokenId {
      * whitespace
      * comment
      */
-   
+
     //see the Css3.g lexer definition to find out which of the tokens are only
     //token fragments (will not show up in the output tokens list)
 
     EOF(Css3Lexer.EOF, OTHERS),
-    
+
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
-    
+
     AND(Css3Lexer.AND, OPERATORS),
     OR(Css3Lexer.OR, OPERATORS),
     NOT(Css3Lexer.NOT, OPERATORS),
@@ -163,22 +163,22 @@ public enum CssTokenId implements TokenId {
     X(Css3Lexer.X, OTHERS),
     Y(Css3Lexer.Y, OTHERS),
     Z(Css3Lexer.Z, OTHERS),
-    
+
     COMMENT(Css3Lexer.COMMENT, COMMENTS),
     LINE_COMMENT(Css3Lexer.LINE_COMMENT, COMMENTS),
-    
+
     //following two should possibly not be part of the grammar at all
     CDO(Css3Lexer.CDO, OTHERS), //<!--
     CDC(Css3Lexer.CDC, OTHERS), // -->
-    
+
     INVALID(Css3Lexer.INVALID, OTHERS),
     DIMENSION(Css3Lexer.DIMENSION, NUMBERS),
     NL(Css3Lexer.NL, WHITESPACES), //newline
     PIPE(Css3Lexer.PIPE, OPERATORS),  //NOI18N
-    
+
     GEN(Css3Lexer.GEN, OTHERS),
     NAMESPACE_SYM(Css3Lexer.NAMESPACE_SYM, AT_RULE_SYMBOL),
-    
+
     TOPLEFTCORNER_SYM(Css3Lexer.TOPLEFTCORNER_SYM, AT_RULE_SYMBOL),
     TOPLEFT_SYM(Css3Lexer.TOPLEFT_SYM, AT_RULE_SYMBOL),
     TOPCENTER_SYM(Css3Lexer.TOPCENTER_SYM, AT_RULE_SYMBOL),
@@ -195,18 +195,18 @@ public enum CssTokenId implements TokenId {
     RIGHTTOP_SYM(Css3Lexer.RIGHTTOP_SYM, AT_RULE_SYMBOL),
     RIGHTMIDDLE_SYM(Css3Lexer.RIGHTMIDDLE_SYM, AT_RULE_SYMBOL),
     RIGHTBOTTOM_SYM(Css3Lexer.RIGHTBOTTOM_SYM, AT_RULE_SYMBOL),
-    
+
     WEBKIT_KEYFRAMES_SYM(Css3Lexer.WEBKIT_KEYFRAMES_SYM, AT_RULE_SYMBOL),
-    
+
     COUNTER_STYLE_SYM(Css3Lexer.COUNTER_STYLE_SYM, AT_RULE_SYMBOL),
-    
+
     BEGINS(Css3Lexer.BEGINS, OPERATORS),
     ENDS(Css3Lexer.ENDS, OPERATORS),
     CONTAINS(Css3Lexer.CONTAINS, OPERATORS),
-    
+
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
     HASH_SYMBOL(Css3Lexer.HASH_SYMBOL, OTHERS),
-    
+
     /**
      * '...' in less_args_list rule
      */
@@ -215,33 +215,33 @@ public enum CssTokenId implements TokenId {
      * '@rest...' in less_args_list rule
      */
     LESS_REST(Css3Lexer.LESS_REST, OTHERS),
-    
+
     /**
      * WHEN keyword in guarded mixin
      * .mixin (@a) "when" (@a > 10), (@a < -10) { ... }
      */
     LESS_WHEN(Css3Lexer.LESS_WHEN, OTHERS),
-    
+
     /**
      * & operator in rules:
-     * 
+     *
      * .parent & {
      *       color: black;
      * }
      */
     LESS_AND(Css3Lexer.LESS_AND, OTHERS),
-    
+
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),
     MOZ_REGEXP(Css3Lexer.MOZ_REGEXP, STRINGS),
-    
+
     AT_IDENT(Css3Lexer.AT_IDENT, AT_RULE_SYMBOL),
-    
+
     GREATER_OR_EQ(Css3Lexer.GREATER_OR_EQ, OPERATORS),
     LESS(Css3Lexer.LESS, OPERATORS),
     LESS_OR_EQ(Css3Lexer.LESS_OR_EQ, OPERATORS),
-    
+
     SASS_VAR(Css3Lexer.SASS_VAR, IDENTIFIERS),
     SASS_MIXIN(Css3Lexer.SASS_MIXIN, AT_RULE_SYMBOL),
     SASS_INCLUDE(Css3Lexer.SASS_INCLUDE, AT_RULE_SYMBOL),
@@ -255,27 +255,28 @@ public enum CssTokenId implements TokenId {
     SASS_FOR(Css3Lexer.SASS_FOR, AT_RULE_SYMBOL),
     SASS_EACH(Css3Lexer.SASS_EACH, AT_RULE_SYMBOL),
     SASS_WHILE(Css3Lexer.SASS_WHILE, AT_RULE_SYMBOL),
-    
+
     CP_EQ(Css3Lexer.CP_EQ, KEYWORDS),
     SASS_FUNCTION(Css3Lexer.SASS_FUNCTION, AT_RULE_SYMBOL),
     SASS_RETURN(Css3Lexer.SASS_RETURN, AT_RULE_SYMBOL),
-    
+
     SASS_ELSE(Css3Lexer.SASS_ELSE, AT_RULE_SYMBOL),
 //    SASS_ELSEIF(Css3Lexer.SASS_ELSEIF, AT_RULE_SYMBOL),
     SASS_CONTENT(Css3Lexer.SASS_CONTENT, AT_RULE_SYMBOL),
-    
+
     CP_NOT_EQ(Css3Lexer.CP_NOT_EQ, AT_RULE_SYMBOL),
-    
+
     PERCENTAGE_SYMBOL(Css3Lexer.PERCENTAGE_SYMBOL, OTHERS ),
-    
+
     EXCLAMATION_MARK(Css3Lexer.EXCLAMATION_MARK, OTHERS),
-    
+
     LESS_JS_STRING(Css3Lexer.LESS_JS_STRING, STRINGS),
-    
-    AT_SIGN(Css3Lexer.AT_SIGN, AT_RULE_SYMBOL);
-    
+
+    AT_SIGN(Css3Lexer.AT_SIGN, AT_RULE_SYMBOL),
+    LESS_IMPORT_TYPE(Css3Lexer.LESS_IMPORT_TYPE, OPERATORS);
+
     ;
-    
+
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<>();
     static {
         for(CssTokenId id : values()) {
@@ -287,12 +288,12 @@ public enum CssTokenId implements TokenId {
     public static  CssTokenId forTokenTypeCode(int tokenTypeCode) {
         return codesMap.get(tokenTypeCode);
     }
- 
+
     private final CssTokenIdCategory primaryCategory;
     private final int code;
 
     private static final Language<CssTokenId> language = new CssLanguageHierarchy().language();
-    
+
     CssTokenId(int code, CssTokenIdCategory primaryCategory) {
         this.primaryCategory = primaryCategory;
         this.code = code;
@@ -319,7 +320,7 @@ public enum CssTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory.name().toLowerCase();
     }
-    
+
     /**
      * same as primaryCategory() but returns CssTokenIdCategory enum member
      */
@@ -329,9 +330,9 @@ public enum CssTokenId implements TokenId {
 
     /**
      * Verifies whether the given input text is lexed as on token of this type.
-     * 
+     *
      * If some part of the input text is not matched by the css token the method returns false.
-     * 
+     *
      * @since 1.12
      * @param input source code to be lexed
      * @return true if the whole source code is lexed as a token of this type.

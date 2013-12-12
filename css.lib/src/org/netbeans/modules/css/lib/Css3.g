@@ -364,6 +364,8 @@ importItem
         |
         //multiple imports in one directive
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier (ws? COMMA ws? resourceIdentifier)* ((ws? mediaQueryList)=>ws? mediaQueryList)?
+        |
+        {isLessSource()}? IMPORT_SYM ws? (LPAREN LESS_IMPORT_TYPE RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
     ;
 media
     : MEDIA_SYM ws?
@@ -1648,6 +1650,7 @@ LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 CP_DOTS         : '...';
 LESS_REST       : '@rest...';
+LESS_IMPORT_TYPE    :   'LESS' | 'CSS';
 
 // -----------------
 // Literal strings. Delimited by either ' or "
