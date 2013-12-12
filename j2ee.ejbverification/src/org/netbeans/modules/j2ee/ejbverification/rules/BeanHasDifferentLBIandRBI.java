@@ -44,20 +44,15 @@
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
@@ -91,34 +86,16 @@ public final class BeanHasDifferentLBIandRBI {
         final List<ErrorDescription> problems = new ArrayList<>();
         final EJBProblemContext ctx = HintsUtils.getOrCacheContext(hintContext);
         if (ctx != null && ctx.getEjb() instanceof Session) {
-            final Session session = (Session) ctx.getEjb();
             final Collection<String> localInterfaces = new TreeSet<>();
-
-            try {
-                ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
-                    @Override
-                    public Void run(EjbJarMetadata metadata) throws Exception {
-                        if (session.getBusinessLocal() != null) {
-                            localInterfaces.addAll(Arrays.asList(session.getBusinessLocal()));
-                        }
-                        if (session.getBusinessRemote() != null) {
-                            for (String remoteInterface : session.getBusinessRemote()) {
-                                if (localInterfaces.contains(remoteInterface)) {
-                                    ErrorDescription problem = HintsUtils.createProblem(
-                                            ctx.getClazz(),
-                                            ctx.getComplilationInfo(),
-                                            Bundle.BeanHasDifferentLBIandRBI_err());
-                                    problems.add(problem);
-                                }
-                            }
-                        }
-                        return null;
-                    }
-                });
-            } catch (MetadataModelException ex) {
-                LOG.log(Level.WARNING, ex.getMessage(), ex);
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, ex.getMessage(), ex);
+            localInterfaces.addAll(Arrays.asList(ctx.getEjbData().getBusinessLocal()));
+            for (String remoteInterface : ctx.getEjbData().getBusinessRemote()) {
+                if (localInterfaces.contains(remoteInterface)) {
+                    ErrorDescription problem = HintsUtils.createProblem(
+                            ctx.getClazz(),
+                            ctx.getComplilationInfo(),
+                            Bundle.BeanHasDifferentLBIandRBI_err());
+                    problems.add(problem);
+                }
             }
         }
         return problems;

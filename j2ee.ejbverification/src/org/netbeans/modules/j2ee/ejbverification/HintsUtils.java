@@ -72,8 +72,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext.SessionData;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.Severity;
@@ -296,12 +299,26 @@ public class HintsUtils {
                     TypeElement javaClass = (TypeElement) info.getTrees().getElement(context.getPath());
                     Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
 
+                    // precompute EJB information
+                    String[] businessLocal = new String[0];
+                    String[] businessRemote = new String[0];
+                    String sessionType = "";
+                    try {
+                        if (ejb instanceof Session) {
+                            Session session = ((Session) ejb);
+                            businessLocal = session.getBusinessLocal();
+                            businessRemote = session.getBusinessRemote();
+                            sessionType = session.getSessionType();
+                        }
+                    } catch (VersionNotSupportedException ex) {
+                        LOG.log(Level.INFO, ex.getMessage(), ex);
+                    }
+
                     if (LOG.isLoggable(Level.FINE)) {
                         long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
                         LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
                     }
-
-                    return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, metadata);
+                    return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
                 }
             });
         } catch (MetadataModelException ex) {
