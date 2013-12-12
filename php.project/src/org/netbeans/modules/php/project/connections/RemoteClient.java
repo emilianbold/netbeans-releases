@@ -323,18 +323,7 @@ public final class RemoteClient implements Cancellable {
             }
 
             if (file.isDirectory()) {
-                File f = getLocalFile(baseLocalDir, file);
-                File[] children = f.listFiles();
-                if (children != null) {
-                    for (File child : children) {
-                        if (isVisible(child)) {
-                            LOGGER.log(Level.FINE, "File {0} added to upload queue", child);
-                            files.add(TransferFile.fromFile(remoteClientImpl, file, child));
-                        } else {
-                            LOGGER.log(Level.FINE, "File {0} NOT added to upload queue [invisible]", child);
-                        }
-                    }
-                }
+                files.addAll(file.getLocalChildren());
             }
         }
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -635,28 +624,7 @@ public final class RemoteClient implements Cancellable {
             }
 
             if (file.isDirectory()) {
-                try {
-                    if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
-                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRemotePath());
-                        // XXX maybe return somehow ignored files as well?
-                        continue;
-                    }
-                    List<RemoteFile> remoteFiles;
-                    synchronized (this) {
-                        remoteFiles = remoteClient.listFiles();
-                    }
-                    for (RemoteFile child : remoteFiles) {
-                        if (isVisible(getLocalFile(baseLocalDir, file, child))) {
-                            LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            files.add(TransferFile.fromRemoteFile(remoteClientImpl, file, child));
-                        } else {
-                            LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
-                        }
-                    }
-                } catch (RemoteException exc) {
-                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRemotePath());
-                    // XXX maybe return somehow ignored files as well?
-                }
+                files.addAll(file.getRemoteChildren());
             }
         }
         if (LOGGER.isLoggable(Level.FINE)) {
