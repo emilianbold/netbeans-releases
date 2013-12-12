@@ -168,19 +168,12 @@ public final class RepositoryQueries {
     
     
     static {
-        AccessorImpl impl = new AccessorImpl();
-        impl.assign();
+        new AccessorImpl();       
     }
     
     
     
     static class AccessorImpl extends NexusRepositoryIndexerImpl.Accessor {
-        
-         public void assign() {
-             if (NexusRepositoryIndexerImpl.ACCESSOR == null) {
-                 NexusRepositoryIndexerImpl.ACCESSOR = this;
-             }
-         }
 
         @Override
         public void addSkipped(Result<?> result, Collection<RepositoryInfo> infos) {
@@ -385,7 +378,7 @@ public final class RepositoryQueries {
         } catch (IOException ex) {
             Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
-        return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+        return NexusRepositoryIndexerImpl.Accessor.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
             @Override
             public void run(Result<NBVersionInfo> result) {
                 //noop
