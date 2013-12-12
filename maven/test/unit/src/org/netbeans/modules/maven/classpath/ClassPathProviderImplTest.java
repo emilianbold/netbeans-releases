@@ -136,7 +136,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
             @Override
             public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+                return NexusRepositoryIndexerImpl.Accessor.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
 
                     @Override
                     public void run(Result<NBVersionInfo> result) {
