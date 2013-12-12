@@ -48,10 +48,10 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.MavenConfiguration;
@@ -59,7 +59,12 @@ import static org.netbeans.modules.maven.configurations.Bundle.*;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -79,10 +84,11 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     public static final String FILENAME = "nbactions.xml"; //NOI18N
     public static final String FILENAME_PREFIX = "nbactions-"; //NOI18N
     public static final String FILENAME_SUFFIX = ".xml"; //NOI18N
-    private Date lastModified = new Date();
-    private boolean lastTimeExists = true;
     private final Map<String,String> properties = new HashMap<String,String>();
     private final FileObject projectDirectory;
+    
+    private final AtomicBoolean resetCache = new AtomicBoolean(false);
+    private FileChangeListener listener = null;
     
     public M2Configuration(String id, FileObject projectDirectory) {
         assert id != null;
@@ -109,10 +115,12 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
         profiles = profs;
     }
     
+    @Override
     public List<String> getActivatedProfiles() {
         return profiles;
     }
 
+    @Override
     public Map<String,String> getProperties() {
         return properties;
     }
@@ -149,18 +157,60 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     }
 
     public @Override InputStream getActionDefinitionStream() {
+
+        checkListener();
         FileObject fo = projectDirectory.getFileObject(getFileNameExt(id));
-        lastTimeExists = fo != null;
+        resetCache.set(false);
         if (fo != null) {
             try {
-                lastModified = fo.lastModified();
                 return fo.getInputStream();
             } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
             }
         }
-        lastModified = new Date();
-        return null;
+       return null;
+    }
+    
+    private synchronized void checkListener() {
+        final String fid = getFileNameExt(id);
+        if (listener == null) {
+            listener = new FileChangeAdapter() {
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    if (fid.equals(fe.getName() + "." + fe.getExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    if (fid.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    if (fid.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    if (fid.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+                
+            };
+            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(listener, projectDirectory));
+        }
+    }
+    
+    private void resetCache() {
+        resetCache.compareAndSet(false, true);
     }
     
    /**
@@ -194,10 +244,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     
     @Override
     protected boolean reloadStream() {
-        FileObject fo = projectDirectory.getFileObject(getFileNameExt(id));
-        boolean prevExists = lastTimeExists;
-        lastTimeExists = fo != null;
-        return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));
+        return resetCache.get();
     }
 
 }

@@ -62,7 +62,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
                                    testSimple_C,
                                    testSimple_D,
                                    testSimple_E,
-                                   testSimple_F,
+                                   testSimple_f,
                                    testSimple_G,
                                    testSimple_H,
                                    testSimple_I,
@@ -95,7 +95,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
 				addTest(RenameTest.class, "testSimple_C").
 				addTest(RenameTest.class, "testSimple_D").
                                 addTest(RenameTest.class, "testSimple_E").
-				addTest(RenameTest.class, "testSimple_F").
+				addTest(RenameTest.class, "testSimple_f").
 				addTest(RenameTest.class, "testSimple_G").
 				addTest(RenameTest.class, "testSimple_H").
                                 addTest(RenameTest.class, "testSimple_I").
@@ -133,8 +133,8 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
 		performIntroduvceMethod(currentTest.testSimple_E);
 	}
         
-        public void testSimple_F(){
-		performIntroduvceMethod(currentTest.testSimple_F);
+        public void testSimple_f(){
+		performIntroduvceMethod(currentTest.testSimple_f);
 	}
                 
         public void testSimple_G(){
@@ -253,7 +253,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
                     case testSimple_C:
                     case testSimple_D: editor.setCaretPosition(21, 1); break;
                     case testSimple_E:
-                    case testSimple_F:
+                    case testSimple_f:
                     case testSimple_G:
                     case testSimple_H: editor.setCaretPosition(22, 1); break;
                     case testSimple_I:
@@ -277,7 +277,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
                     case testSimple_C:
                     case testSimple_D: editor.select(21, 17, 21); break;
                     case testSimple_E:
-                    case testSimple_F:
+                    case testSimple_f:
                     case testSimple_G:
                     case testSimple_H: editor.select(22, 17, 21); break;
                     case testSimple_I:
@@ -324,7 +324,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
                     case testSimple_I: 
                     case testSimple_M: ifo.getRadPublic().setSelected(true); break;    // Public
                     case testSimple_B: 
-                    case testSimple_F: 
+                    case testSimple_f: 
                     case testSimple_J: 
                     case testSimple_N: ifo.getRadProtected().setSelected(true); break; // Protected
                     case testSimple_C: 
@@ -354,7 +354,7 @@ public class IntroduceFieldTest extends ModifyingRefactoring {
                         if(!ifo.getDeclareFinal().isSelected()) ifo.getDeclareFinal().doClick();
                         break;
                     case testSimple_E:
-                    case testSimple_F:
+                    case testSimple_f:
                     case testSimple_G:
                     case testSimple_H:
                         // InCurrentMethod = TRUE, ReplaceAllOccurences = FALSE, DeclareFinal = FALSE

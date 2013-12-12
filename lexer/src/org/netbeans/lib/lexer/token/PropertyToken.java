@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.lib.lexer.WrapTokenId;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
@@ -60,10 +61,8 @@ public class PropertyToken<T extends TokenId> extends DefaultToken<T> {
 
     private final TokenPropertyProvider<T> propertyProvider; // 28 bytes (24-super + 4)
     
-    private boolean noDefaultEmbedding; // 32 bytes
-
-    public PropertyToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
-        super(id, length);
+    public PropertyToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
+        super(wid, length);
         assert (partType != null);
         this.propertyProvider = (propertyProvider != null)
                 ? PartTypePropertyProvider.createDelegating(partType, propertyProvider)
@@ -85,17 +84,6 @@ public class PropertyToken<T extends TokenId> extends DefaultToken<T> {
         return (PartType) getProperty(PartType.class);
     }
 
-    @Override
-    public boolean isNoDefaultEmbedding() {
-        return noDefaultEmbedding;
-    }
-
-    @Override
-    public AbstractToken<T> markNoDefaultEmbedding() {
-        noDefaultEmbedding = true;
-        return null;
-    }
-    
     @Override
     protected String dumpInfoTokenType() {
         return "ProT"; // NOI18N

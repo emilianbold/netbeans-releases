@@ -119,7 +119,7 @@ public class CopyTaskTest extends NativeExecutionBaseTestCase {
         assertTrue(HostInfoUtils.fileExists(execEnv, dst));
 
         StatInfo statFomrUpload = uploadStatus.getStatInfo();
-        StatInfo stat = FileInfoProvider.stat(execEnv, dst).get();
+        StatInfo stat = FileInfoProvider.lstat(execEnv, dst).get();
         assertEquals("Stat got from upload differ", stat.toExternalForm(), statFomrUpload.toExternalForm());
 
         final AtomicReference<Object> ref = new AtomicReference<Object>();

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.35.1
+#Version 7.39.1
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -134,12 +134,12 @@ meth public void validate()
 supr org.openide.util.SharedClassObject
 hfds serialVersionUID
 
-CLSS public abstract org.openide.modules.Modules
+CLSS public org.openide.modules.Modules
 cons protected init()
-meth public abstract org.openide.modules.ModuleInfo ownerOf(java.lang.Class<?>)
+meth public org.openide.modules.ModuleInfo findCodeNameBase(java.lang.String)
+meth public org.openide.modules.ModuleInfo ownerOf(java.lang.Class<?>)
 meth public static org.openide.modules.Modules getDefault()
 supr java.lang.Object
-hcls Trivial
 
 CLSS public abstract interface !annotation org.openide.modules.OnStart
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)

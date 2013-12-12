@@ -264,7 +264,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     /** @return either class or namespace */
     private CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
-	if( cnn != null ) {
+	if( cnn != null && cnn.length > 0) {
             CsmObject obj = null;
             Resolver resolver = ResolverFactory.createResolver(this);
             try {

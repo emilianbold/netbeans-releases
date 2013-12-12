@@ -50,10 +50,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -99,6 +101,8 @@ public class StatusCommand extends GitCommand {
     private final StatusListener listener;
     private final String revision;
     private static final String PROP_TRACK_SYMLINKS = "org.netbeans.libs.git.trackSymLinks"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(StatusCommand.class.getName());
+    private static final Set<File> logged = new HashSet<>();
 
     public StatusCommand (Repository repository, String revision, File[] roots, GitClassFactory gitFactory,
             ProgressMonitor monitor, StatusListener listener) {
@@ -219,6 +223,9 @@ public class StatusCommand extends GitCommand {
                             continue;
                         }
                     } else {
+                        if (mWorking == FileMode.TYPE_GITLINK || mHead == FileMode.TYPE_GITLINK || mIndex == FileMode.TYPE_GITLINK) {
+                            isFolder = file.isDirectory();
+                        }
                         if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                             statusIndexWC = GitStatus.Status.STATUS_REMOVED;
                         } else if (mIndex == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
@@ -439,11 +446,19 @@ public class StatusCommand extends GitCommand {
         InputStream s1 = null, s2 = null;
         try {
             ByteBuffer buf = IO.readWholeStream(s1 = fti.openEntryStream(), (int) fti.getEntryLength());
-            ObjectId hash1 = oi.idFor(Constants.OBJ_BLOB, buf.array());
+            ObjectId hash1 = oi.idFor(Constants.OBJ_BLOB, buf.array(), buf.position(), buf.limit() - buf.position());
             ObjectLoader loader = getRepository().getObjectDatabase().open(objectId);
             ByteBuffer buf2 = IO.readWholeStream(s2 = new EolCanonicalizingInputStream(loader.openStream(), true), (int) fti.getEntryLength());
-            ObjectId hash2 = oi.idFor(Constants.OBJ_BLOB, buf2.array());
-            return !hash1.equals(hash2);
+            ObjectId hash2 = oi.idFor(Constants.OBJ_BLOB, buf2.array(), buf2.position(), buf2.limit() - buf2.position());
+            boolean equal = hash1.equals(hash2);
+            if (equal && !objectId.equals(hash2)) {
+                File root = fti.getDirectory();
+                if (!logged.contains(root)) {
+                    logged.add(root);
+                    LOG.log(Level.INFO, "Inconsistency in using autocrlf=true/input. Repository {0} has unexpected line-endings.", root); //NOI18N
+                }
+            }
+            return !equal;
         } finally {
             if (s1 != null) {
                 try {

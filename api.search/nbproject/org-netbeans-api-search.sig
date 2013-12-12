@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.8.1
+#Version 1.14.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -95,6 +95,7 @@ supr java.lang.Object
 hfds INSTANCE,MAX_PATTERN_LENGTH,MAX_SEARCH_PATTERNS_ITEMS,PREFS_NODE,PROP_REPLACE_PATTERN_PREFIX,PROP_SEARCH_PATTERN_PREFIX,pcs,prefs,replacePatternsList,searchPatternsList
 
 CLSS public final org.netbeans.api.search.SearchPattern
+innr public final static !enum MatchType
 meth public boolean equals(java.lang.Object)
 meth public boolean isMatchCase()
 meth public boolean isRegExp()
@@ -102,12 +103,26 @@ meth public boolean isWholeWords()
 meth public int hashCode()
 meth public java.lang.String getSearchExpression()
 meth public org.netbeans.api.search.SearchPattern changeMatchCase(boolean)
+meth public org.netbeans.api.search.SearchPattern changeMatchType(org.netbeans.api.search.SearchPattern$MatchType)
 meth public org.netbeans.api.search.SearchPattern changeRegExp(boolean)
 meth public org.netbeans.api.search.SearchPattern changeSearchExpression(java.lang.String)
 meth public org.netbeans.api.search.SearchPattern changeWholeWords(boolean)
+meth public org.netbeans.api.search.SearchPattern$MatchType getMatchType()
 meth public static org.netbeans.api.search.SearchPattern create(java.lang.String,boolean,boolean,boolean)
+meth public static org.netbeans.api.search.SearchPattern create(java.lang.String,boolean,boolean,org.netbeans.api.search.SearchPattern$MatchType)
 supr java.lang.Object
-hfds matchCase,regExp,searchExpression,wholeWords
+hfds matchCase,matchType,searchExpression,wholeWords
+
+CLSS public final static !enum org.netbeans.api.search.SearchPattern$MatchType
+ outer org.netbeans.api.search.SearchPattern
+fld public final static org.netbeans.api.search.SearchPattern$MatchType BASIC
+fld public final static org.netbeans.api.search.SearchPattern$MatchType LITERAL
+fld public final static org.netbeans.api.search.SearchPattern$MatchType REGEXP
+meth public java.lang.String toString()
+meth public static org.netbeans.api.search.SearchPattern$MatchType valueOf(java.lang.String)
+meth public static org.netbeans.api.search.SearchPattern$MatchType[] values()
+supr java.lang.Enum<org.netbeans.api.search.SearchPattern$MatchType>
+hfds canonicalPatternFlag,displayName
 
 CLSS public final org.netbeans.api.search.SearchRoot
 cons public init(java.net.URI,java.util.List<org.netbeans.api.search.provider.SearchFilter>)
@@ -279,6 +294,11 @@ meth public static org.netbeans.api.search.ui.ScopeOptionsController adjustPanel
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public static org.netbeans.api.search.ui.ScopeOptionsController adjustPanelsForOptions(javax.swing.JPanel,javax.swing.JPanel,boolean,org.netbeans.api.search.ui.FileNameController)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.search.ui.SearchPatternController adjustComboForSearchPattern(javax.swing.JComboBox)
  anno 0 org.netbeans.api.annotations.common.NonNull()
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -321,7 +341,7 @@ meth public org.netbeans.api.search.provider.SearchInfo getSearchInfo()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 supr java.lang.Object<javax.swing.JComboBox>
 hfds active,extraSearchScopes,manualSelectionListener,manuallySelectedId,preferredId,scopeList,searchScopeChangeListener,searchScopeChangeListenerWeak,selectedSearchScope
-hcls ManualSelectionListener,ScopeComboBoxHierarchyListener,ScopeItem,SearchScopeChangeListener
+hcls ManualSelectionListener,ScopeCellRenderer,ScopeComboBoxHierarchyListener,ScopeItem,SearchScopeChangeListener
 
 CLSS public final org.netbeans.api.search.ui.ScopeOptionsController
 fld protected javax.swing.JCheckBox chkUseIgnoreList
@@ -338,13 +358,15 @@ meth public final void addChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public final void removeChangeListener(javax.swing.event.ChangeListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public javax.swing.JPanel getFileNameComponent()
+ anno 0 org.netbeans.api.annotations.common.NullUnknown()
 meth public org.netbeans.api.search.SearchScopeOptions getSearchScopeOptions()
 meth public void setFileNameRegexp(boolean)
 meth public void setSearchInArchives(boolean)
 meth public void setSearchInGenerated(boolean)
 meth public void setUseIgnoreList(boolean)
 supr java.lang.Object<javax.swing.JPanel>
-hfds btnEditIgnoreList,btnTestFileNamePattern,checkBoxListener,chkArchives,chkFileNameRegex,chkGenerated,fileNameComboBox,replacing
+hfds btnEditIgnoreList,btnTestFileNamePattern,checkBoxListener,chkArchives,chkFileNameRegex,chkGenerated,fileNameComboBox,fileNameComponent,replacing
 hcls CheckBoxListener
 
 CLSS public final org.netbeans.api.search.ui.SearchPatternController
@@ -362,13 +384,15 @@ meth public org.netbeans.api.search.SearchPattern getSearchPattern()
 meth public void bind(org.netbeans.api.search.ui.SearchPatternController$Option,javax.swing.AbstractButton)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public void bindMatchTypeComboBox(javax.swing.JComboBox)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void setSearchPattern(org.netbeans.api.search.SearchPattern)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void unbind(org.netbeans.api.search.ui.SearchPatternController$Option,javax.swing.AbstractButton)
  anno 1 org.netbeans.api.annotations.common.NonNull()
  anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object<javax.swing.JComboBox>
-hfds bindings,defaultTextColor,listener,options,textToFindEditor,valid
+hfds bindings,defaultTextColor,listener,matchType,matchTypeComboBox,options,textToFindEditor,valid
 hcls ModelItem,TextToFindChangeListener
 
 CLSS public final static !enum org.netbeans.api.search.ui.SearchPatternController$Option
@@ -472,6 +496,8 @@ meth public final void removeChangeListener(javax.swing.event.ChangeListener)
 meth public java.lang.String getAdditionalInfo()
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public java.lang.String toString()
+meth public javax.swing.Icon getIcon()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public void selected()
 supr java.lang.Object
 hfds changeListeners

@@ -98,6 +98,7 @@ import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -725,7 +726,6 @@ public final class OpenProjectList {
 	}
         
         Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
-
         while (!toHandle.isEmpty()) {
             if (canceled != null && canceled.get()) {
                 break;
@@ -738,16 +738,28 @@ public final class OpenProjectList {
                 continue;
             }
             Set<? extends Project> subprojects = openSubprojects ? subprojectsCache.get(p) : Collections.<Project>emptySet();
-            
+            boolean recurse = true;
             if (subprojects == null) {
-                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-                if (spp != null) {
+                ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+                if (pcp != null) {
                     if (handle != null) {
                         handle.progress(OpenProjectList_finding_subprojects(ProjectUtils.getInformation(p).getDisplayName()));
                     }
-                    subprojects = spp.getSubprojects();
+                    ProjectContainerProvider.Result res = pcp.getContainedProjects();
+                    subprojects = res.getProjects();
+                    if (res.isRecursive()) {
+                        recurse = false;
+                    }
                 } else {
-                    subprojects = Collections.emptySet();
+                    SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                    if (spp != null) {
+                        if (handle != null) {
+                            handle.progress(OpenProjectList_finding_subprojects(ProjectUtils.getInformation(p).getDisplayName()));
+                        }
+                        subprojects = spp.getSubprojects();
+                    } else {
+                        subprojects = Collections.emptySet();
+                    }
                 }
                 subprojectsCache.put(p, subprojects);
             }
@@ -758,7 +770,11 @@ public final class OpenProjectList {
                 assert sub != null;
                 if (sub != null && /** #224592 we need to test for null sub as some subprojectProvider implementations could be faulty and return null and with final releases assert won't fire */
                     !projectsToOpen.contains(sub) && !toHandle.contains(sub)) {
-                    toHandle.add(sub);
+                    if (recurse) {
+                        toHandle.add(sub);
+                    } else {
+                        projectsToOpen.add(sub);
+                    }
                 }
             }
             
@@ -921,11 +937,16 @@ public final class OpenProjectList {
                 recentProjects.save();
             }
             //#125750 not necessary to call notifyClosed() under synchronized lock.
+            LOAD.enter();
             OPENING_RP.post(new Runnable() { // #177427 - this can be slow, better to do asynch
                 @Override
                 public void run() {
-                    for (Project closed : notifyList) {
-                        notifyClosed(closed);
+                    try {
+                        for (Project closed : notifyList) {
+                            notifyClosed(closed);
+                        }
+                    } finally {
+                        LOAD.exit();
                     }
                 }
             });
@@ -1101,9 +1122,11 @@ public final class OpenProjectList {
         // Using folder is preferred option
         try {     
             FileObject fo = FileUtil.getConfigFile( "Templates/Other/Folder" ); //NOI18N
-            DataObject dobj = DataObject.find( fo );
-            templates.add(dobj);
-            pLRU.remove(fo);
+            if ( fo != null ) {
+                DataObject dobj = DataObject.find( fo );
+                templates.add(dobj);
+                pLRU.remove(fo);
+            }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }

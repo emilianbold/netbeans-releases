@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.32.1
+#Version 1.36.1
 
 CLSS public abstract interface java.io.Serializable
 
@@ -9,6 +9,7 @@ meth public abstract int compareTo({java.lang.Comparable%0})
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[CONSTRUCTOR, FIELD, LOCAL_VARIABLE, METHOD, PACKAGE, PARAMETER, TYPE])
 intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
@@ -141,6 +142,12 @@ meth public static org.netbeans.api.queries.SharabilityQuery$Sharability valueOf
 meth public static org.netbeans.api.queries.SharabilityQuery$Sharability[] values()
 supr java.lang.Enum<org.netbeans.api.queries.SharabilityQuery$Sharability>
 
+CLSS public final org.netbeans.api.queries.VersioningQuery
+meth public static boolean isManaged(java.net.URI)
+meth public static java.lang.String getRemoteLocation(java.net.URI)
+supr java.lang.Object
+hfds LOG,implementations
+
 CLSS public final org.netbeans.api.queries.VisibilityQuery
 meth public boolean isVisible(java.io.File)
 meth public boolean isVisible(org.openide.filesystems.FileObject)
@@ -175,6 +182,10 @@ meth public abstract int getSharability(java.io.File)
 
 CLSS public abstract interface org.netbeans.spi.queries.SharabilityQueryImplementation2
 meth public abstract org.netbeans.api.queries.SharabilityQuery$Sharability getSharability(java.net.URI)
+
+CLSS public abstract interface org.netbeans.spi.queries.VersioningQueryImplementation
+meth public abstract boolean isManaged(java.net.URI)
+meth public abstract java.lang.String getRemoteLocation(java.net.URI)
 
 CLSS public final org.netbeans.spi.queries.VisibilityQueryChangeEvent
 cons public init(java.lang.Object,org.openide.filesystems.FileObject[])

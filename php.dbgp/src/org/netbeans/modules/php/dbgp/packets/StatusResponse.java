@@ -51,32 +51,30 @@ import org.w3c.dom.Node;
  *
  */
 public class StatusResponse extends DbgpResponse {
-    private static final String REASON = "reason";            
-    private static final String STATUS = "status";
-    
-    StatusResponse( Node node ) {
+    private static final String REASON = "reason"; //NOI18N
+    private static final String STATUS = "status"; //NOI18N
+
+    StatusResponse(Node node) {
         super(node);
     }
-    
+
     public Status getStatus() {
-        String status = getAttribute( getNode() , STATUS );
+        String status = getAttribute(getNode(), STATUS);
         return Status.forString(status);
     }
-    
+
     public Reason getReason() {
-        String reason = getAttribute( getNode(), REASON );
-        return Reason.forString( reason );
+        String reason = getAttribute(getNode(), REASON);
+        return Reason.forString(reason);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
-     */
     @Override
-    public void process( DebugSession dbgSession, DbgpCommand command ) {
+    public void process(DebugSession dbgSession, DbgpCommand command) {
         Status status = getStatus();
         Reason reason = getReason();
         assert status != null;
         assert reason != null;
         dbgSession.processStatus(status, reason, command);
     }
+
 }

@@ -1255,13 +1255,14 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      *(@link org.openide.loaders.DataObject). This methods generates
      * a layer registration as described by {@link DataLoaderPool#factory(java.lang.Class, java.lang.String, java.awt.Image)}.
      * 
+     * @see Registrations
      * @since 7.36
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE})
     public static @interface Registration {
         /**
-         * Mime type or list of mime types to recognize. Use 
+         * Mime type to recognize. Use
          * {@link MIMEResolver.ExtensionRegistration} and co. to assign
          * a mime types to {@link FileObject files} in the system.
          */
@@ -1287,7 +1288,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     }
     
      /**
-     * May be uses to allow multiple {@link DataObject.Registration DataObject.Registration} at one place.
+     * May be used to allow multiple {@link DataObject.Registration DataObject.Registration} at one place.
      * @since 7.36
      */
     @Retention(RetentionPolicy.SOURCE)

@@ -119,11 +119,13 @@ public final class UnitTestRunner {
             try {
                 LOGGER.log(Level.FINE, "Running {0} tests...", testingProvider.getIdentifier());
                 testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
-                testSessionImpl.freeze();
                 LOGGER.fine("Test run finished");
             } catch (TestRunException exc) {
                 LOGGER.log(Level.INFO, null, exc);
                 error = true;
+                testSessionImpl.setTestException(true);
+            } finally {
+                testSessionImpl.freeze();
             }
         }
         if (error) {
@@ -156,6 +158,10 @@ public final class UnitTestRunner {
             if (!testingProvider.isCoverageSupported(phpModule)) {
                 // no coverage supported
                 MANAGER.displayOutput(testSession, Bundle.UnitTestRunner_error_coverage(testingProvider.getDisplayName()), true);
+                continue;
+            }
+            if (session.isTestException()) {
+                LOGGER.log(Level.FINE, "No coverage available due to test exception for {0}", testingProvider.getIdentifier());
                 continue;
             }
             if (!session.isCoverageSet()) {

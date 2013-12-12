@@ -133,6 +133,11 @@ public class WorkingCopy extends CompilationController {
     private TreeMaker treeMaker;
     private Map<Tree, Object> tree2Tag;
     private final ElementOverlay overlay;
+    /**
+     * Trees introduced by rewriting. Some checks (now: comments) are done whether a Tree is known to the system
+     * and may fail on newly added trees if they're rewritten recursively
+     */
+    private Map<Tree, Boolean> introducedTrees;
     
     WorkingCopy(final CompilationInfoImpl impl, ElementOverlay overlay) {
         super(impl);
@@ -150,6 +155,7 @@ public class WorkingCopy extends CompilationController {
         externalChanges = null;
         textualChanges = new ArrayList<Diff>();
         userInfo = new HashMap<Integer, String>();
+        introducedTrees = new IdentityHashMap<Tree, Boolean>();
 
         //#208490: force the current ElementOverlay:
         getContext().put(ElementOverlay.class, (ElementOverlay) null);
@@ -249,8 +255,45 @@ public class WorkingCopy extends CompilationController {
         }
         if (oldTree == null || newTree == null)
             throw new IllegalArgumentException("Null values are not allowed.");
-        
+        // Perf: trees are collected just when asserts are enabled.
+        assert new TreeCollector(introducedTrees, true).scan(newTree, null) != null;
         changes.put(oldTree, newTree);
+    }
+    
+    /**
+     * Returns false when asserts enabled and the tree is not among the trees that rewrite original contents. Returns
+     * true if asserts disabled (saves time, trees are not collected)
+     * 
+     * @param t the tree to check.
+     * @return false, if the tree is not among replacements
+     */
+    boolean validateIsReplacement(Tree t) {
+        boolean ok = true;
+        assert !(ok = false);
+        return ok || introducedTrees.containsKey(t);
+    }
+    
+    private static class TreeCollector extends TreeScanner {
+        private final Map<Tree, Boolean> collectTo;
+        private final boolean add;
+
+        public TreeCollector(Map<Tree, Boolean> collectTo, boolean add) {
+            this.collectTo = collectTo;
+            this.add = add;
+        }
+
+
+        @Override
+        public Object scan(Tree node, Object p) {
+            if (add) {
+                collectTo.put(node, true);
+            } else {
+                collectTo.remove(node);
+            }
+            super.scan(node, p);
+            return true;
+        }
+        
     }
     
     /**

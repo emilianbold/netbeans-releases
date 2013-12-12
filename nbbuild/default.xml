@@ -50,6 +50,12 @@ made subject to such option by the copyright holder.
   <defaultexcludes add="**/.ade_path/**"/>
 
   <target name="init-tasks" unless="tasks-already-set">
+    <taskdef name="jnlpupdatemanifeststartup"
+         classname="org.netbeans.nbbuild.JNLPUpdateManifestStartup"
+         classpath="${nbantext.jar}"/>
+    <taskdef name="jnlpupdatemanifestbranding"
+         classname="org.netbeans.nbbuild.JNLPUpdateManifestBranding"
+         classpath="${nbantext.jar}"/>
     <taskdef name="jhindexer"
          classname="org.netbeans.nbbuild.JHIndexer"
          classpath="${nbantext.jar}"/>

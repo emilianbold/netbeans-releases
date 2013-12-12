@@ -91,7 +91,7 @@ public final class RunConfigScriptValidator {
         if (validateIndex) {
             String indexRelativePath = config.getIndexRelativePath();
             if (StringUtils.hasText(indexRelativePath)) {
-                error = BaseRunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath);
+                error = BaseRunConfigValidator.validateIndexFile(config.getIndexParentDir(), indexRelativePath, false);
                 if (error != null) {
                     return error;
                 }

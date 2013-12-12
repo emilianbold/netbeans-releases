@@ -1492,6 +1492,47 @@ $ rm -r /tmp/nb/
              product installation structure.
          </p>
      </usecase>
+     <usecase name="Patch classes" id="patch">
+         <a name="usecase-patch"></a>
+         <p>
+         In case one wants to modify other classes before they get loaded into
+         the VM, one can register its own
+         <code>Agent-Class</code> and then be called whenever another
+         class is defined. The behavior matches as closely as possible the one
+         provided by <a href="@JDK@/java/lang/instrument/package-summary.html">
+         JDK instrument package</a>. To patch bytecode of other classes
+         register your class in manifest and in its static <code>agentmain</code> method
+         add your own <a href="@JDK@/java/lang/instrument/ClassFileTransformer.html">ClassFileTransformer</a>
+         which will then be consulted whenever new classes are loaded.
+         </p>
+         <pre>
+# following line should be in manifest of your module
+Agent-Class: your.pkg.Transformer             
+
+// this should be your class
+package your.pkg;
+public class Transformer implements ClassFileTransformer {
+    public static void agentmain(String args, Instrumentation i) {
+        i.addTransformer(new Transformer());
+    }
+             
+    @Override public byte[] transform(
+        ClassLoader loader, String className, Class classBeingRedefined, 
+        ProtectionDomain protectionDomain, byte[] classfileBuffer
+    ) {
+        // do your transformation
+    }
+}
+</pre>
+        <p>
+        The implementation tries to be as complient as possible with the
+        original JDK's specification, but 
+        some differences are inevitable. For example the <code>classBeingRedefined</code>
+        parameter in the previous example is always <code>null</code>
+        as NetBeans runtime container does not
+        have access to the class instance that is being defined yet.
+        </p>
+     </usecase>
  </answer>
 
 

@@ -1265,6 +1265,31 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public ISVNStatus[] getStatus (File file, boolean bln, boolean bln1, boolean bln2, boolean bln3, boolean bln4, ISVNStatusCallback isvnsc) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ISVNProperty[] getPropertiesIncludingInherited (File file) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ISVNProperty[] getPropertiesIncludingInherited (File file, boolean bln, boolean bln1, List<String> list) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ISVNProperty[] getPropertiesIncludingInherited (SVNUrl svnurl) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ISVNProperty[] getPropertiesIncludingInherited (SVNUrl svnurl, boolean bln, boolean bln1, List<String> list) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     class NotificationHandler extends SVNNotificationHandler {   }
 
     @Override

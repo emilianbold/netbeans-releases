@@ -43,7 +43,6 @@
 package org.netbeans.modules.team.server;
 
 import org.netbeans.modules.team.server.ui.common.OneProjectDashboardPicker;
-import org.netbeans.modules.team.server.ui.common.ColorManager;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +55,7 @@ import java.net.URL;
 import java.util.Collection;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.ide.spi.TeamDashboardComponentProvider;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
@@ -63,9 +63,7 @@ import org.openide.windows.TopComponent;
 import static org.netbeans.modules.team.server.Bundle.*;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
-import org.netbeans.modules.team.server.ui.common.OneProjectDashboard;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;

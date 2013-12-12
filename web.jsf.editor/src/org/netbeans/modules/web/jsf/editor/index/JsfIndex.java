@@ -108,15 +108,6 @@ public class JsfIndex {
         roots = croots.toArray(new FileObject[]{});
     }
 
-    private synchronized QuerySupport createEmbeddingIndex() throws IOException {
-        QuerySupport result = indexCacheEmbedding.get();
-        if (result == null) {
-            result = QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, roots);
-            indexCacheEmbedding.set(result);
-        }
-        return result;
-    }
-
     private synchronized QuerySupport createBinaryIndex() throws IOException {
         QuerySupport result = indexCacheBinary.get();
         if (result == null) {
@@ -154,7 +145,6 @@ public class JsfIndex {
             //aggregate data from both indexes
             col.addAll(getAllCompositeLibraryNames(createBinaryIndex()));
             col.addAll(getAllCompositeLibraryNames(createCustomIndex()));
-            col.addAll(getAllCompositeLibraryNames(createEmbeddingIndex()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -182,7 +172,7 @@ public class JsfIndex {
         try {
             //aggregate data from both indexes
             col.addAll(getCompositeLibraryComponents(createBinaryIndex(), libraryName));
-            col.addAll(getCompositeLibraryComponents(createEmbeddingIndex(), libraryName));
+            col.addAll(getCompositeLibraryComponents(createCustomIndex(), libraryName));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -208,7 +198,7 @@ public class JsfIndex {
     public CompositeComponentModel getCompositeComponentModel(String libraryName, String componentName) {
         //try both indexes, the embedding one first
         try {
-            CompositeComponentModel model = getCompositeComponentModel(createEmbeddingIndex(), libraryName, componentName);
+            CompositeComponentModel model = getCompositeComponentModel(createCustomIndex(), libraryName, componentName);
             return model != null ? model : getCompositeComponentModel(createBinaryIndex(), libraryName, componentName);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -220,7 +210,7 @@ public class JsfIndex {
         //try both indexes, the embedding one first
         Map<FileObject, CompositeComponentModel> models = new HashMap<>();
         try {
-            models.putAll(getCompositeComponentModels(createEmbeddingIndex(), libraryName));
+            models.putAll(getCompositeComponentModels(createCustomIndex(), libraryName));
             models.putAll(getCompositeComponentModels(createBinaryIndex(), libraryName));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -352,7 +342,7 @@ public class JsfIndex {
     public Collection<ResourcesMappingModel.Resource> getAllStaticResources() {
         Collection<ResourcesMappingModel.Resource> resources = new ArrayList<>();
         try {
-            QuerySupport index = createEmbeddingIndex();
+            QuerySupport index = createCustomIndex();
             Collection<? extends IndexResult> results = index.query(ResourcesMappingModel.STATIC_RESOURCES_KEY, "", QuerySupport.Kind.PREFIX, ResourcesMappingModel.STATIC_RESOURCES_KEY);
             for (IndexResult result : results) {
                 String resourceString = result.getValue(ResourcesMappingModel.STATIC_RESOURCES_KEY);

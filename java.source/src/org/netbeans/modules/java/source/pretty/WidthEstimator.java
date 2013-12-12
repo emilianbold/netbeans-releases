@@ -203,7 +203,7 @@ System.err.println("Need width calc for "+tree);
     private void widthFlags(long flags) {
 	if ((flags & SYNTHETIC) != 0)
 	    width+=14;
-	width+=treeinfo.flagNames(flags).length();
+	width+=VeryPretty.flagNames(flags).length();
 	if ((flags & StandardFlags) != 0)
 	    width++;
     }
@@ -319,7 +319,8 @@ System.err.println("Need width calc for "+tree);
     }
 
     public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-	width(tree.typetag.name().toLowerCase());
+        // see defect #239258; in ENGLISH locale, lowercase string has the same length as uppercase, the conversion can be omitted.
+	width(tree.typetag.name());
     }
 
     public void visitTypeArray(JCArrayTypeTree tree) {

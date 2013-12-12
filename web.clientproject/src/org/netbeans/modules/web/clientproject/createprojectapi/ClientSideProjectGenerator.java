@@ -72,7 +72,7 @@ public final class ClientSideProjectGenerator {
      */
     @NonNull
     public static Project createProject(@NonNull CreateProjectProperties properties) throws IOException {
-        Parameters.notNull("properties", properties);
+        Parameters.notNull("properties", properties); // NOI18N
 
         AntProjectHelper h = ClientSideProjectUtilities.setupProject(properties.getProjectDir(), properties.getProjectName());
 
@@ -88,6 +88,11 @@ public final class ClientSideProjectGenerator {
                     properties.getSiteRootFolder(),
                     properties.getTestFolder(),
                     properties.getConfigFolder());
+        // js testing provider
+        String jsTestingProvider = properties.getJsTestingProvider();
+        if (jsTestingProvider != null) {
+            ClientSideProjectUtilities.setJsTestingProvider(project, jsTestingProvider);
+        }
         return project;
     }
 

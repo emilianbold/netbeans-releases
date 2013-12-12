@@ -43,7 +43,9 @@ package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -64,7 +66,7 @@ import org.openide.util.lookup.ServiceProviders;
 @ServiceProvider(service=CsmErrorProvider.class, position=10),
 @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=900)
 })
-public class ParserErrorProvider extends CsmErrorProvider {
+public final class ParserErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLE = CndUtils.getBoolean("cnd.parser.error.provider", true);
 
@@ -74,16 +76,30 @@ public class ParserErrorProvider extends CsmErrorProvider {
     }
 
     @Override
+    public Set<EditorEvent> supportedEvents() {
+        return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+    }
+
+    @Override
     protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
         Collection<CsmParserProvider.ParserError> errors = new ArrayList<CsmParserProvider.ParserError>();
         Thread currentThread = Thread.currentThread();
         FileImpl file = (FileImpl) request.getFile();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        if (request.isCancelled()) {
+            return;
+        }
         ReadOnlyTokenBuffer buffer = file.getErrors(errors);
         if (buffer != null) {
+            if (request.isCancelled()) {
+                return;
+            }
             ParserErrorFilter.getDefault().filter(errors, errorInfos, buffer, request.getFile());
             for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
+                if (request.isCancelled()) {
+                    return;
+                }
                 response.addError(iter.next());
             }
         }

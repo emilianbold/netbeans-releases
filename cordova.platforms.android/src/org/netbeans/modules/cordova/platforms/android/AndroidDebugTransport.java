@@ -76,6 +76,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     private WebSocketClient webSocket;
     private static final Logger LOGGER = Logger.getLogger(AndroidDebugTransport.class.getName());
+    private boolean flush;
 
     @Override
     public boolean detach() {
@@ -136,8 +137,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                     true, 
                     AndroidPlatform.DEFAULT_TIMEOUT, 
                     "forward", // NOI18N
-                    "tcp:9222", // NOI18N
-                    "localabstract:chrome_devtools_remote"); //NOI18N
+                    "tcp:9222", getRedirectString()); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -151,6 +151,16 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
             return false;
         }
     }
+
+    private String getRedirectString() {
+        String appName = getBundleIdentifier();
+        if (appName == null) {
+            //chrome
+            return "localabstract:chrome_devtools_remote";
+        } else {
+            return "localabstract:webview_devtools_remote_" + AndroidPlatform.getDefault().getProcessIdByName(appName);
+        }
+    }
     
     
 
@@ -161,7 +171,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
 
     private URI getURI() {
         JSONArray array = null;
-        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime() && !flush;) {
             try {
                 JSONParser parser = new JSONParser();
 
@@ -186,7 +196,13 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                         if (urlFromBrowser.endsWith("/")) { // NOI18N
                             urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
                         }
-                        final String connectionUrl = getConnectionURL().toExternalForm();
+                        URL conURL = getConnectionURL();
+                        if (conURL ==null) {
+                            //phonegap
+                            setBaseUrl(urlFromBrowser);
+                            return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                        }
+                        final String connectionUrl = conURL.toExternalForm();
                         final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
 
                         if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
@@ -209,4 +225,8 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         throw new IllegalStateException("Cannot get websocket address"); // NOI18N
     }
 
+    @Override
+    public void flush() {
+        flush=true;
+    }
 }

@@ -200,5 +200,14 @@ made subject to such option by the copyright holder.
             <arg value="i18n-check-local.sh"/>
         </exec>
     </target>
-
+    
+    <target name="CheckSignatures" description="Sig Test for CND/DLight modules">
+        <subant buildpath="${nbroot}" target="check-sigtests-version">
+            <property name="sigtest.fail.on.error" value="true"/>
+            <property name="sigtest.skip.check" value="false"/>
+            <property name="validation.nb.cluster.cnd" value=""/>
+            <property name="cluster.config" value="cnd"/>
+        </subant>
+    </target>
+    
 </project>

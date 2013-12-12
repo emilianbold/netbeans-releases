@@ -145,6 +145,7 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         nodePath = "Source Files";
         lineNumber = 29;
+        expectedTime = 4000;
         doMeasurement();
     }
 
@@ -167,11 +168,13 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
     private static final RegionFilter COMPLETION_FILTER
             = new RegionFilter() {
 
+                @Override
                 public boolean accept(javax.swing.JComponent c) {
                     return c.getClass().getName().equals("org.netbeans.modules.editor.completion.CompletionScrollPane")
                     || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
                 }
 
+                @Override
                 public String getFilterName() {
                     return "Accept paints from org.netbeans.modules.editor.completion.CompletionScrollPane || org.openide.text.QuietEditorPane";
                 }

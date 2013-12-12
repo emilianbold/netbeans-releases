@@ -50,6 +50,7 @@ import java.awt.Image;
  * - e.g. Icon is shown next to an Issue, etc.
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public final class IssuePriorityInfo {
     private final String id;
@@ -65,6 +66,7 @@ public final class IssuePriorityInfo {
      * @param id - priority id as given by the particular implementation
      * @param displayName - priority name as given by the particular implementation
      * @see IssuePriorityProvider#getPriorityInfos() 
+     * @since 1.85
      */
     public IssuePriorityInfo(String id, String displayName) {
         this(id, displayName, null);
@@ -77,6 +79,7 @@ public final class IssuePriorityInfo {
      * @param displayName - priority name as given by the particular implementation
      * @param icon - priority icon as given by the particular implementation
      * @see IssuePriorityProvider#getPriorityInfos() 
+     * @since 1.85
      */
     public IssuePriorityInfo(String id, String displayName, Image icon) {
         this.id = id;
@@ -88,6 +91,7 @@ public final class IssuePriorityInfo {
      * Returns the display name for this Priority.
      * 
      * @return display name associated with this Priority
+     * @since 1.85
      */
     public String getDisplayName() {
         return displayName;
@@ -98,6 +102,7 @@ public final class IssuePriorityInfo {
      * 
      * @return icon associated with this Priority
      * @see IssuePriorityProvider#getPriorityInfos()
+     * @since 1.85
      */
     public Image getIcon() {
         return icon;
@@ -107,6 +112,7 @@ public final class IssuePriorityInfo {
      * Returns a unique id for this Priority.
      * 
      * @return a unique id
+     * @since 1.85
      */
     public String getID() {
         return id;

@@ -878,6 +878,20 @@ public class FlowTest extends NbTestCase {
                     "List<Boolean> args");
     }
     
+    public void testSystemExit() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    static void t(int p) {\n" +
+                    "        int ii = 0;\n" +
+                    "        switch (p) {\n" +
+                    "            case 0: ii = 1; System.exit(0); break;\n" +
+                    "        }\n" +
+                    "        System.err.println(i`i);\n" +
+                    "    }\n" +
+                    "}\n",
+                    "0");
+    }
+    
     public void test224028() throws Exception {
         performTest("package test;\n" +
                     "import java.io.*;\n" +

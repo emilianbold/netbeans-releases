@@ -45,15 +45,22 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import javax.accessibility.AccessibleContext;
 import javax.swing.*;
+import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -277,6 +284,82 @@ public final class EvaluationWindow extends TopComponent {
 	    exprList.setMaximumSize(cp.getPreferredSize());
             exprList.addItem(expr);
             exprList.setEditable(true);
+            exprList.setEditor(new ComboBoxEditor() {
+                class ExpressionEditorPane extends JEditorPane {
+                    private ArrayList<ActionListener> listeners = new ArrayList<ActionListener>();
+
+                    public ExpressionEditorPane() {
+                        super(MIMENames.CPLUSPLUS_MIME_TYPE, ""); //NOI18N
+                    }
+                    
+                    @Override
+                    protected void processKeyEvent(KeyEvent e) {
+                        KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
+                        KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+                        if (KeyEvent.KEY_PRESSED == e.getID()) {
+                            if (enter.equals(ks)) {
+                                for (ActionListener actionListener : listeners) {
+                                    actionListener.actionPerformed(new ActionEvent(this, 0, e.toString()));
+                                    return;
+                                }
+                            }
+                        }
+                        
+                        super.processKeyEvent(e);
+                    }
+                    
+                    public void addActionListener(ActionListener l) {
+                        listeners.add(l);
+                    }
+                    
+                    public void removeActionListener(ActionListener l) {
+                        listeners.remove(l);
+                    }
+                    
+                }
+                
+                private ExpressionEditorPane pane = new ExpressionEditorPane();
+
+                @Override
+                public Component getEditorComponent() {
+                    FileObject file = EditorContextDispatcher.getDefault().getMostRecentFile();
+                    int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
+                    if (file != null && line != -1) {
+                        DialogBinding.bindComponentToFile(file, line, 0, 0, pane);
+                    }
+                    return pane;
+                }
+
+                @Override
+                public void setItem(Object anObject) {
+                    if (anObject != null) {
+                        pane.setText(anObject.toString());
+                    } else {
+                        pane.setText(""); //NOI18N
+                    }
+                }
+
+                @Override
+                public Object getItem() {
+                    return pane.getText();
+                }
+
+                @Override
+                public void selectAll() {
+                    pane.selectAll();
+                }
+
+                @Override
+                public void addActionListener(ActionListener l) {
+                    pane.addActionListener(l);
+                }
+
+                @Override
+                public void removeActionListener(ActionListener l) {
+                    pane.removeActionListener(l);
+                }
+            });
+            
             exprList.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {

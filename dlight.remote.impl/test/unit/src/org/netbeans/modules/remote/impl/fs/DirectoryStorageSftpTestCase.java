@@ -68,7 +68,7 @@ public class DirectoryStorageSftpTestCase extends RemoteFileTestBase {
         File file = File.createTempFile("directoryStorage", ".dat");
         try {
             ConnectionManager.getInstance().connectTo(execEnv);
-            Future<StatInfo> res = FileInfoProvider.stat(getTestExecutionEnvironment(), "/usr/include");
+            Future<StatInfo> res = FileInfoProvider.lstat(getTestExecutionEnvironment(), "/usr/include");
             assertNotNull(res);
             StatInfo statInfo = res.get();
             

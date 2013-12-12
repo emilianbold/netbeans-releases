@@ -351,7 +351,7 @@ public abstract class PUCompletor {
             if (provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
                 keys.addAll(allKeyAndValues.get(null).keySet());
             }
-            if (provider != null) {
+            if (provider != null && allKeyAndValues.get(provider) != null) {
                 keys.addAll(allKeyAndValues.get(provider).keySet());
             }
             String itemTexts[] = keys.toArray(new String[]{});

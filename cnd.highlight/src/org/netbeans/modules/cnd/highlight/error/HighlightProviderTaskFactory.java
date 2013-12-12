@@ -39,167 +39,92 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.highlight.semantic.ModelUtils;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Sergey Grinev
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
-public final class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory implements PropertyChangeListener {
-
-    public HighlightProviderTaskFactory(){
-        super();
-        SemanticHighlightingOptions.instance().addPropertyChangeListener(HighlightProviderTaskFactory.this);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        for (FileObject file : OpenedEditors.getDefault().getVisibleEditorsFiles()){
-            reschedule(file);
-        }
-    }
+@MimeRegistrations({
+    @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+    @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
+})
+public final class HighlightProviderTaskFactory extends TaskFactory {
 
     @Override
-    protected PhaseRunner createTask(FileObject fo) {
-        PhaseRunner pr = null;
-        try {
-            final DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            final CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
-            final Document doc = ec.getDocument();
-            if (doc != null && file != null) {
-                pr = new PhaseRunnerImpl(dobj, file, doc);
-            }
-        } catch (DataObjectNotFoundException ex)  {
-            ex.printStackTrace();
-        }
-        return pr != null ? pr : lazyRunner();
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singletonList(new ErrorsHighlighter());
     }
 
-    @Override
-    protected int taskDelay() {
-        return ModelUtils.HIGHLIGHT_DELAY;
-    }
+    private final class ErrorsHighlighter extends ParserResultTask<CndParserResult> {
 
-    @Override
-    protected int rescheduleDelay() {
-        return ModelUtils.RESCHEDULE_HIGHLIGHT_DELAY;
-    }
+        private InterrupterImpl interrupter = new InterrupterImpl();
+        private CndParserResult lastParserResult;
 
-    private static final class PhaseRunnerImpl implements PhaseRunner {
-        private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
-        private final DataObject dobj;
-        private final CsmFile file;
-        private final WeakReference<BaseDocument> weakDoc;
-        private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
-            this.dobj = dobj;
-            this.file = file;
-            if (doc instanceof BaseDocument) {
-                weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-            } else {
-                weakDoc = null;
-            }
+        public ErrorsHighlighter() {
         }
 
         @Override
-        public void run(Phase phase) {
-            Document doc = getDocument();
-            if (doc != null) {
-                if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
-                    MyInterruptor interruptor = new MyInterruptor();
-                    addCancelListener(interruptor);
-                    try {
-                        HighlightProvider.getInstance().update(file, doc, dobj, interruptor);
-                    } finally {
-                        removeCancelListener(interruptor);
-                    }
-                } else if (phase == Phase.CLEANUP) {
-                    HighlightProvider.getInstance().clear(doc);
+        public void run(CndParserResult result, SchedulerEvent event) {
+            synchronized(this) {
+                if (lastParserResult == result) {
+                    return;
                 }
+                this.lastParserResult = result;
+                this.interrupter = new InterrupterImpl();
             }
-        }
-        
-        private BaseDocument getDocument() {
-            return weakDoc != null ? weakDoc.get() : null;
-        }
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-        
-        private void addCancelListener(Cancellable interruptor){
-            synchronized(listeners) {
-                listeners.add(interruptor);
-            }
-        }
-
-        private void removeCancelListener(Cancellable interruptor){
-            synchronized(listeners) {
-                listeners.remove(interruptor);
-            }
-        }
-
-        @Override
-        public void cancel() {
-            synchronized(listeners) {
-                for(Cancellable interruptor : listeners) {
-                    interruptor.cancel();
+            try {
+                final FileObject fo = result.getSnapshot().getSource().getFileObject();
+                if (fo == null) {
+                    return;
                 }
+                final CsmFile csmFile = result.getCsmFile();
+                if (csmFile == null) {
+                    return;
+                }
+                final Document doc = result.getSnapshot().getSource().getDocument(false);
+                DataObject dobj = DataObject.find(fo);
+                HighlightProvider.getInstance().update(csmFile, doc, dobj, interrupter);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
 
         @Override
-        public boolean isHighPriority() {
-            return false;
+        public synchronized void cancel() {
+            interrupter.cancel();
+            lastParserResult = null;
         }
 
         @Override
-        public String toString() {
-            if (file == null) {
-                return "HighlightProviderTaskFactory runner"; //NOI18N
-            } else {
-                return "HighlightProviderTaskFactory runner for "+file.getAbsolutePath(); //NOI18N
-            }
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
         }
 
-        private static final class MyInterruptor implements CancellableInterruptor {
-            private boolean canceled = false;
-            @Override
-            public boolean cancelled() {
-                return canceled;
-            }
-            @Override
-            public boolean cancel() {
-                canceled = true;
-                return true;
-            }
+        @Override
+        public int getPriority() {
+            return 100;
         }
-    }
-
-    public static interface CancellableInterruptor extends Interrupter, Cancellable {
     }
 }

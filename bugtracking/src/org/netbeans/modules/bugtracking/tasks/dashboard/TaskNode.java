@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -63,6 +62,7 @@ import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -313,10 +313,19 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_DATA_CHANGED)
                     || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                fireContentChanged();
-                if (lblName != null) {
-                    lblName.setToolTipText(task.getTooltip());
-                    lblIcon.setIcon(getIcon());
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        fireContentChanged();
+                        if (lblName != null) {
+                            lblName.setToolTipText(task.getTooltip());
+                            lblIcon.setIcon(getIcon());
+                        }
+                    }
+                });
+            } else if (IssueImpl.EVENT_ISSUE_DELETED.equals(evt.getPropertyName())) {
+                if (isCategorized()) {
+                    DashboardViewer.getInstance().removeTask(TaskNode.this);
                 }
             }
         }

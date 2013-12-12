@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.33.1
+#Version 1.38.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -16,6 +16,16 @@ meth public int hashCode()
 meth public java.lang.String toString()
 
 CLSS public final org.netbeans.modules.autoupdate.ui.api.PluginManager
+meth public !varargs static java.lang.Object install(java.util.Set<java.lang.String>,java.lang.Object[])
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+meth public !varargs static java.lang.Object installSingle(java.lang.String,java.lang.String,java.lang.Object[])
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public static boolean openInstallWizard(org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport>)
+meth public static void openInstallWizard(org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport>,boolean)
 supr java.lang.Object
 

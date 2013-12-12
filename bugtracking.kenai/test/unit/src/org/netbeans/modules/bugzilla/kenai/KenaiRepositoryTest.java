@@ -57,11 +57,13 @@ import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 
 /**
  *
@@ -128,26 +130,26 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testIsKenai() throws Throwable {
-        TeamProject prj = TeamUtil.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        TeamProject prj = TeamAccessorUtils.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
-        Repository repo = support.createRepository(prj);
+        Repository repo = support.createRepository(createInfo(prj));
         assertNotNull(repo);
-        assertTrue(TeamUtil.isFromTeamServer(repo));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repo.getUrl()).isOwner(repo.getUrl()));
     }
 
     public void testOneProductAfterConfigurationRefresh() throws Throwable {
-        TeamProject prj = TeamUtil.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        TeamProject prj = TeamAccessorUtils.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
-        Repository repo = support.createRepository(prj);
+        Repository repo = support.createRepository(createInfo(prj));
         BugzillaRepository bugzillaRepository = getData(repo);
         assertNotNull(repo);
         List<String> products = bugzillaRepository.getConfiguration().getProducts();
         assertEquals(1, products.size());
-        assertTrue(TeamUtil.isFromTeamServer(repo));
+        assertTrue(TeamAccessorUtils.getTeamAccessor(repo.getUrl()).isOwner(repo.getUrl()));
         
         bugzillaRepository.refreshConfiguration();
         products = bugzillaRepository.getConfiguration().getProducts();
@@ -162,5 +164,11 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         f = bind.getClass().getDeclaredField("r");
         f.setAccessible(true);
         return (KenaiRepository) f.get(bind);
+    }    
+    
+    private RepositoryInfo createInfo(TeamProject project) {
+        RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
+        info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return info;
     }    
 }

@@ -103,9 +103,12 @@ import org.openide.nodes.Node;
  */
 public class RemoteBuildTestBase extends RemoteTestBase {
 
-    private boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
+    private static final boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
     static {
         System.setProperty("apt.trace.resolver", "true");
+        if (trace) {
+            System.setProperty("org.netbeans.modules.cnd.test.CndTestIOProvider.traceout","true"); // NOI18N
+        }
     }
 
     public RemoteBuildTestBase(String testName, ExecutionEnvironment execEnv) {

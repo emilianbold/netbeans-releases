@@ -335,6 +335,9 @@ public class TaskManagerImpl extends TaskManager {
     @Override
     public void refresh( final TaskScanningScope scopeToRefresh ) {
         if( this.scope.equals( scopeToRefresh ) ) {
+            if (null != loader) {
+                loader.cancel();
+            }
             RP.post( new Runnable() {
                 @Override
                 public void run() {

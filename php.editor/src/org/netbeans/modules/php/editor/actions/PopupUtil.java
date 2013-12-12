@@ -87,8 +87,8 @@ public final class PopupUtil  {
     private static final KeyStroke ESC_KEY_STROKE = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
 
     private static final String POPUP_NAME = "popupComponent"; //NOI18N
+    private static final HideAWTListener HIDE_LISTENER = new HideAWTListener();
     private static JDialog popupWindow;
-    private static HideAWTListener hideListener = new HideAWTListener();
 
     // Singleton
     private PopupUtil() {
@@ -111,7 +111,7 @@ public final class PopupUtil  {
             return; // Content already showing
         }
 
-        Toolkit.getDefaultToolkit().addAWTEventListener(hideListener, AWTEvent.MOUSE_EVENT_MASK);
+        Toolkit.getDefaultToolkit().addAWTEventListener(HIDE_LISTENER, AWTEvent.MOUSE_EVENT_MASK);
 
         // NOT using PopupFactory
         // 1. on linux, creates mediumweight popup taht doesn't refresh behind visible glasspane
@@ -136,8 +136,8 @@ public final class PopupUtil  {
 
         popupWindow.getContentPane().add(content);
 
-        WindowManager.getDefault().getMainWindow().addWindowStateListener(hideListener);
-        WindowManager.getDefault().getMainWindow().addComponentListener(hideListener);
+        WindowManager.getDefault().getMainWindow().addWindowStateListener(HIDE_LISTENER);
+        WindowManager.getDefault().getMainWindow().addComponentListener(HIDE_LISTENER);
         resizePopup();
 
         if (x != (-1)) {
@@ -154,13 +154,13 @@ public final class PopupUtil  {
     public static void hidePopup() {
         if (popupWindow != null) {
 //            popupWindow.getContentPane().removeAll();
-            Toolkit.getDefaultToolkit().removeAWTEventListener(hideListener);
+            Toolkit.getDefaultToolkit().removeAWTEventListener(HIDE_LISTENER);
 
             popupWindow.setVisible(false);
             popupWindow.dispose();
         }
-        WindowManager.getDefault().getMainWindow().removeWindowStateListener(hideListener);
-        WindowManager.getDefault().getMainWindow().removeComponentListener(hideListener);
+        WindowManager.getDefault().getMainWindow().removeWindowStateListener(HIDE_LISTENER);
+        WindowManager.getDefault().getMainWindow().removeComponentListener(HIDE_LISTENER);
         popupWindow = null;
     }
 

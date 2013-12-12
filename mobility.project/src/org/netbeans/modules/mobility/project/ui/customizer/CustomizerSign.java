@@ -60,7 +60,7 @@ import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.modules.mobility.project.ui.security.*;
-import org.netbeans.modules.mobility.project.security.KeyStoreRepository;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.openide.util.NbBundle;
 
 import java.awt.event.ItemListener;

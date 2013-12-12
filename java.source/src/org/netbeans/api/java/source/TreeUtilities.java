@@ -236,14 +236,18 @@ public final class TreeUtilities {
 
             assert assertsEnabled = true;
 
-            if (true) {
-                TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
+            TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
 
-                if (tp == null) {
-                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
-                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
-                    automap = false;
+            if (tp == null) {
+                if (assertsEnabled) {
+                    // HACK: if info is a working copy, the tree might be introduced by rewriting; 
+                    // in that case, no log should be printed
+                    if (!(info instanceof WorkingCopy) || !((WorkingCopy)info).validateIsReplacement(tree)) {
+                        Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
+                        Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
+                    }
                 }
+                automap = false;
             }
 
             if (automap) {
@@ -838,6 +842,58 @@ public final class TreeUtilities {
      */
     public int[] findNameSpan(VariableTree var) {
         return findNameSpan(var.getName().toString(), var);
+    }
+    
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param lst labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(LabeledStatementTree lst) {
+        return findNameSpan(lst.getLabel().toString(), lst);
+    }
+    
+    /**Find span of the {@link TypeParameterTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param tpt type parameter which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(TypeParameterTree tpt) {
+        return findNameSpan(tpt.getName().toString(), tpt);
+    }
+    
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param brk labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(BreakTree brk) {
+        return findNameSpan(brk.getLabel().toString(), brk);
+    }
+    
+    /**Find span of the {@link LabeledStatementTree#getLabel()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param cont labeled statement which name should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.131
+     */
+    public int[] findNameSpan(ContinueTree cont) {
+        return findNameSpan(cont.getLabel().toString(), cont);
     }
     
     /**Find span of the {@link MethodTree#getParameters()} parameter list in the source.

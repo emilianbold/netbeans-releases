@@ -149,7 +149,7 @@ public class UtilTestCase extends NbTestCase {
                     }
                 }
             }
-            if(System.currentTimeMillis() - t > 5000) {
+            if(System.currentTimeMillis() - t > 50000) {
                 break;
             }
         }

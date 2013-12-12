@@ -45,7 +45,6 @@
 package org.netbeans.lib.lexer;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
@@ -105,7 +104,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
 
     private boolean joinSections;
 
-    private Set<Language<?>> childrenLanguages;
+    private Object childrenLanguages; // null or language or Language[]
     
     private JoinTokenList<T> joinTokenList;
     
@@ -114,10 +113,10 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
         super(4);
         this.rootTokenList = rootTokenList;
         this.languagePath = languagePath;
-        childrenLanguages = Collections.emptySet();
+        childrenLanguages = null;
 
         // languagePath has size >= 2
-        assert (languagePath.size() >= 2);
+        assert (languagePath.size() >= 2) : "Cannot create TLL for languagePath=" + languagePath; // NOI18N
         Language<T> language = LexerUtilsConstants.innerLanguage(languagePath);
         if (languagePath.size() > 2) {
             TokenListList<?> parentTokenList = rootTokenList.tokenHierarchyOperation().tokenListList(languagePath.parent());
@@ -148,14 +147,13 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     
     private void scanTokenList(TokenList<?> tokenList, Language<T> language) {
         int tokenCount = tokenList.tokenCount();
-        Set<Language<?>> singleLanguageSet = Collections.<Language<?>>singleton(language);
         for (int i = 0; i < tokenCount; i++) {
             // Check for embedded token list of the given language
             // Do not initialize tokens of ETLs - do so because
             // there might be just few joinSections ETLs and rest non-joining 
             // and then the whole TLL should become joining so avoid extra work
             // that could be thrown away.
-            EmbeddedTokenList<?,T> etl = EmbeddingOperation.embeddedTokenList(tokenList, i, singleLanguageSet, false);
+            EmbeddedTokenList<?,T> etl = EmbeddingOperation.embeddedTokenList(tokenList, i, language, false);
             if (etl != null) {
                 add(etl);
                 if (etl.languageEmbedding().joinSections()) {
@@ -192,22 +190,18 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     }
     
     public void notifyChildAdded(Language<?> language) {
-        if (childrenLanguages.size() == 0)
-            childrenLanguages = new HashSet<Language<?>>();
-        boolean added = childrenLanguages.add(language);
-        assert (added) : "Children language " + language.mimeType() + " already contained."; // NOI18N
+        childrenLanguages = LexerUtilsConstants.languageOrArrayAdd(childrenLanguages, language);
     }
     
     public void notifyChildRemoved(Language<?> language) {
-        boolean removed = childrenLanguages.remove(language);
-        assert (removed) : "Children language " + language.mimeType() + " not contained."; // NOI18N
+        childrenLanguages = LexerUtilsConstants.languageOrArrayRemove(childrenLanguages, language);
     }
     
     public boolean hasChildren() {
-        return (childrenLanguages.size() > 0);
+        return (childrenLanguages != null);
     }
 
-    public Set<Language<?>> childrenLanguages() {
+    public Object childrenLanguages() {
         return childrenLanguages;
     }
 
@@ -273,12 +267,13 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     public int findIndexDuringUpdate(EmbeddedTokenList<?,T> targetEtl, TokenHierarchyEventInfo eventInfo) {
         int high = size() - 1;
         int low = 0;
-        int targetStartOffset = LexerUtilsConstants.updatedStartOffset(targetEtl, eventInfo);
+        int rootModCount = rootTokenList.modCount();
+        int targetStartOffset = LexerUtilsConstants.updatedStartOffset(targetEtl, rootModCount, eventInfo);
         while (low <= high) {
             int mid = (low + high) >>> 1;
             EmbeddedTokenList<?,T> etl = get(mid);
             // Ensure that the startOffset() will be updated
-            int startOffset = LexerUtilsConstants.updatedStartOffset(etl, eventInfo);
+            int startOffset = LexerUtilsConstants.updatedStartOffset(etl, rootModCount, eventInfo);
             int cmp = startOffset - targetStartOffset;
             if (cmp < 0)
                 low = mid + 1;
@@ -297,7 +292,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
                             return low;
                         }
                         // Check whether this was appropriate attempt for match
-                        if (LexerUtilsConstants.updatedStartOffset(etl, eventInfo) != targetStartOffset)
+                        if (LexerUtilsConstants.updatedStartOffset(etl, rootModCount, eventInfo) != targetStartOffset)
                             break;
                     }
                     
@@ -309,7 +304,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
                             return low;
                         }
                         // Check whether this was appropriate attempt for match
-                        if (LexerUtilsConstants.updatedStartOffset(etl, eventInfo) != targetStartOffset)
+                        if (LexerUtilsConstants.updatedStartOffset(etl, rootModCount, eventInfo) != targetStartOffset)
                             break;
                     }
                 }

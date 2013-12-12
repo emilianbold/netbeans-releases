@@ -61,8 +61,7 @@ import org.w3c.dom.Node;
  * @author Ondrej Brejla
  */
 public class RequestedUrlEvalResponse extends EvalResponse {
-
-    private static final Logger logger = Logger.getLogger(DbgpStream.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DbgpStream.class.getName());
 
     public RequestedUrlEvalResponse(Node node) {
         super(node);
@@ -77,7 +76,7 @@ public class RequestedUrlEvalResponse extends EvalResponse {
             try {
                 io.getOut().println(property.getStringValue(), new OutputListenerImpl());
             } catch (UnsufficientValueException | IOException ex) {
-                logger.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.WARNING, null, ex);
             } finally {
                 io.getOut().close();
             }
@@ -95,7 +94,7 @@ public class RequestedUrlEvalResponse extends EvalResponse {
             try {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(ev.getLine()));
             } catch (MalformedURLException ex) {
-                logger.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
 

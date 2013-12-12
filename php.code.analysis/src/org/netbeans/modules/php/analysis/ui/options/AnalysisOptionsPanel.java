@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.analysis.ui.options;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -86,6 +88,7 @@ public class AnalysisOptionsPanel extends JPanel {
 
     private void init() {
         errorLabel.setText(" "); // NOI18N
+        categoriesList.setCellRenderer(new CategoryNameListCellRenderer(categoriesList.getCellRenderer()));
     }
 
     public void addCategoryPanel(AnalysisCategoryPanel panel) {
@@ -143,14 +146,11 @@ public class AnalysisOptionsPanel extends JPanel {
     private void initComponents() {
 
         errorLabel = new JLabel();
-        categoriesLabel = new JLabel();
         categoriesScrollPane = new JScrollPane();
-        categoriesList = new JList();
+        categoriesList = new JList<String>();
         categoryPanel = new JPanel();
 
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
-
-        Mnemonics.setLocalizedText(categoriesLabel, NbBundle.getMessage(AnalysisOptionsPanel.class, "AnalysisOptionsPanel.categoriesLabel.text")); // NOI18N
 
         categoriesList.setModel(new DefaultListModel());
         categoriesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -169,15 +169,12 @@ public class AnalysisOptionsPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
+                .addComponent(categoriesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(categoryPanel, GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(categoriesScrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(categoryPanel, GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(categoriesLabel)
-                            .addComponent(errorLabel))
+                        .addComponent(errorLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(0, 0, 0))
         );
@@ -185,13 +182,12 @@ public class AnalysisOptionsPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(categoriesLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(categoryPanel, GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
-                    .addComponent(categoriesScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(ComponentPlacement.UNRELATED)
-                .addComponent(errorLabel)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(categoryPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(errorLabel))
+                    .addComponent(categoriesScrollPane))
                 .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -208,11 +204,31 @@ public class AnalysisOptionsPanel extends JPanel {
     }//GEN-LAST:event_categoriesListValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JLabel categoriesLabel;
-    private JList categoriesList;
+    private JList<String> categoriesList;
     private JScrollPane categoriesScrollPane;
     private JPanel categoryPanel;
     private JLabel errorLabel;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private static final class CategoryNameListCellRenderer implements ListCellRenderer<String> {
+
+        private final ListCellRenderer<? super String> defaultCellRenderer;
+
+
+        CategoryNameListCellRenderer(ListCellRenderer<? super String> defaultCellRenderer) {
+            assert defaultCellRenderer != null;
+            this.defaultCellRenderer = defaultCellRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
+            // is there a beter way to simply add a padding?
+            value += "   "; // NOI18N
+            return defaultCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
+    }
 
 }

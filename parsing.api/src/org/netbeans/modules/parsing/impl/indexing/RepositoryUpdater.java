@@ -2495,7 +2495,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
-                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second()).getIndex(pair.second().getIndexFolder());
+                    final Context ctx = pair.second();
+                    final FileObject indexFolder = ctx.getIndexFolder();
+                    if (indexFolder == null) {
+                        throw new IllegalStateException(
+                            String.format(
+                            "No index folder for context: %s",      //NOI18N
+                            ctx));
+                    }
+                    final DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(indexFolder);
                     if (index != null) {
                         usedIterables.offer(ci.getIndexablesFor(null));
                     }
@@ -3390,7 +3398,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NullAllowed final Iterable<? extends Indexable> indexables,
                 final boolean finished) throws IOException {
             try {
-                final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                final FileObject indexFolder = ctx.getIndexFolder();
+                if (indexFolder == null) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "No index folder for context: %s",      //NOI18N
+                            ctx));
+                }
+                final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(indexFolder);
                 if (index != null) {
                     TEST_LOGGER.log(
                         Level.FINEST,

@@ -197,7 +197,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         });
         add(findPreviousButton);
         findNextButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/find_next.png", "CTL_FindNext"); // NOI18N
-        findPreviousButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
+        findNextButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
         findNextButton.addActionListener(new ActionListener() {
 
             @Override

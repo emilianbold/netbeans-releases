@@ -109,7 +109,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
     @Override
     public void setSaved(Query q) {
         BugzillaQuery bugzillaQuery = queries.get(q.getDisplayName());
-        bugzillaQuery.getController().save("IssueTableTestQuery" + System.currentTimeMillis());
+        bugzillaQuery.getController().save(q.getDisplayName());
     }
     
     @Override

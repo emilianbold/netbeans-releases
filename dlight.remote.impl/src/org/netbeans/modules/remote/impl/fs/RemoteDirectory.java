@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -52,7 +53,6 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -67,7 +67,6 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -79,6 +78,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -100,10 +100,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ RemoteDirectory(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, cache);
-        if (RefreshManager.REFRESH_ON_CONNECT && cache.exists() && ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-            // see issue #210125 Remote file system does not refresh directory that wasn't instantiated at connect time
-            fileSystem.getRefreshManager().scheduleRefresh(Arrays.<RemoteFileObjectBase>asList(this), false);
-        }
+        RemoteFileSystemTransport.registerDirectory(this);
     }
 
     @Override
@@ -280,6 +277,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     
     @Override
     public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+        Parameters.notNull("path", relativePath);
         relativePath = PathUtilities.normalizeUnixPath(relativePath);
         if ("".equals(relativePath)) { // NOI18N
             return getOwnerFileObject();
@@ -289,7 +287,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             absPath = PathUtilities.normalizeUnixPath(absPath);
             return getFileSystem().findResource(absPath, antiLoop);
         }
-        if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
+        if (relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
         if (relativePath.endsWith("/")) { // NOI18N
@@ -497,9 +495,27 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isProhibited() {
-        return getPath().equals("/proc");//NOI18N
+        return getPath().equals("/proc") || getPath().equals("/dev");//NOI18N
     }
 
+    @Override
+    public void setAttribute(String attrName, Object value) throws IOException {
+        if (attrName.equals("warmup")) { // NOI18N
+            if (Boolean.getBoolean("remote.fs_server.warmup")) {
+                warmup();
+            }
+        } else {
+            super.setAttribute(attrName, value);
+        }
+    }
+    
+    private void warmup() {
+        FSSTransport fsReader = FSSTransport.getInstance(getExecutionEnvironment());
+        if (fsReader != null && fsReader.isValid()) {
+            fsReader.warmap(getPath());
+        }
+    }
+    
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
@@ -507,8 +523,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            DirectoryReader directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
-            for (DirEntry entry : directoryReader.readDirectory(getPath())) {
+            DirEntryList entryList = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());            
+            for (DirEntry entry : entryList.getEntries()) {
                 newEntries.put(entry.getName(), entry);
             }
             
@@ -544,7 +560,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private DirEntry getSpecialDirChildEntry(String absPath, String childName) throws InterruptedException, ExecutionException {
         StatInfo statInfo;
         try {
-            statInfo = FileInfoProvider.stat(getExecutionEnvironment(), absPath, new PrintWriter(System.err)).get();
+            statInfo = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), absPath);
         } catch (ExecutionException e) {
             if (RemoteFileSystemUtils.isFileNotFoundException(e)) {
                 statInfo = null;
@@ -558,10 +574,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     private boolean isAutoMount() {
         String path = getPath();
-        if (AUTO_MOUNTS.contains(path)) {
-            return true;
-        }
-        return false;
+        return AUTO_MOUNTS.contains(path);
     }
 
     private boolean canLs() {
@@ -867,10 +880,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (forceRefresh && ! ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             //RemoteLogger.getInstance().warning("refreshDirectoryStorage is called while host is not connected");
             //force = false;
-            throw new ConnectException();
+            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
         }
 
-        DirectoryStorage storage = null;
+        DirectoryStorage storage;
 
         File storageFile = getStorageFile();
 
@@ -1245,7 +1258,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
             getFileSystem().addPendingFile(fo);
             if (throwConnectException) {
-                throw new ConnectException();
+                throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(getExecutionEnvironment()));
             }
         }
     }

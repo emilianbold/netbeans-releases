@@ -125,6 +125,14 @@ public class CompilerSetNodeProp extends Node.Property<String> {
     public void setValue(String v) {
         configuration.setValue(v);
     }
+    
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }    
 
     @Override
     public void restoreDefaultValue() {

@@ -47,10 +47,8 @@ package org.netbeans.lib.lexer.inc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
@@ -58,6 +56,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingOperation;
+import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.TokenListList;
@@ -159,7 +158,7 @@ public final class TokenHierarchyUpdate {
         }
     }
 
-    private <T extends TokenId> void updateImpl(IncTokenList<T> incTokenList, Set<Language<?>> rootChildrenLanguages) {
+    private <T extends TokenId> void updateImpl(IncTokenList<T> incTokenList, Object rootChildrenLanguages) {
         incTokenList.incrementModCount();
         
         // Update starts at the top language path an goes to possibly embedded-token-lists (ETLs)
@@ -204,7 +203,8 @@ public final class TokenHierarchyUpdate {
         UpdateItem<T> item = tokenListListItem(languagePath);
         if (item != null) {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("THU.updateCreateOrRemoveEmbedding() add=" + add + ": " + addedOrRemovedTokenList.dumpInfo(null));
+                LOG.fine("THU.updateCreateOrRemoveEmbedding() add=" + add + ": " +
+                    addedOrRemovedTokenList.dumpInfo(new StringBuilder(256)));
             }
             if (add) {
                 item.tokenListListUpdate.markAddedMember(addedOrRemovedTokenList);
@@ -278,7 +278,7 @@ public final class TokenHierarchyUpdate {
 
         final TokenListListUpdate<T> tokenListListUpdate;
         
-        final Set<Language<?>> childrenLanguages;
+        final Object childrenLanguages; // null or language or Language[]
 
         UpdateItem<?> parentItem;
 
@@ -286,8 +286,8 @@ public final class TokenHierarchyUpdate {
          * Token list change performed during this update.
          */
         TokenListChange<T> tokenListChange;
-
-        public UpdateItem(TokenHierarchyUpdate update, TokenListList<T> tokenListList, Set<Language<?>> childrenLanguages) {
+        
+        public UpdateItem(TokenHierarchyUpdate update, TokenListList<T> tokenListList, Object childrenLanguages) {
             this.update = update;
             this.tokenListListUpdate = (tokenListList != null)
                     ? new TokenListListUpdate<T>(tokenListList)
@@ -364,7 +364,7 @@ public final class TokenHierarchyUpdate {
                     } else {
                         change = tokenListChange;
                     }
-                    Set<Language<?>> attemptEmbeddingLanguages = processBoundsChange(change);
+                    Object attemptEmbeddingLanguages = processBoundsChange(change);
                     if (attemptEmbeddingLanguages != null) {
                         collectAddedEmbeddings(change, attemptEmbeddingLanguages);
                     }
@@ -374,7 +374,7 @@ public final class TokenHierarchyUpdate {
                     // of the root-level change
                     eventInfo.setMinAffectedStartOffset(tokenListChange.offset());
                     eventInfo.setMaxAffectedEndOffset(tokenListChange.addedEndOffset());
-                    if (childrenLanguages.size() > 0) { // If there are any possible embedded changes with TokenListList
+                    if (childrenLanguages != null) { // If there are any possible embedded changes with TokenListList
                         if (tokenListChange.getClass() == JoinTokenListChange.class) {
                             JoinTokenListChange<T> jChange = (JoinTokenListChange<T>) tokenListChange;
                             jChange.collectAddedRemovedEmbeddings(this);
@@ -409,15 +409,14 @@ public final class TokenHierarchyUpdate {
          * just with updated bounds.
          *
          * @param change non-null change describing the change.
-         * @param parentChange parent change or null for root change.
+         * @return children languages (possibly differs from childrenLanguages)
          */
-        Set<Language<?>> processBoundsChange(TokenListChange<T> change) {
+        Object processBoundsChange(TokenListChange<T> change) {
             // Set of embeddings that will be attempted to be created.
             // For example for "a%" there is a PERCENTS token but there can't be embedding
             // because there must be two skip chars (assumed "%something%").
             // Once "%" is typed there should be an empty embedding for "%%" created.
-            Set<Language<?>> attemptEmbeddingLanguages = childrenLanguages;
-            boolean attemptEmbeddingLanguagesUnmod = true;
+            Object attemptEmbeddingLanguages = childrenLanguages; // null or language or Language[]
             // Go through all embedded list in a chain and check whether the embeddings are OK
             TokenList<T> removedTokenList = change.tokenChangeInfo().removedTokenList();
             TokenOrEmbedding<T> t = removedTokenList.tokenOrEmbedding(0);
@@ -444,17 +443,13 @@ public final class TokenHierarchyUpdate {
                         // In fact all the ETLs that remain should logically be excluded from attempt
                         // for embedding creation. The removed ETLs should remain among attempted.
                         if (attemptEmbeddingLanguages != null) {
-                            Language<?> lang = etl.languagePath().innerLanguage();
-                            if (attemptEmbeddingLanguages.contains(lang)) {
-                                if (attemptEmbeddingLanguages.size() == 1) { // single and contained
+                            Language<?> lang = etl.language();
+                            if (LexerUtilsConstants.languageOrArrayContains(attemptEmbeddingLanguages, lang)) {
+                                if (LexerUtilsConstants.languageOrArraySize(attemptEmbeddingLanguages) == 1) { // single and contained
                                     attemptEmbeddingLanguages = null;
                                 } else { // Multiple langs
-                                    // Possibly make a copied modifiable set
-                                    if (attemptEmbeddingLanguagesUnmod) {
-                                        attemptEmbeddingLanguagesUnmod = false;
-                                        attemptEmbeddingLanguages = new HashSet<Language<?>>(attemptEmbeddingLanguages);
-                                    }
-                                    attemptEmbeddingLanguages.remove(lang);
+                                    attemptEmbeddingLanguages = LexerUtilsConstants.languageOrArrayRemove(
+                                            attemptEmbeddingLanguages, lang);
                                 }
                             } // else - lang not contained in attemptEmbeddingLanguages
                         }
@@ -496,7 +491,7 @@ public final class TokenHierarchyUpdate {
         private <ET extends TokenId> boolean processBoundsChangeEmbeddedTokenList(
                 EmbeddedTokenList<?,ET> etl, int modRelOffset, int beyondModLength
         ) {
-            UpdateItem<ET> childItem = (childrenLanguages.size() > 0)
+            UpdateItem<ET> childItem = (childrenLanguages != null)
                     ? update.<ET>tokenListListItem(etl.languagePath())
                     : null;
             // Check whether the change was not in the start or end skip lengths
@@ -505,7 +500,7 @@ public final class TokenHierarchyUpdate {
                 // Modification within embedding's bounds => embedding can stay
                 // Embedding will be updated once the level gets processed
                 if (childItem == null) {
-                    childItem = new UpdateItem<ET>(update, null, Collections.<Language<?>>emptySet());
+                    childItem = new UpdateItem<ET>(update, null, null);
                     int level = etl.languagePath().size() - 1;
                     update.addItem(childItem, level);
                 } else { // TokenListList exists - item already added
@@ -559,19 +554,23 @@ public final class TokenHierarchyUpdate {
             collectAddedEmbeddings(change, childrenLanguages);
         }
 
-        void collectAddedEmbeddings(TokenListChange<?> change, Set<Language<?>> attemptLanguages) {
+        void collectAddedEmbeddings(TokenListChange<?> change, Object attemptLanguages) {
             // Now collect added embeddings
             TokenList<?> currentTokenList = change.tokenList();
             collectAddedEmbeddings(currentTokenList, change.index(), change.addedTokenOrEmbeddingsCount(), attemptLanguages);
         }
 
-        void collectAddedEmbeddings(TokenList<?> tokenList, int index, int addedCount, Set<Language<?>> attemptLanguages) {
-            for (int i = 0; i < addedCount; i++) {
-                // Ensure that the default embedding gets possibly created
-                EmbeddedTokenList<?,?> etl = EmbeddingOperation.embeddedTokenList(tokenList, index + i, attemptLanguages, false);
-                while (etl != null) {
-                    internalMarkAddedMember(etl);
-                    etl = etl.nextEmbeddedTokenList();
+        void collectAddedEmbeddings(TokenList<?> tokenList, int index, int addedCount, Object attemptLanguages) {
+            int attemptLanguagesSize = LexerUtilsConstants.languageOrArraySize(attemptLanguages);
+            if (attemptLanguagesSize > 0) {
+                for (int i = 0; i < addedCount; i++) {
+                    for (int j = 0; j < attemptLanguagesSize; j++) {
+                        Language attemptLanguage = LexerUtilsConstants.languageOrArrayGet(attemptLanguages, j);
+                        EmbeddedTokenList<?,?> etl = EmbeddingOperation.embeddedTokenList(tokenList, index + i, attemptLanguage, false);
+                        if (etl != null) {
+                            internalMarkAddedMember(etl);
+                        }
+                    }
                 }
             }
         }

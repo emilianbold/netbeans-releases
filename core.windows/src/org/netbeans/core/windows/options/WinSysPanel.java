@@ -44,42 +44,15 @@
 
 package org.netbeans.core.windows.options;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Frame;
-import java.awt.GraphicsDevice;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.LookAndFeel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.LifecycleManager;
-import org.openide.awt.Notification;
-import org.openide.awt.NotificationDisplayer;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
-import org.openide.windows.WindowManager;
 
 @OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
 public class WinSysPanel extends javax.swing.JPanel {
@@ -88,40 +61,12 @@ public class WinSysPanel extends javax.swing.JPanel {
     
     private final Preferences prefs = NbPreferences.forModule(WinSysPanel.class);
     
-    private final boolean isAquaLaF = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-
-    private boolean defMultiRow;
-    private int defTabPlacement;
-    private int defaultLookAndFeelIndex;
-    private final ArrayList<LookAndFeelInfo> lafs = new ArrayList<LookAndFeelInfo>( 10 );
-    
     protected WinSysPanel(final WinSysOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
         boolean isMacJDK17 = isMacJDK7();
         this.isAlphaFloating.setEnabled(!isMacJDK17);
-        checkMaximizeNativeLaF.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                controller.changed();
-            }
-        });
-        initLookAndFeel();
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for( LookAndFeelInfo li : lafs ) {
-            model.addElement( li.getName() );
-        }
-        comboLaf.setModel( model );
-        comboLaf.addItemListener( new ItemListener() {
-
-            @Override
-            public void itemStateChanged( ItemEvent e ) {
-                controller.changed();
-            }
-        });
-        initTabsPanel( panelTabs );
     }
 
     /** This method is called from within the constructor to
@@ -139,28 +84,6 @@ public class WinSysPanel extends javax.swing.JPanel {
         isSnapping = new javax.swing.JCheckBox();
         isDragImageAlpha = new javax.swing.JCheckBox();
         isSnapScreenEdges = new javax.swing.JCheckBox();
-        panelDocTabs = new javax.swing.JPanel();
-        isCloseActivatesMostRecentDocument = new javax.swing.JCheckBox();
-        isNewDocumentOpensNextToActiveTab = new javax.swing.JCheckBox();
-        panelTabs = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        radioTop = new javax.swing.JRadioButton();
-        radioBottom = new javax.swing.JRadioButton();
-        radioLeft = new javax.swing.JRadioButton();
-        radioRight = new javax.swing.JRadioButton();
-        checkMultiRow = new javax.swing.JCheckBox();
-        panelSeparator = new javax.swing.JPanel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jLabel2 = new javax.swing.JLabel();
-        panelSeparator1 = new javax.swing.JPanel();
-        jSeparator2 = new javax.swing.JSeparator();
-        jLabel3 = new javax.swing.JLabel();
-        panelLaF = new javax.swing.JPanel();
-        checkMaximizeNativeLaF = new javax.swing.JCheckBox();
-        panelLaFCombo = new javax.swing.JPanel();
-        comboLaf = new javax.swing.JComboBox();
-        lblLaf = new javax.swing.JLabel();
-        lblRestart = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setLayout(new java.awt.GridBagLayout());
@@ -187,6 +110,7 @@ public class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         add(isAlphaFloating, gridBagConstraints);
 
@@ -220,185 +144,6 @@ public class WinSysPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 25, 0, 0);
         add(isSnapScreenEdges, gridBagConstraints);
-
-        panelDocTabs.setLayout(new java.awt.GridBagLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(isCloseActivatesMostRecentDocument, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_CloseActivatesRecentDocument")); // NOI18N
-        isCloseActivatesMostRecentDocument.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "TIP_CloseActivatesMostRecentDocument")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        panelDocTabs.add(isCloseActivatesMostRecentDocument, gridBagConstraints);
-        isCloseActivatesMostRecentDocument.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.isCloseActivatesMostRecentDocument.AccessibleContext.accessibleDescription")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(isNewDocumentOpensNextToActiveTab, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.isNewDocumentOpensNextToActiveTab.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panelDocTabs.add(isNewDocumentOpensNextToActiveTab, gridBagConstraints);
-
-        panelTabs.setLayout(new java.awt.GridBagLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel1.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        panelTabs.add(jLabel1, gridBagConstraints);
-
-        buttonGroup1.add(radioTop);
-        radioTop.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(radioTop, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioTop.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        panelTabs.add(radioTop, gridBagConstraints);
-
-        buttonGroup1.add(radioBottom);
-        org.openide.awt.Mnemonics.setLocalizedText(radioBottom, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioBottom.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        panelTabs.add(radioBottom, gridBagConstraints);
-
-        buttonGroup1.add(radioLeft);
-        org.openide.awt.Mnemonics.setLocalizedText(radioLeft, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioLeft.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        panelTabs.add(radioLeft, gridBagConstraints);
-
-        buttonGroup1.add(radioRight);
-        org.openide.awt.Mnemonics.setLocalizedText(radioRight, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.radioRight.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 0);
-        panelTabs.add(radioRight, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(checkMultiRow, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMultiRow.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        panelTabs.add(checkMultiRow, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        panelDocTabs.add(panelTabs, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(panelDocTabs, gridBagConstraints);
-
-        panelSeparator.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_END;
-        gridBagConstraints.weightx = 1.0;
-        panelSeparator.add(jSeparator1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel2.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
-        panelSeparator.add(jLabel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
-        add(panelSeparator, gridBagConstraints);
-
-        panelSeparator1.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_END;
-        gridBagConstraints.weightx = 1.0;
-        panelSeparator1.add(jSeparator2, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.jLabel3.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
-        panelSeparator1.add(jLabel3, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
-        add(panelSeparator1, gridBagConstraints);
-
-        panelLaF.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(checkMaximizeNativeLaF, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMaximizeNativeLaF.text")); // NOI18N
-        checkMaximizeNativeLaF.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.checkMaximizeNativeLaF.toolTipText")); // NOI18N
-        panelLaF.add(checkMaximizeNativeLaF, java.awt.BorderLayout.WEST);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(panelLaF, gridBagConstraints);
-
-        panelLaFCombo.setLayout(new java.awt.BorderLayout(3, 0));
-        panelLaFCombo.add(comboLaf, java.awt.BorderLayout.CENTER);
-
-        lblLaf.setLabelFor(comboLaf);
-        org.openide.awt.Mnemonics.setLocalizedText(lblLaf, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.lblLaf.text")); // NOI18N
-        panelLaFCombo.add(lblLaf, java.awt.BorderLayout.WEST);
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblRestart, NbBundle.getMessage(WinSysPanel.class, "WinSysPanel.lblRestart.text")); // NOI18N
-        panelLaFCombo.add(lblRestart, java.awt.BorderLayout.LINE_END);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        add(panelLaFCombo, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
@@ -421,51 +166,10 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         isDragImage.setSelected(prefs.getBoolean(WinSysPrefs.DND_DRAGIMAGE, isNotSolaris && !isMacJDK17));
         isDragImageAlpha.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isNotSolaris && !isMacJDK17));
 
-        isAlphaFloating.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING,!isMacJDK17));
+        isAlphaFloating.setSelected(prefs.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING,false));
         
         isSnapping.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING, true));
         isSnapScreenEdges.setSelected(prefs.getBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, true));
-        
-        isCloseActivatesMostRecentDocument.setSelected(prefs.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true));
-        isNewDocumentOpensNextToActiveTab.setSelected(prefs.getBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, false));
-
-        updateDragSection();
-        updateSnapSection();
-        updateFloatingSection();
-
-        defMultiRow = prefs.getBoolean( WinSysPrefs.DOCUMENT_TABS_MULTIROW, false );
-        checkMultiRow.setSelected( defMultiRow );
-        defTabPlacement = prefs.getInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, JTabbedPane.TOP );
-        switch( defTabPlacement ) {
-            case JTabbedPane.BOTTOM:
-                radioBottom.setSelected( true );
-                break;
-            case JTabbedPane.LEFT:
-                radioLeft.setSelected( true );
-                break;
-            case JTabbedPane.RIGHT:
-                radioRight.setSelected( true );
-                break;
-            default:
-                radioTop.setSelected( true );
-        }
-        
-        checkMaximizeNativeLaF.setSelected(prefs.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false));
-        
-        if( isAquaLaF ) {
-            checkMultiRow.setSelected(false);
-            checkMultiRow.setEnabled(false);
-            radioLeft.setEnabled(false);
-            radioRight.setEnabled(false);
-            if( radioLeft.isSelected() || radioRight.isSelected() ) {
-                radioTop.setSelected(true);
-            }
-        }
-
-        boolean isForcedLaF = isForcedLaF();
-        defaultLookAndFeelIndex = lafs.indexOf( isForcedLaF ? getCurrentLaF() : getPreferredLaF() );
-        comboLaf.setSelectedIndex( defaultLookAndFeelIndex );
-        comboLaf.setEnabled( !isForcedLaF );
     }
 
     protected boolean store() {
@@ -477,35 +181,8 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         
         prefs.putBoolean(WinSysPrefs.SNAPPING, isSnapping.isSelected());
         prefs.putBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, isSnapScreenEdges.isSelected());
-        
-        prefs.putBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, isCloseActivatesMostRecentDocument.isSelected());
-        prefs.putBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, isNewDocumentOpensNextToActiveTab.isSelected());
-        
-        prefs.putBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, checkMaximizeNativeLaF.isSelected());
-        System.setProperty("nb.native.filechooser", checkMaximizeNativeLaF.isSelected() ? "true" : "false"); //NOI18N
 
-        boolean needsWinsysRefresh = false;
-        needsWinsysRefresh = checkMultiRow.isSelected() != defMultiRow;
-        prefs.putBoolean(WinSysPrefs.DOCUMENT_TABS_MULTIROW, checkMultiRow.isSelected());
-
-        int tabPlacement = JTabbedPane.TOP;
-        if( radioBottom.isSelected() )
-            tabPlacement = JTabbedPane.BOTTOM;
-        else if( radioLeft.isSelected() )
-            tabPlacement = JTabbedPane.LEFT;
-        else if( radioRight.isSelected() )
-            tabPlacement = JTabbedPane.RIGHT;
-        prefs.putInt( WinSysPrefs.DOCUMENT_TABS_PLACEMENT, tabPlacement );
-        needsWinsysRefresh |= tabPlacement != defTabPlacement;
-
-        int selLaFIndex = comboLaf.getSelectedIndex();
-        if( selLaFIndex != defaultLookAndFeelIndex && !isForcedLaF() ) {
-            LookAndFeelInfo li = lafs.get( comboLaf.getSelectedIndex() );
-            NbPreferences.root().node( "laf" ).put( "laf", li.getClassName() ); //NOI18N
-            askForRestart();
-        }
-
-        return needsWinsysRefresh;
+        return false;
     }
 
     boolean valid() {
@@ -558,189 +235,13 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         return false;
     }
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JCheckBox checkMaximizeNativeLaF;
-    private javax.swing.JCheckBox checkMultiRow;
-    private javax.swing.JComboBox comboLaf;
     private javax.swing.JCheckBox isAlphaFloating;
-    private javax.swing.JCheckBox isCloseActivatesMostRecentDocument;
     private javax.swing.JCheckBox isDragImage;
     private javax.swing.JCheckBox isDragImageAlpha;
-    private javax.swing.JCheckBox isNewDocumentOpensNextToActiveTab;
     private javax.swing.JCheckBox isSnapScreenEdges;
     private javax.swing.JCheckBox isSnapping;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JLabel lblLaf;
-    private javax.swing.JLabel lblRestart;
-    private javax.swing.JPanel panelDocTabs;
-    private javax.swing.JPanel panelLaF;
-    private javax.swing.JPanel panelLaFCombo;
-    private javax.swing.JPanel panelSeparator;
-    private javax.swing.JPanel panelSeparator1;
-    private javax.swing.JPanel panelTabs;
-    private javax.swing.JRadioButton radioBottom;
-    private javax.swing.JRadioButton radioLeft;
-    private javax.swing.JRadioButton radioRight;
-    private javax.swing.JRadioButton radioTop;
     // End of variables declaration//GEN-END:variables
-
-
-    private void initLookAndFeel() {
-        lafs.clear();
-        for( LookAndFeelInfo i : UIManager.getInstalledLookAndFeels() ) {
-            lafs.add( i );
-        }
-    }
-
-    private boolean isForcedLaF() {
-        return null != System.getProperty( "nb.laf.forced" ); //NOI18N
-    }
-
-    private LookAndFeelInfo getCurrentLaF() {
-        LookAndFeelInfo currentLaf = null;
-        String currentLAFClassName = UIManager.getLookAndFeel().getClass().getName();
-        boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-        for( LookAndFeelInfo li : lafs ) {
-            if( currentLAFClassName.equals( li.getClassName() ) 
-                    || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
-                currentLaf = li;
-                break;
-            }
-        }
-        return currentLaf;
-    }
-
-    private LookAndFeelInfo getPreferredLaF() {
-        String lafClassName = NbPreferences.root().node( "laf" ).get( "laf", null ); //NOI18N
-        if( null == lafClassName )
-            return getCurrentLaF();
-        LookAndFeelInfo currentLaf = null;
-        boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
-        for( LookAndFeelInfo li : lafs ) {
-            if( lafClassName.equals( li.getClassName() )
-                    || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
-                currentLaf = li;
-                break;
-            }
-        }
-        return currentLaf;
-    }
-
-    private static Notification restartNotification;
-
-    private void askForRestart() {
-        if( null != restartNotification ) {
-            restartNotification.clear();
-        }
-        restartNotification = NotificationDisplayer.getDefault().notify( NbBundle.getMessage(WinSysPanel.class, "Hint_RESTART_IDE"),
-                ImageUtilities.loadImageIcon( "org/netbeans/core/windows/resources/restart.png", true ), //NOI18N
-                createRestartNotificationDetails(), createRestartNotificationDetails(),
-                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
-    }
-
-    void selectDarkLookAndFeel() {
-        comboLaf.requestFocusInWindow();
-        SwingUtilities.invokeLater( new Runnable() {
-
-            @Override
-            public void run() {
-                comboLaf.setPopupVisible( true );
-            }
-        });
-    }
-
-    //Use reflection to instantiate ColorModel class and get/set the current profile
-    private static final String COLOR_MODEL_CLASS_NAME = "org.netbeans.modules.options.colors.ColorModel"; //NOI18N
-    private static final String DARK_COLOR_THEME_NAME = "Norway Today"; //NOI18N
-
-    private boolean isChangeEditorColorsPossible() {
-        if( !isDarkLookAndFeel() )
-            return false;
-        ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == cl )
-            cl = WinSysPanel.class.getClassLoader();
-        try {
-            Class klz = cl.loadClass( COLOR_MODEL_CLASS_NAME );
-            Object colorModel = klz.newInstance();
-            Method m = klz.getDeclaredMethod( "getCurrentProfile", new Class[0] ); //NOI18N
-            Object res = m.invoke( colorModel, new Object[0] );
-            return res != null && !DARK_COLOR_THEME_NAME.equals( res );
-        } catch( Exception ex ) {
-            //ignore
-        }
-        return false;
-    }
-
-    private void switchEditorColorsProfile() {
-        if( !isChangeEditorColorsPossible() )
-            return;
-
-        ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == cl )
-            cl = WinSysPanel.class.getClassLoader();
-        try {
-            Class klz = cl.loadClass( COLOR_MODEL_CLASS_NAME );
-            Object colorModel = klz.newInstance();
-            Method m = klz.getDeclaredMethod( "setCurrentProfile", String.class ); //NOI18N
-            m.invoke( colorModel, DARK_COLOR_THEME_NAME );
-        } catch( Exception ex ) {
-            //ignore
-            Logger.getLogger( WinSysPanel.class.getName() ).log( Level.INFO, "Cannot change editor colors profile.", ex ); //NOI18N
-        }
-    }
-
-    private JComponent createRestartNotificationDetails() {
-        JPanel res = new JPanel( new BorderLayout( 10, 10) );
-        res.setOpaque( false );
-        JLabel lbl = new JLabel( NbBundle.getMessage( WinSysPanel.class, "Descr_Restart") ); //NOI18N
-        lbl.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
-        res.add( lbl, BorderLayout.CENTER );
-        final JCheckBox checkEditorColors = new JCheckBox( NbBundle.getMessage( WinSysPanel.class, "Hint_ChangeEditorColors" ) ); //NOI18N
-        if( isChangeEditorColorsPossible() ) {
-            checkEditorColors.setSelected( true );
-            checkEditorColors.setOpaque( false );
-            res.add( checkEditorColors, BorderLayout.SOUTH );
-        }
-        lbl.addMouseListener( new MouseAdapter() {
-            @Override
-            public void mouseClicked( MouseEvent e ) {
-                if( null != restartNotification ) {
-                    restartNotification.clear();
-                    restartNotification = null;
-                }
-                if( checkEditorColors.isSelected() ) {
-                    switchEditorColorsProfile();
-                }
-                LifecycleManager.getDefault().markForRestart();
-                LifecycleManager.getDefault().exit();
-            }
-        });
-        return res;
-    }
-
-    private boolean isDarkLookAndFeel() {
-        String className = NbPreferences.root().node( "laf" ).get( "laf", null );
-        if( null == className )
-            return false;
-
-        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
-        if( null == loader )
-            loader = ClassLoader.getSystemClassLoader();
-
-        try {
-            Class klazz = loader.loadClass( className );
-            LookAndFeel laf = ( LookAndFeel ) klazz.newInstance();
-            return laf.getDefaults().getBoolean( "nb.dark.theme" ); //NOI18N
-        } catch( Exception e ) {
-            //ignore
-        }
-        return false;
-    }
 }

@@ -513,23 +513,23 @@ public class JavaProjectGenerator {
             data.removeChild(cuEl);
         }
         for (JavaCompilationUnit cu : compUnits) {
-            Element cuEl = doc.createElementNS(namespace, "compilation-unit"); // NOI18N
+            Element cuEl = doc.createElementNS(data.getNamespaceURI(), "compilation-unit"); // NOI18N
             data.appendChild(cuEl);
             Element el;
             if (cu.packageRoots != null) {
                 for (String packageRoot : cu.packageRoots) {
-                    el = doc.createElementNS(namespace, "package-root"); // NOI18N
+                    el = doc.createElementNS(data.getNamespaceURI(), "package-root"); // NOI18N
                     el.appendChild(doc.createTextNode(packageRoot));
                     cuEl.appendChild(el);
                 }
             }
             if (cu.isTests) {
                 assert JavaProjectNature.namespaceAtLeast(namespace, JavaProjectNature.NS_JAVA_2);
-                cuEl.appendChild(doc.createElementNS(namespace, "unit-tests")); // NOI18N
+                cuEl.appendChild(doc.createElementNS(data.getNamespaceURI(), "unit-tests")); // NOI18N
             }
             if (cu.classpath != null) {
                 for (JavaCompilationUnit.CP cp : cu.classpath) {
-                    el = doc.createElementNS(namespace, "classpath"); // NOI18N
+                    el = doc.createElementNS(data.getNamespaceURI(), "classpath"); // NOI18N
                     el.appendChild(doc.createTextNode(cp.classpath));
                     el.setAttribute("mode", cp.mode); // NOI18N
                     cuEl.appendChild(el);
@@ -539,7 +539,7 @@ public class JavaProjectGenerator {
                 Iterator it3 = cu.output.iterator();
                 while (it3.hasNext()) {
                     String output = (String)it3.next();
-                    el = doc.createElementNS(namespace, "built-to"); // NOI18N
+                    el = doc.createElementNS(data.getNamespaceURI(), "built-to"); // NOI18N
                     el.appendChild(doc.createTextNode(output));
                     cuEl.appendChild(el);
                 }
@@ -549,43 +549,43 @@ public class JavaProjectGenerator {
                 while (it3.hasNext()) {
                     String javadoc = (String) it3.next();
                     assert JavaProjectNature.namespaceAtLeast(namespace, JavaProjectNature.NS_JAVA_2);
-                    el = doc.createElementNS(namespace, "javadoc-built-to"); // NOI18N
+                    el = doc.createElementNS(data.getNamespaceURI(), "javadoc-built-to"); // NOI18N
                     el.appendChild(doc.createTextNode(javadoc));
                     cuEl.appendChild(el);
                 }
             }
             if (cu.sourceLevel != null) {
-                el = doc.createElementNS(namespace, "source-level"); // NOI18N
+                el = doc.createElementNS(data.getNamespaceURI(), "source-level"); // NOI18N
                 el.appendChild(doc.createTextNode(cu.sourceLevel));
                 cuEl.appendChild(el);
             }
             if (cu.annotationPorocessing != null) {
-                el = doc.createElementNS(namespace, "annotation-processing"); // NOI18N
+                el = doc.createElementNS(data.getNamespaceURI(), "annotation-processing"); // NOI18N
                 if (cu.annotationPorocessing.trigger.contains(AnnotationProcessingQuery.Trigger.ON_SCAN)) {                    
-                    el.appendChild(doc.createElementNS(namespace, "scan-trigger")); //NOI18N
+                    el.appendChild(doc.createElementNS(data.getNamespaceURI(), "scan-trigger")); //NOI18N
                 }
                 if (cu.annotationPorocessing.trigger.contains(AnnotationProcessingQuery.Trigger.IN_EDITOR)) {
-                    el.appendChild(doc.createElementNS(namespace, "editor-trigger")); //NOI18N
+                    el.appendChild(doc.createElementNS(data.getNamespaceURI(), "editor-trigger")); //NOI18N
                 }
                 if (cu.annotationPorocessing.sourceOutput != null) {
-                    final Element soElm = doc.createElementNS(namespace, "source-output");  //NOI18N
+                    final Element soElm = doc.createElementNS(data.getNamespaceURI(), "source-output");  //NOI18N
                     soElm.appendChild(doc.createTextNode(cu.annotationPorocessing.sourceOutput));
                     el.appendChild(soElm);
                 }
                 if (cu.annotationPorocessing.processorPath != null) {
-                    final Element ppElm = doc.createElementNS(namespace, "processor-path"); //NOI18N
+                    final Element ppElm = doc.createElementNS(data.getNamespaceURI(), "processor-path"); //NOI18N
                     ppElm.appendChild(doc.createTextNode(cu.annotationPorocessing.processorPath));
                     el.appendChild(ppElm);
                 }
                 for (String processor : cu.annotationPorocessing.processors) {
-                    final Element pElm = doc.createElementNS(namespace, "processor");   //NOI18N
+                    final Element pElm = doc.createElementNS(data.getNamespaceURI(), "processor");   //NOI18N
                     pElm.appendChild(doc.createTextNode(processor));
                     el.appendChild(pElm);
                 }
                 for (Map.Entry<String,String> option : cu.annotationPorocessing.processorParams.entrySet()) {
-                    final Element poElm = doc.createElementNS(namespace, "processor-option");   //NOI18N
-                    final Element keyElm = doc.createElementNS(namespace,"key");  //NOI18N
-                    final Element valueElm = doc.createElementNS(namespace, "value");   //NOI18N
+                    final Element poElm = doc.createElementNS(data.getNamespaceURI(), "processor-option");   //NOI18N
+                    final Element keyElm = doc.createElementNS(data.getNamespaceURI(),"key");  //NOI18N
+                    final Element valueElm = doc.createElementNS(data.getNamespaceURI(), "value");   //NOI18N
                     keyElm.appendChild(doc.createTextNode(option.getKey()));
                     if (option.getValue() != null) {
                         valueElm.appendChild(doc.createTextNode(option.getValue()));

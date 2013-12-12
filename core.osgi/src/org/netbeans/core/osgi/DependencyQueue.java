@@ -42,9 +42,12 @@
 
 package org.netbeans.core.osgi;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +69,7 @@ import java.util.Set;
 final class DependencyQueue<K,V> {
 
     /** what each value provides */
-    private final Map<V,Set<K>> provides = new /*XXX fails if use this, why? Linked*/HashMap<V,Set<K>>();
+    private final Map<V,Set<K>> provides = new LinkedHashMap<V,Set<K>>();
     /** what each value requires */
     private final Map<V,Set<K>> requires = new HashMap<V,Set<K>>();
     /** what each value needs */
@@ -116,7 +119,9 @@ final class DependencyQueue<K,V> {
             boolean lookForExtra = true;
             while (lookForExtra) {
                 lookForExtra = false;
-                for (V extra : this.provides.keySet()) {
+                List<V> reverseProvides = new ArrayList<V>(this.provides.keySet());
+                Collections.reverse(reverseProvides);
+                for (V extra : reverseProvides) {
                     if (accepted.contains(extra)) {
                         continue;
                     }

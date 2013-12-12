@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  * <p/>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface RepositoryQueryImplementation {
     
@@ -59,6 +60,7 @@ public interface RepositoryQueryImplementation {
      * 
      * @param fileObject
      * @return the remote repository url or null if not available
+     * @since 1.85
      */
     public String getRepositoryUrl(FileObject fileObject);
 }

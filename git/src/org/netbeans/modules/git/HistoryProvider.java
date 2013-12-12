@@ -146,10 +146,12 @@ public class HistoryProvider implements VCSHistoryProvider {
         if (author == null || author.trim().isEmpty()) {
             author = username;
         }
+        String message = h.getFullMessage();
+        assert message != null;
         HistoryEntry e = new HistoryEntry(
                 involvedFiles, 
                 new Date(h.getCommitTime()),
-                h.getFullMessage(), 
+                message == null ? "" : message,  //NOI18N
                 author, 
                 username, 
                 h.getRevision(), 

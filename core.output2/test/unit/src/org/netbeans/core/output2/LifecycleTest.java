@@ -45,15 +45,22 @@
 package org.netbeans.core.output2;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
@@ -400,6 +407,45 @@ public class LifecycleTest extends NbTestCase {
 			      IOSelect.AdditionalOperation.REQUEST_ACTIVE);
 	IOSelect.select(io, extraOps);
 	sleep();
+    }
+
+    /**
+     * Test for bug 239194 - NPE at
+     * org.netbeans.core.output2.FoldingSideBar.paintComponent.
+     *
+     * @throws java.lang.InterruptedException
+     */
+    public void testBug239194() throws InterruptedException {
+        final Semaphore s = new Semaphore(0);
+        final Exception[] excRef = new Exception[1];
+        EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                NbIO io = (NbIO) NbIOProvider.getDefault().getIO("bug239194",
+                        true);
+                try {
+                    FoldingSideBar fsb = pane.getFoldingSideBar();
+                    JTextComponent jtc = pane.getTextView();
+                    jtc.setVisible(false);
+                    jtc.setMinimumSize(new Dimension(-1, -1));
+                    jtc.setSize(new Dimension(-1, -1));
+                    Graphics g = new BufferedImage(1, 1,
+                            BufferedImage.TYPE_INT_RGB).getGraphics();
+                    g.setClip(0,0,1,1);
+                    fsb.paintComponent(g);
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                    excRef[0] = e;
+                } finally {
+                    io.closeInputOutput();
+                    io.dispose();
+                }
+                s.release();
+            }
+        });
+        assertTrue("Timout", s.tryAcquire(30, TimeUnit.MINUTES));
+        assertNull("No exception should be thrown", excRef[0]);
     }
 
     static JComponent getIOWindow() {

@@ -65,7 +65,7 @@ import org.openide.filesystems.FileUtil;
 public class FileUtilAddRecursiveListenerFilterTest extends NbTestCase
 implements FileChangeListener {
     private FileObject root;
-    private List<FileEvent> events = new ArrayList<FileEvent>();
+    private final List<FileEvent> events = new ArrayList<FileEvent>();
     @SuppressWarnings("NonConstantLogger")
     private Logger LOG;
 
@@ -96,7 +96,6 @@ implements FileChangeListener {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #8191: No other even delivered: [...] expected:<1> but was:<2>
     public void testAddListenerGetsFiveCallbacks() throws IOException {
         class AtMostFive implements FileFilter {
             @Override
@@ -125,42 +124,49 @@ implements FileChangeListener {
     public void fileFolderCreated(FileEvent fe) {
         LOG.log(Level.INFO, "fileFolderCreated: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
     @Override
     public void fileDataCreated(FileEvent fe) {
         LOG.log(Level.INFO, "fileDataCreated: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
     @Override
     public void fileChanged(FileEvent fe) {
         LOG.log(Level.INFO, "fileChanged: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
     @Override
     public void fileDeleted(FileEvent fe) {
         LOG.log(Level.INFO, "fileDeleted: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         LOG.log(Level.INFO, "fileRenamed: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         LOG.log(Level.INFO, "fileAttributeChanged: {0}", fe.getFile());
         LOG.log(Level.INFO, "Thread dump", new Exception());
-        events.add(fe);
+        addEventToList(fe);
     }
 
+    private void addEventToList(FileEvent fe) {
+        // Ignore changes in root itself, e.g. modifications of the local
+        // log file.
+        if (!fe.getSource().equals(root)) {
+            events.add(fe);
+        }
+    }
 }

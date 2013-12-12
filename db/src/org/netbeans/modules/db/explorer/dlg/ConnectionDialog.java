@@ -46,13 +46,12 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-
+import javax.swing.JButton;
 import javax.swing.JPanel;
-
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -66,8 +65,10 @@ public class ConnectionDialog {
     
     final DialogDescriptor descriptor;
     final Dialog dialog;
+    final JButton cancelButton;
     
     public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, String dlgTitle, HelpCtx helpCtx, ActionListener actionListener) {
+        this.cancelButton = new JButton(NbBundle.getMessage(ConnectionDialog.class, "ConnectionDlg.CancelOption"));
         this.mediator = mediator;
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
             @Override
@@ -105,14 +106,34 @@ public class ConnectionDialog {
         basePane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yName"));
         basePane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yDesc"));
 
-        descriptor = new DialogDescriptor(basePane, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION,
+        descriptor = new DialogDescriptor(basePane, dlgTitle, true, new Object[] {DialogDescriptor.OK_OPTION, cancelButton},
                      DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
-        // inbuilt close of the dialog is only after CANCEL button click
-        // after OK button is dialog closed by hand
-        Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
-        descriptor.setClosingOptions(closingOptions);
+        
+        // Valid in this case means: connection is not establishing
+        // when the connection is created the process can't be canceled anymore
+        descriptor.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                if("valid".equals(e.getPropertyName())) {
+                    cancelButton.setEnabled((Boolean) e.getNewValue());
+                }
+            }
+        });
+
+        // disable automatic closing
+        descriptor.setClosingOptions(new Object[0]);
         updateValid();
+        
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        
+        // Explicitly close dialog on cancelbutton
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.setVisible(false);
+            }
+        });
+        
         // needed for issue 82787, allows the panel to request the focus
         // to the password text field
         basePane.initializeFocus();

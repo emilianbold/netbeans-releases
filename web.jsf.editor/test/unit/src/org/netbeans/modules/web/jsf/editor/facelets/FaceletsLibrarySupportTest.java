@@ -52,7 +52,6 @@ import junit.framework.TestSuite;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.TestBaseForTestProject;
 import org.netbeans.modules.web.jsf.editor.index.JsfCustomIndexer;
-import org.netbeans.modules.web.jsf.editor.index.JsfIndexer;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Function;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
@@ -81,11 +80,9 @@ public class FaceletsLibrarySupportTest extends TestBaseForTestProject {
     @Override
     protected void setUp() throws Exception {
         JsfCustomIndexer.LOGGER.setLevel(Level.FINE);
-        JsfIndexer.LOG.setLevel(Level.FINE);
 
         Handler h = new ConsoleHandler();
         h.setLevel(Level.FINE);
-        JsfIndexer.LOG.addHandler(h);
         JsfCustomIndexer.LOGGER.addHandler(h);
         super.setUp();
     }

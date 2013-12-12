@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.WrapTokenId;
 
 /**
  * Abstract token is base class of all token implementations used in the lexer module.
@@ -81,7 +82,7 @@ import org.netbeans.lib.lexer.TokenList;
 public abstract class AbstractToken<T extends TokenId> extends Token<T>
 implements TokenOrEmbedding<T> {
     
-    private final T id; // 12 bytes (8-super + 4)
+    private WrapTokenId<T> wid; // 12 bytes (8-super + 4)
 
     protected TokenList<T> tokenList; // 16 bytes
     
@@ -90,14 +91,14 @@ implements TokenOrEmbedding<T> {
     /**
      * @id non-null token id.
      */
-    public AbstractToken(T id) {
-        assert (id != null);
-        this.id = id;
+    public AbstractToken(WrapTokenId<T> wid) {
+        assert (wid != null);
+        this.wid = wid;
     }
     
-    AbstractToken(T id, int rawOffset) {
-        this.id = id;
-        this.rawOffset = rawOffset;
+    AbstractToken(WrapTokenId<T> wid, int rawOffset) {
+        this.wid = wid;
+        setRawOffset(rawOffset);
     }
     
     /**
@@ -107,7 +108,16 @@ implements TokenOrEmbedding<T> {
      */
     @Override
     public final T id() {
-        return id;
+        return wid.id();
+    }
+
+    public WrapTokenId<T> wid() {
+        return wid;
+    }
+
+    public void setWid(WrapTokenId<T> wid) {
+        assert (rawOffset != -1) : "Attempt to set wid=" + wid + " on flyweight token."; // NOI18N
+        this.wid = wid;
     }
 
     /**
@@ -139,6 +149,9 @@ implements TokenOrEmbedding<T> {
      * @param rawOffset new raw offset.
      */
     public final void setRawOffset(int rawOffset) {
+//        if (rawOffset < -1) { // -1 is default value
+//            throw new IllegalArgumentException("Invalid rawOffset=" + rawOffset);
+//        }
         this.rawOffset = rawOffset;
     }
 
@@ -226,21 +239,6 @@ implements TokenOrEmbedding<T> {
         return !isFlyweight();
     }
     
-    /**
-     * Check whether a default embedding creation was attempted but it was unsuccessful.
-     * @return true if a default embedding creation was attempted but it was unsuccessful.
-     */
-    public abstract boolean isNoDefaultEmbedding();
-    
-    /**
-     * Mark the token to not contain a default embedding.
-     *
-     * @return null if the marking finished successfully or a token instance
-     * that supports marking (caller must replace the original token in the token list
-     * with the returned token).
-     */
-    public abstract AbstractToken<T> markNoDefaultEmbedding();
-
     public String dumpInfo() {
         return dumpInfo(null, null, true, true, 0).toString();
     }
@@ -289,7 +287,7 @@ implements TokenOrEmbedding<T> {
             sb.append('<').append(offset); // NOI18N
             sb.append(",").append(offset + length()).append('>'); // NOI18N
         }
-        sb.append(' ').append(id != null ? id.name() + '[' + id.ordinal() + ']' : "<null-id>"); // NOI18N
+        sb.append(' ').append(wid != null ? id().name() + '[' + id().ordinal() + ']' : "<null-id>"); // NOI18N
         sb.append(" ").append(dumpInfoTokenType());
         return sb;
     }

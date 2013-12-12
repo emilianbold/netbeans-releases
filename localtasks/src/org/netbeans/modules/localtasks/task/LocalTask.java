@@ -42,8 +42,6 @@
 package org.netbeans.modules.localtasks.task;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -53,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
@@ -64,15 +64,17 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
 import org.netbeans.modules.mylyn.util.localtasks.IssueField;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,13 +88,12 @@ import org.openide.windows.WindowManager;
 public final class LocalTask extends AbstractLocalTask {
 
     private final NbTask task;
-    private final PropertyChangeSupport support;
     private final LocalRepository repository;
     private TaskController controller;
-    private boolean loading;
     private static final RequestProcessor RP = LocalRepository.getInstance().getRequestProcessor();
     private static final String NB_ATTACHMENT = "nb.attachment."; //NOI18N
     private static final String NB_TASK_REFERENCE = "nb.taskreference."; //NOI18N
+    private static final Object ATTACHMENT_STORAGE_LOCK = new Object();
 
     private List<AttachmentInfo> unsavedAttachments;
     private String tooltip = "";
@@ -101,7 +102,6 @@ public final class LocalTask extends AbstractLocalTask {
         super(task);
         this.task = task;
         this.repository = LocalRepository.getInstance();
-        support = new PropertyChangeSupport(this);
         updateTooltip();
     }
 
@@ -112,12 +112,12 @@ public final class LocalTask extends AbstractLocalTask {
 
     @Override
     protected void attributeChanged (NbTaskDataModel.NbTaskDataModelEvent event, NbTaskDataModel model) {
-        getTaskController().modelStateChanged(model.isDirty() || hasUnsavedAttributes());
+        modelStateChanged(model.isDirty() || hasUnsavedAttributes());
     }
 
     @Override
     protected void modelSaved (NbTaskDataModel model) {
-        getTaskController().modelStateChanged(model.isDirty() || hasUnsavedAttributes());
+        modelStateChanged(model.isDirty() || hasUnsavedAttributes());
     }
 
     @Override
@@ -219,14 +219,6 @@ public final class LocalTask extends AbstractLocalTask {
         return tooltip;
     }
 
-    public void addPropertyChangeListener (PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener (PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
     public boolean searchFor (String[] keywords) {
         String summary = getSummary().toLowerCase();
         for (String kw : keywords) {
@@ -250,12 +242,10 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     void opened () {
-        loading = true;
         LocalRepository.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
-                    loading = false;
                     getTaskController().refreshViewData();
                 } else {
                     // should close somehow
@@ -268,17 +258,30 @@ public final class LocalTask extends AbstractLocalTask {
         LocalRepository.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                if (hasUnsavedAttributes() || !isMarkedNewUnread()) {
-                    save();
-                    getTaskController().modelStateChanged(hasUnsavedChanges());
-                }
                 editorClosed();
             }
         });
     }
 
     public void delete () {
-        fireSaved();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                for (Attachment att : getAttachments()) {
+                    if (att.isInCentral()) {
+                        String uri = att.getUri();
+                        try {
+                            File f = Utilities.toFile(new URI(uri));
+                            f.delete();
+                        } catch (URISyntaxException ex) {
+                            // not interested
+                        }
+                    }
+                }
+                clearUnsavedChanges();
+            }
+        });
+        fireChanged();
         if (controller != null) {
             controller.taskDeleted();
         }
@@ -357,21 +360,13 @@ public final class LocalTask extends AbstractLocalTask {
         ta.setValue(value);
         model.attributeChanged(ta);
     }
-
-    private void fireDataChanged () {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
+ 
+    private boolean hasUnsavedAttributes () {
+        return hasUnsavedAttachments() || hasUnsavedPrivateTaskAttributes();
     }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
-    }
-
-    private boolean hasUnsavedAttributes () {
-        return unsavedAttachments != null || hasUnsavedPrivateTaskAttributes();
+    boolean hasUnsavedAttachments () {
+        return unsavedAttachments != null;
     }
     
     public boolean save () {
@@ -417,7 +412,7 @@ public final class LocalTask extends AbstractLocalTask {
 
     void setUnsubmittedAttachments (List<AttachmentInfo> attachments) {
         unsavedAttachments = new ArrayList<>(attachments);
-        getTaskController().modelStateChanged(true);
+        modelStateChanged(true);
     }
 
     private void persistAttachments (NbTaskDataModel model, TaskData td) {
@@ -426,21 +421,25 @@ public final class LocalTask extends AbstractLocalTask {
             if (parentTA == null) {
                 parentTA = td.getRoot().createAttribute(IssueField.ATTACHMENTS.getKey());
             }
-            for (AttachmentInfo att : unsavedAttachments) {
-                File file = att.getFile();
-                if (file != null) {
-                    String desc = att.getDescription();
-                    String contentType = att.getContentType();
-                    boolean isPatch = att.isPatch();
-                    addAttachment(model, parentTA, file, desc, contentType, isPatch);
+            if (!unsavedAttachments.isEmpty()) {
+                boolean copyToCentral = askCopyToCentralStorage(unsavedAttachments.size());
+                for (AttachmentInfo att : unsavedAttachments) {
+                    File file = att.getFile();
+                    if (file != null) {
+                        String desc = att.getDescription();
+                        String contentType = att.getContentType();
+                        boolean isPatch = att.isPatch();
+                        addAttachment(model, parentTA, file, desc, contentType, isPatch, copyToCentral);
+                    }
                 }
+                unsavedAttachments.clear();
             }
-            unsavedAttachments.clear();
         }
     }
 
     private void addAttachment (NbTaskDataModel model, TaskAttribute parentTA,
-            File file, String desc, String contentType, boolean isPatch) {
+            File file, String desc, String contentType, boolean isPatch,
+            boolean copyToCentralStorage) {
         if (desc == null) {
             desc = "";
         }
@@ -462,7 +461,10 @@ public final class LocalTask extends AbstractLocalTask {
         mapper.setPatch(isPatch);
         mapper.setCreationDate(new Date());
         mapper.setContentType(contentType);
-        mapper.setUrl(Utilities.toURI(file).toString());
+        File realFile = copyToCentralStorage ? copyFileToCentral(file) : file;
+        mapper.setUrl(Utilities.toURI(realFile).toString());
+        // abuse this attribute and mark the patch residing in the central storage
+        mapper.setReplaceExisting(copyToCentralStorage);
         mapper.applyTo(attachment);
         model.attributeChanged(parentTA);
     }
@@ -533,14 +535,12 @@ public final class LocalTask extends AbstractLocalTask {
     
     void setTaskPrivateNotes (String notes) {
         super.setPrivateNotes(notes);
-        getTaskController().modelStateChanged(true);
+        modelStateChanged(true);
     }
     
     public void setTaskDueDate (Date date, boolean persistChange) {
         super.setDueDate(date, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -548,9 +548,7 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -558,9 +556,7 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskEstimate (int estimate, boolean persistChange) {
         super.setEstimate(estimate, persistChange);
-        if (controller != null) {
-            controller.modelStateChanged(hasUnsavedChanges());
-        }
+        modelStateChanged(hasUnsavedChanges());
         if (persistChange) {
             dataChanged();
         }
@@ -576,8 +572,10 @@ public final class LocalTask extends AbstractLocalTask {
             finish();
         }
         save();
-        getTaskController().modelStateChanged(false);
-        getTaskController().refreshViewData();
+        modelStateChanged(false);
+        if (controller != null) {
+            controller.refreshViewData();
+        }
     }
 
     public void attachPatch (final File file, final String description) {
@@ -593,13 +591,66 @@ public final class LocalTask extends AbstractLocalTask {
                         if (parentTA == null) {
                             parentTA = td.getRoot().createAttribute(IssueField.ATTACHMENTS.getKey());
                         }
-                        addAttachment(model, parentTA, file, description, null, true);
+                        addAttachment(model, parentTA, file, description, null, true, true);
                         save();
-                        getTaskController().modelStateChanged(false);
-                        getTaskController().refreshViewData();
+                        modelStateChanged(false);
+                        if (controller != null) {
+                            controller.refreshViewData();
+                        }
                     }
                 }
             });
+        }
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
+    }
+
+    private void modelStateChanged (boolean dirty) {
+        if (controller != null) {
+            controller.modelStateChanged(dirty);
+        }
+    }
+
+    @NbBundle.Messages({
+        "LBL_LocalTask.copyAttToCentralStorage.title=Copy Attachment",
+        "# {0} - number of attachments",
+        "MSG_LocalTask.copyAttToCentralStorage.text=You are trying to add {0} attachments to the local task.\n"
+                + "The attachments will be kept in their original locations and linked from the task\n\n"
+                + "Do you want to copy the files to a central storage to make sure they will be accessible "
+                + "even after their original location is deleted?"
+    })
+    private boolean askCopyToCentralStorage (int attachmentCount) {
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                Bundle.MSG_LocalTask_copyAttToCentralStorage_text(attachmentCount),
+                Bundle.LBL_LocalTask_copyAttToCentralStorage_title(),
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
+    }
+
+    private File copyFileToCentral (File file) {
+        File destFolder = new File(Places.getUserDirectory().getAbsolutePath()
+                + ("/var/tasks/mylyn/tasks/" + repository.getTaskRepository().getConnectorKind() //NOI18N
+                + "-" + repository.getTaskRepository().getUrl()+ "/offline/attachments").replace("/", File.separator)); //NOI18N
+        destFolder.mkdirs();
+        synchronized (ATTACHMENT_STORAGE_LOCK) {
+            File destFile = new File(destFolder, file.getName());
+            if (destFile.exists()) {
+                int i = 1;
+                while (destFile.exists()) {
+                    destFile = new File(destFolder, i + "_" + file.getName());
+                    i = i + 1;
+                }
+            }
+            try {
+                FileUtils.copyFile(file, destFile);
+            } catch (IOException ex) {
+                Logger.getLogger(LocalTask.class.getName()).log(Level.INFO, "Cannot copy " + file //NOI18N
+                        + " to " + destFile + ", will stick with the original", ex); //NOI18N
+                destFile = file;
+            }
+            return destFile;
         }
     }
     
@@ -656,6 +707,7 @@ public final class LocalTask extends AbstractLocalTask {
         private final boolean isPatch;
         private final String uri;
         private Action deleteAction;
+        private final boolean residesInCentral;
 
         public Attachment (TaskAttribute ta) {
             TaskAttachmentMapper taskAttachment = TaskAttachmentMapper.createFrom(ta);
@@ -666,6 +718,8 @@ public final class LocalTask extends AbstractLocalTask {
             this.contentType = taskAttachment.getContentType();
             this.isPatch = taskAttachment.isPatch();
             this.uri = taskAttachment.getUrl();
+            Boolean inCentral = taskAttachment.getReplaceExisting();
+            this.residesInCentral = Boolean.TRUE.equals(inCentral);
         }
 
         @Override
@@ -724,6 +778,14 @@ public final class LocalTask extends AbstractLocalTask {
                 deleteAction = new DeleteAttachmentAction();
             }
             return deleteAction;
+        }
+
+        public String getUri () {
+            return uri;
+        }
+        
+        public boolean isInCentral () {
+            return residesInCentral;
         }
 
         @NbBundle.Messages({

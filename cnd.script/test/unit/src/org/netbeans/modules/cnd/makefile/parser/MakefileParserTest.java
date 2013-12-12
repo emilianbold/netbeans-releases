@@ -71,6 +71,11 @@ public class MakefileParserTest extends NbTestCase {
     }
 
     @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
+    @Override
     public void setUp() throws Exception {
         super.setUp();
         MimePath mimePath = MimePath.parse(MIMENames.MAKEFILE_MIME_TYPE);

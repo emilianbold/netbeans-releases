@@ -224,7 +224,10 @@ public class ChatPanel extends javax.swing.JPanel {
     }
     private void insertLinkToEditor() {
         if (EditorRegistry.lastFocusedComponent() != null) {
-            new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true, false).actionPerformed(null);
+            InsertLinkAction a = InsertLinkAction.create(EditorRegistry.lastFocusedComponent(), outbox, true, false);
+            if(a != null) {
+                a.actionPerformed(null);
+            }
         }
     }
 
@@ -254,7 +257,10 @@ public class ChatPanel extends javax.swing.JPanel {
             }
         }
         if (issues != null && issues.length >0) {
-            new InsertLinkAction(issues[0], outbox, false).actionPerformed(null);
+            InsertLinkAction a = InsertLinkAction.create(issues[0], outbox, false);
+            if(a != null) {
+                a.actionPerformed(null);
+            }
         }
     }
     private void selectIssueReport(Matcher m) {
@@ -951,8 +957,12 @@ public class ChatPanel extends javax.swing.JPanel {
         
         JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
         if (lastFocused!=null) {
-            dropDownMenu.add(new InsertLinkAction(lastFocused, outbox, true, selectedEditorComponent()!=null));
-            dropDownMenu.addSeparator();
+            InsertLinkAction a = InsertLinkAction.create(lastFocused, outbox, true, selectedEditorComponent()!=null);
+            if(a != null) {
+                dropDownMenu.add(a);
+                dropDownMenu.addSeparator();
+            }
+            
         }
         
         HashSet<FileObject> fos = new HashSet();
@@ -961,7 +971,10 @@ public class ChatPanel extends javax.swing.JPanel {
             TopComponent tc = getTopComponent(comp);
             if (tc != null && tc.getClass().getName().endsWith("DiffTopComponent")) //NOI18N
                 continue;
-            dropDownMenu.add(new InsertLinkAction(comp, outbox, false, false));
+            InsertLinkAction a = InsertLinkAction.create(comp, outbox, false, false);
+            if(a != null) {
+                dropDownMenu.add(a);
+            }
         }
         if (lastFocused!=null) {
             dropDownMenu.addSeparator();
@@ -983,7 +996,10 @@ public class ChatPanel extends javax.swing.JPanel {
         for (int i=0;i<3 && i< issues.length;i++) {
             Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
             TopComponent tc = editor.getSelectedTopComponent();
-            dropDownMenu.add(new InsertLinkAction(issues[i], outbox, isIssueRelated(tc)));
+            InsertLinkAction a = InsertLinkAction.create(issues[i], outbox, isIssueRelated(tc));
+            if(a != null) {
+                dropDownMenu.add(a);
+            }
         }
         if (issues.length>0) {
             dropDownMenu.addSeparator();

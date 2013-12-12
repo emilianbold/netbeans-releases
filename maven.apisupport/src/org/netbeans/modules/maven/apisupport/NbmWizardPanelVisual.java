@@ -110,24 +110,24 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     StringValidators.REQUIRE_VALID_FILENAME
                     ));
             SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
-            vgEnabled.add(versionCombo, new Validator<String>() {
-
-                @Override
-                public void validate(Problems prblms, String name, String value) {
-                    if (SEARCHING.equals(value) || !isLoaded) {
-                        prblms.add("still searching", Severity.FATAL);
-                    }
-                }
-
-                @Override
-                public Class modelType() {
-                    return String.class;
-                }
-            });
         } else {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
+        vgEnabled.add(versionCombo, new Validator<String>() {
+
+            @Override
+            public void validate(Problems prblms, String name, String value) {
+                if (SEARCHING.equals(value) || !isLoaded) {
+                    prblms.add("Still searching", Severity.FATAL);
+                }
+            }
+
+            @Override
+            public Class modelType() {
+                return String.class;
+            }
+        });
         RP.post(new Runnable() {
             public @Override void run() {
                 EventQueue.invokeLater(new Runnable()  {
@@ -363,15 +363,13 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
          if (version != null && !version.equals(SEARCHING)) {
              d.putProperty(NbmWizardIterator.NB_VERSION, version);
          }
-         if (isApp) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    panel.getValidationGroup().remove(vg);
-                    panel.getEnabledStateValidationGroup().remove(vgEnabled);
-                }
-            });
-         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                panel.getValidationGroup().remove(vg);
+                panel.getEnabledStateValidationGroup().remove(vgEnabled);
+            }
+        });
     }
 
     void read(WizardDescriptor d) {
@@ -395,18 +393,18 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
             txtAddModule.setText(val);
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    panel.getValidationGroup().addItem(vg, true);
-                    panel.getEnabledStateValidationGroup().addItem(vgEnabled, true);
-                    vgEnabled.performValidation();
-                }
-            });
         }
         String version = (String) d.getProperty(NbmWizardIterator.NB_VERSION);
         if (version != null) {
             versionCombo.setSelectedItem(version);
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                panel.getValidationGroup().addItem(vg, true);
+                panel.getEnabledStateValidationGroup().addItem(vgEnabled, true);
+                vgEnabled.performValidation();
+            }
+        });
     }
 }

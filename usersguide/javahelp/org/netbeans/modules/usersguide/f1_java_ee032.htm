@@ -2,44 +2,404 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Enterprise Application Project Properties Dialog Box: Sources</title>
+<title>Standard EJB Module Project Properties Dialog Box: Web Services</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerGeneral" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerGeneral"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref613" name="sthref613"></a>
-<h1>Standard Enterprise Application Project Properties Dialog Box: Sources</h1>
+<p>Beta Draft: 2013-12-05</p>
+<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSServiceHostDisabled"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref617" name="sthref617"></a>
+<h1>Standard EJB Module Project Properties Dialog Box: Web Services</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This panel of the Project Properties window contains the following elements:</p>
+<p>The Web Services page lets you preconfigure the features that are used by the <code>wscompile</code> tool to compile a web service:</p>
+<ul>
+<li>
+<p>If you are implementing an existing WSDL file, the wscompile tool will create a service end-point interface and implementation class for your web service. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2795">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</li>
+<li>
+<p>If you are creating a web service from scratch, the wscompile tool creates a WSDL file. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2795">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</li>
+</ul>
+<a id="sthref618" name="sthref618"></a>
+<p><b>Features</b></p>
+<p>If you are implementing an existing WSDL file, you can check or type one or more of the following <code>wscompile</code> tool features:</p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
+<table summary="User Interface Features and Effect on Web Services" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="21%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t26">Element</th>
-<th align="left" valign="bottom" id="r1c2-t26">Description</th>
+<th align="left" valign="bottom" id="r1c1-t24">Feature</th>
+<th align="left" valign="bottom" id="r1c2-t24">Effect on Web Service</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t26" headers="r1c1-t26">
-<p>Project Folder</p>
+<td align="left" id="r2c1-t24" headers="r1c1-t24">
+<p>datahandleronly</p>
 </td>
-<td align="left" headers="r2c1-t26 r1c2-t26">
-<p>This field displays the location of the folder that contains the enterprise application. This field is read-only.</p>
+<td align="left" headers="r2c1-t24 r1c2-t24">
+<p>Maps attachments to the DataHandler type.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t24" headers="r1c1-t24">
+<p>donotoverride</p>
+</td>
+<td align="left" headers="r3c1-t24 r1c2-t24">
+<p>No regeneration of classes that already exist on the classpath.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t24" headers="r1c1-t24">
+<p>donotunwrap</p>
+</td>
+<td align="left" headers="r4c1-t24 r1c2-t24">
+<p>Disables unwrapping of document/literal wrapper elements in WSI mode (default).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t24" headers="r1c1-t24">
+<p>explicitcontext</p>
+</td>
+<td align="left" headers="r5c1-t24 r1c2-t24">
+<p>Turns on explicit service context mapping.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t24" headers="r1c1-t24">
+<p>jaxbenumtype</p>
+</td>
+<td align="left" headers="r6c1-t24 r1c2-t24">
+<p>Maps anonymous enumeration to its base type.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t24" headers="r1c1-t24">
+<p>nodatabinding</p>
+</td>
+<td align="left" headers="r7c1-t24 r1c2-t24">
+<p>Turns off data binding for literal encoding.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t24" headers="r1c1-t24">
+<p>noencodedtypes</p>
+</td>
+<td align="left" headers="r8c1-t24 r1c2-t24">
+<p>Turns off encoding type information.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t24" headers="r1c1-t24">
+<p>nomultirefs</p>
+</td>
+<td align="left" headers="r9c1-t24 r1c2-t24">
+<p>Turns off support for multiple references.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t24" headers="r1c1-t24">
+<p>norpcstructures</p>
+</td>
+<td align="left" headers="r10c1-t24 r1c2-t24">
+<p>No generation of RPC structures (-import only).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t24" headers="r1c1-t24">
+<p>novalidation</p>
+</td>
+<td align="left" headers="r11c1-t24 r1c2-t24">
+<p>Turns off full validation of imported WSDL documents.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t24" headers="r1c1-t24">
+<p>resolveidref</p>
+</td>
+<td align="left" headers="r12c1-t24 r1c2-t24">
+<p>Resolve xsd:IDREF.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t24" headers="r1c1-t24">
+<p>searchschema</p>
+</td>
+<td align="left" headers="r13c1-t24 r1c2-t24">
+<p>Searches schema aggressively for types.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t24" headers="r1c1-t24">
+<p>serializeinterfaces</p>
+</td>
+<td align="left" headers="r14c1-t24 r1c2-t24">
+<p>Turns on direct serialization of interface types.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t24" headers="r1c1-t24">
+<p>strict</p>
+</td>
+<td align="left" headers="r15c1-t24 r1c2-t24">
+<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t24" headers="r1c1-t24">
+<p>unwrap</p>
+</td>
+<td align="left" headers="r16c1-t24 r1c2-t24">
+<p>Enables unwrapping of document/literal wrapper elements in WSI mode.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t24" headers="r1c1-t24">
+<p>wsi</p>
+</td>
+<td align="left" headers="r17c1-t24 r1c2-t24">
+<p>Checks for compliance with the WSI-Basic Profile, which is a specification for improved interoperability. For example, the WS-I Basic Profile prohibits the use of rpc/encoded. Therefore, if you set the wsi feature, a warning will be generated when you build a web service that uses a WSDL file that uses rpc/encoded.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>If you want to compile a document-style web service, you can check or type one or more of the following wscompile tool features:</p>
+
+<table summary="Feature descriptions for document style web services." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="25%" />
+<col width="*" />
+<col width="13%" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t25">Feature</th>
+<th align="left" valign="bottom" id="r1c2-t25">Description</th>
+<th align="left" valign="bottom" id="r1c3-t25">Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t25" headers="r1c1-t25">
+<p>documentliteral</p>
+</td>
+<td align="left" headers="r2c1-t25 r1c2-t25">
+<p>Use this to specify in the WSDL file that the web service is of style "document". By default, all web services that do not have at least one operation are compiled as document-style web services.</p>
+</td>
+<td align="left" headers="r2c1-t25 r1c3-t25">
+<p>Yes</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t25" headers="r1c1-t25">
+<p>donotoverride</p>
+</td>
+<td align="left" headers="r3c1-t25 r1c2-t25">
+<p>No regeneration of classes that already exist on the classpath.</p>
+</td>
+<td align="left" headers="r3c1-t25 r1c3-t25">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t25" headers="r1c1-t25">
+<p>noencodedtypes</p>
+</td>
+<td align="left" headers="r4c1-t25 r1c2-t25"><a id="e&lt;" name="e&lt;"></a><a id="novalue&gt;" name="novalue&gt;"></a>
+<p>Not applicable.</p>
+</td>
+<td align="left" headers="r4c1-t25 r1c3-t25">
+<p>-</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t25" headers="r1c1-t25">
+<p>nomultirefs</p>
+</td>
+<td align="left" headers="r5c1-t25 r1c2-t25">
+<p>Turns off support for multiple references.</p>
+</td>
+<td align="left" headers="r5c1-t25 r1c3-t25">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t25" headers="r1c1-t25">
+<p>rpcliteral</p>
+</td>
+<td align="left" headers="r6c1-t25 r1c2-t25">
+<p>Not applicable.</p>
+</td>
+<td align="left" headers="r6c1-t25 r1c3-t25">
+<p>-</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t25" headers="r1c1-t25">
+<p>serializeinterfaces</p>
+</td>
+<td align="left" headers="r7c1-t25 r1c2-t25">
+<p>Turns on direct serialization of interface types.</p>
+</td>
+<td align="left" headers="r7c1-t25 r1c3-t25">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t25" headers="r1c1-t25">
+<p>strict</p>
+</td>
+<td align="left" headers="r8c1-t25 r1c2-t25">
+<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
+</td>
+<td align="left" headers="r8c1-t25 r1c3-t25">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t25" headers="r1c1-t25">
+<p>useonewayoperations</p>
+</td>
+<td align="left" headers="r9c1-t25 r1c2-t25">
+<p>Not applicable.</p>
+</td>
+<td align="left" headers="r9c1-t25 r1c3-t25">
+<p>-</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>If you want to compile a RPC-style web service, you can check or type one or more of the following wscompile tool features:</p>
+
+<table summary="User Interface Feature Descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="25%" />
+<col width="*" />
+<col width="14%" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t26">Feature</th>
+<th align="left" valign="bottom" id="r1c2-t26">Elenent</th>
+<th align="left" valign="bottom" id="r1c3-t26">Required?</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t26" headers="r1c1-t26">
+<p>documentliteral</p>
+</td>
+<td align="left" headers="r2c1-t26 r1c2-t26">
+<p>Not applicable</p>
+</td>
+<td align="left" headers="r2c1-t26 r1c3-t26">
+<p>-</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t26" headers="r1c1-t26">
+<p>donotoverride</p>
+</td>
+<td align="left" headers="r3c1-t26 r1c2-t26">
+<p>No regeneration of classes that already exist on the classpath.</p>
+</td>
+<td align="left" headers="r3c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t26" headers="r1c1-t26">
+<p>noencodedtypes</p>
+</td>
+<td align="left" headers="r4c1-t26 r1c2-t26">
+<p>Encoding rules are defined in the XML Schema.</p>
+<p>By default, RPC-style web services have their encoding rules defined in the SOAP 1.1 Specification. With this feature, it uses the XML Schema defined in the types element for encoding purposes instead.</p>
+</td>
+<td align="left" headers="r4c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t26" headers="r1c1-t26">
+<p>nomultirefs</p>
+</td>
+<td align="left" headers="r5c1-t26 r1c2-t26">
+<p>Turns off support for multiple references.</p>
+</td>
+<td align="left" headers="r5c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t26" headers="r1c1-t26">
+<p>rpcliteral</p>
+</td>
+<td align="left" headers="r6c1-t26 r1c2-t26">
+<p>By default, all web services that have at least one operation are compiled as RPC-style web services.</p>
+</td>
+<td align="left" headers="r6c1-t26 r1c3-t26">
+<p>Yes</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t26" headers="r1c1-t26">
+<p>serializeinterfaces</p>
+</td>
+<td align="left" headers="r7c1-t26 r1c2-t26">
+<p>Turns on direct serialization of interface types.</p>
+</td>
+<td align="left" headers="r7c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t26" headers="r1c1-t26">
+<p>strict</p>
+</td>
+<td align="left" headers="r8c1-t26 r1c2-t26">
+<p>Generates code strictly compliant with the JAX-RPC Specification.</p>
+</td>
+<td align="left" headers="r8c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t26" headers="r1c1-t26">
+<p>useonewayoperations</p>
+</td>
+<td align="left" headers="r9c1-t26 r1c2-t26">
+<p>Methods with void return types are mapped as one-way operations.</p>
+</td>
+<td align="left" headers="r9c1-t26 r1c3-t26">
+<p>No</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>If you want to compile a document-style web service, you can check or type one or more of the following <code>wscompile</code> tool features.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1216">
-<param name="text" value="<html><u>&quot;Developing Enterprise Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

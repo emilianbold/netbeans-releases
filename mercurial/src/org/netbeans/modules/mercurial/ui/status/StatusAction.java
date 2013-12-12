@@ -68,6 +68,11 @@ public class StatusAction extends ContextAction {
     public StatusAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     public boolean enable (Node[] nodes) {

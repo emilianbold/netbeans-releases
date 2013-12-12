@@ -128,7 +128,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         jComboDevice.setModel(deviceModel);
         
         // Read defined platforms and all configurations, profiles and optional packages
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, new SpecificationVersion("3.0"))); //NOI18N
         Arrays.sort(platforms, new Comparator<JavaPlatform>() {
             public int compare(final JavaPlatform o1, final JavaPlatform o2) {
                 return o1.getDisplayName().compareTo(o2.getDisplayName());

@@ -65,6 +65,15 @@ public class BeanImplementsBITest extends TestBase {
             + "@javax.ejb.Local(One.class)\n"
             + "public class TestBean {\n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Local(One.class)\n"
+            + "public class TestBean {\n"
+            + "}"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Local(One.class)\n"
+            + "class TestBean2 {\n"
+            + "}";
 
     public BeanImplementsBITest(String name) {
         super(name);
@@ -84,6 +93,17 @@ public class BeanImplementsBITest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(BeanImplementsBI.class)
                 .assertWarnings("3:13-3:21:warning:" + Bundle.BeanImplementsBI_err());
+    }
+
+    public void testBeanImplementsBIMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createInterface(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(BeanImplementsBI.class)
+                .assertWarnings("3:13-3:21:warning:" + Bundle.BeanImplementsBI_err(),
+                                        "6:6-6:15:warning:" + Bundle.BeanImplementsBI_err());
     }
 
 }

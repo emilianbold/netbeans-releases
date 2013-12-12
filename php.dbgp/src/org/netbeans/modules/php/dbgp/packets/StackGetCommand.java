@@ -43,42 +43,34 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class StackGetCommand extends DbgpCommand {
+    static final String STACK_GET = "stack_get"; // NOI18N
+    private int myDepth;
 
-    static final String STACK_GET = "stack_get";        // NOI18N
-
-    public StackGetCommand( String transactionId ) {
-        super( STACK_GET, transactionId);
+    public StackGetCommand(String transactionId) {
+        super(STACK_GET, transactionId);
         myDepth = -1;
     }
-    
-    public void setDepth( int depth ){
+
+    public void setDepth(int depth) {
         myDepth = depth;
     }
-    
+
     @Override
-    protected String getArguments()
-    {
-        if ( myDepth > 0 ){
+    protected String getArguments() {
+        if (myDepth > 0) {
             return ContextNamesCommand.DEPTH_ARG + myDepth;
         }
         return super.getArguments();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    private int myDepth;
 
 }

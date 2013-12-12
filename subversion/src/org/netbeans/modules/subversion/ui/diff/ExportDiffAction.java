@@ -118,15 +118,19 @@ public class ExportDiffAction extends ContextAction {
     
     @Override
     public boolean enable(Node[] nodes) {
-        Context ctx = getCachedContext(nodes);
-        if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
+        if (super.enable(nodes)) {
+            Context ctx = getCachedContext(nodes);
+            if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
+                return false;
+            }  
+            TopComponent activated = TopComponent.getRegistry().getActivated();
+            if (activated instanceof DiffSetupSource) {
+                return true;
+            }
+            return Lookup.getDefault().lookup(DiffProvider.class) != null;                
+        } else {
             return false;
-        }  
-        TopComponent activated = TopComponent.getRegistry().getActivated();
-        if (activated instanceof DiffSetupSource) {
-            return true;
         }
-        return super.enable(nodes) && Lookup.getDefault().lookup(DiffProvider.class) != null;                
     }
 
     @Override

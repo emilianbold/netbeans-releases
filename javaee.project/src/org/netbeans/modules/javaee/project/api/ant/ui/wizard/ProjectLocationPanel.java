@@ -126,9 +126,13 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         projectNameLabel.setLabelFor(projectNameTextField);
         projectNameLabel.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
 
+        projectNameTextField.setColumns(30);
+
         projectLocationLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         projectLocationLabel.setLabelFor(projectLocationTextField);
         projectLocationLabel.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_ProjectLocation_Label")); // NOI18N
+
+        projectLocationTextField.setColumns(30);
 
         browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_Browse_LabelMnemonic").charAt(0));
         browseButton.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_BrowseLocation_Button")); // NOI18N
@@ -144,9 +148,12 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
         createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_CreatedProjectFolder_Label")); // NOI18N
 
         createdFolderTextField.setEditable(false);
+        createdFolderTextField.setColumns(30);
 
         librariesLabel.setLabelFor(librariesLocation);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "ProjectLocationPanel.librariesLabel.text")); // NOI18N
+
+        librariesLocation.setColumns(30);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseLibraries, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "PanelSharabilityVisual.browseLibraries.text")); // NOI18N
         browseLibraries.addActionListener(new java.awt.event.ActionListener() {
@@ -219,7 +226,7 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
                     .addComponent(browseLibraries)
                     .addComponent(librariesLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint)
+                .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(27, 27, 27)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
         );

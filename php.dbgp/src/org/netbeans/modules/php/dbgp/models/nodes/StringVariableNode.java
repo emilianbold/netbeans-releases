@@ -48,32 +48,25 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class StringVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
+class StringVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    private static final String TYPE_STRING = "TYPE_String"; // NOI18N
 
-    private static final String TYPE_STRING = "TYPE_String";        // NOI18N
-
-    StringVariableNode( Property property , AbstractModelNode parent ) {
-        super(property , parent );
+    StringVariableNode(Property property, AbstractModelNode parent) {
+        super(property, parent);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode#getType()
-     */
     @Override
     public String getType() {
-        return NbBundle.getMessage( StringVariableNode.class , TYPE_STRING);
+        return NbBundle.getMessage(StringVariableNode.class, TYPE_STRING);
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.SCALARS );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.SCALARS);
     }
 
     @Override

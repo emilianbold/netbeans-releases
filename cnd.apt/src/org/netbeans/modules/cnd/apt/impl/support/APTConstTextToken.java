@@ -176,10 +176,10 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 //        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
     }
     
-    private static void addConstText(String text, int id) {
-        assert constText[id] == null || constText[id].equals(text) : "Trying to redefine value " + text + " for already defined token type " + id + ", current value is " + constText[id];
-        constText[id] = text;
-    }
+//    private static void addConstText(String text, int id) {
+//        assert constText[id] == null || constText[id].equals(text) : "Trying to redefine value " + text + " for already defined token type " + id + ", current value is " + constText[id];
+//        constText[id] = text;
+//    }
     
     @Override
     public String getText() {

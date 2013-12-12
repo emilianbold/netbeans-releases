@@ -1780,6 +1780,13 @@ public class Term extends JComponent implements Accessible {
                     c = (char) 13;
                 }
 
+                // Consume ctrl+tab, ctrl+shift+tab event, see #237990
+                if (keymap != null && (c == KeyEvent.VK_TAB)
+                        && ((e.getModifiers() == KeyEvent.CTRL_MASK)
+                        || (e.getModifiers() == (KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)))) {
+                    e.consume();
+                }
+
                 if (passOn && maybeConsume(e)) {
                     on_char(c);
                     possiblyScrollOnInput();
@@ -2236,6 +2243,11 @@ public class Term extends JComponent implements Accessible {
         try {
             String string;
             string = (String) contents.getTransferData(DataFlavor.stringFlavor);
+            
+            // bug #237034
+            if (string == null) {
+                return;
+            }
             /* DEBUG
             System.out.println("System selection contains '" + string + "'"); // NOI18N
              */
@@ -5251,6 +5263,23 @@ public class Term extends JComponent implements Accessible {
         return tab_size;
     }
     private int tab_size = 8;
+    
+    /**
+     * Set select-by-word delimiters.
+     * <p>
+     * When double-clicking on terminal screen selection will expand on left and
+     * right until reaches one of a delimiters or the whitespace symbol (which
+     * is delimiter by default).
+     */
+    public void setSelectByWordDelimiters(String delimiters) {
+        this.delimiters = delimiters;
+        word_delineator.setWordDelimiters(delimiters);
+    }
+
+    public String getSelectByWordDelimiters() {
+        return delimiters;
+    }
+    private String delimiters;
 
     /**
      * Control whether Term scrolls to the bottom on keyboard input.

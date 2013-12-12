@@ -66,16 +66,19 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_C89 = 1;
     public static final int STANDARD_C99 = 2;
-    public static final int STANDARD_INHERITED = 3;
+    public static final int STANDARD_C11 = 3;
+    public static final int STANDARD_INHERITED = 4;
     private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_C89"),
         getString("STANDARD_C99"),
+        getString("STANDARD_C11"),
         getString("STANDARD_INHERITED"),};
     private static final String[] STANDARD_NAMES_ROOT = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_C89"),
-        getString("STANDARD_C99"),};    
+        getString("STANDARD_C99"),
+        getString("STANDARD_C11"),};    
     private IntConfiguration cStandard;        
     
     // Constructors
@@ -102,6 +105,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
             case STANDARD_C89: return LanguageFlavor.C89.toExternal();
             case STANDARD_C99: return LanguageFlavor.C99.toExternal();
+            case STANDARD_C11: return LanguageFlavor.C11.toExternal();
             case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
             default: return LanguageFlavor.UNKNOWN.toExternal();
         }
@@ -118,6 +122,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
             this.cStandard.setValue(STANDARD_C89);
         } else if (cStandard == LanguageFlavor.C99.toExternal()) {
             this.cStandard.setValue(STANDARD_C99);
+        } else if (cStandard == LanguageFlavor.C11.toExternal()) {
+            this.cStandard.setValue(STANDARD_C11);
         } else if (cStandard == LanguageFlavor.UNKNOWN.toExternal()) {
             this.cStandard.setValue(STANDARD_INHERITED);
         }
@@ -227,9 +233,6 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         options += getPreprocessorOptions(compiler.getCompilerSet());
         options += getIncludeDirectoriesOptions(compiler.getCompilerSet());
         options += getLibrariesFlags();
-        if (getCStandard().getValue() != STANDARD_INHERITED) {
-            options += compiler.getCppStandardOptions(getCStandard().getValue());
-        }        
         options += compiler.getCStandardOptions(getInheritedCStandard());
         return CppUtils.reformatWhitespaces(options);
     }
@@ -341,8 +344,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                     set2.setDisplayName(getString("OtherOptionsTxt"));
                     set2.setShortDescription(getString("OtherOptionsHint"));
                     set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                    // The option is not needed anymore as C Standard option is introduced. More information is in Bug 209177.
-                    //set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
                     set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
                 }

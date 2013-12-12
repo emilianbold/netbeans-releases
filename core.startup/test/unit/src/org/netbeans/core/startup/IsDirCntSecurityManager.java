@@ -78,7 +78,6 @@ public class IsDirCntSecurityManager extends SecurityManager {
             return;
         }
         
-        super.checkRead(file);
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
         for (int i = 0; i < stack.length - 1; i++) {
             if (stack[i].getClassName().equals(IsDirCntSecurityManager.class.getName())) {

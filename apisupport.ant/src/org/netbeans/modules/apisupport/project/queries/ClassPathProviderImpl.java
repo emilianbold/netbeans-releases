@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -55,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +70,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.apisupport.project.Evaluator;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -122,6 +125,29 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 boot = ClassPathFactory.createClassPath(ClassPathSupport.createProxyClassPathImplementation(
                         createPathFromProperty(BOOTCLASSPATH_PREPEND),
                         createPathFromProperty(Evaluator.NBJDK_BOOTCLASSPATH)));
+            }
+            //jfxrt on JDK7
+            if (boot != null) {
+                try {
+                    for(ModuleEntry moduleEntryIter : project.getModuleList().getAllEntries()) {
+                        if (moduleEntryIter.getCodeNameBase().equals("org.netbeans.libs.javafx")) {
+                            File jre = new File(System.getProperty("java.home")); // NOI18N
+                            File jdk8 = new File(new File(new File(jre, "lib"), "ext"), "jfxrt.jar"); // NOI18N
+                            if (!jdk8.exists()) {
+                                File jdk7 = new File(new File(jre, "lib"), "jfxrt.jar"); // NOI18N
+                                if (jdk7.exists()) {
+                                    // jdk7 add the classes on bootclasspath
+                                    if (FileUtil.isArchiveFile(FileUtil.toFileObject(jdk7))) {
+                                        boot = ClassPathSupport.createProxyClassPath(boot,
+                                        ClassPathSupport.createClassPath(FileUtil.getArchiveRoot(FileUtil.toFileObject(jdk7))));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             return boot;
         }

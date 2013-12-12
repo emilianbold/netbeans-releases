@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.WrapTokenId;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
@@ -69,8 +70,8 @@ public final class JoinToken<T extends TokenId> extends PropertyToken<T> {
      */
     private int extraTokenListSpanCount; // 40 bytes
 
-    public JoinToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
-        super(id, length, propertyProvider, partType);
+    public JoinToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType) {
+        super(wid, length, propertyProvider, partType);
     }
 
     @Override

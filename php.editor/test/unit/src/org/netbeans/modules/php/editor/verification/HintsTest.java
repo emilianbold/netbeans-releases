@@ -271,4 +271,28 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new InitializeFieldSuggestion(), "testIssue229522.php", "function __construct($par^am) {");
     }
 
+    public void testIssue237726_01() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_01.php");
+    }
+
+    public void testIssue237726_02() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237726_02.php");
+    }
+
+    public void testIssue237768() throws Exception {
+        checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue237768.php");
+    }
+
+    public void testWrongParamNameHint() throws Exception {
+        checkHints(new WrongParamNameHint(), "testWrongParamNameHint.php");
+    }
+
+    public void testIssue239277_01() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue239277.php", "Foo::ahoj(^);");
+    }
+
+    public void testIssue239277_02() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIssue239277.php", "Bat::$bar^z;");
+    }
+
 }

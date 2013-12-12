@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import sun.security.util.SecurityConstants;
 
 /**
  *
@@ -143,10 +142,14 @@ public class RemoteFileURLConnection extends URLConnection {
         if (fileObject != null) {
             if (fileObject.isValid()) {
                 if (fileObject.canRead()) {
-                    actions.append(SecurityConstants.FILE_READ_ACTION).append(' ');
+                    //SecurityConstants.FILE_READ_ACTION is deprecated
+                    // "read" is documented in FilePermission javadoc
+                    actions.append("read").append(' '); //NOI18N
                 }
                 if (fileObject.canWrite()) {
-                    actions.append(SecurityConstants.FILE_WRITE_ACTION).append(' ');
+                    //SecurityConstants.FILE_WRITE_ACTION deprecated,
+                    // "write" is documented in FilePermission javadoc
+                    actions.append("write").append(' '); //NOI18N
                 }
             }
         }

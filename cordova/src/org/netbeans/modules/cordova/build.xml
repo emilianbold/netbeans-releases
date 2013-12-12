@@ -74,16 +74,21 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="upgrade-to-cordova-project" depends="check-cordova-project,check-cordova-version" unless="cordova.project">
-        <echo level="info" message="${cordova.command} -d create . com.coolappz.${project.name} ${project.name}" />
+        <echo level="info" message="${cordova.command} -d create ${java.io.tmpdir}/nb_temp_project com.coolappz.${project.name} ${project.name}" />
+        <delete dir="${java.io.tmpdir}/nb_temp_project"/>
         <exec executable="${cordova.command}" resolveexecutable="true" searchpath="true" failonerror="true" >
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>
             <arg value="create"/>   
-            <arg value="."/>   
+            <arg value="${java.io.tmpdir}/nb_temp_project"/>   
             <arg value="com.coolappz.${project.name}"/>
             <arg value="${project.name}" />
         </exec>
+        <copy todir="." overwrite="true" failonerror="false">
+            <fileset dir="${java.io.tmpdir}/nb_temp_project"/>
+        </copy>
+        <delete dir="${java.io.tmpdir}/nb_temp_project"/>
         <delete dir="www"/>
         <copy todir="www" failonerror="false" quiet="true" >
             <fileset dir="${site.root}"/>

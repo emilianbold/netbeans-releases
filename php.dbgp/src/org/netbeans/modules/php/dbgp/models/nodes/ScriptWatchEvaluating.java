@@ -44,7 +44,6 @@ package org.netbeans.modules.php.dbgp.models.nodes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.ModelNode;
@@ -58,15 +57,14 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.NbBundle;
 
-public class ScriptWatchEvaluating extends AbstractModelNode
-    implements ModelNode
-{
+public class ScriptWatchEvaluating extends AbstractModelNode implements ModelNode {
+    private static final String WATCH_ICON = "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
+    private Watch myWatch;
+    private ContextProvider myProvider;
+    private Property myValue;
 
-    private static final String WATCH_ICON =
-            "org/netbeans/modules/debugger/resources/watchesView/Watch"; // NOI18N
-
-    protected ScriptWatchEvaluating( ContextProvider provider, Watch watch ) {
-        super( null , null );
+    protected ScriptWatchEvaluating(ContextProvider provider, Watch watch) {
+        super(null, null);
         myWatch = watch;
         myProvider = provider;
         requestValue();
@@ -80,7 +78,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         myWatch.remove();
     }
 
-    public synchronized void setExpression( String expression ) {
+    public synchronized void setExpression(String expression) {
         myWatch.setExpression(expression);
         requestValue();
     }
@@ -106,7 +104,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
 
     @Override
     public synchronized String getType() {
-        if ( myValue == null ) {
+        if (myValue == null) {
             return null;
         }
         if (myValue.getType().equals(NbBundle.getMessage(ArrayVariableNode.class, ArrayVariableNode.TYPE_ARRAY))) {
@@ -122,35 +120,30 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         if (!PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
             return NbBundle.getMessage(ScriptWatchEvaluating.class, "WatchesAndEvalDisabled");
         }
-
-        if ( myValue == null ) {
+        if (myValue == null) {
             return null;
         }
         return myValue.getStringValue();
     }
 
     @Override
-    public VariableNode[] getChildren( int from, int to ) {
+    public VariableNode[] getChildren(int from, int to) {
         List<AbstractModelNode> list;
-        synchronized ( this ) {
-            if ( getVariables() == null ) {
+        synchronized (this) {
+            if (getVariables() == null) {
                 list = new ArrayList<>();
-            }
-            else {
+            } else {
                 list = new ArrayList<AbstractModelNode>(getVariables());
             }
         }
-        if ( from >= list.size() ) {
+        if (from >= list.size()) {
             return new VariableNode[0];
         }
-        int end = Math.min( to , list.size() );
+        int end = Math.min(to, list.size());
         list = list.subList(from, end);
-        return list.toArray( new VariableNode[ list.size() ]);
+        return list.toArray(new VariableNode[list.size()]);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#isLeaf()
-     */
     @Override
     public boolean isLeaf() {
         return getChildrenSize() == 0;
@@ -172,33 +165,27 @@ public class ScriptWatchEvaluating extends AbstractModelNode
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.netbeans.modules.php.dbgp.api.ModelNode#getChildrenSize()
-     */
     @Override
     public synchronized int getChildrenSize() {
         return getVariables() == null ? 0 : getVariables().size();
     }
 
     /**
-     * Method intended for call only by WatchesModel.
-     * WatchesModel is responsible for update this node value when debugger
-     * response with value.
+     * Method intended for call only by WatchesModel. WatchesModel is
+     * responsible for update this node value when debugger response with value.
      * This is done in async way.
      */
-    protected synchronized void setEvaluated( Property value ){
+    protected synchronized void setEvaluated(Property value) {
         myValue = value;
-        if ( value != null ) {
-            initVariables( value.getChildren() );
+        if (value != null) {
+            initVariables(value.getChildren());
         }
     }
 
     protected void requestValue() {
-        setEvaluated( null );
+        setEvaluated(null);
         DebugSession session = getSession();
-        if ( session == null ){
+        if (session == null) {
             return;
         }
         final String toEvaluation = getExpression();
@@ -225,17 +212,17 @@ public class ScriptWatchEvaluating extends AbstractModelNode
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> set ) {
+    protected boolean isTypeApplied(Set<FilterType> set) {
         return true;
     }
 
-    private SessionId getSessionId(){
-        if ( myProvider == null ) {
+    private SessionId getSessionId() {
+        if (myProvider == null) {
             return null;
         }
-        SessionId id = ( SessionId )myProvider.lookupFirst( null ,
-                SessionId.class );
-        if ( id == null ) {
+        SessionId id = (SessionId) myProvider.lookupFirst(null,
+                SessionId.class);
+        if (id == null) {
             return null;
         }
         return id;
@@ -243,12 +230,7 @@ public class ScriptWatchEvaluating extends AbstractModelNode
 
     private DebugSession getSession() {
         return SessionManager.getInstance().getSession(
-                getSessionId() );
+                getSessionId());
     }
 
-    private Watch myWatch;
-
-    private ContextProvider myProvider;
-
-    private Property myValue;
 }

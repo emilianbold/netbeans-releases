@@ -44,9 +44,7 @@
 
 package org.netbeans.api.lexer;
 
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.Set;
 import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.EmbeddingOperation;
@@ -56,6 +54,7 @@ import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.TokenOrEmbedding;
+import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
  * Token sequence allows to iterate between tokens
@@ -155,6 +154,7 @@ public final class TokenSequence<T extends TokenId> {
     TokenSequence(TokenList<T> tokenList) {
         this.tokenList = tokenList;
         this.rootTokenList = tokenList.rootTokenList();
+        assert (rootTokenList != null) : "Invalid null rootTokenList"; // NOI18N
         if (tokenList instanceof EmbeddedTokenList) {
             embeddedTokenList = (EmbeddedTokenList<?,T>) tokenList;
             embeddedTokenList.updateModCount(rootTokenList.modCount());
@@ -169,7 +169,7 @@ public final class TokenSequence<T extends TokenId> {
      * used by tokens in this token sequence.
      */
     public Language<T> language() {
-        return LexerUtilsConstants.innerLanguage(languagePath());
+        return tokenList.language();
     }
 
     /**
@@ -328,7 +328,7 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
-        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), false);
+        return embeddedImpl(embeddedLanguage, false);
     }
 
     /**
@@ -359,18 +359,18 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public <ET extends TokenId> TokenSequence<ET> embeddedJoined(Language<ET> embeddedLanguage) {
-        return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), true);
+        return embeddedImpl(embeddedLanguage, true);
     }
 
-    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Set<Language<?>> embeddedLanguagesSet, boolean joined) {
+    private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Language<ET> embeddedLanguage, boolean joined) {
         synchronized (rootTokenList) {
             checkTokenNotNull();
             if (token.isFlyweight()) {
                 return null;
             }
             checkValid();
-            EmbeddedTokenList<?,ET> etl
-                    = EmbeddingOperation.embeddedTokenList(tokenList, tokenIndex, embeddedLanguagesSet, true);
+            EmbeddedTokenList<T,ET> etl
+                    = EmbeddingOperation.embeddedTokenList(tokenList, tokenIndex, embeddedLanguage, true);
             if (etl != null) {
                 etl.updateModCount(rootTokenList.modCount());
                 TokenSequence<ET> tse;
@@ -395,6 +395,8 @@ public final class TokenSequence<T extends TokenId> {
     /**
      * Create language embedding without joining of the embedded sections.
      *
+     * @param startSkipLength number of characters to be skipped at token's begining.
+     * @param endSkipLength number of characters to be skipped at token's end.
      * @throws IllegalStateException if {@link #token()} returns null.
      * @see #createEmbedding(Language, int, int, boolean)
      */

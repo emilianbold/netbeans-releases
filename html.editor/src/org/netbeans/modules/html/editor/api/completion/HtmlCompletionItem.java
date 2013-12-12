@@ -71,6 +71,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -594,7 +595,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public boolean hasHelp() {
-            return tag != null && tag.getHelp() != null || super.hasHelp();
+            return tag != null && (tag.getHelp() != null || (tag.getTagClass() != HtmlTagType.UNKNOWN && super.hasHelp()));
         }
     }
 

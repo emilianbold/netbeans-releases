@@ -64,6 +64,15 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteFileSystemTestCase extends RemoteFileTestBase {
 
+    static { 
+//        System.setProperty("remote.fs_server", "true");
+//        System.setProperty("remote.fs_server.verbose", "0");
+//        System.setProperty("remote.fs_server.log", "true");
+//        System.setProperty("remote.fs_server.verbose.response", "true");
+//        System.setProperty("remote.fs_server.refresh", "1");
+//        RemoteLogger.getInstance().setLevel(Level.FINEST);
+    }
+
     public RemoteFileSystemTestCase(String testName) {
         super(testName);
     }
@@ -113,10 +122,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         Pair[] pairs = new Pair[] {
             new Pair(null, "/usr/include/stdlib.h"),
             new Pair("/usr", "include/stdlib.h"),
-            new Pair("/usr/include", "stdlib.h"),
-            new Pair("/usr/lib", "libc" + sharedLibExt),
-            new Pair("/usr", "lib/libc" + sharedLibExt),
-            new Pair(null, "/usr/lib/libc" + sharedLibExt)
+            new Pair("/usr/include", "stdlib.h"),            
+//            new Pair("/usr/lib", "libc" + sharedLibExt),
+//            new Pair("/usr", "lib/libc" + sharedLibExt),
+//            new Pair(null, "/usr/lib/libc" + sharedLibExt)
         };
         for (int i = 0; i < pairs.length; i++) {
             Pair pair = pairs[i];
@@ -285,7 +294,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             long skew = HostInfoUtils.getHostInfo(getTestExecutionEnvironment()).getClockSkew();
             long delta = Math.abs(localDate.getTime() - lastMod.getTime());
             if (delta > Math.abs(skew) + (long)(1000*60*15)) {
-                assertTrue("Dates differ to much: " + localDate +  " vs " + lastMod + 
+                assertTrue("Dates differ to much for " + fo + ": " + localDate +  " vs " + lastMod + 
                         " delta " + delta + " ms; skew " + skew, false);
             }
             fo.delete();

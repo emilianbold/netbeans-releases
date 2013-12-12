@@ -69,6 +69,11 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     public SearchHistoryAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected Task performAction (final File repository, final File[] roots, final VCSContext context) {

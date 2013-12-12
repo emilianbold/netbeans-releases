@@ -113,9 +113,13 @@ public abstract class NodeProvider implements Lookup.Provider {
 
             for (Node child : nodeSet) {
                 if (child instanceof BaseNode) {
-                    BaseNode node = (BaseNode)child;
+                    BaseNode node = (BaseNode) child;
                     Collection<? extends Node> list = node.getNodeRegistry().getNodes();
                     for (Node n : list) {
+                        nodes.add(n);
+                    }
+                } else {
+                    for (Node n : child.getChildren().getNodes()) {
                         nodes.add(n);
                     }
                 }

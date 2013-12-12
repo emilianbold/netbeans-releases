@@ -229,15 +229,16 @@ public class ArchiveURLMapperTest extends NbTestCase {
         jos.putNextEntry(entry);
         jos.write("new content".getBytes());
         jos.close();
-        TestFileUtils.touch(metaJar, null);  // just for sure
-
-        LOG.info("Before refresh");
-        metaJarFO.refresh();
-        LOG.info("After refresh");
 
         // check meta.jar/newFile
         FileObject newFO = null;
         for (int i = 0; i < 10; i++) {
+            TestFileUtils.touch(metaJar, null);  // just for sure
+
+            LOG.info("Before refresh");
+            metaJarFO.refresh();
+            LOG.info("After refresh");
+            
             newFO = metaRoot.getFileObject("newFile");
             if (newFO != null) {
                 break;

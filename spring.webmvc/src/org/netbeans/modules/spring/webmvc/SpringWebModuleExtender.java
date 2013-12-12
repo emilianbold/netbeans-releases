@@ -86,7 +86,9 @@ import org.netbeans.modules.spring.webmvc.utils.SpringWebFrameworkUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -262,6 +264,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             this.webModule = webModule;
         }
 
+        @NbBundle.Messages({
+            "CreateSpringConfig.msg.invalid.dd=Deployment descriptor cointains errors, Spring framework has to be manually configured there!"
+        })
         public void run() throws IOException {
             // MODIFY WEB.XML
             FileObject dd = webModule.getDeploymentDescriptor();
@@ -272,22 +277,27 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             if (dd != null) {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-                addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
-                addListener(ddRoot, CONTEXT_LOADER);
-                addServlet(ddRoot, getComponent().getDispatcherName(), DISPATCHER_SERVLET, getComponent().getDispatcherMapping(), "2"); // NOI18N
-                WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
-                if (welcomeFiles == null) {
-                    try {
-                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); // NOI18N
-                        ddRoot.setWelcomeFileList(welcomeFiles);
-                    } catch (ClassNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
+                if (ddRoot.getError() != null) {
+                    Message message = new Message(Bundle.CreateSpringConfig_msg_invalid_dd(), Message.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(message);
+                } else {
+                    addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
+                    addListener(ddRoot, CONTEXT_LOADER);
+                    addServlet(ddRoot, getComponent().getDispatcherName(), DISPATCHER_SERVLET, getComponent().getDispatcherMapping(), "2"); // NOI18N
+                    WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+                    if (welcomeFiles == null) {
+                        try {
+                            welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); // NOI18N
+                            ddRoot.setWelcomeFileList(welcomeFiles);
+                        } catch (ClassNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
+                    if (welcomeFiles.sizeWelcomeFile() == 0) {
+                        welcomeFiles.addWelcomeFile("redirect.jsp"); // NOI18N
+                    }
+                    ddRoot.write(dd);
                 }
-                if (welcomeFiles.sizeWelcomeFile() == 0) {
-                    welcomeFiles.addWelcomeFile("redirect.jsp"); // NOI18N
-                }
-                ddRoot.write(dd);
             }
             
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY

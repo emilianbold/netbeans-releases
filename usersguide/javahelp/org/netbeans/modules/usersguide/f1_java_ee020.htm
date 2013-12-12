@@ -2,17 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New EJB Module Wizard: Name and Location</title>
+<title>New Session Bean Wizard</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectLocationWizardPanel_EJB" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectLocationWizardPanel_EJB"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref599" name="sthref599"></a>
-<h1>New EJB Module Wizard: Name and Location</h1>
+<p>Beta Draft: 2013-12-05</p>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref604" name="sthref604"></a>
+<h1>New Session Bean Wizard</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new standard project containing an EJB module. You open the wizard by opening the New Project wizard and selecting the EJB Module template from the Java EE category.</p>
-<p>In the Name and Location page, you have to set the following properties:</p>
+<p>This wizard creates a new session bean in an EJB module. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2704">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You set the following information in the wizard:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -26,69 +34,101 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t15" headers="r1c1-t15">
-<p>Project Name</p>
+<p>EJB Name</p>
 </td>
 <td align="left" headers="r2c1-t15 r1c2-t15">
-<p>Specifies the display name of the project. This name is also used to create the project folder.</p>
+<p>Set the name of the session bean. The name is used as the basis for the session bean's class and interface names.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t15" headers="r1c1-t15">
-<p>Project Location</p>
+<p>Location</p>
 </td>
 <td align="left" headers="r3c1-t15 r1c2-t15">
-<p>Specifies the folder where you want to create the project folder.</p>
+<p>Select the source folder where you want to create the session bean files.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t15" headers="r1c1-t15">
-<p>Project Folder</p>
+<p>Package</p>
 </td>
 <td align="left" headers="r4c1-t15 r1c2-t15">
-<p>Displays the location of the project folder, which contains the primary source package folder and test packages folder for your project. The project folder also contains your project's Ant build script and project metadata. You can add additional source folders after you create the project.</p>
+<p>Select an existing package or type the name of a new package.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t15" headers="r1c1-t15">
-<p>Use Dedicated Folder for Storing Libraries</p>
+<p>Session Type</p>
 </td>
 <td align="left" headers="r5c1-t15 r1c2-t15">
-<p>When selected, you can specify a Libraries Folder where required compilation libraries are stored.</p>
+<p>Select one of the following:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t15" headers="r1c1-t15">
-<p>Libraries Folder</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Stateless</p>
 </td>
 <td align="left" headers="r6c1-t15 r1c2-t15">
-<p>Specifies the location of the folder containing shared libraries. Click Browse to specify a location other than the default.</p>
+<p>The bean does not save state information during its conversation with the user. These enterprise beans are useful for simple interactions between client and application service, interactions that are complete in a single method invocation.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t15" headers="r1c1-t15">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Stateful</p>
+</td>
+<td align="left" headers="r7c1-t15 r1c2-t15">
+<p>The bean saves state information during its conversation with the user. These enterprise beans are useful for business processes that require an interaction between client and application service that lasts longer than a single method invocation and requires memory of the state of the interaction.</p>
+<p>An example is an online shopping cart. The end user, through the client program, can order a number of items. The stateful session bean managing the interaction must accumulate items until the end user is ready to review the accumulated order, approve or reject items, and initiate processing of the lot. The stateful session bean has to store the unprocessed items and enable the end user to add more.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t15" headers="r1c1-t15">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Singleton</p>
+</td>
+<td align="left" headers="r8c1-t15 r1c2-t15">
+<p>(Java EE 6) A singleton session bean is instantiated only once per application and exists for the lifecycle of the application. You can create a singleton bean that the container instantiates when the application starts up by using the @Startup annotation.---An example is a bean that is used to intialize data for an application that can be concurrently accessed by many clients.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t15" headers="r1c1-t15">
+<p>Create Interface</p>
+</td>
+<td align="left" headers="r9c1-t15 r1c2-t15">
+<p>Specify which interfaces to create for the session bean:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t15" headers="r1c1-t15">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Local</p>
+</td>
+<td align="left" headers="r10c1-t15 r1c2-t15">
+<p>Allow your session bean to be accessed from clients that are running in the same Java Virtual Machine.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t15" headers="r1c1-t15">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Remote</p>
+</td>
+<td align="left" headers="r11c1-t15 r1c2-t15">
+<p>Allow your session bean to be accessed from remote clients using remote method calls. This usually means clients that are not running on the session bean's application server. If you select Remote, the IDE can generate a remote interface for the session bean in a Java class library project if the project that you want to contain the interface is open in the IDE. You can choose the project from the dropdown list that lists the open Java class library projects.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Click <b>Next</b> to specify the target server and project source level.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG370">
-<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2696">
+<param name="text" value="<html><u>&quot;About Developing with Enterprise Beans&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG207">
-<param name="text" value="<html><u>&quot;Managing and Creating Projects&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2697">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2697">
 <param name="text" value="<html><u>&quot;Creating an EJB Module Project&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -96,16 +136,8 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
-<param name="text" value="<html><u>&quot;Sharing Libraries with Other Users&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2115">
-<param name="text" value="<html><u>&quot;Working with Ant&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2700">
+<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

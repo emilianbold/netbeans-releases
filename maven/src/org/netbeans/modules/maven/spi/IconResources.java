@@ -64,6 +64,7 @@ public class IconResources {
     public static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
     public static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
     public static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.png";
+    public static final @StaticResource String MOJO_ICON = "org/netbeans/modules/maven/execute/ui/mojo.png";
 
     private IconResources() {
     }

@@ -58,6 +58,20 @@ public class AsynchronousMethodInvocationTest extends TestBase {
                 + "  public void businessMethod() {}\n"
                 + "}";
 
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+                + "@javax.ejb.Stateless\n"
+                + "@javax.ejb.LocalBean\n"
+                + "public class TestBean {\n"
+                + "  @javax.ejb.Asynchronous\n"
+                + "  public void businessMethod() {}\n"
+                + "}"
+                + "@javax.ejb.Stateless\n"
+                + "@javax.ejb.LocalBean\n"
+                + "class TestBean2 {\n"
+                + "  @javax.ejb.Asynchronous\n"
+                + "  public void businessMethod2() {}\n"
+                + "}";
+
     public AsynchronousMethodInvocationTest(String name) {
         super(name);
     }
@@ -68,7 +82,17 @@ public class AsynchronousMethodInvocationTest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(AsynchronousMethodInvocation.class)
-                .findWarning("5:14-5:28:error:" + Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31());
+                .assertWarnings("5:14-5:28:error:" + Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31());
+    }
+
+    public void testAsynchronousSBInvocationEE6LiteMoreBeansInFile() throws Exception {
+        TestModule testModule = createWeb30Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(AsynchronousMethodInvocation.class)
+                .assertWarnings("5:14-5:28:error:" + Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31(),
+                                        "10:14-10:29:error:" +  Bundle.AsynchronousMethodInvocation_err_asynchronous_in_ejb31());
     }
 
     public void testAsynchronousSBInvocationEE7Lite() throws Exception {

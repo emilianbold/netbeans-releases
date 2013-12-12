@@ -350,6 +350,11 @@ abstract public class CsmCompletion {
         }
 
         @Override
+        public Collection<CsmNamespace> getInlinedNamespaces() {
+            return Collections.emptyList();
+        }
+
+        @Override
         public Collection<CsmOffsetableDeclaration> getDeclarations() {
             return Collections.emptyList();
         }
@@ -364,6 +369,11 @@ abstract public class CsmCompletion {
             return wrapped.isGlobal();
         }
 
+        @Override
+        public boolean isInline() {
+            return wrapped.isInline();
+        }
+        
         @Override
         public CsmProject getProject() {
             return project;

@@ -1035,14 +1035,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 // subcomponents are set after reading from code [for some reason...]
                 visualContainer.initSubComponents(childComponents);
-                if (layoutSupport.getComponentCount() == 0) {
-                    RADVisualComponent[] visualSubComponents = visualContainer.getSubComponents();
-                    if (visualSubComponents.length > 0) {
-                        // no layout code was saved for simply added components, so need to add them now
-                        layoutSupport.addComponents(visualSubComponents, null, -1);
-                    }
-                }
                 if (layoutInitialized) { // successfully initialized - build the primary container
+                    if (layoutSupport.getComponentCount() == 0) {
+                        RADVisualComponent[] visualSubComponents = visualContainer.getSubComponents();
+                        if (visualSubComponents.length > 0) {
+                            // no layout code was saved for simply added components, so need to add them now
+                            layoutSupport.addComponents(visualSubComponents, null, -1);
+                        }
+                    }
                     try { // some weird problems might occur - see issue 67890
                         layoutSupport.updatePrimaryContainer();
                     }
@@ -1928,7 +1928,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                           org.netbeans.lib.awtextra.AbsoluteLayout.class;
         }
 
-        else return convIndex; // no layout manager
+        else if (convIndex != LAYOUT_JLAYER) {
+            return convIndex; // no layout manager
+        } // Else old JLayeredPane support should be treated as null layout
+          // (layoutClass is null so just continue below).
 
         CodeExpression layoutExp;
         if (layoutClass != null) {

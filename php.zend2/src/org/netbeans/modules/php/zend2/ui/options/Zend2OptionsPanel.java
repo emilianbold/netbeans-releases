@@ -71,10 +71,11 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
+@NbBundle.Messages({"PhpOptions.zend2.keywords.TabTitle=Frameworks & Tools"})
 @OptionsPanelController.Keywords(
         keywords={"php", "zend", "zend 2", "zend2", "framework", "zf", "zf2", "zf 2"},
         location=UiUtils.OPTIONS_PATH,
-        tabTitle="#Zend2OptionsPanelController.options.name")
+        tabTitle="#PhpOptions.zend2.keywords.TabTitle")
 public class Zend2OptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 1687321354656L;

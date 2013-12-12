@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.commons.treelist;
 
+import org.netbeans.modules.team.commons.ColorManager;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -186,6 +187,13 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                 }
             }
         });
+    }
+
+    @Override
+    boolean isLoaded() {
+        synchronized (LOCK) {
+            return loaded;
+        }
     }
 
     private void startLoading() {

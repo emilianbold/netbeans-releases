@@ -25,12 +25,16 @@ ant clean-untracked-files
 
 sh -x nbbuild/hudson/sigtests || exit 1
 
+set +x
+
 for r in . contrib
 do
     output="`hg -R $r st`"
     if [ -n "$output" ]
     then
-        echo "Local modifications found in $r:"
+        echo "Forbidden local modifications found -> The build will fail."
+        echo "(Needed to fix a job which modified files in the repository)"
+        echo "Modified files are:"
         echo "$output"
         hg -R $r diff
         exit 1

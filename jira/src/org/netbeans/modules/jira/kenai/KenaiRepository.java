@@ -55,17 +55,18 @@ import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.*;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.team.spi.TeamAccessor;
+import org.netbeans.modules.team.spi.TeamProject;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -85,12 +86,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(createInfo(repoName, url));
+        super(createInfo(repoName, url, kenaiProject));
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        TeamAccessor kenaiAccessor = TeamUtil.getTeamAccessor(url);
+        TeamAccessor kenaiAccessor = TeamAccessorUtils.getTeamAccessor(url);
         if (kenaiAccessor != null) {
             kenaiAccessor.addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
         }
@@ -127,15 +128,6 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return ret;
     }
 
-    @Override
-    protected Object[] getLookupObjects() {
-        Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 1];
-        System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj2.length - 1] = kenaiProject;
-        return obj2;
-    }
-    
     @Override
     public JiraQuery createPersistentQuery (String queryName, FilterDefinition filter) {
         return new KenaiQuery(queryName, this, filter, projectName, true, false);
@@ -188,7 +180,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
                 fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
                 myIssues =
                     new KenaiQuery(
-                        NbBundle.getMessage(KenaiRepository.class, "LBL_MyIssues"), // NOI18N
+                        TeamAccessorUtils.MY_ISSUES_QUERY_DISPLAY_NAME, 
                         this,
                         fd,
                         projectName,
@@ -216,7 +208,14 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
                 FilterDefinition fd = new FilterDefinition();
                 fd.setProjectFilter(new ProjectFilter(p));
                 fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
-                allIssues = new KenaiQuery(NbBundle.getMessage(KenaiRepository.class, "LBL_AllIssues"), this, fd, projectName, true, true);
+                allIssues = 
+                    new KenaiQuery(
+                        TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME, 
+                        this, 
+                        fd, 
+                        projectName, 
+                        true, 
+                        true);
             } 
         }
         return allIssues;
@@ -256,10 +255,18 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!TeamUtil.isLoggedIn(kenaiProject.getWebLocation())) {
+        if(!isLoggedIn()) {
             return;
         }
         super.getRemoteFilters();
+    }
+
+    public boolean isLoggedIn() {
+        return TeamAccessorUtils.isLoggedIn(kenaiProject.getWebLocation());
+    }
+    
+    public boolean isMyIssues(JiraQuery q) {
+        return myIssues == q;
     }
 
     @Override
@@ -269,7 +276,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -280,22 +287,6 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         setCredentials(user, password);
 
         return true;
-    }
-
-    private static String getKenaiUser(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
-        if(pa != null) {
-            return pa.getUserName();
-        }
-        return "";                                                              // NOI18N
-    }
-
-    private static char[] getKenaiPassword(TeamProject kenaiProject) {
-        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
-        if(pa != null) {
-            return pa.getPassword();
-        }
-        return new char[0];                                                              
     }
 
     /**
@@ -334,7 +325,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-         Collection<RepositoryUser> users = TeamUtil.getProjectMembers(kenaiProject);
+         Collection<RepositoryUser> users = TeamAccessorUtils.getProjectMembers(kenaiProject);
          if (users.isEmpty()) {
              // fallback - try cache
              users = super.getUsers();
@@ -359,7 +350,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                TeamAccessorUtils.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -371,9 +362,20 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             setCredentials(user, psswd);
         }
     }
-    private static RepositoryInfo createInfo(String repoName, String url) {
+    private static RepositoryInfo createInfo(String repoName, String url, TeamProject project) {
         String id = getRepositoryId(repoName, url);
         String tooltip = NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, url}); // NOI18N
-        return new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip);
+        RepositoryInfo i = new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip);
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        return i;
     }
+
+    @Override
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        RepositoryInfo i = super.createInfo(id, url, name, user, httpUser, password, httpPassword); 
+        i.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, kenaiProject.getName());
+        return i;
+    }
+    
+    
 }

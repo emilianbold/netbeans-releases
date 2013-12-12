@@ -711,7 +711,13 @@ public final class PhpExecutable {
         fullCommand.clear();
         boolean useInterpreter = viaPhpInterpreter;
         if (viaAutodetection) {
-            useInterpreter = !executable.toLowerCase().endsWith(".bat"); // NOI18N
+            String exec = executable.toLowerCase();
+            if (Utilities.isWindows()) {
+                useInterpreter = !exec.endsWith(".bat") // NOI18N
+                        && !exec.endsWith(".cmd"); // NOI18N
+            } else {
+                useInterpreter = !exec.endsWith(".sh"); // NOI18N
+            }
         }
         if (!useInterpreter) {
             fullCommand.add(executable);

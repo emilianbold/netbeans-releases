@@ -41,37 +41,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenServletFileWithOpenedEditorTest extends OpenServletFileTest {
-    
-    public static final String suiteName="UI Responsiveness Web Actions suite";    
-    
+
+    public static final String suiteName = "UI Responsiveness Web Actions suite";
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenServletFileWithOpenedEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -80,25 +81,24 @@ public class OpenServletFileWithOpenedEditorTest extends OpenServletFileTest {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(OpenServletFileWithOpenedEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(OpenServletFileWithOpenedEditorTest.class)
+                .suite();
     }
 
-    public void testOpeningServletFile(){
+    @Override
+    public void testOpeningServletFile() {
         super.testOpeningServletFile();
     }
-    
 
     /**
      * Initialize test - open Main.java file in the Source Editor.
      */
-    public void initialize(){
+    @Override
+    public void initialize() {
         super.initialize();
-        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"),"Source Packages|test|Test.java"));
+        new OpenAction().perform(new Node(new ProjectsTabOperator().getProjectRootNode("TestWebProject"), "Source Packages|test|Test.java"));
     }
-    
 }
