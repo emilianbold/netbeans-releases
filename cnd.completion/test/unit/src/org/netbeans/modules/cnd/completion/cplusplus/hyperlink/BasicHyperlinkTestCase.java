@@ -1031,6 +1031,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug235462.cpp", 109, 9, "bug235462.cpp", 25, 5);
     }      
     
+    public void testBug239348() throws Exception { 
+        // Bug 239348 - Hyperlink to "private" typedef struct does not work
+        performTest("bug239348.h", 6, 11, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 7, 19, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 7, 22, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 10, 6, "bug239348.cpp", 5, 3);
+    }     
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
