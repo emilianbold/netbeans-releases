@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
@@ -165,6 +166,11 @@ public final class JoinTokenList<T extends TokenId> implements MutableTokenList<
         this.tokenListList = tokenListList;
         this.tokenListCount = tokenListList.size();
         resetActiveTokenList(); // Use -1 for activeTokenListIndex
+    }
+
+    @Override
+    public Language<T> language() {
+        return LexerUtilsConstants.innerLanguage(languagePath());
     }
 
     @Override

@@ -55,6 +55,7 @@ import org.netbeans.lib.editor.util.FlyOffsetGapList;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
@@ -85,6 +86,8 @@ public final class IncTokenList<T extends TokenId>
 extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
+    
+    private Language<T> language;
 
     private LanguagePath languagePath;
     
@@ -127,12 +130,20 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     @Override
+    public Language<T> language() {
+        return language;
+    }
+    
+    @Override
     public LanguagePath languagePath() {
         return languagePath;
     }
     
     public void setLanguagePath(LanguagePath languagePath) {
         this.languagePath = languagePath;
+        this.language = (languagePath != null)
+                ? LexerUtilsConstants.<T>innerLanguage(languagePath)
+                : null;
     }
 
     @Override

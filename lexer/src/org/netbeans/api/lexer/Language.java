@@ -44,6 +44,8 @@
 
 package org.netbeans.api.lexer;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +63,6 @@ import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
 import org.netbeans.lib.lexer.inc.TokenChangeInfo;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
-import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 
 /**
@@ -95,6 +96,18 @@ public final class Language<T extends TokenId> {
     static {
         LexerApiPackageAccessor.register(new Accessor());
     }
+
+    /**
+     * List of all languages currently active in the system.
+     * It allows to reuse language ids by searching for a free id.
+     */
+    private static final List<Reference<Language<?>>> languageRefList =
+            new ArrayList<Reference<Language<?>>>();
+    
+    /**
+     * Unique id of the language >= 1.
+     */
+    final int id;
     
     private final LanguageHierarchy<T> languageHierarchy;
     
@@ -162,6 +175,24 @@ public final class Language<T extends TokenId> {
      * @throws IndexOutOfBoundsException if any token id's ordinal is &lt; 0.
      */
     Language(LanguageHierarchy<T> languageHierarchy) {
+        // Search for an empty id
+        int lid = 0;
+        synchronized (Language.class) {
+            for (int i = 0; i < languageRefList.size(); i++) {
+                Reference<Language<?>> langRef = languageRefList.get(i);
+                if (langRef.get() == null) { // Released already
+                    lid = i + 1;
+                    languageRefList.set(i, new WeakReference<Language<?>>(this));
+                    break;
+                }
+            }
+            if (lid == 0) {
+                lid = languageRefList.size() + 1;
+                languageRefList.add(new WeakReference<Language<?>>(this));
+            }
+        }
+        this.id = lid;
+
         this.languageHierarchy = languageHierarchy;
         this.languageOperation = new LanguageOperation<T>(languageHierarchy, this);
         mimeType = LexerSpiPackageAccessor.get().mimeType(languageHierarchy);
@@ -583,7 +614,12 @@ public final class Language<T extends TokenId> {
         Language<T> language) {
             return language.languageOperation();
         }
-        
+
+        @Override
+        public int languageId(Language<?> language) {
+            return language.id;
+        }
+
         public <I> TokenHierarchy<I> createTokenHierarchy(
         TokenHierarchyOperation<I,?> tokenHierarchyOperation) {
             return new TokenHierarchy<I>(tokenHierarchyOperation);

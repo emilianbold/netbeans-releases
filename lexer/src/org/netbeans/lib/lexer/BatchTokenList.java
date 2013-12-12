@@ -81,6 +81,8 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     private final TokenHierarchyOperation<?,T> tokenHierarchyOperation;
     
     private final CharSequence inputSourceText;
+    
+    private final Language<T> language;
 
     private final LanguagePath languagePath;
     
@@ -100,6 +102,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     Language<T> language, Set<T> skipTokenIds, InputAttributes inputAttributes) {
         this.tokenHierarchyOperation = tokenHierarchyOperation;
         this.inputSourceText = inputText;
+        this.language = language;
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
         this.inputAttributes = inputAttributes;
@@ -126,6 +129,11 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenHierarchyOperation;
+    }
+
+    @Override
+    public Language<T> language() {
+        return language;
     }
     
     @Override

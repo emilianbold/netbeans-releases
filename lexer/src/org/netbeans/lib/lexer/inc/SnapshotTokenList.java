@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer.inc;
 
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CompactMap;
@@ -114,6 +115,11 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
 
     public TokenHierarchyOperation<?,T> snapshot() {
         return snapshot;
+    }
+
+    @Override
+    public Language<T> language() {
+        return liveTokenList.language();
     }
     
     @Override

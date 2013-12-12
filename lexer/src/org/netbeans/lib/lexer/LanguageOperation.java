@@ -118,7 +118,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
             Set<T> ids = language.tokenIds();
             for (T id : ids) {
                 // Create a fake empty token
-                DefaultToken<T> emptyToken = new DefaultToken<T>(id);
+                DefaultToken<T> emptyToken = new DefaultToken<T>(new WrapTokenId<T>(id));
                 // Find embedding for non-flyweight token
                 LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(lp);
                 LanguageEmbedding<?> embedding = LexerUtilsConstants.findEmbedding(
@@ -184,19 +184,19 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         return (validator == nullValidator()) ? null : validator;
     }
     
-    public synchronized TextToken<T> getFlyweightToken(T id, String text) {
+    public synchronized TextToken<T> getFlyweightToken(WrapTokenId<T> wid, String text) {
         if (flyItems == null) {
             // Create flyItems array
             @SuppressWarnings("unchecked")
             FlyItem<T>[] arr = (FlyItem<T>[])new FlyItem[language.maxOrdinal() + 1];
             flyItems = arr;
         }
-        FlyItem<T> item = flyItems[id.ordinal()];
+        FlyItem<T> item = flyItems[wid.id().ordinal()];
         if (item == null) {
-            item = new FlyItem<T>(id, text);
-            flyItems[id.ordinal()] = item;
+            item = new FlyItem<T>(wid, text);
+            flyItems[wid.id().ordinal()] = item;
         }
-        return item.flyToken(id, text);
+        return item.flyToken(wid, text);
     }
     
     public synchronized EmbeddingPresence embeddingPresence(T id) {
@@ -313,12 +313,12 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
         
         private TextToken<T> token2; // Second most used
         
-        FlyItem(T id, String text) {
-            newToken(id, text);
+        FlyItem(WrapTokenId<T> wid, String text) {
+            newToken(wid, text);
             token2 = token; // Make both item non-null
         }
 
-        TextToken<T> flyToken(T id, String text) {
+        TextToken<T> flyToken(WrapTokenId<T> wid, String text) {
             // First do a quick check for equality only in both items
             if (token.text() != text) {
                 if (token2.text() == text) {
@@ -329,7 +329,7 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
                     if (!CharSequenceUtilities.textEquals(token.text(), text)) {
                         if (!CharSequenceUtilities.textEquals(token2.text(), text)) {
                             token2 = token;
-                            newToken(id, text);
+                            newToken(wid, text);
                         } else { // swap
                             swap();
                         }
@@ -339,9 +339,9 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
             return token;
         }
         
-        void newToken(T id, String text) {
+        void newToken(WrapTokenId<T> wid, String text) {
             // Create new token
-            token = new TextToken<T>(id, text);
+            token = new TextToken<T>(wid, text);
             token.makeFlyweight();
         }
         

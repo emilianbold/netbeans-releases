@@ -215,7 +215,7 @@ public final class JoinTokenListChange<T extends TokenId> extends TokenListChang
         jtl.moveIndexGap(tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount);
         // Do physical ETLs replace
         tokenListListUpdate.replaceTokenLists();
-        jtl.tokenListsModified(tokenListListUpdate.tokenListCountDiff());
+        jtl.tokenListsModified(tokenListListUpdate.modTokenListCountDiff());
     }
     
     public void replaceTokens(TokenHierarchyEventInfo eventInfo) {
@@ -253,7 +253,7 @@ public final class JoinTokenListChange<T extends TokenId> extends TokenListChang
             localMatchIndex = 0;
         }
         // Now matchTokenListIndex >= removedEndTokenListIndex
-        int afterUpdateMatchEndIndex = matchTokenListIndex + tokenListListUpdate.tokenListCountDiff();
+        int afterUpdateMatchEndIndex = matchTokenListIndex + tokenListListUpdate.modTokenListCountDiff();
         // If localMatchIndex == 0 it means that in fact only previous ETL was covered.
         if (localMatchIndex != 0) { // Include ETL at matchTokenListIndex in relexChanges too.
             afterUpdateMatchEndIndex++;
