@@ -185,6 +185,7 @@ public final class CndFileUtils {
     private static final ConcurrentHashMap<FileSystem,ConcurrentHashMap<CharSequence,FileObject>> foCache = new ConcurrentHashMap<FileSystem, ConcurrentHashMap<CharSequence, FileObject>>();
     
     public static FileObject toFileObject(FileSystem fs, CharSequence absolutePath) {
+        CndUtils.assertTrueInConsole(absolutePath != null, "null path ", fs);
         ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
         if (map == null) {
             map = new ConcurrentHashMap<CharSequence, FileObject>();
