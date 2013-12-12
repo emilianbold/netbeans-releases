@@ -100,7 +100,7 @@ public final class SBSuperClassNotSB {
                     ctx.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                         @Override
                         public Void run(EjbJarMetadata metadata) throws Exception {
-                            Ejb parentEJB = ctx.getMetadata().findByEjbClass(parentClassName);
+                            Ejb parentEJB = metadata.findByEjbClass(parentClassName);
                             if (parentEJB instanceof Session) {
                                 ErrorDescription err = HintsUtils.createProblem(
                                         ctx.getClazz(),
