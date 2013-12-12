@@ -77,9 +77,9 @@ public class RefreshManager {
     private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
     private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
     private final Object queueLock = new Object();
-    
-    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
-    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", RemoteFileSystemTransport.needsClientSidePollingRefresh()); //NOI18N
+
+    private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
+    public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;
@@ -155,14 +155,14 @@ public class RefreshManager {
     }        
     
     public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
-        if (REFRESH_ON_FOCUS) {
+        if (REFRESH_ON_FOCUS && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefreshImpl(filterDirectories(fileObjects), false);
         }
     }
 
     public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
-        if (REFRESH_ON_CONNECT) {
+        if (REFRESH_ON_CONNECT && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on connect schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefreshImpl(filterDirectories(fileObjects), false);
         }

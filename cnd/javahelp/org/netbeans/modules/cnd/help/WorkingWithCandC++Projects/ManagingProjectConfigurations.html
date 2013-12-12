@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -19,7 +19,7 @@ configuration builds a version of your application that includes debug informati
 The Release configuration builds an optimized version.  </p>
 <p>When you manage configurations, you can modify configuration properties and add new configurations.
     And you can select the
-active configuration, which is used when you build or run your project.</p>
+active configuration, which is used by default when you build or run your project.</p>
 <p><b>To manage project configurations:</b></p>
 <ol>
 <li>Right-click the main node of the project and choose Properties.</li>
@@ -40,7 +40,11 @@ active configuration, which is used when you build or run your project.</p>
 <li><b>Tip:</b>  You can also set the active configuration in the IDE's toolbar, or by right-clicking the project node
     and selecting Set Configuration.</li>
 </ul>
-
+<p><b>To build a project with multiple configurations:</b></p>
+<ol><li>Select the project node and choose Run > Batch Build Project, or right-click the project node and choose More Build Commands > Batch Build.</li>
+    <li>In the Batch Build dialog box, select the configurations you want to build.</li> 
+    <li>Click Build for an incremental build or click Clean and Build for a full build. </li>
+</ol>
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>
