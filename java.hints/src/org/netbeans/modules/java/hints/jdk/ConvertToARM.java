@@ -77,6 +77,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -349,7 +350,7 @@ cleanUpStatements).toEditorFix()
         public String getText() {
             return NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM");
         }
-
+        
         @Override
         protected void performRewrite(TransformationContext ctx) {
             final WorkingCopy wc = ctx.getWorkingCopy();
@@ -371,13 +372,15 @@ cleanUpStatements).toEditorFix()
             final Collection<? extends TreePath> tail = unwrap(wc, this.tailHandle);
             final Collection<? extends TreePath> cleanUpStms = unwrap(wc, this.cleanUpStmsHandle);
             final TreeMaker tm = wc.getTreeMaker();
+            final GeneratorUtilities gen = GeneratorUtilities.get(wc);
+            gen.importComments(tp.getLeaf(), wc.getCompilationUnit());
             final Set<StatementTree> nonNeededStms = new HashSet<StatementTree>();
             for (TreePath stm : cleanUpStms) {
                 BlockTree owner = (BlockTree)stm.getParentPath().getLeaf();
                 if (owner == tp.getLeaf()) {
                     nonNeededStms.add((StatementTree)stm.getLeaf());
                 } else {
-                    wc.rewrite(owner,
+                    rewriteCopyComments(wc, owner,
                         tm.removeBlockStatement(
                             owner,
                             (StatementTree)stm.getLeaf()));
@@ -400,7 +403,7 @@ cleanUpStatements).toEditorFix()
                                 vr.getType(),
                                 null));
                         if (vr.getInitializer() != null) {
-                            wc.rewrite(vr,
+                            rewriteCopyComments(wc, vr,
                                 tm.ExpressionStatement(tm.Assignment(
                                     tm.Identifier(vr.getName()),
                                     vr.getInitializer())));
@@ -420,7 +423,7 @@ cleanUpStatements).toEditorFix()
                         block,
                         ConvertToARMFix.<CatchTree>asList(catchesPaths),
                         rewriteFinallyBlock(tm,finStatementsPath));
-                wc.rewrite(tp.getLeaf(), rewriteOwnerBlock(
+                rewriteCopyComments(wc, tp.getLeaf(), rewriteOwnerBlock(gen, 
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
                         (StatementTree)var.getLeaf(),
@@ -445,7 +448,7 @@ cleanUpStatements).toEditorFix()
                         oldTry.getBlock(),
                         ConvertToARMFix.<CatchTree>asList(catchesPaths),
                         rewriteFinallyBlock(tm,finStatementsPath));
-                wc.rewrite(tp.getLeaf(), rewriteOwnerBlock(
+                rewriteCopyComments(wc, tp.getLeaf(), rewriteOwnerBlock(gen, 
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
                         (StatementTree)var.getLeaf(),
@@ -467,7 +470,7 @@ cleanUpStatements).toEditorFix()
                         tm.Block(ConvertToARMFix.<StatementTree>asList(statementsPaths), false),
                         oldTry.getCatches(),
                         oldTry.getFinallyBlock());
-                wc.rewrite(oldTry, newTry);
+                rewriteCopyComments(wc, oldTry, newTry);
             }            
         }
         
@@ -484,6 +487,7 @@ cleanUpStatements).toEditorFix()
         }
         
         private static BlockTree rewriteOwnerBlock(
+                final GeneratorUtilities gen,
                 final TreeMaker tm,
                 final List<? extends StatementTree> originalStatements,
                 final StatementTree var,
@@ -507,6 +511,20 @@ cleanUpStatements).toEditorFix()
                             (statement.getKind() == Kind.TRY && 
                             ((TryTree)statement).getResources() != null &&
                             !((TryTree)statement).getResources().isEmpty())? 2 : 0;
+                    gen.copyComments(statement, newTry, true);
+                    gen.copyComments(statement, newTry, false);
+                    if (statement.getKind() == Kind.TRY) {
+                        // copy over the comments for the finally block, it has been regenerated
+                        TryTree tt = (TryTree)statement;
+                        if (tt.getFinallyBlock() != null) {
+                            Tree nt = newTry.getFinallyBlock();
+                            if (nt == null) {
+                                nt = newTry;
+                            }
+                            gen.copyComments(tt.getFinallyBlock(), nt, true);
+                            gen.copyComments(tt.getFinallyBlock(), nt, false);
+                        }
+                    }
                     statement = newTry;
                 } else if (state == 2) {
                     if (!toRemove.contains(statement)) {
@@ -534,13 +552,20 @@ cleanUpStatements).toEditorFix()
         }
     }
     
+    private static void rewriteCopyComments(WorkingCopy wc, Tree from, Tree to) {
+        GeneratorUtilities gen = GeneratorUtilities.get(wc);
+        gen.copyComments(from, to, true);
+        gen.copyComments(from, to, false);
+        wc.rewrite(from, to);
+    }
+
     private static VariableTree removeFinal(
             final WorkingCopy wc,
             final VariableTree varTree) {
         final ModifiersTree oldMods = varTree.getModifiers();
         if (oldMods != null && oldMods.getFlags().contains(Modifier.FINAL)) {
             final ModifiersTree newMods = wc.getTreeMaker().removeModifiersModifier(oldMods, Modifier.FINAL);
-            wc.rewrite(oldMods, newMods);
+            rewriteCopyComments(wc, oldMods, newMods);
         }
         return varTree;
     }
@@ -562,7 +587,7 @@ cleanUpStatements).toEditorFix()
         final ExpressionTree currentInit = var.getInitializer();
         if (currentInit.getKind() == Kind.NULL_LITERAL) {
             final VariableTree newVar = wc.getTreeMaker().Variable(var.getModifiers(), var.getName(), var.getType(), init);
-            wc.rewrite(var, newVar);
+            rewriteCopyComments(wc, var, newVar);
             return newVar;
         } else {
             return var;

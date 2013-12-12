@@ -46,10 +46,9 @@ import org.netbeans.modules.subversion.client.commands.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 
 /**
- * Subversion 1.7
+ * Subversion 1.8
  * @author tomas
  */
 public class CLIClientTest extends NbTestCase {

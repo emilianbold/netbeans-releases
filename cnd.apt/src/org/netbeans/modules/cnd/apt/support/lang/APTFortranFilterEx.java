@@ -72,10 +72,10 @@ final class APTFortranFilterEx implements APTLanguageFilter {
     }
 
     private final class FilterStream implements TokenStream {
-        private TokenStream orig;
+        private final TokenStream orig;
         private Token nextToken = null;
         private Token nextNextToken = null;
-        boolean newLine = false;
+        //boolean newLine = false;
 
         public FilterStream(TokenStream orig) {
             this.orig = orig;

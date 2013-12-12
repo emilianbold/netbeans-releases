@@ -42,10 +42,14 @@
 package org.netbeans.modules.web.jsf.editor;
 
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
@@ -73,14 +77,46 @@ import org.openide.util.Exceptions;
 
 /**
  * Contains methods used for the navigation resolution.
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsfNavigationHelper {
 
-    private JsfNavigationHelper() {}
+    private JsfNavigationHelper() {
+    }
+
+    /**
+     * Gets HTML token sequence at given caret offset.
+     *
+     * @param th token hierarchy
+     * @param caretOffset caret offset
+     * @return HTML token sequence moved at given offset or {@code null}
+     */
+    static TokenSequence getTokenSequenceAtCaret(TokenHierarchy th, int caretOffset) {
+        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
+        TokenSequence ts = null;
+        for (TokenSequence _ts : seqs) {
+            if (_ts.language() == HTMLTokenId.language()) {
+                ts = _ts;
+                break;
+            }
+        }
+
+        if (ts == null) {
+            return null;
+        }
+
+        ts.move(caretOffset);
+        if (ts.moveNext() || ts.movePrevious()) {
+            return ts;
+        }
+
+        return null;
+    }
 
     /**
      * Navigation implementation for JSF Composite Component libraries.
+     *
      * @param htmlresult parser result
      * @param caretOffset carret offset
      * @param lib library which contains given element
@@ -167,6 +203,7 @@ public class JsfNavigationHelper {
 
     /**
      * Navigation implementation for JSF component defined by @FacesComponent annotation.
+     *
      * @param result parser result
      * @param caretOffset carret offset
      * @param lib library which contains given element
@@ -196,6 +233,31 @@ public class JsfNavigationHelper {
             }
         }
 
+        return DeclarationLocation.NONE;
+    }
+
+    /**
+     * Navigation implementation files references.
+     *
+     * @param htmlresult parser result
+     * @param caretOffset carret offset
+     * @param tag tag name
+     * @param attribute attribute name
+     * @param value attribute value
+     * @return declaration location where to navigate
+     */
+    static DeclarationLocation goToReferencedFile(HtmlParserResult htmlresult, int caretOffset, String tag, String attribute, String value) {
+        if (tag.isEmpty() || attribute.isEmpty() || value.isEmpty()) {
+            return DeclarationLocation.NONE;
+        }
+
+        // navigation for value of the ui:include src attribute
+        if (tag.contains("include") && "src".equals(attribute)) { //NOI18N
+            FileObject fileObject = htmlresult.getSnapshot().getSource().getFileObject().getParent().getFileObject(value);
+            if (fileObject != null) {
+                return new DeclarationLocation(fileObject, 0);
+            }
+        }
         return DeclarationLocation.NONE;
     }
 }

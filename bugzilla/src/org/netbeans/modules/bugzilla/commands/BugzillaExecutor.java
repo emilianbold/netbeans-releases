@@ -61,7 +61,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -109,15 +109,18 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion) {
-        execute(cmd, handleExceptions, checkVersion, true, true);
+        execute(cmd, handleExceptions ? 0 : -1, checkVersion, true, true);
     }
 
     public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
-        execute(cmd, handleExceptions, checkVersion, ensureCredentials, true);
+        execute(cmd, handleExceptions ? 0 : -1, checkVersion, ensureCredentials, true);
     }
     
-    public void execute(BugtrackingCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
+    private void execute(BugtrackingCommand cmd, int handleCounter, boolean checkVersion, boolean ensureCredentials, boolean reexecute) {
+        boolean handleExceptions = handleCounter++ > -1 && handleCounter < 10;
+        
         try {
+            
             cmd.setFailed(true);
 
             if(checkVersion) {
@@ -164,7 +167,7 @@ public class BugzillaExecutor {
             if(handleExceptions) {
                 if(handler.handle()) {
                     // execute again
-                    execute(cmd, handleExceptions, checkVersion, ensureCredentials, !handler.reexecuteOnce());
+                    execute(cmd, handleCounter, checkVersion, ensureCredentials, !handler.reexecuteOnce());
                 }
             }
             return;

@@ -61,6 +61,17 @@ public class RemoteAnnotatedBeanHasRBITest extends TestBase {
             + "public class TestBean {\n"
             + "  public void anything() { }"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Remote\n"
+            + "public class TestBean {\n"
+            + "  public void anything() { }"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "@javax.ejb.Remote\n"
+            + "class TestBean2 {\n"
+            + "  public void anything() { }"
+            + "}";
 
     public void testRemoteAnnotatedBeanHasRBI() throws Exception {
         TestBase.TestModule testModule = createEjb31Module();
@@ -69,5 +80,15 @@ public class RemoteAnnotatedBeanHasRBITest extends TestBase {
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(RemoteAnnotatedBeanHasRBI.class)
                 .assertWarnings("3:13-3:21:error:" + Bundle.RemoteAnnotatedBeanHasRBI_err());
+    }
+
+    public void testRemoteAnnotatedBeanHasRBIMoreBeansInFile() throws Exception {
+        TestBase.TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(RemoteAnnotatedBeanHasRBI.class)
+                .assertWarnings("3:13-3:21:error:" + Bundle.RemoteAnnotatedBeanHasRBI_err(),
+                                        "7:6-7:15:error:" + Bundle.RemoteAnnotatedBeanHasRBI_err());
     }
 }

@@ -41,145 +41,157 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
-import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of expanding nodes/folders in the Explorer.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
 
-    /** Name of the folder which test creates and expands */
+    /**
+     * Name of the folder which test creates and expands
+     */
     protected String project;
-    /** Path to the folder which test creates and expands */
+    /**
+     * Path to the folder which test creates and expands
+     */
     protected String pathToFolderNode;
-    /** Node represantation of the folder which test creates and expands */
+    /**
+     * Node representation of the folder which test creates and expands
+     */
     protected Node nodeToBeExpanded;
-    /** Projects tab */
+    /**
+     * Projects tab
+     */
     protected ProjectsTabOperator projectTab;
-    
-    
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      */
     public ExpandNodesProjectsViewTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 100;
     }
-    
+
     /**
      * Creates a new instance of ExpandNodesInExplorer
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public ExpandNodesProjectsViewTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 100;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ExpandNodesProjectsViewTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenFoldersProject")
+                .addTest(ExpandNodesProjectsViewTest.class)
+                .suite();
     }
 
-    public void testExpandProjectNode(){
+    public void testExpandProjectNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = "";
+        expectedTime = 200;
         doMeasurement();
     }
 
-    public void testExpandSourcePackagesNode(){
+    public void testExpandSourcePackagesNode() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES;
+        expectedTime = 200;
         doMeasurement();
     }
-    
-    public void testExpandFolderWith50JavaFiles(){
+
+    public void testExpandFolderWith50JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder50";
-        expectedTime = 1500;
+        expectedTime = 300;
         doMeasurement();
     }
-    
-    public void testExpandFolderWith100JavaFiles(){
+
+    public void testExpandFolderWith100JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder100";
-        expectedTime = 1500;
+        expectedTime = 500;
         doMeasurement();
     }
 
-    public void testExpandFolderWith1000JavaFiles(){
+    public void testExpandFolderWith1000JavaFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder1000";
-        expectedTime = 1500;
+        expectedTime = 2500;
         doMeasurement();
     }
 
-    public void testExpandFolderWith100XmlFiles(){
+    public void testExpandFolderWith100XmlFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.xmlFolder100";
+        expectedTime = 2000;
         doMeasurement();
     }
-    
-    public void testExpandFolderWith100TxtFiles(){
+
+    public void testExpandFolderWith100TxtFiles() {
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.txtFolder100";
+        expectedTime = 600;
         doMeasurement();
     }
-    
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         projectTab = new ProjectsTabOperator();
         new MaximizeWindowAction().performAPI(projectTab);
         projectTab.getProjectRootNode("PerformanceTestFoldersData").collapse();
-        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EXPLORER_FILTER);
     }
-        
-        
+
+    @Override
     public void prepare() {
-        if(pathToFolderNode.equals(""))
+        if (pathToFolderNode.equals("")) {
             nodeToBeExpanded = projectTab.getProjectRootNode(project);
-        else
+        } else {
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        }
+        nodeToBeExpanded.collapse();
     }
-    
-    public ComponentOperator open(){
+
+    @Override
+    public ComponentOperator open() {
+        // wait only for expansion and ignore other repaint events (badging etc.)
+        MY_END_EVENT = ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE;
         nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         nodeToBeExpanded.collapse();
     }
-    
+
     @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
         projectTab.getProjectRootNode(project).collapse();
-        new RestoreWindowAction().performAPI(projectTab);
+        projectTab.close();
+        ProjectsTabOperator.invoke();
     }
-
 }

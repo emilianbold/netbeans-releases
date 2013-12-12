@@ -42,6 +42,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 
 /**
@@ -66,5 +67,5 @@ public abstract class SPIAccessor {
     
     public abstract RepositoryInfo read(Preferences preferences, String key);
     public abstract void store(Preferences preferences, RepositoryInfo info, String key);
-    
+    public abstract <I> QueryProvider.IssueContainer<I> createIssueContainer(IssueContainerImpl<I> impl);
 }

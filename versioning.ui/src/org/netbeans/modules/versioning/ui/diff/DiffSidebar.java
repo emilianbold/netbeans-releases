@@ -99,12 +99,19 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import javax.swing.plaf.TextUI;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.UserQuestionException;
+import org.openide.util.WeakListeners;
 
 /**
  * Left editor sidebar showing changes in the file against the base version.
@@ -143,6 +150,8 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private RequestProcessor.Task   refreshDiffTask;
     private VersioningSystem ownerVersioningSystem;
+    private final LookupListener lookupListenerGC;
+    private Color bgColor = Color.WHITE;
 
     public DiffSidebar(JTextComponent target, FileObject file) {
         LOG.log(Level.FINE, "creating DiffSideBar for {0}", file != null ? file.getPath() : null);
@@ -151,6 +160,19 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         this.foldHierarchy = FoldHierarchy.get(target);
         this.document = (BaseDocument) textComponent.getDocument();
         this.markProvider = new DiffMarkProvider();
+        final Lookup.Result r = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(target)).lookupResult(FontColorSettings.class);
+        lookupListenerGC = new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
+                if (fcsIt.hasNext()) {
+                    updateColors(r);
+                }
+            }
+        };
+        r.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , r));
+        bgColor = defaultBackground();
+        updateColors(r);
         setToolTipText(""); // NOI18N
         refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
@@ -792,10 +814,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     private Color backgroundColor() {
+        return bgColor;
+    }
+
+    private Color defaultBackground () {
         if (textComponent != null) {
             return textComponent.getBackground();
         }
-
         return Color.WHITE;
     }
 
@@ -1248,6 +1273,32 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 dir.deleteOnExit();
                 return FileUtil.normalizeFile(dir);
             }
+        }
+    }
+    
+    private void updateColors (Lookup.Result r) {
+        Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
+        if (!fcsIt.hasNext()) {
+            return;
+        }
+        FontColorSettings fcs = fcsIt.next();
+        
+        AttributeSet as = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        Color oldC = bgColor;
+        Coloring coloring = as == null ? null : Coloring.fromAttributeSet(as);
+        Color newC = null;
+        if (coloring != null) {
+            newC = coloring.getBackColor();
+        }
+        bgColor = newC == null ? defaultBackground() : newC;
+        if (!bgColor.equals(oldC)) {
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run () {
+                    DiffSidebar.this.repaint();
+                }
+            });
         }
     }
          

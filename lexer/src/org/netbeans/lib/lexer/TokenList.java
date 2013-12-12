@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
@@ -88,7 +89,9 @@ public interface TokenList<T extends TokenId> {
      */
     // -J-Dorg.netbeans.lib.lexer.TokenList.level=FINE
     public static final Logger LOG = Logger.getLogger(TokenList.class.getName());
-    
+
+    Language<T> language();
+
     /**
      * Language path of this token list.
      */
@@ -321,6 +324,15 @@ public interface TokenList<T extends TokenId> {
      * @return true if the token list was removed or false otherwise.
      */
     boolean isRemoved();
+
+    /**
+     * Dump extra information (not token infos)
+     * about this token list to the given string builder.
+     *
+     * @param sb non-null string builder.
+     * @return sb passed as an argument.
+     */
+    StringBuilder dumpInfo(StringBuilder sb);
 
     /**
      * Type of this token list for dump info purpose.

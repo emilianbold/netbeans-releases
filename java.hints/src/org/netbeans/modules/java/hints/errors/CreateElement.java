@@ -432,40 +432,8 @@ public final class CreateElement implements ErrorRule<Void> {
                         }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor(ErrorFixesFakeHint.getPreferences(targetFile, FixKind.CREATE_FINAL_FIELD_CTOR))) {
-                            boolean hasOtherConstructors = false;
-                            for (Tree member : ((ClassTree)firstClass.getLeaf()).getMembers()) {
-                                if (member.getKind() == Tree.Kind.METHOD && "<init>".contentEquals(((MethodTree)member).getName()) && firstMethod.getLeaf() != member) { //NOI18N
-                                    BlockTree body = ((MethodTree) member).getBody();
-                                    Iterator<? extends StatementTree> stats = body != null ? body.getStatements().iterator() : Collections.<StatementTree>emptyList().iterator();
-                                    if (stats.hasNext()) {
-                                        StatementTree stat = stats.next();
-                                        if (stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
-                                            ExpressionTree exp = ((ExpressionStatementTree)stat).getExpression();
-                                            if (exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                                                ExpressionTree meth = ((MethodInvocationTree)exp).getMethodSelect();
-                                                if (meth.getKind() == Tree.Kind.IDENTIFIER && "this".contentEquals(((IdentifierTree)meth).getName())) { //NOI18N
-                                                    continue;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    // TODO: the field will be declared as non-final even though it may
-                                    // me actually initialized from all the relevant constructors. To fix that, Flow
-                                    // analysis should be executed on the class as a whole to get all final candidates.
-                                    hasOtherConstructors = true;
-                                    break;
-                                }
-                            }
-                            if (!hasOtherConstructors) {
-                                BlockTree constructorBody = ((MethodTree) firstMethod.getLeaf()).getBody();
-
-                                // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
-                                // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,
-                                // but then report errors on the field's assignments in regular methods.
-                                if (Flow.unknownSymbolFinalCandidate(info, 
-                                        e, source, Collections.singletonList(new TreePath(firstMethod, constructorBody)), new AtomicBoolean())) {
-                                    modifiers.add(Modifier.FINAL);
-                                }
+                            if (CreateElementUtilities.canDeclareVariableFinal(info, firstMethod, e)) {
+                                modifiers.add(Modifier.FINAL);
                             }
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
@@ -526,6 +494,10 @@ public final class CreateElement implements ErrorRule<Void> {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : Pair.<List<? extends TypeMirror>, List<String>>of(null, null);
 
         if (formalArguments == null) {
+            return Collections.<Fix>emptyList();
+        }
+        
+        if (superType != null && (superType.getKind() == TypeKind.OTHER)) {
             return Collections.<Fix>emptyList();
         }
 

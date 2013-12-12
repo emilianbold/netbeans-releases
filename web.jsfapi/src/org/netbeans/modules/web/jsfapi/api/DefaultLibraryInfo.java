@@ -50,9 +50,10 @@ public enum DefaultLibraryInfo implements LibraryInfo {
     FACELETS("http://xmlns.jcp.org/jsf/facelets", "Facelets", "ui"), //NOI18N
     COMPOSITE("http://xmlns.jcp.org/jsf/composite", "Composite Components", "cc"), //NOI18N
     PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
-//    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
     JSF("http://xmlns.jcp.org/jsf", "Jsf", "jsf"), //NOI18N
     PASSTHROUGH("http://xmlns.jcp.org/jsf/passthrough", "Passthrough", "p"); //NOI18N
+
+    private static final DefaultLibraryInfo[] ALL_INFOS = values();
 
     private String namespace;
     private String displayName;
@@ -90,8 +91,8 @@ public enum DefaultLibraryInfo implements LibraryInfo {
     }
 
     public static LibraryInfo forNamespace(String namespace) {
-        for (int i = 0; i < values().length; i++) {
-            LibraryInfo li = values()[i];
+        for (int i = 0; i < ALL_INFOS.length; i++) {
+            LibraryInfo li = ALL_INFOS[i];
             if (li.getNamespace().equals(namespace)
                     || (li.getLegacyNamespace() != null && li.getLegacyNamespace().equals(namespace))) {
                 return li;

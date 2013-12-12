@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -113,10 +114,20 @@ public class SubprojectsGroup extends Group {
             if (h != null) {
                 h.progress(progressMessage(p), Math.min(++startEnd[0], startEnd[1]));
             }
-            SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-            if (spp != null) {
-                for (Project p2 : spp.getSubprojects()) {
-                    visitSubprojects(p2, projects, h, startEnd);
+            ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+            if (pcp != null) {
+                ProjectContainerProvider.Result res = pcp.getContainedProjects();
+                projects.addAll(res.getProjects());
+                if (!res.isRecursive()) {
+                    visitSubprojects(p, projects, h, startEnd);
+                }
+            } else {
+                //fallback to semi-deprecated subprojectprovider
+                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                if (spp != null) {
+                    for (Project p2 : spp.getSubprojects()) {
+                        visitSubprojects(p2, projects, h, startEnd);
+                    }
                 }
             }
         }

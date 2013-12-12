@@ -74,9 +74,9 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-@NbBundle.Messages("PhpDocOptionsPanel.keywords.documentation=documentation")
+@NbBundle.Messages({"PhpDocOptionsPanel.keywords.documentation=documentation", "PhpDocOptionsPanel.keywords.TabTitle=Frameworks & Tools"})
 @OptionsPanelController.Keywords(keywords={"php", "phpdoc", "phpdocumentor", "#PhpDocOptionsPanel.keywords.documentation"},
-        location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_PHPDocOptionsName")
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#PhpDocOptionsPanel.keywords.TabTitle")
 public final class PhpDocOptionsPanel extends JPanel {
     private static final long serialVersionUID = 18784654654113L;
     private static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc"; // NOI18N

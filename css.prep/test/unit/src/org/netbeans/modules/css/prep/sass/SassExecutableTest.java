@@ -42,33 +42,37 @@
 package org.netbeans.modules.css.prep.sass;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
 
 
 public class SassExecutableTest extends NbTestCase {
+
+    private static final VersionOutputProcessorFactory VERSION_OUTPUT_PROCESSOR_FACTORY
+            = new VersionOutputProcessorFactory(SassExecutable.VERSION_PATTERN);
 
     public SassExecutableTest(String name) {
         super(name);
     }
 
     public void testParseValidVersions() {
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9 (Media Mark)"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("SASS 3.2.9 (Media Mark)"));
-        assertEquals("3.3.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.3.0 (Media Mark)"));
-        assertEquals("3.3.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.3.0.alpha.198"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9a (Media Mark)"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9"));
-        assertEquals("3.2.9.1.25", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9.1.25"));
-        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass  3.2.9    (Media Mark)"));
-        assertEquals("1", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1 (Media Mark)"));
-        assertEquals("1.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1.0 (Media Mark)"));
-        assertEquals("1.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1.0,25 (Media Mark)"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 (Media Mark)"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("SASS 3.2.9 (Media Mark)"));
+        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0 (Media Mark)"));
+        assertEquals("3.3.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.3.0.alpha.198"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9a (Media Mark)"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9"));
+        assertEquals("3.2.9.1.25", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 3.2.9.1.25"));
+        assertEquals("3.2.9", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass  3.2.9    (Media Mark)"));
+        assertEquals("1", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1 (Media Mark)"));
+        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0 (Media Mark)"));
+        assertEquals("1.0", VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass 1.0,25 (Media Mark)"));
     }
 
     public void testParseInvalidVersions() {
-        assertNull(SassExecutable.VersionOutputProcessorFactory.parseVersion("3.2.9 (Media Mark)"));
-        assertNull(SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
+        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("3.2.9 (Media Mark)"));
+        assertNull(VERSION_OUTPUT_PROCESSOR_FACTORY.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
     }
 
 }

@@ -113,6 +113,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private long renderTime;
         private int numTokens;
         private final String language;
+        private final String languageFlavor;
 //        private 
         
         private Map<Integer, CsmObject> objects = null;
@@ -122,12 +123,16 @@ public final class ParserProviderImpl extends CsmParserProvider {
         Antlr2CppParser(CsmParserProvider.CsmParserParameters params) {
             this.params = params;
             this.file = (FileImpl) params.getMainFile();
+            this.language = params.getLanguage();
+            this.languageFlavor = params.getLanguageFlavor();            
             int aFlags = CPPParserEx.CPP_CPLUSPLUS;
             if (!TraceFlags.REPORT_PARSING_ERRORS) {
                 aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
             }
+            if (APTLanguageSupport.FLAVOR_CPP11.equals(languageFlavor)) {
+                aFlags |= CPPParserEx.CPP_FLAVOR_CPP11;
+            }
             this.flags = aFlags;
-            this.language = params.getLanguage();
             csmCorePackageAccessor = CsmCorePackageAccessor.get();
         }
 

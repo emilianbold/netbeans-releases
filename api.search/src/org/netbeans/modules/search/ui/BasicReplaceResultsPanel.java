@@ -163,12 +163,17 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(ResultModel.PROP_VALID)) {
+            String pn = evt.getPropertyName();
+            if (ResultModel.PROP_VALID.equals(pn)
+                    && Boolean.FALSE.equals(evt.getNewValue())) {
                 replaceButton.setText(NbBundle.getMessage(ResultView.class,
                         "TEXT_BUTTON_REPLACE_INVALID"));                //NOI18N
                 replaceButton.setEnabled(false);
-            } else if (evt.getPropertyName().equals(ResultModel.PROP_SELECTION)
-                    && resultModel.isValid()) {
+            } else if (resultModel.isValid()) {
+                if (ResultModel.PROP_VALID.equals(pn)
+                        && Boolean.TRUE.equals(evt.getNewValue())) {
+                    setFinalRootNodeText();
+                }
                 setButtonText();
             }
         }
@@ -203,7 +208,7 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
         });
     }
 
-    public void displayIssues(IssuesPanel issuesPanel) {
+    void displayIssues(IssuesPanel issuesPanel) {
         if (issuesPanel != null) {
             showRefreshButton();
             removeButtons(btnNext, btnPrev, btnFlatView, btnTreeView,

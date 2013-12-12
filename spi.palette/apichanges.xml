@@ -110,6 +110,22 @@ is the proper place.
   <changes>
     <change>
         <api name="palette_api"/>
+        <summary>Introduced <code>PaletteItemRegistration</code> and <code>PaletteItemRegistrations</code></summary>
+        <version major="1" minor="40"/>
+        <date day="10" month="12" year="2013"/>
+        <author login="skygo"/>
+        <compatibility addition="yes"/>
+          <description>
+             <p>
+                  Introduced a new annotation for registering palette items.
+              </p>
+          </description>
+        <class package="org.netbeans.spi.palette" name="PaletteItemRegistration"/>
+        <class package="org.netbeans.spi.palette" name="PaletteItemRegistrations"/>        
+        <issue number="227345"/>
+    </change>      
+    <change>
+        <api name="palette_api"/>
         <summary>Deprecating ModuleInstall</summary>
         <version major="1" minor="31"/>
         <date day="1" month="4" year="2012"/>

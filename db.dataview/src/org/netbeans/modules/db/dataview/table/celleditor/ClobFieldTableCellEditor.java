@@ -95,19 +95,22 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     }
     private static final Logger LOG = Logger.getLogger(
             ClobFieldTableCellEditor.class.getName());
-    protected static final String EDIT = "edit";
-    protected Clob currentValue;
-    protected JButton button;
-    protected JPopupMenu popup;
-    protected JTable table;
-    protected int currentRow;
-    protected int currentColumn;
-    protected int currentModelRow;
-    protected int currentModelColumn;
-    protected JMenuItem saveContentMenuItem;
-    protected JMenuItem editContentMenuItem;
-    protected JMenuItem loadContentMenuItem;
-    protected JMenuItem nullContentMenuItem;
+    private static final String EDIT = "edit";
+    
+    private static File lastFile;
+    
+    private Clob currentValue;
+    private JButton button;
+    private JPopupMenu popup;
+    private JTable table;
+    private int currentRow;
+    private int currentColumn;
+    private int currentModelRow;
+    private int currentModelColumn;
+    private JMenuItem saveContentMenuItem;
+    private JMenuItem editContentMenuItem;
+    private JMenuItem loadContentMenuItem;
+    private JMenuItem nullContentMenuItem;
     
     @SuppressWarnings("LeakingThisInConstructor")
     public ClobFieldTableCellEditor() {
@@ -238,10 +241,12 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
         }
         CharsetSelector charset = new CharsetSelector();
         JFileChooser c = new JFileChooser();
+        c.setCurrentDirectory(lastFile);
         c.setAccessory(charset);
         int fileDialogState = c.showSaveDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
+            lastFile = f;
             Reader r;
             Writer w;
             try {
@@ -263,11 +268,13 @@ public class ClobFieldTableCellEditor extends AbstractCellEditor
     private Clob loadLobFromFile() {
         CharsetSelector charset = new CharsetSelector();
         JFileChooser c = new JFileChooser();
+        c.setCurrentDirectory(lastFile);
         c.setAccessory(charset);
         Clob result = null;
         int fileDialogState = c.showOpenDialog(table);
         if (fileDialogState == JFileChooser.APPROVE_OPTION) {
             File f = c.getSelectedFile();
+            lastFile = f;
             Reader r;
             try {
                 result = new FileBackedClob();

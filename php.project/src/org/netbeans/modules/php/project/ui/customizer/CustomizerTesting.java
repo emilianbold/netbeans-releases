@@ -46,7 +46,10 @@ import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +68,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -155,6 +157,13 @@ public class CustomizerTesting extends JPanel {
         GroupLayout.ParallelGroup horizontalGroup = providersPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING);
         GroupLayout.SequentialGroup verticalGroup = providersPanelLayout.createSequentialGroup();
         boolean first = true;
+        final Collator collator = Collator.getInstance();
+        Collections.sort(allTestingProviders, new Comparator<PhpTestingProvider>() {
+            @Override
+            public int compare(PhpTestingProvider provider1, PhpTestingProvider provider2) {
+                return collator.compare(provider1.getDisplayName(), provider2.getDisplayName());
+            }
+        });
         for (PhpTestingProvider testingProvider : allTestingProviders) {
             String identifier = testingProvider.getIdentifier();
             JCheckBox checkBox = new JCheckBox(testingProvider.getDisplayName());
@@ -242,7 +251,7 @@ public class CustomizerTesting extends JPanel {
 
         testDirsLabel = new JLabel();
         testDirsScrollPane = new JScrollPane();
-        testDirsList = new JList();
+        testDirsList = new JList<BasePathSupport.Item>();
         addFolderButton = new JButton();
         removeButton = new JButton();
         moveUpButton = new JButton();
@@ -328,7 +337,7 @@ public class CustomizerTesting extends JPanel {
     private JPanel providersPanel;
     private JButton removeButton;
     private JLabel testDirsLabel;
-    private JList testDirsList;
+    private JList<BasePathSupport.Item> testDirsList;
     private JScrollPane testDirsScrollPane;
     // End of variables declaration//GEN-END:variables
 

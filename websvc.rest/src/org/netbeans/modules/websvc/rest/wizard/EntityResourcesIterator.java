@@ -155,7 +155,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
                 RestUtils.createApplicationConfigClass(restSupport, restAppPack, appClassName);
             }
             RestUtils.disableRestServicesChangeListner(project);
-            generator.generate(pHandle);
+            generator.generate(null);
             pHandle.progress(80);
             restSupport.configure(resourcePackage);
         } catch(Exception iox) {

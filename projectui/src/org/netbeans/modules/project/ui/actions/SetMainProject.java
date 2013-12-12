@@ -198,6 +198,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
         if ( subMenu == null ) {
             subMenu = new JMenu(LBL_SetMainProjectAction_Name());
+            subMenu.getPopupMenu().setLayout(new VerticalGridLayout());
             //ok to have mnenomics here, not shown on mac anyway
             subMenu.setMnemonic(MNE_SetMainProjectAction_Name().charAt(0));
             //#70835: the menu bar holds only subMenu not this action. As this action listens only weakly on OPL, noone holds this action.

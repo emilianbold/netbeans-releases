@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -81,27 +82,28 @@ public class SourcesNodeFactory implements NodeFactory {
         return new SourceChildrenList(prj);
     }
 
-    private static class SourceChildrenList implements NodeList<SourceGroup>, ChangeListener {
+    private static final class SourceChildrenList implements NodeList<SourceGroup>, ChangeListener {
 
         private final PhpProject project;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private final Sources projectSources;
+        private final ChangeListener changeListener;
 
-        public SourceChildrenList(PhpProject project) {
+
+        private SourceChildrenList(PhpProject project) {
             this.project = project;
-        }
-
-        private Sources getSources() {
-            return ProjectUtils.getSources(project);
+            projectSources = ProjectUtils.getSources(project);
+            changeListener = WeakListeners.change(this, projectSources);
         }
 
         @Override
         public void addNotify() {
-            getSources().addChangeListener(this);
+            projectSources.addChangeListener(changeListener);
         }
 
         @Override
         public void removeNotify() {
-            getSources().removeChangeListener(this);
+            projectSources.removeChangeListener(changeListener);
         }
 
         @Override

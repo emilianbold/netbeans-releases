@@ -55,6 +55,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.WrapTokenIdCache;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 import org.netbeans.lib.lexer.token.DefaultToken;
@@ -425,15 +426,16 @@ public class TokenSequenceTest extends NbTestCase {
         Token<?> token = ts.token();
         // Exclude TokenLength since it should be cached - verify later
         assertSame(DefaultToken.class, token.getClass());
+        WrapTokenIdCache<TestTokenId> cache = WrapTokenIdCache.get(TestTokenId.language());
         assertSize("Token instance too big", Collections.singletonList(token), 24,
-                new Object[] { tokenList, TestTokenId.IDENTIFIER });
+                new Object[] { tokenList, TestTokenId.IDENTIFIER, cache.plainWid(TestTokenId.IDENTIFIER) });
 
         // Test TextToken size
         assertTrue(ts.moveNext());
         token = ts.token();
         assertSame(TextToken.class, token.getClass());
         assertSize("Token instance too big", Collections.singletonList(token), 24,
-                new Object[] { tokenList, TestTokenId.PLUS, "+" });
+                new Object[] { tokenList, TestTokenId.PLUS, cache.plainWid(TestTokenId.PLUS), "+" });
 
         // Test DefaultToken size
         assertTrue(ts.moveNext());

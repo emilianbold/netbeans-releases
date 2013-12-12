@@ -113,4 +113,13 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
     public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }
+    
 }

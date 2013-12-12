@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.runconfigs;
 
+import java.io.File;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -94,6 +95,12 @@ public final class RunConfigScript extends BaseRunConfig<RunConfigScript> {
     }
 
     //~ Methods
+
+    @Override
+    public File getIndexFile() {
+        // #237370 - index file can start with "../"
+        return FileUtil.normalizeFile(super.getIndexFile());
+    }
 
     public String getHint() {
         StringBuilder sb = new StringBuilder(100);

@@ -152,6 +152,7 @@ public class PhpUnitLogParserTest extends NbTestCase {
         assertEquals(1, testSuite.getTestCases().size());
 
         TestCaseVo testCase = testSuite.getTestCases().get(0);
+        assertEquals("Calculator2Test", testCase.getClassName());
         assertEquals("testAdd", testCase.getName());
         assertEquals("/home/gapon/NetBeansProjects/PhpProject01/tests/hola/Calculator2Test.php", testCase.getFile());
         assertEquals(43, testCase.getLine());

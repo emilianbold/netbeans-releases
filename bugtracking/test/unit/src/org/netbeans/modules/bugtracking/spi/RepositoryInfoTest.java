@@ -84,7 +84,7 @@ public class RepositoryInfoTest extends NbTestCase {
                 "password".toCharArray(), 
                 "httpPassword".toCharArray());
         
-        assertEquals("id", info.getId());
+        assertEquals("id", info.getID());
         assertEquals("cid", info.getConnectorId()); 
         assertEquals("http://url", info.getUrl());
         assertEquals("displayName", info.getDisplayName());
@@ -133,7 +133,7 @@ public class RepositoryInfoTest extends NbTestCase {
         storedInfo.store(pref, "key");
         RepositoryInfo readInfo = RepositoryInfo.read(pref, "key");
         
-        assertEquals(storedInfo.getId(), readInfo.getId());
+        assertEquals(storedInfo.getID(), readInfo.getID());
         assertEquals(storedInfo.getConnectorId(), readInfo.getConnectorId()); 
         assertEquals(storedInfo.getUrl(), readInfo.getUrl());
         assertEquals(storedInfo.getDisplayName(), readInfo.getDisplayName());

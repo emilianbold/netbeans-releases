@@ -94,8 +94,8 @@ import org.openide.util.NbBundle;
     private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
 
     public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
-            FileObject privProjectStorageDir, FSPath... paths) {
-        super(executionEnvironment, out, err, privProjectStorageDir, paths);
+            FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
+        super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
         this.mapper = RemotePathMap.getPathMap(executionEnvironment);
         this.logger = new RemoteUtil.PrefixedLogger("FtpSyncWorker[" + executionEnvironment + "]"); //NOI18N
         this.filter = new SharabilityFilter();
@@ -154,7 +154,7 @@ import org.openide.util.NbBundle;
     private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException, ConnectionManager.CancellationException {
 
         fileData = FileData.get(privProjectStorageDir, executionEnvironment);
-        fileCollector = new FileCollector(files, logger, mapper, filter, fileData, executionEnvironment, err);
+        fileCollector = new FileCollector(files, buildResults, logger, mapper, filter, fileData, executionEnvironment, err);
 
         uploadCount = 0;
         uploadSize = 0;
@@ -175,9 +175,6 @@ import org.openide.util.NbBundle;
             throw new IOException();
         }
         uploadPlainFiles();
-
-        fileCollector.runNewFilesDiscovery(true);
-        fileCollector.shutDownNewFilesDiscovery();
 
         if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
@@ -333,6 +330,14 @@ import org.openide.util.NbBundle;
 
     @Override
     public void shutdown() {
+        try {
+            fileCollector.runNewFilesDiscovery(true);
+            fileCollector.shutDownNewFilesDiscovery();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InterruptedException | ConnectionManager.CancellationException ex) {
+            // don't report InterruptedException or CancellationException
+        }
     }
 
     @Override

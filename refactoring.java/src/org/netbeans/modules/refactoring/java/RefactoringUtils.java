@@ -79,12 +79,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -1039,6 +1042,16 @@ public class RefactoringUtils {
             }
         }
         return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+    }
+
+    public static boolean isFromEditor(EditorCookie ec) {
+        if (ec != null && NbDocument.findRecentEditorPane(ec) != null) {
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            if (activetc instanceof CloneableEditorSupport.Pane) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private RefactoringUtils() {

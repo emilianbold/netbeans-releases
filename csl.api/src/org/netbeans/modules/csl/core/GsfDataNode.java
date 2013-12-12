@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 
 import javax.swing.Action;
 import javax.swing.JSeparator;
+import org.netbeans.api.editor.mimelookup.MimePath;
 
 import org.openide.ErrorManager;
 import org.openide.actions.OpenAction;
@@ -83,6 +84,27 @@ public class GsfDataNode extends DataNode {
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
+    
+    private void loadActions(List<Action> actions, DataFolder df) throws IOException, ClassNotFoundException {
+        DataObject[] dob = df.getChildren();
+        int i;
+        int k = dob.length;
+
+        for (i = 0; i < k; i++) {
+            InstanceCookie ic = dob[i].getCookie(InstanceCookie.class);
+            if (ic == null) {
+                LOG.log(Level.WARNING, "Not an action instance, or broken action: {0}", dob[i].getPrimaryFile());
+                continue;
+            }
+            Class clazz = ic.instanceClass();
+
+            if (JSeparator.class.isAssignableFrom(clazz)) {
+                actions.add(null);
+            } else {
+                actions.add((Action)ic.instanceCreate());
+            }
+        }
+    }
 
     /** Get actions for this data object.
      * (Copied from LanguagesDataNode in languages/engine)
@@ -101,23 +123,15 @@ public class GsfDataNode extends DataNode {
 
                 if (fo != null) {
                     DataFolder df = DataFolder.findFolder(fo);
-                    DataObject[] dob = df.getChildren();
-                    int i;
-                    int k = dob.length;
-
-                    for (i = 0; i < k; i++) {
-                        InstanceCookie ic = dob[i].getCookie(InstanceCookie.class);
-                        if (ic == null) {
-                            LOG.log(Level.WARNING, "Not an action instance, or broken action: {0}", dob[i].getPrimaryFile());
-                            continue;
-                        }
-                        Class clazz = ic.instanceClass();
-
-                        if (JSeparator.class.isAssignableFrom(clazz)) {
-                            actions.add(null);
-                        } else {
-                            actions.add((Action)ic.instanceCreate());
-                        }
+                    loadActions(actions, df);
+                }
+                MimePath mp = MimePath.get(mimeType);
+                String s = mp.getInheritedType();
+                if (s != null && !s.isEmpty()) {
+                    fo = FileUtil.getConfigFile("Loaders/" + s + "/Actions"); // NOI18N
+                    if (fo != null) {
+                        DataFolder df = DataFolder.findFolder(fo);
+                        loadActions(actions, df);
                     }
                 }
             } catch (ClassNotFoundException ex) {

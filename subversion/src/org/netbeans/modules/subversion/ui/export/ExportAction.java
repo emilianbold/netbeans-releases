@@ -85,7 +85,7 @@ public class ExportAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 && getCachedContext(nodes).getRoots().size() > 0;
+        return nodes != null && nodes.length == 1 && isCacheReady() && getCachedContext(nodes).getRoots().size() > 0;
     }   
 
     @Override    

@@ -206,12 +206,13 @@ public final class CoreBridgeImpl extends CoreBridge {
                 NodeOp.registerPropertyEditors();
             }
         });
+
         ProxySelector selector = Lookup.getDefault().lookup(ProxySelector.class);
         if (selector != null) {
             // install java.net.ProxySelector
             ProxySelector.setDefault(selector);
         }
-        
+
         editorsRegistered = true;
     }
 

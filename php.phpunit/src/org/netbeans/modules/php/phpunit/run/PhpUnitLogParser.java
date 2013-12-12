@@ -179,6 +179,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
     private void processTestCase(Attributes attributes) {
         assert testCase == null;
         testCase = new TestCaseVo(
+                getClass(attributes),
                 getName(attributes),
                 getFile(attributes),
                 getLine(attributes),
@@ -258,6 +259,10 @@ public final class PhpUnitLogParser extends DefaultHandler {
             // ignored
         }
         return l;
+    }
+
+    private String getClass(Attributes attributes) {
+        return attributes.getValue("class"); // NOI18N
     }
 
     private String getName(Attributes attributes) {

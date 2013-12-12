@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -95,6 +96,10 @@ import org.openide.util.Exceptions;
     @Override
     public File createFileObject(String path) {
         RemoteLogger.getInstance().log(Level.FINEST, "RFSV: creating file for {0}", path);
+        if (!path.isEmpty() && path.charAt(0) != '/') {
+            return factory.create(env, path);
+        }
+        
         FileObject fo = fs.findResource(path);
         if (fo == null || !fo.isValid()) {
             RemoteLogger.getInstance().log(Level.FINEST, "Null file object for {0}", path);

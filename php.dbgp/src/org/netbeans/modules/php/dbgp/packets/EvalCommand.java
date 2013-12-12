@@ -48,60 +48,50 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
 /**
  * @author ads
  *
  */
 public class EvalCommand extends DbgpCommand {
+    static final String EVAL = "eval"; // NOI18N
+    private String myData;
+    private List<PropertyChangeListener> myListeners;
 
-    static final String EVAL = "eval";      // NOI18N
-
-    public EvalCommand( String transactionId ) {
-        this( EVAL, transactionId);
+    public EvalCommand(String transactionId) {
+        this(EVAL, transactionId);
         myListeners = new CopyOnWriteArrayList<>();
     }
 
-    protected EvalCommand( String command , String transactionId  ){
-        super( command , transactionId );
+    protected EvalCommand(String command, String transactionId) {
+        super(command, transactionId);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
 
-    public void setData( String data ){
+    public void setData(String data) {
         myData = data;
     }
 
-    public void addPropertyChangeListener( PropertyChangeListener listener ){
-        myListeners.add( listener );
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        myListeners.add(listener);
     }
 
-    public void removePropertyChangeListener( PropertyChangeListener listener ){
-        myListeners.remove( listener) ;
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        myListeners.remove(listener);
     }
 
-    void firePropertyChangeEvent( String propName , Property property ){
-        for( PropertyChangeListener listener : myListeners ){
-            listener.propertyChange( new PropertyChangeEvent( this , propName,
-                    null,property ) );
+    void firePropertyChangeEvent(String propName, Property property) {
+        for (PropertyChangeListener listener : myListeners) {
+            listener.propertyChange(new PropertyChangeEvent(this, propName, null, property));
         }
     }
 
     @Override
-    protected String getData()
-    {
+    protected String getData() {
         return myData;
     }
-
-    private String myData;
-
-    private List<PropertyChangeListener> myListeners ;
 
 }

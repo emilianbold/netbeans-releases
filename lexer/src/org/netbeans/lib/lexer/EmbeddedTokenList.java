@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.lib.editor.util.FlyOffsetGapList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
 import org.netbeans.lib.lexer.inc.TokenListChange;
@@ -161,6 +162,19 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
         initLAState();
     }
 
+    void reinit(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
+        this.branchToken = branchToken;
+        this.branchTokenStartOffset = branchTokenStartOffset;
+        this.rootModCount = modCount;
+    }
+
+    public void reinitChain(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
+        reinit(branchToken, branchTokenStartOffset, modCount);
+        if (nextEmbeddedTokenList != null) {
+            nextEmbeddedTokenList.reinitChain(branchToken, branchTokenStartOffset, modCount);
+        }
+    }
+
     public void initAllTokens() {
         assert (!embedding.joinSections()) : "Cannot init all tokens since ETL joins sections\n" + // NOI18N
                 this + '\n' + dumpRelatedTLL();
@@ -225,6 +239,11 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
     
     public void setNextEmbeddedTokenList(EmbeddedTokenList<T,?> nextEmbeddedTokenList) {
         this.nextEmbeddedTokenList = nextEmbeddedTokenList;
+    }
+
+    @Override
+    public Language<ET> language() {
+        return embedding.language(); // Same as languagePath.innerLanguage()
     }
     
     @Override
@@ -387,19 +406,6 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
         if (nextEmbeddedTokenList != null) {
             nextEmbeddedTokenList.markRemoved(branchTokenStartOffset);
         }
-    }
-
-    public void reinitChain(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
-        reinit(branchToken, branchTokenStartOffset, modCount);
-        if (nextEmbeddedTokenList != null) {
-            nextEmbeddedTokenList.reinitChain(branchToken, branchTokenStartOffset, modCount);
-        }
-    }
-
-    void reinit(AbstractToken<T> branchToken, int branchTokenStartOffset, int modCount) {
-        this.branchToken = branchToken;
-        this.branchTokenStartOffset = branchTokenStartOffset;
-        this.rootModCount = modCount;
     }
 
     @Override
@@ -636,10 +642,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<ET>> implements MutableTokenList<ET>, 
         
     }
 
+    @Override
     public StringBuilder dumpInfo(StringBuilder sb) {
-        if (sb == null) {
-            sb = new StringBuilder(50);
-        }
         if (isRemoved()) {
             sb.append("REMOVED-");
         }

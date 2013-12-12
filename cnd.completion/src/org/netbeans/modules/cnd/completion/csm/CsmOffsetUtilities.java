@@ -205,13 +205,7 @@ public class CsmOffsetUtilities {
         boolean inScope = false;
         if (fun != null) {
             inScope = true;
-            // in function, but check that not in return type
-            // check if offset in return value
-            CsmType retType = fun.getReturnType();
             CsmFunctionParameterList paramList = fun.getParameterList();
-            if (CsmOffsetUtilities.isInObject(retType, offset)) {
-                return paramList.getEndOffset() <= retType.getStartOffset();
-            }
             // check if offset is before parameters
             if (paramList != null) {
                 if (CsmOffsetUtilities.isInObject(paramList, offset)) {
@@ -223,7 +217,11 @@ public class CsmOffsetUtilities {
                     if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
                         return false;
                     }
-                    return true;
+                    // in function, but check that not in return type
+                    // check if offset in return value
+                    CsmType retType = fun.getReturnType();            
+                    boolean isRetTypeDecltype = CsmContextUtilities.checkDecltype(retType); // NOI18N                    
+                    return isRetTypeDecltype || !CsmOffsetUtilities.isInObject(retType, offset);
                 }
             }
             // check initializer list for constructors

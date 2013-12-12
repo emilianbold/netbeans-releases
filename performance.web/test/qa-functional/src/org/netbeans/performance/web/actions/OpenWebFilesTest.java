@@ -41,59 +41,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.actions;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.setup.WebSetup;
 
 /**
  * Test of opening files.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class OpenWebFilesTest extends PerformanceTestCase {
-    
-    /** Node to be opened/edited */
-    public static Node openNode ;
-    
-    /** Folder with data */
+
+    /**
+     * Node to be opened/edited
+     */
+    public static Node openNode;
+
+    /**
+     * Folder with data
+     */
     public static String fileProject;
- 
-    /** Folder with data  */
+
+    /**
+     * Folder with data
+     */
     public static String fileFolder;
-    
-    /** Name of file to open */
+
+    /**
+     * Name of file to open
+     */
     public static String fileName;
-    
-    /** Menu item name that opens the editor */
+
+    /**
+     * Menu item name that opens the editor
+     */
     public static String menuItem;
-    
+
     protected static String OPEN = "Open"; //NOI18N
-    
+
     protected static String EDIT = "Edit"; //NOI18N
-    
+
     protected static String WEB_PAGES = "Web Pages"; //NOI18N
-    
- 
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      */
     public OpenWebFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
+
     /**
      * Creates a new instance of OpenFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
@@ -102,24 +113,23 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebSetup.class)
-             .addTest(OpenWebFilesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(WebSetup.class)
+                .addTest(OpenWebFilesTest.class)
+                .suite();
     }
 
-    public void testOpeningWebXmlFile(){
+    public void testOpeningWebXmlFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
-        fileFolder = "WEB-INF"; 
+        fileFolder = "WEB-INF";
         fileName = "web.xml";
         menuItem = EDIT;
         doMeasurement();
     }
 
-    public void testOpeningJSPFile(){
+    public void testOpeningJSPFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -128,7 +138,7 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testOpeningBigJSPFile(){
+    public void testOpeningBigJSPFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -136,8 +146,8 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         menuItem = OPEN;
         doMeasurement();
     }
-    
-    public void testOpeningHTMLFile(){
+
+    public void testOpeningHTMLFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
         fileFolder = "";
@@ -146,67 +156,70 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testOpeningTagFile(){
+    public void testOpeningTagFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
-        fileFolder = "WEB-INF|tags"; 
+        fileFolder = "WEB-INF|tags";
         fileName = "mytag.tag";
         menuItem = OPEN;
         doMeasurement();
     }
 
-    public void testOpeningTldFile(){
+    public void testOpeningTldFile() {
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
-        fileFolder = "WEB-INF"; 
+        fileFolder = "WEB-INF";
         fileName = "MyTLD.tld";
         menuItem = OPEN;
         doMeasurement();
     }
-    
-    public void initialize(){
+
+    @Override
+    public void initialize() {
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         addEditorPhaseHandler();
         disableEditorCaretBlinking();
     }
 
-    public void shutdown(){
+    @Override
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
         removeEditorPhaseHandler();
-        
+
     }
-    
-    public void prepare(){
-        System.out.println("PREPARE: "+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
-        this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
-        
-        if (this.openNode == null) {
-            fail ("Cannot find node ["+WEB_PAGES  + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
+
+    @Override
+    public void prepare() {
+        System.out.println("PREPARE: " + WEB_PAGES + (fileFolder.equals("") ? "" : "|") + fileFolder + '|' + fileName);
+        openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject), WEB_PAGES + (fileFolder.equals("") ? "" : "|") + fileFolder + '|' + fileName);
+
+        if (openNode == null) {
+            fail("Cannot find node [" + WEB_PAGES + (fileFolder.equals("") ? "" : "|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
         }
-        log("========== Open file path ="+this.openNode.getPath());
+        log("========== Open file path =" + openNode.getPath());
     }
-    
-    public ComponentOperator open(){
-        JPopupMenuOperator popup =  this.openNode.callPopup();
+
+    @Override
+    public ComponentOperator open() {
+        JPopupMenuOperator popup = openNode.callPopup();
         if (popup == null) {
-            fail ("Cannot get context menu for node ["+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
-        }
-        log("------------------------- after popup invocation ------------");
-        try {
-            popup.pushMenu(this.menuItem);
-        }
-        catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
-            fail ("Cannot push menu item "+this.menuItem+" of node ["+WEB_PAGES  + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
+            fail("Cannot get context menu for node [" + WEB_PAGES + (fileFolder.equals("") ? "" : "|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
+        } else {
+            log("------------------------- after popup invocation ------------");
+            try {
+                popup.pushMenu(menuItem);
+            } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
+                fail("Cannot push menu item " + menuItem + " of node [" + WEB_PAGES + (fileFolder.equals("") ? "" : "|") + fileFolder + '|' + fileName + "] in project [" + fileProject + "]");
+            }
         }
         log("------------------------- after open ------------");
-
         return null;
-
     }
-    
-    public void close(){
+
+    @Override
+    public void close() {
         new EditorOperator(fileName).closeDiscard();
     }
 }

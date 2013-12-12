@@ -147,9 +147,13 @@ public abstract class ProjectHudsonProvider {
      */
     public static final class Association {
 
+        private static final Pattern URL_PATTERN = Pattern.compile(
+                "(https?://.+?/)(?:view/([^/]+)/)?((?:job/(?:[^/]+)/)*)");//NOI18N
+
         private final String jobURL;
         /** Server URL (first), sequence of folders, job name (last). */
         private final String[] jobPath;
+        private final String viewName;
 
         /**
          * Creates an association.
@@ -170,6 +174,7 @@ public abstract class ProjectHudsonProvider {
             }
             this.jobURL = getStandardJobUrl(serverURL, jobName);
             this.jobPath = new String[]{serverURL, jobName};
+            this.viewName = null;
         }
 
         private static String getStandardJobUrl(String serverURL, String jobName) {
@@ -181,7 +186,7 @@ public abstract class ProjectHudsonProvider {
         /**
          * Creates an association.
          *
-         * @param job URL
+         * @param jobURL Hudson Job (or View) URL.
          * @throws IllegalArgumentException if parameter has invalid syntax
          * @since hudson/1.32
          */
@@ -191,36 +196,43 @@ public abstract class ProjectHudsonProvider {
                 throw new IllegalArgumentException(jobURL + " must end in a slash"); // NOI18N
             }
             this.jobURL = jobURL;
-            this.jobPath = extractJobPath(jobURL);
-        }
-
-        private static String[] extractJobPath(String jobURL) throws IllegalArgumentException {
-            Matcher m = Pattern.compile("(https?://.+?/)((?:job/(?:[^/]+)/)*)").matcher(jobURL); // NOI18N
+            Matcher m = URL_PATTERN.matcher(jobURL);
             if (!m.matches()) {
                 throw new IllegalArgumentException("Cannot extract job path: " + jobURL); //NOI18N
+            }
+
+            String rawViewName = m.group(2);
+            this.viewName = rawViewName == null || rawViewName.isEmpty()
+                    ? null
+                    : Utilities.uriDecode(rawViewName);
+
+            String rawJobPath = m.group(3);
+            this.jobPath = extractJobPath(m.group(1), rawJobPath);
+        }
+
+        private static String[] extractJobPath(String rootURL, String rawPath)
+                throws IllegalArgumentException {
+            if (rawPath == null || rawPath.isEmpty()) {
+                return new String[]{rootURL};
             } else {
-                String rawPath = m.group(2);
-                if (rawPath == null || rawPath.isEmpty()) {
-                    return new String[]{m.group(1)};
-                } else {
-                    String[] elements = rawPath.split("/");
-                    assert elements.length > 0 && (elements.length % 2) == 0;
-                    String[] result = new String[(elements.length / 2) + 1];
-                    result[0] = m.group(1); // server URL
-                    for (int i = 0; i < elements.length; i++) {
-                        String element = elements[i];
-                        if (i % 2 == 0) {
-                            assert "job".equals(element);
-                        } else {
-                            String decoded = Utilities.uriDecode(element);
-                            if (decoded.trim().isEmpty()) {
-                                throw new IllegalArgumentException("Empty job name: " + jobURL); //NOI18N
-                            }
-                            result[(i / 2) + 1] = decoded;
+                String[] elements = rawPath.split("/");                 //NOI18N
+                assert elements.length > 0 && (elements.length % 2) == 0;
+                String[] result = new String[(elements.length / 2) + 1];
+                result[0] = rootURL; // server URL
+                for (int i = 0; i < elements.length; i++) {
+                    String element = elements[i];
+                    if (i % 2 == 0) {
+                        assert "job".equals(element);                   //NOI18N
+                    } else {
+                        String decoded = Utilities.uriDecode(element);
+                        if (decoded.trim().isEmpty()) {
+                            throw new IllegalArgumentException(
+                                    "Empty job name: " + rawPath);      //NOI18N
                         }
+                        result[(i / 2) + 1] = decoded;
                     }
-                    return result;
                 }
+                return result;
             }
         }
 
@@ -258,6 +270,15 @@ public abstract class ProjectHudsonProvider {
             } else {
                 return null;
             }
+        }
+
+        /**
+         * Return view name if it was specified in the URL. Can be null.
+         *
+         * @return The view name if available, null otherwise.
+         */
+        public String getViewName() {
+            return this.viewName;
         }
 
         /**

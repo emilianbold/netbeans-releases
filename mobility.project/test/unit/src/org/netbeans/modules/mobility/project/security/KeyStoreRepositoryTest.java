@@ -64,6 +64,7 @@ import junit.framework.TestSuite;
 import org.netbeans.core.startup.NbRepository;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;

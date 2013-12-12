@@ -73,7 +73,7 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
     }
 
     @Override
-    public void remove (LocalRepository r) {
+    public void removed (LocalRepository r) {
         throw new UnsupportedOperationException("Not supported for Local Tasks");
     }
 

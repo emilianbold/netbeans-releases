@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 
@@ -57,7 +57,7 @@ import org.netbeans.modules.team.server.ui.spi.QueryHandle;
  *
  * @author Tomas Stupka
  */
-class TeamProjectImpl extends org.netbeans.modules.bugtracking.team.spi.TeamProject {
+class TeamProjectImpl extends org.netbeans.modules.team.spi.TeamProject {
 
     public static String getProjectKey (ODCSProject project) {
         return project.getServer().getUrl().toString() + ":" + project.getName();
@@ -112,15 +112,19 @@ class TeamProjectImpl extends org.netbeans.modules.bugtracking.team.spi.TeamProj
 
     @Override
     public String getName() {
-        return project.getName();
+        return project.getId();
     }
 
     @Override
     public String getDisplayName() {
-        return getName();
+        return project.getName();
     }
 
     @Override
+    public String getHost() {
+        return project.getServer().getUrl().toString();
+    }
+    
     public void fireQueryActivated(Query query) {
         ODCSHandler handler = Support.getInstance().getODCSHandler(project.getServer());
         if(handler == null) {

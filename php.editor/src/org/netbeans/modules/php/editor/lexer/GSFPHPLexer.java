@@ -59,9 +59,8 @@ import org.openide.filesystems.FileObject;
  * @author Petr Pisl, Marek Fukala
  */
 public final class GSFPHPLexer implements Lexer<PHPTokenId> {
-
     private final PHP5ColoringLexer scanner;
-    private TokenFactory<PHPTokenId> tokenFactory;
+    private final TokenFactory<PHPTokenId> tokenFactory;
 
     private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean shortTag, boolean aspTag, boolean inPHP) {
         scanner = new PHP5ColoringLexer(info, shortTag, aspTag, inPHP);

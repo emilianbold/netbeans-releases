@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -106,6 +107,10 @@ public abstract class CsmErrorProvider extends NamedOption {
         void done();
     }
     
+    public enum EditorEvent {
+        DocumentBased,
+        FileBased
+    }
     
     public interface RequestValidator {
 
@@ -146,8 +151,14 @@ public abstract class CsmErrorProvider extends NamedOption {
     }
     
     protected abstract void doGetErrors(Request request, Response response);
+    
+    public abstract Set<EditorEvent> supportedEvents();
 
     public static boolean disableAsLibraryHeaderFile(CsmFile file) {
+        // partially included files are excluded
+        if (CsmErrorProvider.isPartial(file, new HashSet<CsmFile>())) {
+            return true;
+        }
         // in release mode we skip library files, because it's very irritating
         // for user to see errors in system libraries
         return CndUtils.isReleaseMode() && (file != null) && file.isHeaderFile() && 
@@ -184,11 +195,9 @@ public abstract class CsmErrorProvider extends NamedOption {
 
         @Override
         public void doGetErrors(Request request, Response response) {
-            if (! isPartial(request.getFile(), new HashSet<CsmFile>())) {
-                Thread currentThread = Thread.currentThread();
-                currentThread.setName("Provider "+getName()+" prosess "+request.getFile().getAbsolutePath()); // NOI18N
-                getErrorsImpl(request, response);
-            }
+            Thread currentThread = Thread.currentThread();
+            currentThread.setName("Provider "+getName()+" prosess "+request.getFile().getAbsolutePath()); // NOI18N
+            getErrorsImpl(request, response);
         }
 
         @Override
@@ -217,6 +226,11 @@ public abstract class CsmErrorProvider extends NamedOption {
         @Override
         public String getName() {
             return "synchronous-merger"; // NOI18N
+        }
+
+        @Override
+        public Set<EditorEvent> supportedEvents() {
+            return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
         }
     }
 
@@ -256,20 +270,31 @@ public abstract class CsmErrorProvider extends NamedOption {
         public String getName() {
             return "asynchronous-merger"; // NOI18N
         }
+
+        @Override
+        public Set<EditorEvent> supportedEvents() {
+            return EnumSet.<EditorEvent>of(EditorEvent.DocumentBased, EditorEvent.FileBased);
+        }
     }
     
     /** default instance */
-    private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
-    
-    public static synchronized CsmErrorProvider getDefault() {
-        return DEFAULT;
+    private static final CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
+
+    // for testing only
+    public static final void getAllErrors(Request request, Response response) {
+        DEFAULT.getErrors(request, response);
     }
 
+    // for testing only
+    public static CsmErrorProvider getDefault() {
+        return DEFAULT;
+    }    
+    
     /**
      * Determines whether this file contains part of some declaration,
      * i.e. whether it was included in the middle of some other declaration
      */
-    private static boolean isPartial(CsmFile isIncluded, Set<CsmFile> antiLoop) {
+    public static boolean isPartial(CsmFile isIncluded, Set<CsmFile> antiLoop) {
         if (antiLoop.contains(isIncluded)) {
             return false;
         }

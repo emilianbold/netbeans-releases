@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.repository.util;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -139,7 +138,6 @@ import java.util.TreeMap;
  * @see Collection
  * @see Map
  * @see TreeMap
- * @see Hashtable
  * @since 1.2
  */
 public class LongHashMap<K> //extends AbstractMap<K>
@@ -198,6 +196,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
      * @throws IllegalArgumentException if the initial capacity is negative
      *         or the load factor is nonpositive.
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public LongHashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal initial capacity: " + // NOI18N
@@ -240,6 +239,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
      * Constructs an empty <tt>LongHashMap</tt> with the default initial capacity
      * (16) and the default load factor (0.75).
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public LongHashMap() {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         threshold = (int) (DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
@@ -366,7 +366,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
         Object k = maskNull(key);
         int hash = k.hashCode();
         int i = indexFor(hash, table.length);
-        Entry e = table[i];
+        Entry<K> e = table[i];
         while (e != null) {
             if (e.key.hashCode() == hash && eq(k, e.key)) {
                 return true;
@@ -484,6 +484,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
      *        capacity is MAXIMUM_CAPACITY (in which case value
      *        is irrelevant).
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void resize(int newCapacity) {
         Entry<K>[] oldTable = table;
         int oldCapacity = oldTable.length;
@@ -616,9 +617,9 @@ public class LongHashMap<K> //extends AbstractMap<K>
             return containsNullValue();
         }
 
-        Entry[] tab = table;
+        Entry<K>[] tab = table;
         for (int i = 0; i < tab.length; i++) {
-            for (Entry e = tab[i]; e != null; e = e.next) {
+            for (Entry<K> e = tab[i]; e != null; e = e.next) {
                 if (value.equals(e.value)) {
                     return true;
                 }
@@ -631,9 +632,9 @@ public class LongHashMap<K> //extends AbstractMap<K>
      * Special-case code for containsValue with null argument
      **/
     private boolean containsNullValue() {
-        Entry[] tab = table;
+        Entry<K>[] tab = table;
         for (int i = 0; i < tab.length; i++) {
-            for (Entry e = tab[i]; e != null; e = e.next) {
+            for (Entry<K> e = tab[i]; e != null; e = e.next) {
                 if (e.value == NO_VALUE) {
                     return true;
                 }
@@ -672,6 +673,7 @@ public class LongHashMap<K> //extends AbstractMap<K>
         }
 
         @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
         public boolean equals(Object o) {
             if (!(o instanceof Entry)) {
                 return false;

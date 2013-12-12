@@ -146,10 +146,18 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      */
     private Map<LanguagePath,TokenListList<?>> path2tokenListList;
     
-    private Set<Language<?>> rootChildrenLanguages;
+    private Object rootChildrenLanguages; // null or language or Language[]
     
     private int maxTokenListListPathSize;
     
+    /**
+     * Actively hold wrap tokenid caches for the lifetime of this token hierarchy.
+     */
+    private WrapTokenIdCache<?>[] wrapTokenIdCaches;
+
+    private Language<?> lastQueryLanguage;
+    
+    private WrapTokenIdCache<?> lastQueryCache;
 
     /**
      * Constructor for reader as input.
@@ -242,7 +250,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         // Create listener list even for non-mutable hierarchies as there may be
         // custom embeddings created that need to be notified
         listenerList = new EventListenerList();
-        rootChildrenLanguages = Collections.emptySet();
+        rootChildrenLanguages = null;
     }
     
     public TokenHierarchy<I> tokenHierarchy() {
@@ -344,7 +352,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 
     private void invalidatePath2TokenListList() {
         path2tokenListList = null; // Drop all token list lists
-        rootChildrenLanguages = Collections.emptySet();
+        rootChildrenLanguages = null;
         maxTokenListListPathSize = 0;
     }
 
@@ -423,7 +431,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         ensureReadLocked();
         synchronized (rootTokenList) {
             TokenSequence<T> ts;
-            if (isActiveImpl() && (language == null || rootTokenList.languagePath().topLanguage() == language)) {
+            if (isActiveImpl() && (language == null || rootTokenList.language() == language)) {
                 ts = LexerApiPackageAccessor.get().createTokenSequence(rootTokenList);
             } else {
                 ts = null;
@@ -483,45 +491,38 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
      * If the list needs to be created or it was non-mandatory.
      */
     public <ET extends TokenId> TokenListList<ET> tokenListList(LanguagePath languagePath) {
-        synchronized (rootTokenList) {
-            assert isActiveNoInit() : "Token hierarchy expected to be active.";
-            @SuppressWarnings("unchecked")
-            TokenListList<ET> tll = (TokenListList<ET>) path2tokenListList().get(languagePath);
-            if (tll == null) {
-                tll = new TokenListList<ET>(rootTokenList, languagePath);
-                path2tokenListList.put(languagePath, tll);
-                maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
-                // Also create parent token list lists if they don't exist yet
-                Language<?> innerLanguage = languagePath.innerLanguage();
-                if (languagePath.size() >= 3) { // Top-level token list list not maintained
-                    tokenListList(languagePath.parent()).notifyChildAdded(innerLanguage);
-                } else {
-                    assert (languagePath.size() == 2);
-                    assert (languagePath.parent() == rootTokenList.languagePath());
-                    if (rootChildrenLanguages.size() == 0)
-                        rootChildrenLanguages = new HashSet<Language<?>>();
-                    boolean added = rootChildrenLanguages.add(innerLanguage);
-                    assert (added) : "Language " + innerLanguage + " already contained: " + rootChildrenLanguages; // NOI18N
-                }
+        assert isActiveNoInit() : "Token hierarchy expected to be active.";
+        @SuppressWarnings("unchecked")
+        TokenListList<ET> tll = (TokenListList<ET>) path2tokenListList().get(languagePath);
+        if (tll == null) {
+            tll = new TokenListList<ET>(rootTokenList, languagePath);
+            path2tokenListList.put(languagePath, tll);
+            maxTokenListListPathSize = Math.max(languagePath.size(), maxTokenListListPathSize);
+            // Also create parent token list lists if they don't exist yet
+            Language<?> innerLanguage = languagePath.innerLanguage();
+            if (languagePath.size() >= 3) { // Top-level token list list not maintained
+                tokenListList(languagePath.parent()).notifyChildAdded(innerLanguage);
+            } else {
+                assert (languagePath.size() == 2);
+                assert (languagePath.parent() == rootTokenList.languagePath());
+                rootChildrenLanguages = LexerUtilsConstants.languageOrArrayAdd(rootChildrenLanguages, innerLanguage);
             }
-            return tll;
         }
+        return tll;
     }
     
     /**
      * Get existing token list list or null if the TLL does not exist yet.
      */
     public <ET extends TokenId> TokenListList<ET> existingTokenListList(LanguagePath languagePath) {
-        synchronized (rootTokenList()) {
-            @SuppressWarnings("unchecked")
-            TokenListList<ET> tll = (path2tokenListList != null) 
-                    ? (TokenListList<ET>) path2tokenListList.get(languagePath)
-                    : null;
-            return tll;
-        }
+        @SuppressWarnings("unchecked")
+        TokenListList<ET> tll = (path2tokenListList != null) 
+                ? (TokenListList<ET>) path2tokenListList.get(languagePath)
+                : null;
+        return tll;
     }
 
-    public Set<Language<?>> rootChildrenLanguages() { // Not used from API
+    public Object rootChildrenLanguages() { // Not used from API
         return rootChildrenLanguages;
     }
 
@@ -615,8 +616,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             if (lps == null) {
                 if (!isActiveImpl())
                     return Collections.emptySet();
-                LanguagePath lp = rootTokenList.languagePath();
-                Language<?> lang = lp.topLanguage();
+                Language<?> lang = rootTokenList.language();
                 LanguageOperation<?> langOp = LexerApiPackageAccessor.get().languageOperation(lang);
                 @SuppressWarnings("unchecked")
                 Set<LanguagePath> clps = (Set<LanguagePath>)
@@ -643,7 +643,36 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             // Fire the token hierarchy change event
         }
     }
+
+    public <T extends TokenId> WrapTokenIdCache<T> getWrapTokenIdCache(Language<T> language) {
+        // Since syncing on root TL there should be no need for additional synching
+        if (language == lastQueryLanguage) {
+            @SuppressWarnings("unchecked")
+            WrapTokenIdCache<T> cache = (WrapTokenIdCache<T>) lastQueryCache;
+            return cache;
+        } else {
+            int lid = LexerApiPackageAccessor.get().languageId(language);
+            if (wrapTokenIdCaches == null || lid >= wrapTokenIdCaches.length) {
+                WrapTokenIdCache<?>[] n = (WrapTokenIdCache<?>[]) new WrapTokenIdCache<?>[lid + 1];
+                if (wrapTokenIdCaches != null) {
+                    System.arraycopy(wrapTokenIdCaches, 0, n, 0, wrapTokenIdCaches.length);
+                }
+                wrapTokenIdCaches = n;
+            }
+            @SuppressWarnings("unchecked")
+            WrapTokenIdCache<T> cache = (WrapTokenIdCache<T>) wrapTokenIdCaches[lid];
+            if (cache == null) {
+                cache = WrapTokenIdCache.get(language);
+                wrapTokenIdCaches[lid] = cache;
+            }
             
+            lastQueryLanguage = language;
+            lastQueryCache = cache;
+            return cache;
+        }
+    }
+
+    
 //    public boolean isSnapshot() {
 //        return (liveTokenHierarchyOperation != null);
 //    }

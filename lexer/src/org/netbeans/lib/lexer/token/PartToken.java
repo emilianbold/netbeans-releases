@@ -47,6 +47,7 @@ package org.netbeans.lib.lexer.token;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenOrEmbedding;
+import org.netbeans.lib.lexer.WrapTokenId;
 import org.netbeans.spi.lexer.TokenPropertyProvider;
 
 /**
@@ -64,10 +65,10 @@ public final class PartToken<T extends TokenId> extends PropertyToken<T> {
     
     private final int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
 
-    public PartToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
+    public PartToken(WrapTokenId<T> wid, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
             TokenOrEmbedding<T> joinToken, int partTokenIndex, int partTextOffset
     ) {
-        super(id, length, propertyProvider, partType);
+        super(wid, length, propertyProvider, partType);
         setJoinTokenOrEmbedding(joinToken);
         this.partTokenIndex = partTokenIndex;
         this.partTextOffset = partTextOffset;

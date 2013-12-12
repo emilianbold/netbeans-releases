@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.PortCollection;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.WizardDescriptor;
@@ -76,7 +77,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     private ServerWizardIterator wizardIterator;
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    private transient List<ChangeListener> listeners
+            = new CopyOnWriteArrayList<>();
     
     /**
      * 
@@ -315,19 +317,48 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     @Override
     public void storeSettings(Object settings) {
     }
-    
+
+    /**
+     * Domain attributes should be checked before finishing this wizard.
+     * <p/>
+     * @return Always returns <code>false</code>.
+     */
     @Override
     public boolean isFinishPanel() {
-        return wizardIterator.getHttpPort() != -1;
+        return false;
     }
     
-    static boolean isRegisterableDomain(File domainDir) {
+    /**
+     * Validates if <code>domainDir</code> contains valid GlassFish domain.
+     * <p/>
+     * @param domainDir      GlassFish domain directory to be validated.
+     * @param portCollection Information from <code>domain.xml</code>
+     *                       configuration file is stored here when
+     *                       <code>domainDir</code> contains valid GlassFish
+     *                       domain.
+     * @return Value of <code>true</code> when <code>domainDir</code> contains
+     *         valid GlassFish domain or <code>false</code> otherwise.
+     */
+    static boolean isRegisterableDomain(final File domainDir,
+            final PortCollection portCollection) {
         File testFile = new File(domainDir, "logs"); // NOI18N
         if (!testFile.exists()) {
             testFile = domainDir;
         }
         return Utils.canWrite(testFile) &&
-                org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDir, null);
+                org.netbeans.modules.glassfish.common.utils.Util
+                .readServerConfiguration(domainDir, portCollection);
+    }
+
+    /**
+     * Validates if <code>domainDir</code> contains valid GlassFish domain.
+     * <p/>
+     * @param domainDir GlassFish domain directory to be validated.
+     * @return Value of <code>true</code> when <code>domainDir</code> contains
+     *         valid GlassFish domain or <code>false</code> otherwise.
+     */
+    static boolean isRegisterableDomain(File domainDir) {
+        return isRegisterableDomain(domainDir, null);
     }
     
     private File getGlassfishRoot(File installDir) {

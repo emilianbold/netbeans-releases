@@ -155,6 +155,7 @@ public interface VCSHistoryProvider {
             assert files != null && files.length > 0 : "a history entry must have at least one file"; // NOI18N
             assert revision != null && revision != null : "a history entry must have a revision";     // NOI18N
             assert dateTime != null : "a history entry must have a date";                             // NOI18N
+            assert message != null : "a history entry must have a message, at least empty";           // NOI18N
             
             this.files = files;
             this.dateTime = dateTime;

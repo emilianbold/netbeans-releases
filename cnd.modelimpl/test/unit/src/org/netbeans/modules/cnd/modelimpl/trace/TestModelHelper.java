@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.indexing.impl.TextIndexStorageManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
@@ -126,6 +127,7 @@ public final class TestModelHelper {
     public void shutdown(boolean clearCache) {
         synchronized (LOCK) {
             traceModel.shutdown(clearCache);
+            TextIndexStorageManager.shutdown();
         }
     }
 

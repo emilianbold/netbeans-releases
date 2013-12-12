@@ -46,6 +46,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.openide.util.Lookup;
@@ -69,7 +70,15 @@ public abstract class CsmParserProvider {
             public String getLanguage() {
                 return Utils.getLanguage(file.getFileType(), file.getAbsolutePath().toString());
             }
-            
+
+            @Override
+            public String getLanguageFlavor() {
+                if (file instanceof FileImpl) {
+                    return ((FileImpl)file).getFileLanguageFlavor();
+                }
+                return APTLanguageSupport.FLAVOR_UNKNOWN;
+            }
+
         });
     }
 
@@ -88,6 +97,8 @@ public abstract class CsmParserProvider {
         CsmFile getMainFile();
         
         String getLanguage();
+        
+        String getLanguageFlavor();
         
     }
     

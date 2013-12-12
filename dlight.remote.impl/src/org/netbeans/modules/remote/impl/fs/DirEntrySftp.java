@@ -191,7 +191,7 @@ public class DirEntrySftp implements DirEntry {
             String cache = unescape(externalForm.substring(0, pos));
             StatInfo statInfo = StatInfo.fromExternalForm(externalForm.substring(pos + 1));
             return new DirEntrySftp(statInfo, cache);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new FormatException("Wrong directory entry format: " + externalForm, ex); // NOI18N
         }        
     }

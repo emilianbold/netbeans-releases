@@ -65,6 +65,7 @@ import org.glassfish.tools.ide.admin.CommandStopDAS;
 import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
+import org.glassfish.tools.ide.utils.NetUtils;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
 import static org.netbeans.modules.glassfish.common.BasicTask.STOP_TIMEOUT;
@@ -178,7 +179,8 @@ public class RestartTask extends BasicTask<TaskState> {
                     "RestartTask.localShutdownStart.notOffline",
                     instanceName);
             default:
-                if (!ServerUtils.isDASRunning(instance)) {
+                if (!ServerUtils.isAdminPortListening(
+                        instance, NetUtils.PORT_CHECK_TIMEOUT)) {
                     return localOfflineStart();
                 } else {
                 return new StateChange(this,
@@ -312,7 +314,8 @@ public class RestartTask extends BasicTask<TaskState> {
      */
     @SuppressWarnings("SleepWhileInLoop")
     private boolean vaitForDebugPort(final String host, final int port) {
-        boolean result = ServerUtils.isRunningRemote(host, port);
+        boolean result = NetUtils.isPortListeningRemote(
+                host, port, NetUtils.PORT_CHECK_TIMEOUT);
         if (!result) {
             long tmStart = System.currentTimeMillis();
             while (!result
@@ -321,7 +324,8 @@ public class RestartTask extends BasicTask<TaskState> {
                 try {
                     Thread.sleep(PORT_CHECK_IDLE);
                 } catch (InterruptedException ex) {}
-                result = ServerUtils.isRunningRemote(host, port);
+                result = NetUtils.isPortListeningRemote(
+                        host, port, NetUtils.PORT_CHECK_TIMEOUT);
             }
         }
         return result;
@@ -340,8 +344,8 @@ public class RestartTask extends BasicTask<TaskState> {
         if (debugMode) {
             debugPort = instance.getDebugPort();
             debugMode = updateDebugOptions(debugPort);
-            debugPortActive = ServerUtils.isRunningRemote(
-                    instance.getHost(), debugPort);
+            debugPortActive = NetUtils.isPortListeningRemote(
+                    instance.getHost(), debugPort, NetUtils.PORT_CHECK_TIMEOUT);
         }
         ResultString result
                 = CommandRestartDAS.restartDAS(instance, debugMode);

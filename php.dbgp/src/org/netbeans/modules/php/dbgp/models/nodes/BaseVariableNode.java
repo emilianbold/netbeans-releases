@@ -46,21 +46,18 @@ import java.util.Set;
 import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 
-
 /**
  * @author ads
  *
  */
-class BaseVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
+class BaseVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
 
-    BaseVariableNode( Property property , AbstractModelNode parent  ) {
-        super(property , parent );
+    BaseVariableNode(Property property, AbstractModelNode parent) {
+        super(property, parent);
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
+    protected boolean isTypeApplied(Set<FilterType> filters) {
         return true;
     }
 

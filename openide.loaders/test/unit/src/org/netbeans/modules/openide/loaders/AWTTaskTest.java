@@ -38,6 +38,7 @@
 package org.netbeans.modules.openide.loaders;
 
 import java.awt.EventQueue;
+import java.util.concurrent.Semaphore;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -102,19 +103,26 @@ public class AWTTaskTest extends NbTestCase {
     }
     
     public void testWaitForItself() {
+        final Semaphore s = new Semaphore(0);
         class R implements Runnable {
             int cnt;
-            Task waitFor;
+            volatile Task waitFor;
 
             @Override
             public void run() {
                 cnt++;
+                try {
+                    s.acquire(); // Ensure waitFor != null.
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 waitFor.waitFinished();
             }
         }
         
         R r = new R();
         r.waitFor = new AWTTask(r, null);
+        s.release();
         r.waitFor.waitFinished();
         
         assertEquals("Executed once", 1, r.cnt);

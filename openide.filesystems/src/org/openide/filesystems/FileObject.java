@@ -1352,16 +1352,12 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
                     return;
                 }
                 if (fs != null && fsList != null) {
-                    for (FileChangeListener fcl : fsList) {
-                        FCLSupport.dispatchEvent(fcl, fe, op, postNotify);
-                    }  
+                    FCLSupport.dispatchEvent(fsList, fe, op, postNotify);
                 }
 
 
                 if (rep != null && repList != null) {
-                    for (FileChangeListener fcl : repList) {
-                        FCLSupport.dispatchEvent(fcl, fe, op, postNotify);
-                    }                      
+                    FCLSupport.dispatchEvent(repList, fe, op, postNotify);
                 }
             }
         }

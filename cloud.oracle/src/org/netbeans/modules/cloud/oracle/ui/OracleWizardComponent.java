@@ -302,14 +302,6 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
         return userNameTextField.getText().trim();
     }
     
-    public static String getPrefixedUserName(String prefix, String username) {
-        if (username.startsWith(prefix+".")) {
-            return username;
-        } else {
-            return prefix + "." + username;
-        }
-    }
-    
     public String getDataCenter() {
         String s = ((JTextField)jDataCenterComboBox.getEditor().getEditorComponent()).getText().trim();
         return s;

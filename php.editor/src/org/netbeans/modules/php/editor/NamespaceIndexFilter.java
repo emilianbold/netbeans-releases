@@ -97,7 +97,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
      */
     public String getName() {
         if (name == null) {
-            name = prefix.toName().toString();
+            name = prefix.toString();
         }
         return name;
     }

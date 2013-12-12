@@ -74,6 +74,8 @@ public class NamingFactoryTest extends NbTestCase {
         clearWorkDir();
         Object res = CharSequences.create("0123456789012345678901234567890123456789");
         assertTrue("Contains Byte: " + res.getClass(), res.getClass().getName().contains("Byte"));
+        res = CharSequences.create("testRename-1");
+        assertTrue("Contains Fixed: " + res.getClass(), res.getClass().getName().contains("Fixed"));
     }
     
     public void registerSecurityManager() {

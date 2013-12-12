@@ -46,7 +46,7 @@ import java.util.Objects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.execution.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.utils.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
@@ -118,7 +118,7 @@ public final class Server implements Comparable<Server> {
     })
     @Override
     public String toString() {
-        if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
+        if (serverInstanceId == null || ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
             return MSG_No_Server();
         }
 

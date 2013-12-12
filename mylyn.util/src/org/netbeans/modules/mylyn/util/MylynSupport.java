@@ -595,7 +595,7 @@ public class MylynSupport {
                     }
                     try {
                         if (removeUnseenOrphanedTasks) {
-                            Set<ITask> orphanedUnseenTasks = new HashSet<ITask>();
+                            Set<ITask> orphanedUnseenTasks = new LinkedHashSet<ITask>();
                             for (UnmatchedTaskContainer cont : taskList.getUnmatchedContainers()) {
                                 for (ITask task : cont.getChildren()) {
                                     if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW

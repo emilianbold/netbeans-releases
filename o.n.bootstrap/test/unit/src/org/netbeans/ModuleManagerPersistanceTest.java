@@ -104,12 +104,6 @@ public class ModuleManagerPersistanceTest extends NbTestCase {
         assertSame("Is not OSGi, but is computed", Boolean.FALSE, snd.isOSGi(sampleModule));
     }
 
-    public void testModuleManagerSensitiveToLocale() throws Exception {
-        Locale.setDefault(Locale.FRENCH);
-        ModuleManager snd = createModuleManager();
-        assertNull("Cache invalidated", snd.isOSGi(sampleModule));
-    }
-
     private ModuleManager createModuleManager() throws Exception {
         MockModuleInstaller mi = new MockModuleInstaller();
         MockEvents me = new MockEvents();

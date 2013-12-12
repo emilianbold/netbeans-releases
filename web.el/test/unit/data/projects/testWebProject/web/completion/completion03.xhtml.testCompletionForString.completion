@@ -14,8 +14,6 @@ METHOD     contentEquals(StringBuffer sb)  [PUBLIC]   boolean
 METHOD     endsWith(String suffix)         [PUBLIC]   boolean
 METHOD     equals(Object anObject)         [PUBLIC]   boolean
 METHOD     equalsIgnoreCase(String anothe  [PUBLIC]   boolean
-METHOD     getBytes(Charset charset)       [PUBLIC]   byte[]
-METHOD     getBytes(String charsetName)    [PUBLIC]   byte[]
 METHOD     getBytes(int srcBegin,int srcE  [PUBLIC]   void
 METHOD     getChars(int srcBegin,int srcE  [PUBLIC]   void
 METHOD     hashCode()                      [PUBLIC]   int

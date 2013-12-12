@@ -544,26 +544,23 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(StaticConstantAccess node) {
         String clsName = CodeUtils.extractUnqualifiedClassName(node);
+        ClassElementAttribute c = getCurrentClassElement();
         switch (clsName) {
             case "self": //NOI18N
-                {
-                    ClassElementAttribute c = getCurrentClassElement();
+                if (c != null) {
+                    clsName = c.getName();
+                }
+                break;
+            case "parent": //NOI18N
+                if (c != null) {
+                    c = c.getSuperClass();
                     if (c != null) {
                         clsName = c.getName();
                     }
-                    break;
                 }
-            case "parent": //NOI18N
-                {
-                    ClassElementAttribute c = getCurrentClassElement();
-                    if (c != null) {
-                        c = c.getSuperClass();
-                        if (c != null) {
-                            clsName = c.getName();
-                        }
-                    }
-                    break;
-                }
+                break;
+            default:
+                //no-op
         }
         Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, clsName); //NOI18N
         if (!nn.isEmpty()) {
@@ -814,8 +811,8 @@ public class SemiAttribute extends DefaultVisitor {
                     ce.superClass = (ClassElementAttribute) lookup(superClsName.getName(), Kind.CLASS);
                     node2Element.put(node.getSuperClass(), ce.superClass);
                 }
-                List<Expression> interfaes = node.getInterfaes();
-                for (Expression identifier : interfaes) {
+                List<Expression> interfaces = node.getInterfaes();
+                for (Expression identifier : interfaces) {
                     //TODO: ifaces must be fixed;
                 }
                 if (node.getBody() != null) {
@@ -1180,10 +1177,7 @@ public class SemiAttribute extends DefaultVisitor {
             if (this.classElement != other.classElement && (this.classElement == null || !this.classElement.equals(other.classElement))) {
                 return false;
             }
-            if (this.modifier != other.modifier) {
-                return false;
-            }
-            return true;
+            return this.modifier == other.modifier;
         }
 
         public enum ClassMemberKind {
@@ -1319,10 +1313,7 @@ public class SemiAttribute extends DefaultVisitor {
             if (this.ifaces != other.ifaces && (this.ifaces == null || !this.ifaces.equals(other.ifaces))) {
                 return false;
             }
-            if (this.initialized != other.initialized) {
-                return false;
-            }
-            return true;
+            return this.initialized == other.initialized;
         }
 
 
@@ -1399,14 +1390,11 @@ public class SemiAttribute extends DefaultVisitor {
             if (this.enclosedElements != other.enclosedElements && (this.enclosedElements == null || !this.enclosedElements.equals(other.enclosedElements))) {
                 return false;
             }
-            if (this.initialized != other.initialized) {
-                return false;
-            }
-            return true;
+            return this.initialized == other.initialized;
         }
     }
 
-    public class DefinitionScope {
+    public final class DefinitionScope {
 
         private final Map<Kind, Map<String, AttributedElement>> name2Writes = new EnumMap<>(Kind.class);
         private boolean classScope;
@@ -1570,7 +1558,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     public static class ClassType extends AttributedType {
 
-        private ClassElementAttribute element;
+        private final ClassElementAttribute element;
 
         public ClassType(ClassElementAttribute element) {
             this.element = element;
@@ -1588,7 +1576,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     public static class FunctionType extends AttributedType {
 
-        private FunctionElementAttribute element;
+        private final FunctionElementAttribute element;
 
         public FunctionType(FunctionElementAttribute element) {
             this.element = element;

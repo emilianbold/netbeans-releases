@@ -41,93 +41,82 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import java.io.IOException;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Find Usages
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class RefactorFindUsagesTest extends PerformanceTestCase {
-    
+
     private static Node testNode;
-    private String TITLE, ACTION, NEXT;
+    private String TITLE, ACTION, FIND;
     private static NbDialogOperator refactorDialog;
     private static TopComponentOperator usagesWindow;
-    
-    
-    /** Creates a new instance of RefactorFindUsagesDialog */
+
+    /**
+     * Creates a new instance of RefactorFindUsagesDialog
+     *
+     * @param testName test name
+     */
     public RefactorFindUsagesTest(String testName) {
         super(testName);
-        expectedTime = 120000; // the action has progress indication and it is expected it will last
+        expectedTime = 2000;
     }
-    
-    /** Creates a new instance of RefactorFindUsagesDialog */
+
+    /**
+     * Creates a new instance of RefactorFindUsagesDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public RefactorFindUsagesTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = 120000; // the action has progress indication and it is expected it will last
+        super(testName, performanceDataName);
+        expectedTime = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(RefactorFindUsagesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(RefactorFindUsagesTest.class)
+                .suite();
     }
 
-    public void testSetupjEditProject() {
-       CommonUtilities.jEditProjectOpen();
-        try {
-            this.openDataProjects("jEdit41");
-        } catch (IOException ex) {
-        }
-    }
-
-    public void testRefactorFindUsages(){
+    public void testRefactorFindUsages() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
     public void initialize() {
         String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
-        NEXT = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle","CTL_Find");  // "Next >"
-        TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsed");  // "Find Usages"
-        ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsedAction"); // "Find Usages..."
-        testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");
+        FIND = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Find");
+        TITLE = Bundle.getStringTrimmed(BUNDLE, "LBL_WhereUsed");  // "Find Usages"
+        ACTION = Bundle.getStringTrimmed(BUNDLE, "LBL_WhereUsedAction"); // "Find Usages..."
+        testNode = new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java");
     }
-    
+
+    @Override
     public void prepare() {
         testNode.performPopupAction(ACTION);
         refactorDialog = new NbDialogOperator(TITLE);
     }
-    
-    public ComponentOperator open() {
 
-        new JButtonOperator(refactorDialog, NEXT).push();
-        
-        long timeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 360000);
+    @Override
+    public ComponentOperator open() {
+        new JButtonOperator(refactorDialog, FIND).pushNoBlock();
         usagesWindow = new TopComponentOperator("Usages"); // NOI18N
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout);
-        
         return usagesWindow;
     }
 
@@ -136,6 +125,7 @@ public class RefactorFindUsagesTest extends PerformanceTestCase {
         usagesWindow.close();
     }
 
+    @Override
     public void shutdown() {
         System.gc();
         System.gc();

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.jira.repository;
 
-import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.team.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
@@ -95,12 +95,10 @@ import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -128,7 +126,6 @@ public class JiraRepository {
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
 
-    private Lookup lookup;
     private RepositoryInfo info;
     
     private PropertyChangeSupport support;
@@ -171,7 +168,7 @@ public class JiraRepository {
     }
     
     public String getID() {
-        return info.getId();
+        return info.getID();
     }
 
     public JiraQuery createQuery() {
@@ -227,8 +224,12 @@ public class JiraRepository {
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword);
-        String id = info != null ? info.getId() : name + System.currentTimeMillis();
-        info = new RepositoryInfo(id, JiraConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+        String id = info != null ? info.getID() : name + System.currentTimeMillis();
+        info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+    }
+
+    protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
+        return new RepositoryInfo(id, JiraConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
     }
         
     public String getDisplayName() {
@@ -285,17 +286,6 @@ public class JiraRepository {
             controller = new JiraRepositoryController(this);
         }
         return controller;
-    }
-
-    public Lookup getLookup() {
-        if(lookup == null) {
-            lookup = Lookups.fixed(getLookupObjects());
-        }
-        return lookup;
-    }
-
-    protected Object[] getLookupObjects() {
-        return new Object[] { getIssueCache() };
     }
 
     public String getUrl() {
@@ -387,7 +377,7 @@ public class JiraRepository {
                 for (NamedFilter nf : filters) {
                     JiraQuery q = new JiraQuery(nf.getName(), this, nf);
                     ret.add(q);
-                    q.getController().fireSaved();
+                    q.getController().fireChanged();
                 }
             }
         }

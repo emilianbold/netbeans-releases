@@ -55,8 +55,8 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -82,7 +82,6 @@ public class BugzillaQuery {
     private OwnerInfo info;
     private boolean saved;
     protected long lastRefresh;
-    private final PropertyChangeSupport support;
     private IRepositoryQuery iquery;
         
     public BugzillaQuery(BugzillaRepository repository) {
@@ -100,7 +99,6 @@ public class BugzillaQuery {
         this.iquery = query;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.support = new PropertyChangeSupport(this);
         this.lastRefresh = BugzillaConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         
         if(initControler) {
@@ -108,18 +106,6 @@ public class BugzillaQuery {
         }
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    private void fireQueryIssuesChanged() {
-        support.firePropertyChange(QueryProvider.EVENT_QUERY_REFRESHED, null, null);
-    }  
-    
     public String getDisplayName() {
         return name;
     }
@@ -361,8 +347,10 @@ public class BugzillaQuery {
         @Override
         public void taskRemoved (NbTask task) {
             issues.remove(task.getTaskId());
-            // when issue table or task dashboard is able to handle removals
-            // fire an event from here
+            BugzillaIssue issue = repository.getIssueForTask(task);
+            if (issue != null) {
+                fireNotifyDataRemoved(issue); 
+            }
         }
 
         @Override
@@ -440,7 +428,6 @@ public class BugzillaQuery {
             r.run();
         } finally {
             fireFinished();
-            fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
         }
     }

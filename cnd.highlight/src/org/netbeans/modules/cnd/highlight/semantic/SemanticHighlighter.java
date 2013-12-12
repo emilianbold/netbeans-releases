@@ -66,12 +66,14 @@ import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 
@@ -86,10 +88,13 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
+    
+    private InterrupterImpl interrupter;
 
-    public SemanticHighlighter(Document doc) {
-        super(doc); 
+    public SemanticHighlighter(Document doc, InterrupterImpl interrupter) {
+        super(doc);
         init(doc);
+        this.interrupter = interrupter;
     }
 
     @Override
@@ -144,28 +149,25 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    private void update(final Interrupter interrupter) {
-        BaseDocument doc = getDocument();
+    private void update(Document doc, final InterrupterImpl interrupter) {
         if (doc != null) {
             DocumentListener listener =  null;
-            if (interrupter instanceof InterrupterImpl) {
                 listener = new DocumentListener(){
                     @Override
                     public void insertUpdate(DocumentEvent e) {
-                        ((InterrupterImpl)interrupter).cancel();
+                        interrupter.cancel();
                     }
                     @Override
                     public void removeUpdate(DocumentEvent e) {
-                        ((InterrupterImpl)interrupter).cancel();
+                        interrupter.cancel();
                     }
                     @Override
                     public void changedUpdate(DocumentEvent e) {
                     }
                 };
                 doc.addDocumentListener(listener);
-            }
             try {
-                update(doc, interrupter);
+                updateImpl(doc, interrupter);
             } finally {
                 if (listener != null) {
                     doc.removeDocumentListener(listener);
@@ -174,13 +176,13 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
     
-    public static PositionsBag getSemanticBagForTests(Document doc, Interrupter interrupter, boolean fast) {
-        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(doc);
-        semanticHighlighter.update(interrupter);
+    public static PositionsBag getSemanticBagForTests(Document doc, InterrupterImpl interrupter, boolean fast) {
+        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(doc, interrupter);
+        semanticHighlighter.update(doc, interrupter);
         return getHighlightsBag(doc, fast);
     }
 
-    private void update(BaseDocument doc, final Interrupter interrupter) {
+    private void updateImpl(Document doc, final InterrupterImpl interrupter) {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
         PositionsBag newBagFast = new PositionsBag(doc);
         PositionsBag newBagSlow = new PositionsBag(doc);
@@ -307,41 +309,22 @@ public final class SemanticHighlighter extends HighlighterBase {
         return CsmMacroExpansion.getOffsetInExpandedText(doc, fileOffset);
     }
 
-    // PhaseRunner
     @Override
-    public void run(Phase phase) {
-        if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
-            InterrupterImpl interrupter = new InterrupterImpl();
-            try {
-                addCancelListener(interrupter);
-                update(interrupter);
-            } catch (AssertionError ex) {
-                ex.printStackTrace(System.err);
-            } catch (Exception ex) {
-                ex.printStackTrace(System.err);
-            } finally {
-                removeCancelListener(interrupter);
-            }
-        } else if (phase == Phase.CLEANUP) {
-            BaseDocument doc = getDocument();
-            if (doc != null) {
-                //System.err.println("cleanAfterYourself");
-                getHighlightsBag(doc, true).clear();
-                getHighlightsBag(doc, false).clear();
-            }
-        }
+    public void run(CndParserResult result, SchedulerEvent event) {
+        interrupter.resume();
+        update(result.getSnapshot().getSource().getDocument(false), interrupter);
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
     
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public boolean isHighPriority() {
-        return false;
-    }
-
     @Override
     public String toString() {
         return "SemanticHighlighter runner"; //NOI18N

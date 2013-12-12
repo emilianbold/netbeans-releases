@@ -67,6 +67,29 @@ public class ChangeParametersTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test238836() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(int a);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = (int c) -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "a", "int", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 0, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public interface A {\n"
+                        + "    boolean test(int a, int y);\n"
+                        + "\n"
+                        + "    public static void m() {\n"
+                        + "        A f2 = (int c, int y) -> true;\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test221730() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

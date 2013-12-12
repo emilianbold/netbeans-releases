@@ -50,7 +50,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 

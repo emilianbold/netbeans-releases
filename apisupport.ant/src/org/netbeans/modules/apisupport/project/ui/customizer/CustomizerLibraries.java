@@ -771,12 +771,7 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
         if (project == null) {
             return;
         }
-        if (helper.isSharableProject()) {
-            chooser = new FileChooser(helper, true);
-        } else {
-            chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
-        }
-        chooser.enableVariableBasedSelection(true);
+        chooser = new FileChooser(helper, true);
         chooser.setFileHidingEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled( true );

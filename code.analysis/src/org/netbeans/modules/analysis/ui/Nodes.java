@@ -89,6 +89,7 @@ import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -608,18 +609,22 @@ public class Nodes {
             Collections.sort(eds, new Comparator<ErrorDescription>() {
                 @Override public int compare(ErrorDescription o1, ErrorDescription o2) {
                     try {
-                        final PositionBounds r1 = o1.getRange();
-                        final PositionBounds r2 = o2.getRange();
-                        if (r1 != null) {
-                            return r2 != null ?
-                                r1.getBegin().getLine() - r2.getBegin().getLine() :
-                                -1;
-                        } else {
-                            return r2 != null ?
-                                1 :
-                                o1.getDescription().compareTo(o2.getDescription());
+                        try {
+                            final PositionBounds r1 = o1.getRange();
+                            final PositionBounds r2 = o2.getRange();
+                            if (r1 != null) {
+                                return r2 != null
+                                        ? r1.getBegin().getLine() - r2.getBegin().getLine()
+                                        : -1;
+                            } else {
+                                return r2 != null
+                                        ? 1
+                                        : o1.getDescription().compareTo(o2.getDescription());
+                            }
+                        } catch (UserQuestionException uqe) {
+                            uqe.confirmed();
+                            return compare(o1, o2);
                         }
-                        
                     } catch (IOException ex) {
                         throw new IllegalStateException(ex); //XXX
                     }

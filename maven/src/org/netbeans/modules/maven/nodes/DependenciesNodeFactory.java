@@ -89,13 +89,13 @@ public class DependenciesNodeFactory implements NodeFactory {
         @Override public List<DependenciesNode.DependenciesSet> keys() {
             List<DependenciesNode.DependenciesSet> list = new ArrayList<DependenciesNode.DependenciesSet>();
             list.add(compile);
-            if (!runtime.list().isEmpty()) {
+            if (!runtime.list(false).isEmpty()) {
                 list.add(runtime);
             }
-            if (!test.list().isEmpty()) {
+            if (!test.list(false).isEmpty()) {
                 list.add(test);
             }
-            if (!noncp.list().isEmpty()) {
+            if (!noncp.list(false).isEmpty()) {
                 list.add(noncp);
             }
             return list;

@@ -227,6 +227,7 @@
                 <xs:element ref="tns:default" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:c89" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:c99" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:c11" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -249,6 +250,13 @@
     </xs:element>
 
     <xs:element name="c99">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="required" />
+            <xs:attribute name="default" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="c11">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />

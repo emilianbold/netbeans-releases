@@ -218,7 +218,7 @@ public class UnusedImportsTest extends NbTestCase {
                                           "import static can.not.*;\n" +
                                           "public class Main { resolve r; }"));
 
-        performUnusedImportsTest();
+        performUnusedImportsTest("import static can.not.*;\n");
     }
 
     public void testUnresolvableImports16() throws Exception {
@@ -228,7 +228,7 @@ public class UnusedImportsTest extends NbTestCase {
                                           "import static can.not.*;\n" +
                                           "public class Main { { resolve(); } }"));
 
-        performUnusedImportsTest();
+        performUnusedImportsTest("import static can.not.*;\n");
     }
 
     public void testUnresolvableImports17() throws Exception {

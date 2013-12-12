@@ -126,7 +126,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static ClientSideProjectWizardIterator existingProject() {
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
-    
+
     public static ClientSideProjectWizardIterator newProjectWithExtender() {
         return new ClientSideProjectWizardIterator(new NewProjectWizard(true), true);
     }
@@ -200,7 +200,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             extenders = Collections.EMPTY_LIST;
         }
         panels = wizard.createPanels();
-        
+
         // Make sure list of steps is accurate.
         LinkedList<String> steps = new LinkedList<String>();
         steps.addAll(Arrays.asList(wizard.createSteps()));
@@ -219,7 +219,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 initPanelsCol.add(panel);
                 steps.add(i++,panel.getComponent().getName());
             }
-            
+
         }
 
         extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
@@ -387,17 +387,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
         public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
-        
+
         private boolean withExtenders;
 
         public NewProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
         }
-        
+
         public NewProjectWizard() {
             this(false);
         }
-        
+
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
@@ -505,6 +505,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
             if (librariesPath != null) {
                 JavaScriptLibraries.setJsLibFolder(project, librariesPath);
+            }
+            // js testing provider
+            String jsTestingProvider = properties.getJsTestingProvider();
+            if (jsTestingProvider != null) {
+                ClientSideProjectUtilities.setJsTestingProvider(project, jsTestingProvider);
             }
         }
 

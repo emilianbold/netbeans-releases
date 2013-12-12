@@ -43,14 +43,22 @@
 package org.netbeans.modules.php.api.util;
 
 import java.awt.Image;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.ui.SearchPanel;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -67,6 +75,14 @@ public final class UiUtils {
      */
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
     /**
+     * SFS path where all the PHP frameworks and tools can be found.
+     */
+    public static final String FRAMEWORKS_AND_TOOLS_SUB_PATH = "FrameworksAndTools"; // NOI18N
+    /**
+     * SFS full path where all the PHP frameworks and tools can be found.
+     */
+    public static final String FRAMEWORKS_AND_TOOLS_OPTIONS_PATH = OPTIONS_PATH + "/" + FRAMEWORKS_AND_TOOLS_SUB_PATH; // NOI18N
+    /**
      * SFS path where all the PHP customizer panels can be found.
      */
     public static final String CUSTOMIZER_PATH = "org-netbeans-modules-php-project"; // NOI18N
@@ -82,6 +98,7 @@ public final class UiUtils {
     private static final String ICON_PATH = "org/netbeans/modules/php/api/ui/resources/defaultFolder.gif"; // NOI18N
     private static final String OPENED_ICON_PATH = "org/netbeans/modules/php/api/ui/resources/defaultFolderOpen.gif"; // NOI18N
 
+
     private UiUtils() {
     }
 
@@ -90,20 +107,40 @@ public final class UiUtils {
      * @param message message to display before IDE options are opened
      * @see #invalidScriptProvided(String, String)
      */
-    public static void invalidScriptProvided(String message) {
+    public static void invalidScriptProvided(@NonNull String message) {
         invalidScriptProvided(message, null);
     }
 
     /**
      * Display a dialog with the message and then open IDE options.
      * @param message message to display before IDE options are opened
-     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
+     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks), can be {@code null}
      * @see #invalidScriptProvided(String)
      */
-    public static void invalidScriptProvided(String message, String optionsSubcategory) {
-        Parameters.notNull("message", message);
+    public static void invalidScriptProvided(@NonNull String message, @NullAllowed String optionsSubcategory) {
+        Parameters.notNull("message", message); // NOI18N
 
         informAndOpenOptions(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE), optionsSubcategory);
+    }
+
+    /**
+     * Open project customizer for the given category. Possibly display
+     * dialog with a message first.
+     * @param phpModule PHP module to be used
+     * @param customizerCategory customizer category to be opened
+     * @param message message to be displayed before project customizer is opened
+     * @since 2.38
+     */
+    public static void invalidScriptProvided(@NonNull PhpModule phpModule, @NonNull String customizerCategory,
+            @NullAllowed String message) {
+        Parameters.notNull("phpModule", phpModule); // NOI18N
+        Parameters.notNull("customizerCategory", customizerCategory); // NOI18N
+
+        NotifyDescriptor descriptor = null;
+        if (message != null) {
+            descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        }
+        openCustomizer(phpModule, customizerCategory, descriptor);
     }
 
     /**
@@ -112,7 +149,7 @@ public final class UiUtils {
      * @param exc {@link ExecutionException} thrown
      * @see #processExecutionException(ExecutionException, String)
      */
-    public static void processExecutionException(ExecutionException exc) {
+    public static void processExecutionException(@NonNull ExecutionException exc) {
         processExecutionException(exc, null);
     }
 
@@ -120,20 +157,36 @@ public final class UiUtils {
      * Show a dialog that informs user about exception during running an external process.
      * Opens IDE options, PHP &lt;subcategory> category or General category if no <code>subcategory</code> given.
      * @param exc {@link ExecutionException} thrown
-     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks)
+     * @param optionsSubcategory IDE options subcategory to open (suitable e.g. for frameworks), can be {@code null}
      * @see #processExecutionException(ExecutionException)
      */
-    public static void processExecutionException(ExecutionException exc, final String optionsSubcategory) {
-        Parameters.notNull("exc", exc);
-
-        final Throwable cause = exc.getCause();
-        assert cause != null;
+    public static void processExecutionException(@NonNull final ExecutionException exc, @NullAllowed final String optionsSubcategory) {
+        Parameters.notNull("exc", exc); // NOI18N
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                informAndOpenOptions(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage()), NotifyDescriptor.ERROR_MESSAGE),
-                        optionsSubcategory);
+                informAndOpenOptions(createNotifyDescriptor(exc), optionsSubcategory);
+            }
+        });
+    }
+
+    /**
+     * Show a dialog that informs user about exception during running an external process.
+     * Open project customizer for the given category.
+     * @param exc {@link ExecutionException} thrown
+     * @param phpModule PHP module to be used
+     * @param customizerCategory customizer category to be opened
+     * @since 2.38
+     */
+    public static void processExecutionException(@NonNull final ExecutionException exc, @NonNull final PhpModule phpModule,
+            @NonNull final String customizerCategory) {
+        Parameters.notNull("exc", exc); // NOI18N
+        Parameters.notNull("phpModule", phpModule); // NOI18N
+        Parameters.notNull("customizerCategory", customizerCategory); // NOI18N
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                openCustomizer(phpModule, customizerCategory, createNotifyDescriptor(exc));
             }
         });
     }
@@ -148,10 +201,10 @@ public final class UiUtils {
 
     /**
      * Display Options dialog with PHP > &lt;subcategory> panel preselected.
-     * @param optionsSubcategory PHP Options subcategory to be opened, can be <code>null</code> (then, the General panel is opened)
+     * @param optionsSubcategory PHP Options subcategory to be opened, can be {@code null} (then, the General panel is opened)
      * @see #showGeneralOptions()
      */
-    public static void showOptions(String optionsSubcategory) {
+    public static void showOptions(@NullAllowed String optionsSubcategory) {
         String path = OPTIONS_PATH;
         if (!StringUtils.hasText(optionsSubcategory)) {
             optionsSubcategory = GENERAL_OPTIONS_SUBCATEGORY;
@@ -162,6 +215,7 @@ public final class UiUtils {
     /**
      * Returns default folder icon as {@link Image}. Never returns {@code null}.
      * @param opened whether closed or opened icon should be returned
+     * @return default folder icon
      */
     public static Image getTreeFolderIcon(boolean opened) {
         Image base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
@@ -176,9 +230,26 @@ public final class UiUtils {
         return base;
     }
 
-    private static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {
-        assert descriptor != null;
+    static NotifyDescriptor createNotifyDescriptor(ExecutionException exc) {
+        assert exc != null;
+        final Throwable cause = exc.getCause();
+        assert cause != null;
+        return new NotifyDescriptor.Message(
+                NbBundle.getMessage(UiUtils.class, "MSG_ExceptionDuringRunScript", cause.getLocalizedMessage()),
+                NotifyDescriptor.ERROR_MESSAGE);
+    }
 
+    static void openCustomizer(@NonNull PhpModule phpModule, @NonNull String customizerCategory, @NullAllowed NotifyDescriptor descriptor) {
+        assert phpModule != null;
+        assert customizerCategory != null;
+        if (descriptor != null) {
+            DialogDisplayer.getDefault().notify(descriptor);
+        }
+        phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(customizerCategory, null);
+    }
+
+    static void informAndOpenOptions(NotifyDescriptor descriptor, String optionsSubcategory) {
+        assert descriptor != null;
         DialogDisplayer.getDefault().notify(descriptor);
         showOptions(optionsSubcategory);
     }
@@ -234,4 +305,48 @@ public final class UiUtils {
             String getNoItemsFound();
         }
     }
+
+    /**
+     * Registers a subpanel inside PHP's Framework and Tools panel.
+     * Should be placed on a {@link org.netbeans.spi.options.OptionsPanelController} instance.
+     * @see org.netbeans.spi.options.AdvancedOption
+     * @since 2.35
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PhpOptionsPanelRegistration {
+
+        /**
+         * Panel identifier.
+         * @return panel identifier
+         */
+        String id();
+
+        /**
+         * Label shown on the tab. You may use {@code #key} syntax.
+         * @return tab label
+         */
+        String displayName();
+
+        /**
+         * Optional keywords (separated by commas) for use with Quick Search (must also specify {@link #keywordsCategory}).
+         * You may use {@code #key} syntax.
+         * @return optional keywords (separated by commas)
+         */
+        String keywords() default ""; // NOI18N
+
+        /**
+         * Keyword category for use with Quick Search (must also specify {@link #keywords}).
+         * @return keyword category for use with Quick Search
+         */
+        String keywordsCategory() default ""; // NOI18N
+
+        /**
+         * Position relative to sibling subpanels.
+         * @return position relative to sibling subpanels
+         */
+        int position() default Integer.MAX_VALUE;
+
+    }
+
 }

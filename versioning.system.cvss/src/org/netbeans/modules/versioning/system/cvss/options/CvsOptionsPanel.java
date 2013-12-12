@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.*;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 
 /**
@@ -56,7 +55,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  * 
  * @author Maros Sandor
  */
-@OptionsPanelController.Keywords(keywords={"cvs"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@OptionsPanelController.Keywords(keywords={"cvs"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
 @NbBundle.Messages("CTL_OptionsPanel.title=Versioning")
 class CvsOptionsPanel extends javax.swing.JPanel {
     private String[] keywords;

@@ -97,6 +97,16 @@ public class RuntimeTabOperator extends TopComponentOperator {
         return _tree;
     }
     
+    /**
+     * Collapse all nodes.
+     */
+    public void collapseAll() {
+        JTreeOperator tree = tree();
+        for (int i = tree.getRowCount() - 1; i >= 0; i--) {
+            tree.collapseRow(i);
+        }
+    }
+
     /** getter for Runtime root node
      * @return RuntimeRootNode */    
     public Node getRootNode() {

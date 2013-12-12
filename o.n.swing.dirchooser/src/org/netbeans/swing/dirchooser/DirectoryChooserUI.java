@@ -419,6 +419,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         });
         
         filenameTextField.addKeyListener(new TextFieldKeyListener());
+        filenameTextField.addKeyListener(new AltUpHandler());
         
         fnl.setLabelFor(filenameTextField);
         filenameTextField.addFocusListener(
@@ -770,6 +771,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         tree.addTreeExpansionListener(new TreeExpansionHandler());
         TreeKeyHandler keyHandler = new TreeKeyHandler();
         tree.addKeyListener(keyHandler);
+        tree.addKeyListener(new AltUpHandler());
         tree.addFocusListener(keyHandler);
         tree.addMouseListener(dirHandler);
         tree.addFocusListener(dirHandler);
@@ -799,6 +801,19 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 && "1.6.0_16".compareTo(System.getProperty("java.version")) >=0;
     }
 
+    /** 
+     * Handles alt-up key 
+     */
+    private class AltUpHandler extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent evt) {
+            if(evt.getKeyCode() == KeyEvent.VK_UP && (evt.getModifiers() & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
+                Action action = getChangeToParentDirectoryAction();
+                action.actionPerformed(new ActionEvent(evt.getSource(), 0, ""));
+            }
+        }        
+    }
+    
     /** 
      * Handles keyboard quick search in tree and delete action.
      */

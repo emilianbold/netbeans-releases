@@ -47,32 +47,25 @@ import org.netbeans.modules.php.dbgp.models.VariablesModelFilter.FilterType;
 import org.netbeans.modules.php.dbgp.packets.Property;
 import org.openide.util.NbBundle;
 
-
 /**
  * @author ads
  *
  */
-class ResourceVariableNode extends
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode
-{
+class ResourceVariableNode extends org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    private static final String TYPE_RESOURCE = "TYPE_Resource"; // NOI18N
 
-    private static final String TYPE_RESOURCE = "TYPE_Resource";        // NOI18N
-
-    protected ResourceVariableNode( Property property, AbstractModelNode parent ) {
+    protected ResourceVariableNode(Property property, AbstractModelNode parent) {
         super(property, parent);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.models.nodes.AbstractVariableNode#getType()
-     */
     @Override
     public String getType() {
-        return NbBundle.getMessage( ResourceVariableNode.class, TYPE_RESOURCE);
+        return NbBundle.getMessage(ResourceVariableNode.class, TYPE_RESOURCE);
     }
 
     @Override
-    protected boolean isTypeApplied( Set<FilterType> filters ) {
-        return filters.contains( FilterType.RESOURCE );
+    protected boolean isTypeApplied(Set<FilterType> filters) {
+        return filters.contains(FilterType.RESOURCE);
     }
 
 }

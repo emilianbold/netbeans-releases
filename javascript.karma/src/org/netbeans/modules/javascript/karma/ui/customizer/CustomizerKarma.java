@@ -45,9 +45,12 @@ package org.netbeans.modules.javascript.karma.ui.customizer;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -56,12 +59,13 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -85,8 +89,9 @@ public class CustomizerKarma extends JPanel {
 
     private void init() {
         // data
-        karmaTextField.setText(KarmaPreferences.getInstance().getKarma(project));
-        configTextField.setText(KarmaPreferences.getInstance().getConfig(project));
+        karmaTextField.setText(KarmaPreferences.getKarma(project));
+        configTextField.setText(KarmaPreferences.getConfig(project));
+        autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
         // listeners
         addListeners();
         // initial validation
@@ -102,8 +107,10 @@ public class CustomizerKarma extends JPanel {
 
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ItemListener defaultItemListener = new DefaultItemListener();
         karmaTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        autowatchCheckBox.addItemListener(defaultItemListener);
     }
 
     void validateData() {
@@ -126,24 +133,13 @@ public class CustomizerKarma extends JPanel {
     }
 
     void storeData() {
-        KarmaPreferences.getInstance().setKarma(project, karmaTextField.getText());
-        KarmaPreferences.getInstance().setConfig(project, configTextField.getText());
+        KarmaPreferences.setKarma(project, karmaTextField.getText());
+        KarmaPreferences.setConfig(project, configTextField.getText());
+        KarmaPreferences.setAutowatch(project, autowatchCheckBox.isSelected());
     }
 
     private File getProjectDirectory() {
         return FileUtil.toFile(project.getProjectDirectory());
-    }
-
-    private File getConfigDirectory() {
-        Karma.ConfigFolderProvider configFolderProvider = project.getLookup().lookup(Karma.ConfigFolderProvider.class);
-        if (configFolderProvider != null) {
-            File configFolder = configFolderProvider.getConfigFolder();
-            if (configFolder != null
-                    && configFolder.isDirectory()) {
-                return configFolder;
-            }
-        }
-        return getProjectDirectory();
     }
 
     /**
@@ -156,9 +152,12 @@ public class CustomizerKarma extends JPanel {
         karmaLabel = new JLabel();
         karmaTextField = new JTextField();
         karmaBrowseButton = new JButton();
+        karmaSearchButton = new JButton();
         configLabel = new JLabel();
         configTextField = new JTextField();
         configBrowseButton = new JButton();
+        configSearchButton = new JButton();
+        autowatchCheckBox = new JCheckBox();
 
         karmaLabel.setLabelFor(karmaTextField);
         Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
@@ -169,6 +168,13 @@ public class CustomizerKarma extends JPanel {
         karmaBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 karmaBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(karmaSearchButton, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaSearchButton.text")); // NOI18N
+        karmaSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                karmaSearchButtonActionPerformed(evt);
             }
         });
 
@@ -184,6 +190,15 @@ public class CustomizerKarma extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(configSearchButton, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.configSearchButton.text")); // NOI18N
+        configSearchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                configSearchButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -195,16 +210,25 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(karmaTextField, GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                        .addComponent(karmaTextField, GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(karmaBrowseButton))
+                        .addComponent(karmaBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(karmaSearchButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configBrowseButton))))
+                        .addComponent(configBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(configSearchButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(autowatchCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
+
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configSearchButton, karmaSearchButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -212,12 +236,16 @@ public class CustomizerKarma extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(karmaLabel)
                     .addComponent(karmaTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(karmaBrowseButton))
+                    .addComponent(karmaBrowseButton)
+                    .addComponent(karmaSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(configLabel)
                     .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(configBrowseButton)))
+                    .addComponent(configBrowseButton)
+                    .addComponent(configSearchButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(autowatchCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -239,7 +267,7 @@ public class CustomizerKarma extends JPanel {
         File file = new FileChooserBuilder(CustomizerKarma.class)
                 .setTitle(Bundle.CustomizerKarma_chooser_config())
                 .setFilesOnly(true)
-                .setDefaultWorkingDirectory(getConfigDirectory())
+                .setDefaultWorkingDirectory(KarmaUtils.getConfigDir(project))
                 .forceUseOfDefaultWorkingDirectory(true)
                 .showOpenDialog();
         if (file != null) {
@@ -247,13 +275,38 @@ public class CustomizerKarma extends JPanel {
         }
     }//GEN-LAST:event_configBrowseButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found.")
+    private void karmaSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaSearchButtonActionPerformed
+        File karma = KarmaUtils.findKarma(project);
+        if (karma != null) {
+            karmaTextField.setText(karma.getAbsolutePath());
+            return;
+        }
+        // no karma found
+        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_karma_none());
+    }//GEN-LAST:event_karmaSearchButtonActionPerformed
+
+    @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
+    private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
+        File karmaConfig = KarmaUtils.findKarmaConfig(KarmaUtils.getConfigDir(project));
+        if (karmaConfig != null) {
+            configTextField.setText(karmaConfig.getAbsolutePath());
+            return;
+        }
+        // no config found
+        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_config_none());
+    }//GEN-LAST:event_configSearchButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autowatchCheckBox;
     private JButton configBrowseButton;
     private JLabel configLabel;
+    private JButton configSearchButton;
     private JTextField configTextField;
     private JButton karmaBrowseButton;
     private JLabel karmaLabel;
+    private JButton karmaSearchButton;
     private JTextField karmaTextField;
     // End of variables declaration//GEN-END:variables
 
@@ -277,6 +330,15 @@ public class CustomizerKarma extends JPanel {
         }
 
         private void processChange() {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             validateData();
         }
 

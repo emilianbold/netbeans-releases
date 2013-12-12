@@ -1309,6 +1309,16 @@ public class FileStatusCache {
         public boolean isFileExternal() {
             return value.isFileExternal();
         }
+
+        @Override
+        public String getMovedFromAbspath () {
+            return value.getMovedFromAbspath();
+        }
+
+        @Override
+        public String getMovedToAbspath () {
+            return value.getMovedToAbspath();
+        }
     }
 
     public FileLabelCache getLabelsCache () {

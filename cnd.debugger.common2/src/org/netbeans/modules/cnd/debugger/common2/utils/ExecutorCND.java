@@ -65,6 +65,7 @@ import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -111,7 +112,8 @@ import org.openide.util.Utilities;
     /*
      * Interrupt an arbitrary process with SIGINT
      */
-    public void interrupt(int pid) throws IOException {
+    public void interrupt(final int pid) throws IOException {
+        CndUtils.assertNonUiThread();
         // use DebugBreakProcess on windows
         if (exEnv.isLocal() && Utilities.isWindows()) {
             File f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", "org.netbeans.modules.cnd.debugger.common2", false); // NOI18N
@@ -133,16 +135,18 @@ import org.openide.util.Utilities;
     }
 
     public void interruptGroup() throws IOException {
-	try {
-            CommonTasksSupport.sendSignalGrp(exEnv, this.pid, Signal.SIGINT, null).get();
+        CndUtils.assertNonUiThread();
+        try {
+            CommonTasksSupport.sendSignalGrp(exEnv, ExecutorCND.this.pid, Signal.SIGINT, null).get();
         } catch (InterruptedException ex) {
         } catch (ExecutionException ex) {
         }
     }
 
-    public void sigqueue(int sig, int data) throws IOException {
-	try {
-            CommonTasksSupport.sigqueue(exEnv, this.pid, sig, data, null).get();
+    public void sigqueue(final int sig, final int data) throws IOException {
+        CndUtils.assertNonUiThread();
+        try {
+            CommonTasksSupport.sigqueue(exEnv, ExecutorCND.this.pid, sig, data, null).get();
         } catch (InterruptedException ex) {
         } catch (ExecutionException ex) {
         }

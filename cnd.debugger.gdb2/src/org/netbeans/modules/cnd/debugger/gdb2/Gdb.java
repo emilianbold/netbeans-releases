@@ -81,6 +81,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
+import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
@@ -460,7 +461,8 @@ public class Gdb {
 	    //
 
 	    if (!connectExisting) {
-		ioPack.console().getTerm().pushStream(tentativeGdb.tap());
+                ioPack.console().getTerm().pushStream(new KeyProcessingStream());
+                ioPack.console().getTerm().pushStream(tentativeGdb.tap());
 		ioPack.console().getTerm().setCustomColor(0,
 		    Color.yellow.darker().darker());
 		ioPack.console().getTerm().setCustomColor(1,
@@ -730,6 +732,39 @@ public class Gdb {
 
 	DialogDisplayer.getDefault().
 	    notify(new NotifyDescriptor.Message(panel));
+    }
+    
+    private static final class KeyProcessingStream extends TermStream {
+
+        // start - from GDB to the console
+        @Override
+        public void flush() {
+            toDTE.flush();
+        }
+
+        @Override
+        public void putChar(char c) {
+            toDTE.putChar(c);
+        }
+
+        @Override
+        public void putChars(char[] buf, int offset, int count) {
+            toDTE.putChars(buf, offset, count);
+        }
+        // end - from GDB to the console
+        
+        // start - rom the console to GDB
+        @Override
+        public void sendChar(char c) {
+            toDCE.sendChar(c);
+        }
+
+        @Override
+        public void sendChars(char[] c, int offset, int count) {
+            toDCE.sendChars(c, offset, count);
+        }
+        // end - from the console to GDB
+        
     }
 
     /**
