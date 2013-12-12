@@ -93,6 +93,8 @@ import org.openide.util.RequestProcessor;
 })
 public final class UseInjectionInsteadOfInstantionRule {
 
+    private static final RequestProcessor RP = new RequestProcessor("UseInjectionInsteadOfInstantionFixRP", 1);
+
     private UseInjectionInsteadOfInstantionRule() {
     }
 
@@ -178,7 +180,7 @@ public final class UseInjectionInsteadOfInstantionRule {
         @Override
         public ChangeInfo implement() throws Exception {
 
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
