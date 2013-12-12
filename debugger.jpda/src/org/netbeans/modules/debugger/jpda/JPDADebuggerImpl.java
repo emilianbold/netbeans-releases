@@ -135,6 +135,9 @@ import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
+import org.netbeans.modules.debugger.jpda.expr.formatters.Formatters;
+import org.netbeans.modules.debugger.jpda.expr.formatters.FormattersLoopControl;
+import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -145,6 +148,7 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
 import org.netbeans.modules.debugger.jpda.models.ClassVariableImpl;
 import org.netbeans.modules.debugger.jpda.models.VariableMirrorTranslator;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -2534,6 +2538,37 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
         return true;
+    }
+    
+    public Variable getFormattedValue(ObjectVariable ov) {
+        return getFormattedValue(ov, new FormattersLoopControl());
+    }
+    
+    private Variable getFormattedValue(ObjectVariable ov, FormattersLoopControl formattersLoopControl) {
+        JPDAClassType ct = ov.getClassType();
+        if (ct == null) {
+            return ov;
+        }
+        VariablesFormatter f = Formatters.getFormatterForType(ct, formattersLoopControl.getFormatters());
+        if (f != null && formattersLoopControl.canUse(f, ct.getName(), null)) {
+            String code = f.getValueFormatCode();
+            if (code != null && code.length() > 0) {
+                try {
+                    Variable ret = ((AbstractObjectVariable) ov).evaluate(code);
+                    if (ret == null) {
+                        return null;
+                    }
+                    if (ret instanceof ObjectVariable) {
+                        return getFormattedValue((ObjectVariable) ret, formattersLoopControl);
+                    } else {
+                        return ret;
+                    }
+                } catch (InvalidExpressionException iex) {
+                    //return VariablesTableModel.getMessage((InvalidExpressionException) t);
+                }
+            }
+        }
+        return ov;
     }
 
 

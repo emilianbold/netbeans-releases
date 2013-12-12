@@ -205,7 +205,7 @@ public class Utilities {
         String projectUrl = Utilities.PROJECTS.get(projectName);
         File projectsDir = new File(System.getProperty("nbjunit.workdir"), "tmpdir");
         File projectZip = new File(projectsDir, projectName + ".zip");
-        if (!projectZip.exists()) {
+        if (!projectZip.exists() || projectZip.length()<1) {
             projectDownload(projectUrl, projectZip);
         }
         unzip(projectZip, workdir);
