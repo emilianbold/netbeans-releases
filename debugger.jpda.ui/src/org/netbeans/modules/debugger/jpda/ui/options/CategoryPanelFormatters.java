@@ -77,7 +77,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
+import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
 import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
