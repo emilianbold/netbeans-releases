@@ -123,8 +123,9 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
         Map<String,Object> parameters = new HashMap<String,Object>();
         parameters.put("license", "GPL");
         parameters.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        String newLine = isNashorn ? System.getProperty("line.separator") : "\n";
             FileObject inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
-            assertEquals("#!/usr/bin/perl\n# GPL\n# nue in nue.pl\n", inst.asText());
+            assertEquals("#!/usr/bin/perl"+newLine+"# GPL"+newLine+"# nue in nue.pl"+newLine, inst.asText());
             assertEquals("nue.pl", inst.getPath());
             /* XXX perhaps irrelevant since typical wizards disable Finish in this condition
             inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue", parameters).getPrimaryFile();
@@ -132,7 +133,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
             assertEquals("nue_1.pl", inst.getPath());
              */
             inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue.cgi", parameters).getPrimaryFile();
-            assertEquals("#!/usr/bin/perl\n# GPL\n# nue in nue.cgi\n", inst.asText());
+            assertEquals("#!/usr/bin/perl"+newLine+"# GPL"+newLine+"# nue in nue.cgi"+newLine, inst.asText());
             assertEquals("nue.cgi", inst.getPath());
             /* XXX
             inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "nue.cgi", parameters).getPrimaryFile();
@@ -140,7 +141,7 @@ public class ScriptingCreateFromTemplateTest extends NbTestCase {
             assertEquals("nue_1.cgi", inst.getPath());
              */
             inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "explicit.pl", parameters).getPrimaryFile();
-            assertEquals("#!/usr/bin/perl\n# GPL\n# explicit in explicit.pl\n", inst.asText());
+            assertEquals("#!/usr/bin/perl"+newLine+"# GPL"+newLine+"# explicit in explicit.pl"+newLine, inst.asText());
             assertEquals("explicit.pl", inst.getPath());
             /* XXX
             inst = DataObject.find(template).createFromTemplate(DataFolder.findFolder(root), "explicit.pl", parameters).getPrimaryFile();

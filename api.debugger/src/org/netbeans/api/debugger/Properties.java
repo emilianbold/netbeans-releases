@@ -1201,6 +1201,8 @@ public abstract class Properties {
                 if (l < 0) {
                     return defaultValue;
                 }
+                boolean fixArrayType = false;
+                ClassNotFoundException arrayTypeNotFoundEx = null;
                 Object[] os;
                 try {
                     os = (Object[]) Array.newInstance (
@@ -1208,15 +1210,35 @@ public abstract class Properties {
                         l
                     );
                 } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    arrayTypeNotFoundEx = ex;
                     os = new Object [l];
+                    fixArrayType = true;
                 }
+                Class aType = null;
                 for (int i = 0; i < l; i++) {
                     Object o = p.getObject ("" + i, BAD_OBJECT); // NOI18N
                     if (o == BAD_OBJECT) {
                         return defaultValue;
                     }
                     os [i] = o;
+                    if (fixArrayType && o != null) {
+                        Class oType = o.getClass();
+                        if (aType == null) {
+                            aType = oType;
+                        } else {
+                            if (aType != oType) {
+                                fixArrayType = false;
+                                aType = null;
+                            }
+                        }
+                    }
+                }
+                if (fixArrayType && aType != null) {
+                    Object[] newOS = (Object[]) Array.newInstance(aType, l);
+                    System.arraycopy(os, 0, newOS, 0, l);
+                    os = newOS;
+                } else if (arrayTypeNotFoundEx != null) {
+                    Exceptions.printStackTrace(arrayTypeNotFoundEx);
                 }
                 return os;
             } finally {

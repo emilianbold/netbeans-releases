@@ -62,7 +62,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
+import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
