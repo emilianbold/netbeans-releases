@@ -1111,7 +1111,7 @@ cp_args_list
     //sass varargs:
     //@mixin box-shadow($shadows...) {} -- note that now also LESS parser allows this incorrectly (minor issue)
 
-    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST))?)
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)*  ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST)?)
     |
     (CP_DOTS | LESS_REST)
     ;
