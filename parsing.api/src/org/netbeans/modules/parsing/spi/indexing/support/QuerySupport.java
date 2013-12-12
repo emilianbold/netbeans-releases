@@ -196,7 +196,7 @@ public final class QuerySupport {
         Set<URL> urls;
 
         if (sourceDeps.containsKey(root)) {
-            urls = findReverseSourceRoots(root, sourceDeps, peerDeps);
+            urls = Util.findReverseSourceRoots(root, sourceDeps, peerDeps);
         } else {
             urls = new HashSet<URL>();
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -702,48 +702,6 @@ public final class QuerySupport {
             }
         }
         return null;
-    }
-
-    @NonNull
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
-    private static Set<URL> findReverseSourceRoots(
-            @NonNull final URL thisSourceRoot,
-            @NonNull final Map<URL, List<URL>> deps,
-            @NonNull final Map<URL, List<URL>> peers) {
-        //Create inverse dependencies
-        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
-        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
-            final URL u1 = entry.getKey();
-            final List<URL> l1 = entry.getValue();
-            for (URL u2 : l1) {
-                List<URL> l2 = inverseDeps.get(u2);
-                if (l2 == null) {
-                    l2 = new ArrayList<URL>();
-                    inverseDeps.put (u2,l2);
-                }
-                l2.add (u1);
-            }
-        }
-        //Collect dependencies
-        final Set<URL> result = new HashSet<URL>();
-        final LinkedList<URL> todo = new LinkedList<URL> ();
-        todo.add (thisSourceRoot);
-        while (!todo.isEmpty()) {
-            final URL u = todo.removeFirst();
-            if (!result.contains(u)) {
-                result.add (u);
-                List<URL> ideps = inverseDeps.get(u);
-                if (ideps != null) {
-                    todo.addAll (ideps);
-                }                
-                ideps = peers.get(u);
-                if (ideps != null) {
-                    todo.addAll (ideps);
-                }
-            }
-        }
-
-        return result;
     }
 
     @NonNull
