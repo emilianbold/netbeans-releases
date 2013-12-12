@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -246,6 +247,30 @@ public class MoveJavaFileTest extends RefactoringTestBase {
                 new File("movepkg/MoveClass.java", "package movepkg; public class MoveClass { public MoveClass() { } }"),
                 new File("movepkg/MoveClassDep.java", "package movepkg; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkg.MoveClass reference2; } }"));
         performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkgdst/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkgdst/MoveClass.java", "package movepkgdst; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; import movepkgdst.MoveClass; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkgdst.MoveClass reference2; } }"));
+    }
+
+    public void testMoveClassUndoRedo() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkg.MoveClass reference2; } }"));
+        performMoveClass(Lookups.singleton(src.getFileObject("movepkg/MoveClass.java")), new URL(src.getURL(), "movepkgdst/"));
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkgdst/MoveClass.java", "package movepkgdst; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; import movepkgdst.MoveClass; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkgdst.MoveClass reference2; } }"));
+        UndoManager undoManager = UndoManager.getDefault();
+        undoManager.setAutoConfirm(true);
+        undoManager.undo(null);
+        verifyContent(src,
+                new File("movepkgdst/package-info.java", "package movepkgdst;"),
+                new File("movepkg/MoveClass.java", "package movepkg; public class MoveClass { public MoveClass() { } }"),
+                new File("movepkg/MoveClassDep.java", "package movepkg; public class MoveClassDep { public MoveClassDep() { MoveClass reference; movepkg.MoveClass reference2; } }"));
+        undoManager.redo(null);
         verifyContent(src,
                 new File("movepkgdst/package-info.java", "package movepkgdst;"),
                 new File("movepkgdst/MoveClass.java", "package movepkgdst; public class MoveClass { public MoveClass() { } }"),

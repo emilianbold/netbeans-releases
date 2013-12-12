@@ -482,6 +482,10 @@ abstract class BackupFacility2 {
             backup.deleteOnExit();
             boolean exists = false;
             FileObject fo = entry.orig;
+            if(!fo.isValid()) { // Try to restore FO
+                FileObject file = FileUtil.toFileObject(FileUtil.toFile(fo));
+                fo = file == null? fo : file;
+            }
             if (exists = fo.isValid()) {
                 backup.createNewFile();
                 copy(fo, backup);
