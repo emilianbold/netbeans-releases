@@ -308,7 +308,7 @@ public class TreeModelRoot {
         return treeNodeDisplayFormat;
     }
 
-    private final class ModelChangeListener implements ModelListener {
+    private final class ModelChangeListener implements ModelRootChangeListener {
 
         //private final Logger logger = Logger.getLogger(ModelChangeListener.class.getName());
 

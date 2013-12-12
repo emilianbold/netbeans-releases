@@ -79,6 +79,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.viewmodel.AsynchronousModel;
 import org.netbeans.modules.viewmodel.DefaultTreeExpansionManager;
 import org.netbeans.modules.viewmodel.HyperCompoundModel;
+import org.netbeans.modules.viewmodel.ModelRootChangeListener;
 import org.netbeans.modules.viewmodel.OutlineTable;
 import org.netbeans.modules.viewmodel.TreeModelNode.ActionOnPresetNodes;
 import org.netbeans.modules.viewmodel.TreeModelNode.DisableableAction;
@@ -1024,6 +1025,7 @@ public final class Models {
         public void removeModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
+                removeLonelyModelRootChangelisteners(modelListeners);
                 if (modelListeners.isEmpty()) {
                     filter.removeModelListener (this);
                     model.removeModelListener (this);
@@ -1067,6 +1069,18 @@ public final class Models {
                    n + "  " + model;
         }
 
+    }
+    
+    private static void removeLonelyModelRootChangelisteners(Collection<ModelListener> listeners) {
+        if (listeners.isEmpty()) {
+            return ;
+        }
+        for (ModelListener ml : listeners) {
+            if (!(ml instanceof ModelRootChangeListener)) {
+                return ;
+            }
+        }
+        listeners.clear();
     }
 
     private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
@@ -1186,6 +1200,7 @@ public final class Models {
         public void removeModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
+                removeLonelyModelRootChangelisteners(modelListeners);
                 if (modelListeners.isEmpty()) {
                     filter.removeModelListener (this);
                     model.removeModelListener (this);
@@ -1542,6 +1557,7 @@ public final class Models {
         public void removeModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
+                removeLonelyModelRootChangelisteners(modelListeners);
                 if (modelListeners.isEmpty()) {
                     if (filter != null) {
                         filter.removeModelListener (this);
@@ -1659,6 +1675,7 @@ public final class Models {
         public void removeModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
+                removeLonelyModelRootChangelisteners(modelListeners);
                 if (modelListeners.isEmpty()) {
                     filter.removeModelListener (this);
                     model.removeModelListener (this);
@@ -2148,6 +2165,7 @@ public final class Models {
         public void removeModelListener (ModelListener l) {
             synchronized (modelListeners) {
                 modelListeners.remove(l);
+                removeLonelyModelRootChangelisteners(modelListeners);
                 if (modelListeners.isEmpty()) {
                     expansionFilter.removeModelListener (this);
                     //model.removeModelListener (this);
