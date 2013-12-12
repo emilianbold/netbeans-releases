@@ -141,6 +141,9 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         try {
             progressHandle.start();
             forDownload = transferFilesToDownload != null ? transferFilesToDownload : remoteClient.prepareDownload(sources, filesToDownload);
+
+            RemoteUtils.fetchAllFiles(true, forDownload, sources, filesToDownload);
+
             if (showDownloadDialog) {
                 boolean reallyShowDialog = true;
                 if (forDownload.size() == 1
@@ -150,7 +153,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 }
 
                 if (reallyShowDialog) {
-                    long timestamp = project != null ? ProjectSettings.getLastDownload(project) : -1;
+                    long timestamp = project != null ? RemoteUtils.getLastTimestamp(false, project) : -1;
                     forDownload = TransferFilesChooser.forDownload(forDownload, timestamp).showDialog();
                 }
             }

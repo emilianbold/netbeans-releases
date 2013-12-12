@@ -66,9 +66,11 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.expr.formatters.Formatters;
+import org.netbeans.modules.debugger.jpda.expr.formatters.FormattersLoopControl;
 import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
 import org.netbeans.modules.debugger.jpda.ui.IOManager;
-import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
+import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
@@ -94,7 +96,6 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     //private JPDADebugger debugger;
     private IOManager ioManager;
-    private VariablesFormatter[] formatters;
     private VariablesFormatter[] formattersWithExpandTestCode;
     private final Object formattersLock = new Object();
     private Properties jpdaProperties;
@@ -128,6 +129,23 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     }
 
     private VariablesFormatter[] getFormatters() {
+        Formatters formatters = Formatters.getDefault();
+        if (formattersChangeListener == null) {
+            formattersChangeListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (Formatters.PROP_FORMATTERS.equals(evt.getPropertyName())) {
+                        synchronized (formattersLock) {
+                            formattersWithExpandTestCode = null;
+                            childrenExpandTest.clear();
+                        }
+                    }
+                }
+            };
+            formatters.addPropertyChangeListener(WeakListeners.propertyChange(formattersChangeListener, formatters));
+        }
+        return formatters.getFormatters();
+        /*
         synchronized (formattersLock) {
             if (formatters == null) {
                 formattersChangeListener = new PropertyChangeListener() {
@@ -148,6 +166,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             }
             return formatters;
         }
+        */
     }
 
     private VariablesFormatter[] getFormattersWithExpandTestCode() {
@@ -255,8 +274,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 return original.getChildren (variable, from, to);
             }
 
-            VariablesFormatter f = getFormatterForType(ct, formatters.getFormatters());
-            if (f != null && formatters.canUse(f, ct.getName())) {
+            VariablesFormatter f = Formatters.getFormatterForType(ct, formatters.getFormatters());
+            String[] formattersInLoopRef = new String[] { null };
+            if (f != null && formatters.canUse(f, ct.getName(), formattersInLoopRef)) {
                 if (f.isUseChildrenVariables()) {
                     Map<String, String> chvs = f.getChildrenVariables();
                     Object[] ch = new Object[chvs.size()];
@@ -303,31 +323,12 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                         }
                     }
                 }
+            } else if (formattersInLoopRef[0] != null) {
+                printFormattersInLoopDetected(formattersInLoopRef[0]);
             }
         }
         
         return original.getChildren (variable, from, to);
-    }
-
-    private VariablesFormatter getFormatterForType(JPDAClassType ct, VariablesFormatter[] formatters) {
-        String cname = ct.getName();
-        for (VariablesFormatter f: formatters) {
-            if (!f.isEnabled()) {
-                continue;
-            }
-            String[] types = f.getClassTypes();
-            boolean applies = false;
-            for (String type : types) {
-                if (type.equals(cname) || (f.isIncludeSubTypes() && isInstanceOf(ct, type))) {
-                    applies = true;
-                    break;
-                }
-            }
-            if (applies) {
-                return f;
-            }
-        }
-        return null;
     }
 
     /**
@@ -360,7 +361,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
             public void run() {
                 boolean isLeaf = false;
                 try {
-                    VariablesFormatter f = getFormatterForType(ct, getFormattersWithExpandTestCode());
+                    VariablesFormatter f = Formatters.getFormatterForType(ct, getFormattersWithExpandTestCode());
                     if (f != null) {
                         String expandTestCode = f.getChildrenExpandTestCode();
                         if ("false".equals(expandTestCode)) {   // Optimalization for constant
@@ -481,8 +482,9 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         if (ct == null) {
             return original.getValueAt (variable, columnID);
         }
-        VariablesFormatter f = getFormatterForType(ct, formatters.getFormatters());
-        if (f != null && formatters.canUse(f, ct.getName()) &&
+        VariablesFormatter f = Formatters.getFormatterForType(ct, formatters.getFormatters());
+        String[] formattersInLoopRef = new String[] { null };
+        if (f != null && formatters.canUse(f, ct.getName(), formattersInLoopRef) &&
             ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
               columnID == Constants.WATCH_VALUE_COLUMN_ID ||
               columnID == Constants.LOCALS_TO_STRING_COLUMN_ID ||
@@ -509,6 +511,8 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 }
             }
 
+        } else if (formattersInLoopRef[0] != null) {
+            printFormattersInLoopDetected(formattersInLoopRef[0]);
         }
         if ( isToStringValueType (type) &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
@@ -613,64 +617,22 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         return toStringValueType.contains (type);
     }
     
-    private static boolean isInstanceOf(JPDAClassType ct, String className) {
-        if (ct == null) return false;
-        try {
-            java.lang.reflect.Method isInstanceOfMethod = ct.getClass().getMethod("isInstanceOf", String.class);
-            return (Boolean) isInstanceOfMethod.invoke(ct, className);
-        } catch (java.lang.reflect.InvocationTargetException itex) {
-            Throwable t = itex.getTargetException();
-            if (t instanceof VMDisconnectedException) {
-                return false;
-            } else if (t instanceof ObjectCollectedException) {
-                return false;
-            } else if (t instanceof InternalException) {
-                return false;
-            } else if (t instanceof InvalidStackFrameException) {
-                return false;
-            } else {
-                Exceptions.printStackTrace(itex);
-                return false;
-            }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
-    }
-
-    private final class FormattersLoopControl {
-
-        private Map<String, VariablesFormatter> usedFormatters;
-
-        public FormattersLoopControl() {
-            usedFormatters = new LinkedHashMap<String, VariablesFormatter>();
-        }
-
-        public VariablesFormatter[] getFormatters() {
-            return VariablesFormatterFilter.this.getFormatters();
-        }
-
-        public boolean canUse(VariablesFormatter f, String type) {
-            boolean can = usedFormatters.put(type, f) == null;
-            if (!can && getIOManager() != null && !String.class.getName().equals(type)) {
-                if (!formattersLoopWarned) {
-                    formattersLoopWarned = true;
-                    ioManager.println(
-                        NbBundle.getMessage(VariablesFormatterFilter.class,
-                                            "MSG_LoopInTypeFormattingIntroErrorMessage"),
-                        null, true);
-                }
-                List<String> names = new ArrayList<String>(usedFormatters.size());
-                for (Map.Entry<String, VariablesFormatter> vf : usedFormatters.entrySet()) {
-                    names.add(vf.getValue().getName()+" ("+vf.getKey()+")");
-                }
+    private void printFormattersInLoopDetected(String formattersInLoop) {
+        if (getIOManager() != null) {
+            if (!formattersLoopWarned) {
+                formattersLoopWarned = true;
                 ioManager.println(
-                        NbBundle.getMessage(VariablesFormatterFilter.class,
-                                            "MSG_LoopInTypeFormatting",
-                                            names.toString()),
-                        null, false);
+                    NbBundle.getMessage(VariablesFormatterFilter.class,
+                                        "MSG_LoopInTypeFormattingIntroErrorMessage"),
+                    null, true);
             }
-            return can;
+            ioManager.println(
+                    NbBundle.getMessage(VariablesFormatterFilter.class,
+                                        "MSG_LoopInTypeFormatting",
+                                        formattersInLoop),
+                    null, false);
+            
         }
     }
+
 }

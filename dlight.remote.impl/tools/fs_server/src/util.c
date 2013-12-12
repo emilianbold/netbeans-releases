@@ -510,3 +510,19 @@ int utf8_strlen(const char *buffer) {
     }
     return len;
 }
+
+/** returns true if dir is subdirectory of parent OR if they are EQUAL */
+bool is_subdir(const char* child, const char* parent) {
+    const char *p = child;
+    const char *d = parent;
+    while (*d && *d == *p) {
+        p++;
+        d++;
+    }
+    // we are either at dir terminating '\0' or first differnce
+    if (*d) {
+        return false;
+    } else {
+        return *p == '/' || *p == 0;
+    }   
+}

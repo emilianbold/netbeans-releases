@@ -128,7 +128,7 @@ public class RemoteFileObjectFactory {
         return putIfAbsent(fo.getPath(), fo);
     }
 
-    private RemoteFileObjectBase createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteDirectory(RemoteDirectory parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
         String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);

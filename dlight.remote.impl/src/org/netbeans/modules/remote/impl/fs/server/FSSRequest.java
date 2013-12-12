@@ -61,6 +61,12 @@ public final class FSSRequest {
         this.kind = kind;
         this.path = path;
     }
+    
+    /*package*/ FSSRequest(FSSRequestKind kind, String path, boolean zeroId) {
+        this.id = zeroId ? 0 : nextId.incrementAndGet();
+        this.kind = kind;
+        this.path = path;
+    }
 
     public int getId() {
         return id;
@@ -77,5 +83,9 @@ public final class FSSRequest {
     @Override
     public String toString() {
         return getClass().getSimpleName() + ' ' + kind + ' ' + id + path; //NOI18N
+    }
+
+    /*package*/ boolean needsResponse() {
+        return id > 0;
     }
 }

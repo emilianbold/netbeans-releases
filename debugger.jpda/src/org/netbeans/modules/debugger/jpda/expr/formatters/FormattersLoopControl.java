@@ -40,31 +40,38 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.server;
+package org.netbeans.modules.debugger.jpda.expr.formatters;
 
-/** 
- * Request and response kind 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ *
+ * @author Martin Entlicher
  */
- public enum FSSRequestKind {
-    FS_REQ_LS('l'), 
-    FS_REQ_RECURSIVE_LS('r'), 
-    FS_REQ_STAT('S'), 
-    FS_REQ_LSTAT('s'),
-    FS_REQ_CANCEL('c'), 
-    FS_REQ_QUIT('q'),
-    FS_REQ_SLEEP('P'),
-    FS_REQ_ADD_WATCH('W'),
-    FS_REQ_REMOVE_WATCH('w'),
-    FS_REQ_REFRESH('R');
-
-    private final char letter;
-
-    private FSSRequestKind(char letter) {
-        this.letter = letter;
-    }
-
-    public char getChar() {
-        return letter;
-    }
+public class FormattersLoopControl {
     
+    private final Map<String, VariablesFormatter> usedFormatters;
+
+    public FormattersLoopControl() {
+        usedFormatters = new LinkedHashMap<String, VariablesFormatter>();
+    }
+
+    public VariablesFormatter[] getFormatters() {
+        return Formatters.getDefault().getFormatters();
+    }
+
+    public boolean canUse(VariablesFormatter f, String type, String[] formattersInLoopRef) {
+        boolean can = usedFormatters.put(type, f) == null;
+        if (!can && formattersInLoopRef != null && !String.class.getName().equals(type)) {
+            List<String> names = new ArrayList<String>(usedFormatters.size());
+            for (Map.Entry<String, VariablesFormatter> vf : usedFormatters.entrySet()) {
+                names.add(vf.getValue().getName()+" ("+vf.getKey()+")");
+            }
+            formattersInLoopRef[0] = names.toString();
+        }
+        return can;
+    }
 }
