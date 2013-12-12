@@ -398,7 +398,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         private ValidationResult getValidationResult() {
             boolean compilationEnabled = getComponent().isCompilationEnabled();
             return type.getPreferencesValidator()
-                    .validateMappings(compilationEnabled, getComponent().getMappings())
+                    .validateMappings(CssPreprocessorUtils.getWebRoot(project), compilationEnabled, getComponent().getMappings())
                     .validateExecutable(compilationEnabled)
                     .getResult();
         }

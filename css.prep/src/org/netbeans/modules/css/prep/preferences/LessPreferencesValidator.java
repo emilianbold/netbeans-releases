@@ -42,11 +42,13 @@
 package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
@@ -63,14 +65,15 @@ public class LessPreferencesValidator implements CssPreprocessorPreferencesValid
     @Override
     public LessPreferencesValidator validate(Project project) {
         LessPreferences lessPreferences = LessPreferences.getInstance();
-        return validateMappings(lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
+        return validateMappings(CssPreprocessorUtils.getWebRoot(project), lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
     }
 
     @Override
-    public LessPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings) {
+    public LessPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings) {
+        assert root != null;
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
-                    .validate(mappings)
+                    .validate(root, mappings)
                     .getResult());
         }
         return this;
