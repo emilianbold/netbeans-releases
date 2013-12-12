@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChangeSupport;
 import org.netbeans.modules.php.project.connections.ui.transfer.TransferFilesChooser;
@@ -140,7 +141,12 @@ final class TransferSelectorModel {
             return;
         }
         transferFiles.add(transferFile);
-        if (selected.contains(transferFile.getParent())
+        boolean selectNode = false;
+        if (!RemoteUtils.allFilesFetched(transferType == TransferFilesChooser.TransferType.DOWNLOAD)) {
+            // lazy children
+            selectNode = selected.contains(transferFile.getParent());
+        }
+        if (selectNode
                 || preselect(transferFile)) {
             setNodeSelected(node, true);
         }
