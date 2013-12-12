@@ -681,4 +681,16 @@ public class Css3ParserLessTest extends CssTestBase {
                 "    @import \"_768up.less\";\n" +
                 "}");
     }
+
+    public void testIssue237976_01() {
+        assertParses(".img-responsive(@display: block; @disp: block) {\n" +
+                "  height: auto;\n" +
+                "}");
+    }
+
+    public void testIssue237976_02() {
+        assertParses(".img-responsive2(@display: block;) {\n" +
+                "  height: auto;\n" +
+                "}");
+    }
 }
