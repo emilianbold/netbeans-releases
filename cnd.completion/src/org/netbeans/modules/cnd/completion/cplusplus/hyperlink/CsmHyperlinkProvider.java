@@ -67,6 +67,8 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -318,6 +320,21 @@ public class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 CsmClassifier cls = CsmClassifierResolver.getDefault().getOriginalClassifier((CsmClassifier)csmObject, csmFile);
                 if (CsmKindUtilities.isOffsetable(cls)) {
                     item = (CsmOffsetable) cls;
+                }
+            } else if (CsmKindUtilities.isTypedef(csmObject)) {
+                CsmTypedef td  = (CsmTypedef) csmObject;
+                CsmType type = td.getType();
+                CsmClassifier typeCls = type != null ? type.getClassifier() : null;
+                if (CsmKindUtilities.isOffsetable(typeCls)) {
+                    if (CsmKindUtilities.isClassForwardDeclaration(typeCls) || CsmKindUtilities.isEnumForwardDeclaration(typeCls)) {
+                        // Special case: typedef is a synonim of the class with the same name
+                        if (td.getQualifiedName().equals(typeCls.getQualifiedName())) {
+                            CsmClassifier cls = CsmClassifierResolver.getDefault().getOriginalClassifier(typeCls, csmFile);
+                            if (CsmKindUtilities.isOffsetable(cls)) {
+                                item = (CsmOffsetable) cls;
+                            }
+                        }
+                    }
                 }
             }
         } else if (CsmKindUtilities.isNamespace(csmObject)) {
