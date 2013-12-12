@@ -109,6 +109,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private QuickSearch quickSearch;
     private final QuickSearch.Callback filterCallback;
     private JLabel lblEmptyDetails;
+    private final Font italicFont;
 
     public NotificationCenterTopComponent() {
         notificationManager = NotificationCenterManager.getInstance();
@@ -116,6 +117,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         tableRefreshTimer = new Timer(TABLE_REFRESH_PERIOD, new RefreshTimerListener());
         tableRefreshTimer.stop();
         tableKeyListener = new TableKeyListener();
+        italicFont = new JLabel().getFont().deriveFont(Font.ITALIC);
         setName(NbBundle.getMessage(NotificationCenterTopComponent.class, "CTL_NotificationCenterTopComponent"));
         setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "HINT_NotificationCenterTopComponent"));
     }
@@ -126,7 +128,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         Color color = Utils.getTextBackground();
         detailsPanel.setBackground(new Color(color.getRed(), color.getGreen(), color.getBlue()));
         lblEmptyDetails = new JLabel(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_EmptyDetails"), JLabel.CENTER);
-        lblEmptyDetails.setFont(lblEmptyDetails.getFont().deriveFont(Font.ITALIC));
+        lblEmptyDetails.setFont(italicFont);
         lblEmptyDetails.setEnabled(false);
 
         splitPane.setRightComponent(detailsPanel);
