@@ -60,34 +60,34 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class ProxySettings {
     
-    public static final String PROXY_HTTP_HOST = "proxyHttpHost";
-    public static final String PROXY_HTTP_PORT = "proxyHttpPort";
-    public static final String PROXY_HTTPS_HOST = "proxyHttpsHost";
-    public static final String PROXY_HTTPS_PORT = "proxyHttpsPort";
-    public static final String PROXY_SOCKS_HOST = "proxySocksHost";
-    public static final String PROXY_SOCKS_PORT = "proxySocksPort";
-    public static final String NOT_PROXY_HOSTS = "proxyNonProxyHosts";
-    public static final String PROXY_TYPE = "proxyType";
-    public static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication";
-    public static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";
-    public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";
-    public static final String USE_PROXY_ALL_PROTOCOLS = "useProxyAllProtocols";
-    public static final String DIRECT = "DIRECT";
-    public static final String PAC = "PAC";
+    public static final String PROXY_HTTP_HOST = "proxyHttpHost";   // NOI18N
+    public static final String PROXY_HTTP_PORT = "proxyHttpPort";   // NOI18N
+    public static final String PROXY_HTTPS_HOST = "proxyHttpsHost"; // NOI18N
+    public static final String PROXY_HTTPS_PORT = "proxyHttpsPort"; // NOI18N
+    public static final String PROXY_SOCKS_HOST = "proxySocksHost"; // NOI18N
+    public static final String PROXY_SOCKS_PORT = "proxySocksPort"; // NOI18N
+    public static final String NOT_PROXY_HOSTS = "proxyNonProxyHosts";  // NOI18N
+    public static final String PROXY_TYPE = "proxyType";                // NOI18N
+    public static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
+    public static final String PROXY_AUTHENTICATION_USERNAME = "proxyAuthenticationUsername";   // NOI18N
+    public static final String PROXY_AUTHENTICATION_PASSWORD = "proxyAuthenticationPassword";   // NOI18N
+    public static final String USE_PROXY_ALL_PROTOCOLS = "useProxyAllProtocols";    // NOI18N
+    public static final String DIRECT = "DIRECT";   // NOI18N
+    public static final String PAC = "PAC";     // NOI18N
     
-    public static final String SYSTEM_PROXY_HTTP_HOST = "systemProxyHttpHost";
-    public static final String SYSTEM_PROXY_HTTP_PORT = "systemProxyHttpPort";
-    public static final String SYSTEM_PROXY_HTTPS_HOST = "systemProxyHttpsHost";
-    public static final String SYSTEM_PROXY_HTTPS_PORT = "systemProxyHttpsPort";
-    public static final String SYSTEM_PROXY_SOCKS_HOST = "systemProxySocksHost";
-    public static final String SYSTEM_PROXY_SOCKS_PORT = "systemProxySocksPort";
-    public static final String SYSTEM_NON_PROXY_HOSTS = "systemProxyNonProxyHosts";
-    public static final String SYSTEM_PAC = "systemPAC";
+    public static final String SYSTEM_PROXY_HTTP_HOST = "systemProxyHttpHost";      // NOI18N
+    public static final String SYSTEM_PROXY_HTTP_PORT = "systemProxyHttpPort";      // NOI18N
+    public static final String SYSTEM_PROXY_HTTPS_HOST = "systemProxyHttpsHost";    // NOI18N
+    public static final String SYSTEM_PROXY_HTTPS_PORT = "systemProxyHttpsPort";    // NOI18N
+    public static final String SYSTEM_PROXY_SOCKS_HOST = "systemProxySocksHost";    // NOI18N
+    public static final String SYSTEM_PROXY_SOCKS_PORT = "systemProxySocksPort";    // NOI18N
+    public static final String SYSTEM_NON_PROXY_HOSTS = "systemProxyNonProxyHosts"; // NOI18N
+    public static final String SYSTEM_PAC = "systemPAC";                            // NOI18N
     
     // Only for testing purpose (Test connection in General options panel)
-    public static final String TEST_SYSTEM_PROXY_HTTP_HOST = "testSystemProxyHttpHost";
-    public static final String TEST_SYSTEM_PROXY_HTTP_PORT = "testSystemProxyHttpPort";
-    public static final String HTTP_CONNECTION_TEST_URL = "http://netbeans.org";
+    public static final String TEST_SYSTEM_PROXY_HTTP_HOST = "testSystemProxyHttpHost"; // NOI18N
+    public static final String TEST_SYSTEM_PROXY_HTTP_PORT = "testSystemProxyHttpPort"; // NOI18N
+    public static final String HTTP_CONNECTION_TEST_URL = "http://netbeans.org";        // NOI18N
     
     private static String presetNonProxyHosts;
 
@@ -234,7 +234,7 @@ public class ProxySettings {
     public static void setAuthenticationPassword(char[] password) {
         Keyring.save(ProxySettings.PROXY_AUTHENTICATION_PASSWORD, password,
                 // XXX consider including getHttpHost and/or getHttpsHost
-                NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));
+                NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));    // NOI18N
     }
 
     public static void addPreferenceChangeListener (PreferenceChangeListener l) {
@@ -247,7 +247,7 @@ public class ProxySettings {
     
     private static String getPresetNonProxyHosts () {
         if (presetNonProxyHosts == null) {
-            presetNonProxyHosts = System.getProperty ("http.nonProxyHosts", "");
+            presetNonProxyHosts = System.getProperty ("http.nonProxyHosts", "");    // NOI18N
         }
         return presetNonProxyHosts;
     }
@@ -267,9 +267,9 @@ public class ProxySettings {
             if (n.isEmpty()) {
                 continue;
             }
-            if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '|') {
-                if (!n.startsWith("|")) {
-                    sb.append('|');
+            if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '|') { // NOI18N
+                if (!n.startsWith("|")) {   // NOI18N
+                    sb.append('|');         // NOI18N
                 }
             }
             sb.append(n);
@@ -343,7 +343,7 @@ public class ProxySettings {
             String t = st.nextToken ();
             if (set.add (t.toLowerCase (Locale.US))) {
                 if (compactedProxyHosts.length() > 0) {
-                    compactedProxyHosts.append('|');
+                    compactedProxyHosts.append('|');    // NOI18N
                 }
                 compactedProxyHosts.append(t);
             }
@@ -352,7 +352,7 @@ public class ProxySettings {
     }
     
     private static String addReguralToNonProxyHosts (String nonProxyHost) {
-        StringTokenizer st = new StringTokenizer (nonProxyHost, "|");
+        StringTokenizer st = new StringTokenizer (nonProxyHost, "|");   // NOI18N
         StringBuilder reguralProxyHosts = new StringBuilder();
         while (st.hasMoreTokens ()) {
             String t = st.nextToken ();
@@ -360,7 +360,7 @@ public class ProxySettings {
                 t = t + '*'; //NOI18N
             }
             if (reguralProxyHosts.length() > 0) 
-                reguralProxyHosts.append('|');
+                reguralProxyHosts.append('|');  // NOI18N
             reguralProxyHosts.append(t);
         }
 
@@ -376,10 +376,10 @@ public class ProxySettings {
     }
     
     private static InetSocketAddress analyzeProxy(URI uri) {
-        Parameters.notNull("uri", uri);
+        Parameters.notNull("uri", uri);     // NOI18N
         List<Proxy> proxies = ProxySelector.getDefault().select(uri);
-        assert proxies != null : "ProxySelector cannot return null for " + uri;
-        assert !proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;
+        assert proxies != null : "ProxySelector cannot return null for " + uri;     // NOI18N
+        assert !proxies.isEmpty() : "ProxySelector cannot return empty list for " + uri;    // NOI18N
         String protocol = uri.getScheme();
         Proxy p = proxies.get(0);
         if (Proxy.Type.DIRECT == p.type()) {
@@ -387,14 +387,14 @@ public class ProxySettings {
             return null;
         }
         if (protocol == null
-                || ((protocol.startsWith("http") || protocol.equals("ftp")) && Proxy.Type.HTTP == p.type())
-                || !(protocol.startsWith("http") || protocol.equals("ftp"))) {
+                || ((protocol.startsWith("http") || protocol.equals("ftp")) && Proxy.Type.HTTP == p.type()) // NOI18N
+                || !(protocol.startsWith("http") || protocol.equals("ftp"))) {  // NOI18N
             if (p.address() instanceof InetSocketAddress) {
                 // check is
                 //assert ! ((InetSocketAddress) p.address()).isUnresolved() : p.address() + " must be resolved address.";
                 return (InetSocketAddress) p.address();
             } else {
-                LOGGER.log(Level.INFO, p.address() + " is not instanceof InetSocketAddress but " + p.address().getClass());
+                LOGGER.log(Level.INFO, p.address() + " is not instanceof InetSocketAddress but " + p.address().getClass()); // NOI18N
                 return null;
             }
         } else {

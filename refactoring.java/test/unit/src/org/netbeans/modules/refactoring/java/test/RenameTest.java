@@ -70,6 +70,52 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testJavadocEnum2() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is ONE test\n"
+                + "     * @see www.netbeans.org\n"
+                + "     */\n"
+                + "    ONE\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, "TWO", null, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is TWO test\n"
+                + "     * @see www.netbeans.org\n"
+                + "     */\n"
+                + "    TWO\n"
+                + "}"));
+    }
+    
+        public void testJavadocFieldgroup() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is a test\n"
+                + "     */\n"
+                + "    private String s, t;\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, "v", null, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * This is a test\n"
+                + "     */\n"
+                + "    private String v, t;\n"
+                + "}"));
+    }
+    
     public void testJavadocEnum() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

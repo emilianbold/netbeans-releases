@@ -276,6 +276,9 @@ public class CsmContextUtilities {
                     if (CsmKindUtilities.isFunctionExplicitInstantiation(entry.getScope())) {
                         incAll = include = true;
                     }
+                    if (CsmKindUtilities.isFunctionPointerType(entry.getScope())) {
+                        incAll = include = true;
+                    }
                 } else if (!includeFunctionVars) {
                     assert (includeFileLocal);
                     // we have sorted context entries => if we reached function or class =>
@@ -665,7 +668,7 @@ public class CsmContextUtilities {
         CsmFunction fun = getFunction(context, true);
         return fun != null; 
     }     
-
+    
     public static boolean isInFunctionInstantiation(CsmContext context, int offset) {
         CsmFunctionInstantiation fi = getFunctionInstantiation(context, true);
         return fi != null;
@@ -677,6 +680,7 @@ public class CsmContextUtilities {
         return (type != null) && 
                 !type.isInstantiation() && 
                 !checkDecltype(type) &&
+                !CsmKindUtilities.isFunctionPointerType(type) &&
                 CsmOffsetUtilities.isInObject(type, offset);
     }
     
@@ -706,7 +710,7 @@ public class CsmContextUtilities {
      * @param type
      * @return true if type is based on decltype
      */
-    private static boolean checkDecltype(CsmType type) {
+    static boolean checkDecltype(CsmType type) {
         String fullName = type.getClassifierText().toString();
         String nameParts[] = fullName.split("::"); // NOI18N         
         for (String part : nameParts) {

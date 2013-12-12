@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
  * @author  Jiri Rechtacek
  *          Winston Prakash - Added optional Page Layout Chooser Panel
  */
-public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+public class NewFileIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 1L;
     
@@ -82,7 +82,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
     private transient WizardDescriptor wiz;
     private transient Project currentProject;
     
-    private transient boolean isFolder;
+    private final transient boolean isFolder;
     
     
     /** Create a new wizard iterator. */

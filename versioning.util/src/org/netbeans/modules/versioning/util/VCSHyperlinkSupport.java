@@ -242,8 +242,13 @@ public class VCSHyperlinkSupport {
             this.bounds = new Rectangle[length];
             for (int i = 0; i < length; i++) {
                 try {
-                    Rectangle startr = tui.modelToView(textPane, docstart[i], Position.Bias.Forward).getBounds();
-                    Rectangle endr = tui.modelToView(textPane, docend[i], Position.Bias.Backward).getBounds();
+                    Rectangle startr = tui.modelToView(textPane, docstart[i], Position.Bias.Forward);
+                    Rectangle endr = tui.modelToView(textPane, docend[i], Position.Bias.Backward);
+                    if (startr == null || endr == null) {
+                        continue;
+                    }
+                    startr = startr.getBounds();
+                    endr = endr.getBounds();
                     this.bounds[i] = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
                     //NOTE the textPane is positioned within a parent panel so the origin has to be modified too
                     if (null != translator) {

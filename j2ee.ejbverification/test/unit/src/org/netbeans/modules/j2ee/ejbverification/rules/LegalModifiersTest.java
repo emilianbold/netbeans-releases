@@ -69,6 +69,15 @@ public class LegalModifiersTest extends TestBase {
             + "public final class TestBean3 {\n"
             + "  public TestBean3() { }"
             + "}";
+    private static final String TEST_BEAN3_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public final class TestBean3 {\n"
+            + "  public TestBean3() { }"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "final class TestBean4 {\n"
+            + "  public TestBean4() { }"
+            + "}";
 
     public void testLegalModifiersNotPublic() throws Exception {
         TestModule testModule = createEjb31Module();
@@ -95,5 +104,16 @@ public class LegalModifiersTest extends TestBase {
                 .input("test/TestBean3.java", TEST_BEAN3)
                 .run(LegalModifiers.class)
                 .assertWarnings("2:19-2:28:error:" + Bundle.LegalModifiers_BeanClassNotBeFinal());
+    }
+
+    public void testLegalModifiersFinalMoreBeansInFile() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean3.java", TEST_BEAN3_MORE_CLASSES)
+                .run(LegalModifiers.class)
+                .assertWarnings("2:19-2:28:error:" + Bundle.LegalModifiers_BeanClassNotBeFinal(),
+                                "5:12-5:21:error:" + Bundle.LegalModifiers_BeanClassMustBePublic(),
+                                "5:12-5:21:error:" + Bundle.LegalModifiers_BeanClassNotBeFinal());
     }
 }

@@ -43,10 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
-
 
 /**
  * @author ads
@@ -54,51 +52,34 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public class DbgpSessionProvider extends SessionProvider {
     private ContextProvider myContextProvider;
-    
-    public DbgpSessionProvider( ContextProvider contextProvider ) {
+
+    public DbgpSessionProvider(ContextProvider contextProvider) {
         myContextProvider = contextProvider;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.SessionProvider#getLocationName()
-     */
     @Override
-    public String getLocationName()
-    {
-        // TODO Auto-generated method stub
+    public String getLocationName() {
         return "LOCATION NAME";
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.SessionProvider#getServices()
-     */
     @Override
-    public Object[] getServices()
-    {
+    public Object[] getServices() {
         return new Object[0];
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.SessionProvider#getSessionName()
-     */
     @Override
-    public String getSessionName()
-    {
-        SessionId id = (SessionId)
-            getContextProvider().lookupFirst( null , SessionId.class );
-        return id.getId();//findUnique( id.getSessionPrefix() );
+    public String getSessionName() {
+        SessionId id = (SessionId) getContextProvider().lookupFirst(null, SessionId.class);
+        return id.getId();
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.spi.debugger.SessionProvider#getTypeID()
-     */
     @Override
-    public String getTypeID()
-    {
+    public String getTypeID() {
         return DebuggerImpl.SESSION_ID;
     }
-    
+
     private ContextProvider getContextProvider() {
         return myContextProvider;
-    }       
+    }
+
 }

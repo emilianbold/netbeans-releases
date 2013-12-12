@@ -2148,8 +2148,18 @@
                     var outfile = new String(project.getProperty("application.title"));
                     var includeDT = new String(project.getProperty("javafx.deploy.includeDT"));
                     var offline = new String(project.getProperty("javafx.deploy.allowoffline"));
-                    deploy.setWidth(width);
-                    deploy.setHeight(height);
+                    if (width.indexOf("%") != -1) {
+                        deploy.setEmbeddedWidth(width);
+                        deploy.setWidth(800);
+                    } else {
+                        deploy.setWidth(width);
+                    }
+                    if (height.indexOf("%") != -1) {
+                        deploy.setEmbeddedHeight(height);
+                        deploy.setHeight(600);
+                    } else {
+                        deploy.setHeight(height);
+                    }
                     deploy.setOutdir(outdir);
                     deploy.setEmbedJNLP(isTrue(embedJNLP));
                     deploy.setUpdateMode(updatemode);

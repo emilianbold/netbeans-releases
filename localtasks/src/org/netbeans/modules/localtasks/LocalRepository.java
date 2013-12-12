@@ -144,7 +144,7 @@ public final class LocalRepository {
         return Collections.<LocalQuery>singletonList(LocalQuery.getInstance());
     }
 
-    TaskRepository getTaskRepository () {
+    public TaskRepository getTaskRepository () {
         if (taskRepository == null) {
             taskRepository = MylynSupport.getInstance().getLocalTaskRepository();
         }
@@ -203,8 +203,9 @@ public final class LocalRepository {
                 }
                 
             });
-            LocalQuery.getInstance().fireTasksChanged();
-            return getLocalTask(task);
+            LocalTask lt = getLocalTask(task);
+            LocalQuery.getInstance().addTask(lt);
+            return lt;
         } catch (OperationCanceledException ex) {
             // creation of new task may be immediately canceled
             // happens when more repositories are available and
@@ -242,7 +243,7 @@ public final class LocalRepository {
             getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run () {
-                    LocalQuery.getInstance().fireTasksChanged();
+                    LocalQuery.getInstance().fireFinished();
                 }
             });
         }
@@ -296,8 +297,11 @@ public final class LocalRepository {
 
     public void taskDeleted (String id) {
         LocalRepositoryConfig.getInstance().deleteTaskPreferences(id);
-        getCache().removeTask(id);
-        LocalQuery.getInstance().fireTasksChanged();
+        LocalTask lt = getCache().getTask(id);
+        if(lt != null) {
+            getCache().removeTask(id);
+            LocalQuery.getInstance().removeTask(lt);
+        }
     }
     
     private class Cache {

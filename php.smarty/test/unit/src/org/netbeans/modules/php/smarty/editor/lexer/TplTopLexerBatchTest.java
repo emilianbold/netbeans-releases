@@ -372,6 +372,51 @@ public class TplTopLexerBatchTest extends TplTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
     }
 
+    public void testIssue235733_1() {
+        String text = "{assign var='sss' value='I\"m string'}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "assign var='sss' value='I\"m string'");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    public void testIssue235733_2() {
+        String text = "{assign var='sss' value=\"I'm string\"}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "assign var='sss' value=\"I'm string\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    public void testIssue235733_3() {
+        String text = "{assign var='sss' value='I\\'m string'}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "assign var='sss' value='I\\'m string'");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    public void testIssue235733_4() {
+        // this is unescaped apostrophe
+        String text = "{assign var='sss' value='I\'m string'}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "assign var='sss' value='I\'m string'}");
+    }
+
+    public void testIssue235733_5() {
+        String text = "{assign var='sss' value=\"escape \\\" char \"}";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "assign var='sss' value=\"escape \\\" char \"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
     private TokenSequence createTokenSequence(String text) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());
         return hi.tokenSequence();

@@ -526,7 +526,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                     break;
                 }
                 
-                final boolean metadataFolder = VCSFileProxy.createFileProxy(parent, folderName).exists();
+                // is the folder a special one where metadata should not be looked for?
+                boolean forbiddenFolder = Utils.isForbiddenFolder(parent);
+                final boolean metadataFolder = !forbiddenFolder && VCSFileProxy.createFileProxy(parent, folderName).exists();
                 if(metadataFolder) {
                     LOG.log(
                             Level.FINER, 

@@ -3,7 +3,7 @@
     <title>jdk7-netbeans-Title</title>
     <welcome file="Welcome.html"></welcome>
     <background file="background.tif" scaling="none" alignment="bottomleft"></background>
-    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
+    <options allow-external-scripts="no" customize="never" rootVolumeOnly="false"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
     <script>
@@ -33,25 +33,50 @@ function checkMemsize() {
 
 <script>
 /* js:pkmk:start */
-function volumeCheckTiger() {
-	return  checkSystemversion() ;
-}
-/* js:pkmk:end */
-
-
-/* js:pkmk:start */
 function checkSystemversion() {
-	var result = false;
-	var version;	
-        if(!(/* >= */ system.compareVersions(system.version.ProductVersion, '10.7.3') >= 0)) {
-            my.result.title = 'OS X Lion required';
-            my.result.message = 'This Installer is supported only on OS X Lion (10.7.3) or Later';
-            my.result.type = 'Fatal';
-            return false;
-        }
-	return true;
+  if(!(checkForMacOSX('10.7.3') == true)) {
+    my.result.title = 'OS X Lion required';
+    my.result.message = 'This Installer is supported only on OS X 10.7.3 or Later.';
+    my.result.type = 'Fatal';
+    return false;
+  }
+  return true;
 }
 /* js:pkmk:end */
+    
+// Check is current MAC OS X version less than supportedVersion
+function checkForMacOSX(supportedVersion) {
+    try {
+        // Get current ProductVersion
+        var tProductVersion = system.version.ProductVersion;
+        // Get current ProductName
+        var tProductName = system.version.ProductName;
+
+        // Check if current version is less than supportedVersion, if yes Set the result type to Fatal, and give correct message to user
+
+        if(tProductVersion &lt; supportedVersion)
+        {
+            // Set result values
+            var osCheckTitle = system.localizedStringWithFormat('OSCHECK_TITLE');
+            osCheckTitle = osCheckTitle.replace("%1$@", tProductName);
+            osCheckTitle = osCheckTitle.replace("%2$@", supportedVersion);
+    
+            var osCheckMessage = system.localizedStringWithFormat('OSCHECK_MESSAGE');
+            osCheckMessage = osCheckMessage.replace("%1$@", tProductName);
+            osCheckMessage = osCheckMessage.replace("%2$@", tProductVersion);
+            osCheckMessage = osCheckMessage.replace("%3$@", supportedVersion);
+    
+            my.result.title = osCheckTitle;
+            my.result.message = osCheckMessage;
+            my.result.type = 'Fatal';
+        }
+    } catch (e) {
+        // an exception just occurred
+        return (false);
+    }
+    // return true
+    return (true);
+}
 </script>
 
 <script>
@@ -86,7 +111,7 @@ function isDowngrade() {
                 return false;
             }
             // check if Oracle JRE is installed not by someone else
-            if (bundle.CFBundleIdentifier &amp;&amp; 'com.oracle.java.JavaAppletPlugin') {
+            if (bundle.CFBundleIdentifier == 'com.oracle.java.JavaAppletPlugin') {
                 var tCurrentVersion = bundle.CFBundleShortVersionString;
                 // check if current plugin being installed is a downgrade
                 var tVersionResult = system.compareVersions(bundle.CFBundleVersion, tInstallVersion);
@@ -142,13 +167,13 @@ function pm_choice1_enabled() {
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
     </choice>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="288196" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="285784" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@">
         <relocate search-id="pkmktoken6">
             <bundle id="com.oracle.jmc"/>
         </relocate>
     </pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="147476" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="145064" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
             <bundle id="org.andymatuschak.sparkle.finish-installation"/>

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.ui.spi;
 
+import org.junit.Assert;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.hudson.ui.spi.ProjectHudsonProvider.Association;
 
@@ -74,6 +75,27 @@ public class ProjectHudsonProviderTest extends NbTestCase {
         assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/site/")); // #189254
         assertNull(Association.fromString("http://nowhere.net/hudson/view/someview/job/Some Job/"));
         assertEquals("Some Job", Association.fromString("http://nowhere.net/hudson/view/someview/job/Some%20Job/").getJobName());
+    }
+
+    /**
+     * Test for bug 200446.
+     */
+    public void testAssociationsWithViewName() {
+        String urlViewJob = "http://nowhere.net/hudson/view/someview/job/Some%20Job/";
+        Assert.assertArrayEquals(
+                new String[]{"http://nowhere.net/hudson/", "Some Job"},
+                Association.fromString(urlViewJob).getJobPath());
+        Assert.assertEquals(
+                "someview",
+                Association.fromString(urlViewJob).getViewName());
+
+        String urlViewOnly = "http://nowhere.net/hudson/view/Some%20View/";
+        Assert.assertArrayEquals(
+                new String[]{"http://nowhere.net/hudson/"},
+                Association.fromString(urlViewOnly).getJobPath());
+        Assert.assertEquals(
+                "Some View",
+                Association.fromString(urlViewOnly).getViewName());
     }
 
     public void testAssociationOfHudsonJobsInFolderHierarchy() {

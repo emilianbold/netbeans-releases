@@ -44,6 +44,8 @@ package org.netbeans.modules.options.keymap;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -88,7 +90,7 @@ class ButtonCellEditor extends DefaultCellEditor {
             }
         }
     };
-
+    
     private static final ShortcutCellPanel cell = new ShortcutCellPanel();
 
 
@@ -118,6 +120,7 @@ class ButtonCellEditor extends DefaultCellEditor {
     public boolean stopCellEditing() {
         String s = cell.toString();
         Window ancestorWindow = (Window)SwingUtilities.getRoot(cell);
+        // #236458: options are now saved asynchronously. If the dialog was to 
         if (ancestorWindow == null) {
             return true;
         }
@@ -135,6 +138,12 @@ class ButtonCellEditor extends DefaultCellEditor {
         Collection<ShortcutAction> sameScopeActions = model.getMutableModel().filterSameScope(conflictingAction, sca);
         
         if (!conflictingAction.isEmpty()) {
+             if (!SwingUtilities.isEventDispatchThread()) {
+                 // #236458: options are now saved asynchronously, off EDT. If we display dialog, the IDE will lock up.
+                cell.getTextField().setText(orig);
+                fireEditingCanceled();
+                return true;
+             }
             //there is a conflicting action, show err dialog
             Object overrride = overrride(conflictingAction, sameScopeActions);
             

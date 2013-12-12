@@ -101,7 +101,7 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<?>> {
             //   different than the one of token hierarchy (actually happens).
             // Then there was a multiple-ETL-initialization problem since TLL does not check
             //   the top language.
-            if (rootTokenList.languagePath().topLanguage() != languagePath.topLanguage()) {
+            if (rootTokenList.language() != languagePath.topLanguage()) {
                 tokenListList = null;
                 tokenListIndex = Integer.MAX_VALUE; // Mark no mods to tokenSequences
                 tokenSequences = Collections.emptyList();
@@ -112,7 +112,6 @@ public final class TokenSequenceList extends AbstractList<TokenSequence<?>> {
                 int high = size - 1;
                 // Find the token list which has the end offset above or equal to the requested startOffset
                 EmbeddedTokenList<?,?> firstTokenList;
-                int rootModCount = rootTokenList.modCount();
                 if (startOffset > 0) {
                     while (tokenListIndex <= high) {
                         int mid = (tokenListIndex + high) / 2;

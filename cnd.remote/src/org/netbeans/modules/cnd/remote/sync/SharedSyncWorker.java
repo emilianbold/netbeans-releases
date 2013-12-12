@@ -67,10 +67,10 @@ import org.openide.filesystems.FileSystem;
     private final ExecutionEnvironment executionEnvironment;
 
     public SharedSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
-            String workingDir, FSPath... paths) {
+            String workingDir, List<FSPath> paths, List<FSPath> buildResults) {
         this.fileSystem = SyncUtils.getSingleFileSystem(paths);
-        this.fsPaths = paths;
-        this.files = SyncUtils.toFiles(paths);
+        this.fsPaths = paths.toArray(new FSPath[paths.size()]);
+        this.files = SyncUtils.toFiles(this.fsPaths);
         this.executionEnvironment = executionEnvironment;
         this.workingDir = workingDir;
     }

@@ -50,9 +50,9 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -64,8 +64,12 @@ import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -94,18 +98,50 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private static final int SAVING_DELAY = 100;
     private RequestProcessor.Task savingTask;
     private Document scheduledDocument;
-    private Date timeStamp = new Date(0);
     private Document cachedDoc;
+    private static final Document DELETED_FILE_DOCUMENT = XMLUtil.createDocument(AUX_CONFIG, null, null, null);
     private final Object configIOLock = new Object();
     private final FileObject projectDirectory;
     private ProblemProvider pp;
+    private final FileChangeAdapter fileChange;
+    private final AtomicBoolean fileChangeSet = new AtomicBoolean(false);
     
-    public M2AuxilaryConfigImpl(FileObject dir, boolean writable) {
+    public M2AuxilaryConfigImpl(FileObject dir, boolean longtermInstance) {
         this.projectDirectory = dir;
         
-        if (writable) {
+        if (longtermInstance) {
             pp = new ProblemProvider();
+            fileChange = new FileChangeAdapter() {
 
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    if (CONFIG_FILE_NAME.equals(fe.getName() + "." + fe.getExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    if (CONFIG_FILE_NAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    if (CONFIG_FILE_NAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    if (CONFIG_FILE_NAME.equals(fe.getFile().getNameExt())) {
+                        resetCache();
+                    }
+                }
+            };
+            
         savingTask = RP.create(new Runnable() {
             public @Override void run() {
                 try {
@@ -141,8 +177,16 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 }
             }
         });
+        } else {
+            fileChange = null;
+            fileChangeSet.set(true);
         }
     }
+    
+    private synchronized void resetCache() {
+        cachedDoc = null;
+    }
+    
     
     public ProjectProblemsProvider getProblemProvider() {
         return pp;
@@ -188,6 +232,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             + "So until the problem is resolved manually, the affected configuration will be ignored."
     })
     private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
+        lazyAttachListener();
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
@@ -202,9 +247,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     LOG.log(Level.INFO, iae.getMessage(), iae);
                 }
             }
-            final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
-            if (config != null) {
-                if (config.lastModified().after(timeStamp)) {
+            if (cachedDoc == null) {
+                final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
+                if (config != null) {
                     // we need to re-read the config file..
                     try {
                         Document doc = loadConfig(config);
@@ -217,8 +262,8 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     } catch (SAXException ex) {
                         if (pp != null) {
                             pp.setProblem(ProjectProblem.createWarning(
-                                    TXT_Problem_Broken_Config(), 
-                                    DESC_Problem_Broken_Config(ex.getMessage()), 
+                                    TXT_Problem_Broken_Config(),
+                                    DESC_Problem_Broken_Config(ex.getMessage()),
                                     new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
@@ -229,24 +274,24 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     } catch (IllegalArgumentException iae) {
                         //thrown from XmlUtil.findElement when more than 1 equal elements are present.
                         LOG.log(Level.INFO, iae.getMessage(), iae);
-                    } finally {
-                        timeStamp = config.lastModified();
                     }
                     return null;
                 } else {
-                    //reuse cached value if available;
-                    if (cachedDoc != null) {
-                        try {
-                            return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
-                        } catch (IllegalArgumentException iae) {
-                            //thrown from XmlUtil.findElement when more than 1 equal elements are present.
-                            LOG.log(Level.INFO, iae.getMessage(), iae);
-                        }
-                    }
+                    // no file.. remove possible cache
+                    cachedDoc = DELETED_FILE_DOCUMENT;
+                    return null;
                 }
             } else {
-                // no file.. remove possible cache
-                cachedDoc = null;
+                if (cachedDoc == DELETED_FILE_DOCUMENT) {
+                    return null;
+                }
+                //reuse cached value if available;
+                try {
+                    return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                } catch (IllegalArgumentException iae) {
+                    //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                    LOG.log(Level.INFO, iae.getMessage(), iae);
+                }
             }
             return null;
         } else {
@@ -266,7 +311,14 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         }
     }
 
+    private void lazyAttachListener() {
+        if (fileChangeSet.compareAndSet(false, true)) {
+            projectDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(fileChange, projectDirectory));
+        }
+    }
+
     public @Override synchronized void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
+        lazyAttachListener();
         Document doc = null;
         if (shared) {
             if (scheduledDocument != null) {
@@ -332,6 +384,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
 
     public @Override synchronized boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
+        lazyAttachListener();
         Document doc = null;
         FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
         if (shared) {

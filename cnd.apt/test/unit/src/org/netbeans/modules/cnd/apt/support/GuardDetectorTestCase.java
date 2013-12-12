@@ -84,6 +84,11 @@ public class GuardDetectorTestCase extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testPragmaOnce() throws Exception {
         String base =
                   "#pragma once\n"

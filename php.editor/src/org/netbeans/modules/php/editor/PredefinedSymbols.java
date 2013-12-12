@@ -53,6 +53,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
@@ -62,7 +64,7 @@ import org.openide.util.Utilities;
  * @author tomslot
  */
 public final class PredefinedSymbols {
-
+    private static final Logger LOGGER = Logger.getLogger(PredefinedSymbols.class.getName());
     // see http://www.php.net/manual/en/reserved.variables.php
     public static final Collection<String> SUPERGLOBALS = new TreeSet<>(Arrays.asList(
             "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
@@ -143,7 +145,7 @@ public final class PredefinedSymbols {
                 urll = FileUtil.getArchiveRoot(urll);
                 docURLBase = urll.toString();
             } catch (java.net.MalformedURLException e) {
-                // nothing to do
+                LOGGER.log(Level.FINE, null, e);
             }
         }
     }

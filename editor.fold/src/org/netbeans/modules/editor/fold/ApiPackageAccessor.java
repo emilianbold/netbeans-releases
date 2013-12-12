@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.Collection;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -105,6 +106,8 @@ public abstract class ApiPackageAccessor {
     public abstract void foldSetCollapsed(Fold fold, boolean collapsed);
     
     public abstract void foldSetParent(Fold fold, Fold parent);
+    
+    public abstract void foldTearOut(Fold f, Collection c);
 
     public abstract void foldExtractToChildren(Fold fold, int index, int length, Fold targetFold);
 

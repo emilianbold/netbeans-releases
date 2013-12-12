@@ -48,7 +48,7 @@ import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 
 /**
- * intended to be run with 1.7 client
+ * intended to be run with 1.8 client
  * @author tomas
  */
 public class SvnKitClientTest extends NbTestCase {

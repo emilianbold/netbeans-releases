@@ -48,10 +48,8 @@ import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import java.awt.EventQueue;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
@@ -77,9 +75,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -103,7 +100,6 @@ import org.openide.util.NbBundle.Messages;
 public class ODCSIssue extends AbstractNbTaskWrapper {
 
     private final ODCSRepository repository;
-    private final PropertyChangeSupport support;
 
     private ODCSIssueController controller;
     
@@ -145,7 +141,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
-        support = new PropertyChangeSupport(this);
         updateRecentChanges();
         updateTooltip();
     }
@@ -210,6 +205,11 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return recentChanges;
     }
     
+    @NbBundle.Messages({
+        "CTL_Issue_Scheduling.Scheduled_Title=Scheduled",
+        "CTL_Issue_Scheduling.Due_Title=Due",
+        "CTL_Issue_Scheduling.Estimate_Title=Estimate"
+    })
     private boolean updateTooltip () {
         String displayName = getDisplayName();
         String oldTooltip = tooltip;
@@ -254,6 +254,33 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
             + "</table>"; //NOI18N
 
+        String scheduledLabel = Bundle.CTL_Issue_Scheduling_Scheduled_Title();
+        String scheduled = getScheduleDisplayString();
+
+        String dueLabel = Bundle.CTL_Issue_Scheduling_Due_Title();
+        String due = getDueDisplayString();
+        
+
+        String estimateLabel = Bundle.CTL_Issue_Scheduling_Estimate_Title();
+        String estimate = getEstimateDisplayString();
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>"; //NOI18N
+        }
+        boolean addNewLine = !due.isEmpty() || !estimate.isEmpty();
+        if (addNewLine) {
+            fieldTable += "<tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td>"; //NOI18N
+        }
+        if (addNewLine) {
+            fieldTable += "</tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
+        
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {
@@ -734,14 +761,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public String getParentId() {
         return getRepositoryFieldValue(IssueField.PARENT);
     }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
 
     public ODCSRepository getRepository() {
         return repository;
@@ -848,16 +867,18 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
-                if (updateTooltip()) {
-                    fireDataChanged();
-                }
-                fireDataChanged();
-                refreshViewData(false);
+                dataChanged();
             }
         });
+    }
+
+    private void dataChanged () {
+        if (node != null) {
+            node.fireDataChanged();
+        }
+        updateTooltip();
+        fireDataChanged();
+        refreshViewData(false);
     }
 
     @Override
@@ -898,6 +919,58 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
+    }
+    
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                setDueDateAndSubmit(date);
+            }
+        });
+    }
+    
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+        }
+        if (persistChange) {
+            dataChanged();
+        }
+    }
+    
+    private void setDueDateAndSubmit (final Date date) {
+        refresh();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                if (date == null) {
+                    setFieldValue(IssueField.DUEDATE, "");
+                } else {
+                    setFieldValue(IssueField.DUEDATE, IssuePanel.INPUT_DATE_FORMAT.format(date));
+                }
+                submitAndRefresh();
+            }
+        });
     }
     
     public boolean discardLocalEdits () {
@@ -1088,26 +1161,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         }
         return null;
     }
-
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    private void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-    
-    private void fireStatusChanged() {
-        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
-    }
-
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
-    }
  
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
-    }
-
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         NbTask task = getNbTask();
@@ -1200,6 +1254,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
         return getNewAttachments();
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
 
     class Comment {

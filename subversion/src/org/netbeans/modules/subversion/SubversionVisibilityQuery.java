@@ -51,6 +51,7 @@ import java.io.*;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 
@@ -62,11 +63,12 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 public class SubversionVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 
     private FileStatusCache       cache;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.SubversionVisibilityQuery");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.SubversionVisibilityQuery"); //NOI18N
 
     public SubversionVisibilityQuery() {
     }
 
+    @Override
     public boolean isVisible(File file) {
         long t = System.currentTimeMillis();
         Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
@@ -83,7 +85,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
         try {
             // get cached status so you won't block or trigger synchronous shareability calls
             FileInformation info = getCache().getCachedStatus(file);
-            return info == null || info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
+            return info == null || info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY || !containsMetadata(file);
         } catch (Exception e) {
             LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
@@ -103,10 +105,11 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
         return cache;
     }
     
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
-            if (file != null && file.isDirectory()) {
+            if (file != null && file.isDirectory() && containsMetadata(file)) {
                 FileInformation old = (FileInformation) event.getParams()[1];
                 FileInformation cur = (FileInformation) event.getParams()[2];
                 if (old != null && old.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY || cur.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
@@ -119,5 +122,20 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
     static boolean isHiddenFolder(FileInformation info, File file) {
         return file.isDirectory() && info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     }
-    
-        }          
+
+    /**
+     * It makes sense to implement versioning query only for folders with metadata inside.
+     * Otherwise they are either new or come from 1.7+ working copies where svn folders
+     * are removed from disk immediately.
+     */
+    private boolean containsMetadata (File folder) {
+        String[] children = folder.list(new FilenameFilter() {
+            @Override
+            public boolean accept (File dir, String name) {
+                return SvnUtils.isAdministrative(name);
+            }
+        });
+        return children != null && children.length > 0;
+    }
+
+}          

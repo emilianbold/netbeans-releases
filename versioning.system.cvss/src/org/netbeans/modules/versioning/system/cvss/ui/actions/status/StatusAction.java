@@ -64,6 +64,11 @@ public class StatusAction extends AbstractSystemAction {
     public StatusAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_Status";  // NOI18N

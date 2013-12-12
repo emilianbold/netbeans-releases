@@ -76,18 +76,22 @@ public final class TokenIdImpl implements TokenId {
         this.primaryCategory = primaryCategory;
     }
     
+    @Override
     public String name() {
         return name;
     }
 
+    @Override
     public int ordinal() {
         return ordinal;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
     
+    @Override
     public String toString() {
         return LexerUtilsConstants.idToString(this);
     }

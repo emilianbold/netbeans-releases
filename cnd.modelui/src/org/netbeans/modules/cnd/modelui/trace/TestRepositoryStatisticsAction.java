@@ -46,8 +46,6 @@ import java.util.Collection;
 import java.util.Date;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -85,9 +83,9 @@ public class TestRepositoryStatisticsAction extends TestProjectActionBase {
         InputOutput io = IOProvider.getDefault().getIO("", false);
         io.select();
         OutputWriter out = io.getOut();
-        RepositoryStatistics.report(out, new Date().toString());
-        if (ret.equals(JOptionPane.YES_OPTION)) {
-            RepositoryStatistics.clear();
-        }
+//        RepositoryStatistics.report(out, new Date().toString());
+//        if (ret.equals(JOptionPane.YES_OPTION)) {
+//            RepositoryStatistics.clear();
+//        }
     }
 }

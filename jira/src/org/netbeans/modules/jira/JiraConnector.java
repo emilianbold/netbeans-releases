@@ -42,21 +42,21 @@
 
 package org.netbeans.modules.jira;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
-import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.team.spi.TeamProject;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.team.spi.TeamProject;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -67,9 +67,10 @@ import org.openide.util.NbBundle;
 @BugtrackingConnector.Registration (
         id=JiraConnector.ID,
         displayName="#LBL_ConnectorName",
-        tooltip="#LBL_ConnectorTooltip"
+        tooltip="#LBL_ConnectorTooltip",
+        iconPath = "org/netbeans/modules/bugzilla/resources/repository.png"
 )    
-public class JiraConnector extends TeamBugtrackingConnector {
+public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private boolean alreadyLogged = false;
@@ -80,6 +81,10 @@ public class JiraConnector extends TeamBugtrackingConnector {
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
+        Repository r = createKenaiRepository(info);
+        if(r != null) {
+            return r;
+        }
         return JiraUtils.createRepository(new JiraRepository(info));
     }
     
@@ -105,8 +110,13 @@ public class JiraConnector extends TeamBugtrackingConnector {
      * Kenai
      ******************************************************************************/
     
-    @Override
-    public Repository createRepository(TeamProject project) {
+    public Repository createKenaiRepository(RepositoryInfo info) {
+        String name = info.getValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME);
+        TeamProject project = null;
+        if(name != null) {
+            project = TeamAccessorUtils.getTeamProject(info.getUrl(), name);
+        }
+        
         if(project == null || project.getType() != BugtrackingType.JIRA) {
             return null;
         }
@@ -142,4 +152,9 @@ public class JiraConnector extends TeamBugtrackingConnector {
     public BugtrackingType getType() {
         return BugtrackingType.JIRA;
     }    
+
+    @Override
+    public String findNBRepository() {
+        return null; // relevant only for bugzilla
+    }
 }

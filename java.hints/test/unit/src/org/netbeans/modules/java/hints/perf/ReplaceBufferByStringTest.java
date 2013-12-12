@@ -92,6 +92,45 @@ public class ReplaceBufferByStringTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    // see #239082, StringBuffer(int) should not be reported, not known yet what is the intent
+    public void testConstructorWithLength() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                "public final class Test {\n" +
+                "    public void test() {\n" +
+                "        int x = 1;\n" +
+                "        StringBuffer sb = new StringBuffer(x);\n" +
+                "        String y = sb.toString();\n" +
+                "    }\n" +
+                "}")
+                .run(ReplaceBufferByString.class)
+                .assertWarnings();
+    }
+    
+    public void testAppendStringAndChar() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                "public final class Test {\n" +
+                "    public void test() {\n" +
+                "        StringBuffer sb = new StringBuffer(\"x\").append('a');\n" +
+                "        String y = sb.toString();\n" +
+                "    }\n" +
+                "}")
+                .run(ReplaceBufferByString.class)
+                .findWarning("3:8-3:60:verifier:Replace StringBuffer/Builder by String")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                "public final class Test {\n" +
+                "    public void test() {\n" +
+                "        String sb = \"xa\";\n" +
+                "        String y = sb;\n" +
+                "    }\n" +
+                "}");
+    }
+
     public void testStringAccessInMethod() throws Exception {
         HintTest
                 .create()

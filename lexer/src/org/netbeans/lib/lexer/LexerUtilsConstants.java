@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.inc.IncTokenList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenHierarchyEventInfo;
@@ -93,9 +94,9 @@ public final class LexerUtilsConstants {
     public static final int READER_TEXT_BUFFER_SIZE = 16384;
     
     public static final AbstractToken<?> SKIP_TOKEN
-        = new TextToken<TokenId>(
+        = new TextToken<TokenId>(new WrapTokenId<TokenId>(
             new TokenIdImpl("skip-token-id; special id of TokenFactory.SKIP_TOKEN; " + // NOI18N
-                    " It should never be part of token sequence", 0, null), // NOI18N
+                    " It should never be part of token sequence", 0, null)), // NOI18N
             "" // empty skip token text NOI18N
         );
     
@@ -170,6 +171,14 @@ public final class LexerUtilsConstants {
         return LexerApiPackageAccessor.get().languageOperation(language);
     }
     
+    public static <T extends TokenId> LanguageOperation<T> languageOperation(Language<T> language) {
+        return LexerApiPackageAccessor.get().languageOperation(language);
+    }
+    
+    public static <T extends TokenId> LanguageHierarchy<T> languageHierarchy(Language<T> language) {
+        return LexerApiPackageAccessor.get().languageHierarchy(language);
+    }
+    
     /**
      * Find the language embedding for the given parameters.
      * <br/>
@@ -198,6 +207,89 @@ public final class LexerUtilsConstants {
             maxPathSize = Math.max(lp.size(), maxPathSize);
         }
         return maxPathSize;
+    }
+    
+    public static Object languageOrArrayAdd(Object languageOrArray, Language language) {
+        if (languageOrArray == null) {
+            return language;
+        } else if (languageOrArray.getClass() == Language.class) {
+            return (languageOrArray != language)
+                    ? new Language[] { (Language) languageOrArray, language }
+                    : languageOrArray; // Already contained
+        } else {
+            Language[] languageArray = (Language[]) languageOrArray;
+            for (int i = languageArray.length - 1; i >= 0; i--) {
+                if (languageArray[i] == language) { // Language is final
+                    return languageOrArray; // Already contains
+                }
+            }
+            Language[] ret = new Language[languageArray.length + 1];
+            System.arraycopy(languageArray, 0, ret, 0, languageArray.length);
+            ret[languageArray.length] = language;
+            return ret;
+        }
+    }
+    
+    public static Object languageOrArrayRemove(Object languageOrArray, Language language) {
+        if (languageOrArray == null) {
+            return null;
+        } else if (languageOrArray.getClass() == Language.class) {
+            return (languageOrArray == language) ? null : languageOrArray;
+        } else {
+            Language[] languageArray = (Language[]) languageOrArray;
+            for (int i = languageArray.length - 1; i >= 0; i--) {
+                if (languageArray[i] == language) { // Language is final
+                    Language[] ret = new Language[languageArray.length - 1];
+                    System.arraycopy(languageArray, 0, ret, 0, i);
+                    System.arraycopy(languageArray, i + 1, ret, i, languageArray.length - i - 1);
+                    return ret;
+                }
+            }
+            return languageOrArray; // Not contained
+        }
+    }
+    
+    public static int languageOrArraySize(Object languageOrArray) {
+        if (languageOrArray == null) {
+            return 0;
+        } else if (languageOrArray.getClass() == Language.class) {
+            return 1;
+        } else {
+            return ((Language[]) languageOrArray).length;
+        }
+    }
+    
+    public static boolean languageOrArrayContains(Object languageOrArray, Language language) {
+        if (languageOrArray == null) {
+            return false;
+        } else if (languageOrArray.getClass() == Language.class) {
+            return (Language) languageOrArray == language;
+        } else {
+            Language[] languageArray = (Language[]) languageOrArray;
+            for (int i = languageArray.length - 1; i >= 0; i--) {
+                if (languageArray[i] == language) { // Language is final
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    public static Language languageOrArrayGet(Object languageOrArray, int index) {
+        if (languageOrArray != null) {
+            if (languageOrArray.getClass() == Language.class) {
+                if (index == 0) {
+                    return (Language) languageOrArray;
+                }
+            } else {
+                Language[] languageArray = (Language[]) languageOrArray;
+                if (index >= 0 && index < languageArray.length) {
+                    return languageArray[index];
+                }
+            }
+        }
+        throw new IndexOutOfBoundsException("Invalid index=" + index + // NOI18N
+                ", length=" + languageOrArraySize(languageOrArray)); // NOI18N
     }
     
     /**
@@ -318,7 +410,7 @@ public final class LexerUtilsConstants {
         return new int[] { high, midStartOffset };
     }
 
-    public static int updatedStartOffset(EmbeddedTokenList<?,?> etl, TokenHierarchyEventInfo eventInfo) {
+    public static int updatedStartOffset(EmbeddedTokenList<?,?> etl, int rootModCount, TokenHierarchyEventInfo eventInfo) {
         etl.updateModCount();
         int startOffset = etl.startOffset();
         return (etl.isRemoved() && startOffset > eventInfo.modOffset())
@@ -452,6 +544,13 @@ public final class LexerUtilsConstants {
         if (tokenList instanceof EmbeddedTokenList) {
             ((EmbeddedTokenList<?,?>)tokenList).updateModCount();
         }
+        if (tokenList instanceof IncTokenList) {
+            String error = ((IncTokenList<?>)tokenList).checkConsistency();
+            if (error != null) {
+                return error;
+            }
+        }
+        
         int startOffset = tokenList.startOffset();
         int lastOffset = startOffset;
         for (int i = 0; i < tokenCountCurrent; i++) {

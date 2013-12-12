@@ -79,7 +79,6 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -133,7 +132,7 @@ public final class Atoum {
     public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         if (validatePhpModule(phpModule) != null) {
             if (showCustomizer) {
-                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(AtoumCustomizer.IDENTIFIER, null);
+                UiUtils.invalidScriptProvided(phpModule, AtoumCustomizer.IDENTIFIER, null);
             }
             return null;
         }
@@ -236,7 +235,6 @@ public final class Atoum {
             }
             params.add(FILTER_PARAM);
             params.add(buffer.toString());
-            runInfo.resetCustomTests();
         }
         if (runInfo.getSessionType() == TestRunInfo.SessionType.DEBUG) {
             params.add(XDEBUG_CONFIG_PARAM);
@@ -263,7 +261,12 @@ public final class Atoum {
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+            if (AtoumPreferences.isAtoumEnabled(phpModule)) {
+                // custom atoum script
+                UiUtils.processExecutionException(ex, phpModule, AtoumCustomizer.IDENTIFIER);
+            } else {
+                UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+            }
             throw new TestRunException(ex);
         }
         return null;

@@ -42,19 +42,25 @@
 package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.commons.SimpleIssueFinder;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
+import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -89,6 +95,8 @@ public class ODCS {
     private IssuePriorityProvider<ODCSIssue> ipp;    
     private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
+    private IssueFinder issueFinder;
+    private IssueScheduleProvider<ODCSIssue> ischp;
 
     private void init() {
         rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
@@ -174,27 +182,54 @@ public class ODCS {
                 @Override
                 public IssuePriorityInfo[] getPriorityInfos() {
                     if(infos == null) {
-                        List<Priority> priorities = repository.getRepositoryConfiguration(false).getPriorities();
-                        Collections.sort(priorities, new Comparator<Priority>() {
-                            @Override
-                            public int compare(Priority p1, Priority p2) {
-                                if(p1 == null && p2 == null) return 0;
-                                if(p1 == null) return -1;
-                                if(p2 == null) return 1;
-                                return p1.getSortkey().compareTo(p2.getSortkey());
+                        RepositoryConfiguration rc = repository.getRepositoryConfiguration(false);
+                        if(rc != null) {
+                            List<Priority> priorities = rc.getPriorities();
+                            Collections.sort(priorities, new Comparator<Priority>() {
+                                @Override
+                                public int compare(Priority p1, Priority p2) {
+                                    if(p1 == null && p2 == null) return 0;
+                                    if(p1 == null) return -1;
+                                    if(p2 == null) return 1;
+                                    return p1.getSortkey().compareTo(p2.getSortkey());
+                                }
+                            });
+                            infos = new IssuePriorityInfo[priorities.size()];
+                            for (int i = 0; i < priorities.size(); i++) {
+                                Priority priority = priorities.get(i);
+                                infos[i] = new IssuePriorityInfo(priority.getId().toString(), priority.getValue());
                             }
-                        });
-                        infos = new IssuePriorityInfo[priorities.size()];
-                        for (int i = 0; i < priorities.size(); i++) {
-                            Priority priority = priorities.get(i);
-                            infos[i] = new IssuePriorityInfo(priority.getId().toString(), priority.getValue());
+                        } else {
+                            infos = new IssuePriorityInfo[0];
                         }
-                    }
+                    } 
                     return infos;
                 }
             };
         }
         return ipp;
+    }
+    
+    public IssueScheduleProvider<ODCSIssue> getSchedulingProvider () {
+        if(ischp == null) {
+            ischp = new IssueScheduleProvider<ODCSIssue>() {
+                @Override
+                public void setSchedule (ODCSIssue i, IssueScheduleInfo scheduleInfo) {
+                    i.setTaskScheduleDate(scheduleInfo, true);
+                }
+
+                @Override
+                public Date getDueDate (ODCSIssue i) {
+                    return i.getPersistentDueDate();
+                }
+
+                @Override
+                public IssueScheduleInfo getSchedule (ODCSIssue i) {
+                    return i.getPersistentScheduleInfo();
+                }
+            };
+        }
+        return ischp;
     }
     
     public RequestProcessor getRequestProcessor() {
@@ -219,4 +254,20 @@ public class ODCS {
         }
         return ocp;
     }    
+    
+    public IssueFinder getODCSIssueFinder() {
+        if(issueFinder == null) {
+            issueFinder = new IssueFinder() {
+                @Override
+                public int[] getIssueSpans(CharSequence text) {
+                    return SimpleIssueFinder.getInstance().getIssueSpans(text);
+                }
+                @Override
+                public String getIssueId(String issueHyperlinkText) {
+                    return SimpleIssueFinder.getInstance().getIssueId(issueHyperlinkText);
+                }
+            };
+        }
+        return issueFinder;
+    }        
 }

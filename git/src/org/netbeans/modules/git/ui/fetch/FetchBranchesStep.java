@@ -143,9 +143,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
 
     public void setRemote (GitRemoteConfig remote) {
-        if (this.remote != remote && (this.remote == null || remote == null)) {
-            this.remote = remote;
-        }
+        this.remote = remote;
         validateBeforeNext();
     }
 

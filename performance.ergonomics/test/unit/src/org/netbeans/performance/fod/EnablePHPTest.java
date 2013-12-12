@@ -62,4 +62,9 @@ public final class EnablePHPTest extends EnablementSpeedBase {
     protected String featureName() {
         return "php";
     }
+
+    @Override
+    protected long threshold() {
+        return 13000;
+    }
 }

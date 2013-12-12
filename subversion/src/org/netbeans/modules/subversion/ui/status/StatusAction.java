@@ -78,6 +78,11 @@ public class StatusAction  extends ContextAction {
     public StatusAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;
     

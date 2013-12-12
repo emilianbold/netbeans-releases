@@ -130,9 +130,11 @@ public class GrailsArtifacts {
         FileObject projectRoot = project.getProjectDirectory();
         for (SourceGroup group : groups) {
             FileObject folder = group.getRootFolder();
-            FileObject categoryFolder = projectRoot.getFileObject(category.getRelativePath());
-            if (folder.equals(categoryFolder)) {
-                return group;
+            if (category != null) {
+                FileObject categoryFolder = projectRoot.getFileObject(category.getRelativePath());
+                if (folder.equals(categoryFolder)) {
+                    return group;
+                }
             }
         }
 

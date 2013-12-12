@@ -53,8 +53,8 @@ import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
@@ -65,19 +65,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ScanUtils;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -88,7 +88,13 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Rechtacek
  */
 public class JFXApplicationClassChooser extends javax.swing.JPanel {
-    
+
+    private static final RequestProcessor RP = new RequestProcessor(JFXApplicationClassChooser.class);
+    private static final Logger LOG = Logger.getLogger(JFXApplicationClassChooser.class.getName());
+
+    /*test*/ static final String LOG_INIT = "INIT";  //NOI18N
+    /*test*/ static final String LOG_MAIN_CLASSES = "MAIN-CLASSES: {0} SCAN: {1}";  //NOI18N
+
     private final PropertyEvaluator evaluator;
     private final Project project;
     private ChangeListener changeListener;
@@ -225,43 +231,50 @@ public class JFXApplicationClassChooser extends javax.swing.JPanel {
     }
     
     private void initClassesModel() {
-
+        
         final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
-
-        RequestProcessor.getDefault().post(new Runnable() {
+        if (classpathMap.isEmpty()) {
+            //No sources at all.
+            return;
+        }
+        RP.post(new Runnable() {
             @Override
             public void run() {
-                final AtomicBoolean initOK = new AtomicBoolean(true);
-                Future f = null;
-                try {
-                    f = ParserManager.parseWhenScanFinished("text/x-java", new UserTask() {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            if (!initOK.get()) {
-                                initClassesModel();
-                            }
-                        }
-                    });
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                final Set<String> appClassNames = isFXinSwing
-                        ? JFXProjectUtils.getMainClassNames(project)
-                        : JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
-
-                if (f != null && f.isDone()) {
-                    labelScanning.setVisible(false);
-                } else {
-                    initOK.set(false);
-                }
-                SwingUtilities.invokeLater(new Runnable() {
+                LOG.log(Level.FINE, LOG_INIT);
+                final List<ClassPath> cps = classpathMap.values().iterator().next();
+                final ClasspathInfo cpInfo = ClasspathInfo.create(cps.get(0), cps.get(1), cps.get(2));
+                final JavaSource js = JavaSource.create(cpInfo);
+                ScanUtils.postUserActionTask(js, new Task<CompilationController>() {
                     @Override
-                    public void run() {
-                        listAppClasses.setListData(appClassNames.toArray());
-                        String appClassName = evaluator.getProperty(isFXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
-                        if (appClassName != null && appClassNames.contains(appClassName)) {
-                            listAppClasses.setSelectedValue(appClassName, true);
+                    public void run(CompilationController parameter) throws Exception {
+                        final boolean barrier = SourceUtils.isScanInProgress();
+                        final Set<String> appClassNames = isFXinSwing ?
+                            JFXProjectUtils.getMainClassNames(project) :
+                            JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                        LOG.log(
+                            Level.FINE,
+                            LOG_MAIN_CLASSES,
+                            new Object[]{
+                                appClassNames,
+                                barrier
+                            });
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!barrier) {
+                                    labelScanning.setVisible(false);
+                                }
+                                listAppClasses.setListData(appClassNames.toArray());
+                                String appClassName = evaluator.getProperty(isFXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
+                                if (appClassName != null && appClassNames.contains(appClassName)) {
+                                    listAppClasses.setSelectedValue(appClassName, true);
+                                }
+                            }
+                        });
+                        if (barrier) {
+                            ScanUtils.signalIncompleteData(parameter, null);
                         }
+
                     }
                 });
             }

@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.cordova.platforms.android;
 
+import java.io.BufferedReader;
 import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +54,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.cordova.platforms.spi.Device;
@@ -345,6 +349,29 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<? extends ProvisioningProfile> getProvisioningProfiles() {
         return Collections.emptyList();
+    }
+
+    public String getProcessIdByName(String appName) {
+        try {
+            String result = ProcessUtilities.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "shell", "ps"); //NOI18N
+            BufferedReader r = new BufferedReader(new StringReader(result));
+            while (r.ready()) {
+                String line = r.readLine();
+                if (line == null) {
+                    return null;
+                }
+                if (line.trim().endsWith(appName)) {
+                    Pattern column = Pattern.compile("(\\S+)(\\s+)(\\S+)(\\s+)(.+)");
+                    Matcher matcher = column.matcher(line);
+                    if (matcher.matches()) {
+                        return matcher.group(3);
+                    }
+                }
+            } 
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }
 

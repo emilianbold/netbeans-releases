@@ -48,6 +48,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -164,6 +165,27 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             return node;
         }
         return super.visitMethod(node, p);
+    }
+
+    @Override
+    public Tree visitMemberReference(MemberReferenceTree node, Element methodElement) {
+        final TreePath methodInvocationPath = getCurrentPath();
+        Element el = trees.getElement(methodInvocationPath);
+//        TypeMirror tm = workingCopy.getTrees().getTypeMirror(getCurrentPath());
+        if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
+            List<? extends VariableTree> parameters = methodTree.getParameters();
+            BlockTree body = methodTree.getBody();
+
+            final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<>();
+            scanForNameClash(methodInvocationPath, body, methodElement, original2TranslatedBody);
+            if (problem != null && problem.isFatal()) {
+                return node;
+            }
+            body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
+            LambdaExpressionTree lambda = make.LambdaExpression(parameters, body);
+            rewrite(node, lambda);
+        }
+        return super.visitMemberReference(node, methodElement);
     }
 
     @Override

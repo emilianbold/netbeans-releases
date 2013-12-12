@@ -53,7 +53,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks.FileLock;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.openide.modules.Places;
 
 /**
@@ -140,7 +140,7 @@ public class DashboardStorage {
     }
 
     public List<String> readClosedRepositories() {
-        assert !SwingUtilities.isEventDispatchThread() : "should not access the category storage in awt"; // NOI18N
+        assert !SwingUtilities.isEventDispatchThread() : "should not access the repository storage in awt"; // NOI18N
         File closedRepositoryFile = new File(getStorageFolder(storageFolder), CLOSED_REPO_FILE);
         return readClosedEntries(closedRepositoryFile);
     }

@@ -82,7 +82,7 @@ public class RelatedCMPHelper {
     private SourceGroup location;
     private String packageName;
     
-    private boolean cmpFieldsInInterface;
+    private boolean generateMappedSuperclasses;
     private boolean generateFinderMethods;
     private boolean generateJAXBAnnotations;
     private boolean generateValidationConstraints;
@@ -247,12 +247,12 @@ public class RelatedCMPHelper {
         this.location = location;
     }
     
-    public boolean isCmpFieldsInInterface() {
-        return cmpFieldsInInterface;
+    public boolean isGenerateMappedSuperclasses() {
+        return generateMappedSuperclasses;
     }
     
-    public void setCmpFieldsInInterface(boolean cmpFieldsInInterface) {
-        this.cmpFieldsInInterface = cmpFieldsInInterface;
+    public void setGenerateMappedSuperclasses(boolean generateMappedSuperclasses) {
+        this.generateMappedSuperclasses = generateMappedSuperclasses;
     }
     
     public boolean isUseColumnNamesInRelationships() {

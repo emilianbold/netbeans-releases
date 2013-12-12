@@ -63,22 +63,21 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.impl.fs.RemoteFileUrlMapper;
 import org.netbeans.spi.extexecution.ProcessBuilderFactory;
 import org.netbeans.spi.extexecution.ProcessBuilderImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
 abstract public class FileOperationsProvider {
-    public static final String ATTRIBUTE = "FileProxyOperations"; // NOI18N
-    private static final int LINK_DEPTH = 5;
-        
+    public static final String ATTRIBUTE = "FileProxyOperations"; // NOI18N        
     private static FileOperationsProvider defaultProvider;
 
     protected FileOperationsProvider() {
@@ -90,7 +89,7 @@ abstract public class FileOperationsProvider {
 
         private final ExecutionEnvironment env;
         private final RemoteFileSystem fileSystem;
-        private final RequestProcessor RP;
+        //private final RequestProcessor RP;
         
         private static final boolean USE_CACHE;
         static {
@@ -103,7 +102,7 @@ abstract public class FileOperationsProvider {
             if (root instanceof RemoteFileObject) {
                 env = ((RemoteFileObject)root).getExecutionEnvironment();
                 fileSystem = (RemoteFileSystem) fs;
-                RP = new RequestProcessor("Refresh for "+env); //NOI18N
+                //RP = new RequestProcessor("Refresh for "+env); //NOI18N
             } else {
                 throw new IllegalArgumentException();
             }
@@ -134,44 +133,22 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
-            return isDirectory(file, LINK_DEPTH);
-        }
-        
-        private boolean isDirectory(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            if (deep > 0) {
-                deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
-                try {
-                    FileInfoProvider.StatInfo statInfo = stat.get();
-                    switch (statInfo.getFileType()) {
-                        case Directory:
-                            return true;
-                        case SymbolicLink:
-                            String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) { // NOI18N
-                                return isDirectory(toFileProxy(linkTarget), deep);
-                            } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
-                                path = PathUtilities.normalizeUnixPath(path);
-                                return isDirectory(toFileProxy(path), deep);
-                            }
-                        default:
-                            return false;
-                    }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
-                        return false;
-                    }
-                    ex.printStackTrace(System.err);
+            try {
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
+                return statInfo.isDirectory(); 
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                    return false;
                 }
+                ex.printStackTrace(System.err);
             }
             return false;
         }
-
+        
         protected long lastModified(FileProxyO file) {
             if (USE_CACHE) {
                 Long res = fileSystem.vcsSafeLastModified(file.getPath());
@@ -179,38 +156,18 @@ abstract public class FileOperationsProvider {
                     return res.longValue();
                 }
             }
-            return lastModified(file, LINK_DEPTH);
-        }
-
-        private long lastModified(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return -1;
             }
-            if (deep > 0) {
-                deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
-                try {
-                    FileInfoProvider.StatInfo statInfo = stat.get();
-                    switch (statInfo.getFileType()) {
-                        case SymbolicLink:
-                            String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) { // NOI18N
-                                return lastModified(toFileProxy(linkTarget), deep);
-                            } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
-                                path = PathUtilities.normalizeUnixPath(path);
-                                return lastModified(toFileProxy(path), deep);
-                            }
-                        default:
-                            return statInfo.getLastModified().getTime();
-                    }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
-                        return -1;
-                    }
-                    ex.printStackTrace(System.err);
+            try {
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
+                return statInfo.getLastModified().getTime();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                    return -1;
                 }
+                ex.printStackTrace(System.err);
             }
             return -1;
         }
@@ -222,97 +179,39 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
-            return isFile(file, LINK_DEPTH);
-        }
-        
-        private boolean isFile(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            if (deep > 0) {
-                deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
-                try {
-                    FileInfoProvider.StatInfo statInfo = stat.get();
-                    switch (statInfo.getFileType()) {
-                        case Regular:
-                            return true;
-                        case SymbolicLink:
-                            String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) { // NOI18N
-                                return isFile(toFileProxy(linkTarget), deep);
-                            } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
-                                path = PathUtilities.normalizeUnixPath(path);
-                                return isFile(toFileProxy(path), deep);
-                            }
-                        default:
-                            return false;
-                    }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
-                        return false;
-                    }
-                    ex.printStackTrace(System.err);
+            try {
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
+                return statInfo.isPlainFile(); 
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                    return false;
                 }
-            }
-            return false;
-        }
-
-        private boolean notExist(ExecutionException e) {
-            Throwable ex = e;
-            while (ex != null) {
-                if (ex instanceof SftpIOException) {
-                    switch(((SftpIOException)ex).getId()) {
-                        case SftpIOException.SSH_FX_NO_SUCH_FILE:
-                        case SftpIOException.SSH_FX_PERMISSION_DENIED:
-                        return true;
-                    }
-                    break;
-                }
-                ex = ex.getCause();
+                ex.printStackTrace(System.err);
             }
             return false;
         }
         
         protected boolean canWrite(FileProxyO file) {
-            return canWrite(file, LINK_DEPTH);
-        }
-        
-        private boolean canWrite(FileProxyO file, int deep) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            if (deep > 0) {
-                deep--;
-                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
-                try {
-                    FileInfoProvider.StatInfo statInfo = stat.get();
-                    switch (statInfo.getFileType()) {
-                        case SymbolicLink:
-                            String linkTarget = statInfo.getLinkTarget();
-                            if (linkTarget.startsWith("/")) { // NOI18N
-                                return canWrite(toFileProxy(linkTarget), deep);
-                            } else {
-                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
-                                path = PathUtilities.normalizeUnixPath(path);
-                                return canWrite(toFileProxy(path), deep);
-                            }
-                        default:
-                            return statInfo.canWrite(env);
-                    }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
-                        return false;
-                    }
-                    ex.printStackTrace(System.err);
+            try {
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, file.getPath());
+                return statInfo.canWrite(env); 
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
+                    return false;
                 }
+                ex.printStackTrace(System.err);
             }
             return false;
         }
-
+        
         protected FileObject getRoot() {
             RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
             return fs.getRoot();
@@ -336,13 +235,14 @@ abstract public class FileOperationsProvider {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
-            Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
             try {
-                FileInfoProvider.StatInfo statInfo = stat.get();
+                // shouldn't we use stat instead of lstat?
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(
+                        getExecutionEnvironment(), file.getPath());
                 return statInfo != null;
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
-                if (notExist(ex)) {
+                if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     return false;
                 }
                 System.err.println("Exception on file "+file.getPath());
@@ -378,7 +278,7 @@ abstract public class FileOperationsProvider {
                     }
                 } catch (InterruptedException ex) {
                 } catch (ExecutionException ex) {
-                    if (notExist(ex)) {
+                    if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                         return null;
                     }
                     ex.printStackTrace(System.err);

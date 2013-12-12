@@ -43,11 +43,11 @@
 package org.netbeans.modules.bugtracking.bridge.exportdiff;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -56,7 +56,7 @@ import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
 public class AttachPanel extends javax.swing.JPanel implements ChangeListener {
     private final IssueQuickSearch qs;
     
-    public AttachPanel(ChangeListener issueListener, File referenceFile) {
+    public AttachPanel(ChangeListener issueListener, FileObject referenceFile) {
         initComponents();
         qs = IssueQuickSearch.create(referenceFile);
         qs.setEnabled(false);

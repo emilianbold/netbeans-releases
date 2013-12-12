@@ -54,13 +54,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.CsmValidable;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.IncludedFileStorageKey;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -72,17 +74,17 @@ import org.openide.util.CharSequences;
  * container to keep files included from project.
  * @author Vladimir Voskresensky
  */
-public final class IncludedFileContainer {
+public final class IncludedFileContainer extends ProjectComponent {
     private final List<Entry> list;
-    private final ProjectBase srorageListOwner;
 
     public IncludedFileContainer(ProjectBase startProject) {
-        this.srorageListOwner = startProject;
+        super(new IncludedFileStorageKey(startProject));
         list = new CopyOnWriteArrayList<IncludedFileContainer.Entry>();
+        put();
     }
 
-    public IncludedFileContainer(ProjectBase startProject, RepositoryDataInput aStream) throws IOException {
-        this.srorageListOwner = startProject;
+    public IncludedFileContainer(RepositoryDataInput aStream) throws IOException {
+        super(aStream);
         int count = aStream.readInt();
         Collection<Entry> aList = new ArrayList<IncludedFileContainer.Entry>(count);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -92,12 +94,14 @@ public final class IncludedFileContainer {
 //            list.add(new Entry(includedProjectUID, startProject, storageKey));
 //            Key storageKey = keyFactory.readKey(aStream);
             Storage storage = new Storage(aStream);
-            aList.add(new Entry(includedProjectUID, startProject, storage));
+            aList.add(new Entry(includedProjectUID, storage));
         }
         this.list = new CopyOnWriteArrayList<Entry>(aList);
     }
 
+    @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
+        super.write(aStream);
         List<Entry> aList = new ArrayList<Entry>(list);
         aStream.writeInt(aList.size());
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -140,10 +144,11 @@ public final class IncludedFileContainer {
                     return;
                 }
             }
-            Storage storage = Storage.create(srorageListOwner, includedProject);
+            Storage storage = new Storage(includedProject);
 //            Entry includedProjectEntry = new Entry(includedProject.getUID(), srorageListOwner, storage.getKey());
-            Entry includedProjectEntry = new Entry(includedProject.getUID(), srorageListOwner, storage);
+            Entry includedProjectEntry = new Entry(includedProject.getUID(), storage);
             list.add(includedProjectEntry);
+            put();
         }
     }
 
@@ -160,7 +165,7 @@ public final class IncludedFileContainer {
     public boolean putStorage(ProjectBase includedProject) {
         Storage storage = getStorageForProject(includedProject);
         if (storage != null) {
-            storage.put();
+            put();
             return true;
         }
         return false;
@@ -200,7 +205,7 @@ public final class IncludedFileContainer {
         Storage storage = getStorageForProject(includedFileOwner);
         if (storage != null) {
             storage.invalidate(fileKey);
-            storage.put();
+            put();
         }
     }
 
@@ -211,7 +216,7 @@ public final class IncludedFileContainer {
         Storage storage = getStorageForProject(includedFileOwner);
         if (storage != null) {
             out = storage.remove(fileKey) != null;
-            storage.put();
+            put();
         }
         return out;
     }
@@ -231,9 +236,10 @@ public final class IncludedFileContainer {
         for (Entry entry : list) {
             entry.storage.debugClearState();
         }
+        put();
     }
 
-    public final static class Storage extends ProjectComponent  {
+    public final static class Storage {
 
         private FileEntry getFileEntry(CharSequence fileKey) {
             assert CharSequences.isCompact(fileKey);
@@ -242,22 +248,17 @@ public final class IncludedFileContainer {
 
         private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileContainer.FileEntry>();
         private final FileSystem fileSystem;
+        private final CsmUID<CsmProject> includedProjectUID;
 
-        private Storage(Key key, FileSystem fileSystem) {
-            super(key);
-            this.fileSystem = fileSystem;
+        private Storage(ProjectBase includedProject) {
+            this.fileSystem = includedProject.getFileSystem();
+            includedProjectUID = UIDs.get((CsmProject)includedProject);
         }
 
         public Map<CharSequence, FileContainer.FileEntry> getInternalMap() {
             return Collections.unmodifiableMap(myFiles);
         }
         
-        private static Storage create(ProjectBase startProject, ProjectBase includedProject) {
-            Storage storage = new Storage(new IncludedFileStorageKey(startProject, includedProject), includedProject.getFileSystem());
-            storage.put();
-            return storage;
-        }
-
         private void invalidate(CharSequence fileKey) {
             assert CharSequences.isCompact(fileKey);
             FileEntry entry = myFiles.get(fileKey);
@@ -285,22 +286,21 @@ public final class IncludedFileContainer {
             return entry;
         }
 
-        public Storage(RepositoryDataInput aStream) throws IOException {
-            super(aStream);
+        private Storage(RepositoryDataInput aStream) throws IOException {
             fileSystem = PersistentUtils.readFileSystem(aStream);
-            FileContainer.readStringToFileEntryMap(fileSystem, getIncludedUnitId(), aStream, myFiles);
+            includedProjectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
+            FileContainer.readStringToFileEntryMap(fileSystem, getIncludedUnitId(includedProjectUID), aStream, myFiles);
         }
 
-        @Override
-        public void write(RepositoryDataOutput aStream) throws IOException {
-            super.write(aStream);
+        private void write(RepositoryDataOutput aStream) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, aStream);
-            FileContainer.writeStringToFileEntryMap(getIncludedUnitId(), aStream, myFiles);
+            UIDObjectFactory.getDefaultFactory().writeUID(includedProjectUID, aStream);
+            FileContainer.writeStringToFileEntryMap(getIncludedUnitId(includedProjectUID), aStream, myFiles);
         }
-
+        
         @Override
         public String toString() {
-            return "Storage:" + getKey(); // NOI18N
+            return "Storage:" + includedProjectUID; // NOI18N
         }
 
         private void debugClearState() {
@@ -309,15 +309,16 @@ public final class IncludedFileContainer {
             for (FileEntry file : files) {
                 file.debugClearState();
             }
-            put();
         }
 
-        private int getIncludedUnitId() {
-            // see asserts in FileContainer.writeStringToFileEntryMap
-            if (true) return getUnitId();
-            IncludedFileStorageKey key = (IncludedFileStorageKey) getKey();
-            return key.getIncludedUnitIndex();
+        private int getIncludedUnitId(CsmUID<CsmProject> uid) {
+            if (uid instanceof KeyBasedUID<?>) {
+                Key k = ((KeyBasedUID<?>) uid).getKey();
+                return KeyUtilities.getProjectIndex(k);
+            }
+            throw new IllegalArgumentException();
         }
+    
     }
     
     private static final class Entry {
@@ -328,7 +329,7 @@ public final class IncludedFileContainer {
         private final Storage storage;
 
 //        public Entry(CsmUID<CsmProject> prj, CsmValidable stateOwner, Key storageKey) {
-        public Entry(CsmUID<CsmProject> prj, CsmValidable stateOwner, Storage storage) {
+        private Entry(CsmUID<CsmProject> prj, Storage storage) {
             this.prjUID = prj;
 //            this.storageKey = storageKey;
 //            this.storage = new WeakContainer<Storage>(stateOwner, storageKey);

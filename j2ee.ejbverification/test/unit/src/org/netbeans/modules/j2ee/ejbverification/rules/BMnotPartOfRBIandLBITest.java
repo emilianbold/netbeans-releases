@@ -47,7 +47,6 @@ import org.netbeans.modules.j2ee.ejbverification.TestBase;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,6 +69,15 @@ public class BMnotPartOfRBIandLBITest extends TestBase {
             + "public class TestBean implements LocalOne, RemoteOne {\n"
             + "  public void anything() {}\n"
             + "}";
+    private static final String TEST_BEAN_MORE_CLASSES = "package test;\n"
+            + "@javax.ejb.Stateless\n"
+            + "public class TestBean implements LocalOne, RemoteOne {\n"
+            + "  public void anything() {}\n"
+            + "}\n"
+            + "@javax.ejb.Stateless\n"
+            + "class TestBean2 implements LocalOne, RemoteOne {\n"
+            + "  public void anything() {}\n"
+            + "}";
 
     public BMnotPartOfRBIandLBITest(String name) {
         super(name);
@@ -90,7 +98,18 @@ public class BMnotPartOfRBIandLBITest extends TestBase {
         HintTestBase.create(testModule.getSources()[0])
                 .input("test/TestBean.java", TEST_BEAN)
                 .run(BMnotPartOfRBIandLBI.class)
-                .findWarning("2:13-2:21:warning:" + Bundle.BMnotPartOfRBIandLBI_err());
+                .assertWarnings("2:13-2:21:warning:" + Bundle.BMnotPartOfRBIandLBI_err());
+    }
+
+    public void testBMnotPartOfRBIandLBIMoreBeansInFile() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createInterfaces(testModule);
+        HintTestBase.create(testModule.getSources()[0])
+                .input("test/TestBean.java", TEST_BEAN_MORE_CLASSES)
+                .run(BMnotPartOfRBIandLBI.class)
+                .assertWarnings("2:13-2:21:warning:" + Bundle.BMnotPartOfRBIandLBI_err(),
+                                        "6:6-6:15:warning:" + Bundle.BMnotPartOfRBIandLBI_err());
     }
 
 }

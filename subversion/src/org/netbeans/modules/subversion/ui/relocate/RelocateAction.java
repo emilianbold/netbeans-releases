@@ -80,14 +80,16 @@ public class RelocateAction extends ContextAction {
         if(nodes.length != 1) {
             return false;
         }
-        final Context ctx = getCachedContext(nodes);
-        File[] roots = ctx.getRootFiles();
-        if(roots == null || roots.length < 1) {
-            return false;
-        }
-        for (File file : roots) {
-            if(file.isDirectory()) {
-                return true; // at least one dir
+        if (isCacheReady()) {
+            final Context ctx = getCachedContext(nodes);
+            File[] roots = ctx.getRootFiles();
+            if(roots == null || roots.length < 1) {
+                return false;
+            }
+            for (File file : roots) {
+                if(file.isDirectory()) {
+                    return true; // at least one dir
+                }
             }
         }
         return false;

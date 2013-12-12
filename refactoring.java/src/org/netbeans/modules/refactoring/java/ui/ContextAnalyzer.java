@@ -100,7 +100,7 @@ public final class ContextAnalyzer {
 
         Runnable task;
         EditorCookie ec = context.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
+        if (RefactoringUtils.isFromEditor(ec)) {
             task = new TextComponentTask(ec) {
 
                 @Override
@@ -164,16 +164,6 @@ public final class ContextAnalyzer {
         }
         return task;
     }
-
-    private static boolean isFromEditor(EditorCookie ec) {
-        if (ec != null && NbDocument.findRecentEditorPane(ec) != null) {
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            if (activetc instanceof CloneableEditorSupport.Pane) {
-                return true;
-            }
-        }
-        return false;
-    }
     
     /**
      * utility method to perform enable/disable logic for refactoring actions
@@ -191,7 +181,7 @@ public final class ContextAnalyzer {
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
             if(JavaRefactoringUtils.isRefactorable(tph.getFileObject())) {
-                return !onlyFromEditor || isFromEditor(lookup.lookup(EditorCookie.class));
+                return !onlyFromEditor || RefactoringUtils.isFromEditor(lookup.lookup(EditorCookie.class));
             } else {
                 return false;
             }
@@ -206,7 +196,7 @@ public final class ContextAnalyzer {
         }
 
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (isFromEditor(ec)) {
+        if (RefactoringUtils.isFromEditor(ec)) {
             return true;
         }
         return !notOnlyFile;

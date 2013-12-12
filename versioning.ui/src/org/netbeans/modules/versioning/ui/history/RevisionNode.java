@@ -133,7 +133,12 @@ class RevisionNode extends AbstractNode implements Comparable {
     public String getName() {                
         return getFormatedDate(entry);
     }    
-       
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+    
     static String getFormatedDate(HistoryEntry se)  {
         int day = getDay(se.getDateTime().getTime());
         switch(day) {
@@ -174,7 +179,7 @@ class RevisionNode extends AbstractNode implements Comparable {
             return -1;
         }
         RevisionNode node = (RevisionNode) obj;
-        return node.entry.getDateTime().compareTo(entry.getDateTime());
+        return entry.getDateTime().compareTo(node.entry.getDateTime());
     }
     
     class MessageProperty extends PropertySupport.ReadOnly<TableEntry> {
@@ -207,20 +212,7 @@ class RevisionNode extends AbstractNode implements Comparable {
         private TableEntry te;
         public EditableMessageProperty() {
             super(PROPERTY_NAME_LABEL, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_LabelProperty_Desc"));
-            te = new TableEntry() {
-                @Override
-                public String getDisplayValue() {
-                    return entry.getMessage();
-                }
-                @Override
-                public String getTooltip() {
-                    String tooltip = entry.getMessage();
-                    if(tooltip == null || "".equals(tooltip.trim())) {                       // NOI18N
-                        tooltip = NbBundle.getMessage(RevisionNode.class, "LBL_SetTooltip"); // NOI18N
-                    }
-                    return tooltip;
-                }
-            };   
+            te = new MsgEntry(entry);   
         }
         @Override
         public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
@@ -257,22 +249,61 @@ class RevisionNode extends AbstractNode implements Comparable {
         public String toString() {
             return entry.getMessage();
         }
+
+        private class MsgEntry extends TableEntry {
+            private final HistoryEntry entry;
+            public MsgEntry(HistoryEntry entry) {
+                this.entry = entry;
+            }
+            @Override
+            public String getDisplayValue() {
+                return entry.getMessage();
+            }
+            @Override
+            public String getTooltip() {
+                String tooltip = entry.getMessage();
+                if(tooltip == null || "".equals(tooltip.trim())) {                       // NOI18N
+                    tooltip = NbBundle.getMessage(RevisionNode.class, "LBL_SetTooltip"); // NOI18N
+                }
+                return tooltip;
+            }
+
+            @Override
+            public String toString() {
+                return entry.getMessage();
+            }
+            
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 11 * hash + (this.entry.getMessage() != null ? this.entry.getMessage().hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final MsgEntry other = (MsgEntry) obj;
+                String msg1 = entry.getMessage();
+                String msg2 = other.entry.getMessage();
+                if (msg1 == null || !msg1.equals(msg2)) {
+                    return false;
+                }
+                return true;
+            }
+        }
     }                      
     
     class UserProperty extends PropertySupport.ReadOnly<TableEntry> {
         private TableEntry te;
         public UserProperty() {
             super(PROPERTY_NAME_USER, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_UserProperty_Desc"));
-            te = new TableEntry() {
-                @Override
-                public String getDisplayValue() {
-                    return entry.getUsernameShort();
-                }
-                @Override
-                public String getTooltip() {
-                    return entry.getUsername();
-                }
-            };            
+            te = new UserEntry(entry);            
         }
         @Override
         public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
@@ -283,34 +314,52 @@ class RevisionNode extends AbstractNode implements Comparable {
         public String toString() {
             return entry.getUsername();
         }
+
+        private class UserEntry extends TableEntry {
+            private final HistoryEntry entry;
+            public UserEntry(HistoryEntry entry) {
+                this.entry = entry;
+            }
+            @Override
+            public String getDisplayValue() {
+                return entry.getUsernameShort();
+            }
+            @Override
+            public String getTooltip() {
+                return entry.getUsername();
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 47 * hash + (this.entry.getUsernameShort() != null ? this.entry.getUsernameShort().hashCode() : 0);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final UserEntry other = (UserEntry) obj;
+                String un1 = this.entry.getUsernameShort();
+                String un2 = other.entry.getUsernameShort();
+                if (un1 == null || !un1.equals(un2)) {
+                    return false;
+                }
+                return true;
+            }
+        }
     }        
     
     class RevisionProperty extends PropertySupport.ReadOnly<TableEntry> {
-        private TableEntry te;
+        private final TableEntry te;
         public RevisionProperty() {
             super(PROPERTY_NAME_VERSION, TableEntry.class, NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Name"), NbBundle.getMessage(RevisionNode.class, "LBL_VersionProperty_Desc"));
-            te = new TableEntry() {
-                @Override
-                public String getDisplayValue() {
-                    return entry.getRevisionShort();
-                }
-                @Override
-                public String getTooltip() {
-                    return entry.getRevision();
-                }
-                @Override
-                public int compareTo(TableEntry e) {
-                    if(e == null) return 1;
-                    Integer i1;
-                    Integer i2;
-                    try {
-                        i1 = Integer.parseInt(getDisplayValue());
-                        i2 = Integer.parseInt(e.getDisplayValue());
-                        return i1.compareTo(i2);
-                    } catch (NumberFormatException ex) {}
-                    return super.compareTo(e);
-                }
-            };
+            te = new RevisionEntry(entry);
         }
         @Override
         public TableEntry getValue() throws IllegalAccessException, InvocationTargetException {
@@ -320,6 +369,60 @@ class RevisionNode extends AbstractNode implements Comparable {
         @Override
         public String toString() {
             return entry.getRevision();
+        }
+
+        private class RevisionEntry extends TableEntry {
+            private final HistoryEntry entry;
+
+            private RevisionEntry(HistoryEntry entry) {
+                this.entry = entry;
+            }
+            
+            @Override
+            public String getDisplayValue() {
+                return entry.getRevisionShort();
+            }
+
+            @Override
+            public String getTooltip() {
+                return entry.getRevision();
+            }
+
+            @Override
+            public int compareTo(TableEntry e) {
+                if(e == null) return 1;
+                Integer i1;
+                Integer i2;
+                try {
+                    i1 = Integer.parseInt(getDisplayValue());
+                    i2 = Integer.parseInt(e.getDisplayValue());
+                    return i1.compareTo(i2);
+                } catch (NumberFormatException ex) {}
+                return super.compareTo(e);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                String r1 = this.entry.getRevisionShort();
+                String r2 = ((RevisionEntry)obj).entry.getRevisionShort();
+                if (r1 == null || !r1.equals(r2)) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 71 * hash + (this.entry.getRevisionShort() != null ? this.entry.getRevisionShort().hashCode() : 0);
+                return hash;
+            }
         }
     } 
 

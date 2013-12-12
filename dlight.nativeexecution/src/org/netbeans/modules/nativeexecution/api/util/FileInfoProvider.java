@@ -158,7 +158,11 @@ public class FileInfoProvider {
         private final int access;
         private final Date lastModified;
 
-        /*package*/ StatInfo(String name, int uid, int gid, long size, boolean directory, boolean link, String linkTarget, int access, Date lastModified) {
+        public StatInfo(String name, int uid, int gid, long size, String linkTarget, int mode, Date lastModified) {
+            this(name, uid, gid, size, isDir(mode), isLink(mode), linkTarget, mode, lastModified);
+        }
+
+        public StatInfo(String name, int uid, int gid, long size, boolean directory, boolean link, String linkTarget, int access, Date lastModified) {
             this.name = name;
             this.gid = gid;
             this.uid = uid;
@@ -174,6 +178,14 @@ public class FileInfoProvider {
             this.lastModified = lastModified;
             assert directory == isDirectory();
             assert link == isLink();
+        }
+        
+        private static boolean isLink(int mode) {
+            return (mode & S_IFMT) == S_IFLNK;
+        }
+        
+        private static boolean isDir(int mode) {
+            return (mode & S_IFMT) == S_IFDIR;
         }
         
         public int getAccess() {
@@ -350,6 +362,14 @@ public class FileInfoProvider {
     
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath, Writer error) {
         return SftpSupport.getInstance(env).stat(absPath, error);
+    }
+
+    public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath) {
+        return SftpSupport.getInstance(env).lstat(absPath, new PrintWriter(System.err));
+    }
+    
+    public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath, Writer error) {
+        return SftpSupport.getInstance(env).lstat(absPath, error);
     }
 
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath) {

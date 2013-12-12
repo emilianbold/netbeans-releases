@@ -60,6 +60,10 @@ import org.netbeans.lib.lexer.TokenHierarchyOperation;
 
 public final class TokenHierarchyEventInfo {
 
+    // True to log real source chars
+    // -J-Dorg.netbeans.editor.log.source.text=true
+    static final boolean LOG_SOURCE_TEXT = Boolean.getBoolean("org.netbeans.editor.log.source.text"); // NOI18N
+
     private final TokenHierarchyOperation<?,?> tokenHierarchyOperation;
 
     private final TokenHierarchyEventType type;
@@ -212,7 +216,7 @@ public final class TokenHierarchyEventInfo {
             CharSequenceUtilities.debugText(sb, insertedText());
             sb.append("\"\n");
         }
-        if (detail) {
+        if (LOG_SOURCE_TEXT && detail) {
             sb.append("\n\n----------------- ORIGINAL TEXT -----------------\n" + // NOI18N
                 originalText() +
                 "\n----------------- BEFORE-CARET TEXT -----------------\n" + // NOI18N

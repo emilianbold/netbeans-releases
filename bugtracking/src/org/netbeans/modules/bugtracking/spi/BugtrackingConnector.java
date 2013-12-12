@@ -51,7 +51,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 /**
  * Represents a bugtracking connector.
  * <p>
- * Bugtracking system registration can be done via {@link BugtrackingConnector#Registration}. 
+ * Bugtracking system registration can be done via {@link Registration}. 
  * </p>
  *
  * <pre>
@@ -67,32 +67,74 @@ import org.netbeans.modules.bugtracking.api.Repository;
  * </pre>
  * 
  * @author Tomas Stupka
+ * @since 1.85
  */
 public interface BugtrackingConnector {
 
     /**
-     * Creates a {@link Repository} instance.
+     * Called to create a new, not yet initialized, repository instance. Typically, this method is
+     * called from the create repository action. The returned repository is then subsequently
+     * presented in the repository dialog, so that the user can provide the necessary 
+     * repository connection data. On user confirm the infrastructure takes care of persisting 
+     * the data and uses them to create a repository instance in the next session. See also 
+     * {@link #createRepository(org.netbeans.modules.bugtracking.spi.RepositoryInfo)}.
+     * 
+     * <p>
+     * The to be returned {@link Repository} instance can be obtained via 
+     * <br/>
+     * {@link BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) }
+     * <br/>
+     * in which scope the implementation particular repository representation is 
+     * coupled with provider implementations giving access to the plugin internal data. 
+     * </p>
+     * 
+     * <p>
+     * See also {@link RepositoryController} on how the interaction with the repository UI 
+     * is handled.
+     * </p>
+     * 
+     * @return the created repository
+     * @see BugtrackingSupport
+     * @see BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) 
+     * 
+     * @since 1.85
+     */
+    public Repository createRepository();
+    
+    /**
+     * Called to create a repository instance based on already existing data - either created in a previous session,
+     * or provided by other means - e.g from a maven pom file. 
+     * 
+     * <p>
+     * The to be returned {@link Repository} instance can be obtained via 
+     * <br/>
+     * {@link BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) }
+     * <br/>
+     * in which scope the implementation particular repository representation is 
+     * coupled with provider implementations giving access to the plugin internal data. 
+     * </p>
+     * 
+     * <p>
+     * See also {@link RepositoryController} on how the interaction with the repository UI 
+     * is handled.
+     * </p>
      * 
      * @param info repository information based on which the repository should be created
      * 
      * @return a {@link Repository} instance.
-     * @see BugtrackingFactory
+     * @see BugtrackingSupport
+     * @see BugtrackingSupport#createRepository(java.lang.Object, org.netbeans.modules.bugtracking.spi.IssueStatusProvider, org.netbeans.modules.bugtracking.spi.IssueScheduleProvider, org.netbeans.modules.bugtracking.spi.IssuePriorityProvider, org.netbeans.modules.bugtracking.spi.IssueFinder) 
+     * 
+     * @since 1.85
      */
     public Repository createRepository(RepositoryInfo info);  
     
-    /**
-     * Creates a new repository instance. 
-     * 
-     * @return the created repository
-     * @see BugtrackingFactory
-     */
-    public Repository createRepository();
-
     /**
      * Register a BugtrackingConnector in the IDE.
      * 
      * @author Tomas Stupka
      * @see org.openide.util.lookup.ServiceProvider
+     * @since 1.85
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
@@ -101,14 +143,16 @@ public interface BugtrackingConnector {
         /**
          * Returns a unique ID for this connector
          *
-         * @return
+         * @return id
+         * @since 1.85
          */
         public String id();
 
         /**
          * Returns the icon path for this connector
          *
-         * @return
+         * @return the icon path
+         * @since 1.85
          */
         public String iconPath() default "";
 
@@ -116,6 +160,7 @@ public interface BugtrackingConnector {
          * Returns the display name for this connector
          *
          * @return the display name for this connector
+         * @since 1.85
          */
         public String displayName();
 
@@ -123,6 +168,7 @@ public interface BugtrackingConnector {
          * Returns tooltip for this connector
          *
          * @return tooltip for this connector
+         * @since 1.85
          */
         public String tooltip();    
         
@@ -134,6 +180,7 @@ public interface BugtrackingConnector {
          * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
+         * @since 1.85
          */
         public boolean providesRepositoryManagement() default true;
         

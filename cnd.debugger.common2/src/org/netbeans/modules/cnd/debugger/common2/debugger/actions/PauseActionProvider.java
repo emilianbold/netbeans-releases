@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.Collections;
 
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -69,7 +70,12 @@ public class PauseActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-	getDebugger().pause();
+        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                getDebugger().pause();
+            }
+        });
     }
 
     /* interface NativeActionsProvider */

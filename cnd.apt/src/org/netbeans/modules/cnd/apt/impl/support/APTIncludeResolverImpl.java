@@ -68,6 +68,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
     private final FileSystem fileSystem;
+    //private final int hashCode;
 //    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
@@ -77,6 +78,16 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
+        //int aHashCode = 0;
+        //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+        //    for(IncludeDirEntry entry: systemIncludePaths) {
+        //        aHashCode+=entry.hashCode()*31;
+        //    }
+        //    for(IncludeDirEntry entry: userIncludePaths) {
+        //        aHashCode+=entry.hashCode()*19;
+        //    }
+        //}
+        //hashCode = aHashCode;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
 //        if (TRACE) { 
@@ -109,9 +120,34 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     public CharSequence getBasePath() {
         return baseFile;
     }
+
+    //@Override
+    //public int hashCode() {
+    //    return hashCode;
+    //}
+
+    //@Override
+    //public boolean equals(Object obj) {
+    //    if (obj == null) {
+    //        return false;
+    //    }
+    //    if (getClass() != obj.getClass()) {
+    //        return false;
+    //    }
+    //    final APTIncludeResolverImpl other = (APTIncludeResolverImpl) obj;
+    //    if (this.systemIncludePaths != other.systemIncludePaths && (this.systemIncludePaths == null || !this.systemIncludePaths.equals(other.systemIncludePaths))) {
+    //        return false;
+    //    }
+    //    if (this.userIncludePaths != other.userIncludePaths && (this.userIncludePaths == null || !this.userIncludePaths.equals(other.userIncludePaths))) {
+    //        return false;
+    //    }
+    //    return true;
+    //}
     
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
+    //private static int count = 0;
+    //private static int hit = 0;
         
     private ResolvedPath resolveFilePath(String includedFile, boolean system, boolean includeNext) {
         ResolvedPath result = null;
@@ -123,11 +159,30 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
                 result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
             }
             if ( result == null) {
-                int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
-                PathsCollectionIterator paths = 
-                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
-                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
+                if (includeNext) {
+                    PathsCollectionIterator paths =  new PathsCollectionIterator(userIncludePaths, systemIncludePaths, baseFileIncludeDirIndex+1);
+                    result = APTIncludeUtils.resolveFilePath(paths, includedFile, baseFileIncludeDirIndex+1);
+                } else {
+                    //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+                    //    //count++;
+                    //    result = ResolverResultsCache.getResolvedPath(includedFile, this);
+                    //}
+                    if (result == null) {
+                        PathsCollectionIterator paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, 0);
+                        result = APTIncludeUtils.resolveFilePath(paths, includedFile, 0);
+                        //if (APTTraceFlags.USE_INCLIDE_RESOLVER_CACHE) {
+                        //    if (result != null) {
+                        //        ResolverResultsCache.putResolvedPath(includedFile, this, result);
+                        //    }
+                        //}
+                    } else {
+                        //hit++;
+                        //if (hit%10000 == 0) {
+                        //    System.err.println("Count = "+count+" hit = "+hit);
+                        //}
+                    }
                 }
+            }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);

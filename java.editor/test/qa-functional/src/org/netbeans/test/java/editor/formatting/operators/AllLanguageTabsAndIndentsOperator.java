@@ -57,7 +57,7 @@ public class AllLanguageTabsAndIndentsOperator extends FormattingPanelOperator {
     public static final String TABS__AND__INDENTS = "Tabs And Indents";
     public static final String ALL__LANGUAGES = "All Languages";
 
-    private enum Settings implements OperatorGetter {
+    enum Settings implements OperatorGetter {
 
         EXPANDTAB {
                     @Override

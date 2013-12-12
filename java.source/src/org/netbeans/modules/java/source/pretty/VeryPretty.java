@@ -159,6 +159,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private final WidthEstimator widthEstimator;
     private final DanglingElseChecker danglingElseChecker;
 
+    /**
+     * Suppresses printing of variable type. Used when printing parameters for IMPLICIT-param lambdas
+     */
+    public boolean suppressVariableType;
     public Name enclClassName; // the enclosing class name.
     private int indentSize;
     private int prec; // visitor argument: the current precedence level.
@@ -848,19 +852,21 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printAnnotations(tree.mods.annotations);
         if (notEnumConst) {
             printFlags(tree.mods.flags);
-            if ((tree.mods.flags & VARARGS) != 0) {
-                // Variable arity method. Expecting  ArrayType, print ... instead of [].
-                if (Kind.ARRAY_TYPE == tree.vartype.getKind()) {
-                    printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+            if (!suppressVariableType) {
+                if ((tree.mods.flags & VARARGS) != 0) {
+                    // Variable arity method. Expecting  ArrayType, print ... instead of [].
+                    if (Kind.ARRAY_TYPE == tree.vartype.getKind()) {
+                        printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+                    } else {
+                        printExpr(tree.vartype);
+                    }
+                    print("...");
                 } else {
-                    printExpr(tree.vartype);
+                    print(tree.vartype);
                 }
-                print("...");
-            } else {
-                print(tree.vartype);
             }
         }
-        if (tree.vartype != null) //should also check the flags?
+        if (tree.vartype != null && !suppressVariableType) //should also check the flags?
             needSpace();
         if (!ERROR.contentEquals(tree.name))
             print(tree.name);
@@ -1029,9 +1035,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         print(cs.spaceWithinLambdaParens() && tree.params.nonEmpty() ? "( " : "(");
         boolean oldPrintingMethodParams = printingMethodParams;
         printingMethodParams = true;
+        suppressVariableType = tree.paramKind == JCLambda.ParameterKind.IMPLICIT;
         wrapTrees(tree.params, cs.wrapLambdaParams(), cs.alignMultilineLambdaParams()
                 ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
                   true);
+        suppressVariableType = false;
         printingMethodParams = oldPrintingMethodParams;
         if (cs.spaceWithinLambdaParens() && tree.params.nonEmpty())
             needSpace();
@@ -1562,13 +1570,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitTypeUnion(JCTypeUnion that) {
-        boolean first = true;
-
-        for (JCExpression c : that.getTypeAlternatives()) {
-            if (!first) print(" | ");
-            print(c);
-            first = false;
-        }
+        boolean sep = cs.spaceAroundBinaryOps();
+        wrapTrees(that.getTypeAlternatives(), 
+                cs.wrapDisjunctiveCatchTypes(), 
+                cs.alignMultilineDisjunctiveCatchTypes() ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                false, sep, sep, "|"); // NOI18N
     }
 
     @Override
@@ -1662,10 +1668,25 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         }
         return sb.toString();
     }
+    
+    private static final String[] typeTagNames = new String[TypeTag.values().length];
+    
+    static {
+        for (TypeTag tt : TypeTag.values()) {
+            typeTagNames[tt.ordinal()] = tt.name().toLowerCase(Locale.ENGLISH);
+        }
+    }
+    
+    /**
+     * Workaround for defect #239258. Converts typetag names into lowercase using ENGLISH locale.
+     */
+    static String typeTagName(TypeTag tt) {
+        return typeTagNames[tt.ordinal()];
+    }
 
     @Override
     public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-	print(tree.typetag.name().toLowerCase());
+	print(typeTagName(tree.typetag));
     }
 
     @Override
@@ -2421,13 +2442,41 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
 
     public void printFlags(long flags, boolean addSpace) {
-	print(TreeInfo.flagNames(flags & ~INTERFACE & ~ANNOTATION & ~ENUM));
+	print(flagNames(flags & ~INTERFACE & ~ANNOTATION & ~ENUM));
         if ((flags & StandardFlags) != 0) {
             if (cs.placeNewLineAfterModifiers())
                 toColExactly(out.leftMargin);
             else if (addSpace)
 	        needSpace();
         }
+    }
+    
+    private static final String[] flagLowerCaseNames = new String[Flag.values().length];
+    
+    static {
+        for (Flag flag : Flag.values()) {
+            flagLowerCaseNames[flag.ordinal()] = flag.name().toLowerCase(Locale.ENGLISH);
+        }
+    }
+    
+    /**
+     * Workaround for defect #239258. Prints flag names converted to lowercase in ENGLISH locale to 
+     * avoid weird Turkish I > i-without-dot-above conversion.
+     * 
+     * @param flags flags
+     * @return flag names, space-separated.
+     */
+    public static String flagNames(long flags) {
+        flags = flags & Flags.ExtendedStandardFlags;
+        StringBuilder buf = new StringBuilder();
+        String sep = ""; // NOI18N
+        for (Flag flag : Flags.asFlagSet(flags)) {
+            buf.append(sep);
+            String fname = flagLowerCaseNames[flag.ordinal()];
+            buf.append(fname);
+            sep = " "; // NOI18N
+        }
+        return buf.toString().trim();
     }
 
     public void printBlock(JCTree oldT, JCTree newT, Kind parentKind) {
@@ -2904,17 +2953,26 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     }
     
     private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst) {
+        wrapTrees(trees, wrapStyle, wrapIndent, wrapFirst, cs.spaceBeforeComma(), cs.spaceAfterComma(), ","); // NOI18N
+    }
+
+    private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst,
+            boolean spaceBeforeSeparator, boolean spaceAfterSeparator, String separator) {
+        
         boolean first = true;
         for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
             if (!first) {
-                print(cs.spaceBeforeComma() ? " ," : ",");
+                if (spaceBeforeSeparator) {
+                    print(' '); // NOI18N
+                }
+                print(separator);
             }
             
             if (!first || wrapFirst) {
                 switch(first && wrapStyle != WrapStyle.WRAP_NEVER ? WrapStyle.WRAP_IF_LONG : wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
-                    boolean space = cs.spaceAfterComma() && !first;
+                    boolean space = spaceAfterSeparator && !first;
                     if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + (space ? 1 : 0) <= rm) {
                         if (space)
                             print(' ');
@@ -2925,7 +2983,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:
-                    if (cs.spaceAfterComma() && !first)
+                    if (spaceAfterSeparator && !first)
                         print(' ');
                     break;
                 }

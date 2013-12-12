@@ -77,6 +77,7 @@ public final class GitRevisionInfo {
     private final Map<String, GitBranch> branches;
     private GitFileInfo[] modifiedFiles;
     private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());
+    private String shortMessage;
 
     GitRevisionInfo (RevCommit commit, Repository repository) {
         this(commit, Collections.<String, GitBranch>emptyMap(), repository);
@@ -99,7 +100,24 @@ public final class GitRevisionInfo {
      * @return the first line of the commit message.
      */
     public String getShortMessage () {
-        return revCommit.getShortMessage();
+        if (shortMessage == null) {
+            String msg = revCommit.getFullMessage();
+            StringBuilder sb = new StringBuilder();
+            boolean empty = true;
+            for (int pos = 0; pos < msg.length(); ++pos) {
+                char c = msg.charAt(pos);
+                if (c == '\r' || c == '\n') {
+                    if (!empty) {
+                        break;
+                    }
+                } else {
+                    sb.append(c);
+                    empty = false;
+                }
+            }
+            shortMessage = sb.toString();
+        }
+        return shortMessage;
     }
 
     /**

@@ -50,9 +50,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -183,16 +185,16 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     }
 
     private void fireVisibilityChanged(VCSFileProxy[] proxies) {
-        FileObject[] fileObjects = new FileObject[proxies.length];
-        for (int i = 0; i < proxies.length; i++) {
-            FileObject fo = proxies[i].toFileObject();
-            if(fo != null) {
-                fileObjects[i] = fo;
+        Set<FileObject> fileObjects = new LinkedHashSet<FileObject>(proxies.length);
+        for (VCSFileProxy proxy : proxies) {
+            FileObject fo = findExistingFileObject(proxy);
+            if (fo != null) {
+                fileObjects.add(fo);
             } else {
-                LOG.log(Level.WARNING, "VCS visibility did not fire because of {0} which returns no FileObject", proxies[i]); // NOI18N
+                LOG.log(Level.WARNING, "VCS visibility did not fire because of {0} which returns no FileObject", proxy); // NOI18N
             }
         }
-        fireVisibilityChanged(fileObjects);
+        fireVisibilityChanged(fileObjects.toArray(new FileObject[fileObjects.size()]));
     }
     
     private void fireVisibilityChanged(FileObject[] files) {
@@ -224,6 +226,18 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         return hgmetadataPattern.matcher(file.getPath()).matches()  ||
                cvsmetadataPattern.matcher(file.getPath()).matches() ||
                gitmetadatapattern.matcher(file.getPath()).matches();
+    }
+
+    private FileObject findExistingFileObject (VCSFileProxy proxy) {
+        FileObject fo = null;
+        while (proxy != null) {
+            fo = proxy.toFileObject();
+            if (fo != null) {
+                break;
+            }
+            proxy = proxy.getParentFile();
+        }
+        return fo;
     }
 
     private class VisibilityChangedTask implements Runnable {

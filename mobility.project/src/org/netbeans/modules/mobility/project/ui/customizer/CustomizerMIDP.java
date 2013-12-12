@@ -69,6 +69,7 @@ import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
@@ -139,7 +140,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             name2profileAll = new HashMap<String,J2MEPlatform.J2MEProfile>();
 
             // Read defined platforms and all configurations, profiles and optional packages
-            final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+            final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, new SpecificationVersion("3.0"))); //NOI18N
             final HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile> cfg = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
                     prof = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>(), 
                     opt = new HashMap<J2MEPlatform.J2MEProfile,J2MEPlatform.J2MEProfile>();

@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -288,6 +289,21 @@ public final class Model {
                     if (fqn.length() > 0) {
                         DeclarationScope ds = ModelUtils.getDeclarationScope(with);
                         JsObject fromExpression = ModelUtils.findJsObjectByName((JsObject)ds, fqn.toString());
+                        if (fromExpression == null) { 
+                            int position = ((JsWithObjectImpl)with).getExpressionRange().getStart();
+                            JsObject parent = visitor.getGlobalObject();
+                            for (StringTokenizer stringTokenizer = new StringTokenizer( type.getType(), "."); stringTokenizer.hasMoreTokens();) {
+                                String name = stringTokenizer.nextToken();
+                                JsObject newObject = parent.getProperty(name);
+                                if (newObject == null) {
+                                    newObject = new JsObjectImpl(parent, new IdentifierImpl(name, position), new OffsetRange(position, position + name.length()), false, null, null);
+                                    parent.addProperty(name, newObject);
+                                }
+                                position = position + name.length() + 1; // 1 is the dot                                
+                                parent = newObject;
+                            }
+                            fromExpression = parent;
+                        }
                         if (fromExpression != null) {
                             for (IndexedElement indexedElement : properties) {
                                 JsObject jsWithProperty = with.getProperty(indexedElement.getName());
@@ -296,7 +312,7 @@ public final class Model {
                                     }
                             }
                             processWithExpressionOccurrences(fromExpression, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
-                        }
+                        } 
                     }
                         
                 }
@@ -334,7 +350,8 @@ public final class Model {
     private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
         JsObject parent = jsObject.getParent();
         boolean isThis = false;
-        if (expression.get(expression.size() - 2).equals("this")) { //NOI18N
+        
+        if ((expression.size() > 1) && expression.get(expression.size() - 2).equals("this")) { //NOI18N
             parent = ModelUtils.findJsObject(this, expRange.getStart());
             if (parent instanceof JsWith) {
                 parent = parent.getParent();

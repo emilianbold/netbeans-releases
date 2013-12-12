@@ -89,6 +89,7 @@ public class GeneralKnockout extends JellyTestCase {
   public static String currentFile = "";
   public final String TEST_BASE_NAME = "knockout_";
   public static int NAME_ITERATOR = 0;
+  public static String originalContent;
 
   public GeneralKnockout(String args) {
     super(args);

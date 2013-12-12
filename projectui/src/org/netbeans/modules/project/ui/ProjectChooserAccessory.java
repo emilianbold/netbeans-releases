@@ -73,6 +73,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.ProjectContainerProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -557,17 +558,9 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     return icon;
                 }
             }
-            if (!f.exists()) {
-                //#159646: Workaround for JDK issue #6357445
-                // Can happen when a file was deleted on disk while project
-                // dialog was still open. In that case, throws an exception
-                // repeatedly from FSV.gSI during repaint.
-                return null;
-            }
             if ( 
                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
-                    f.getParentFile() != null && // do not consider drive roots
-                    f.isDirectory()) { // #173958: do not call ProjectManager.isProject now, could block
+                    f.getParentFile() != null) { // #173958: do not call ProjectManager.isProject now, could block
                 synchronized (this) {
                     if (lookingForIcon == null) {
                         lookingForIcon = f;
@@ -578,10 +571,24 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             }
-            return chooser.getFileSystemView().getSystemIcon(f);
+            try {
+                return chooser.getFileSystemView().getSystemIcon(f);
+            } catch (NullPointerException ex) {
+                //#159646: Workaround for JDK issue #6357445
+                // Can happen when a file was deleted on disk while project
+                // dialog was still open. In that case, throws an exception
+                // repeatedly from FSV.gSI during repaint.
+                return null;
+            }
         }
 
         public @Override void run() {
+            if (!lookingForIcon.isDirectory()) {
+                synchronized (this) {
+                    lookingForIcon = null;
+                }
+                return;
+            }
             File d = FileUtil.normalizeFile(lookingForIcon);
             ProjectManager.Result r = getProjectResult(d);
             Icon icon;
@@ -596,7 +603,15 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     }
                 }
             } else {
-                icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                try {
+                    icon = chooser.getFileSystemView().getSystemIcon(lookingForIcon);
+                } catch (NullPointerException ex) {
+                    //#159646: Workaround for JDK issue #6357445
+                    // Can happen when a file was deleted on disk while project
+                    // dialog was still open. In that case, throws an exception
+                    // repeatedly from FSV.gSI during repaint.
+                    icon = null;
+                }
             }
             synchronized (this) {
                 knownProjectIcons.put(lookingForIcon, icon);
@@ -718,15 +733,29 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 return;
             }
             Set<? extends Project> subprojects = cache.get(p);
+            boolean recurse = true;
             if (subprojects == null) {
-                SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
-                if (spp != null) {
+                ProjectContainerProvider pcp = p.getLookup().lookup(ProjectContainerProvider.class);
+                if (pcp != null) {
+                    ProjectContainerProvider.Result res = pcp.getContainedProjects();
+                    if (res.isRecursive()) {
+                        recurse = false;
+                    }
                     if (cancel) {
                         return;
                     }
-                    subprojects = spp.getSubprojects();
+                    subprojects = res.getProjects();
                 } else {
-                    subprojects = Collections.emptySet();
+                    SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                    if (spp != null) {
+                        if (cancel) {
+                            return;
+                        }
+                        subprojects = spp.getSubprojects();
+                        
+                    } else {
+                        subprojects = Collections.emptySet();
+                    }
                 }
                 cache.put(p, subprojects);
             }
@@ -736,10 +765,11 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 }
                 if ( !result.contains( sp ) ) {
                     result.add( sp );
-
-                    //#70029: only add sp's subprojects if sp is not already in result,
-                    //to prevent StackOverflow caused by misconfigured projects:
-                    addSubprojects(sp, result, cache);
+                    if (recurse) {
+                        //#70029: only add sp's subprojects if sp is not already in result,
+                        //to prevent StackOverflow caused by misconfigured projects:
+                        addSubprojects(sp, result, cache);
+                    }
                 }
             }
 

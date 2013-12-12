@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.modelui.trace;
 import java.util.Collection;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
@@ -60,7 +60,7 @@ public class TestRepositoryDistributionAction extends TestProjectActionBase {
         if (projects != null) {
             for(CsmProject project : projects) {
                 System.err.println("Project "+project);
-                RepositoryAccessor.getRepository().debugDistribution();
+                RepositoryTestUtils.debugDistribution();
             }
         }
     }

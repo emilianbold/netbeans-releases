@@ -47,11 +47,19 @@ package org.netbeans.modules.image;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -241,7 +249,122 @@ public class ImageViewer extends CloneableTopComponent {
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
 
-        return new JScrollPane(panel);
+        final JScrollPane scrollPane = new JScrollPane(panel);
+        
+        MouseWheelListener mwl = new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                double oldScale = getScale();
+                // Point in scrolled pane
+                Point visiblePoint = e.getPoint();
+
+                // "Picturepixel"
+                Point markedPoint = new Point(
+                        (int) (visiblePoint.getX() / oldScale),
+                        (int) (visiblePoint.getY() / oldScale));
+
+                int clicks = e.getWheelRotation();
+                int clicks_abs = Math.abs(clicks);
+                for (int i = 0; i < clicks_abs; i++) {
+                    if (clicks < 0) {
+                        zoomIn();
+                    } else {
+                        zoomOut();
+                    }
+                }
+    
+                double newScale = getScale();
+                
+                Point markedPointInRealSpace = new Point(
+                        (int) (markedPoint.getX() * newScale),
+                        (int) (markedPoint.getY() * newScale)
+                        );
+                
+                Rectangle r = scrollPane.getViewport().getViewRect();
+                
+                r.setLocation(markedPointInRealSpace);
+                r.translate(-r.width / 2, - r.height / 2);
+                
+                panel.scrollRectToVisible(r);
+
+            }
+        };
+    
+        panel.addMouseWheelListener(mwl);
+        
+        class DragHandler implements MouseListener, MouseMotionListener {
+            Point startDragPos = null;
+            Point scrollPaneStartPos = null;
+            
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(e.getButton() == 2) {
+                    startDragPos = e.getPoint();
+                    scrollPaneStartPos = scrollPane.getViewport().getViewPosition();
+                    panel.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+               if(e.getButton() == 2) {
+                    startDragPos = null;
+                    scrollPaneStartPos = null;
+                    panel.setCursor(null);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if(startDragPos != null) {
+                    Point newPos = e.getPoint();
+                    int delta_x = newPos.x - startDragPos.x;
+                    int delta_y = newPos.y - startDragPos.y;
+                    
+                    Point scrollPanePos = scrollPaneStartPos.getLocation();
+                    scrollPanePos.translate(-delta_x, -delta_y);
+                    Dimension viewDim = scrollPane.getViewport().getViewRect().getSize();
+                    Dimension contentsDim = scrollPane.getViewport().getViewSize();
+                    int maxX = contentsDim.width - viewDim.width;
+                    int maxY = contentsDim.height - viewDim.height;
+                    if(scrollPanePos.x < 0) {
+                        scrollPanePos.x = 0;
+                    } else if(scrollPanePos.x > maxX) {
+                        scrollPanePos.x = maxX;
+                    }
+                    if(scrollPanePos.y < 0) {
+                        scrollPanePos.y = 0;
+                    } else if(scrollPanePos.y > maxY) {
+                        scrollPanePos.y = maxY;
+                    }
+                    scrollPane.getViewport().setViewPosition(scrollPanePos);
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+            }
+        }
+        
+        DragHandler dh = new DragHandler();
+        
+        panel.addMouseListener(dh);
+        panel.addMouseMotionListener(dh);
+        
+        return scrollPane;
     }
     
     /**

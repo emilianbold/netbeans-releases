@@ -76,10 +76,10 @@ import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.PatchUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel.AttachmentInfo;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
+import org.netbeans.modules.bugtracking.commons.PatchUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -121,7 +121,7 @@ public class AttachmentsPanel extends JPanel {
         createNewButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AttachmentsPanel.createNewButton.AccessibleContext.accessibleDescription")); // NOI18N
     }
 
-    public void setIssue(NbJiraIssue issue) {
+    public void setIssue(NbJiraIssue issue, NbJiraIssue.Attachment[] attachments) {
         newAttachments.clear();
         removeAll();
 
@@ -131,7 +131,6 @@ public class AttachmentsPanel extends JPanel {
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
-        NbJiraIssue.Attachment[] attachments = issue.getAttachments();
         hadNoAttachments = (attachments.length == 0);
         horizontalGroup.addGroup(layout.createSequentialGroup()
             .addComponent(noneLabel)
@@ -239,6 +238,13 @@ public class AttachmentsPanel extends JPanel {
 
     public void removeChangeListener (ChangeListener changeListener) {
         supp.removeChangeListener(changeListener);
+    }
+    
+    /**
+     * Programmatically calls create new attachment method
+     */
+    final void createAttachment () {
+        createNewButton.doClick();
     }
 
     private JPopupMenu menuFor(NbJiraIssue.Attachment attachment) {

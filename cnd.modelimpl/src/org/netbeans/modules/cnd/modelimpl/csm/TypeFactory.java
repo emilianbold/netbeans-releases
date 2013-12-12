@@ -233,7 +233,7 @@ public class TypeFactory {
             type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
-            ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
+            ((TypeFunPtrImpl)type).init(ast, scope, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));

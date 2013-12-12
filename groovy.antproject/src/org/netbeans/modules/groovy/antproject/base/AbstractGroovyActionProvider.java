@@ -321,7 +321,9 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
         List<String> names = getTestRootsNames(project);
         List<FileObject> result = new ArrayList<FileObject>();
         for (String name : names) {
-            FileObject root = project.getProjectDirectory().getFileObject(name);
+            // FileObject JavaDoc says that path delimited should be always '/'
+            // See issue #238330 for more details
+            FileObject root = project.getProjectDirectory().getFileObject(name.replace('\\', '/')); // NOI18N
             if (root != null) {
                 result.add(root);
             }

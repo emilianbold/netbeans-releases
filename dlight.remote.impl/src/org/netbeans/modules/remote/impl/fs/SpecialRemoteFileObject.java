@@ -147,7 +147,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
         return FileType.fromChar(fileTypeChar);
     }
 
-    private class DelegateOutputStream extends OutputStream {
+    private static class DelegateOutputStream extends OutputStream {
 
         public DelegateOutputStream() throws IOException {
         }

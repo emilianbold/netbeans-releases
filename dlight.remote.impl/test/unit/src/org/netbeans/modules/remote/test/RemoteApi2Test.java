@@ -65,7 +65,8 @@ public class RemoteApi2Test extends NativeExecutionBaseTestSuite {
            RemoteLinksChangeLinkTestCase.class,
            RemoteLinksChangeLinkTestCase2.class,
            ListenersTestCase.class,
-           ListenersParityTestCase.class
+           ListenersParityTestCase.class,
+           PlainFileWriteEventsTestCase.class
         };
     }
     

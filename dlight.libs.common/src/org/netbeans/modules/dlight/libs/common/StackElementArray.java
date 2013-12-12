@@ -57,6 +57,20 @@ class StackElementArray {
     public static Set<StackElementArray> createSet() {
         return Collections.synchronizedSet(new HashSet<StackElementArray>());
     }
+    
+    
+    public static boolean addStackIfNew(final StackTraceElement[] stackElems, Set<StackElementArray> stacks, int stackCompareSize) {
+        int startIndex = 0; 
+        int endIndex = Math.min(stackElems.length, startIndex + stackCompareSize);
+        StackTraceElement[] compareElems = new StackTraceElement[endIndex - startIndex];
+        System.arraycopy(stackElems, startIndex, compareElems, 0, endIndex - startIndex);
+        StackElementArray stackElementArray = new StackElementArray(compareElems);
+        if (!stacks.contains(stackElementArray)) {
+            stacks.add(stackElementArray);
+            return true;
+        }
+        return false;
+    }    
 
     public static boolean addStackIfNew(Set<StackElementArray> stacks, int stackCompareSize) {
         StackTraceElement[] stackElems = new Exception().getStackTrace();

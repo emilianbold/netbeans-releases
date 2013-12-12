@@ -65,6 +65,10 @@ public class CommonSettings {
     public static final String TEST_CLASSNAME_SUFFIX = NbBundle.getMessage(
             CommonSettings.class,
             "PROP_test_classname_suffix");                //NOI18N
+    /** suffix for names of generated integration test classes */
+    public static final String INTEGRATION_TEST_CLASSNAME_SUFFIX = NbBundle.getMessage(
+            CommonSettings.class,
+            "PROP_integration_test_classname_suffix");                //NOI18N
     /** prefix for names of generated test suites */
     public static final String SUITE_CLASSNAME_PREFIX = NbBundle.getMessage(
             CommonSettings.class,
@@ -114,7 +118,8 @@ public class CommonSettings {
     public static final String PROP_GENERATE_CLASS_SETUP      = "generateClassSetUp";
     public static final String PROP_GENERATE_CLASS_TEARDOWN   = "generateClassTearDown";
     public static final String PROP_GENERATOR = "generator";
-    public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";                
+    public static final String PROP_ROOT_SUITE_CLASSNAME = "rootSuiteClassName";    
+    public static final String PROP_GENERATE_INTEGRATION_TESTS   = "generateIntegrationTests";            
 
     public static final String PROP_RESULTS_SPLITPANE_DIVIDER = "resultsSplitDivider";
     
@@ -295,5 +300,13 @@ public class CommonSettings {
     public void setResultsSplitPaneDivider(int newVal) {
         getPreferences().putInt(PROP_RESULTS_SPLITPANE_DIVIDER, newVal);
     }    
+
+    public boolean isGenerateIntegrationTests() {
+        return getPreferences().getBoolean(PROP_GENERATE_INTEGRATION_TESTS, false);
+    }
+
+    public void setGenerateIntegrationTests(boolean newVal) {
+        getPreferences().putBoolean(PROP_GENERATE_INTEGRATION_TESTS, newVal);
+    }
     
 }

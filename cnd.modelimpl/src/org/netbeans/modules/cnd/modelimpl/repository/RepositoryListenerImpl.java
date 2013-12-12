@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
+import org.netbeans.modules.cnd.repository.api.RepositoryListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
@@ -61,7 +62,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * after the specified interval has passed
  * @author Vladimir Kvashin
  */
-public class RepositoryListenerImpl implements RepositoryListener {
+public class RepositoryListenerImpl implements RepositoryListener, RepositoryExceptionListener {
 
     /** Singleton's instance */
     private static final RepositoryListenerImpl instance = new RepositoryListenerImpl();
@@ -92,19 +93,17 @@ public class RepositoryListenerImpl implements RepositoryListener {
     private class UnitTimer implements ActionListener {
 
         private final int unitId;
-        private final CharSequence unitName;
         private final Timer timer;
 
-        public UnitTimer(int unitId, CharSequence unitName, int interval) {
+        public UnitTimer(int unitId, int interval) {
             this.unitId = unitId;
-            this.unitName = unitName;
             timer = new Timer(interval, this);
             timer.start();
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            timeoutElapsed(unitId, unitName);
+            timeoutElapsed(unitId);
         }
 
         public void cancel() {
@@ -136,50 +135,51 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
     /** RepositoryListener implementation */
     @Override
-    public boolean unitOpened(final int unitId, final CharSequence unitName) {
+    public boolean unitOpened(final int unitId) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-            trace("RepositoryListener: unitOpened %s\n", unitName); // NOI18N
+            trace("RepositoryListener: unitOpened %d\n", unitId); // NOI18N
         }
-        if (TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
-            trace("Watched project %s is opening\n", unitName); // NOI18N
-        }
+        //commented out as we do not have project name
+//        if (TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
+//            trace("Watched project %s is opening\n", unitName); // NOI18N
+//        }
         synchronized (lock) {
             if (!explicitelyOpened.contains(unitId)) {
                 if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-                    trace("RepositoryListener: implicit open !!! %s\n", unitName); // NOI18N
+                    trace("RepositoryListener: implicit open !!! %d\n", unitId); // NOI18N
                 }
-                unitTimers.put(unitId, new UnitTimer(unitId, unitName, IMPLICIT_CLOSE_INTERVAL * 1000));
+                unitTimers.put(unitId, new UnitTimer(unitId,  IMPLICIT_CLOSE_INTERVAL * 1000));
             }
         }
         return true;
     }
 
-    @Override
-    public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
-        if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-            trace("RepositoryListener: repositoryOpened %s\n", cacheLocation.getLocation().getAbsolutePath()); //NOI18N // NOI18N
-        }
-        return true;
-    }
+//    @Override
+//    public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+//        if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
+//            trace("RepositoryListener: repositoryOpened %s\n", cacheLocation.getLocation().getAbsolutePath()); //NOI18N // NOI18N
+//        }
+//        return true;
+//    }
 
     /** RepositoryListener implementation */
     @Override
-    public void unitClosed(final int unitId, final CharSequence unitName) {
+    public void unitClosed(final int unitId) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-            trace("RepositoryListener: unitClosed %s\n", unitName); // NOI18N
+            trace("RepositoryListener: unitClosed %d\n", unitId); // NOI18N
         }
-        if (TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
-            trace("Watched project %s is explicitly closing\n", unitName); // NOI18N
-        }
+//        if (TRACE_PROJECT && TRACE_PROJECT_NAME.equals(unitName)) {
+//            trace("Watched project %s is explicitly closing\n", unitName); // NOI18N
+//        }
         synchronized (lock) {
             killTimer(unitId);
             explicitelyOpened.remove(unitId);
         }
     }
 
-    @Override
-    public void unitRemoved(int unitId, CharSequence unitName) {
-    }
+//    @Override
+//    public void unitRemoved(int unitId, CharSequence unitName) {
+//    }
 
     /** RepositoryListener implementation */
     @Override
@@ -220,15 +220,15 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
 
-    private void timeoutElapsed(final int unitId, final CharSequence unitName) {
+    private void timeoutElapsed(final int unitId) {
         if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-            trace("RepositoryListener: timeout elapsed for %s\n", unitName); // NOI18N
+            trace("RepositoryListener: timeout elapsed for %d\n", unitId); // NOI18N
         }
         synchronized (lock) {
             UnitTimer unitTimer = unitTimers.remove(unitId);
             if (unitTimer != null) {
                 if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
-                    trace("RepositoryListener: scheduling closure for %s\n", unitName); // NOI18N
+                    trace("RepositoryListener: scheduling closure for %d\n", unitId); // NOI18N
                 }
                 unitTimer.cancel();
                 scheduleClosing(unitId);

@@ -162,7 +162,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     }
     
     @Override public JMenuItem getMenuPresenter() {
-        createSubMenu();
+        createSubMenu(OpenProjectList.getDefault().getOpenProjects());
         return subMenu;
     }
     
@@ -182,10 +182,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         "MNE_SetMainProjectAction_Name=M",
         "LBL_NoneMainProject_Name=&None"
     })
-    private void createSubMenu() {
-        
-        Project projects[] = OpenProjectList.getDefault().getOpenProjects();
-        
+    private void createSubMenu(Project[] projects) {    
         Arrays.sort(projects, OpenProjectList.projectByDisplayName());
         
         // Enable disable the action according to number of open projects
@@ -198,6 +195,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
         if ( subMenu == null ) {
             subMenu = new JMenu(LBL_SetMainProjectAction_Name());
+            subMenu.getPopupMenu().setLayout(new VerticalGridLayout());
             //ok to have mnenomics here, not shown on mac anyway
             subMenu.setMnemonic(MNE_SetMainProjectAction_Name().charAt(0));
             //#70835: the menu bar holds only subMenu not this action. As this action listens only weakly on OPL, noone holds this action.
@@ -265,10 +263,11 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
+            final Project projects[] = OpenProjectList.getDefault().getOpenProjects();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                   createSubMenu();
+                   createSubMenu(projects);
                 }
             });
             

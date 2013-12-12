@@ -89,6 +89,8 @@ import org.netbeans.junit.NbTestCase;
  */
 public abstract class CndBaseTestCase extends NbTestCase {
 
+    private Logger logger5;
+    private Logger logger4;
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
         File[] clusters = findClusters();
@@ -164,6 +166,10 @@ public abstract class CndBaseTestCase extends NbTestCase {
         System.setProperty("netbeans.user", userDir.getAbsolutePath());
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
 
     @Override
     protected void tearDown() throws Exception {
@@ -177,6 +183,11 @@ public abstract class CndBaseTestCase extends NbTestCase {
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
+        logger4 = Logger.getLogger("org.netbeans.modules.settings.RecognizeInstanceObjects");
+        logger4.setLevel(Level.SEVERE);
+        logger5 = Logger.getLogger("org.netbeans.ui.indexing");
+        logger5.setLevel(Level.SEVERE);
+        System.setProperty("RepositoryUpdate.increasedLogLevel", "SEVERE");
         List<Class> list = new ArrayList<Class>();
 //        list.add(MockMimeLookup.class);
         for(Class cls : getServises()){

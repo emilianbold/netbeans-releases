@@ -220,3 +220,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-glassfish-common}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-glassfish-common"/>
 <link href="${javadoc.docs.org-netbeans-modules-javaee-project}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-javaee-project"/>
 <link href="${javadoc.docs.org-netbeans-modules-maven-util}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-maven-util"/>
+<link href="${javadoc.docs.org-netbeans-modules-bugtracking}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-bugtracking"/>

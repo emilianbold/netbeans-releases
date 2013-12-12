@@ -942,7 +942,7 @@ public final class GeneratorUtilities {
     }
 
     /**
-     * Copy comments from source tree to target tree.
+     * Copy comments from source tree to target tree. Copying a given comment twice will be ignored.
      *
      * @param source tree to copy comments from
      * @param target tree to copy comments to

@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
@@ -95,7 +97,9 @@ public class CsmOffsetResolver {
     public static CsmObject findObject(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         assert (file != null) : "can't be null file in findObject";
         // not interested in context, only object under offset
-        CsmObject last = findObjectWithContext(file, offset, null, fileReferncesContext);
+        CsmContext context = new CsmContext(file, offset);
+        CsmObject last = findObjectWithContext(file, offset, context, fileReferncesContext);
+        last = exploreTypeObject(context, last, offset);
         return last;
     }
 
@@ -262,10 +266,66 @@ public class CsmOffsetResolver {
         }
         return false;
     }
+    
+    // Function updates context and last object if current last has type or is even type and this type is scope itself
+    private static CsmObject exploreTypeObject(CsmContext context, CsmObject last, int offset) {
+        if (CsmKindUtilities.isTypedefOrTypeAlias(last)) { 
+            CsmType type = ((CsmTypedef) last).getType();
+            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                CsmObject inner = updateAndFindInFunctionType(context, (CsmFunctionPointerType) type, offset);
+                if (inner != null) {
+                    last = inner;
+                }
+            }
+        } else if (CsmKindUtilities.isVariable(last)) {
+            CsmType type = ((CsmVariable) last).getType();
+            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                CsmObject inner = updateAndFindInFunctionType(context, (CsmFunctionPointerType) type, offset);
+                if (inner != null) {
+                    last = inner;
+                }
+            }
+        } else if (CsmKindUtilities.isFunctionPointerType(last)) {
+            CsmObject inner = updateAndFindInFunctionType(context, (CsmFunctionPointerType) last, offset);
+            if (inner != null) {
+                last = inner;
+            }
+        }
+        return last;
+    }
+    
+    private static CsmObject updateAndFindInFunctionType(CsmContext context, CsmFunctionPointerType funType, int offset) {
+        if (CsmOffsetUtilities.isInObject(funType, offset)) {
+            // add scope to context
+            CsmContextUtilities.updateContext(funType, offset, context);
+            
+            Collection<CsmParameter> params = funType.getParameters();
+            CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);            
+            
+            if (param != null && !CsmOffsetUtilities.sameOffsets(funType, param)) {
+                CsmType type = param.getType();
+                
+                if (CsmKindUtilities.isFunctionPointerType(type)) {
+                    CsmObject inner = updateAndFindInFunctionType(context, (CsmFunctionPointerType) type, offset);
+                    if (inner != null) {
+                        return inner;
+                    }
+                }
+//                if (CsmOffsetUtilities.isInObject(type, offset)) {
+//                    context.setLastObject(type);
+//                    return type;
+//                }
+                context.setLastObject(param);
+                return param;
+            }
+        }
+        return null;
+    }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         CsmContext context = new CsmContext(file, offset);
         findObjectWithContext(file, offset, context, fileReferncesContext);
+        exploreTypeObject(context, context.getLastObject(), offset);
         return context;
     }
 }

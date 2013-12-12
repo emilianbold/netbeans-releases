@@ -40,6 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.repository.impl.spi;
+
 /**
  *
  * @author akrasny

@@ -56,9 +56,17 @@ public final class BaseRunConfigValidator {
     private BaseRunConfigValidator() {
     }
 
-    @NbBundle.Messages("BaseRunConfigValidator.error.index.label=Index File")
     public static String validateIndexFile(File rootDirectory, String indexFile) {
-        return validateRelativeFile(rootDirectory, indexFile, Bundle.BaseRunConfigValidator_error_index_label());
+        return validateIndexFile(rootDirectory, indexFile, true);
+    }
+
+    @NbBundle.Messages("BaseRunConfigValidator.error.index.label=Index File")
+    public static String validateIndexFile(File rootDirectory, String indexFile, boolean normalizeFile) {
+        return validateRelativeFile(rootDirectory, indexFile, Bundle.BaseRunConfigValidator_error_index_label(), normalizeFile);
+    }
+
+    static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource) {
+        return validateRelativeFile(rootDirectory, relativeFile, errSource, true);
     }
 
     @NbBundle.Messages({
@@ -67,7 +75,7 @@ public final class BaseRunConfigValidator {
         "# {0} - source of error",
         "BaseRunConfigValidator.error.relativeFile.invalid={0} must be a valid relative URL."
     })
-    static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource) {
+    static String validateRelativeFile(File rootDirectory, String relativeFile, String errSource, boolean normalizeFile) {
         assert rootDirectory != null;
         if (!StringUtils.hasText(relativeFile)) {
             return Bundle.BaseRunConfigValidator_error_relativeFile_missing(errSource);
@@ -80,8 +88,10 @@ public final class BaseRunConfigValidator {
             error = true;
         } else {
             File index = PhpProjectUtils.resolveFile(rootDirectory, relativeFile);
-            if (!index.isFile()
-                    || !index.equals(FileUtil.normalizeFile(index))) {
+            if (!index.isFile()) {
+                error = true;
+            } else if (normalizeFile
+                    && !index.equals(FileUtil.normalizeFile(index))) {
                 error = true;
             }
         }

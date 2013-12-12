@@ -118,6 +118,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2me.keystore</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -494,12 +502,6 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.mobility.project.ui.customizer</package>
                 <package>org.netbeans.spi.mobility.project.ui.customizer.support</package>
             </friend-packages>
-            <extra-compilation-unit>
-                <package-root>antsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}:${tools.jar}:build/classes</classpath>
-                <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
-            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

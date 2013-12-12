@@ -1087,7 +1087,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
 
         private WizardDescriptor wizardDescriptor;
         private Project project;
-        private boolean cmp;
 
         boolean waitingForScan;
         
@@ -1108,11 +1107,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
 
         @Override
         public HelpCtx getHelp() {
-            if (cmp) {
-                return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + DatabaseTablesPanel.class.getSimpleName()); // NOI18N
-            } else {
                 return new HelpCtx(DatabaseTablesPanel.class);
-            }
         }
 
         @Override
@@ -1134,7 +1129,6 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                 componentInitialized = true;
 
                 project = Templates.getProject(wizardDescriptor);
-                cmp = RelatedCMPWizard.isCMP(wizardDescriptor);
                 RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
                 DBSchemaFileList dbschemaFileList = helper.getDBSchemaFileList();
                 PersistenceGenerator persistenceGen = helper.getPersistenceGenerator();
@@ -1177,7 +1171,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                 return false;
             }
 
-            if (!cmp && SourceLevelChecker.isSourceLevel14orLower(project)) {
+            if (SourceLevelChecker.isSourceLevel14orLower(project)) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_NeedProperSourceLevel"));
                 return false;
             }

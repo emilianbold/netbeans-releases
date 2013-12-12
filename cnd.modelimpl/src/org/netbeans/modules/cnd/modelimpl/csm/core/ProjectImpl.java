@@ -65,9 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -79,24 +77,20 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public final class ProjectImpl extends ProjectBase {
 
-    private ProjectImpl(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
-        super(model, fs, platformProject, name);
+    private ProjectImpl(ModelImpl model, NativeProject platformProject, CharSequence name) {
+        super(model, platformProject, name);
     // RepositoryUtils.put(this);
     }
 
     public static ProjectImpl createInstance(ModelImpl model, NativeProject platformProject, String name) {
-        return createInstance(model, platformProject.getFileSystem(), platformProject, name);
-    }
-
-    private static ProjectImpl createInstance(ModelImpl model, FileSystem fs, NativeProject platformProject, String name) {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, fs, platformProject, name);
+                instance = readInstance(model, platformProject, name);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(fs, platformProject, false);
+                cleanRepository(platformProject, false);
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -104,13 +98,12 @@ public final class ProjectImpl extends ProjectBase {
             DiagnosticExceptoins.register(new IllegalStateException(
                     "Expected " + ProjectImpl.class.getName() + //NOI18N
                     " but restored from repository " + instance.getClass().getName())); //NOI18N
-            cleanRepository(fs, platformProject, false);
+            cleanRepository(platformProject, false);
             instance = null;
         }
         if (instance == null) {
-            instance = new ProjectImpl(model, fs, platformProject, name);
+            instance = new ProjectImpl(model, platformProject, name);
         }
-        CndUtils.assertTrue(instance.getFileSystem() == fs);
         return (ProjectImpl) instance;
     }
 
@@ -118,7 +111,7 @@ public final class ProjectImpl extends ProjectBase {
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
         return ParserQueue.Position.HEAD;
     }
-    
+
     public 
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
@@ -461,7 +454,10 @@ public final class ProjectImpl extends ProjectBase {
                 delay = Integer.MAX_VALUE;
             }
         }
-        task.schedule(delay);
+        // to prevent frequent re-post 
+        if (task.getDelay() < Math.max(100, delay - 100)) {
+            task.schedule(delay);
+        }
     }
 
     @Override

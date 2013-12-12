@@ -62,12 +62,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery;
@@ -86,12 +89,14 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Jan Lahoda, Dusan Balek
+ * @author Jan Lahoda, Dusan Balek, Tomas Zezula
  */
 public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(APTUtils.class.getName());
     private static final String PROCESSOR_PATH = "processorPath"; //NOI18N
+    private static final String BOOT_PATH = "bootPath"; //NOI18N
+    private static final String COMPILE_PATH = "compilePath";   //NOI18N
     private static final String APT_ENABLED = "aptEnabled"; //NOI18N
     private static final String ANNOTATION_PROCESSORS = "annotationProcessors"; //NOI18N
     private static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
@@ -103,21 +108,21 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final int SLIDING_WINDOW = 1000; //1s
     private static final RequestProcessor RP = new RequestProcessor(APTUtils.class);
     private final FileObject root;
-    private final ClassPath processorPath;
+    private volatile ClassPath bootPath;
+    private volatile ClassPath compilePath;
+    private final AtomicReference<ClassPath> processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
     private final SourceLevelQuery.Result sourceLevel;
     private final RequestProcessor.Task slidingRefresh;
     private volatile ClassLoaderRef classLoaderCache;
 
-    private APTUtils(
-            @NonNull final FileObject root,
-            @NonNull final ClassPath preprocessorPath,
-            @NonNull final AnnotationProcessingQuery.Result aptOptions,
-            @NonNull final SourceLevelQuery.Result sourceLevel) {
+    private APTUtils(@NonNull final FileObject root) {
         this.root = root;
-        this.processorPath = preprocessorPath;
-        this.aptOptions = aptOptions;
-        this.sourceLevel = sourceLevel;
+        bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+        compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+        processorPath = new AtomicReference<>(ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH));
+        aptOptions = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
+        sourceLevel = SourceLevelQuery.getSourceLevel2(root);
         this.slidingRefresh = RP.create(new Runnable() {
             @Override
             public void run() {
@@ -129,6 +134,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         });
     }
 
+    @NonNull
     public static APTUtils get(final FileObject root) {
         if (root == null) {
             return null;
@@ -153,6 +159,21 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
 
         return utils;
+    }
+
+    @CheckForNull
+    public static APTUtils getIfExist(@NullAllowed final FileObject root) {
+        if (root == null) {
+            return null;
+        }
+        final URL rootUrl = root.toURL();
+        APTUtils res = knownSourceRootsMap.get(rootUrl);
+        if (res != null) {
+            return res;
+        }
+        final Reference<APTUtils> utilsRef = auxiliarySourceRootsMap.get(root);
+        res = utilsRef != null ? utilsRef.get() : null;
+        return res;
     }
 
     public static void sourceRootRegistered(FileObject root, URL rootURL) {
@@ -180,20 +201,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         }
     }
 
+    @NonNull
     private static APTUtils create(FileObject root) {
-        ClassPath pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
-        if (pp == null) {
-            return null;
-        }
-        AnnotationProcessingQuery.Result options = AnnotationProcessingQuery.getAnnotationProcessingOptions(root);
-        SourceLevelQuery.Result sourceLevel = SourceLevelQuery.getSourceLevel2(root);
-        APTUtils utils = new APTUtils(root, pp, options, sourceLevel);
-        pp.addPropertyChangeListener(WeakListeners.propertyChange(utils, pp));
-        pp.getRoots();//so that the ClassPath starts listening on the filesystem
-        options.addChangeListener(WeakListeners.change(utils, options));
-        if (sourceLevel.supportsChanges())
-            sourceLevel.addChangeListener(WeakListeners.change(utils, sourceLevel));
-
+        final APTUtils utils = new APTUtils(root);
+        utils.listen();
         return utils;
     }
 
@@ -205,11 +216,20 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         return aptOptions.annotationProcessingEnabled().contains(AnnotationProcessingQuery.Trigger.IN_EDITOR);
     }
 
+    @CheckForNull
+    public URL sourceOutputDirectory() {
+        return aptOptions.sourceOutputDirectory();
+    }
+
     public Collection<? extends Processor> resolveProcessors(boolean onScan) {
+        ClassPath pp = validatePaths();
         ClassLoader cl;
         final ClassLoaderRef cache = classLoaderCache;
         if (cache == null || (cl=cache.get(root)) == null) {
-            cl = CachingArchiveClassLoader.forClassPath(processorPath, new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
+            if (pp == null) {
+                pp = ClassPath.EMPTY;
+            }
+            cl = CachingArchiveClassLoader.forClassPath(pp, new BypassOpenIDEUtilClassLoader(Context.class.getClassLoader()));
             classLoaderCache = !DISABLE_CLASSLOADER_CACHE ? new ClassLoaderRef(cl, root) : null;
         }
         Collection<Processor> result = lookupProcessors(cl, onScan);
@@ -236,6 +256,38 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             slidingRefresh.schedule(SLIDING_WINDOW);
 
         }        
+    }
+
+    private void listen() {
+        listenOnProcessorPath(processorPath.get(), this);
+        aptOptions.addChangeListener(WeakListeners.change(this, aptOptions));
+        if (sourceLevel.supportsChanges())
+            sourceLevel.addChangeListener(WeakListeners.change(this, sourceLevel));
+    }
+    
+    private static void listenOnProcessorPath(
+            @NullAllowed final ClassPath cp,
+            @NonNull final APTUtils target) {
+        if (cp != null) {
+            cp.addPropertyChangeListener(WeakListeners.propertyChange(target, cp));
+            cp.getRoots();//so that the ClassPath starts listening on the filesystem
+        }
+    }
+
+    @CheckForNull
+    private ClassPath validatePaths() {
+        ClassPath pp = processorPath.get();
+        if (pp != null) {
+            return pp;
+        }
+        pp = ClassPath.getClassPath(root, JavaClassPathConstants.PROCESSOR_PATH);
+        if (pp != null && processorPath.compareAndSet(null, pp)) {
+            bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+            compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
+            listenOnProcessorPath(pp, this);
+            classLoaderCache = null;
+        }
+        return pp;
     }
 
     private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {
@@ -298,6 +350,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             return false;
         boolean vote = false;
         try {
+            final ClassPath pp = validatePaths();
             final URL url = fo.toURL();
             if (JavaIndex.ensureAttributeValue(url, SOURCE_LEVEL_ROOT, sourceLevel.getSourceLevel(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
@@ -308,6 +361,20 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             }            
             if (JavaIndex.ensureAttributeValue(url, JRE_PROFILE, sourceLevel.getProfile().getName(), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to jre profile change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            if (JavaIndex.ensureAttributeValue(url, BOOT_PATH, pathToString(bootPath),checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to boot path change"); //NOI18N
+                vote = true;
+                if (checkOnly) {
+                    return vote;
+                }
+            }
+            if (JavaIndex.ensureAttributeValue(url, COMPILE_PATH, pathToString(compilePath),checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to compile path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
                     return vote;
@@ -325,7 +392,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
                 //no need to check further:
                 return vote;
             }
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(processorPath), checkOnly)) {
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, pathToString(pp), checkOnly)) {
                 JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 vote = true;
                 if (checkOnly) {
@@ -346,8 +413,11 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     }
 
     @NonNull
-    private static String pathToString(@NonNull final ClassPath cp) {
+    private static String pathToString(@NullAllowed ClassPath cp) {
         final StringBuilder b = new StringBuilder();
+        if (cp == null) {
+            cp = ClassPath.EMPTY;
+        }
         for (FileObject fo : cp.getRoots()) {
             final URL u = fo.toURL();
             final File f = FileUtil.archiveOrDirForURL(u);

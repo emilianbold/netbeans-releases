@@ -41,16 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.dbgp.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
-
 import javax.swing.SwingUtilities;
-
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -64,25 +61,20 @@ import org.openide.util.WeakListeners;
  *
  * @author ads
  */
-@ActionsProvider.Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={Utils.MIME_TYPE})
-public class BreakpointActionProvider extends ActionsProviderSupport
-        implements PropertyChangeListener
-{
+@ActionsProvider.Registration(actions = {"toggleBreakpoint"}, activateForMIMETypes = {Utils.MIME_TYPE})
+public class BreakpointActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
 
     public BreakpointActionProvider() {
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
-        EditorContextDispatcher.getDefault().addPropertyChangeListener(
-                Utils.MIME_TYPE,
-                WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
+        EditorContextDispatcher.getDefault().addPropertyChangeListener(Utils.MIME_TYPE, WeakListeners.propertyChange(this, EditorContextDispatcher.getDefault()));
     }
 
     @Override
     public void doAction(Object action) {
         if (SwingUtilities.isEventDispatchThread()) {
             addBreakpoints();
-        }
-        else {
-            SwingUtilities.invokeLater( new Runnable() {
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     addBreakpoints();
@@ -93,34 +85,27 @@ public class BreakpointActionProvider extends ActionsProviderSupport
 
     @Override
     public Set getActions() {
-        return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT );
+        return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
 
     private void addBreakpoints() {
         Line line = Utils.getCurrentLine();
-
         if (line == null) {
             return;
         }
-
-        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager()
-                .getBreakpoints();
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         boolean add = true;
-        for ( Breakpoint breakpoint : breakpoints ) {
-            if (breakpoint instanceof LineBreakpoint
-                    && ((LineBreakpoint) breakpoint).getLine().equals(line)  )
-            {
-                DebuggerManager.getDebuggerManager().removeBreakpoint(
-                        breakpoint );
+        for (Breakpoint breakpoint : breakpoints) {
+            if (breakpoint instanceof LineBreakpoint && ((LineBreakpoint) breakpoint).getLine().equals(line)) {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(breakpoint);
                 add = false;
                 break;
             }
         }
         LineBreakpoint lineBreakpoint = new LineBreakpoint(line);
         lineBreakpoint.refreshValidity();
-        if ( add ) {
-            DebuggerManager.getDebuggerManager().addBreakpoint(
-                    lineBreakpoint);
+        if (add) {
+            DebuggerManager.getDebuggerManager().addBreakpoint(lineBreakpoint);
         }
     }
 

@@ -89,6 +89,10 @@ public class TestUtil extends CommonTestUtil {
         return JUnitSettings.TEST_CLASSNAME_SUFFIX;
     }
     
+    static private String getIntegrationTestSuffix() {
+        return JUnitSettings.INTEGRATION_TEST_CLASSNAME_SUFFIX;
+    }
+    
     static private String getTestClassPrefix() {
         return JUnitSettings.TEST_CLASSNAME_PREFIX;
     }
@@ -118,6 +122,10 @@ public class TestUtil extends CommonTestUtil {
     public static String getTestClassName(String sourceClassName) {
         return getTestClassPrefix() + sourceClassName + getTestClassSuffix();
     }
+    
+    public static String getIntegrationTestClassName(String sourceClassName) {
+        return getTestClassPrefix() + sourceClassName + getIntegrationTestSuffix();
+    }
         
     
     //
@@ -142,6 +150,22 @@ public class TestUtil extends CommonTestUtil {
         }
     }
     
+    /**
+     * Converts given package filename to integration test suite filename, e.g.
+     * &quot;<tt>org/netbeans/foo</tt>&quot; -&gt;
+     * &quot;<tt>org/netbeans/foo/{suite-prefix}FooIT{suite-suffix}</tt>&quot;
+     * @param packageFileName package filename in form of "org/netbeans/foo"
+     */
+    public static String convertPackage2ITSuiteName(String packageFileName) {
+        if (packageFileName.length() == 0) {
+            return getRootSuiteName();
+        } else {
+            int index = packageFileName.lastIndexOf('/');
+            String pkg = index > -1 ? packageFileName.substring(index+1) : packageFileName;
+            pkg = pkg.substring(0, 1).toUpperCase() + pkg.substring(1);
+            return packageFileName + "/" + getTestSuitePrefix()+pkg+getIntegrationTestSuffix()+getTestSuiteSuffix();
+        }
+    }    
     
     /**
      * Converts given class filename to test filename, e.g.
@@ -880,7 +904,7 @@ public class TestUtil extends CommonTestUtil {
      * @param  file  file whose source level is to be determined
      * @return  string denoting source level of the given file
      *          (e.g. <code>&quot;1.5&quot;</code>)
-     *          or {@code null} if the source level could not be determined
+     *          or {@literal null} if the source level could not be determined
      */
     static String getSourceLevel(FileObject file) {
         ClassPath srcCP = ClassPath.getClassPath(file, ClassPath.SOURCE);
@@ -898,12 +922,12 @@ public class TestUtil extends CommonTestUtil {
 
     /**
      * Checks whether Java annotations are applicable in the given file.
-     * The result is {@code true} if source level of the given is known
+     * The result is {@literal true} if source level of the given is known
      * and the source level is 1.5 or higher.
      * 
      * @param  file  file to be checked
-     * @return  {@code true} if the given file is known to be based on
-     *          JDK 1.5 or higher; {@code false} otherwise
+     * @return  {@literal true} if the given file is known to be based on
+     *          JDK 1.5 or higher; {@literal false} otherwise
      * @see  #getSourceLevel
      * @see  #areAnnotationsSupported(String)
      */
@@ -916,9 +940,9 @@ public class TestUtil extends CommonTestUtil {
      * Java source level.
      * 
      * @param  sourceLevel  Java source level (e.g. <code>&quot;1.5&quot;</code>),
-     *                      or {@code null} if the source level is unknown
-     * @return  {@code true} if the source level is known and Java annotations
-     *          are supported in the source level, {@code false} otherwise
+     *                      or {@literal null} if the source level is unknown
+     * @return  {@literal true} if the source level is known and Java annotations
+     *          are supported in the source level, {@literal false} otherwise
      * @see  #areAnnotationsSupported(FileObject)
      */
     static boolean areAnnotationsSupported(String sourceLevel) {

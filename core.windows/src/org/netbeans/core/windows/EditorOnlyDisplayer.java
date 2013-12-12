@@ -49,6 +49,7 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -118,6 +119,13 @@ public class EditorOnlyDisplayer {
     private void onRegistryChange( PropertyChangeEvent evt ) {
         if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() ) ) {
             
+            final TopComponent tc = TopComponent.getRegistry().getActivated();
+            if( null != tc ) {
+                //#237857 
+                Window activeWindow = SwingUtilities.getWindowAncestor(tc);
+                if( null != activeWindow && !activeWindow.equals(WindowManagerImpl.getInstance().getMainWindow()) )
+                    return;
+            }
             if( switchCurrentEditor() ) {
                 return;
             }

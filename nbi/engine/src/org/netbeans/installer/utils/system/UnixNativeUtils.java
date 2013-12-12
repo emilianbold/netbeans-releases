@@ -39,10 +39,12 @@
 package org.netbeans.installer.utils.system;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +95,7 @@ public class UnixNativeUtils extends NativeUtils {
     private File quotaExecutable = null;
     private File browserExecutable = null;
     private boolean browserExecutableSet = false;
+    private Boolean isSystem64Bit = null;
     
     private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
         System.getProperty("user.home"),
@@ -243,6 +246,27 @@ public class UnixNativeUtils extends NativeUtils {
         }
     }
     
+    @Override
+    public boolean isSystem64Bit() {
+        if (isSystem64Bit == null) {
+            isSystem64Bit = false;
+            
+            try {
+                Process p = Runtime.getRuntime().exec("uname -m");
+                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                if (br.ready()) {
+                    String line = br.readLine();
+                    isSystem64Bit = line.endsWith("64");
+                }
+            } catch (IOException ex) {
+                LogManager.log(ErrorLevel.WARNING, ex);
+            }
+        }
+        
+        return isSystem64Bit;
+    }
+    
+    @Override
     public boolean isCurrentUserAdmin() throws NativeException{
         if(isUserAdminSet) {
             return isUserAdmin;

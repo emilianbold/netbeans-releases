@@ -57,6 +57,7 @@ import javax.swing.SwingConstants;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.TabableView;
 import javax.swing.text.View;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 
@@ -207,6 +208,13 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                         Font font = ViewUtils.getFont(hView.getAttributes(), docView.op.getDefaultFont());
                         TextLayout textLayout = docView.op.createTextLayout(tlText, font);
                         float width = TextLayoutUtils.getWidth(textLayout, tlText, font);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("PVChildren.replace(): Width of hView-Id=" + hView.getDumpId() + // NOI18N
+                                    ", startOffset=" + hView.getStartOffset() + // NOI18N
+                                    ", width=" + width + // NOI18N
+                                    ", text='" + CharSequenceUtilities.debugText(text) + // NOI18N
+                                    "', font=" + font + "\n"); // NOI18N
+                        }
                         hView.setTextLayout(textLayout, width);
                         if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
                             docView.getTextLayoutVerifier().put(textLayout, text);

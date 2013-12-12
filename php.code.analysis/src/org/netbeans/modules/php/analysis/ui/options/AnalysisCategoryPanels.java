@@ -62,7 +62,8 @@ public final class AnalysisCategoryPanels {
         // can be easily improved (e.g. Lookup.forPath())
         return Arrays.asList(
                 new CodeSnifferOptionsPanel(),
-                new MessDetectorOptionsPanel());
+                new MessDetectorOptionsPanel(),
+                new CodingStandardsFixerOptionsPanel());
     }
 
 }

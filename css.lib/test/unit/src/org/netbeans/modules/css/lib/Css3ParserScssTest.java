@@ -520,9 +520,9 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    //fails as the 
+    //fails as the
     //
-    //.body.firefox #{$selector}:before 
+    //.body.firefox #{$selector}:before
     //
     //selector is parsed as property declaration - due to the colon presence - FIXME!!!
     public void testInterpolationExpressionComplex() {
@@ -1488,14 +1488,37 @@ public class Css3ParserScssTest extends CssTestBase {
 
     public void testInterpolationExpressionWithBrackets() {
         assertParses(".#{$item}-important { background-color: green; }");
-        
+
         assertParses(".important[href]  {  }\n");
-        
+
         assertParses(".#{$item}important[href]  {  }\n");
-        
+
         assertParses("@each $item in label, badge {\n"
                 + "   .#{$item}-important         { background-color: green; }\n"
                 + "   .#{$item}-important[href]   { background-color: blue; }\n"
                 + " }");
+    }
+    
+    public void testIssue237010() {
+        assertParses("$textColorError: \"blue\";\n" +
+                "$allowTagSelectors: true;\n" +
+                "@if $allowTagSelectors != true {\n" +
+                "  .oj-text-input {\n" +
+                "    @include oj-normalize-text-input;\n" +
+                "  }\n" +
+                "  .oj-text-input[type='search'] {\n" +
+                "    @include oj-normalize-search-input;\n" +
+                "  }\n" +
+                "}\n" +
+                "$currSelectors: if($allowTagSelectors,\n" +
+                "  // here:  \n" +
+                " \".oj-date-input.oj-invalid, \n" +
+                "  input[type='url'].oj-invalid\", \n" +
+                "  // class selectors: \n" +
+                "  \".oj-text-input.oj-invalid,\n" +
+                "  .oj-textarea.oj-invalid\");\n" +
+                "#{$currSelectors} {\n" +
+                "    border: 2px solid $textColorError; \n" +
+                "}");
     }
 }

@@ -57,4 +57,8 @@ public interface CsmNamespaceDefinition extends CsmOffsetableDeclaration, CsmSco
 
     /** Gets correspondent namespace */
     CsmNamespace getNamespace();
+    
+    /** Returns true if it is inline namespace definition */
+    boolean isInline();
+    
 }

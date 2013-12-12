@@ -50,9 +50,7 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -105,7 +103,7 @@ public class GoToSourceTest extends PerformanceTestCase {
     @Override
     public void prepare() {
         new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(fileName);
+        editorOperator = new EditorOperator(fileName);
         editorOperator.waitComponentShowing(true);
         editorOperator.setCaretPosition(1, 1);
         new NavigatorOperator().getTree().waitRow("cancelReservation", 1);
@@ -117,10 +115,12 @@ public class GoToSourceTest extends PerformanceTestCase {
         JTreeOperator tree = new NavigatorOperator().getTree();
         int row = tree.findRow(new JTreeOperator.TreeRowChooser() {
 
+            @Override
             public boolean checkRow(JTreeOperator oper, int row) {
                 return oper.getPathForRow(row).toString().contains(functionName);
             }
 
+            @Override
             public String getDescription() {
                 return "Looking for a row '" + functionName + "'";
             }
@@ -130,10 +130,7 @@ public class GoToSourceTest extends PerformanceTestCase {
         int y = (int) r.getCenterY();
         tree.clickForPopup(x, y);
         // Go to source
-        new JPopupMenuOperator().pushMenu(
-                Bundle.getStringTrimmed(
-                "org.netbeans.modules.gsfret.navigation.actions.Bundle",
-                "LBL_Goto"));
+        new JPopupMenuOperator().pushMenu("Go to Source");
         return null;
     }
 

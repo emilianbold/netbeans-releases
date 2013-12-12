@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit.run;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.openide.filesystems.FileUtil;
@@ -59,6 +60,7 @@ public final class TestCaseVo {
     private static final String DIFF_SECTION_START = "@@ @@"; // NOI18N
 
     private final List<String> stacktrace = new ArrayList<>();
+    private final String className;
     private final String name;
     private final String file;
     private final int line;
@@ -67,8 +69,9 @@ public final class TestCaseVo {
     private TestCase.Status status = TestCase.Status.PASSED;
 
 
-    public TestCaseVo(String name, String file, int line, long time) {
+    public TestCaseVo(String className, String name, String file, int line, long time) {
         assert name != null;
+        this.className = className;
         this.name = name;
         this.file = file;
         this.line = line;
@@ -78,7 +81,7 @@ public final class TestCaseVo {
     @NbBundle.Messages("TestCaseVo.tests.no=No valid test cases found.")
     static TestCaseVo skippedTestCase() {
         // suite with no testcases => create a fake with error message
-        TestCaseVo testCase = new TestCaseVo(Bundle.TestCaseVo_tests_no(), null, -1, -1);
+        TestCaseVo testCase = new TestCaseVo(null, Bundle.TestCaseVo_tests_no(), null, -1, -1);
         testCase.status = TestCase.Status.SKIPPED;
         return testCase;
     }
@@ -91,8 +94,9 @@ public final class TestCaseVo {
         return PHPUNIT_TYPE;
     }
 
+    @CheckForNull
     public String getClassName() {
-        return name;
+        return className;
     }
 
     public String getFile() {

@@ -84,6 +84,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
+import javax.swing.undo.UndoManager;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
@@ -1276,6 +1277,9 @@ public class ActionFactory {
             Document doc = target.getDocument();
             UndoableEdit undoMgr = (UndoableEdit)doc.getProperty(
                                        BaseDocument.UNDO_MANAGER_PROP);
+            if (undoMgr == null) {
+                undoMgr = (UndoableEdit) doc.getProperty(UndoManager.class);
+            }
             if (target != null && undoMgr != null) {
                 try {
                     undoMgr.undo();
@@ -1304,6 +1308,9 @@ public class ActionFactory {
             Document doc = target.getDocument();
             UndoableEdit undoMgr = (UndoableEdit)doc.getProperty(
                                        BaseDocument.UNDO_MANAGER_PROP);
+            if (undoMgr == null) {
+                undoMgr = (UndoableEdit) doc.getProperty(UndoManager.class);
+            }
             if (target != null && undoMgr != null) {
                 try {
                     undoMgr.redo();

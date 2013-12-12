@@ -177,7 +177,7 @@ public class JavaJspCompletionProvider implements CompletionProvider {
         protected void process(FileObject fileObject, Source javaSource){
             try{
                 completionItems = JavaCompletionProvider.query(
-                        javaSource, queryType, shiftedOffset, caretOffset);
+                        javaSource, queryType, shiftedOffset, caretOffset, null);
             } catch (Exception e){
                 logger.log(Level.SEVERE, e.getMessage(), e);
             }

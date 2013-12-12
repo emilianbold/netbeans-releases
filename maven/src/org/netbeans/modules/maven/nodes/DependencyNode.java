@@ -116,6 +116,7 @@ import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
 import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.DependencyTypeIconBadge;
+import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -164,7 +165,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             + NbBundle.getMessage(DependencyNode.class, "ICON_MissingBadge");//NOI18N
     private static final String toolTipManaged = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.MANAGED_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(DependencyNode.class, "ICON_ManagedBadge");//NOI18N
-
+    private static final String toolTipForeignBundler = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(IconResources.BROKEN_PROJECT_BADGE_ICON) + "\">&nbsp;" //NOI18N
+            + NbBundle.getMessage(DependencyNode.class, "ICON_PreferSourcesBadge");//NOI18N
+    
     private static final RequestProcessor RP = new RequestProcessor(DependencyNode.class);
 
     private static Children createChildren(@NullAllowed Node nodeDelegate) {
@@ -183,7 +186,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     @CheckForNull
-    private static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
+    static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
         if (!longLiving) {
             return null;
         }
@@ -193,11 +196,8 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
         return null;        
     }
-    public DependencyNode(NbMavenProjectImpl project, Artifact art, FileObject fo, boolean isLongLiving) {
-        this(project, art, fo, isLongLiving, createNodeDelegate(art, fo, isLongLiving));
-    }
 
-    private DependencyNode(
+    public DependencyNode(
             NbMavenProjectImpl project,
             final Artifact art,
             final FileObject fo,
@@ -351,7 +351,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private String createName(boolean longLiving) {
         if (longLiving) {
             //TODO when the name changes on the other end (dep project) we have no way of knowing..
-            Project prj = data.getDependencyProjectAvailable();
+            Project prj = data.getDependencyProject();
             if (prj != null) {
                 return ProjectUtils.getInformation(prj).getDisplayName();
             }
@@ -557,6 +557,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
                     retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
                 }
+            } else {
+                Project p = data.getDependencyProject();
+                if (p != null) {
+                    ForeignClassBundler fcb = p.getLookup().lookup(ForeignClassBundler.class);
+                    if (fcb != null && !fcb.preferSources()) {
+                        Image ann = ImageUtilities.loadImage(IconResources.BROKEN_PROJECT_BADGE_ICON); //NOI18N
+                        ann = ImageUtilities.addToolTipToImage(ann, toolTipForeignBundler);
+                        retValue =  ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
+                    }
+                }
             }
             if (showManagedState() && data.isManaged()) {
                 Image ann = ImageUtilities.loadImage(IconResources.MANAGED_BADGE_ICON); //NOI18N
@@ -579,6 +589,15 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             ann = ImageUtilities.addToolTipToImage(ann, toolTipMissing);
             return ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
         } else {
+            Project p = data.getDependencyProject();
+            if (p != null) {
+                ForeignClassBundler fcb = p.getLookup().lookup(ForeignClassBundler.class);
+                if (fcb != null && !fcb.preferSources()) {
+                    Image ann = ImageUtilities.loadImage(IconResources.BROKEN_PROJECT_BADGE_ICON); //NOI18N
+                    ann = ImageUtilities.addToolTipToImage(ann, toolTipForeignBundler);
+                    retValue = ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
+                }
+            }
             return retValue;
         }
     }
@@ -670,7 +689,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 //    }
 
     //extract the model out of the node class
-    static class Data {
+    public static class Data {
 
         private Artifact art;
         private Project project;
@@ -754,7 +773,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
          * @return
          */
         private boolean isDependencyProjectAvailable() {
-            return getDependencyProjectAvailable() != null;
+            return getDependencyProject() != null;
         }
 
         /**
@@ -762,7 +781,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
          *
          * @return
          */
-        private Project getDependencyProjectAvailable() {
+        private Project getDependencyProject() {
             if (Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
                 return null;
             }

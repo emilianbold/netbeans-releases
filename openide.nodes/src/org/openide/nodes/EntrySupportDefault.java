@@ -321,7 +321,7 @@ class EntrySupportDefault extends EntrySupport {
         ChildrenArray cha = array.get();
         for (Entry en : toRemove) {
             Info info = map.remove(en);
-            checkInfo(info, en, null, map);
+            checkInfo(info, en, new ArrayList<Entry>(), map);
             nodes.addAll(info.nodes(true));
             cha.remove(info);
         }

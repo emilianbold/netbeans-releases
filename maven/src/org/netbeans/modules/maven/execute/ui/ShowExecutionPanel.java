@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -83,7 +84,6 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         private static final @StaticResource String ERROR_ICON = "org/netbeans/modules/maven/execute/ui/error.png";
         private static final @StaticResource String LIFECYCLE_ICON = "org/netbeans/modules/maven/execute/ui/lifecycle.png";
         private static final @StaticResource String ICON_PHASE = "org/netbeans/modules/maven/execute/ui/phase.png"; 
-        private static final @StaticResource String ICON_MOJO = "org/netbeans/modules/maven/execute/ui/mojo.png";
         
     private final ExplorerManager manager;
     private boolean showPhases = false;
@@ -416,7 +416,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             config = lookup.lookup(RunConfig.class);
             assert start != null && end != null;
             
-            setIconBaseWithExtension(ICON_MOJO);
+            setIconBaseWithExtension(IconResources.MOJO_ICON);
             setDisplayName(start.goal);
         }
 
@@ -428,7 +428,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public String getShortDescription() {
-            return "<html>Goal: " + start.goal + "<br/>Phase:" + start.phase + "<br/>Execution Id:" + start.executionId + (end.getErrorMessage() != null ? "<br/>Error<b>" + end.getErrorMessage() + "</b>": "") + "</html>";
+            return "<html>Goal: " + start.goal + "<br/>Phase: " + start.phase + "<br/>Execution Id: " + start.executionId + (end.getErrorMessage() != null ? "<br/>Error: <b>" + end.getErrorMessage() + "</b>": "") + "</html>";
         }
 
         @Override

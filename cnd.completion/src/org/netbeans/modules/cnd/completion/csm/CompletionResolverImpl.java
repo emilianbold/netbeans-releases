@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -69,6 +70,8 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -1831,6 +1834,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
                 updateResolveTypesInFunction(offset, context, match);
+            } else if (isInFunctionPointerType(context, offset)) {
+                updateResolveTypesInFunction(offset, context, match);
             } else if (CsmContextUtilities.getClass(context, false, true) != null) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
@@ -1852,6 +1857,19 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resolveTypes |= RESOLVE_LIB_NAMESPACES;
             }
         }
+    }
+    
+    private boolean isInFunctionPointerType(CsmContext context, int offset) {
+        if (CsmKindUtilities.isFunctionPointerType(context.getLastObject())) {
+            return CsmOffsetUtilities.isInObject(context.getLastObject(), offset);
+        } else if (CsmKindUtilities.isTypedefOrTypeAlias(context.getLastObject())) {
+            CsmTypedef typedef = (CsmTypedef) context.getLastObject();
+            CsmType type = typedef.getType();
+            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                return CsmOffsetUtilities.isInObject(type, offset);
+            }
+        }
+        return false;
     }
 
     private Collection<CsmDeclaration> getUsedDeclarations(CsmFile file, int offset, String prefix, boolean match, CsmDeclaration.Kind[] kinds) {

@@ -231,6 +231,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         debuggerCommand = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         infoPanel = new javax.swing.JTextPane();
+        usePreverify = new javax.swing.JCheckBox();
 
         setName(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_General_Information")); // NOI18N
         setPreferredSize(new java.awt.Dimension(600, 400));
@@ -305,17 +306,17 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Preverify_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel4, gridBagConstraints);
         jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command")); // NOI18N
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command")); // NOI18N
 
-        preverifyCommand.setText("\"{platformhome}{/}bin{/}preverify\" {classpath|-classpath \"{classpath}\"} -d \"{destdir}\" \"{srcdir}\"");
+        preverifyCommand.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -325,7 +326,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Execution_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel5, gridBagConstraints);
@@ -335,7 +336,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         executionCommand.setText("\"{platformhome}{/}bin{/}emulator\" {device|-Xdevice:\"{device}\"} {jadfile|-Xdescriptor:\"{jadfile}\"} {securitydomain|-Xdomain:{securitydomain}} {cmdoptions}");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -345,7 +346,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Debugger_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel6, gridBagConstraints);
@@ -355,7 +356,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         debuggerCommand.setText("\"{platformhome}{/}bin{/}emulator\" {device|-Xdevice:\"{device}\"} {jadfile|-Xdescriptor:\"{jadfile}\"} {securitydomain|-Xdomain:{securitydomain}} {debug|-Xdebug -Xrunjdwp:transport={debugtransport},server={debugserver},suspend={debugsuspend},address={debugaddress}} {cmdoptions}");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -368,13 +369,28 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(usePreverify, org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Preverify_Checkbox")); // NOI18N
+        usePreverify.setFocusPainted(false);
+        usePreverify.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                usePreverifyActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(usePreverify, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -383,6 +399,16 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
             return;
         platformHome.setText(value);
     }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void usePreverifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usePreverifyActionPerformed
+        if (usePreverify.isSelected()) {
+            preverifyCommand.setEnabled(true);
+            preverifyCommand.setText("\"{platformhome}{/}bin{/}preverify\" {classpath|-classpath \"{classpath}\"} -d \"{destdir}\" \"{srcdir}\""); // NOI18N
+        } else {
+            preverifyCommand.setEnabled(false);
+            preverifyCommand.setText(""); // NOI18N
+        }        
+    }//GEN-LAST:event_usePreverifyActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -401,6 +427,7 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
     private javax.swing.JTextField platformHome;
     private javax.swing.JTextField platformName;
     private javax.swing.JTextField preverifyCommand;
+    private javax.swing.JCheckBox usePreverify;
     // End of variables declaration//GEN-END:variables
     
     public void setWizardPanel(final WizardPanel wizardPanel) {

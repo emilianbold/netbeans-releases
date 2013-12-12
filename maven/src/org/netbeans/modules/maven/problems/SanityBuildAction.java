@@ -42,15 +42,19 @@
 
 package org.netbeans.modules.maven.problems;
 
-import java.awt.event.ActionEvent;
 import java.util.Arrays;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.TestChecker;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig.ReactorStyle;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import static org.netbeans.modules.maven.problems.Bundle.*;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
@@ -61,27 +65,41 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({"ACT_validate=Priming Build",
             "ACT_start_validate=Priming build was started."})
-public class SanityBuildAction extends AbstractAction {
+public class SanityBuildAction implements ProjectProblemResolver {
 
-    private final NbMavenProjectImpl nbproject;
+    private final Project nbproject;
 
-    public SanityBuildAction(NbMavenProjectImpl nbproject) {
-        super(ACT_validate());
-        putValue(ProblemReporterImpl.ACT_START_MESSAGE, ACT_start_validate());
+    public SanityBuildAction(Project nbproject) {
         this.nbproject = nbproject;
     }
 
-    public @Override void actionPerformed(ActionEvent e) {
-        BeanRunConfig config = new BeanRunConfig();
-        config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
-        config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
-        config.setReactorStyle(ReactorStyle.ALSO_MAKE);
-        config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
-        config.setProject(nbproject);
-        String label = build_label(nbproject.getProjectDirectory().getNameExt());
-        config.setExecutionName(label);
-        config.setTaskDisplayName(label);
-        RunUtils.run(config);
+    @Override
+    public Future<ProjectProblemsProvider.Result> resolve() {
+        FutureTask<ProjectProblemsProvider.Result> toRet = new FutureTask<ProjectProblemsProvider.Result>(new Callable<ProjectProblemsProvider.Result>() {
+            @Override
+            public ProjectProblemsProvider.Result call() throws Exception {
+                BeanRunConfig config = new BeanRunConfig();
+                config.setExecutionDirectory(FileUtil.toFile(nbproject.getProjectDirectory()));
+                NbMavenProject mavenPrj = nbproject.getLookup().lookup(NbMavenProject.class);
+                if (mavenPrj != null
+                        && mavenPrj.getMavenProject().getVersion() != null 
+                        && mavenPrj.getMavenProject().getVersion().endsWith("SNAPSHOT")) {
+                    config.setGoals(Arrays.asList("--fail-at-end", "install")); // NOI18N
+                } else {
+                    config.setGoals(Arrays.asList("--fail-at-end", "package")); // NOI18N
+                }
+                config.setReactorStyle(ReactorStyle.ALSO_MAKE);
+                config.setProperty(TestChecker.PROP_SKIP_TEST, "true"); //priming doesn't need test execution, just compilation
+                config.setProject(nbproject);
+                String label = build_label(nbproject.getProjectDirectory().getNameExt());
+                config.setExecutionName(label);
+                config.setTaskDisplayName(label);
+                RunUtils.run(config);
+                return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED, ACT_start_validate());
+            }
+        });
+        MavenModelProblemsProvider.RP.execute(toRet);
+        return toRet;
     }
 
 }

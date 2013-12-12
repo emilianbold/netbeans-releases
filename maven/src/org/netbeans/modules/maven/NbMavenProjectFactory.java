@@ -76,7 +76,7 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
     
     
     public @Override boolean isProject(FileObject fileObject) {
-        File projectDir = FileUtil.toFile(fileObject);
+        File projectDir = FileUtil.toFile(fileObject); //guard that we only recognize projects on local filesystem. Maven won't be able to work with anything else.
         if (projectDir == null) {
             return false;
         }

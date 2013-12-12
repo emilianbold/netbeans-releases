@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,8 +49,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import org.netbeans.modules.autoupdate.services.OperationContainerImpl;
+import org.openide.modules.ModuleInfo;
 
 /**
  * An object that keeps requests for operations upon instances of <code>UpdateEelement</code>
@@ -415,7 +415,7 @@ public final class OperationContainer<Support> {
     }
     
     OperationContainerImpl<Support> impl;
-    private Support support;
+    private final Support support;
     private Boolean upToDate = null;
     
     @Override

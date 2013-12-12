@@ -188,34 +188,27 @@ public class InjectCompositeComponent {
         final Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
         final String prefix = (String) templateWizard.getProperty("selectedPrefix"); //NOI18N
         if (result != null && result.size() > 0) {
-            // issue #225974 - invoke the document change in AWT thread - it will call the hints refresh immediately
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final String compName = result.iterator().next().getName();
-                    final BaseDocument doc = (BaseDocument) document;
-                    final Indent indent = Indent.get(doc);
-                    indent.lock();
-                    try {
-                        doc.runAtomic(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    doc.remove(startOffset, endOffset - startOffset);
-                                    String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
-                                    doc.insertString(startOffset, text, null);
-                                    indent.reindent(startOffset, startOffset + text.length());
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        });
-                    } finally {
-                        indent.unlock();
+            final String compName = result.iterator().next().getName();
+            final BaseDocument doc = (BaseDocument) document;
+            final Indent indent = Indent.get(doc);
+            indent.lock();
+            try {
+                doc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.remove(startOffset, endOffset - startOffset);
+                            String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
+                            doc.insertString(startOffset, text, null);
+                            indent.reindent(startOffset, startOffset + text.length());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
-                }
-            });
-            
+                });
+            } finally {
+                indent.unlock();
+            }
 
             // get component folder
             FileObject tF = Templates.getTargetFolder(templateWizard);
@@ -229,7 +222,8 @@ public class InjectCompositeComponent {
                 if (webModule != null && webModule.getDocumentBase() != null) {
                     IndexingManager.getDefault().refreshIndexAndWait(
                             webModule.getDocumentBase().toURL(),
-                            Collections.singleton(generatedFO.toURL()));
+                            // issue #225974 - refresh the source FO to get hints
+                            Arrays.asList(generatedFO.toURL(), source.getFileObject().toURL()));
                 }
             }
 

@@ -11,13 +11,13 @@ public class Class_A_D implements Runnable{
     /**
      *
      * @param param the value of param
+     * @param zz the value of zz
      * @param myParameter the value of myParameter
-     * @param varargs the value of varargs
      */
-    public void m(int param, String myParameter, String... varargs) {
+    public void m(int param, int zz, String myParameter) {
         String x = myParameter;
         String y = "ABC";
-        int z = 12345;
+        int z = zz;
     }
     
     public void run() {
@@ -52,8 +52,8 @@ public class Class_A_D implements Runnable{
     }
     
     public void usage() {
-        new Class_A_D();        
-        m(1, "ABC","","");
+        new Class_A_A();        
+        m(1,2, "ABC");
         new Super().m1();
         new Sub().m1();
         y();

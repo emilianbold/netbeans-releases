@@ -79,6 +79,8 @@ class UserSearch implements ItemListener {
         ((UserSearchItem)combo.getSelectedItem()).selected(this);
 
     }
+    
+    @Override
     public void itemStateChanged(ItemEvent e) {
         if(e.getStateChange() == ItemEvent.SELECTED) {
             ((UserSearchItem)e.getItem()).selected(this);
@@ -153,7 +155,7 @@ class UserSearch implements ItemListener {
     }
 
     private class NobodySearch extends UserSearchItem {
-        private UserFilter filter = new NobodyFilter();
+        private final UserFilter filter = new NobodyFilter();
         public NobodySearch(String displayName) {
             super(displayName);
         }
@@ -171,7 +173,7 @@ class UserSearch implements ItemListener {
         }
     }
     private class CurrentUserSearch extends UserSearchItem {
-        private UserFilter filter = new CurrentUserFilter();
+        private final UserFilter filter = new CurrentUserFilter();
         public CurrentUserSearch() {
             super("Current User");
         }

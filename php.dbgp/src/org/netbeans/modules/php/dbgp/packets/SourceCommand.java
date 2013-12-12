@@ -43,76 +43,57 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class SourceCommand extends DbgpCommand {
+    static final String SOURCE = "source"; // NOI18N
+    private static final String FILE_ARG = "-f "; // NOI18N
+    private static final String BEGIN_ARG = "-b "; // NOI18N
+    private static final String END_ARG = "-e "; // NOI18N
+    private String myFileUri;
+    private int myBegin;
+    private int myEnd;
 
-    static final String         SOURCE      = "source";      // NOI18N
-    
-    private static final String FILE_ARG    = "-f ";         // NOI18N
-    
-    private static final String BEGIN_ARG   = "-b ";         // NOI18N
-    
-    private static final String END_ARG     = "-e ";         // NOI18N
-
-    public SourceCommand( String transactionId ) {
-        super( SOURCE , transactionId);
+    public SourceCommand(String transactionId) {
+        super(SOURCE, transactionId);
         myBegin = -1;
         myEnd = -1;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#wantAcknowledgment()
-     */
     @Override
-    public boolean wantAcknowledgment()
-    {
+    public boolean wantAcknowledgment() {
         return true;
     }
-    
-    public void setFile( String uri ){
+
+    public void setFile(String uri) {
         myFileUri = uri;
     }
-    
-    public void setBeginLine( int line ){
-        myBegin = line; 
+
+    public void setBeginLine(int line) {
+        myBegin = line;
     }
-    
-    public void setEndLine( int line ){
+
+    public void setEndLine(int line) {
         myEnd = line;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpCommand#getArguments()
-     */
+
     @Override
-    protected String getArguments()
-    {
-        StringBuilder builder = new StringBuilder( FILE_ARG );
-        builder.append( myFileUri );
-        
-        if ( myBegin != -1 ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( BEGIN_ARG );
-            builder.append( myBegin );
+    protected String getArguments() {
+        StringBuilder builder = new StringBuilder(FILE_ARG);
+        builder.append(myFileUri);
+        if (myBegin != -1) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(BEGIN_ARG);
+            builder.append(myBegin);
         }
-        
-        if ( myEnd != -1 ){
-            builder.append( BrkpntSetCommand.SPACE );
-            builder.append( END_ARG );
-            builder.append( myEnd );
+        if (myEnd != -1) {
+            builder.append(BrkpntSetCommand.SPACE);
+            builder.append(END_ARG);
+            builder.append(myEnd);
         }
-        
-        return builder.toString();    
+        return builder.toString();
     }
-    
-    private String myFileUri;
-    
-    private int myBegin;
-    
-    private int myEnd;
 
 }
