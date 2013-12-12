@@ -38,23 +38,16 @@
 #
 # Contributor(s):
 #
-# Portions Copyrighted 1997-2013 Sun Microsystems, Inc.
+# Portions Copyrighted 2013 Sun Microsystems, Inc.
 
-unpack_dir=$1
-jdk_home=$2
 set -e
 
-echo Calling unpack200 in $unpack_dir
-if [ -d "$unpack_dir" ]; then
-    cd "$unpack_dir"
-    for x in `find . -name \*.jar.pack` ; do
-        jar=`echo $x | sed 's/jar.pack/jar/'`
-        "$jdk_home/bin/unpack200" $x $jar
-        touch -r $x $jar
-        rm $x
-    done
-else
-    echo "$unpack_dir" does not exist.
+script_dir=`dirname "$0"`
+
+if [ -f "$script_dir"/postinstall ]; then
+    echo Calling ./postinstall in "$0"
+    sh "$script_dir"/postinstall "$@"
+            else
+    echo "$script_dir"/postinstall does not exist in "$0"
 fi
 
-exit 0

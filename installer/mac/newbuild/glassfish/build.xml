@@ -20,13 +20,12 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="glassfish" basedir="." default="build-pkg">
-
-
     <property name="builddir" value="${basedir}/build"/>
     <property name="appdir" value="${builddir}/app"/>
     <property name="scriptsdir" value="${builddir}/scripts"/>
     
-    <target name="clean"  depends="clean-getport">
+<!--    <target name="clean"  depends="clean-getport">-->
+    <target name="clean">
         <delete dir="${builddir}"/>
     </target>
 
@@ -35,31 +34,22 @@ Microsystems, Inc. All Rights Reserved.
          <mkdir dir="${scriptsdir}"/>
     </target>
     
-    <target name="get-bits">
+    <target name="get-bits">       
         <echo message="Downloading GlassFish from ${glassfish_location_ml}" />
         <get src="${glassfish_location_ml}" dest="./build/glassfish_image.zip" usetimestamp="true"/>
     </target>
     
-    <target name="unzip" depends="get-bits">
+    <target name="unzip" depends="get-bits">       
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${builddir} ; unzip glassfish_image.zip -d ${appdir}; rm ${builddir}/glassfish_image.zip"/>
+            <arg value="cd ${builddir} ; unzip glassfish_image.zip -d ${appdir}; mv -f ${appdir}/${glassfish.subdir}/* ${appdir}; mv -f ${appdir}/${glassfish.subdir}/.org* ${appdir}; rm -rf ${appdir}/${glassfish.subdir}; rm ${builddir}/glassfish_image.zip"/>
         </exec>
     </target>
-    
-    <target name="build-getport">
-        <ant dir="${basedir}/getport" target="jar"/>
-    </target>
 
-    <target name="clean-getport">
-        <ant dir="${basedir}/getport" target="clean"/>
-        <delete file="${scriptsdir}/getport.jar"/>
-    </target>    
-    
-    <target name="build-pkg" depends="clean, init, unzip, build-getport">
+    <target name="build-pkg" depends="clean, init, unzip">
         <exec executable="sh" failonerror="yes" outputproperty="size">
             <arg value="-c"/>
-            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 22528"/>
+            <arg value="du -sk build | sed 's/[\t]*build//' | xargs -I {}  expr {} + 5000"/>
         </exec>        
         <echo message="sizeof.glassfish=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>            
         <echo message="Executing pack200 in ${appdir}"/>
@@ -83,23 +73,24 @@ Microsystems, Inc. All Rights Reserved.
             </filterset>
         </copy>
 
+
         <copy  todir="${scriptsdir}">
-            <fileset dir="${basedir}/pkg/scripts/"/>
+            <fileset dir="${basedir}/pkg/scripts"/>
         </copy>
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
-        <copy file="${basedir}/../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
-        <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.jar" tofile="${scriptsdir}/servicetag.jar"/>
-        <copy file="${basedir}/../netBeans/baseide/build/scripts/servicetag.sh" tofile="${scriptsdir}/servicetag.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/add_gf.sh" tofile="${scriptsdir}/add_gf.sh"/>
+        <copy file="${basedir}/../netBeans/baseide/build/scripts/add_javadb.sh" tofile="${scriptsdir}/add_javadb.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/perm.sh" tofile="${scriptsdir}/perm.sh"/>        
-        <copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>
+
+
+        <!--<copy file="${basedir}/getport/dist/getport.jar" tofile="${scriptsdir}/getport.jar"/>        -->
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
-
+        
         <echo message="Building glassfish-${glassfish.id}.pkg into ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>

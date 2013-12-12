@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 product_id=$1
 

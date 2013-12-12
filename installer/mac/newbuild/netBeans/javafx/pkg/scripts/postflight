@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 # The contents of this file are subject to the terms of the Common Development
 # and Distribution License (the License). You may not use this file except in
@@ -25,15 +25,3 @@ dirname=`dirname "$0"`
 
 #add Product ID
 "$dirname"/addproduct_id.sh "FX"
-
-#clean receipts
-"$dirname"/clean_receipts.sh "javafx-$NB_ID" "org.netbeans.ide.javafx"
-
-
-
-"$dirname"/add_cluster.sh "javafx"
-
-touch ~/.javafx_eula_accepted
-
-#create ST for JavaFX
-#"$dirname"/servicetag.sh "javafx"

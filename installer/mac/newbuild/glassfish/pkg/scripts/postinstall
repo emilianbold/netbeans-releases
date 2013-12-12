@@ -38,23 +38,18 @@
 #
 # Contributor(s):
 #
-# Portions Copyrighted 1997-2013 Sun Microsystems, Inc.
+# Portions Copyrighted 2013 Sun Microsystems, Inc.
 
-unpack_dir=$1
-jdk_home=$2
 set -e
 
-echo Calling unpack200 in $unpack_dir
-if [ -d "$unpack_dir" ]; then
-    cd "$unpack_dir"
-    for x in `find . -name \*.jar.pack` ; do
-        jar=`echo $x | sed 's/jar.pack/jar/'`
-        "$jdk_home/bin/unpack200" $x $jar
-        touch -r $x $jar
-        rm $x
-    done
-else
-    echo "$unpack_dir" does not exist.
-fi
+script_dir=`dirname "$0"`
+source_dir=$1
+target_dir=$2
 
-exit 0
+jdk_home=`"$script_dir"/get_current_jdk.sh`
+
+. "$script_dir"/env.sh
+
+if [ -n "$GLASSFISH_INSTALL_DIR" ]; then
+   sh "$script_dir"/unpack200.sh "$GLASSFISH_INSTALL_DIR" "$jdk_home"
+fi
