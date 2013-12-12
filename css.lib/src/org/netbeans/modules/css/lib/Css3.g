@@ -396,6 +396,7 @@ mediaBodyItem
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_content
+    | {isCssPreprocessorSource()}? importItem
     | rule
     | page
     | fontFace
