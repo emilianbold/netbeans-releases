@@ -52,14 +52,13 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.CallEjbGenerator;
 import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext;
 import org.netbeans.modules.j2ee.ejbverification.HintsUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -111,26 +110,26 @@ public final class UseInjectionInsteadOfInstantionRule {
         if (!(element instanceof TypeElement)) {
             return null;
         }
-        final TypeElement javaClass = (TypeElement) element;
 
-        // is the file source of enterprise app?
-        final EjbJar ejbJar = getEjbJarForFileObject(ctx.getInfo().getFileObject());
-        if (ejbJar == null) {
+        final TypeElement enclosing = findNearestTypeElement(ctx);
+        if (enclosing == null) {
             return null;
         }
+
+        // class inside EJB environment
+        final EJBProblemContext ejbContext = HintsUtils.getOrCacheContext(ctx, enclosing.asType().toString());
+        if (ejbContext == null) {
+            return null;
+        }
+
+        final TypeElement javaClass = (TypeElement) element;
         try {
-            return ejbJar.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, ErrorDescription>() {
+            return ejbContext.getEjbModule().getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, ErrorDescription>() {
                 @Override
                 public ErrorDescription run(EjbJarMetadata metadata) {
-                    String ejbVersion = metadata.getRoot().getVersion().toString();
-                    // Only EJB 3.0+ are supported
-                    if (!HintsUtils.isEjb30Plus(ejbVersion)) {
-                        return null;
-                    }
-
                     Ejb ejb = metadata.findByEjbClass(ElementUtilities.getBinaryName(javaClass));
                     if (ejb != null) {
-                        ReplaceInstantionByInjectionFix fix = new ReplaceInstantionByInjectionFix(ctx, ejbJar);
+                        ReplaceInstantionByInjectionFix fix = new ReplaceInstantionByInjectionFix(ctx, ejbContext.getEjbModule(), enclosing);
                         return ErrorDescriptionFactory.forTree(
                                 ctx,
                                 ctx.getPath(),
@@ -148,28 +147,28 @@ public final class UseInjectionInsteadOfInstantionRule {
         return null;
     }
 
-    private static EjbJar getEjbJarForFileObject(FileObject fileObject) {
-        Project prj = FileOwnerQuery.getOwner(fileObject);
-        if (prj == null) {
-            return null;
+    private static TypeElement findNearestTypeElement(HintContext ctx) {
+        Iterator<Tree> iterator = ctx.getPath().iterator();
+        while (iterator.hasNext()) {
+            Tree next = iterator.next();
+            if (next.getKind() == Tree.Kind.CLASS) {
+                TreePath path = ctx.getInfo().getTrees().getPath(ctx.getInfo().getCompilationUnit(), next);
+                return (TypeElement) ctx.getInfo().getTrees().getElement(path);
+            }
         }
-
-        J2eeProjectCapabilities projCap = J2eeProjectCapabilities.forProject(prj);
-        if (projCap == null || (!projCap.isEjb30Supported() && !projCap.isEjb31LiteSupported())) {
-            return null;
-        }
-
-        return EjbJar.getEjbJar(fileObject);
+        return null;
     }
 
     private static class ReplaceInstantionByInjectionFix implements Fix {
 
         private final HintContext context;
         private final EjbJar ejbJar;
+        private final TypeElement enclosing;
 
-        public ReplaceInstantionByInjectionFix(HintContext context, EjbJar ejbJar) {
+        public ReplaceInstantionByInjectionFix(HintContext context, EjbJar ejbJar, TypeElement enclosing) {
             this.context = context;
             this.ejbJar = ejbJar;
+            this.enclosing = enclosing;
         }
 
         @Override
@@ -184,19 +183,6 @@ public final class UseInjectionInsteadOfInstantionRule {
 
                 @Override
                 public void run() {
-                    TypeElement element = null;
-
-                    //XXX - find better way to get enclosing class TypeElement
-                    Iterator<Tree> iterator = context.getPath().iterator();
-                    while (iterator.hasNext()) {
-                        Tree next = iterator.next();
-                        if (next.getKind() == Tree.Kind.CLASS) {
-                            TreePath path = context.getInfo().getTrees().getPath(context.getInfo().getCompilationUnit(), next);
-                            element = (TypeElement) context.getInfo().getTrees().getElement(path);
-                            break;
-                        }
-                    }
-
                     // remove instantion
                     try {
                         Fix removeFromParent = JavaFixUtilities.removeFromParent(context, null, context.getPath());
@@ -207,29 +193,27 @@ public final class UseInjectionInsteadOfInstantionRule {
 
                     // inject reference
                     try {
-                        if (element != null) {
-                            TypeElement javaClass = (TypeElement) context.getInfo().getTrees().getElement(context.getVariables().get("$clazz")); //NOI18N
-                            FileObject referencingFO = context.getInfo().getFileObject();
-                            String referencingBN = ElementUtilities.getBinaryName(element);
-                            String referencedSN = javaClass.getSimpleName().toString();
-                            String name = _RetoucheUtil.uniqueMemberName(referencingFO, referencingBN, referencedSN, referencedSN);
-                            
-                            CallEjbGenerator generator = CallEjbGenerator.create(
-                                    EjbReferenceSupport.createEjbReference(ejbJar, javaClass.toString()),
-                                    name,
-                                    true);
+                        TypeElement javaClass = (TypeElement) context.getInfo().getTrees().getElement(context.getVariables().get("$clazz")); //NOI18N
+                        FileObject referencingFO = context.getInfo().getFileObject();
+                        String referencingBN = ElementUtilities.getBinaryName(enclosing);
+                        String referencedSN = javaClass.getSimpleName().toString();
+                        String name = _RetoucheUtil.uniqueMemberName(referencingFO, referencingBN, referencedSN, referencedSN);
 
-                            generator.addReference(
-                                referencingFO,
-                                referencingBN,
-                                SourceUtils.getFile(ElementHandle.create(javaClass), context.getInfo().getClasspathInfo()),
-                                ElementUtilities.getBinaryName(javaClass),
-                                null,
-                                EjbReference.EjbRefIType.NO_INTERFACE,
-                                false,
-                                FileOwnerQuery.getOwner(context.getInfo().getFileObject())
-                            );
-                        }
+                        CallEjbGenerator generator = CallEjbGenerator.create(
+                                EjbReferenceSupport.createEjbReference(ejbJar, javaClass.toString()),
+                                name,
+                                true);
+
+                        generator.addReference(
+                            referencingFO,
+                            referencingBN,
+                            SourceUtils.getFile(ElementHandle.create(javaClass), context.getInfo().getClasspathInfo()),
+                            ElementUtilities.getBinaryName(javaClass),
+                            null,
+                            EjbReference.EjbRefIType.NO_INTERFACE,
+                            false,
+                            FileOwnerQuery.getOwner(context.getInfo().getFileObject())
+                        );
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }

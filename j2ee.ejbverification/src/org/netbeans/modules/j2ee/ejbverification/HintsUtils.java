@@ -48,7 +48,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -233,7 +232,7 @@ public class HintsUtils {
     }
 
     /**
-     * Gets problem context used by standard EJB hints.
+     * Gets problem context used by standard EJB hints. This method can be used for @TriggerTreeKind based hints.
      * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
      *
      * @param context Hints API context
@@ -242,6 +241,18 @@ public class HintsUtils {
     public static EJBProblemContext getOrCacheContext(HintContext context) {
         Element element = context.getInfo().getTrees().getElement(context.getPath());
         String elementType = element.asType().toString();
+        return getOrCacheContext(context, elementType);
+    }
+
+    /**
+     * Gets problem context used by standard EJB hints.
+     * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
+     *
+     * @param context Hints API context
+     * @param elementType FQN of the element where should be hint applied
+     * @return EJB hint's context
+     */
+    public static EJBProblemContext getOrCacheContext(HintContext context, String elementType) {
         Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT + elementType);
         if (cached == null) {
             LOG.log(Level.FINEST, "HintContext doesn''t contain cached EJBProblemContext which is going to be created for type: {0}", elementType);
