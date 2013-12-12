@@ -291,6 +291,7 @@ public class TreeEvaluator {
                     loggerMethod.fine("STARTED : "+classType+"."+method+" ("+args+") in thread "+evaluationThread);
                 }
             }
+            EvaluatorVisitor.autoboxArguments(method.argumentTypes(), args, evaluationThread, null);
             Value value;
             if (objectReference != null) {
                 value =

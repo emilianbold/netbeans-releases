@@ -1498,7 +1498,7 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "   .#{$item}-important[href]   { background-color: blue; }\n"
                 + " }");
     }
-    
+
     public void testIssue237010() {
         assertParses("$textColorError: \"blue\";\n" +
                 "$allowTagSelectors: true;\n" +
@@ -1519,6 +1519,13 @@ public class Css3ParserScssTest extends CssTestBase {
                 "  .oj-textarea.oj-invalid\");\n" +
                 "#{$currSelectors} {\n" +
                 "    border: 2px solid $textColorError; \n" +
+                "}");
+    }
+
+    public void testIssue236388() {
+        assertParses("@media only screen and (min-width: 768px) {\n" +
+                "    @import \"_grid.less\";\n" +
+                "    @import \"_768up.less\";\n" +
                 "}");
     }
 }

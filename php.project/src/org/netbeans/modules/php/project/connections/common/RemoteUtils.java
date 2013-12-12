@@ -44,16 +44,21 @@ package org.netbeans.modules.php.project.connections.common;
 import java.net.Proxy;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NetworkSettings;
 
@@ -64,8 +69,67 @@ public final class RemoteUtils {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
 
+    private static final boolean FETCH_ALL_LOCAL_FILES = Boolean.getBoolean("nb.php.remote.localFiles.eager"); // NOI18N
+    private static final boolean FETCH_ALL_REMOTE_FILES = Boolean.getBoolean("nb.php.remote.remoteFiles.eager"); // NOI18N
+    private static final boolean FETCH_ALL_FILES = Boolean.getBoolean("nb.php.remote.files.eager"); // NOI18N
+
 
     private RemoteUtils() {
+    }
+
+    public static boolean allFilesFetched(boolean remote) {
+        if (FETCH_ALL_FILES) {
+            return true;
+        }
+        return remote ? FETCH_ALL_REMOTE_FILES : FETCH_ALL_LOCAL_FILES;
+    }
+
+    public static long getLastTimestamp(boolean upload, Project project) {
+        if (!allFilesFetched(!upload)) {
+            // using lazy children, return far future
+            return 4102441200L; // 2100/1/1 ;)
+        }
+        return upload ? ProjectSettings.getLastUpload(project) : ProjectSettings.getLastDownload(project);
+    }
+
+    // #237253
+    /**
+     * Add all children recursively to the given transfer files if:
+     * <ul>
+     * <li>proper system property is set,</li>
+     * <li>preselected files contain only sources.</li>
+     * </ul>
+     * @param remote {@code true} for remote files, {@code false} for local ones
+     * @param files files to be fetched
+     * @param sources source directory
+     * @param preselectedFiles preselected files
+     */
+    public static void fetchAllFiles(boolean remote, Set<TransferFile> files, FileObject sources, FileObject[] preselectedFiles) {
+        if (!allFilesFetched(remote)) {
+            return;
+        }
+        if (preselectedFiles.length != 1) {
+            // some files selected for upload
+            return;
+        }
+        if (!preselectedFiles[0].equals(sources)) {
+            // not source dir
+            return;
+        }
+        Set<TransferFile> tmp = new HashSet<>();
+        for (TransferFile transferFile : files) {
+            fetchAllFiles(remote, tmp, transferFile);
+        }
+        files.clear();
+        files.addAll(tmp);
+    }
+
+    private static void fetchAllFiles(boolean remote, Set<TransferFile> allFiles, TransferFile transferFile) {
+        allFiles.add(transferFile);
+        List<TransferFile> children = remote ? transferFile.getRemoteChildren() : transferFile.getLocalChildren();
+        for (TransferFile child : children) {
+            fetchAllFiles(remote, allFiles, child);
+        }
     }
 
     /**
