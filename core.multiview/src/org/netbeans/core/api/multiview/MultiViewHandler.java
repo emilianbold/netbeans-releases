@@ -45,6 +45,7 @@
 package org.netbeans.core.api.multiview;
 
 import org.netbeans.core.multiview.MultiViewHandlerDelegate;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 
 /**
  * A handler for the  multiview's {@link org.openide.windows.TopComponent}, obtainable via
@@ -108,6 +109,28 @@ public final class MultiViewHandler {
         del.requestVisible(desc);
     }
     
+    /**
+     * Adds another multiview element to an existing multiview TopComponent. 
+     * Such elements are not persisted.
+     * @param descr The description of the element to be added.
+     * @param position Position of the new element or -1 to append the element to the end.
+     * @since 1.38
+     */
+    public void addMultiViewDescription(MultiViewDescription descr, int position) {
+        del.addMultiViewDescription( descr, position );
+    }
+    
+    /**
+     * Removes multiview element that was added at runtime.
+     * @param descr The description of the element that was previously passed to 
+     * addMultiViewDescription method.
+     * @since 1.38
+     * @see #addMultiViewDescription(org.netbeans.core.spi.multiview.MultiViewDescription, int) 
+     */
+    public void removeMultiViewDescription(MultiViewDescription descr) {
+        del.removeMultiViewDescription( descr );
+    }
+ 
     
  
 }
