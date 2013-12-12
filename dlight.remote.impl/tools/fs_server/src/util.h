@@ -141,6 +141,8 @@ int utf8_bytes_count(const char *buffer, int char_count);
 int utf8_char_count(const char *buffer, int byte_count);
 int utf8_strlen(const char *buffer);
 
+bool is_subdir(const char* child, const char* parent);
+
 #ifdef	__cplusplus
 }
 #endif

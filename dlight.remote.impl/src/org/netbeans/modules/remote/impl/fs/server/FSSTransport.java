@@ -435,11 +435,29 @@ public class FSSTransport extends RemoteFileSystemTransport {
     
     @Override
     protected void registerDirectoryImpl(RemoteDirectory directory) {
-        
+        if (ConnectionManager.getInstance().isConnectedTo(env)) {
+            requestRefreshCycle(directory.getPath());
+        }
     }
 
     @Override
     protected void unregisterDirectoryImpl(String path) {
         
     }
+    
+    @Override
+    protected void onConnect() {
+        requestRefreshCycle("/"); //NOI18N
+    }
+
+    @Override
+    protected void onFocusGained() {
+        requestRefreshCycle("/"); //NOI18N
+    }
+ 
+    private void requestRefreshCycle(String path) {
+        if (!dispatcher.isRefreshing()) {
+            dispatcher.requestRefreshCycle(path);
+        }
+    }    
 }

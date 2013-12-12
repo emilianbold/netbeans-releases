@@ -59,6 +59,14 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).needsClientSidePollingRefresh();
     }
 
+    static void onFocusGained(ExecutionEnvironment execEnv) {
+        getInstance(execEnv).onFocusGained();
+    }
+
+    static void onConnect(ExecutionEnvironment execEnv) {
+        getInstance(execEnv).onConnect();
+    }
+        
     public static void registerDirectory(RemoteDirectory directory) {
         getInstance(directory.getExecutionEnvironment()).registerDirectoryImpl(directory);
     }
@@ -118,7 +126,7 @@ public abstract class RemoteFileSystemTransport {
         }
         return transport;
     }
-    
+
     protected abstract FileInfoProvider.StatInfo stat(String path) 
             throws InterruptedException, CancellationException, ExecutionException;
     
@@ -135,4 +143,10 @@ public abstract class RemoteFileSystemTransport {
     protected abstract void registerDirectoryImpl(RemoteDirectory directory);
 
     protected abstract void unregisterDirectoryImpl(String path);
+
+    protected void onConnect() {
+    }
+
+    protected void onFocusGained() {
+    }
 }
