@@ -86,6 +86,8 @@ import static org.netbeans.modules.refactoring.java.ui.Bundle.*;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
+    private static boolean INSTANT = Boolean.getBoolean("org.netbeans.modules.java.refactoring.instantRename");
+    
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
@@ -93,7 +95,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public void doRename(final Lookup lookup) {
         final EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if(RefactoringUtils.isFromEditor(ec)) {
+        if(INSTANT && RefactoringUtils.isFromEditor(ec)) {
             invokeInstantRename(lookup, ec);
         } else {
             doFullRename(lookup);

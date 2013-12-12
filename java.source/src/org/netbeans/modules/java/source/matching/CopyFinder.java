@@ -53,6 +53,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -971,6 +972,31 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return false;
 
         return scan(node.getStatement(), t.getStatement(), p);
+    }
+
+    @Override
+    public Boolean visitLabeledStatement(LabeledStatementTree node, TreePath p) {
+        if (p == null) {
+            return super.visitLabeledStatement(node, p); 
+        }
+        LabeledStatementTree lst = (LabeledStatementTree)p.getLeaf();
+        
+        String ident = lst.getLabel().toString();
+
+        if (ident.startsWith("$")) { // NOI18N
+            if (bindState.variables2Names.containsKey(ident)) {
+                if (!node.getLabel().contentEquals(bindState.variables2Names.get(ident))) {
+                    return false;
+                }
+            } else {
+                bindState.variables2Names.put(ident, node.getLabel().toString());
+            }
+        } else {
+            if (!node.getLabel().toString().equals(ident)) {
+                return false;
+            }
+        }
+        return scan(node.getStatement(), lst.getStatement(), p);
     }
 
     public Boolean visitIdentifier(IdentifierTree node, TreePath p) {

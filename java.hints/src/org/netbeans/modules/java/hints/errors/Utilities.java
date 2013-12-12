@@ -1443,6 +1443,14 @@ public class Utilities {
             }
         }
     }
+    
+    public static boolean isValidElement(Element e) {
+        return e != null && isValidType(e.asType());
+    }
+    
+    public static boolean isValidType(TypeMirror m) {
+        return m != null && (m.getKind() != TypeKind.OTHER && m.getKind() != TypeKind.ERROR);
+    }
 
     /**
      * Detects if targets file is non-null and writable

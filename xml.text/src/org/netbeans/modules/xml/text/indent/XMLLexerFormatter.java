@@ -485,9 +485,7 @@ public class XMLLexerFormatter {
                 l++;
             }
         }
-        if (l > 0) {
-            addLine(l);
-        }
+        addLine(l);
     }
     
     private void addLine(int len) {

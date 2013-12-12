@@ -59,7 +59,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -75,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -242,6 +242,18 @@ public final class PathRegistry implements Runnable {
             LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
         }
         scheduleFirer(roots);
+    }
+
+    public void unregisterUnknownSourceRoots(@NonNull Iterable<? extends URL> roots) {
+        Parameters.notNull("roots", roots); //NOI18N
+        synchronized (this) {
+            for (URL root : roots) {
+                unknownRoots.remove(root);
+                if (unknownSourcePath != null) {
+                    unknownSourcePath.remove(root);
+                }
+            }
+        }
     }
 
     public Collection<? extends URL> getSources () {
