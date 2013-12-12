@@ -58,7 +58,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -74,8 +73,8 @@ public class RefreshManager {
     /** one the task was scheduled, this should be true */
     private volatile boolean updateTaskScheduled = false;
     
-    private final LinkedList<RemoteFileObjectBase> queue = new LinkedList<RemoteFileObjectBase>();
-    private final Set<RemoteFileObjectBase> set = new HashSet<RemoteFileObjectBase>();
+    private final LinkedList<String> queue = new LinkedList<String>();
+    private final Set<String> set = new HashSet<String>();
     private final Object queueLock = new Object();
 
     private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
@@ -92,13 +91,19 @@ public class RefreshManager {
             int cnt = 0;
                 while (true) {
                     RemoteFileObjectBase fo;
+                    String path;
                     synchronized (queueLock) {
-                        fo = queue.poll();
-                        if (fo == null) {
+                        path = queue.poll();
+                        if (path == null) {
                             break;
                         }
+                        set.remove(path);
+                        fo = factory.getCachedFileObject(path);
                         cnt++;
-                        set.remove(fo);
+                    }
+                    if (fo == null) {
+                        RemoteLogger.finest("RefreshManager: skipping dead file object {0} @ {1}", path, env);
+                        continue;
                     }
                     try {
                         fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
@@ -233,12 +238,13 @@ public class RefreshManager {
         }        
         synchronized (queueLock) {
             for (RemoteFileObjectBase fo : fileObjects) {
-                if (set.contains(fo)) {
-                    queue.remove(fo);
+                String path = fo.getPath();
+                if (set.contains(path)) {
+                    queue.remove(path);
                 } else {
-                    set.add(fo);
+                    set.add(path);
                 }
-                queue.add(toTheHead ? 0 : queue.size(), fo);
+                queue.add(toTheHead ? 0 : queue.size(), path);
             }
         }
         updateTask.schedule(0);
