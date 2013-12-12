@@ -1346,9 +1346,15 @@ public final class WebProject implements Project {
             // TODO: dongmei: anything for EJBs???????
 
             // unregister project's classpaths to GlobalPathRegistry
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            try {
+                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+            } catch (IllegalArgumentException e) {
+                // Classpath were not registered before unregistration
+                LOGGER.log(Level.INFO, "While trying to close the project, it was not possible to unregister classpath items "
+                        + "because they were not registered in the first place.", e);
+            }
 
             CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssSupport);
 
