@@ -97,7 +97,7 @@ import org.openide.util.RequestProcessor;
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
-    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 2); // NOI18N
+    private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
 
@@ -144,8 +144,27 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    public boolean isRefreshing() {
+        return REFRESH_INTERVAL > 0;
+    }
+
     public void connected() {
         RP.post(new ConnectTask());
+    }
+
+    void requestRefreshCycle() {
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, "/", true);
+        try {
+            dispatch(req);
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (CancellationException ex) {
+            // don't report CancellationException
+        } catch (InterruptedException ex) {
+            // don't report InterruptedException
+        } catch (ExecutionException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     private class ConnectTask implements Runnable {
@@ -292,11 +311,14 @@ import org.openide.util.RequestProcessor;
 
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
-        FSSResponse response = new FSSResponse(request, this);
-        synchronized (responseLock) {
-            RemoteLogger.assertNull(responses.get(request.getId()),
-                    "response should be null for id {0}", request.getId()); // NOI18N
-            responses.put(request.getId(), response);
+        FSSResponse response = null;
+        if (request.needsResponse()) {
+            response = new FSSResponse(request, this);
+            synchronized (responseLock) {
+                RemoteLogger.assertNull(responses.get(request.getId()),
+                        "response should be null for id {0}", request.getId()); // NOI18N
+                responses.put(request.getId(), response);
+            }
         }
         FsServer srv;
         try {

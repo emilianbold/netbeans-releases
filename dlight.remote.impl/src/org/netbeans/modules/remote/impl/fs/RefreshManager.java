@@ -126,7 +126,9 @@ public class RefreshManager {
                     }
                 }                
                 time = System.currentTimeMillis() - time;
-                RemoteLogger.getInstance().log(Level.FINEST, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
+                if (cnt > 0) {
+                    RemoteLogger.getInstance().log(Level.FINEST, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
+                }
             }
         }
     
@@ -159,20 +161,26 @@ public class RefreshManager {
         updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker(false)); //NOI18N
     }        
     
-    public void scheduleRefreshOnFocusGained(Collection<RemoteFileObjectBase> fileObjects) {
+    public void scheduleRefreshOnFocusGained() {        
         if (REFRESH_ON_FOCUS && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
+            Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefreshImpl(filterDirectories(fileObjects), false);
+        } else {
+            RemoteFileSystemTransport.onFocusGained(env);
         }
     }
 
-    public void scheduleRefreshOnConnect(Collection<RemoteFileObjectBase> fileObjects) {
+    public void scheduleRefreshOnConnect() {
         if (REFRESH_ON_CONNECT && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
+            Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
             RemoteLogger.getInstance().log(Level.FINE, "Refresh on connect schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
             scheduleRefreshImpl(filterDirectories(fileObjects), false);
+        } else {
+            RemoteFileSystemTransport.onConnect(env);
         }
     }
-    
+
     private Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
         Collection<RemoteFileObjectBase> result = new TreeSet<RemoteFileObjectBase>(new PathComparator(true));
         for (RemoteFileObjectBase fo : fileObjects) {

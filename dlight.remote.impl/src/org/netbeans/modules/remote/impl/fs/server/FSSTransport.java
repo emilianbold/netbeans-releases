@@ -442,4 +442,20 @@ public class FSSTransport extends RemoteFileSystemTransport {
     protected void unregisterDirectoryImpl(String path) {
         
     }
+    
+    @Override
+    protected void onConnect() {
+        requestRefreshCycle();
+    }
+
+    @Override
+    protected void onFocusGained() {
+        requestRefreshCycle();
+    }
+ 
+    private void requestRefreshCycle() {
+        if (!dispatcher.isRefreshing()) {
+            dispatcher.requestRefreshCycle();
+        }
+    }    
 }
