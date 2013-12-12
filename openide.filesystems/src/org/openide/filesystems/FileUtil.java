@@ -1716,6 +1716,14 @@ public final class FileUtil extends Object {
             if (!path.equals("\\\\") && !("\\\\".equals(file.getParent()))) {  //NOI18N
                 LOG.log(Level.FINE, path, e);
             }
+            if (path.endsWith(".")) {
+                path = path.substring(0, path.length() - 1);
+                retVal = new File(path);
+            }
+            if (path.endsWith("\\")) {
+                path = path.substring(0, path.length() - 1);
+                retVal = new File(path);
+            }
         }
         // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
         if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
