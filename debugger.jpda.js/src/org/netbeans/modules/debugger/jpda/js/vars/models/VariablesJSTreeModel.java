@@ -128,7 +128,9 @@ public class VariablesJSTreeModel implements TreeModelFilter {
         }
         for (Map.Entry<String, LocalVariable> entry : localVarsByName.entrySet()) {
             JSVariable jsv = JSVariable.create(debugger, entry.getValue());
-            newChildren.add(0, jsv);
+            if (jsv != null) {
+                newChildren.add(0, jsv);
+            }
         }
         if (scopeVars != null) {
             Collections.reverse(scopeVars);
