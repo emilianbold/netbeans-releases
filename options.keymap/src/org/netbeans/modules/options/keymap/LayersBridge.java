@@ -882,7 +882,18 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
         
         public String getDisplayName () {
             if (name == null) {
-                name = (String) action.getValue (Action.NAME);
+                try {
+                    name = (String) action.getValue (Action.NAME);
+                } catch (MissingResourceException ex) {
+                    // this is a common plugin error, which would be otherwise attributed to 
+                    // actions component. Print a warning and blame the real originator of the bug
+                    LOG.log(Level.WARNING, "Missing resources for action {0}, class {1}: {2}", new Object[] {
+                        id,
+                        action.getClass().getName(),
+                        ex.getLocalizedMessage()
+                    });
+                    // name remains null, action will be filtered out from the display.
+                }
                 if (name == null) {
                     name = ""; // #185619: not intended for presentation in this dialog
                 }
