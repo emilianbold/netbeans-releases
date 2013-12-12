@@ -791,11 +791,11 @@ static void thread_shutdown() {
 static void refresh_cycle(fs_request* request) {
     dirtab_flush(); // TODO: find the appropriate place
     stopwatch_start();
-    if (request) {
+    if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_REFRESH, request->id, (long) utf8_strlen(request->path), request->path);
     }
     dirtab_visit(refresh_visitor, request);
-    if (request) {
+    if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request->id, (long) utf8_strlen(request->path), request->path);
     }
     stopwatch_stop(TRACE_FINE, "refresh cycle");    
