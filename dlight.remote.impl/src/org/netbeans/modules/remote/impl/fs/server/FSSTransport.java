@@ -435,7 +435,9 @@ public class FSSTransport extends RemoteFileSystemTransport {
     
     @Override
     protected void registerDirectoryImpl(RemoteDirectory directory) {
-        
+        if (ConnectionManager.getInstance().isConnectedTo(env)) {
+            requestRefreshCycle(directory.getPath());
+        }
     }
 
     @Override
@@ -445,17 +447,17 @@ public class FSSTransport extends RemoteFileSystemTransport {
     
     @Override
     protected void onConnect() {
-        requestRefreshCycle();
+        requestRefreshCycle("/"); //NOI18N
     }
 
     @Override
     protected void onFocusGained() {
-        requestRefreshCycle();
+        requestRefreshCycle("/"); //NOI18N
     }
  
-    private void requestRefreshCycle() {
+    private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
-            dispatcher.requestRefreshCycle();
+            dispatcher.requestRefreshCycle(path);
         }
     }    
 }

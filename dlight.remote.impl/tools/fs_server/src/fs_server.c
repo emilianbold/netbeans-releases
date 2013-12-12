@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 20
+#define FS_SERVER_MINOR_VERSION 21
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -660,18 +660,19 @@ static int entry_comparator(const void *element1, const void *element2) {
 }
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
-    bool explicit = false;
-    int request_id = 0;
-    if (data) {
-        request_id = ((fs_request*) data)->id;
-        explicit = true;
-    }
+    fs_request *request = data;
     if (is_prohibited(path)) {
         trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
         return true;
     }
+    if (request) {
+        if (!is_subdir(path, request->path)) {
+            trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
+            return true;
+        }
+    }
     dirtab_lock(el);
-    if (!explicit && dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
+    if (!request && dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
         return true;
@@ -681,7 +682,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_state state = dirtab_get_state(el);
-    if (!explicit && state == DE_STATE_REFRESH_SENT) {
+    if (!request && state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
         return true;
@@ -764,7 +765,8 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     if (differs) {
         trace(TRACE_INFO, "refresh manager: sending notification for %s\n", path);
         // trailing '\n' already there, added by form_entry_response
-        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_CHANGE, request_id, (long) utf8_strlen(path), path);
+        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_CHANGE, 
+                request ? request->id : 0, (long) utf8_strlen(path), path);
         my_fflush(STDOUT);
         dirtab_set_state(el, DE_STATE_REFRESH_SENT);
     }

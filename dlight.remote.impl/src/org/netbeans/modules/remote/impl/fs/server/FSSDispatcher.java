@@ -152,8 +152,8 @@ import org.openide.util.RequestProcessor;
         RP.post(new ConnectTask());
     }
 
-    void requestRefreshCycle() {
-        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, "/", true);
+    void requestRefreshCycle(String path) {
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
         try {
             dispatch(req);
         } catch (IOException ex) {
