@@ -52,6 +52,7 @@ import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
@@ -181,7 +182,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     private ValidationResult getValidationResult() {
         boolean compilationEnabled = getOptionsPanel().isCompilationEnabled();
         return type.getPreferencesValidator()
-                .validateMappings(compilationEnabled, getOptionsPanel().getMappings())
+                .validateMappings(CssPreprocessorUtils.getWebRoot(project), compilationEnabled, getOptionsPanel().getMappings())
                 .validateExecutable(compilationEnabled)
                 .getResult();
     }
