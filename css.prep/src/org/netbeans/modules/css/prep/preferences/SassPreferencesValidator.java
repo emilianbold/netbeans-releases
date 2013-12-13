@@ -70,7 +70,6 @@ public final class SassPreferencesValidator implements CssPreprocessorPreference
 
     @Override
     public SassPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings) {
-        assert root != null;
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(root, mappings)
