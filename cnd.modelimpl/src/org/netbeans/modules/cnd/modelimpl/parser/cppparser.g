@@ -377,6 +377,10 @@ tokens {
         return isCPlusPlus() && langFlavor == FLAVOR_CPP11;
     }
 
+    boolean isC() {
+        return lang == ANSI_C;
+    }
+
 	protected static final int tsInvalid   = 0x0;
 	protected static final int tsVOID      = 0x1;
 	protected static final int tsCHAR      = 0x2;
@@ -3549,6 +3553,16 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
 	|
+                // Function definition in C language
+                {isC()}?
+                ((LITERAL___extension__)?
+                    (options {greedy=true;} :function_attribute_specification!)?
+                    declaration_specifiers[false, false]
+                    (options {greedy=true;} :function_attribute_specification!)? 
+                    function_declarator[true, false, false] LCURLY
+                ) =>
+                external_declaration {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);} // TODO: refactor this
+        |
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
                 {if (statementTrace>=1)
 			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());

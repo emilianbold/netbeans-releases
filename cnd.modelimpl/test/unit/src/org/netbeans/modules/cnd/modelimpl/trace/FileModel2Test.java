@@ -488,4 +488,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Error with existing namespaces in C language
         performTest("c_namespaces.c");
     }
+    
+    public void testBug238041() throws Exception {
+        // Bug 238041 - Function inside a function (in C) breaks parser
+        performTest("bug238041.c");
+    }
 }
