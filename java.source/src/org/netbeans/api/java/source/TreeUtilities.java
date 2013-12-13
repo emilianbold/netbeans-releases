@@ -239,7 +239,7 @@ public final class TreeUtilities {
             TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
 
             if (tp == null) {
-                if (assertsEnabled) {
+                if (assertsEnabled && !info.getTreeUtilities().isSynthetic(info.getCompilationUnit(), tree)) {
                     // HACK: if info is a working copy, the tree might be introduced by rewriting; 
                     // in that case, no log should be printed
                     if (!(info instanceof WorkingCopy) || !((WorkingCopy)info).validateIsReplacement(tree)) {
