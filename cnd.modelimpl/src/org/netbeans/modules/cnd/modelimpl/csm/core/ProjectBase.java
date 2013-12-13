@@ -153,6 +153,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
@@ -3433,7 +3434,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public FileObject getFileObject() {
-            return CndFileUtils.toFileObject(project.getFileSystem(), normalizedAbsPath);
+            FileObject fo = CndFileUtils.toFileObject(project.getFileSystem(), normalizedAbsPath);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(project.getFileSystem(), normalizedAbsPath);
+            }
+            return fo;
         }
 
         @Override

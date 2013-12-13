@@ -119,12 +119,15 @@ public final class IncludeDirEntry {
             FileSystem entryFS = fs;
             if (exists) {
                 FileObject fo = CndFileUtils.toFileObject(fs, dir);
-                try {
-                    entryFS = fo.getFileSystem();
-                    // FIXME XXX:FullRemote 
-                    dir = CndFileUtils.normalizePath(fo);
-                } catch (FileStateInvalidException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (fo == null) {
+                    exists = false;
+                } else {
+                    try {
+                        entryFS = fo.getFileSystem();
+                        dir = CndFileUtils.normalizePath(fo);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
