@@ -317,6 +317,20 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
         }
     }
+    
+    public void testNormalizeNonExistingButNotAccessibleRootOnWindows() throws IOException {
+        if (!Utilities.isWindows()) {
+            return;
+        }
+        for (File r : File.listRoots()) {
+            // hopefully one of them is a CD drive
+            File g = new File(r + "\\my\\.");
+            File gn = FileUtil.normalizeFile(g);
+            File gnn = FileUtil.normalizeFile(gn);
+            assertEquals("Normalized: " + g, gn, gnn);
+        }
+        
+    }
 
     public void testNormalizeFileIsCached() throws Exception {
         File f = new File(getWorkDir(), "text.txt");
