@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.eclipse.persistence.internal.libraries.antlr.runtime.debug.Profiler;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.common.api.Version;
 
