@@ -481,6 +481,7 @@ public final class ProxyFileManager implements JavaFileManager {
     private <T extends javax.tools.FileObject> T mark(
             @NullAllowed final T result,
             @NonNull final JavaFileManager.Location l) throws MalformedURLException {
+        boolean valid = true;
         ProcessorGenerated.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
             type = ProcessorGenerated.Type.RESOURCE;
@@ -506,10 +507,17 @@ public final class ProxyFileManager implements JavaFileManager {
                         type);
                 }
             }
+            if (!FileObjects.isValidFileName(result.getName())) {
+                LOG.log(
+                    Level.WARNING,
+                    "Cannot write Annotation Processor generated file: {0}",   //NOI18N
+                    result.getName());
+                valid = false;
+            }
         }
         return result == null ?
                 null :
-                processorGeneratedFiles.canWrite() || !siblings.getProvider().hasSibling() ?
+                valid && (processorGeneratedFiles.canWrite() || !siblings.getProvider().hasSibling()) ?
                     result :
                     (T) FileObjects.nullWriteFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }

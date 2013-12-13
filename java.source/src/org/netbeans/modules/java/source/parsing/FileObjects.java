@@ -794,6 +794,18 @@ public class FileObjects {
         return data;
     }
 
+    public static boolean isValidFileName(@NonNull final CharSequence fileName) {
+        for (int i = 0; i<fileName.length(); i++) {
+            final char c = fileName.charAt(i);
+            switch (c) {
+                case '<':   //NOI18N
+                case '>':   //NOI18N
+                    return false;
+            }
+        }
+        return true;
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Private helper methods">
     private static CharSequence getCharContent(InputStream ins, Charset encoding, JavaFileFilterImplementation filter, long expectedLength, boolean ignoreEncodingErrors) throws IOException {
         char[] result;
