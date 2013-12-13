@@ -55,7 +55,6 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -155,7 +154,7 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        FileObject webRoot = getWebRoot(project, fileObject);
+        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project, fileObject);
         File target = getTargetFile(project, webRoot, file);
         if (target == null) {
             // not found
@@ -189,11 +188,11 @@ abstract class BaseProcessor {
         assert originalName != null : fileObject;
         assert originalExtension != null : fileObject;
         File originalFile = new File(FileUtil.toFile(fileObject).getParentFile(), originalName + "." + originalExtension); // NOI18N
-        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), originalFile));
+        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), originalFile));
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
-        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
+        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
     }
 
     private void deleteFile(File file) {
@@ -234,15 +233,6 @@ abstract class BaseProcessor {
             return null;
         }
         return target;
-    }
-
-    @CheckForNull
-    private FileObject getWebRoot(Project project, FileObject fileObject) {
-        ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
-        if (projectWebRootProvider == null) {
-            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getClass().getName());
-        }
-        return projectWebRootProvider.getWebRoot(fileObject);
     }
 
 }

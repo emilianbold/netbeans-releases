@@ -42,15 +42,17 @@
 package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
 public interface CssPreprocessorPreferencesValidator {
 
     ValidationResult getResult();
     CssPreprocessorPreferencesValidator validate(Project project);
-    CssPreprocessorPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings);
+    CssPreprocessorPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings);
     CssPreprocessorPreferencesValidator validateExecutable(boolean enabled);
 
 }

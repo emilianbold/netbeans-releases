@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  *
@@ -108,6 +109,9 @@ public class FSSUtil  {
         switch (errno) {
             case Errno.EACCES:
             case Errno.ENOENT:
+                return new FSSFileNotFoundException(errno, emsg);
+            case 0:
+                RemoteLogger.info("Got zero error code; treating as 'file not found': {0}", emsg);
                 return new FSSFileNotFoundException(errno, emsg);
             default:
                 return new FSSIOException(errno, emsg);
