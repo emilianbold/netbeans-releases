@@ -98,13 +98,13 @@ public final class ConnectionManager {
     private static List<ConnectionListener> connectionListeners = new CopyOnWriteArrayList<ConnectionListener>();
     private static final Object channelsSupportLock = new Object();
     private static HashMap<ExecutionEnvironment, ConnectToAction> connectionActions = new HashMap<ExecutionEnvironment, ConnectToAction>();
-    // Instance of the ConnectionManager
-    private static final ConnectionManager instance = new ConnectionManager();
     private static final ConcurrentHashMap<ExecutionEnvironment, JSch> jschPool =
             new ConcurrentHashMap<ExecutionEnvironment, JSch>();
     private final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
+    // Instance of the ConnectionManager
+    private static final ConnectionManager instance = new ConnectionManager();
     private final ConnectionContinuation DEFAULT_CC;
     private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
 

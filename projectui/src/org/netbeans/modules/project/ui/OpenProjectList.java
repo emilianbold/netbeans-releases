@@ -81,7 +81,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
@@ -103,9 +102,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -349,6 +346,7 @@ public final class OpenProjectList {
         private final ProgressHandle progress;
         
         @Messages("CAP_Opening_Projects=Opening Projects")
+        @SuppressWarnings("LeakingThisInConstructor")
         public LoadOpenProjects(int a) {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
@@ -1227,7 +1225,7 @@ public final class OpenProjectList {
             if ( dir != null && dir.isFolder() ) {
                 try {
                     Project p = ProjectManager.getDefault().findProject( dir );
-                    if ( p != null ) {
+                    if ( p != null && !result.contains(p)) { //#238093, #238811 if multiple entries point to the same project we end up with the same instance multiple times in the linked list. That's wrong.
                         result.add( p );
                     }
                 }       
