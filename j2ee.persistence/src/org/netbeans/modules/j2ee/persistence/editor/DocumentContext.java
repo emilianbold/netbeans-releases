@@ -74,10 +74,6 @@ import org.w3c.dom.Node;
  */
 public class DocumentContext {
 
-    //public static final String PREFIX = "ns"; //NOI18N
-    //public static final String XSI_SCHEMALOCATION = "schemaLocation"; //NOI18N
-    //public static final String XSI_NONS_SCHEMALOCATION = "noNamespaceSchemaLocation"; //NOI18N
-
     private static final Logger LOGGER = Logger.getLogger(DocumentContext.class.getName());
     private Document document;
     private XMLSyntaxSupport syntaxSupport;
@@ -91,6 +87,8 @@ public class DocumentContext {
             new HashMap<String, String>();
     private String schemaLocation;
     private String noNamespaceSchemaLocation;
+    private final String VERSION = "version";//NOI18N
+    private String persistenceVersion = null;
 
     DocumentContext(Document document) {
         this.document = document;
@@ -209,6 +207,10 @@ public class DocumentContext {
         return declaredNamespaces.get(prefix);
     }
     
+    public String getVersion() {
+        return persistenceVersion;
+    }
+    
     public String getNamespacePrefix(String namespace) {
         for(Entry<String, String> entry : declaredNamespaces.entrySet()) {
             if(entry.getValue().equals(namespace)) {
@@ -261,6 +263,10 @@ public class DocumentContext {
                     // Avoid overwriting a namespace declaration "closer" to the caret offset.
                     if (!declaredNamespaces.containsKey(prefix)) {
                         declaredNamespaces.put(prefix, attrValue);
+                    }
+                    Node tmp = attributes.getNamedItem(VERSION);
+                    if(tmp!=null) {
+                        persistenceVersion = tmp.getNodeValue();
                     }
                 }
             }
