@@ -89,7 +89,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         if ((fileSystem instanceof RemoteFileSystem)) { // paranoidal check
             return ((RemoteFileSystem) fileSystem).normalizeAbsolutePath(absPath);
         }
-        return absPath;
+        return PathUtilities.normalizeUnixPath(absPath);
     }
 
     @Override
