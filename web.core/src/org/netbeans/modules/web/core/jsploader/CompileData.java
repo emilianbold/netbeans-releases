@@ -48,8 +48,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.core.api.JspContextInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -77,7 +80,12 @@ public class CompileData {
         this.jspPage = jspPage;
         WebModule wm = WebModule.getWebModule (jspPage.getPrimaryFile());
         if (wm != null) {
-            this.docRoot = wm.getDocumentBase ();
+            this.docRoot = wm.getDocumentBase();
+            if (docRoot == null) {
+                // #235824 - NPE happens during refactoring, deletion etc.
+                Project project = FileOwnerQuery.getOwner(jspPage.getPrimaryFile());
+                docRoot = project.getProjectDirectory();
+            }
             String jspResourcePath = JspCompileUtil.findRelativeContextPath(docRoot, jspPage.getPrimaryFile());
             JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (docRoot);
             servletJavaRoot = finder.getServletTempDirectory();

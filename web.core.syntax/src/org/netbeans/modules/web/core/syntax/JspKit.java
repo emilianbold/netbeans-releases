@@ -530,8 +530,17 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
 
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
+                // EL expression completion - #234702
+                if (dotPos > 0) {
+                    String charPrefix = doc.getText(dotPos - 1, 1);
+                    if ("{".equals(str) && ("#".equals(charPrefix) || "$".equals(charPrefix))) { //NOI18N
+                        super.insertString(doc, dotPos, caret, "{}", overwrite);                 //NOI18N
+                        caret.setDot(dotPos + 1);
+                        return;
+                    }
+                }
 
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
                     boolean handled =
