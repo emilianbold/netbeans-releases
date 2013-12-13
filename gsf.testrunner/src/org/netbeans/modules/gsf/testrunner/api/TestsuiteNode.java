@@ -441,7 +441,7 @@ public class TestsuiteNode extends AbstractNode {
      * @return {@code true} if the currently used JDK version is 8, otherwise {@code false}.
      */
     private static boolean isJDK8() {
-        return Integer.parseInt(System.getProperty("java.version").split(".")[1]) == 8;
+        return Integer.parseInt(System.getProperty("java.version").split("\\.")[1]) == 8;
     }
 
 }
