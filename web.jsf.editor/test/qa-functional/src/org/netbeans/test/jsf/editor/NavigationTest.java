@@ -85,7 +85,7 @@ public class NavigationTest extends GeneralJSF {
         openFile("navigate.xhtml", NavigationTest.current_project);
         
         // workaround for issue 239455
-        EditorOperator eo = new EditorOperator("navigator.xhtml");
+        EditorOperator eo = new EditorOperator("navigate.xhtml");
         eo.setCaretPosition(4, 46);
         type(eo, " ");
         new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_S, 2)).performShortcut(eo);
