@@ -82,6 +82,8 @@ import org.openide.windows.OutputWriter;
 @ServiceProvider(service=AntLogger.class, position=50)
 public final class JavaAntLogger extends AntLogger {
     
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
+    
     static final class StackTraceParse {
         final String line;
         final String resource;
@@ -145,6 +147,9 @@ public final class JavaAntLogger extends AntLogger {
             "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
             "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
     static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
+        if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so do not check for stacktrace
+            return null;
+        }
         Matcher m = STACK_TRACE.matcher(line);
         if (m.matches()) {
             // We have a stack trace.
@@ -316,6 +321,9 @@ public final class JavaAntLogger extends AntLogger {
         
         // Look for classpaths.
         if (messageLevel == AntEvent.LOG_VERBOSE) {
+            if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so do not care about it
+                return;
+            }
             Matcher m2 = CLASSPATH_ARGS.matcher(line);
             if (m2.find()) {
                 String cp = m2.group(1);
@@ -392,7 +400,7 @@ public final class JavaAntLogger extends AntLogger {
     private static String guessExceptionMessage(SessionData data) {
         final String pet = data.possibleExceptionText;
         String lem = data.lastExceptionMessage;
-        if (pet != null) {
+        if (pet != null && pet.length() < LOGGER_MAX_LINE_LENGTH) { // not too long message, so check for exception
             if (lem == null) {
                 Matcher m = EXCEPTION_MESSAGE.matcher(pet);
                 if (m.matches()) {
