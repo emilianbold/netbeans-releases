@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 21
+#define FS_SERVER_MINOR_VERSION 22
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -494,8 +494,8 @@ static bool response_entry_create(buffer response_buf,
                 escaped_link);
         return true;
     } else {
-        report_error("error getting lstat for '%s': %s\n", abspath, strerror(errno));
         err_set(errno, "error getting lstat for '%s': %s\n", abspath, err_to_string(errno));
+        report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
         return false;
     }
 }
@@ -617,7 +617,7 @@ static void response_stat(int request_id, const char* path) {
         free(escaped_name);        
     }  else {
         int err_code = errno;
-        char* strerr = strerror(err_code);
+        const char* strerr = err_to_string(err_code);
         report_error("error getting stat for '%s': %s\n", path, strerr);
         my_fprintf(STDOUT, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
         my_fflush(STDOUT);

@@ -42,11 +42,13 @@
 package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
@@ -63,14 +65,14 @@ public final class SassPreferencesValidator implements CssPreprocessorPreference
     @Override
     public SassPreferencesValidator validate(Project project) {
         SassPreferences sassPreferences = SassPreferences.getInstance();
-        return validateMappings(sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
+        return validateMappings(CssPreprocessorUtils.getWebRoot(project), sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
     }
 
     @Override
-    public SassPreferencesValidator validateMappings(boolean enabled, List<Pair<String, String>> mappings) {
+    public SassPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
-                    .validate(mappings)
+                    .validate(root, mappings)
                     .getResult());
         }
         return this;

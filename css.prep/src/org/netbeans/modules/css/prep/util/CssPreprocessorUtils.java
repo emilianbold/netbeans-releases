@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -54,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
@@ -155,6 +157,28 @@ public final class CssPreprocessorUtils {
     }
 
     @CheckForNull
+    public static FileObject getWebRoot(Project project, FileObject fileObject) {
+        return getProjectWebRootProvider(project).getWebRoot(fileObject);
+    }
+
+    @CheckForNull
+    public static FileObject getWebRoot(Project project) {
+        Collection<FileObject> webRoots = getProjectWebRootProvider(project).getWebRoots();
+        if (webRoots.isEmpty()) {
+            return null;
+        }
+        return webRoots.iterator().next();
+    }
+
+    private static ProjectWebRootProvider getProjectWebRootProvider(Project project) {
+        ProjectWebRootProvider projectWebRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (projectWebRootProvider == null) {
+            throw new IllegalArgumentException("ProjectWebRootProvider must be found in project lookup: " + project.getClass().getName());
+        }
+        return projectWebRootProvider;
+    }
+
+    @CheckForNull
     public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, FileObject source) {
         File root = FileUtil.toFile(webRoot);
         File file = FileUtil.toFile(source);
@@ -173,18 +197,18 @@ public final class CssPreprocessorUtils {
     }
 
     public static File resolveInput(FileObject webRoot, Pair<String, String> mapping) {
-        return resolveFile(FileUtil.toFile(webRoot), mapping.first().trim());
+        return resolveFile(FileUtil.toFile(webRoot), mapping.first());
     }
 
     @CheckForNull
     static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
         for (Pair<String, String> mapping : mappings) {
-            File from = resolveFile(root, mapping.first().trim());
+            File from = resolveFile(root, mapping.first());
             String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
             if (relpath != null
                     && !relpath.startsWith("..")) { // NOI18N
                 // path match
-                File to = resolveFile(root, mapping.second().trim());
+                File to = resolveFile(root, mapping.second());
                 to = PropertyUtils.resolveFile(to, relpath);
                 return resolveFile(to, makeCssFilename(name));
             }
@@ -193,7 +217,8 @@ public final class CssPreprocessorUtils {
         return null;
     }
 
-    private static File resolveFile(File directory, String subpath) {
+    static File resolveFile(File directory, String subpath) {
+        subpath = subpath.trim();
         if (subpath.startsWith("/")) { // NOI18N
             subpath = subpath.substring(1);
         }
@@ -217,12 +242,21 @@ public final class CssPreprocessorUtils {
             return result;
         }
 
-        public MappingsValidator validate(List<Pair<String, String>> mappings) {
-            validateMappings(mappings);
+        public MappingsValidator validate(@NullAllowed FileObject root, List<Pair<String, String>> mappings) {
+            File f = null;
+            if (root != null) {
+                f = FileUtil.toFile(root);
+            }
+            return validate(f, mappings);
+        }
+
+        public MappingsValidator validate(@NullAllowed File root, List<Pair<String, String>> mappings) {
+            validateMappings(root, mappings);
             return this;
         }
 
         @NbBundle.Messages({
+            "MappingsValidator.warning.root.invalid=Web/site root is invalid.",
             "MappingsValidator.warning.none=At least one input and output path must be set.",
             "MappingsValidator.warning.input.empty=Input path cannot be empty.",
             "MappingsValidator.warning.output.empty=Output path cannot be empty.",
@@ -230,8 +264,15 @@ public final class CssPreprocessorUtils {
             "MappingsValidator.warning.input.format=Input path \"{0}\" is incorrect.",
             "# {0} - mapping",
             "MappingsValidator.warning.output.format=Output path \"{0}\" is incorrect.",
+            "# {0} - mapping",
+            "MappingsValidator.warning.input.file=Input path \"{0}\" is existing file but directory expected.",
+            "# {0} - mapping",
+            "MappingsValidator.warning.output.file=Output path \"{0}\" is existing file but directory expected.",
         })
-        private MappingsValidator validateMappings(List<Pair<String, String>> mappings) {
+        private MappingsValidator validateMappings(@NullAllowed File root, List<Pair<String, String>> mappings) {
+            if (root == null) {
+                result.addError(new ValidationResult.Message("root", Bundle.MappingsValidator_warning_root_invalid())); // NOI18N
+            }
             if (mappings.isEmpty()) {
                 result.addError(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_none())); // NOI18N
             }
@@ -242,6 +283,9 @@ public final class CssPreprocessorUtils {
                     result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(input).matches()) {
                     result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_format(input))); // NOI18N
+                } else if (root != null
+                        && resolveFile(root, input).isFile()) {
+                    result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_file(input))); // NOI18N
                 }
                 // output
                 String output = mapping.second();
@@ -249,6 +293,9 @@ public final class CssPreprocessorUtils {
                     result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(output).matches()) {
                     result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_format(output))); // NOI18N
+                } else if (root != null
+                        && resolveFile(root, output).isFile()) {
+                    result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_file(output))); // NOI18N
                 }
             }
             return this;

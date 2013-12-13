@@ -106,7 +106,7 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 1, children.length);
             storage = ((RemoteDirectory) roDirFO.getImplementor()).testGetExistingDirectoryStorage();            
-            assertEquals("storage.size", 2, storage.listAll().size());
+            assertEquals("storage.size for " + roDirFO.getPath(), 2, storage.listAll().size());
             
             FileObject fileFO2 = getFileObject(filePath2);
             children = roDirFO.getChildren();
@@ -119,13 +119,13 @@ public class ReadOnlyDirTestCase extends RemoteFileTestBase {
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
             storage = ((RemoteDirectory) roDirFO.getImplementor()).testGetExistingDirectoryStorage();
-            assertEquals("storage.size", 4, storage.listAll().size());
+            assertEquals("storage.size for " + roDirFO.getPath(), 4, storage.listAll().size());
             
             roDirFO.refresh();
             children = roDirFO.getChildren();
             assertEquals("children size for " + roDirFO.getPath(), 2, children.length);
             storage = ((RemoteDirectory) roDirFO.getImplementor()).testGetExistingDirectoryStorage();
-            assertEquals("storage.size", 2, storage.listAll().size());            
+            assertEquals("storage.size for " + roDirFO.getPath(), 2, storage.listAll().size());            
         } finally {
             if (baseDir != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
