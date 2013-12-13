@@ -1180,7 +1180,6 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "class UserTask {\n" +
             "\n" +
             "    public int j;\n" +
-            "\n" +
             "    private int k = 1;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1220,6 +1219,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class UserTask {\n" +
+            "\n" +
             "    int i,j,k;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1452,7 +1452,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "        ;\n" +
             "        int i2 = throwSomething2();\n" +
             "        // Some comment2\n" +
-            "        \n" +
+            "        \n" + // TODO, should not be here, caused by diff-ing even i2 against the original field group
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
