@@ -92,6 +92,14 @@ public class JspCommentHandler extends CommentHandler.DefaultCommentHandler {
                 ts.move(bounds[1]);
                 if(ts.moveNext()) {
                     Token t = ts.token();
+
+                    // in case of caret within the comment, find the ending bound
+                    if (t.id() == JspTokenId.COMMENT) {
+                        while (ts.moveNext() && t.id() == JspTokenId.COMMENT) {
+                            bounds[1] += ts.token().offset(th) - 2;
+                        }
+                    }
+
                     if(isScriptletOrDelimiter(t)) {
                         inScriptlet[1] = true;
                         //try to find beginning of the scriptlet
