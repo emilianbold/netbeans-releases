@@ -304,6 +304,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // we have found possible candidates, but we'd prefer to check visibility to
             // select the best one
             Collection<CsmObject> visibleObjs = new ArrayList<CsmObject>();
+            Collection<CsmObject> visibleTypedefs = new ArrayList<CsmObject>();
             Collection<CsmObject> visibleFwd = new ArrayList<CsmObject>();
             CsmIncludeResolver resolver = CsmIncludeResolver.getDefault();
             CsmFile startFile = contResolver.getStartFile();
@@ -320,6 +321,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                     foundVisible = true;
                     if(CsmClassifierResolver.getDefault().isForwardClassifier(obj)) {
                         visibleFwd.add(obj);
+                    } else if (CsmKindUtilities.isTypedefOrTypeAlias(obj)) {
+                        visibleTypedefs.add(obj);
+                        enough = true;
                     } else {
                         visibleObjs.add(obj);
                         enough = true;
@@ -329,6 +333,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (foundVisible) {
                 // add visible
                 out.addAll(visibleObjs);
+                out.addAll(visibleTypedefs);
                 out.addAll(visibleFwd);
             }
         }
@@ -1869,8 +1874,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private boolean isInFunctionPointerType(CsmContext context, int offset) {
-        if (CsmKindUtilities.isFunctionPointerType(context.getLastObject())) {
-            return CsmOffsetUtilities.isInObject(context.getLastObject(), offset);
+        if (CsmKindUtilities.isFunctionPointerType(context.getLastScope())) {
+            return CsmOffsetUtilities.isInObject(context.getLastScope(), offset);
         } else if (CsmKindUtilities.isTypedefOrTypeAlias(context.getLastObject())) {
             CsmTypedef typedef = (CsmTypedef) context.getLastObject();
             CsmType type = typedef.getType();

@@ -45,7 +45,6 @@ package org.netbeans.modules.remote.impl.fs.server;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -68,14 +67,12 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
-import org.openide.modules.OnStart;
-import org.openide.modules.OnStop;
 
 /**
  *
  * @author vkvashin
  */
-public class FSSTransport extends RemoteFileSystemTransport {
+public class FSSTransport extends RemoteFileSystemTransport implements ConnectionListener {
     
     private static final Map<ExecutionEnvironment, FSSTransport> instances = new HashMap<ExecutionEnvironment, FSSTransport>();
     private static final Object instancesLock = new Object();
@@ -103,6 +100,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
             if (instance == null) {
                 instance = new FSSTransport(env);
                 instances.put(env, instance);
+                ConnectionManager.getInstance().addConnectionListener(instance);
             }
             return instance;
         }
@@ -110,7 +108,7 @@ public class FSSTransport extends RemoteFileSystemTransport {
 
     private FSSTransport(ExecutionEnvironment env) {
         this.env = env;
-        this.dispatcher = FSSDispatcher.getInstance(env);
+        this.dispatcher = FSSDispatcher.getInstance(env);        
     }
     
     @Override
@@ -380,54 +378,21 @@ public class FSSTransport extends RemoteFileSystemTransport {
         }
     }
     
-    private void shutdown() {
+    @Override
+    public void connected(ExecutionEnvironment env) {
+        if (env.equals(this.env)) {
+            dispatcher.connected();
+        }
     }
 
-    private void connected() {
-        dispatcher.connected();
+    @Override
+    public void disconnected(ExecutionEnvironment env) {
     }
     
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);
     }
 
-    @OnStop
-    public static class Closer implements Runnable {
-        @Override
-        public void run() {
-            Collection<FSSTransport> inctancesCopy;
-            synchronized (instancesLock) {                
-                inctancesCopy = instances.values();
-            }
-            for (FSSTransport instance : inctancesCopy) {
-                instance.shutdown();
-            }
-        }        
-    }
-    
-    @OnStart
-    public static class Starter implements Runnable, ConnectionListener {
-
-        @Override
-        public void run() {
-            ConnectionManager.getInstance().addConnectionListener(this);
-        }
-
-        @Override
-        public void connected(ExecutionEnvironment env) {
-            if (USE_FS_SERVER) {
-                FSSTransport instance = getInstance(env);
-                if (instance != null) {
-                    instance.connected();
-                }
-            }
-        }
-
-        @Override
-        public void disconnected(ExecutionEnvironment env) {
-        }
-    }
-    
     @Override
     protected boolean needsClientSidePollingRefresh() {
         return false;
@@ -457,7 +422,8 @@ public class FSSTransport extends RemoteFileSystemTransport {
  
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
-            dispatcher.requestRefreshCycle(path);
+            // file system root has empty path
+            dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path);
         }
     }    
 }
