@@ -236,9 +236,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	out.toLeftMargin();
     }
 
-    public void reset(int margin) {
+    public void reset(int margin, int col) {
 	out.setLength(0);
 	out.leftMargin = margin;
+        out.col = col;
     }
 
     public int getIndent() {

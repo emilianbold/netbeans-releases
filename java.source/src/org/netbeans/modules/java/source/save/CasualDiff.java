@@ -3406,7 +3406,7 @@ public class CasualDiff {
                             VeryPretty oldPrinter = this.printer;
                             int old = oldPrinter.indent();
                             this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                            this.printer.reset(old);
+                            this.printer.reset(old, oldPrinter.out.getCol());
                             this.printer.oldTrees = oldTrees;
                             int index = oldList.indexOf(ld);
                             int[] poss = estimator.getPositions(index);
@@ -4207,7 +4207,7 @@ public class CasualDiff {
                                 VeryPretty oldPrinter = this.printer;
                                 int old = oldPrinter.indent();
                                 this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                                this.printer.reset(old);
+                                this.printer.reset(old, oldPrinter.out.getCol());
                                 this.printer.oldTrees = oldTrees;
                                 int[] poss = getBounds(oldT, doc);
                                 int end = diffDocTree(doc, oldT, item.element, poss);
