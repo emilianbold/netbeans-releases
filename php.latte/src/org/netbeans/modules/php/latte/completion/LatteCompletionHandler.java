@@ -186,7 +186,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         HELPERS.add(LatteElement.HelperFactory.create("nl2br")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("lower")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("upper")); //NOI18N
-        HELPERS.add(LatteElement.HelperFactory.create("firstLower")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("firstUpper")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("capitalize")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("date", Arrays.asList(new Parameter[] {new HelperParameter("'format'")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("number", Arrays.asList(new Parameter[] {//NOI18N
