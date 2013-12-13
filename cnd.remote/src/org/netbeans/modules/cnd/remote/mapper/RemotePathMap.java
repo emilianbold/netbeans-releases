@@ -245,7 +245,10 @@ public abstract class RemotePathMap extends PathMap {
             if (file.isDirectory()) {
                 localPaths.add(file.getAbsolutePath());
             } else {
-                localPaths.add(file.getParentFile().getAbsolutePath());
+                File parentFile = file.getParentFile();
+                if (parentFile != null) {
+                    localPaths.add(parentFile.getAbsolutePath());
+                }
             }
         }
         // sort local paths so that if there are parent paths, they go first
