@@ -46,10 +46,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
-import static org.junit.Assert.*;
 
-public class CssPreprocessorUtilsTest {
+public class CssPreprocessorUtilsTest extends NbTestCase {
+
+    public CssPreprocessorUtilsTest(String name) {
+        super(name);
+    }
 
     @Test
     public void testEncodeMappings() {
@@ -105,24 +110,33 @@ public class CssPreprocessorUtilsTest {
     }
 
     @Test
-    public void testValidMappingsFormat() {
+    public void testValidMappingsFormat() throws Exception {
+        // non-existing folder
+        File root = new File("/root");
         List<Pair<String, String>> mappings = Arrays.asList(
                 Pair.of("/scss", "/css"),
                 Pair.of("/another/scss", "/another/css"),
                 Pair.of(".", "."));
         ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
-                .validate(mappings)
+                .validate(root, mappings)
+                .getResult();
+        assertTrue(validationResult.isFaultless());
+        // existing folder
+        root = getWorkDir();
+        validationResult = new CssPreprocessorUtils.MappingsValidator()
+                .validate(root, mappings)
                 .getResult();
         assertTrue(validationResult.isFaultless());
     }
 
     @Test
     public void testInvalidMappingsFormat() {
+        File root = new File("/root");
         Pair<String, String> mapping1 = Pair.of("/sc" + CssPreprocessorUtils.MAPPING_DELIMITER + "ss", "/css");
         Pair<String, String> mapping2 = Pair.of("/scss", "   ");
         List<Pair<String, String>> mappings = Arrays.asList(mapping1, mapping2);
         ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
-                .validate(mappings)
+                .validate(root, mappings)
                 .getResult();
         assertEquals(0, validationResult.getWarnings().size());
         assertEquals(2, validationResult.getErrors().size());
@@ -131,7 +145,41 @@ public class CssPreprocessorUtilsTest {
         assertTrue(error1.getMessage(), error1.getMessage().contains(mapping1.first()));
         ValidationResult.Message error2 = validationResult.getErrors().get(1);
         assertEquals("mapping." + mapping2.second(), error2.getSource());
-        assertEquals(error2.getMessage(), Bundle.MappingsValidator_warning_output_empty());
+        assertEquals(Bundle.MappingsValidator_warning_output_empty(), error2.getMessage());
+    }
+
+    @Test
+    public void testInvalidRoot() throws Exception {
+        ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
+                .validate((FileObject) null, Collections.singletonList(Pair.of("/scss", "/css")))
+                .getResult();
+        assertEquals(0, validationResult.getWarnings().size());
+        assertEquals(1, validationResult.getErrors().size());
+        ValidationResult.Message error1 = validationResult.getErrors().get(0);
+        assertEquals("root", error1.getSource());
+        assertEquals(Bundle.MappingsValidator_warning_root_invalid(), error1.getMessage());
+    }
+
+    @Test
+    public void testInvalidMappingsFile() throws Exception {
+        File root = getWorkDir();
+        File source = File.createTempFile("nb-", "-source", root);
+        File target = File.createTempFile("nb-", "-target", root);
+        assertTrue(source.isFile());
+        assertTrue(target.isFile());
+        Pair<String, String> mapping = Pair.of("/" + source.getName(), "/" + target.getName());
+        List<Pair<String, String>> mappings = Collections.singletonList(mapping);
+        ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
+                .validate(root, mappings)
+                .getResult();
+        assertEquals(0, validationResult.getWarnings().size());
+        assertEquals(2, validationResult.getErrors().size());
+        ValidationResult.Message error1 = validationResult.getErrors().get(0);
+        assertEquals("mapping." + mapping.first(), error1.getSource());
+        assertEquals(Bundle.MappingsValidator_warning_input_file(mapping.first()), error1.getMessage());
+        ValidationResult.Message error2 = validationResult.getErrors().get(1);
+        assertEquals("mapping." + mapping.second(), error2.getSource());
+        assertEquals(Bundle.MappingsValidator_warning_output_file(mapping.second()), error2.getMessage());
     }
 
 }
