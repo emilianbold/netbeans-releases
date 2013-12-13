@@ -69,19 +69,19 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
-                                 types={ TableModelFilter.class, TableHTMLModelFilter.class },
+                                 types=TableHTMLModelFilter.class,
                                  position=100),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
-                                 types=TableModelFilter.class,
+                                 types=TableHTMLModelFilter.class,
                                  position=100),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
-                                 types=TableModelFilter.class,
+                                 types=TableHTMLModelFilter.class,
                                  position=100),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
-                                 types=TableModelFilter.class,
+                                 types=TableHTMLModelFilter.class,
                                  position=100)
 })
-public class BoldVariablesTableModelFilter implements TableModelFilter, TableHTMLModelFilter,
+public class BoldVariablesTableModelFilter implements TableHTMLModelFilter,
 Constants {
     
     private Map variableToValueType = new WeakHashMap ();
@@ -89,16 +89,6 @@ Constants {
     private Map variableToValueToString = new WeakHashMap ();
     
     
-    
-    @Override
-    public Object getValueAt (
-        TableModel original, 
-        Object row, 
-        String columnID
-    ) throws UnknownTypeException {
-        Object result = original.getValueAt (row, columnID);
-        return result;
-    }
     
     @Override
     public boolean hasHTMLValueAt(TableHTMLModel original, Object row, String columnID) throws UnknownTypeException {
@@ -192,25 +182,6 @@ Constants {
         }
     }
     
-    @Override
-    public boolean isReadOnly (
-        TableModel original, 
-        Object row, 
-        String columnID
-    ) throws UnknownTypeException {
-        return original.isReadOnly (row, columnID);
-    }
-    
-    @Override
-    public void setValueAt (
-        TableModel original, 
-        Object row, 
-        String columnID, 
-        Object value
-    ) throws UnknownTypeException {
-        original.setValueAt (row, columnID, value);
-    }
-    
     /** 
      * Registers given listener.
      * 
@@ -262,9 +233,13 @@ Constants {
                 color = new JTable().getForeground();
             }
         }
-        sb.append ("<font color=");
-        sb.append (Integer.toHexString ((color.getRGB () & 0xffffff)));
-        sb.append (">");
+        sb.append ("<font color=\"#");
+        String hexColor = Integer.toHexString ((color.getRGB () & 0xffffff));
+        for (int i = hexColor.length(); i < 6; i++) {
+            sb.append("0"); // Prepend zeros to length of 6
+        }
+        sb.append(hexColor);
+        sb.append ("\">");
         text = text.replaceAll ("&", "&amp;");
         text = text.replaceAll ("<", "&lt;");
         text = text.replaceAll (">", "&gt;");
