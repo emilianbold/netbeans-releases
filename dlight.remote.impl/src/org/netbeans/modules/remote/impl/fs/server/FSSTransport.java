@@ -457,7 +457,8 @@ public class FSSTransport extends RemoteFileSystemTransport {
  
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
-            dispatcher.requestRefreshCycle(path);
+            // file system root has empty path
+            dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path);
         }
     }    
 }
