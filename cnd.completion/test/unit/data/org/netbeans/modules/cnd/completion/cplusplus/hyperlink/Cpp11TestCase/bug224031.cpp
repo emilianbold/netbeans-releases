@@ -11,5 +11,6 @@ namespace bug224031 {
     int opCode;
 
     decltype(opCode) (*get_ptr(const char opCode))(int, int);
-    
+ 
+    typedef void (*funPointer)(const int items[], int arg, int elems[]);
 }
