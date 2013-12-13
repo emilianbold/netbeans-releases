@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.SimpleDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -163,7 +164,12 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                             break;
                     case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                             try {
-                                LambdaFunction<?> fddi = LambdaFunction.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                                CsmDeclaration fddi;
+                                if (APTLanguageSupport.getInstance().isLanguageC(language)) {
+                                    fddi = FunctionDDImpl.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                                } else {
+                                    fddi = LambdaFunction.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                                }
                                 declarators.add(fddi);
                             } catch (AstRendererException e) {
                                 DiagnosticExceptoins.register(e);

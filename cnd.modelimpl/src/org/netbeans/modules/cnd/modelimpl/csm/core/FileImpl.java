@@ -1362,7 +1362,7 @@ public final class FileImpl implements CsmFile,
             System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        int flags = APTLanguageSupport.getInstance().isLanguageC(getFileLanguage()) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }

@@ -125,7 +125,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             this.file = (FileImpl) params.getMainFile();
             this.language = params.getLanguage();
             this.languageFlavor = params.getLanguageFlavor();            
-            int aFlags = CPPParserEx.CPP_CPLUSPLUS;
+            int aFlags = APTLanguageSupport.getInstance().isLanguageC(language) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
             if (!TraceFlags.REPORT_PARSING_ERRORS) {
                 aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
             }

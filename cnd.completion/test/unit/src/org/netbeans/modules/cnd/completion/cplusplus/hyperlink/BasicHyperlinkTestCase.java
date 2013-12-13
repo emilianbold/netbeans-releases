@@ -1039,6 +1039,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug239348.h", 10, 6, "bug239348.cpp", 5, 3);
     }     
     
+    public void testBug238041() throws Exception {
+        // Bug 238041 - Function inside a function (in C) breaks parser 
+        performTest("bug238041.c", 4, 11, "bug238041.c", 4, 1);
+        performTest("bug238041.c", 5, 11, "bug238041.c", 5, 5);
+        performTest("bug238041.c", 6, 17, "bug238041.c", 5, 20);
+        performTest("bug238041.c", 6, 21, "bug238041.c", 4, 16);
+        performTest("bug238041.c", 7, 15, "bug238041.c", 2, 1);
+        performTest("bug238041.c", 10, 14, "bug238041.c", 5, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
