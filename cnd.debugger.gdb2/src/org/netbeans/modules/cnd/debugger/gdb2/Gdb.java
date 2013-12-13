@@ -461,7 +461,7 @@ public class Gdb {
 	    //
 
 	    if (!connectExisting) {
-                ioPack.console().getTerm().pushStream(new KeyProcessingStream());
+//                ioPack.console().getTerm().pushStream(new KeyProcessingStream());
                 ioPack.console().getTerm().pushStream(tentativeGdb.tap());
 		ioPack.console().getTerm().setCustomColor(0,
 		    Color.yellow.darker().darker());
@@ -766,6 +766,280 @@ public class Gdb {
         // end - from the console to GDB
         
     }
+    
+    //    start - Temporary block
+    
+//    private static class KeyProcessingStream extends TermStream {
+//
+//        private final char[] wrapCR = new char[]{ESC.CHAR_CR};
+//        private final char[] wrapNL = new char[]{ESC.CHAR_LF};
+//        private final char[] wrapNAK = new char[]{ESC.CHAR_NAK};
+//
+//        private class Interpreter {
+//
+//            private boolean processChars(final char[] chars) {
+//                if (isEqual(chars, ESC.UP_SEQUENCE)) {
+////                    historyUp();
+//                    return true;
+//                } else if (isEqual(chars, ESC.DOWN_SEQUENCE)) {
+////                    historyDown();
+//                    return true;
+////                } else if (isEqual(chars, wrapNL) || isEqual(chars, wrapCR)) {
+////                    history.add(getLine().toString());
+////                    return false;
+//                } else if (isEqual(chars, ESC.LEFT_SEQUENCE)) {
+//                    if (caretIdx > 0) {
+//                        caretIdx--;
+//                        toDTE.putChars(ESC.BS_SEQUENCE, 0, 1);
+//                        toDTE.flush();
+//                    }
+//                    return true;
+//                } else if (isEqual(chars, ESC.RIGHT_SEQUENCE)) {
+//                    if (caretIdx < line.length()) {
+//                        caretIdx++;
+//                        toDTE.putChars(chars, 0, chars.length);
+//                        toDTE.flush();
+//                    }
+//                    return true;
+//                } else if (isEqual(chars, ESC.HOME_SEQUENCE) || isEqual(chars, ESC.END_SEQUENCE)) {
+//                    return true;
+//                } else if (isEqual(chars, wrapNAK)) {
+//                    caretIdx = 0;
+//                    return true;
+//                }
+//                return false;
+//                //\033[H
+//            }
+//
+//            private boolean isEqual(final char[] x, final char[] y) {
+//                return Arrays.equals(x, y);
+//            }
+//        }
+//        
+//        private static class History {
+//
+//            private static final int MAX_SIZE = 100;
+//
+//            private final LinkedList<String> list;
+//            private ListIterator<String> iter;
+//
+//            private boolean lastCallIsNext = false;
+//
+//            public History() {
+//                list = new LinkedList();
+//                iter = list.listIterator();
+//            }
+//
+//            public void add(final String string) {
+//                if (list.size() > MAX_SIZE) {
+//                    list.removeFirst();
+//                }
+//                list.addLast(string);
+//                iter = list.listIterator(list.size());
+//            }
+//
+//            public String previous() {
+//                if (lastCallIsNext) {
+//                    iter.previous();
+//                }
+//                lastCallIsNext = false;
+//                if (iter.hasPrevious()) {
+//                    return iter.previous();
+//                } else {
+//                    return "";
+//                }
+//            }
+//
+//            public String next() {
+//                if (!lastCallIsNext) {
+//                    iter.next();
+//                }
+//                lastCallIsNext = true;
+//                if (iter.hasNext()) {
+//                    return iter.next();
+//                } else {
+//                    return "";
+//                }
+//            }
+//        }
+//
+//        private final Interpreter interp = new Interpreter();
+//        private int caretIdx;
+//
+//        private final StringBuffer line = new StringBuffer();
+//
+//        private int send_buf_sz = 2;
+//        private char send_buf[] = new char[send_buf_sz];
+//
+//        char[] send_buf(int n) {
+//            if (n >= send_buf_sz) {
+//                send_buf_sz = n + 1;
+//                send_buf = new char[send_buf_sz];
+//            }
+//            return send_buf;
+//        }
+//
+//        private int put_capacity = 16;
+//        private int put_length = 0;
+//        private char put_buf[] = new char[put_capacity];
+//
+//        public void flush() {
+//            toDTE.flush();
+//        }
+//
+//        public void putChar(char c) {
+//            put_length = 0;
+//            processChar(c);
+//            toDTE.putChars(put_buf, 0, put_length);
+//        }
+//
+//        public void putChars(char buf[], int offset, int count) {
+//            put_length = 0;
+//            for (int bx = 0; bx < count; bx++) {
+//                processChar(buf[offset + bx]);
+//            }
+//            toDTE.putChars(put_buf, 0, put_length);
+//        }
+//
+//        private void processChar(char c) {
+//            appendChar(c);
+//            if (c == 10) {
+//                appendChar((char) 13);
+//            }
+//        }
+//
+//        private void appendChar(char c) {
+//            if (put_length >= put_capacity) {
+//                int new_capacity = put_capacity * 2;
+//                if (new_capacity < 0) {
+//                    new_capacity = Integer.MAX_VALUE;
+//                }
+//                char new_buf[] = new char[new_capacity];
+//                System.arraycopy(put_buf, 0, new_buf, 0, put_length);
+//                put_buf = new_buf;
+//                put_capacity = new_capacity;
+//            }
+//
+//            put_buf[put_length++] = c;
+//        }
+//
+//        public void sendChar(char c) {
+//            if (c == ESC.CHAR_CR) {
+//                toDTE.putChar(c);
+//                toDTE.flush();
+//
+//                c = (char) 10;
+//                toDTE.putChar(c);
+//                toDTE.flush();
+//
+//                line.append(c);
+//
+//                int nchars = line.length();
+//                char[] tmp = send_buf(nchars);
+//                line.getChars(0, nchars, tmp, 0);
+//                toDCE.sendChars(tmp, 0, nchars);
+//                line.delete(0, 99999);
+//
+//                caretIdx = 0;
+//            } else if (c == ESC.CHAR_CR) {
+//                toDTE.putChar((char) 13);
+//                toDTE.flush();
+//
+//                toDTE.putChar(c);
+//                toDTE.flush();
+//
+//                line.append(c);
+//
+//                int nchars = line.length();
+//                char[] tmp = send_buf(nchars);
+//                line.getChars(0, nchars, tmp, 0);
+//                toDCE.sendChars(tmp, 0, nchars);
+//                line.delete(0, 99999);
+//
+//                caretIdx = 0;
+//            } else if (c == ESC.CHAR_BS) {
+//                // BS
+//                int nchars = line.length();
+//
+//                if (nchars == 0) {
+//                    return;
+//                }
+//                char erased_char = ' ';
+//                try {
+//                    erased_char = line.charAt(nchars - 1);
+//                } catch (Exception x) {
+//                    return;
+//                }
+//                int cwidth = getTerm().charWidth(erased_char);
+//
+//                line.delete(nchars - 1, nchars);
+//
+//                while (--cwidth > 0) {
+//                    line.append(' ');
+//                }
+//
+//                toDTE.putChars(ESC.BS_SEQUENCE, 0, 3);
+//                toDTE.flush();
+//                
+//                caretIdx--;
+//
+//            } else if (c == ESC.CHAR_NAK) {
+//                int length = line.length();
+//                for (int i = 0; i < length; i++) {
+//                    sendChar(ESC.CHAR_BS);
+//                }
+//            } else {
+//                toDTE.putChar(c);
+//                toDTE.flush();
+//                if (caretIdx == line.length()){
+//                    line.append(c);
+//                } else {
+//                    line.insert(caretIdx, c);
+//                }
+//                caretIdx++;
+////                
+//            }
+//        }
+//
+//        public void sendChars(char c[], int offset, int count) {
+//            boolean consumed = interp.processChars(c);
+//            if (consumed) {
+//                return;
+//            }
+//            
+//            for (int cx = 0; cx < count; cx++) {
+//                sendChar(c[offset + cx]);
+//            }
+//        }
+//    }
+//    
+//    private static class ESC{
+//        private static final char CHAR_BS               = (char) 8;	// ^H ASCII BackSpace
+//        private static final char CHAR_LF               = (char) 10;	// ^J ASCII LineFeed
+//        private static final char CHAR_CR               = (char) 13;	// ^M ASCII CarriageReturn
+//        private static final char CHAR_ESC              = (char) 27;	// ^[ ASCII ESCape
+//        private static final char CHAR_SP               = (char) 32;	// ASCII SPace
+//        private static final char CHAR_NAK              = (char) 21;	// ^U ASCII NegativeAcknowledge
+//        
+//        private static final char[] BS_SEQUENCE         = {CHAR_BS, CHAR_SP, CHAR_BS};
+//        private static final char[] BOLD_SEQUENCE       = {CHAR_ESC, '[', '1', 'm'};
+//        private static final char[] BLUEBOLD_SEQUENCE   = {CHAR_ESC, '[', '1', ';', '3', '4', 'm'};
+//        private static final char[] RED_SEQUENCE        = {CHAR_ESC, '[', '3', '1', 'm'};
+//        private static final char[] BROWN_SEQUENCE      = {CHAR_ESC, '[', '5', '0', 'm'};
+//        private static final char[] GREEN_SEQUENCE      = {CHAR_ESC, '[', '5', '1', 'm'};
+//        private static final char[] LOG_SEQUENCE        = {CHAR_ESC, '[', '5', '2', 'm'};
+//        private static final char[] RESET_SEQUENCE      = {CHAR_ESC, '[', '0', 'm'};
+//        
+//        private static final char[] UP_SEQUENCE         = {CHAR_ESC, '[', 'A'};
+//        private static final char[] DOWN_SEQUENCE       = {CHAR_ESC, '[', 'B'};
+//        private static final char[] RIGHT_SEQUENCE      = {CHAR_ESC, '[', 'C'};
+//        private static final char[] LEFT_SEQUENCE       = {CHAR_ESC, '[', 'D'};
+//        private static final char[] HOME_SEQUENCE       = {CHAR_ESC, '[', 'H'};
+//        private static final char[] END_SEQUENCE        = {CHAR_ESC, '[', 'F'};
+//    }
+    
+//    end - Temporary block
+
 
     /**
      * Tap into the io between gdb and Term.

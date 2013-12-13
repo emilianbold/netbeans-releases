@@ -98,17 +98,29 @@
           </cTool>
         </makeTool>
       </makefileType>
-      <item path="src/array.c" ex="false" tool="0" flavor2="0">
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/dirtab.c" ex="false" tool="0" flavor2="0">
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/fs_server.c" ex="false" tool="0" flavor2="0">
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/queue.c" ex="false" tool="0" flavor2="0">
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
-      <item path="src/util.c" ex="false" tool="0" flavor2="0">
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
       </item>
     </conf>
     <conf name="Solaris_Townes" type="0">
@@ -209,7 +221,7 @@
     </conf>
     <conf name="MacOS" type="0">
       <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -612,6 +624,63 @@
         </cTool>
       </item>
       <item path="src/util.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+    </conf>
+    <conf name="Tmp" type="0">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE}</buildCommand>
+          <cleanCommand>${MAKE} clean</cleanCommand>
+          <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
+        </makeTool>
+      </makefileType>
+      <folder path="0/src">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>SOLARIS</Elem>
+            <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
+            <Elem>__EXTENSIONS__</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
+      <item path="src/array.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/blocking_queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/dirtab.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/fs_server.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/queue.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="src/util.c" ex="false" tool="0" flavor2="3">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
       </item>
