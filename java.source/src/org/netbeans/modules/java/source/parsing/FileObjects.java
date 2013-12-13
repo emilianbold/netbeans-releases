@@ -794,6 +794,16 @@ public class FileObjects {
         return data;
     }
 
+    public static boolean isValidFileName(@NonNull final javax.tools.FileObject fo) {
+        final String name;
+        if (fo instanceof Base) {
+            name = ((Base)fo).getPath();
+        } else {
+            name = fo.toUri().getPath();
+        }
+        return isValidFileName(name);
+    }
+
     public static boolean isValidFileName(@NonNull final CharSequence fileName) {
         for (int i = 0; i<fileName.length(); i++) {
             final char c = fileName.charAt(i);
@@ -911,22 +921,41 @@ public class FileObjects {
         public String toString() {
             return this.toUri().toString();
         }
-        
+
+        @NonNull
         public String getPackage () {
             return this.pkgName;
         }
-        
+
+        @NonNull
         public String getNameWithoutExtension () {
             return this.nameWithoutExt;
         }
         
         @Override
+        @NonNull
         public String getName () {
-            return this.nameWithoutExt + '.' + ext;
+            final StringBuilder sb = new StringBuilder(nameWithoutExt);
+            sb.append('.'); //NOI18N
+            sb.append(ext);
+            return sb.toString();
         }
-        
+
+        @NonNull
         public String getExt () {
             return this.ext;
+        }
+
+        @NonNull
+        public String getPath() {
+            String res = convertPackage2Folder(inferBinaryName());
+            if (!ext.isEmpty()) {
+                final StringBuilder sb = new StringBuilder(res);
+                sb.append('.'); //NOI18N
+                sb.append(ext);
+                res = sb.toString();
+            }
+            return res;
         }
         
         public boolean isVirtual () {
@@ -934,6 +963,7 @@ public class FileObjects {
         }
         
         @Override
+        @NonNull
         public final String inferBinaryName () {
             final StringBuilder sb = new StringBuilder ();
             sb.append (this.pkgName);

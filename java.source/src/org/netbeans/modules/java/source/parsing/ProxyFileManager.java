@@ -507,11 +507,14 @@ public final class ProxyFileManager implements JavaFileManager {
                         type);
                 }
             }
-            if (!FileObjects.isValidFileName(result.getName())) {
+            if (!FileObjects.isValidFileName(result)) {
                 LOG.log(
                     Level.WARNING,
-                    "Cannot write Annotation Processor generated file: {0}",   //NOI18N
-                    result.getName());
+                    "Cannot write Annotation Processor generated file: {0} ({1})",   //NOI18N
+                    new Object[] {
+                        result.getName(),
+                        result.toUri()
+                    });
                 valid = false;
             }
         }
