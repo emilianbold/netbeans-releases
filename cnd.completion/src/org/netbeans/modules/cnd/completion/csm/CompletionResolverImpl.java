@@ -1874,8 +1874,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     private boolean isInFunctionPointerType(CsmContext context, int offset) {
-        if (CsmKindUtilities.isFunctionPointerType(context.getLastObject())) {
-            return CsmOffsetUtilities.isInObject(context.getLastObject(), offset);
+        if (CsmKindUtilities.isFunctionPointerType(context.getLastScope())) {
+            return CsmOffsetUtilities.isInObject(context.getLastScope(), offset);
         } else if (CsmKindUtilities.isTypedefOrTypeAlias(context.getLastObject())) {
             CsmTypedef typedef = (CsmTypedef) context.getLastObject();
             CsmType type = typedef.getType();
