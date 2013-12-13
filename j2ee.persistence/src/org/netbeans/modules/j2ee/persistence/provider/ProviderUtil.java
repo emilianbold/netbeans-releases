@@ -101,6 +101,8 @@ public class ProviderUtil {
     public static final Provider OPENJPA_PROVIDER2_1 = new OpenJPAProvider(Persistence.VERSION_2_1);
     public static final Provider OPENJPA_PROVIDER1_0 = new OpenJPAProvider(Persistence.VERSION_1_0);
     public static final Provider DEFAULT_PROVIDER = new DefaultProvider();
+    public static final Provider DEFAULT_PROVIDER2_0 = new DefaultProvider(Persistence.VERSION_2_0);
+    public static final Provider DEFAULT_PROVIDER2_1 = new DefaultProvider(Persistence.VERSION_2_1);
     /**
      * TopLink provider using the provider class that was used in NetBeans 5.5. Needed
      * for maintaining backwards compatibility with persistence units created in 5.5.
@@ -129,9 +131,19 @@ public class ProviderUtil {
         }
         
        String ver = PersistenceUtils.getJPAVersion(project);
-       ver = ver == null ? Persistence.VERSION_2_0 : ver;
+       ver = ver == null ? Persistence.VERSION_2_1 : ver;
 
-       Provider ret = DEFAULT_PROVIDER;// some unknown provider
+       Provider ret = null;
+       switch(ver) {
+           case Persistence.VERSION_1_0:
+           ret = DEFAULT_PROVIDER;
+               break;
+           case Persistence.VERSION_2_0:
+               ret = DEFAULT_PROVIDER2_0;
+               break;
+           case Persistence.VERSION_2_1:
+               ret = DEFAULT_PROVIDER2_1;
+       }// some unknown provider
        
        for (Provider each : getAllProviders()) {
             if (each.getProviderClass().equals(providerClass.trim())) {
@@ -591,8 +603,17 @@ public class ProviderUtil {
                 }
             }
         }
-
-        return top_provider == null ? DEFAULT_PROVIDER : top_provider;
+       if(top_provider == null) {
+            switch(version) {
+                case Persistence.VERSION_1_0:
+                return DEFAULT_PROVIDER;
+                case Persistence.VERSION_2_0:
+                return DEFAULT_PROVIDER2_0;
+                default:
+                return DEFAULT_PROVIDER2_1;
+            }// some unknown provider
+       }
+       return top_provider;
     }
 
     //analize properties for best match provider version
@@ -647,7 +668,7 @@ public class ProviderUtil {
             }
         }
         if (providers.size() == 0) {
-            providers.add(DEFAULT_PROVIDER);
+            providers.add(DEFAULT_PROVIDER2_1);
         }
         return providers;
     }

@@ -55,6 +55,10 @@ import org.openide.util.NbBundle;
  * @author Erno Mononen
  */
 public class DefaultProvider extends Provider{
+
+    protected DefaultProvider(String version){
+        super("javax.persistence.EntityManager", version);
+    }
     
     protected DefaultProvider(){
         super("javax.persistence.EntityManager");
