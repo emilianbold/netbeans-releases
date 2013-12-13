@@ -93,6 +93,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
     static final RequestProcessor RP = new RequestProcessor(EndorsedClassPathImpl.class);
 
     private List<? extends PathResourceImplementation> resourcesCache;
+    private boolean includeJDKCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
     private BootClassPathImpl bcp;
@@ -118,10 +119,12 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 String[] boot = getBootClasspath();
+                includeJDKCache = true;
                 if (boot != null) {
                     for (String b : boot) {
                         if ("netbeans.ignore.jdk.bootclasspath".equals(b)) { // NOI18N
                             includeJDK[0] = false;
+                            includeJDKCache = false;
                         }
                     }
                     for (URL u :  stripDefaultJavaPlatform(boot)) {
@@ -189,6 +192,8 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                 }
                 current = boot;
                 resourcesCache = Collections.unmodifiableList (result);
+            } else {
+                includeJDK[0] = includeJDKCache;
             }
             return this.resourcesCache;
         }
