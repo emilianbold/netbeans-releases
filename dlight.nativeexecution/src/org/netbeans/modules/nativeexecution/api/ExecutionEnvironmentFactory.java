@@ -70,7 +70,7 @@ public class ExecutionEnvironmentFactory {
 
     private static final ExecutionEnvironmentFactoryService defaultFactory =
             new ExecutionEnvironmentFactoryServiceImpl();
-    private static final Collection<ExecutionEnvironmentFactoryService> allFactories =
+    private static final CopyOnWriteArrayList<ExecutionEnvironmentFactoryService> allFactories =
             new CopyOnWriteArrayList<ExecutionEnvironmentFactoryService>();
     private static final Lookup.Result<ExecutionEnvironmentFactoryService> lookupResult =
             Lookup.getDefault().lookupResult(ExecutionEnvironmentFactoryService.class);
@@ -81,15 +81,12 @@ public class ExecutionEnvironmentFactory {
         ll = new LookupListener() {
 
             @Override
-            public synchronized void resultChanged(LookupEvent ev) {
+            public void resultChanged(LookupEvent ev) {
                 Collection<? extends ExecutionEnvironmentFactoryService> newSet =
                         lookupResult.allInstances();
-                allFactories.retainAll(newSet);
-
-                for (ExecutionEnvironmentFactoryService impl : newSet) {
-                    if (!allFactories.contains(impl)) {
-                        allFactories.add(impl);
-                    }
+                synchronized (this) {
+                    allFactories.retainAll(newSet);
+                    allFactories.addAllAbsent(newSet);
                 }
             }
         };
