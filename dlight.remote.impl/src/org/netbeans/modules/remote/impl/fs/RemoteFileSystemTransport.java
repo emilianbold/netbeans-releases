@@ -116,7 +116,7 @@ public abstract class RemoteFileSystemTransport {
     public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
             throws InterruptedException, CancellationException, ExecutionException {
 
-        return getInstance(execEnv).stat(path);
+        return getInstance(execEnv).lstat(path);
      }
 
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
