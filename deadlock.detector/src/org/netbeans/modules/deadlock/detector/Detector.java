@@ -53,6 +53,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Detects deadlocks using ThreadMXBean.
@@ -257,13 +258,33 @@ class Detector implements Runnable {
      * @param deadlocked 
      */
     private void reportStackTrace(ThreadInfo[] deadlocked, File report) {
+        DeadlockDetectedException deadlockException = new DeadlockDetectedException(null);
+        deadlockException.setStackTrace(deadlocked[0].getStackTrace());
+        DeadlockDetectedException lastDde = deadlockException;
         for (ThreadInfo toBeReported : deadlocked) {
-            DeadlockDetectedException dde = new DeadlockDetectedException();
+            DeadlockDetectedException dde = new DeadlockDetectedException(toBeReported.getThreadName());
             dde.setStackTrace(toBeReported.getStackTrace());
-            LOG.log(Level.SEVERE, report.getAbsolutePath(), dde);
+            lastDde.initCause(dde);
+            lastDde = dde;
         }
+        LOG.log(Level.SEVERE, report.getAbsolutePath(), deadlockException);
     }
     
     private static class DeadlockDetectedException extends RuntimeException {
+        
+        public DeadlockDetectedException(String threadName) {
+            super(threadName);
+        }
+
+        @NbBundle.Messages("MSG_DeadlockDetected=A deadlock was detected.\nWe suggest to restart the IDE to recover.")
+        @Override
+        public String getLocalizedMessage() {
+            if (getMessage() == null) {
+                return Bundle.MSG_DeadlockDetected();
+            } else {
+                return super.getLocalizedMessage();
+            }
+        }
+        
     }
 }
