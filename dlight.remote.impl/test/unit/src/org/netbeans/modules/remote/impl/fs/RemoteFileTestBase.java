@@ -79,7 +79,6 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("remote.fs_server.verbose", "1");
         System.setProperty("remote.fs_server.log", "true");        
         TestLogHandler.attach(RemoteLogger.getInstance());
-        new FSSTransport.Starter().run();
     }
     
     protected RemoteFileSystem fs;
