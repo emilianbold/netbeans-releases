@@ -44,10 +44,14 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 
 public class DocumentUtilitiesTest extends NbTestCase {
 
@@ -105,6 +109,49 @@ public class DocumentUtilitiesTest extends NbTestCase {
             }
         });
         doc.insertString(0, "test", null);
+    }
+
+    public void testInsertedTextIsPresent() throws Exception {
+        final PlainDocument doc = new PlainDocument();
+        final CountDownLatch insertDone = new CountDownLatch(1);
+        final CountDownLatch removeDone = new CountDownLatch(1);
+
+        doc.addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent evt) {
+                insertDone.countDown();
+                try {
+                    removeDone.await(1, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    throw new IllegalStateException(ex);
+                }
+
+                try {
+                    String insertedText = evt.getDocument().getText(evt.getOffset(), evt.getLength());
+                } catch (BadLocationException ex) {
+                    throw new IllegalStateException(
+                            "Inserted text not present in document !!! docLen=" + doc.getLength(), ex);
+                }
+            }
+            public void removeUpdate(DocumentEvent evt) {
+            }
+            public void changedUpdate(DocumentEvent evt) {
+            }
+        });
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    insertDone.await();
+                    doc.remove(0, doc.getLength());
+                    removeDone.countDown();
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }).start();
+
+        doc.insertString(0, "Hello", null);
+        
     }
 
 }

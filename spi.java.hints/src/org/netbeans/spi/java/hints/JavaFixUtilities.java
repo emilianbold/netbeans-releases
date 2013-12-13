@@ -1230,7 +1230,12 @@ public class JavaFixUtilities {
             switch (original.getKind()) {
                 case PARENTHESIZED:
                     ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
-                    return make.Parenthesized(negate(expr, original, nullOnPlainNeg));
+                    ExpressionTree negatedOrNull = negate(expr, original, true);
+                    if (negatedOrNull != null) {
+                        return make.Parenthesized(negatedOrNull);
+                    } else {
+                        return null;
+                    }
                 case LOGICAL_COMPLEMENT:
                     newTree = ((UnaryTree) original).getExpression();
                     while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {

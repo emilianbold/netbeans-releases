@@ -356,6 +356,18 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
             } else {
                 return false;
             }
+        } else if (CsmKindUtilities.isFile(item)) {
+            CsmFile file = (CsmFile) item;
+            if (!file.equals(currentFile)) {
+                // TODO: think if should check only for headers
+                if (file.isHeaderFile()) {
+                    if (((ProjectBase) currentFile.getProject()).getGraphStorage().isFileIncluded(currentFile, file)) {
+                        return true;
+                    }
+                }
+            } else {
+                return true;
+            }
         } else if (!CsmKindUtilities.isNamespace(item)) {
             System.err.println("not yet handled object " + item);
         }

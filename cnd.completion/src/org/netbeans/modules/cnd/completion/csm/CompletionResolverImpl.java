@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -307,7 +308,15 @@ public class CompletionResolverImpl implements CompletionResolver {
             CsmIncludeResolver resolver = CsmIncludeResolver.getDefault();
             CsmFile startFile = contResolver.getStartFile();
             for (CsmObject obj : toCheck) {
-                if (resolver.isObjectVisible(startFile, obj)) {
+                boolean isVisible = false;
+                
+                if (CsmKindUtilities.isOffsetable(obj)) {
+                    isVisible = resolver.isObjectVisible(((CsmOffsetable) obj).getContainingFile(), file);
+                }
+                
+                isVisible |= resolver.isObjectVisible(startFile, obj);
+                
+                if (isVisible) {
                     foundVisible = true;
                     if(CsmClassifierResolver.getDefault().isForwardClassifier(obj)) {
                         visibleFwd.add(obj);

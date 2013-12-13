@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
@@ -78,6 +79,7 @@ import org.netbeans.modules.java.editor.imports.ClipboardHandler;
 import org.netbeans.modules.java.editor.imports.FastImportAction;
 import org.netbeans.modules.java.editor.imports.JavaFixAllImports;
 import org.netbeans.modules.java.editor.overridden.GoToSuperTypeAction;
+import org.netbeans.modules.java.editor.rename.InstantRenameAction;
 import org.netbeans.modules.java.editor.semantic.GoToMarkOccurrencesAction;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
@@ -101,6 +103,8 @@ public class JavaKit extends NbEditorKit {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     static final long serialVersionUID =-5445829962533684922L;
+    
+    private static final boolean INSTANT = Boolean.getBoolean("org.netbeans.modules.java.refactoring.instantRename");
 
 //    private static final Object sourceLevelKey = new Object();
 
@@ -252,6 +256,7 @@ public class JavaKit extends NbEditorKit {
             new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
             new ToggleCommentAction("//"), // NOI18N
             new JavaGenerateFoldPopupAction(), // NO_KEYBINDING in super
+            new InstantRenameAction(),
             new InsertSemicolonAction(true),
             new InsertSemicolonAction(false),
             new SelectCodeElementAction(selectNextElementAction, true),
@@ -266,8 +271,19 @@ public class JavaKit extends NbEditorKit {
             new GoToMarkOccurrencesAction(true),
             new ClipboardHandler.JavaCutAction(),
         };
-
-        return TextAction.augmentList(superActions, actions);
+        final Action[] value = TextAction.augmentList(superActions, actions);
+        
+        return !INSTANT ? value : removeInstant(value);
+    }
+    
+    private Action[] removeInstant(Action[] actions) {
+        List<Action> value = new LinkedList<>();
+        for (Action action : actions) {
+            if(!(action instanceof InstantRenameAction)) {
+                value.add(action);
+            }
+        }
+        return value.toArray(new Action[value.size()]);
     }
 
     @Override

@@ -44,6 +44,7 @@ package org.netbeans.spi.java.hints;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -180,6 +181,8 @@ public class ErrorDescriptionFactory {
 
     private static int[] computeNameSpan(Tree tree, HintContext context) {
         switch (tree.getKind()) {
+            case LABELED_STATEMENT:
+                return context.getInfo().getTreeUtilities().findNameSpan((LabeledStatementTree) tree);
             case METHOD:
                 return context.getInfo().getTreeUtilities().findNameSpan((MethodTree) tree);
             case ANNOTATION_TYPE:

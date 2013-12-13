@@ -302,6 +302,32 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken("url(http://fonts.googleapis.com/css?family=Josefin+Sans|Sigmar+One|Maven+Pro)", Css3Lexer.URI, lexer.nextToken());
     }
 
+    public void testIssue237975_01() throws Exception {
+        String source = "@import (css) \"theme\"";
+        ExtCss3Lexer lexer = createLexer(source);
+        assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("(", Css3Lexer.LPAREN, lexer.nextToken());
+        assertANTLRToken("css", Css3Lexer.LESS_IMPORT_TYPE, lexer.nextToken());
+        assertANTLRToken(")", Css3Lexer.RPAREN, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("\"theme\"", Css3Lexer.STRING, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+
+    public void testIssue237975_02() throws Exception {
+        String source = "@import (less) \"theme\"";
+        ExtCss3Lexer lexer = createLexer(source);
+        assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("(", Css3Lexer.LPAREN, lexer.nextToken());
+        assertANTLRToken("less", Css3Lexer.LESS_IMPORT_TYPE, lexer.nextToken());
+        assertANTLRToken(")", Css3Lexer.RPAREN, lexer.nextToken());
+        assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("\"theme\"", Css3Lexer.STRING, lexer.nextToken());
+        assertANTLRToken(null, Css3Lexer.EOF, lexer.nextToken());
+    }
+
      /**
     * @param expectedImage - use null if you do not want to check the image
     */
