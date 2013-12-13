@@ -94,14 +94,14 @@ public class DataCenterHandler extends DefaultHandler {
                 isDataCenter = false;
                 dataCenters.add(new DataCenters.DataCenter(shortName, longName,
                         Version.fromJsr277OrDottedNotationWithFallback(jcsVersion)));
+                shortName = null;
+                longName = null;
+                jcsVersion = null;
             } else if ("ShortName".equals(qName)) {
                 shortName = content.toString();
             } else if ("LongName".equals(qName)) {
                 longName = content.toString();
             }
-            shortName = null;
-            longName = null;
-            jcsVersion = null;
         } else if (isDataCenter) {
             if ("DataCenters".equals(qName)) {
                 isDataCenters = false;

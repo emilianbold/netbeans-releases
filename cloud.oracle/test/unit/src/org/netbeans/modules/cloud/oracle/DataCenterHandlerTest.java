@@ -7,7 +7,9 @@ import java.net.URL;
 import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.eclipse.persistence.internal.libraries.antlr.runtime.debug.Profiler;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.common.api.Version;
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -76,8 +78,10 @@ public class DataCenterHandlerTest extends NbTestCase {
             assertEquals("em1", dataCenters.get(2).getShortName());
             assertEquals("em2", dataCenters.get(3).getShortName());
 
-            assertEquals("13.2", dataCenters.get(1).getJcsVersion());
-            assertEquals("13.1", dataCenters.get(2).getJcsVersion());
+            assertEquals(Version.fromJsr277OrDottedNotationWithFallback("13.2"),
+                    dataCenters.get(1).getJcsVersion());
+            assertEquals(Version.fromJsr277OrDottedNotationWithFallback("13.1"),
+                    dataCenters.get(2).getJcsVersion());
         } finally {
             is.close();
         }
