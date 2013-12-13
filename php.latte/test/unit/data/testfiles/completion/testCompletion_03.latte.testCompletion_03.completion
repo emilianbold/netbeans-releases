@@ -5,7 +5,7 @@ RULE       bytes:precision=2                          Helper
 RULE       capitalize                                 Helper
 RULE       dataStream:mimetype=NULL                   Helper
 RULE       date:'format'                              Helper
-RULE       firstLower                                 Helper
+RULE       firstUpper                                 Helper
 RULE       implode:glue=''                            Helper
 RULE       indent:level=1:char='\t'                   Helper
 RULE       length                                     Helper

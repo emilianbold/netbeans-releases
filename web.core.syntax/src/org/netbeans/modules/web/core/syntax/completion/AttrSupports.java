@@ -442,12 +442,12 @@ public class AttrSupports {
                 // need to normalize fileNamePart with respect to orig
                 String ctxPath = JspUtils.resolveRelativeURL("/"+orig.getPath(), path);  // NOI18N
                 //is this absolute path?
-                if (path.startsWith("/"))
+                if (path.startsWith("/") && documentBase != null) {
                     ctxPath = documentBase.getPath() + path;
-                else
+                } else {
                     ctxPath = ctxPath.substring(1);
-                
-                
+                }
+
                 FileSystem fs = orig.getFileSystem();
                 
                 FileObject folder = fs.findResource(ctxPath);
