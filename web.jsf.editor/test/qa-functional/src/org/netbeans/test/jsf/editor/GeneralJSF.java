@@ -43,13 +43,15 @@ package org.netbeans.test.jsf.editor;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -183,6 +185,33 @@ public class GeneralJSF extends J2eeTestCase {
         if (sb.toString().length() > 1) {
             fail("Unable to find items " + sb.toString() + ". Completion list is " + completionList);
         }
+    }
+    
+    protected void checkCompletionItemsJSF(CompletionJListOperator jlist, String[] asIdeal, int maxItems) throws Exception {
+        Set<String> actual = new HashSet<String>();
+        List list = jlist.getCompletionItems();
+        StringBuilder suggestions = new StringBuilder();
+        String _t;
+        for (int i = 0; i < list.size() && i < maxItems; i++) {
+            if (list.get(i) instanceof org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem) {
+                _t = ((org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem) list.get(i)).getItemText();
+                actual.add(_t);
+                suggestions.append(_t).append(",");
+            } else {
+                actual.add(list.get(i).toString());
+                suggestions.append(list.get(i).toString()).append(",");
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < asIdeal.length; i++) {
+            if (!actual.contains(asIdeal[i])) {
+                sb.append(asIdeal[i]).append(",");
+            }
+
+        }
+        String result = sb.toString();
+        assertTrue("Completion does not contain items: " + result + " in list " + suggestions, result.length() == 0);
     }
 
     protected void checkCompletionDoesntContainItems(CompletionJListOperator jlist, String[] invalidList) {
