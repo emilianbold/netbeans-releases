@@ -265,7 +265,7 @@ public final class CssPreprocessorUtils {
             "# {0} - mapping",
             "MappingsValidator.warning.output.format=Output path \"{0}\" is incorrect.",
             "# {0} - mapping",
-            "MappingsValidator.warning.input.file=Input path \"{0}\" is existing file but directory expected..",
+            "MappingsValidator.warning.input.file=Input path \"{0}\" is existing file but directory expected.",
             "# {0} - mapping",
             "MappingsValidator.warning.output.file=Output path \"{0}\" is existing file but directory expected.",
         })
