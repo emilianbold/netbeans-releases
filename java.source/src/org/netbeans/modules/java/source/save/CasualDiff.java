@@ -3378,88 +3378,57 @@ public class CasualDiff {
                     }
                     if (insetBlankLine)
                         printer.blankline();
-                    int oldPos = item.element.getKind() != Kind.VARIABLE ? getOldPos(item.element) : item.element.pos;
-                    boolean found = false;
-                    if (oldPos > 0) {
-                        for (JCTree oldT : oldList) {
-                            int oldNodePos = oldT.getKind() != Kind.VARIABLE ? getOldPos(oldT) : oldT.pos;
-                            if (oldPos == oldNodePos) {
-                                found = true;
-                                VeryPretty oldPrinter = this.printer;
-                                int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                                this.printer.reset(old);
-                                this.printer.oldTrees = oldTrees;
-                                int index = oldList.indexOf(oldT);
-                                int[] poss = estimator.getPositions(index);
-                                int end = diffTree(oldT, item.element, poss);
-                                copyTo(end, poss[1]);
-                                printer.print(this.printer.toString());
-                                printer.reindentRegions.addAll(this.printer.reindentRegions);
-                                this.printer = oldPrinter;
-                                this.printer.undent(old);
-                                break;
-                            }
-                        }
-                    }
+
                     JCTree ld = null;
-//                    if (deletedItems != null && !deletedItems.isEmpty()) {
-//                        ld = deletedItems.poll();
-//                    }
-                    if (!found) {
-                        if (lastdel != null) {
-                            boolean wasInFieldGroup = false;
-                            // PENDING - should it be tested also in the loop of *all* deleted items ? Originally both the 
-                            // FieldGroup and others only cared about the lastdel Tree.
-                            if(lastdel instanceof FieldGroupTree) {
-                                FieldGroupTree fieldGroupTree = (FieldGroupTree) lastdel;
-                                for (JCVariableDecl var : fieldGroupTree.getVariables()) {
-                                    if(treesMatch(item.element, var, false)) {
-                                        ld = lastdel;
-                                        wasInFieldGroup = true;
-                                        oldTrees.remove(item.element);
-                                        break;
-                                    }
+                    if (lastdel != null) {
+                        boolean wasInFieldGroup = false;
+                        // PENDING - should it be tested also in the loop of *all* deleted items ? Originally both the 
+                        // FieldGroup and others only cared about the lastdel Tree.
+                        if(lastdel instanceof FieldGroupTree) {
+                            FieldGroupTree fieldGroupTree = (FieldGroupTree) lastdel;
+                            for (JCVariableDecl var : fieldGroupTree.getVariables()) {
+                                if(treesMatch(item.element, var, false)) {
+                                    ld = lastdel;
+                                    wasInFieldGroup = true;
+                                    oldTrees.remove(item.element);
+                                    break;
                                 }
-                            }
-                            boolean match = wasInFieldGroup;
-                            for (Iterator<JCTree> it = deletedItems.iterator(); !match && it.hasNext(); ) {
-                                ld = it.next();
-                                if (match = treesMatch(item.element, ld, false)) {
-                                    it.remove();
-                                }
-                            }
-//                            while (!match && (ld = deletedItems.poll()) != null) {
-//                                match = treesMatch(item.element, ld, false);
-//                            }
-                            if(match) {
-                                VeryPretty oldPrinter = this.printer;
-                                int old = oldPrinter.indent();
-                                this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
-                                this.printer.reset(old);
-                                this.printer.oldTrees = oldTrees;
-                                int index = oldList.indexOf(ld);
-                                int[] poss = estimator.getPositions(index);
-                                //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                                int diffTo = diffTree(ld, item.element, poss);
-                                copyTo(diffTo, poss[1]);
-                                localPointer = Math.max(localPointer, poss[1]);
-                                printer.print(this.printer.toString());
-                                printer.reindentRegions.addAll(this.printer.reindentRegions);
-                                this.printer = oldPrinter;
-                                this.printer.undent(old);
-                                if (deletedItems.isEmpty()) {
-                                    lastdel = null;
-                                }
-                                break;
                             }
                         }
-                        if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
-                        // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
-                        // at all
-                        printer.print(item.element);
-                        if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
+                        boolean match = wasInFieldGroup;
+                        for (Iterator<JCTree> it = deletedItems.iterator(); !match && it.hasNext(); ) {
+                            ld = it.next();
+                            if (match = treesMatch(item.element, ld, false)) {
+                                it.remove();
+                            }
+                        }
+                        if(match) {
+                            VeryPretty oldPrinter = this.printer;
+                            int old = oldPrinter.indent();
+                            this.printer = new VeryPretty(diffContext, diffContext.style, tree2Tag, tree2Doc, tag2Span, origText, oldPrinter.toString().length() + oldPrinter.getInitialOffset());//XXX
+                            this.printer.reset(old);
+                            this.printer.oldTrees = oldTrees;
+                            int index = oldList.indexOf(ld);
+                            int[] poss = estimator.getPositions(index);
+                            //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
+                            int diffTo = diffTree(ld, item.element, poss);
+                            copyTo(diffTo, poss[1]);
+                            localPointer = Math.max(localPointer, poss[1]);
+                            printer.print(this.printer.toString());
+                            printer.reindentRegions.addAll(this.printer.reindentRegions);
+                            this.printer = oldPrinter;
+                            this.printer.undent(old);
+                            if (deletedItems.isEmpty()) {
+                                lastdel = null;
+                            }
+                            break;
+                        }
                     }
+                    if (LineInsertionType.BEFORE == estimator.lineInsertType()) printer.newline();
+                    // PENDING: although item.element may be among oldTrees, its surrounding whitespaces are not used
+                    // at all
+                    printer.print(item.element);
+                    if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                     break;
                 }
                 case DELETE: {
@@ -3480,7 +3449,9 @@ public class CasualDiff {
                 case NOCHANGE: {
                     lastGroup = group;
                     int[] pos = estimator.getPositions(i);
-                    if (pos[0] > localPointer && i != 0) {
+                    // I don't know the reason for i != 0 (do not copy prefix for 1st item ??). Anyway, if insertion happens,
+                    // the prefix should be probably copied.
+                    if (pos[0] > localPointer) {
                         // print fill-in
                         copyTo(localPointer, pos[0], printer);
                     }
