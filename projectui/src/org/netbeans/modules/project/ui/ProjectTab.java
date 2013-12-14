@@ -937,15 +937,17 @@ public class ProjectTab extends TopComponent
                                         }
                                         if ( activeFile != null ) {
                                             Project projectOwner = FileOwnerQuery.getOwner(activeFile);
-                                            Node projectNode = null;
-                                            for (Node node : children.getNodes(true)) {
-                                                if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
-                                                    projectNode = node;
-                                                    break;
+                                            if (projectOwner != null) {
+                                                Node projectNode = null;
+                                                for (Node node : children.getNodes(true)) {
+                                                    if(projectOwner.equals(node.getLookup().lookup(Project.class))) {
+                                                        projectNode = node;
+                                                        break;
+                                                    }
                                                 }
+                                                tab.manager.setSelectedNodes(new Node[] {projectNode});
+                                                tab.btv.scrollToNode(projectNode);
                                             }
-                                            tab.manager.setSelectedNodes(new Node[] {projectNode});
-                                            tab.btv.scrollToNode(projectNode);
                                         }
                                     } catch (PropertyVetoException e) {
                                         // Node found but can't be selected

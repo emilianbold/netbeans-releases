@@ -60,6 +60,7 @@ import org.openide.windows.OutputWriter;
 public class ForkedJavaOverride extends Java {
 
     private static final RequestProcessor PROCESSOR = new RequestProcessor(ForkedJavaOverride.class.getName(), Integer.MAX_VALUE);
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
 
     // should be consistent with java.project.JavaAntLogger.STACK_TRACE
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
@@ -323,8 +324,10 @@ public class ForkedJavaOverride extends Java {
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
                                     foldingHelper.checkFolds(str, err, session);
-                                    if (!STACK_TRACE.matcher(str).find()) {
-                                        StandardLogger.findHyperlink(str, session, null).println(session, err);
+                                    if (str.length() < LOGGER_MAX_LINE_LENGTH) { // not too long message, probably interesting
+                                        if (!STACK_TRACE.matcher(str).find()) {
+                                            StandardLogger.findHyperlink(str, session, null).println(session, err);
+                                        }
                                     }
                                     log(str, logLevel);
                                     currentLine.reset();
@@ -385,15 +388,14 @@ public class ForkedJavaOverride extends Java {
         boolean inStackTrace = false;
 
         private void checkFolds(String s, boolean error, AntSession session) {
-
-            if (EXCEPTION.matcher(s).find() && error) {
-                inStackTrace = true;
-                clearHandle();
-            } else if (STACK_TRACE.matcher(s).find()
-                    && inStackTrace && error) {
-                if (foldHandle == null) {
-                    foldHandle = IOFolding.startFold(session.getIO(),
-                            true);
+            if (s.length() < LOGGER_MAX_LINE_LENGTH && error) { // too long message, probably coming from user, so no need for folds
+                if (EXCEPTION.matcher(s).find()) {
+                    inStackTrace = true;
+                    clearHandle();
+                }
+            } else if (s.length() < LOGGER_MAX_LINE_LENGTH && inStackTrace && error) { // too long message, probably coming from user, so no need for folds
+                if (foldHandle == null && STACK_TRACE.matcher(s).find()) {
+                    foldHandle = IOFolding.startFold(session.getIO(), true);
                 }
             } else {
                 inStackTrace = false;

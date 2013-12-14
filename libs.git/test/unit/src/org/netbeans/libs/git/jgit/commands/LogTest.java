@@ -716,6 +716,7 @@ public class LogTest extends AbstractGitTestCase {
         commit(files);
         
         GitClient client = getClient(workDir);
+        client.createBranch("BRANCH", "master", NULL_PROGRESS_MONITOR);
         SearchCriteria crit = new SearchCriteria();
         crit.setRevisionTo("master");
         GitRevisionInfo[] log = client.log(crit, NULL_PROGRESS_MONITOR);
@@ -727,8 +728,9 @@ public class LogTest extends AbstractGitTestCase {
         log = client.log(crit, true, NULL_PROGRESS_MONITOR);
         for (GitRevisionInfo info : log) {
             // all commits are from master
-            assertEquals(1, info.getBranches().size());
+            assertEquals(2, info.getBranches().size());
             assertNotNull(info.getBranches().get("master"));
+            assertNotNull(info.getBranches().get("BRANCH"));
         }
     }
     

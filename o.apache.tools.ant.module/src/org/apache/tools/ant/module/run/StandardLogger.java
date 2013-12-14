@@ -84,6 +84,7 @@ import org.openide.windows.OutputListener;
 public final class StandardLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());
+    public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 1000); //NOI18N
     
     /**
      * Regexp matching an output line that is a column marker from a compiler or similar.
@@ -426,6 +427,10 @@ public final class StandardLogger extends AntLogger {
             deliverBlockOfTextAsLines(line, event, event.getLogLevel());
             return;
         }
+        if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so just print it
+            session.println(line, false, null);
+            return;
+        }
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
         if (m.matches()) {
             // #37358: adjust the column number of the last hyperlink accordingly.
@@ -484,6 +489,9 @@ public final class StandardLogger extends AntLogger {
 
     private static final Pattern UNIMPORTANT_MESSAGE = Pattern.compile("\\[deprecation\\]|warning|stopped|cannot find symbol|wrong ELF class");
     public static boolean isImportant(String message) {
+        if (message.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so not really important
+            return false;
+        }
         return !UNIMPORTANT_MESSAGE.matcher(message).find();
     }
 
@@ -540,6 +548,10 @@ public final class StandardLogger extends AntLogger {
      * Possibly hyperlink a message logged event.
      */
     public static PartiallyLinkedLine findHyperlink(String line, AntSession session, Stack<File> cwd) {
+        if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so just print it without trying to hyperlink
+            session.println(line, false, null);
+            return new PartiallyLinkedLine(line);
+        }
         Matcher m = HYPERLINK.matcher(line);
         if (!m.matches()) {
             ERR.fine("does not look like a hyperlink");
