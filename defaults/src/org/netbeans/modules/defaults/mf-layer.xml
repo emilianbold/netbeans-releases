@@ -1363,6 +1363,32 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
             </folder>
+
+            <folder name="x-tag">
+                <folder name="FontsColors">
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="CityLights-JSP-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="NetBeans55-JSP-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-web-core-syntax-token-colorings.xml" url="BlueTheme-JSP-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.defaults.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
             
             <folder name="x-jsp">
                 <folder name="FontsColors">

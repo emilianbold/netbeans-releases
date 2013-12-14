@@ -124,9 +124,9 @@ final class ViewFolderPasteType  extends PasteType {
         return null;
     }
     
-    private Transferable pasteImpl() throws IOException {
+    private void pasteImpl() throws IOException {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
-            return null;
+            return;
         }
         FileObject itemFO = getFolderFileObject(fromFolder);
         if (type == DnDConstants.ACTION_MOVE) {
@@ -136,6 +136,9 @@ final class ViewFolderPasteType  extends PasteType {
                 if (itemFO.isValid()) {
                     String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                     FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
+                    if (toFolderFO == null || !toFolderFO.isValid()) {
+                        return;
+                    }
                     String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
                     final FileLock lock = itemFO.lock();
                     try {
@@ -181,7 +184,6 @@ final class ViewFolderPasteType  extends PasteType {
                 }
             }
         }
-        return null;
     }
 
     private void recussiveMoveConfigurations(Folder folder, Folder toFolder, String newName, boolean move) throws IOException {

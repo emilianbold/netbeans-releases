@@ -347,7 +347,7 @@ public abstract class PUCompletor {
                     NbEditorUtilities.getFileObject(context.getDocument()));
             Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             ArrayList<String> keys = new ArrayList<String>();
-            String ver = provider == null ? Persistence.VERSION_1_0 : ProviderUtil.getVersion(provider);
+            String ver = provider == null ? context.getDocumentContext().getVersion() : ProviderUtil.getVersion(provider);
             if (provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
                 keys.addAll(allKeyAndValues.get(null).keySet());
             }
@@ -396,7 +396,7 @@ public abstract class PUCompletor {
                     NbEditorUtilities.getFileObject(context.getDocument()));
             Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             String[] values = null;
-            String ver = provider == null ? null : ProviderUtil.getVersion(provider);
+            String ver = provider == null ? context.getDocumentContext().getVersion() : ProviderUtil.getVersion(provider);
             if (provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
                 values = allKeyAndValues.get(null).get(propertyName);
             }

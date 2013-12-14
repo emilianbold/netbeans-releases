@@ -139,14 +139,24 @@ public class MagicCache {
                                 String s = split[i];
                                 try {
                                     if (s.length() == 2) {
-                                        int L = Integer.parseInt(s, 16);
-                                        res[pos++] = (byte) (L & 0xFF);
+                                        if (pos < res.length) { // should never be so; but see #239322
+                                            int L = Integer.parseInt(s, 16);
+                                            res[pos++] = (byte) (L & 0xFF);
+                                        }
                                     } else {
                                         long L = Long.parseLong(s, 16);
-                                        res[pos++] = (byte) (L & 0xFF);
-                                        res[pos++] = (byte) (L>>8 & 0xFF);
-                                        res[pos++] = (byte) (L>>16 & 0xFF);
-                                        res[pos++] = (byte) (L>>24 & 0xFF);
+                                        if (pos < res.length) { // should never be so; but see #239322
+                                            res[pos++] = (byte) (L & 0xFF);
+                                        }
+                                        if (pos < res.length) {
+                                            res[pos++] = (byte) (L>>8 & 0xFF);
+                                        }
+                                        if (pos < res.length) {
+                                            res[pos++] = (byte) (L>>16 & 0xFF);
+                                        }
+                                        if (pos < res.length) {
+                                            res[pos++] = (byte) (L>>24 & 0xFF);
+                                        }
                                     }
                                 } catch (NumberFormatException ex) {
                                     break;

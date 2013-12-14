@@ -125,6 +125,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
         FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
         if (result == null) {
             CndUtils.assertTrueInConsole(false, "can not find file object for " + absPath); //NOI18N
+            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
         }
         return result;
     }

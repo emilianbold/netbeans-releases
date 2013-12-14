@@ -423,7 +423,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
             // file system root has empty path
-            dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path);
+            dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
         }
     }    
 }
