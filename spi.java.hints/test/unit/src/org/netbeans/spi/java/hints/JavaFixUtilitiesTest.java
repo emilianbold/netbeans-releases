@@ -425,12 +425,13 @@ public class JavaFixUtilitiesTest extends TestBase {
     public void testRewriteCatchMultiVariable() throws Exception {
         performRewriteTest("package test;\n" +
                            "public class Test {\n" +
-                           "    { try { } catch {NullPointerException ex} { } }\n" +
+                           "    { try { } catch (NullPointerException ex) { } }\n" +
                            "}\n",
                            "try { } catch $catches$ => try { new Object(); } catch $catches$",
                            "package test;\n" +
                            "public class Test {\n" +
-                           "    {  try {      new Object();\n } catch {NullPointerException ex} { } }\n" +
+                           // should be try {[ ] new Object() .... ?
+                           "    {  try {new Object();\n } catch (NullPointerException ex) { } }\n" +
 		           "}\n");
     }
 
@@ -443,8 +444,8 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "package test;\n" +
                            "public class Test {\n" +
                            //XXX: whitespaces:
-//                           "    { int i = 0; switch (i) {case 0: System.err.println(1); break; case 1: System.err.println(2); break; case 3: System.err.println(3); break; }\n" +
-                           "    { int i = 0; switch (i) {case 0: System.err.println(1); break; case 1: System.err.println(2); break; case   3: System.err.println(3); break; }\n" +
+                           "    { int i = 0; switch (i) {case 0: System.err.println(1); break; case 1: System.err.println(2); break; case 3: System.err.println(3); break; }\n" +
+//                           "    { int i = 0; switch (i) {case 0: System.err.println(1); break; case 1: System.err.println(2); break; case   3: System.err.println(3); break; }\n" +
 		           "}\n");
     }
 

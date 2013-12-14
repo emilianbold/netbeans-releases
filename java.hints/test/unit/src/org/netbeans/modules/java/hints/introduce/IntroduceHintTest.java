@@ -855,7 +855,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFix8() throws Exception {
         performFixTest("package test; import java.io.IOException; public class Test {public void test(int y) {while (true) {if (--y <= 0) break;}}}",
                        125 - 25, 145 - 25,
-                       "package test; import java.io.IOException; public class Test {public void test(int y) {while (true) {if ( name(y)) break;}} private boolean name(int y) { if (--y <= 0) { return true; } return false; } }",
+                       "package test; import java.io.IOException; public class Test {public void test(int y) {while (true) {if (name(y)) break;}} private boolean name(int y) { if (--y <= 0) { return true; } return false; } }",
                        new DialogDisplayerImpl3("name", null, true));
     }
 
@@ -943,7 +943,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethodFixStatic() throws Exception {
         performFixTest("package test; public class Test {public static int test(int y) {y += 5; return y;}}",
                        89 - 25, 96 - 25,
-                       "package test; public class Test {public static int test(int y) { y = name(y); return y;} private static int name(int y) { y += 5; return y; } }",
+                       "package test; public class Test {public static int test(int y) {y = name(y); return y;} private static int name(int y) { y += 5; return y; } }",
                        new DialogDisplayerImpl3("name", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
@@ -953,7 +953,7 @@ public class IntroduceHintTest extends NbTestCase {
      */
     public void testIntroduceMethodFix132434() throws Exception {
         performFixTest("package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();|p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } });|}}",
-                       "package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel(); foo(p);} private static void foo(JPanel p) { p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } }); } }",
+                       "package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();foo(p);} private static void foo(JPanel p) { p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } }); } }",
                        new DialogDisplayerImpl3("foo", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
@@ -996,7 +996,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethod109663f() throws Exception {
         performFixTest("package test; public class Test {public static void test(int y) {for (int u = y ; ; ) {if (y == 0) break; else y++;}}}",
                        112 - 25, 140 - 25,
-                       "package test; public class Test {public static void test(int y) {for (int u = y ; ; ) {if ( name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
+                       "package test; public class Test {public static void test(int y) {for (int u = y ; ; ) {if (name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
                        new DialogDisplayerImpl3("name", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
@@ -1004,7 +1004,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethod109663g() throws Exception {
         performFixTest("package test; public class Test {public static void test(int y) {for (Integer i : java.util.Arrays.asList(y)) {if (y == 0) break; else y++;}}}",
                        136 - 25, 164 - 25,
-                       "package test; public class Test {public static void test(int y) {for (Integer i : java.util.Arrays.asList(y)) {if ( name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
+                       "package test; public class Test {public static void test(int y) {for (Integer i : java.util.Arrays.asList(y)) {if (name(y)) break;}} private static boolean name(int y) { if (y == 0) { return true; } else { y++; } return false; } }",
                        new DialogDisplayerImpl3("name", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
@@ -1049,7 +1049,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethod112552e() throws Exception {
         performFixTest("package test; public class Test {public static void t() {boolean first = true; while (true) {first = false; while (first) {System.err.println();}}}}",
                        148 - 25, 169 - 25,
-                       "package test; public class Test {public static void t() {boolean first = true; while (true) {first = false; while (first) { name();}}} private static void name() { System.err.println(); } }",
+                       "package test; public class Test {public static void t() {boolean first = true; while (true) {first = false; while (first) {name();}}} private static void name() { System.err.println(); } }",
                        new DialogDisplayerImpl3("name", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
@@ -1057,7 +1057,7 @@ public class IntroduceHintTest extends NbTestCase {
     public void testIntroduceMethod111896a() throws Exception {
         performFixTest("package test; public class Test {public static void t() {new Runnable() { private  int i; public void run() { } };}}",
                        82 - 25, 139 - 25,
-                       "package test; public class Test {public static void t() { name();} private static void name() { new Runnable() { private int i; public void run() { } }; } }",
+                       "package test; public class Test {public static void t() {name();} private static void name() { new Runnable() { private int i; public void run() { } }; } }",
                        new DialogDisplayerImpl3("name", EnumSet
                 .of(Modifier.PRIVATE), true));
     }
