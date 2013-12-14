@@ -338,7 +338,12 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                     }
                     validateError = true;
                 } else {
-                    panel.connectionLabel.setVisible(true);
+                    UIUtils.runInAWT(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.connectionLabel.setVisible(true);
+                        }
+                    });
                     logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] ok.", // NOI18N
                                        Level.INFO, name, url, user, getPassword(), httpUser, getHttpPassword());
                 }

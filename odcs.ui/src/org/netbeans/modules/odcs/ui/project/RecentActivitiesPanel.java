@@ -54,17 +54,19 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.RootPaneContainer;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
@@ -73,6 +75,7 @@ import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.JobHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -223,6 +226,8 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
+                showWaitCursor(true);
+                final Collection<ProjectActivity> activities = getAllowedActivities();
                 try {
                     final List<ProjectActivity> recentActivities = client.getRecentActivities(projectHandle.getTeamProject().getId());
                     SwingUtilities.invokeLater(new Runnable() {
@@ -230,7 +235,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                         public void run() {
                             if (recentActivities != null && !recentActivities.isEmpty()) {
                                 RecentActivitiesPanel.this.recentActivities = recentActivities;
-                                showRecentActivities();
+                                showRecentActivities(activities);
                             } else {
                                 RecentActivitiesPanel.this.recentActivities = Collections.emptyList();
                                 showEmptyContent();
@@ -250,6 +255,16 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         });
     }
 
+    private Collection<ProjectActivity> getAllowedActivities() {
+        List<ProjectActivity> ret = new LinkedList<ProjectActivity>();
+        for (ProjectActivity projectActivity : recentActivities) {
+            if (isActivityAllowed(projectActivity)) {
+                ret.add(projectActivity);
+            }
+        }
+        return ret;
+    }
+            
     private void createShowButtons() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.EAST;
@@ -283,17 +298,13 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         pnlShow.revalidate();
     }
 
-    private void showRecentActivities() {
-        showWaitCursor(true);
+    private void showRecentActivities(Collection<ProjectActivity> activities) {
         try {
             Date lastDate = null;
             DateSeparatorPanel currentDatePanel = null;
             pnlContent.removeAll();
             boolean isEmpty = true;
-            for (ProjectActivity activity : recentActivities) {
-                if (!isActivityAllowed(activity)) {
-                    continue;
-                }
+            for (ProjectActivity activity : activities) {
                 isEmpty = false;
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(0, 3, 0, 0);
@@ -343,45 +354,50 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         }
     }
 
-    private void showWaitCursor(boolean showWait){
-        Window window = null;
-        Component glassPane = null;
-        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-        if (focusOwner != null) {
-            window = SwingUtilities.getWindowAncestor(focusOwner);
-            if (window != null) {
-                RootPaneContainer root = (RootPaneContainer) SwingUtilities.getAncestorOfClass(RootPaneContainer.class, focusOwner);
-                glassPane = root.getGlassPane();
+    private void showWaitCursor(final boolean showWait){
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                Window window = null;
+                Component glassPane = null;
+                Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+                if (focusOwner != null) {
+                    window = SwingUtilities.getWindowAncestor(focusOwner);
+                    if (window != null) {
+                        RootPaneContainer root = (RootPaneContainer) SwingUtilities.getAncestorOfClass(RootPaneContainer.class, focusOwner);
+                        glassPane = root.getGlassPane();
+                    }
+                }
+                if (window == null || glassPane == null) {
+                    window = WindowManager.getDefault().getMainWindow();
+                    glassPane = ((JFrame) window).getGlassPane();
+                }
+                
+                if (showWait) {
+                    defaultCursor = window.getCursor();
+                    Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+                    window.setCursor(waitCursor);
+                    glassPane.setCursor(waitCursor);
+                    glassPane.setVisible(true);
+                } else {
+                    glassPane.setVisible(false);
+                    window.setCursor(defaultCursor);
+                    glassPane.setCursor(defaultCursor);
+                }
             }
-        }
-        if (window == null || glassPane == null) {
-            window = WindowManager.getDefault().getMainWindow();
-            glassPane = ((JFrame) window).getGlassPane();
-        }
-
-        if (showWait) {
-            defaultCursor = window.getCursor();
-            Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
-            window.setCursor(waitCursor);
-            glassPane.setCursor(waitCursor);
-            glassPane.setVisible(true);
-        } else {
-            glassPane.setVisible(false);
-            window.setCursor(defaultCursor);
-            glassPane.setCursor(defaultCursor);
-        }
+        });
     }
 
     private boolean isActivityAllowed(ProjectActivity activity) {
-        boolean isActivityAllowed = activity instanceof BuildActivity;
-        if (isActivityAllowed) {
+        boolean isBuildActivity = activity instanceof BuildActivity;
+        if (isBuildActivity) {
             boolean watched = isJobWatched((BuildActivity) activity);
-            isActivityAllowed = watched ? chbBuildWatched.isSelected() : chbBuildUnwatched.isSelected();
+            isBuildActivity = watched ? chbBuildWatched.isSelected() : chbBuildUnwatched.isSelected();
         }
         return activity instanceof TaskActivity && chbTask.isSelected()
                 || activity instanceof ScmActivity && chbScm.isSelected()
                 || activity instanceof WikiActivity && chbWiki.isSelected()
-                || isActivityAllowed;
+                || isBuildActivity;
     }
 
     private boolean isJobWatched(BuildActivity buildActivity) {
@@ -436,7 +452,19 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         public void actionPerformed(ActionEvent e) {
             persistShowSettings();
             if (isActivityEnable(recentActivities, clazz)) {
-                showRecentActivities();
+                showWaitCursor(true);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Collection<ProjectActivity> activities = getAllowedActivities();                
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                showRecentActivities(activities);
+                            }
+                        });
+                    }
+                });
             }
         }
     }
