@@ -967,11 +967,16 @@ public abstract class PositionEstimator {
                 int wsOnlyStart = -1;
                 // localResult will receive start of non-whitespace part of the statment (either statement, or comment)
                 int localResult = -1;
+                int insertPos = -1;
                 while (nonRelevant.contains((token = seq.token()).id())) {
                     switch (token.id()) {
                         case WHITESPACE:
-                            int indexOf = token.text().toString().indexOf('\n');
+                            int indexOf = token.text().toString().lastIndexOf('\n');
                             if (indexOf > -1) {
+                                // indexOf cannot be -1; insertPos will point after the 1st newline in preceding
+                                // whitespace, while "element begin" will point after the last line to preserve
+                                // whitespaces when deleting the element.
+                                insertPos = seq.offset() + (token.text().toString().indexOf('\n')) + 1;
                                 localResult = seq.offset() + indexOf + 1;
                             } else if (first || previousEnd == 0) {
                                 wsOnlyStart = previousEnd;
@@ -1002,7 +1007,10 @@ public abstract class PositionEstimator {
                 first = false;
                 if (minimalLeftPosition != (-1) && minimalLeftPosition > previousEnd) {
                     previousEnd = minimalLeftPosition;
-                    localResult = minimalLeftPosition;
+                    insertPos = localResult = minimalLeftPosition;
+                }
+                if (insertPos == -1) {
+                    insertPos = localResult;
                 }
                 seq.move(treeEnd);
                 int wideEnd = treeEnd;
@@ -1069,7 +1077,7 @@ public abstract class PositionEstimator {
                 }
                 if (wideEnd < treeEnd) wideEnd = treeEnd;
                 if (minimalLeftPosition < wideEnd) minimalLeftPosition = wideEnd;
-                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos, localResult });
+                data.add(new int[] { previousEnd, wideEnd, previousEnd, appendInsertPos, insertPos });
                 append.add(itemAppend);
             }
             initialized = true;
