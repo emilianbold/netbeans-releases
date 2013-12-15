@@ -236,9 +236,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	out.toLeftMargin();
     }
 
-    public void reset(int margin) {
+    public void reset(int margin, int col) {
 	out.setLength(0);
 	out.leftMargin = margin;
+        out.col = col;
     }
 
     public int getIndent() {
@@ -308,8 +309,16 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         doAccept(t);
         blankLines(t, false);
     }
+    
+    private Map<JCTree, Integer> overrideStartPositions;
 
-    private static int getOldPos(JCTree oldT) {
+    private int getOldPos(JCTree oldT) {
+        if (overrideStartPositions != null) {
+            Integer i = overrideStartPositions.get(oldT);
+            if (i != null) {
+                return i;
+            }
+        }
         return TreeInfo.getStartPos(oldT);
     }
     public int endPos(JCTree t) {
@@ -334,22 +343,48 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         java.util.List<? extends StatementTree> statements = getStatements(parent.getLeaf());
         
         if (statements == null) return variables;
-            
-        int startIndex = statements.indexOf(fgt.getVariables().get(0));
+        JCVariableDecl firstDecl = fgt.getVariables().get(0);
+        int startIndex = statements.indexOf(firstDecl);
             
         if (startIndex < 0) return variables; //XXX: should not happen
         
         int origCount = 0;
-            
+        int s = statements.size();
         for (JCTree t : variables) {
-            if (statements.get(startIndex++) != t) break;
+            if (startIndex >= s || statements.get(startIndex++) != t) break;
             origCount++;
         }
         
         if (origCount < 2) return variables;
         
+        int firstPos = getOldPos(firstDecl);
+        int groupStart = startIndex;
+        // find the start of the field group among the original statement. The fieldgroup is detected using
+        // positions from the TreeInfo; all fieldgroup members have the same starting position.
+        while (groupStart > 0) {
+            Tree t = statements.get(groupStart - 1);
+            if (!(t instanceof JCVariableDecl)) {
+                break;
+            }
+            if (getOldPos((JCVariableDecl)t) != firstPos) {
+                break;
+            }
+            groupStart--;
+        }
+        int firstIdentStart = ((JCTree)statements.get(groupStart)).pos;
+        if (groupStart < startIndex) {
+            // must print the declaration part up to the 1st variable name (VarDecl.pos from JCTree), doPrintOriginalTrees
+            // would include the whole region including the members present in the original FieldGroup
+            copyToIndented(firstPos, firstIdentStart);
+
+            Map<JCTree, Integer> m = new IdentityHashMap<>(origCount);
+            for (int i = 0; i < origCount; i++) {
+                m.put(variables.get(i), variables.get(i).pos);
+            }
+            overrideStartPositions = m;
+        }
         doPrintOriginalTree(variables.subList(0, origCount), true);
-        
+        overrideStartPositions = null;
         return variables.subList(origCount, variables.size());
     }
     

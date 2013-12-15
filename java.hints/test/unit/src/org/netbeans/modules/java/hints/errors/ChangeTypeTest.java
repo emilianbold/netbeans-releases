@@ -108,7 +108,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "package test; public class Test {private void test() {int i = \"s\";}}",
                 62,
                 "Change type of i to String",
-                "package test; public class Test {private void test() { String i = \"s\";}}"
+                "package test; public class Test {private void test() {String i = \"s\";}}"
                 );
     }
 
@@ -121,7 +121,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "package test; public class Test {private void test() {String s = 5;}}",
                 65,
                 "Change type of s to int",
-                "package test; public class Test {private void test() { int s = 5;}}");
+                "package test; public class Test {private void test() {int s = 5;}}");
     }
 
     public void testLocalVariableStringToObject() throws Exception {
@@ -140,7 +140,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
         performFixTest("test/Test.java",
                 "package test; import java.util.List; public class Test {private void test() {String o = |test1();} private List<? extends CharSequence> test1() {return null;}}",
                 "Change type of o to List&lt;? extends CharSequence>",
-                "package test; import java.util.List; public class Test {private void test() { List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
+                "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
     }
 
     public void testCapturedWildcard2() throws Exception {

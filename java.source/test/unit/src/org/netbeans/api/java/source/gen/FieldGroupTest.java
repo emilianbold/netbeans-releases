@@ -1180,7 +1180,6 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "class UserTask {\n" +
             "\n" +
             "    public int j;\n" +
-            "\n" +
             "    private int k = 1;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1220,6 +1219,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class UserTask {\n" +
+            "\n" +
             "    int i,j,k;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1452,7 +1452,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "        ;\n" +
             "        int i2 = throwSomething2();\n" +
             "        // Some comment2\n" +
-            "        \n" +
+            "        \n" + // TODO, should not be here, caused by diff-ing even i2 against the original field group
             "    }\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
@@ -1471,6 +1471,76 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
                 stmts.add(oldB.getStatements().get(1));
                 workingCopy.rewrite(oldB, make.Block(stmts, false));
             }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    /**
+     * Checks that variable decls copied out from the original VarGroupTree form a variable group.
+     * d,e,f are copied verbatim, so they should form a variable group. The code copies the matching variables out from
+     * the original place as a block of text.
+     * 
+     * @throws Exception 
+     */
+    public void testFieldGroupSplitInTwo() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "\n" +
+            "class Source {\n" +
+            "    void foo() {\n" +
+            "        int a, b, c = 3 * 8, d, e, f;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = "package test;\n" +
+            "\n" +
+            "class Source {\n" +
+            "    void foo() {\n" +
+            "        int a, b, c;\n" +
+            "        {\n" +
+            "            c = 3 * 8;\n" +
+            "        }\n" +
+            "        int d, e, f;\n" +
+            "        int eeee;\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            @Override
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(Phase.RESOLVED);
+                ClassTree ct = (ClassTree)wc.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree mt = (MethodTree)ct.getMembers().get(1);
+                List<? extends StatementTree> stmts = mt.getBody().getStatements();
+                
+                TreeMaker mk = wc.getTreeMaker();
+                List<StatementTree> newStats = new ArrayList(4);
+                VariableTree aDecl = (VariableTree)stmts.get(0);
+                newStats.add(stmts.get(0)); // int a,
+                newStats.add(stmts.get(1)); // int b,
+                
+                VariableTree origCDecl = (VariableTree)stmts.get(2);
+                
+                VariableTree cDecl = mk.Variable(aDecl.getModifiers(), origCDecl.getName(), aDecl.getType(), null);
+                newStats.add(cDecl);
+                // add a block to separate the variable groups
+                newStats.add(mk.Block(Collections.<StatementTree>singletonList(
+                        mk.ExpressionStatement(
+                            mk.Assignment(mk.Identifier("c"), origCDecl.getInitializer()))), false));
+                // rest of original field group
+                newStats.add(stmts.get(3));
+                newStats.add(stmts.get(4));
+                newStats.add(stmts.get(5));
+                newStats.add(mk.Variable(origCDecl.getModifiers(), "eeee", aDecl.getType(), null));
+                
+                wc.rewrite(mt.getBody(), mk.Block(newStats, false));
+            }
+            
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);

@@ -648,7 +648,6 @@ public class TryTest extends GeneratorTestMDRCompat {
             "\n" +
             "    public void m()\n" +
             "    {\n" +
-            "\n" +//TODO: should not be here
             "        try\n" +
             "        {\n" +
             "            InputStream in = null;\n" +
@@ -707,8 +706,9 @@ public class TryTest extends GeneratorTestMDRCompat {
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
-        assertEquals(golden, res);
+        // avoid affecting following test if assert check fails
         setValues(preferences, origValues);
+        assertEquals(golden, res);
     }
 
     public void testWrapTryInTry() throws Exception {
