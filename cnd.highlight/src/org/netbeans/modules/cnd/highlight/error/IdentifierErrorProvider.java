@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -59,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -274,6 +277,11 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
         @Override
         public int getEndOffset() {
             return endOffset;
+        }
+        
+        @Override
+        public List<Fix> getFixes() {
+            return Collections.<Fix>emptyList();
         }
     }
 }
