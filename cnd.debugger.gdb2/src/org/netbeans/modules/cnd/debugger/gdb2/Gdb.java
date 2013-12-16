@@ -44,51 +44,45 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
-import java.io.IOException;
-
 import java.awt.Color;
+import java.io.IOException;
 import java.nio.charset.Charset;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.List;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 import java.util.logging.Level;
-
-import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.RequestProcessor;
-
-
-import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
-
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
-
-// for dyingWords. SHOULD be moved elsewhere!
-import javax.swing.JPanel;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.openide.DialogDisplayer;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
+import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public class Gdb {
@@ -461,7 +455,7 @@ public class Gdb {
 	    //
 
 	    if (!connectExisting) {
-//                ioPack.console().getTerm().pushStream(new KeyProcessingStream());
+                ioPack.console().getTerm().pushStream(KeyProcessing.createStream());
                 ioPack.console().getTerm().pushStream(tentativeGdb.tap());
 		ioPack.console().getTerm().setCustomColor(0,
 		    Color.yellow.darker().darker());
@@ -734,313 +728,6 @@ public class Gdb {
 	    notify(new NotifyDescriptor.Message(panel));
     }
     
-    private static final class KeyProcessingStream extends TermStream {
-
-        // start - from GDB to the console
-        @Override
-        public void flush() {
-            toDTE.flush();
-        }
-
-        @Override
-        public void putChar(char c) {
-            toDTE.putChar(c);
-        }
-
-        @Override
-        public void putChars(char[] buf, int offset, int count) {
-            toDTE.putChars(buf, offset, count);
-        }
-        // end - from GDB to the console
-        
-        // start - rom the console to GDB
-        @Override
-        public void sendChar(char c) {
-            toDCE.sendChar(c);
-        }
-
-        @Override
-        public void sendChars(char[] c, int offset, int count) {
-            toDCE.sendChars(c, offset, count);
-        }
-        // end - from the console to GDB
-        
-    }
-    
-    //    start - Temporary block
-    
-//    private static class KeyProcessingStream extends TermStream {
-//
-//        private final char[] wrapCR = new char[]{ESC.CHAR_CR};
-//        private final char[] wrapNL = new char[]{ESC.CHAR_LF};
-//        private final char[] wrapNAK = new char[]{ESC.CHAR_NAK};
-//
-//        private class Interpreter {
-//
-//            private boolean processChars(final char[] chars) {
-//                if (isEqual(chars, ESC.UP_SEQUENCE)) {
-////                    historyUp();
-//                    return true;
-//                } else if (isEqual(chars, ESC.DOWN_SEQUENCE)) {
-////                    historyDown();
-//                    return true;
-////                } else if (isEqual(chars, wrapNL) || isEqual(chars, wrapCR)) {
-////                    history.add(getLine().toString());
-////                    return false;
-//                } else if (isEqual(chars, ESC.LEFT_SEQUENCE)) {
-//                    if (caretIdx > 0) {
-//                        caretIdx--;
-//                        toDTE.putChars(ESC.BS_SEQUENCE, 0, 1);
-//                        toDTE.flush();
-//                    }
-//                    return true;
-//                } else if (isEqual(chars, ESC.RIGHT_SEQUENCE)) {
-//                    if (caretIdx < line.length()) {
-//                        caretIdx++;
-//                        toDTE.putChars(chars, 0, chars.length);
-//                        toDTE.flush();
-//                    }
-//                    return true;
-//                } else if (isEqual(chars, ESC.HOME_SEQUENCE) || isEqual(chars, ESC.END_SEQUENCE)) {
-//                    return true;
-//                } else if (isEqual(chars, wrapNAK)) {
-//                    caretIdx = 0;
-//                    return true;
-//                }
-//                return false;
-//                //\033[H
-//            }
-//
-//            private boolean isEqual(final char[] x, final char[] y) {
-//                return Arrays.equals(x, y);
-//            }
-//        }
-//        
-//        private static class History {
-//
-//            private static final int MAX_SIZE = 100;
-//
-//            private final LinkedList<String> list;
-//            private ListIterator<String> iter;
-//
-//            private boolean lastCallIsNext = false;
-//
-//            public History() {
-//                list = new LinkedList();
-//                iter = list.listIterator();
-//            }
-//
-//            public void add(final String string) {
-//                if (list.size() > MAX_SIZE) {
-//                    list.removeFirst();
-//                }
-//                list.addLast(string);
-//                iter = list.listIterator(list.size());
-//            }
-//
-//            public String previous() {
-//                if (lastCallIsNext) {
-//                    iter.previous();
-//                }
-//                lastCallIsNext = false;
-//                if (iter.hasPrevious()) {
-//                    return iter.previous();
-//                } else {
-//                    return "";
-//                }
-//            }
-//
-//            public String next() {
-//                if (!lastCallIsNext) {
-//                    iter.next();
-//                }
-//                lastCallIsNext = true;
-//                if (iter.hasNext()) {
-//                    return iter.next();
-//                } else {
-//                    return "";
-//                }
-//            }
-//        }
-//
-//        private final Interpreter interp = new Interpreter();
-//        private int caretIdx;
-//
-//        private final StringBuffer line = new StringBuffer();
-//
-//        private int send_buf_sz = 2;
-//        private char send_buf[] = new char[send_buf_sz];
-//
-//        char[] send_buf(int n) {
-//            if (n >= send_buf_sz) {
-//                send_buf_sz = n + 1;
-//                send_buf = new char[send_buf_sz];
-//            }
-//            return send_buf;
-//        }
-//
-//        private int put_capacity = 16;
-//        private int put_length = 0;
-//        private char put_buf[] = new char[put_capacity];
-//
-//        public void flush() {
-//            toDTE.flush();
-//        }
-//
-//        public void putChar(char c) {
-//            put_length = 0;
-//            processChar(c);
-//            toDTE.putChars(put_buf, 0, put_length);
-//        }
-//
-//        public void putChars(char buf[], int offset, int count) {
-//            put_length = 0;
-//            for (int bx = 0; bx < count; bx++) {
-//                processChar(buf[offset + bx]);
-//            }
-//            toDTE.putChars(put_buf, 0, put_length);
-//        }
-//
-//        private void processChar(char c) {
-//            appendChar(c);
-//            if (c == 10) {
-//                appendChar((char) 13);
-//            }
-//        }
-//
-//        private void appendChar(char c) {
-//            if (put_length >= put_capacity) {
-//                int new_capacity = put_capacity * 2;
-//                if (new_capacity < 0) {
-//                    new_capacity = Integer.MAX_VALUE;
-//                }
-//                char new_buf[] = new char[new_capacity];
-//                System.arraycopy(put_buf, 0, new_buf, 0, put_length);
-//                put_buf = new_buf;
-//                put_capacity = new_capacity;
-//            }
-//
-//            put_buf[put_length++] = c;
-//        }
-//
-//        public void sendChar(char c) {
-//            if (c == ESC.CHAR_CR) {
-//                toDTE.putChar(c);
-//                toDTE.flush();
-//
-//                c = (char) 10;
-//                toDTE.putChar(c);
-//                toDTE.flush();
-//
-//                line.append(c);
-//
-//                int nchars = line.length();
-//                char[] tmp = send_buf(nchars);
-//                line.getChars(0, nchars, tmp, 0);
-//                toDCE.sendChars(tmp, 0, nchars);
-//                line.delete(0, 99999);
-//
-//                caretIdx = 0;
-//            } else if (c == ESC.CHAR_CR) {
-//                toDTE.putChar((char) 13);
-//                toDTE.flush();
-//
-//                toDTE.putChar(c);
-//                toDTE.flush();
-//
-//                line.append(c);
-//
-//                int nchars = line.length();
-//                char[] tmp = send_buf(nchars);
-//                line.getChars(0, nchars, tmp, 0);
-//                toDCE.sendChars(tmp, 0, nchars);
-//                line.delete(0, 99999);
-//
-//                caretIdx = 0;
-//            } else if (c == ESC.CHAR_BS) {
-//                // BS
-//                int nchars = line.length();
-//
-//                if (nchars == 0) {
-//                    return;
-//                }
-//                char erased_char = ' ';
-//                try {
-//                    erased_char = line.charAt(nchars - 1);
-//                } catch (Exception x) {
-//                    return;
-//                }
-//                int cwidth = getTerm().charWidth(erased_char);
-//
-//                line.delete(nchars - 1, nchars);
-//
-//                while (--cwidth > 0) {
-//                    line.append(' ');
-//                }
-//
-//                toDTE.putChars(ESC.BS_SEQUENCE, 0, 3);
-//                toDTE.flush();
-//                
-//                caretIdx--;
-//
-//            } else if (c == ESC.CHAR_NAK) {
-//                int length = line.length();
-//                for (int i = 0; i < length; i++) {
-//                    sendChar(ESC.CHAR_BS);
-//                }
-//            } else {
-//                toDTE.putChar(c);
-//                toDTE.flush();
-//                if (caretIdx == line.length()){
-//                    line.append(c);
-//                } else {
-//                    line.insert(caretIdx, c);
-//                }
-//                caretIdx++;
-////                
-//            }
-//        }
-//
-//        public void sendChars(char c[], int offset, int count) {
-//            boolean consumed = interp.processChars(c);
-//            if (consumed) {
-//                return;
-//            }
-//            
-//            for (int cx = 0; cx < count; cx++) {
-//                sendChar(c[offset + cx]);
-//            }
-//        }
-//    }
-//    
-//    private static class ESC{
-//        private static final char CHAR_BS               = (char) 8;	// ^H ASCII BackSpace
-//        private static final char CHAR_LF               = (char) 10;	// ^J ASCII LineFeed
-//        private static final char CHAR_CR               = (char) 13;	// ^M ASCII CarriageReturn
-//        private static final char CHAR_ESC              = (char) 27;	// ^[ ASCII ESCape
-//        private static final char CHAR_SP               = (char) 32;	// ASCII SPace
-//        private static final char CHAR_NAK              = (char) 21;	// ^U ASCII NegativeAcknowledge
-//        
-//        private static final char[] BS_SEQUENCE         = {CHAR_BS, CHAR_SP, CHAR_BS};
-//        private static final char[] BOLD_SEQUENCE       = {CHAR_ESC, '[', '1', 'm'};
-//        private static final char[] BLUEBOLD_SEQUENCE   = {CHAR_ESC, '[', '1', ';', '3', '4', 'm'};
-//        private static final char[] RED_SEQUENCE        = {CHAR_ESC, '[', '3', '1', 'm'};
-//        private static final char[] BROWN_SEQUENCE      = {CHAR_ESC, '[', '5', '0', 'm'};
-//        private static final char[] GREEN_SEQUENCE      = {CHAR_ESC, '[', '5', '1', 'm'};
-//        private static final char[] LOG_SEQUENCE        = {CHAR_ESC, '[', '5', '2', 'm'};
-//        private static final char[] RESET_SEQUENCE      = {CHAR_ESC, '[', '0', 'm'};
-//        
-//        private static final char[] UP_SEQUENCE         = {CHAR_ESC, '[', 'A'};
-//        private static final char[] DOWN_SEQUENCE       = {CHAR_ESC, '[', 'B'};
-//        private static final char[] RIGHT_SEQUENCE      = {CHAR_ESC, '[', 'C'};
-//        private static final char[] LEFT_SEQUENCE       = {CHAR_ESC, '[', 'D'};
-//        private static final char[] HOME_SEQUENCE       = {CHAR_ESC, '[', 'H'};
-//        private static final char[] END_SEQUENCE        = {CHAR_ESC, '[', 'F'};
-//    }
-    
-//    end - Temporary block
-
-
     /**
      * Tap into the io between gdb and Term.
      * - It echoes stuff it gets from gdb to the Term while accumulating
@@ -1068,39 +755,6 @@ public class Gdb {
     static class Tap
         extends org.netbeans.lib.terminalemulator.TermStream
         implements MICommandInjector {
-
-        private static final char char_NL = (char) 10;	// ASCII NewLine
-        private static final char char_CR = (char) 13;	// ASCII CarriageReturn
-        private static final char char_ESC = (char) 27;	// ASCII ESCape
-        private static final char char_BS = (char) 8;	// ASCII BackSpace
-        private static final char char_SP = (char) 32;	// ASCII SPace
-        private static final char bs_sequence[] = {char_BS, char_SP, char_BS};
-        private static final char bold_sequence[] = {char_ESC, '[', '1', 'm'};
-        private static final char bluebold_sequence[] =
-	    {char_ESC, '[', '1', ';', '3', '4', 'm'};
-        private static final char red_sequence[] =
-	    {char_ESC, '[', '3', '1', 'm'};
-	// custom colors setup in GdbDebuggerImpl.start2()
-
-	// custom color 0
-        private static final char brown_sequence[] =
-	    {char_ESC, '[', '5', '0', 'm'};
-
-	// custom color 1
-        private static final char green_sequence[] =
-	    {char_ESC, '[', '5', '1', 'm'};
-
-	// custom color 2
-        private static final char log_sequence[] =
-	    {char_ESC, '[', '5', '2', 'm'};
-
-        private static final char reset_sequence[] =
-	    {char_ESC, '[', '0', 'm'};
-
-        // input line main buffer
-        // Typed characters come to us via sendChar[s], are stored in 'inputLine'
-        // and sent on on a NL.
-        private StringBuilder inputLine = new StringBuilder();
 
         // characters from gdb accumulate here and are forwarded to the tap
         private StringBuilder interceptBuffer = new StringBuilder();
@@ -1145,102 +799,21 @@ public class Gdb {
             dispatchInterceptedLines();
         }
 
-        // auto-growing buffer to act as intermediary between 'line'
-        // and toDCE.sendChars() which takes char arrays.
-        private char send_buf[] = new char[64];
-
-        /**
-         * Send a typed-in line to the process.
-         */
-        private void sendLine() {
-
-            int nchars = inputLine.length();
-
-            if (nchars >= send_buf.length) {
-                send_buf = new char[nchars + 1];
-            }
-
-            inputLine.getChars(0, nchars, send_buf, 0);
-            toDCE.sendChars(send_buf, 0, nchars);
-
-            inputLine.setLength(0);	              // clear the line
-        }
-
         /**
          * Send character typed into console to gdb
          */
         public void sendChar(char c) {
-
-            // map CR to NL (stty icrnl)
-            if (c == char_CR) {
-                toDTE.putChar(c);   // echo
-                toDTE.flush();
-
-                c = char_NL;		// NL
-                toDTE.putChar(c);	// echo the newline too
-                toDTE.flush();
-
-                inputLine.append(c);
-
-                sendLine();
-
-            } else if (c == char_NL) {
-                toDTE.putChar(char_CR);   // echo carriage return too
-                toDTE.flush();
-
-                toDTE.putChar(c);   // echo
-                toDTE.flush();
-
-                inputLine.append(c);
-
-                sendLine();
-
-            } else if (c == 8) {
-                // BS
-                int nchars = inputLine.length();
-
-                if (nchars == 0) {
-                    return;	// nothing left to BS over
-                }
-                char erased_char = ' ';     // The char we're going to erase
-                try {
-                    erased_char = inputLine.charAt(nchars - 1);
-                } catch (Exception x) {
-                    return;	// apparently the 'nchars == 0' test failed above ;-)
-                }
-                int cwidth = getTerm().charWidth(erased_char);
-
-                // remove from line buffer
-                inputLine.delete(nchars - 1, nchars);
-
-                // HACK (see the big comment in the original TermStream)
-
-                while (--cwidth > 0) {
-                    inputLine.append(' ');
-                }
-
-                // erase character on screen
-                toDTE.putChars(bs_sequence, 0, 3);
-                toDTE.flush();
-
-            } else {
-                // echo
-                toDTE.putChars(bluebold_sequence, 0, bluebold_sequence.length);
-                toDTE.putChar(c);
-                toDTE.putChars(reset_sequence, 0, reset_sequence.length);
-                toDTE.flush();
-
-                inputLine.append(c);
-            }
+            CndUtils.assertTrueInConsole(false, "should not be used; KeyProcessingStream should send only lines");
+            toDCE.sendChar(c);
         }
 
         /**
          * Send character typed into console to gdb
          */
         public void sendChars(char c[], int offset, int count) {
-            for (int cx = 0; cx < count; cx++) {
-                sendChar(c[offset + cx]);
-            }
+            String line = String.valueOf(c, offset, count);
+            CndUtils.assertTrueInConsole(line.length() == 0 || line.endsWith("\n"), "KeyProcessingStream should send only lines");
+            toDCE.sendChars(c, offset, count);
         }
 
         private void setMiProxy(MIProxy miProxy) {
@@ -1256,10 +829,10 @@ public class Gdb {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     // echo
-                    toDTE.putChars(bold_sequence, 0, bold_sequence.length);
+                    toDTE.putChars(KeyProcessing.ESCAPES.BOLD_SEQUENCE, 0, KeyProcessing.ESCAPES.BOLD_SEQUENCE.length);
                     toDTE.putChars(cmda, 0, cmda.length);
-                    toDTE.putChar(char_CR);			// tack on a CR
-                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
+                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
                     toDTE.flush();
 
                     // send to gdb
@@ -1279,10 +852,10 @@ public class Gdb {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     // echo
-                    toDTE.putChars(log_sequence, 0, log_sequence.length);
+                    toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
                     toDTE.putChars(cmda, 0, cmda.length);
                     // toDTE.putChar(char_CR);			// tack on a CR
-                    toDTE.putChars(reset_sequence, 0, reset_sequence.length);
+                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
                     toDTE.flush();
                 }
             });
@@ -1298,11 +871,11 @@ public class Gdb {
 
             interceptBuffer.append(c);
 
-            if (c == char_NL) {
+            if (c == KeyProcessing.ESCAPES.CHAR_LF) {
 		// detected EOL
 
 		// Map NL to NLCR
-                appendChar(char_CR);
+                appendChar(KeyProcessing.ESCAPES.CHAR_CR);
 
 		String line = interceptBuffer.toString();
                 synchronized (interceptedLines) {
@@ -1313,19 +886,19 @@ public class Gdb {
 		// do some pattern recognition and alternative colored output.
 		if (line.startsWith("~")) { // NOI18N
 		    // comment line
-		    putBuf.insert(0, green_sequence);
-		    putBuf.append(reset_sequence);
+		    putBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
+		    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
 		} else if (line.startsWith("&")) { // NOI18N
 		    // output
-		    putBuf.insert(0, brown_sequence);
-		    putBuf.append(reset_sequence);
+		    putBuf.insert(0, KeyProcessing.ESCAPES.BROWN_SEQUENCE);
+		    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
 		} else {
 		    int caretx = line.indexOf('^');
 		    if (caretx != -1) {
 			if (line.startsWith("^error,", caretx)) { // NOI18N
 			    // error
-			    putBuf.insert(0, red_sequence);
-			    putBuf.append(reset_sequence);
+			    putBuf.insert(0, KeyProcessing.ESCAPES.RED_SEQUENCE);
+			    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
 			}
 		    }
 		}
