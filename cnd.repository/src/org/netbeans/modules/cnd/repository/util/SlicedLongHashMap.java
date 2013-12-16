@@ -49,16 +49,17 @@ import java.util.Collections;
 
 /**
  * A LongHashMap that is sliced by several chunks to reduce concurrency
+ *
  * @author Alexander Simon
  * @author Vladimir Kvashin
  */
 public class SlicedLongHashMap<K> {
 
     private final LongHashMap<K>[] instances;
-    private int sliceNumber;
+    private final int sliceNumber;
     private final int segmentMask; // mask
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public SlicedLongHashMap(int sliceNumber, int sliceCapacity) {
         // Find power-of-two sizes best matching arguments
         int ssize = 1;
@@ -74,44 +75,44 @@ public class SlicedLongHashMap<K> {
     }
 
     private LongHashMap<K> getDelegate(K key) {
-	int index = key.hashCode() & segmentMask;
-	return instances[index];
+        int index = key.hashCode() & segmentMask;
+        return instances[index];
 
     }
 
     public long put(K key, long value) {
-	return getDelegate(key).put(key, value);
+        return getDelegate(key).put(key, value);
     }
 
     public long get(K key) {
-	return getDelegate(key).get(key);
+        return getDelegate(key).get(key);
     }
 
     public long remove(K key) {
-	return getDelegate(key).remove(key);
+        return getDelegate(key).remove(key);
     }
 
     public int size() {
-	int size = 0;
-	for (int i = 0; i < sliceNumber; i++) {
-	    size += instances[i].size();
-	}
-	return size;
+        int size = 0;
+        for (int i = 0; i < sliceNumber; i++) {
+            size += instances[i].size();
+        }
+        return size;
     }
 
     public Collection<K> keySet() {
-	Collection<K> res = new ArrayList<K>(size());
-	for (int i = 0; i < sliceNumber; i++) {
-	    res.addAll(instances[i].keySet());
-	}
-	return Collections.<K>unmodifiableCollection(res);
+        Collection<K> res = new ArrayList<K>(size());
+        for (int i = 0; i < sliceNumber; i++) {
+            res.addAll(instances[i].keySet());
+        }
+        return Collections.<K>unmodifiableCollection(res);
     }
 
     public Collection<LongHashMap.Entry<K>> entrySet() {
-	Collection<LongHashMap.Entry<K>> res = new ArrayList<LongHashMap.Entry<K>>(size());
-	for (int i = 0; i < sliceNumber; i++) {
-	    res.addAll(instances[i].entrySet());
-	}
-	return Collections.<LongHashMap.Entry<K>>unmodifiableCollection(res);
+        Collection<LongHashMap.Entry<K>> res = new ArrayList<LongHashMap.Entry<K>>(size());
+        for (int i = 0; i < sliceNumber; i++) {
+            res.addAll(instances[i].entrySet());
+        }
+        return Collections.<LongHashMap.Entry<K>>unmodifiableCollection(res);
     }
 }

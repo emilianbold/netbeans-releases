@@ -1,10 +1,10 @@
 //  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-// 
+//
 //  Copyright 2011 Oracle and/or its affiliates. All rights reserved.
-// 
+//
 //  Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 //  Other names may be trademarks of their respective owners.
-// 
+//
 //  The contents of this file are subject to the terms of either the GNU
 //  General Public License Version 2 only ("GPL") or the Common
 //  Development and Distribution License("CDDL") (collectively, the
@@ -22,7 +22,7 @@
 //  License Header, with the fields enclosed by brackets [] replaced by
 //  your own identifying information:
 //  "Portions Copyrighted [year] [name of copyright owner]"
-// 
+//
 //  If you wish your version of this file to be governed by only the CDDL
 //  or only the GPL Version 2, indicate your decision by adding
 //  "[Contributor] elects to include this software in this distribution
@@ -33,9 +33,9 @@
 //  However, if you add GPL Version 2 code and therefore, elected the GPL
 //  Version 2 license, then the option applies only if the new code is
 //  made subject to such option by the copyright holder.
-// 
+//
 //  Contributor(s):
-// 
+//
 //  Portions Copyrighted 2011 Sun Microsystems, Inc.
 //
 // A complete lexer and grammar for CSS 2.1 as defined by the
@@ -56,7 +56,7 @@
 // section.
 //
 
-//Modifications to the original css21 source file by Jim Idle have been done to fulfill the 
+//Modifications to the original css21 source file by Jim Idle have been done to fulfill the
 //css3 parsing rules and making the parser more error prone.
 //1) incorporated the grammar changes from selectors module: http://www.w3.org/TR/css3-selectors/#grammar
 //      a. There's no 'universal' selector node, 'typeSelector' is used instead where instead of the identifier there's the star token.
@@ -116,7 +116,7 @@ grammar Css3;
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib;
-    
+
 }
 
 @members {
@@ -124,11 +124,11 @@ package org.netbeans.modules.css.lib;
     protected boolean isLessSource() {
         return false;
     }
-    
+
     protected boolean isScssSource() {
         return false;
     }
-    
+
     private boolean isCssPreprocessorSource() {
         return isLessSource() || isScssSource();
     }
@@ -213,13 +213,13 @@ package org.netbeans.modules.css.lib;
             }
         }
     }
-    
+
     /**
          * synces to next RBRACE "}" taking nesting into account
          */
         protected void syncToRBRACE(int nest)
             {
-                
+
                 int mark = -1;
                 //create error-recovery node
                 //dbg.enterRule(getGrammarFileName(), "recovery");
@@ -229,7 +229,7 @@ package org.netbeans.modules.css.lib;
                     for(;;) {
                         //read char
                         int c = input.LA(1);
-                        
+
                         switch(c) {
                             case Token.EOF:
                                 input.rewind();
@@ -245,9 +245,9 @@ package org.netbeans.modules.css.lib;
                                     return ;
                                 }
                         }
-                        
+
                         input.consume();
-                                            
+
                     }
 
                 } catch (Exception e) {
@@ -263,7 +263,7 @@ package org.netbeans.modules.css.lib;
                     //dbg.exitRule(getGrammarFileName(), "recovery");
                 }
             }
-    
+
 }
 
 @lexer::header {
@@ -318,12 +318,12 @@ package org.netbeans.modules.css.lib;
 // A style sheet consists of an optional character set specification, an optional series
 // of imports, and then the main body of style rules.
 //
-styleSheet  
-    :   
+styleSheet
+    :
     	ws?
     	( charSet ws? )?
         imports?
-        namespaces? 
+        namespaces?
         body?
      EOF
     ;
@@ -340,7 +340,7 @@ namespace
 namespacePrefixName
   : IDENT
   ;
-    
+
 resourceIdentifier
   : STRING | URI
   ;
@@ -357,16 +357,18 @@ imports
 	:
 	( importItem ws? SEMI ws? )+
 	;
-	
+
 importItem
-    :   
+    :
         IMPORT_SYM ws? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
         |
         //multiple imports in one directive
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier (ws? COMMA ws? resourceIdentifier)* ((ws? mediaQueryList)=>ws? mediaQueryList)?
+        |
+        {isLessSource()}? IMPORT_SYM ws? (LPAREN LESS_IMPORT_TYPE RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
     ;
 media
-    : MEDIA_SYM ws? 
+    : MEDIA_SYM ws?
     (
          mediaQueryList
     ) ws?
@@ -374,7 +376,7 @@ media
         mediaBody?
     RBRACE
     ;
-    
+
 mediaBody
     :
     (
@@ -386,7 +388,7 @@ mediaBody
 
 mediaBodyItem
     :
-    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration 
+    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
@@ -396,6 +398,7 @@ mediaBodyItem
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_content
+    | {isCssPreprocessorSource()}? importItem
     | rule
     | page
     | fontFace
@@ -407,52 +410,52 @@ mediaBodyItem
 mediaQueryList
  : mediaQuery ( (ws? COMMA)=> ws? COMMA ws? mediaQuery )*
  ;
- 
+
 mediaQuery
- : 
+ :
     (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
     | mediaExpression ( ws? AND ws? mediaExpression )*
     | {isLessSource()}? cp_variable
  ;
- 
+
 mediaQueryOperator
- 	: ONLY | NOT 		
+ 	: ONLY | NOT
  	;
- 
+
 mediaType
  : IDENT | GEN | {isCssPreprocessorSource()}? sass_interpolation_expression_var
  ;
- 
+
 mediaExpression
-    : 
+    :
     LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN
     ;
-    
+
 mediaFeatureValue
     :
-    ws? COLON ws? 
+    ws? COLON ws?
     (
         {isCssPreprocessorSource()}? cp_expression
         |
         expression
     )
     ;
- 
+
 mediaFeature
  : IDENT | GEN | {isCssPreprocessorSource()}? ( cp_variable | sass_interpolation_expression_var )
  ;
- 
- body	
-    :	
+
+ body
+    :
     (
          ( bodyItem ((ws? SEMI)=>ws? SEMI)? ws? )
          |
          ( SEMI ws? )
     )+
     ;
- 
+
 bodyItem
-    : 
+    :
         (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
@@ -467,9 +470,9 @@ bodyItem
         | {isScssSource()}? sass_function_declaration
     ; catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(NL)); 
+        consumeUntil(input, BitSet.of(NL));
     }
-    
+
 at_rule
     :
     media
@@ -478,23 +481,23 @@ at_rule
     | fontFace
     | vendorAtRule
     ;
-    
+
 vendorAtRule
 : moz_document | webkitKeyframes | generic_at_rule;
-    
+
 atRuleId
 	:
 	IDENT | STRING
 	;
-    
+
 generic_at_rule
-    : AT_IDENT ws? ( atRuleId ws? )? 
-        LBRACE 
+    : AT_IDENT ws? ( atRuleId ws? )?
+        LBRACE
         	syncTo_RBRACE
         RBRACE
-	;    
+	;
 moz_document
-	: 
+	:
 	MOZ_DOCUMENT_SYM ws? ( moz_document_function ws?) ( COMMA ws? moz_document_function ws? )*
 	LBRACE ws?
 		body? //can be empty
@@ -505,29 +508,29 @@ moz_document_function
 	:
 	URI | MOZ_URL_PREFIX | MOZ_DOMAIN | MOZ_REGEXP
 	;
-    
+
 //http://developer.apple.com/library/safari/#documentation/appleapplications/reference/SafariCSSRef/Articles/OtherStandardCSS3Features.html#//apple_ref/doc/uid/TP40007601-SW1
 webkitKeyframes
 	:
-	WEBKIT_KEYFRAMES_SYM ws? atRuleId ws? 
+	WEBKIT_KEYFRAMES_SYM ws? atRuleId ws?
 	LBRACE ws?
 		( webkitKeyframesBlock ws? )*
 	RBRACE
 	;
-	
+
 webkitKeyframesBlock
 	:
 	webkitKeyframeSelectors ws?
 	LBRACE  ws? syncToFollow
 		declarations?
-	RBRACE 
-	;	
-	
+	RBRACE
+	;
+
 webkitKeyframeSelectors
 	:
 	( IDENT | PERCENTAGE ) ( ws? COMMA ws? ( IDENT | PERCENTAGE ) )*
 	;
-    
+
 page
     : PAGE_SYM ws? ( IDENT ws? )? (pseudoPage ws?)?
         LBRACE ws?
@@ -536,14 +539,14 @@ page
             ((propertyDeclaration|margin) ws?)? (SEMI ws? ((propertyDeclaration|margin) ws?)?)*
         RBRACE
     ;
-    
+
 counterStyle
     : COUNTER_STYLE_SYM ws? IDENT ws?
         LBRACE ws? syncToDeclarationsRule
 		declarations?
         RBRACE
     ;
-    
+
 fontFace
     : FONT_FACE_SYM ws?
         LBRACE ws? syncToDeclarationsRule
@@ -551,20 +554,20 @@ fontFace
         RBRACE
     ;
 
-margin	
+margin
 	: margin_sym ws? LBRACE ws? syncToDeclarationsRule declarations? RBRACE
        ;
-       
-margin_sym 
+
+margin_sym
 	:
-       TOPLEFTCORNER_SYM | 
-       TOPLEFT_SYM | 
-       TOPCENTER_SYM | 
-       TOPRIGHT_SYM | 
+       TOPLEFTCORNER_SYM |
+       TOPLEFT_SYM |
+       TOPCENTER_SYM |
+       TOPRIGHT_SYM |
        TOPRIGHTCORNER_SYM |
-       BOTTOMLEFTCORNER_SYM | 
-       BOTTOMLEFT_SYM | 
-       BOTTOMCENTER_SYM | 
+       BOTTOMLEFTCORNER_SYM |
+       BOTTOMLEFT_SYM |
+       BOTTOMCENTER_SYM |
        BOTTOMRIGHT_SYM |
        BOTTOMRIGHTCORNER_SYM |
        LEFTTOP_SYM |
@@ -572,54 +575,54 @@ margin_sym
        LEFTBOTTOM_SYM |
        RIGHTTOP_SYM |
        RIGHTMIDDLE_SYM |
-       RIGHTBOTTOM_SYM 
+       RIGHTBOTTOM_SYM
        ;
-    
+
 pseudoPage
     : COLON IDENT
     ;
-    
+
 operator
     : SOLIDUS
     | COMMA
     ;
-        
+
 unaryOperator
     : MINUS
     | PLUS
-    ;  
-    
+    ;
+
 property
-    : 
+    :
 
     //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
     //(the IE allows also just ident as its content)
     (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
-    | IDENT 
-    | GEN 
+    | IDENT
+    | GEN
     | {isCssPreprocessorSource()}? cp_variable
-    
+
     ; catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(COLON)); 
+        consumeUntil(input, BitSet.of(COLON));
     }
-    
-rule 
-    :   
+
+rule
+    :
     selectorsGroup ws?
-    LBRACE ws? syncToFollow 
+    LBRACE ws? syncToFollow
         declarations?
     RBRACE
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(RBRACE));
-        input.consume(); //consume the RBRACE as well   
+        input.consume(); //consume the RBRACE as well
     }
-    
+
 declarations
     :
-    ( 
+    (
          ( declaration ((ws? SEMI)=>ws? SEMI)? ws? )
          |
          ( SEMI ws? )
@@ -628,75 +631,75 @@ declarations
 
 declaration
     :
-    (cp_variable_declaration)=>cp_variable_declaration 
-    | (sass_nested_properties)=>sass_nested_properties 
-    | (propertyDeclaration)=>propertyDeclaration 
+    (cp_variable_declaration)=>cp_variable_declaration
+    | (sass_nested_properties)=>sass_nested_properties
+    | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
-    | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
-    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
+    | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
+    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (selectorsGroup ws? LBRACE)=>rule 
-    | {isCssPreprocessorSource()}? at_rule 
-    | {isScssSource()}? sass_control 
-    | {isScssSource()}? sass_extend 
-    | {isScssSource()}? sass_debug 
-    | {isScssSource()}? sass_content 
-    | {isScssSource()}? sass_function_return 
-    | {isScssSource()}? importItem 
+    | (selectorsGroup ws? LBRACE)=>rule
+    | {isCssPreprocessorSource()}? at_rule
+    | {isScssSource()}? sass_control
+    | {isScssSource()}? sass_extend
+    | {isScssSource()}? sass_debug
+    | {isScssSource()}? sass_content
+    | {isScssSource()}? sass_function_return
+    | {isScssSource()}? importItem
     | GEN
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
         consumeUntil(input, BitSet.of(SEMI));
     }
-    
+
 selectorsGroup
-    :	
+    :
         // looking for #{, lookeahead exited by { (rule beginning)
         ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression
 	|
         selector (ws? COMMA ws? selector)*
     ;
-        
+
 selector
     :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws?) simpleSelectorSequence)*
     ;
- 
+
 combinator
-    : 
+    :
     PLUS | GREATER | TILDE
     ;
 
 simpleSelectorSequence
-	:   
+	:
 	( typeSelector ((ws? esPred)=>ws? elementSubsequent)* )
-	| 
+	|
 	elementSubsequent ((ws? esPred)=>ws? elementSubsequent)*
 	;
 	catch[ RecognitionException rce] {
             reportError(rce);
-            consumeUntil(input, BitSet.of(LBRACE)); 
+            consumeUntil(input, BitSet.of(LBRACE));
         }
-        
+
 //predicate
 esPred
     : HASH_SYMBOL | HASH | DOT | LBRACKET | COLON | DCOLON | SASS_EXTEND_ONLY_SELECTOR
-    ;        
-       
-typeSelector 
+    ;
+
+typeSelector
 	options { k = 2; }
  	:  (((IDENT | STAR)? PIPE)=>namespacePrefix)? elementName
  	;
 
 namespacePrefix
   : ( namespacePrefixName | STAR)? PIPE
-  ;  
+  ;
 
-    
+
 elementSubsequent
-    : 
+    :
     (
         {isScssSource()}? sass_extend_only_selector
         | {isLessSource()}? less_selector_interpolation // @{var} { ... }
@@ -706,35 +709,35 @@ elementSubsequent
         | pseudo
     )
     ;
-    
+
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH 
-      | 
-        ( HASH_SYMBOL 
-            ( NAME 
+    : HASH
+      |
+        ( HASH_SYMBOL
+            ( NAME
               | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
-            ) 
+            )
         )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE));
     }
 
 cssClass
-    : DOT 
-        ( 
-            IDENT 
-            | GEN  
+    : DOT
+        (
+            IDENT
+            | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
         )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE)); 
+        consumeUntil(input, BitSet.of(WS, IDENT, LBRACE));
     }
-    
+
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
     : IDENT | GEN | LESS_AND | STAR
@@ -744,7 +747,7 @@ slAttribute
     : LBRACKET
     	namespacePrefix? ws?
         slAttributeName ws?
-        
+
             (
                 (
                       OPEQ
@@ -758,21 +761,21 @@ slAttribute
                 slAttributeValue
                 ws?
             )?
-    
+
       RBRACKET
 ;
 catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(IDENT, LBRACE)); 
+        consumeUntil(input, BitSet.of(IDENT, LBRACE));
     }
 
 //bit similar naming to attrvalue, attrname - but these are different - for functions
 slAttributeName
 	: IDENT
 	;
-	
+
 slAttributeValue
-	: 
+	:
 	(
   	      IDENT
               | STRING
@@ -782,7 +785,7 @@ slAttributeValue
 pseudo
     : ( COLON | DCOLON )
              (
-                ( 
+                (
                     ( IDENT | GEN )
                     ( // Function
                         ws? LPAREN ws? ( (expression ws?) | STAR )? RPAREN
@@ -794,7 +797,7 @@ pseudo
     ;
 
 propertyDeclaration
-    : 
+    :
     STAR? property ws? COLON ws? propertyValue (ws? prio)?
     | {isCssPreprocessorSource()}? STAR? property ws? COLON ws? cp_propertyValue //cp_expression may contain the IMPORT_SYM
     ;
@@ -802,12 +805,12 @@ propertyDeclaration
         reportError(rce);
         //recovery: if an mismatched token occures inside a declaration is found,
         //then skip all tokens until an end of the rule is found represented by right curly brace
-        consumeUntil(input, BitSet.of(SEMI, RBRACE)); 
+        consumeUntil(input, BitSet.of(SEMI, RBRACE));
     }
 
 //XXX this is a hack for the IMPORT_SYM inside cp_expression
 cp_propertyValue
-    : 
+    :
     {isCssPreprocessorSource()}? cp_expression_list
     | propertyValue
     ;
@@ -823,50 +826,50 @@ expressionPredicate
     :
     ( ~ (AT_IDENT | STAR | SOLIDUS | LBRACE | SEMI | RBRACE | SASS_VAR) )+ ( SEMI | RBRACE )
     ;
-    
+
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
 //since the rule matches epsilon it will always be entered
 syncToDeclarationsRule
     @init {
         //why sync to DOT? - LESS allows class rules nested
-        syncToSet(BitSet.of(IDENT, RBRACE, STAR, DOT)); 
+        syncToSet(BitSet.of(IDENT, RBRACE, STAR, DOT));
     }
-    	:	
+    	:
     	;
-    	
+
 syncTo_RBRACE
     @init {
         syncToRBRACE(1); //initial nest == 1
     }
-    	:	
-    	;    	
+    	:
+    	;
 
 syncTo_SEMI
     @init {
-        syncToSet(BitSet.of(SEMI)); 
+        syncToSet(BitSet.of(SEMI));
     }
-    	:	
+    	:
             SEMI
-    	;    	
+    	;
 
 //synct to computed follow set in the rule
 syncToFollow
     @init {
         syncToSet();
     }
-    	:	
+    	:
     	;
-    
+
 prio
     : IMPORTANT_SYM
     ;
-    
+
 expression
     : term ( (( ws | (ws? operator ws?) | /* nothing */) term)=> ( ws | (ws? operator ws?) | /* nothing */) term)*
     ;
-    
+
 term
-    : 
+    :
     ( unaryOperator ws? )?
     (
         (functionName ws? LPAREN)=>function //"myfunction(" as predicate
@@ -896,7 +899,7 @@ term
 
 //SASS/LESS expressions workaround
 //Bug 233359 - false error in SASS editor
-//https://netbeans.org/bugzilla/show_bug.cgi?id=233359    
+//https://netbeans.org/bugzilla/show_bug.cgi?id=233359
 cp_term_symbol
     : PERCENTAGE_SYMBOL //what else?
     ;
@@ -912,14 +915,14 @@ function
 	;
 catch[ RecognitionException rce] {
         reportError(rce);
-        consumeUntil(input, BitSet.of(RPAREN, SEMI, RBRACE)); 
+        consumeUntil(input, BitSet.of(RPAREN, SEMI, RBRACE));
 }
-    
+
 functionName
-        //css spec allows? here just IDENT, 
+        //css spec allows? here just IDENT,
         //but due to some nonstandart MS extension like progid:DXImageTransform.Microsoft.gradien
         //the function name can be a bit more complicated
-	: 
+	:
         (IDENT COLON)? IDENT (DOT IDENT)*
     	;
 
@@ -929,51 +932,51 @@ fnAttributes
     ;
 
 fnAttribute
-	: 
+	:
         (fnAttributeName ws? (OPEQ|COLON) )=>fnAttributeName ws? (OPEQ|COLON) ws? fnAttributeValue
         | {isCssPreprocessorSource()}? cp_expression
         | expression
 	;
-    
+
 fnAttributeName
-	: 
+	:
             IDENT (DOT IDENT)*
             | {isCssPreprocessorSource()}? cp_variable
 	;
-	
+
 fnAttributeValue
-	: 
+	:
             term ( (( ws | (ws? SOLIDUS ws?) | /* nothing */) term)=> ( ws | (ws? SOLIDUS ws?) | /* nothing */) term)* //== expression w/o COMMAs
             | {isCssPreprocessorSource()}? cp_math_expression
 	;
-    
+
 hexColor
     : HASH
     ;
-    
+
 ws
     : ( WS | NL | COMMENT )+
     ;
-    
+
 //*** LESS SYNTAX ***
 //Some additional modifications to the standard syntax rules has also been done.
 //ENTRY POINT FROM CSS GRAMMAR
 cp_variable_declaration
-    : 
+    :
         {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list
-        | 
+        |
         {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list (ws? SASS_DEFAULT)?
     ;
 
-//ENTRY POINT FROM CSS GRAMMAR    
+//ENTRY POINT FROM CSS GRAMMAR
 cp_variable
-    : 
+    :
         //every token which might possibly begin with the at sign
         {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE  )
         |
         {isScssSource()}? ( SASS_VAR )
     ;
-    
+
 //comma separated list of cp_expression-s
 cp_expression_list
     :
@@ -992,22 +995,22 @@ cp_expression_list
 //- comma separted list of expressions-s in parenthesis
 //
 cp_expression
-    :    
-    cp_expression_atom 
-    ( 
-        (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom 
+    :
+    cp_expression_atom
+    (
+        (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom
         | (ws? cp_expression_atom)=>ws? cp_expression_atom
-    )* 
+    )*
     ;
-    
+
 cp_expression_operator
     :
     OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_expression_atom
-    :    
-        (NOT ws?)? 
+    :
+        (NOT ws?)?
         (
             (cp_math_expression)=>cp_math_expression
             | LPAREN ws? cp_expression_list ws? RPAREN
@@ -1020,35 +1023,35 @@ cp_math_expressions
     cp_math_expression
     (ws cp_math_expression)*
     ;
-//mathematical expression: 
+//mathematical expression:
 //-------------------------
-//allowed content: 
+//allowed content:
 //- parens: ()
 //- binary oparators: +,-,*
 //- unary operators: +,-
 //- terms
 //- SASS interpolation expression where the term is allowed
 //
-//NOT ALLOWED: 
+//NOT ALLOWED:
 //- COMMAS
 //- terms separated just by whitespace - e.g. "one two"
 //
 cp_math_expression
-    :    cp_math_expression_atom 
+    :    cp_math_expression_atom
          (
             (ws? (PLUS|MINUS|STAR|SOLIDUS) )=> ws? (PLUS|MINUS|STAR|SOLIDUS) ws? cp_math_expression_atom
-         )* 
+         )*
     ;
 
 cp_math_expression_atom
-    :    
+    :
     term
     | IMPORTANT_SYM //cp property value may contain any gargabe - TODO - possibly add other garbage tokens
-    | ( unaryOperator ws? )? LPAREN ws? cp_math_expression ws? RPAREN 
+    | ( unaryOperator ws? )? LPAREN ws? cp_math_expression ws? RPAREN
     ;
 
-//parametric mixins: 
-//    .border-radius (@radius) 
+//parametric mixins:
+//    .border-radius (@radius)
 //    .box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)
 //
 //normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
@@ -1060,39 +1063,39 @@ cp_mixin_declaration
         |
         {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
     )
-    ws? cp_mixin_block 
+    ws? cp_mixin_block
     ;
 
-//allow: .mixin; .mixin(); .mixin(@param, #77aa00); 
+//allow: .mixin; .mixin(); .mixin(@param, #77aa00);
 //ENTRY POINT FROM CSS GRAMMAR
 cp_mixin_call
-    :    
+    :
     (
         {isLessSource()}? DOT cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
     ;
-    
+
 cp_mixin_block
     :
     LBRACE ws? syncToFollow
         declarations?
     RBRACE
     ;
-        
+
 cp_mixin_name
     :
     IDENT
     ;
-    
+
 cp_mixin_call_args
-    : 
+    :
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  CP_DOTS?   
+    cp_mixin_call_arg ( (COMMA | SEMI) ws? cp_mixin_call_arg)*  CP_DOTS?
     ;
-    
+
 cp_mixin_call_arg
     :
     (
@@ -1103,18 +1106,18 @@ cp_mixin_call_arg
 
 //.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
 cp_args_list
-    : 
+    :
     //the term separatos is supposed to be just COMMA, but in some weird old? samples
     //I found semicolon used as a delimiter between arguments
-    
+
     //sass varargs:
     //@mixin box-shadow($shadows...) {} -- note that now also LESS parser allows this incorrectly (minor issue)
 
-    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)* ( ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST))?)
-    | 
+    ( cp_arg ( ( COMMA | SEMI ) ws? cp_arg)*  ( (COMMA | SEMI) ws? )? (CP_DOTS | LESS_REST)?)
+    |
     (CP_DOTS | LESS_REST)
     ;
-    
+
 //.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
 cp_arg
     :
@@ -1127,19 +1130,19 @@ less_mixin_guarded
     :
     LESS_WHEN ws? less_condition ( (COMMA | AND) ws? less_condition)*
     ;
-    
+
 //.truth (@a) when (@a) { ... }
 //.truth (@a) when (@a = true) { ... }
 less_condition
     :
     (NOT ws?)?
-    LPAREN ws? 
+    LPAREN ws?
         (
              (cp_variable | less_function_in_condition) ws? (less_condition_operator ws? cp_math_expression)?
-        )        
+        )
     RPAREN
     ;
-    
+
 //.mixin (@a, @b: 0) when ("isnumber(@b)") { ... }
 less_function_in_condition
     :
@@ -1156,7 +1159,7 @@ less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
     ;
-    
+
 less_selector_interpolation
     :
     AT_SIGN LBRACE ws? IDENT ws? RBRACE
@@ -1166,15 +1169,15 @@ less_selector_interpolation
 
 //why there're two almost same selector_interpolation_expression-s?
 //the problem is that the one for selector can contain COLON inside the expression
-//whereas the later cann't. 
+//whereas the later cann't.
 sass_selector_interpolation_expression
     :
-        ( 
+        (
             (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER | LBRACKET | RBRACKET )
         )
-        ( 
+        (
             ws?
             (
                 (sass_interpolation_expression_var)=>sass_interpolation_expression_var
@@ -1184,15 +1187,15 @@ sass_selector_interpolation_expression
         )*
 
     ;
-    
+
 sass_declaration_interpolation_expression
     :
-        ( 
+        (
             (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
             (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
         )
-        ( 
+        (
             ws?
             (
                 (sass_interpolation_expression_var)=>sass_interpolation_expression_var
@@ -1202,12 +1205,12 @@ sass_declaration_interpolation_expression
         )*
 
     ;
-    
+
 sass_interpolation_expression_var
     :
         HASH_SYMBOL LBRACE cp_expression RBRACE //XXX possibly allow cp_expression inside
     ;
-    
+
 //SASS nested properties:
 //.funky {
 //  font: 2px/3px {
@@ -1235,7 +1238,7 @@ sass_extend
     :
     SASS_EXTEND ws simpleSelectorSequence (ws? SASS_OPTIONAL)?
     ;
-    
+
 sass_extend_only_selector
     :
     SASS_EXTEND_ONLY_SELECTOR
@@ -1245,7 +1248,7 @@ sass_debug
     :
     ( SASS_DEBUG | SASS_WARN ) ws cp_expression
     ;
-    
+
 sass_control
     :
     sass_if | sass_for | sass_each | sass_while
@@ -1255,10 +1258,10 @@ sass_if
     :
     SASS_IF ws sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
-    
+
 sass_else
     :
-    SASS_ELSE ws? sass_control_block 
+    SASS_ELSE ws? sass_control_block
     |
     SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
@@ -1267,7 +1270,7 @@ sass_control_expression
     :
     cp_expression
     ;
-    
+
 sass_for
     :
     SASS_FOR ws cp_variable ws {tokenNameEquals("from")}? IDENT /*from*/ ws cp_math_expression ws {tokenNameEquals("to")|tokenNameEquals("through")}? IDENT /*to, through*/ ws cp_math_expression ws? sass_control_block
@@ -1277,7 +1280,7 @@ sass_each
     :
     SASS_EACH ws cp_variable ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
     ;
-    
+
 sass_while
     :
     SASS_WHILE ws sass_control_expression ws? sass_control_block
@@ -1287,16 +1290,16 @@ sass_control_block
     :
     LBRACE ws? declarations? RBRACE //likely not enough!
     ;
-    
+
 sass_function_declaration
     :
-    //I assume there can be not only the return statement in the function block, 
+    //I assume there can be not only the return statement in the function block,
     //but so far haven't found any such example so I put the declarations rule inside
-    //and added the sass_function_return into the declarations rule itself (not fully correct) 
+    //and added the sass_function_return into the declarations rule itself (not fully correct)
     //as the return should be allowed only from the sass function declaration
     SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
     ;
-    
+
 sass_function_name
     :
     IDENT
@@ -1306,7 +1309,7 @@ sass_function_return
     :
     SASS_RETURN ws cp_expression
     ;
-    
+
 sass_content
     :
     SASS_CONTENT
@@ -1322,7 +1325,7 @@ sass_content
 // is unambiguous for both ANTLR and lex (the standard defines tokens
 // in lex notation), then the token names are equivalent.
 //
-// Note however that lex has a match order defined as top to bottom 
+// Note however that lex has a match order defined as top to bottom
 // with longest match first. This results in a fairly inefficent, match,
 // REJECT, match REJECT set of operations. ANTLR lexer grammars are actaully
 // LL grammars (and hence LL recognizers), which means that we must
@@ -1336,7 +1339,7 @@ sass_content
 //
 // Lex style macro names used in the spec may sometimes be used (in upper case
 // version) as fragment rules in this grammar. However ANTLR fragment rules
-// are not quite the same as lex macros, in that they generate actual 
+// are not quite the same as lex macros, in that they generate actual
 // methods in the recognizer class, and so may not be as effecient. In
 // some cases then, the macro contents are embedded. Annotation indicate when
 // this is the case.
@@ -1364,16 +1367,16 @@ fragment    HEXCHAR     : ('a'..'f'|'A'..'F'|'0'..'9')  ;
 
 fragment    NONASCII    : '\u0080'..'\uFFFF'            ;   // NB: Upper bound should be \u4177777
 
-fragment    UNICODE     : '\\' HEXCHAR 
-                                (HEXCHAR 
-                                    (HEXCHAR 
-                                        (HEXCHAR 
+fragment    UNICODE     : '\\' HEXCHAR
+                                (HEXCHAR
+                                    (HEXCHAR
+                                        (HEXCHAR
                                             (HEXCHAR HEXCHAR?)?
                                         )?
                                     )?
-                                )? 
+                                )?
                                 ('\r'|'\n'|'\t'|'\f'|' ')*  ;
-                                
+
 fragment    ESCAPE      : UNICODE | '\\' ~('\r'|'\n'|'\f'|HEXCHAR)  ;
 
 fragment    NMSTART     : '_'
@@ -1391,37 +1394,37 @@ fragment    NMCHAR      : '_'
                         | NONASCII
                         | ESCAPE
                         ;
-                        
+
 fragment    NAME        : NMCHAR+   ;
 
-fragment    URL         : ( 
-                              '['|'!'|'#'|'$'|'%'|'&'|'*'|'~'|'.'|':'|'/'|'?'|'='|';'|','|'+'|'@'
+fragment    URL         : (
+                              '['|'!'|'#'|'$'|'%'|'&'|'*'|'~'|'.'|':'|'/'|'?'|'='|';'|','|'+'|'@'|'|'
                             | NMCHAR
                           )*
                         ;
 
-                        
-// Basic Alpha characters in upper, lower and escaped form. 
 
-fragment    A   :   ('a'|'A')     
+// Basic Alpha characters in upper, lower and escaped form.
+
+fragment    A   :   ('a'|'A')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'1'
                 ;
-fragment    B   :   ('b'|'B')     
+fragment    B   :   ('b'|'B')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'2'
                 ;
-fragment    C   :   ('c'|'C')     
+fragment    C   :   ('c'|'C')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'3'
                 ;
-fragment    D   :   ('d'|'D')     
+fragment    D   :   ('d'|'D')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'4'
                 ;
-fragment    E   :   ('e'|'E')     
+fragment    E   :   ('e'|'E')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'5'
                 ;
-fragment    F   :   ('f'|'F')     
+fragment    F   :   ('f'|'F')
                 |   '\\' ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'6'
                 ;
-fragment    G   :   ('g'|'G')  
+fragment    G   :   ('g'|'G')
                 |   '\\'
                         (
                               'g'
@@ -1429,151 +1432,151 @@ fragment    G   :   ('g'|'G')
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'7'
                         )
                 ;
-fragment    H   :   ('h'|'H')  
-                | '\\' 
+fragment    H   :   ('h'|'H')
+                | '\\'
                         (
                               'h'
                             | 'H'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'8'
-                        )   
+                        )
                 ;
-fragment    I   :   ('i'|'I')  
-                | '\\' 
+fragment    I   :   ('i'|'I')
+                | '\\'
                         (
                               'i'
                             | 'I'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')'9'
                         )
                 ;
-fragment    J   :   ('j'|'J')  
-                | '\\' 
+fragment    J   :   ('j'|'J')
+                | '\\'
                         (
                               'j'
                             | 'J'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('A'|'a')
-                        )   
+                        )
                 ;
-fragment    K   :   ('k'|'K')  
-                | '\\' 
+fragment    K   :   ('k'|'K')
+                | '\\'
                         (
                               'k'
                             | 'K'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('B'|'b')
-                        )   
+                        )
                 ;
-fragment    L   :   ('l'|'L')  
-                | '\\' 
+fragment    L   :   ('l'|'L')
+                | '\\'
                         (
                               'l'
                             | 'L'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('C'|'c')
-                        )   
+                        )
                 ;
-fragment    M   :   ('m'|'M')  
-                | '\\' 
+fragment    M   :   ('m'|'M')
+                | '\\'
                         (
                               'm'
                             | 'M'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('D'|'d')
-                        )   
+                        )
                 ;
-fragment    N   :   ('n'|'N')  
-                | '\\' 
+fragment    N   :   ('n'|'N')
+                | '\\'
                         (
                               'n'
                             | 'N'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('E'|'e')
-                        )   
+                        )
                 ;
-fragment    O   :   ('o'|'O')  
-                | '\\' 
+fragment    O   :   ('o'|'O')
+                | '\\'
                         (
                               'o'
                             | 'O'
                             | ('0' ('0' ('0' '0'?)?)?)? ('4'|'6')('F'|'f')
-                        )   
+                        )
                 ;
-fragment    P   :   ('p'|'P')  
+fragment    P   :   ('p'|'P')
                 | '\\'
                         (
                               'p'
                             | 'P'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('0')
-                        )   
+                        )
                 ;
-fragment    Q   :   ('q'|'Q')  
-                | '\\' 
+fragment    Q   :   ('q'|'Q')
+                | '\\'
                         (
                               'q'
                             | 'Q'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('1')
-                        )   
+                        )
                 ;
-fragment    R   :   ('r'|'R')  
-                | '\\' 
+fragment    R   :   ('r'|'R')
+                | '\\'
                         (
                               'r'
                             | 'R'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('2')
-                        )   
+                        )
                 ;
-fragment    S   :   ('s'|'S')  
-                | '\\' 
+fragment    S   :   ('s'|'S')
+                | '\\'
                         (
                               's'
                             | 'S'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('3')
-                        )   
+                        )
                 ;
-fragment    T   :   ('t'|'T')  
-                | '\\' 
+fragment    T   :   ('t'|'T')
+                | '\\'
                         (
                               't'
                             | 'T'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('4')
-                        )   
+                        )
                 ;
-fragment    U   :   ('u'|'U')  
-                | '\\' 
+fragment    U   :   ('u'|'U')
+                | '\\'
                         (
                               'u'
                             | 'U'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('5')
                         )
                 ;
-fragment    V   :   ('v'|'V')  
-                | '\\' 
+fragment    V   :   ('v'|'V')
+                | '\\'
                         (     'v'
                             | 'V'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('6')
                         )
                 ;
-fragment    W   :   ('w'|'W')  
-                | '\\' 
+fragment    W   :   ('w'|'W')
+                | '\\'
                         (
                               'w'
                             | 'W'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('7')
-                        )   
+                        )
                 ;
-fragment    X   :   ('x'|'X')  
-                | '\\' 
+fragment    X   :   ('x'|'X')
+                | '\\'
                         (
                               'x'
                             | 'X'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('8')
                         )
                 ;
-fragment    Y   :   ('y'|'Y')  
-                | '\\' 
+fragment    Y   :   ('y'|'Y')
+                | '\\'
                         (
                               'y'
                             | 'Y'
                             | ('0' ('0' ('0' '0'?)?)?)? ('5'|'7')('9')
                         )
                 ;
-fragment    Z   :   ('z'|'Z')  
-                | '\\' 
+fragment    Z   :   ('z'|'Z')
+                | '\\'
                         (
                               'z'
                             | 'Z'
@@ -1595,8 +1598,8 @@ CDO             : '<!--'
                         $channel = 3;   // CDO on channel 3 in case we want it later
                     }
                 ;
-    
-// ---------------------            
+
+// ---------------------
 // HTML comment close.  HTML/XML comments may be placed around style sheets so that they
 //                      are hidden from higher scope parsing engines such as HTML parsers.
 //                      They comment close is therfore ignored by the CSS parser and we hide
@@ -1608,7 +1611,7 @@ CDC             : '-->'
                         $channel = 4;   // CDC on channel 4 in case we want it later
                     }
                 ;
-                
+
 INCLUDES        : '~='      ;
 DASHMATCH       : '|='      ;
 BEGINS          : '^='      ;
@@ -1636,7 +1639,7 @@ TILDE		: '~'       ;
 PIPE            : '|'       ;
 PERCENTAGE_SYMBOL
                 : '%'       ;
-EXCLAMATION_MARK: '!'       ;                
+EXCLAMATION_MARK: '!'       ;
 
 CP_EQ           : '=='       ;
 CP_NOT_EQ       : '!='       ;
@@ -1647,25 +1650,26 @@ LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 CP_DOTS         : '...';
 LESS_REST       : '@rest...';
+LESS_IMPORT_TYPE    :   'LESS' | 'CSS';
 
 // -----------------
 // Literal strings. Delimited by either ' or "
 //
 fragment    INVALID :;
-STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )* 
+STRING          : '\'' ( ~('\r'|'\f'|'\'') )*
                     (
                           '\''
                         | { $type = INVALID; }
                     )
-                    
-                | '"' ( ~('\n'|'\r'|'\f'|'"') )*
+
+                | '"' ( ~('\r'|'\f'|'"') )*
                     (
                           '"'
                         | { $type = INVALID; }
                     )
                 ;
-                
-LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )* 
+
+LESS_JS_STRING  : '`' ( ~('\r'|'\f'|'`') )*
                     (
                           '`'
                         | { $type = INVALID; }
@@ -1674,7 +1678,7 @@ LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )*
 
 
 ONLY 		: 'ONLY';
-NOT		: 'NOT'; 
+NOT		: 'NOT';
 AND		: 'AND';
 OR		: 'OR';
 
@@ -1704,7 +1708,7 @@ TOPLEFT_SYM           :'@TOP-LEFT';
 TOPCENTER_SYM         :'@TOP-CENTER';
 TOPRIGHT_SYM          :'@TOP-RIGHT';
 TOPRIGHTCORNER_SYM    :'@TOP-RIGHT-CORNER';
-BOTTOMLEFTCORNER_SYM  :'@BOTTOM-LEFT-CORNER'; 
+BOTTOMLEFTCORNER_SYM  :'@BOTTOM-LEFT-CORNER';
 BOTTOMLEFT_SYM        :'@BOTTOM-LEFT';
 BOTTOMCENTER_SYM      :'@BOTTOM-CENTER';
 BOTTOMRIGHT_SYM       :'@BOTTOM-RIGHT';
@@ -1728,7 +1732,7 @@ SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_ELSE           : '@ELSE';
-//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if 
+//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if
 SASS_FOR            : '@FOR';
 SASS_FUNCTION       : '@FUNCTION';
 SASS_RETURN         : '@RETURN';
@@ -1737,7 +1741,7 @@ SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
 
 AT_SIGN             : '@';
-AT_IDENT	    : AT_SIGN NMCHAR+;	
+AT_IDENT	    : AT_SIGN NMCHAR+;
 
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
@@ -1765,7 +1769,7 @@ fragment    TIME        :;  // 'ms', 's'
 fragment    FREQ        :;  // 'khz', 'hz'
 fragment    DIMENSION   :;  // nnn'Somethingnotyetinvented'
 fragment    PERCENTAGE  :;  // '%'
-fragment    RESOLUTION  :;  //dpi,dpcm	
+fragment    RESOLUTION  :;  //dpi,dpcm
 
 NUMBER
     :   (
@@ -1776,10 +1780,10 @@ NUMBER
               (D P (I|C))=>
                 D P
                 (
-                     I | C M     
+                     I | C M
                 )
                 { $type = RESOLUTION; }
-        	
+
             | (E (M|X))=>
                 E
                 (
@@ -1789,44 +1793,44 @@ NUMBER
             | (P(X|T|C))=>
                 P
                 (
-                      X     
+                      X
                     | T
                     | C
                 )
-                            { $type = LENGTH;       }   
+                            { $type = LENGTH;       }
             | (C M)=>
                 C M         { $type = LENGTH;       }
-            | (M (M|S))=> 
+            | (M (M|S))=>
                 M
                 (
                       M     { $type = LENGTH;       }
-            
+
                     | S     { $type = TIME;         }
                 )
             | (I N)=>
                 I N         { $type = LENGTH;       }
-            
+
             | (D E G)=>
                 D E G       { $type = ANGLE;        }
 //            | (R A D)=>
 //                R A D       { $type = ANGLE;        }
 
             | (R (A|E))=>
-                R    
-                ( 
+                R
+                (
                    A D       {$type = ANGLE;         }
                  | E M       {$type = REM;           }
                 )
-            
+
             | (S)=>S        { $type = TIME;         }
-                
+
             | (K? H Z)=>
                 K? H    Z   { $type = FREQ;         }
-            
+
             | IDENT         { $type = DIMENSION;    }
-            
+
             | PERCENTAGE_SYMBOL { $type = PERCENTAGE;   }
-            
+
             | // Just a number
         )
     ;
@@ -1839,13 +1843,13 @@ URI :   U R L
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
     ;
-    
+
 MOZ_URL_PREFIX
 	:
 	'URL-PREFIX('
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
-    
+
     	;
 
 MOZ_DOMAIN
@@ -1853,7 +1857,7 @@ MOZ_DOMAIN
 	'DOMAIN('
             ((WS)=>WS)? (URL|STRING) WS?
         ')'
-    
+
     	;
 
 MOZ_REGEXP
@@ -1861,7 +1865,7 @@ MOZ_REGEXP
 	'REGEXP('
             ((WS)=>WS)? STRING WS?
         ')'
-    
+
         	;
 
 // -------------
@@ -1869,28 +1873,28 @@ MOZ_REGEXP
 //              that process the whitespace within the parser, ANTLR does not
 //              need to deal with the whitespace directly in the parser.
 //
-WS      
-    : 
+WS
+    :
     (' '|'\t')+
     ;
 
-NL      
-    : 
-    ('\r' '\n'? | '\n')    
+NL
+    :
+    ('\r' '\n'? | '\n')
     ;
 
 // Comments.    Comments may not be nested, may be multilined and are delimited
 //              like C comments: /* ..... */
-COMMENT         
-    : 
+COMMENT
+    :
     '/*' ( options { greedy=false; } : .*) '*/'
     ;
 
 LINE_COMMENT
     :
     '//'( options { greedy=false; } : ~('\r' | '\n')* ) {
-	$channel = HIDDEN;    
-    }   
+	$channel = HIDDEN;
+    }
     ;
 
 // -------------

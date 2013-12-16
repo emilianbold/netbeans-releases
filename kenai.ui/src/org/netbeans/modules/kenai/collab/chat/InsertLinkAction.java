@@ -71,12 +71,24 @@ public class InsertLinkAction extends AbstractAction {
     private String outText;
     private JTextPane out;
 
-    public InsertLinkAction(JTextComponent component, JTextPane out, boolean insertLineNumber, boolean insertAccelerator) {
-        super();
+    static InsertLinkAction create (IssueHandle issueHandle, JTextPane outbox, boolean insertAccelerator) {
+        return new InsertLinkAction(issueHandle, outbox, insertAccelerator);
+    }
+        
+    static InsertLinkAction create(JTextComponent component, JTextPane out, boolean insertLineNumber, boolean insertAccelerator) {
         assert component != null;
         Document document = component.getDocument();
         FileObject fo = NbEditorUtilities.getFileObject(document);
+        if(fo == null) {
+            return null;
+        }
         int line = NbDocument.findLineNumber((StyledDocument) document, component.getCaretPosition()) + 1;
+        return new InsertLinkAction(fo, line, out, insertLineNumber, insertAccelerator);
+    }
+    
+    private InsertLinkAction(FileObject fo, int line, JTextPane out, boolean insertLineNumber, boolean insertAccelerator) {
+        super();
+        
         ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
         if (insertLineNumber) {
             putValue(NAME, fo.getNameExt() + ":" + line); // NOI18N
@@ -101,7 +113,7 @@ public class InsertLinkAction extends AbstractAction {
         outText =  "FILE:" + outText; // NOI18N
     }
 
-    public InsertLinkAction(IssueHandle issueHandle, JTextPane outbox, boolean insertAccelerator) {
+    private InsertLinkAction (IssueHandle issueHandle, JTextPane outbox, boolean insertAccelerator) {
         putValue(NAME, issueHandle.getShortDisplayName());
         if (insertAccelerator)
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));

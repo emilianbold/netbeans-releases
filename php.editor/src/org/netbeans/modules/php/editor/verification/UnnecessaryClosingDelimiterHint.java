@@ -91,16 +91,23 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
 
     private CloseTagWrapper createCloseTagWrapper(TokenSequence<PHPTokenId> ts) {
         CloseTagWrapper result = CloseTagWrapper.NONE;
+        boolean inOpenTagWithEcho = false;
         while (ts.moveNext()) {
             Token<PHPTokenId> token = ts.token();
             if (token != null) {
                 PHPTokenId id = token.id();
-                if (id == PHPTokenId.PHP_CLOSETAG) {
-                    result = new CloseTagWrapperImpl(ts.offset());
-                } else if (id == PHPTokenId.T_INLINE_HTML) {
-                    result.setHtmlPart(token);
-                } else {
-                    result = CloseTagWrapper.NONE;
+                switch (id) {
+                    case T_OPEN_TAG_WITH_ECHO:
+                        inOpenTagWithEcho = true;
+                        break;
+                    case PHP_CLOSETAG:
+                        result = new CloseTagWrapperImpl(ts.offset(), inOpenTagWithEcho);
+                        break;
+                    case T_INLINE_HTML:
+                        result.setHtmlPart(token);
+                        break;
+                    default:
+                        result = CloseTagWrapper.NONE;
                 }
             }
         }
@@ -132,22 +139,22 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
     private final class CloseTagWrapperImpl implements CloseTagWrapper {
         private static final String CLOSING_TAG = "?>"; //NOI18N
         private final int closeTagOffset;
+        private final boolean startsWithOpenTagWithEcho;
         private Token<PHPTokenId> inlineHtmlTag;
 
-        private CloseTagWrapperImpl(int closeTagOffset) {
+        private CloseTagWrapperImpl(int closeTagOffset, boolean startsWithOpenTagWithEcho) {
             this.closeTagOffset = closeTagOffset;
+            this.startsWithOpenTagWithEcho = startsWithOpenTagWithEcho;
         }
 
         @Override
         public void setHtmlPart(Token<PHPTokenId> inlineHtmlTag) {
-            if (this.inlineHtmlTag == null) { //store just first html part after close tag
-                this.inlineHtmlTag = inlineHtmlTag;
-            }
+            this.inlineHtmlTag = inlineHtmlTag;
         }
 
         @Override
         public boolean shouldBeRemoved() {
-            return inlineHtmlTag == null || inlineHtmlTag.text().toString().trim().length() == 0;
+            return !startsWithOpenTagWithEcho && (inlineHtmlTag == null || inlineHtmlTag.text().toString().trim().length() == 0);
         }
 
         @NbBundle.Messages("UnnecessaryClosingDelimiterHintText=Unnecessary Closing Delimiter")
@@ -205,7 +212,7 @@ public class UnnecessaryClosingDelimiterHint extends HintRule {
     }
 
     @Override
-    @NbBundle.Messages("UnnecessaryClosingDelimiterHintDesc=It is a good practise to don't use closing PHP delimiter "
+    @NbBundle.Messages("UnnecessaryClosingDelimiterHintDesc=It is a good practise to omit closing PHP delimiter "
             + "at the end of file. It's just a source of \"Headers already sent\" errors.")
     public String getDescription() {
         return Bundle.UnnecessaryClosingDelimiterHintDesc();

@@ -33,9 +33,9 @@ if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
     hg ci -m "new help files" -u "$commit_username" --config 'extensions.win32text=' --config 'encode.**=cleverencode:'
 
     # check count of really modified files for push
-    OUT_COUNT=`hg parent -v --template 'files: {files}'| grep '^files:' | wc -l`
+    OUT_COUNT=`hg parent -v --template 'files: {files}'| grep '^files:' | wc -w`
     echo OUT_COUNT: $OUT_COUNT
-    if [ "$OUT_COUNT" -gt 0 ]; then
+    if [ "$OUT_COUNT" -gt 1 ]; then
         echo "There are $OUT_COUNT outgoing changes, start pushing..."
         hg push -b $push_branch -f $push_url
         HG_RESULT=$?

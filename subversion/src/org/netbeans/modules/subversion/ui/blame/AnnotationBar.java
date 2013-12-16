@@ -1025,7 +1025,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         Subversion.LOG.log(Level.INFO, " can not HTML escape: " + al.getCommitMessage(), e1); // NOI18N
                     }
                     if (escaped != null) {
-                        String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
+                        String lined = escaped.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>");  // NOI18N
                         annotation.append("<p>").append(lined); // NOI18N
                     }
                 }

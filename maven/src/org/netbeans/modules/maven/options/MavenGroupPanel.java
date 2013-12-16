@@ -60,6 +60,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileUtil;
 import static org.netbeans.modules.maven.options.Bundle.*;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -87,14 +88,6 @@ public class MavenGroupPanel extends javax.swing.JPanel {
         } else {
             globalMavenValue = MAVEN_RUNTIME_External(f.getAbsolutePath());
         }
-        loadValues(grp);
-        category.setStoreListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-               applyValues(grp);
-            }
-        });
         listItemChangedListener = new ActionListener() {
             
             @Override
@@ -123,7 +116,14 @@ public class MavenGroupPanel extends javax.swing.JPanel {
                 lastSelected = selected;
             }
         };
-        comMavenHome.addActionListener(listItemChangedListener);
+        loadValues(grp);
+        category.setStoreListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+               applyValues(grp);
+            }
+        });
     }
     
     
@@ -255,40 +255,54 @@ public class MavenGroupPanel extends javax.swing.JPanel {
     }
      
 
-    private void loadValues(ProjectGroup grp) {
+    private void loadValues(final ProjectGroup grp) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                predefinedRuntimes.clear();
+                predefinedRuntimes.add("");
+                String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
+                if (defaultExternalMavenRuntime != null) {
+                    predefinedRuntimes.add(defaultExternalMavenRuntime);
+                }
+                userDefinedMavenRuntimes.clear();
+                userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
+                final List<String> toAdd = new ArrayList<String>();
+                final File command = EmbedderFactory.getEffectiveMavenHome(grp);
+                for (String runtime : predefinedRuntimes) {
+                    boolean bundledRuntime = runtime.isEmpty();
+                    String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled()
+                            : MAVEN_RUNTIME_External(runtime);
+                    toAdd.add(desc);
+                }
 
-        predefinedRuntimes.clear();
-        predefinedRuntimes.add("");
-        String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
-        if (defaultExternalMavenRuntime != null) {
-            predefinedRuntimes.add(defaultExternalMavenRuntime);
-        }
-        userDefinedMavenRuntimes.clear();
-        userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
-        comMavenHome.removeActionListener(listItemChangedListener);
-        mavenHomeDataModel.removeAllElements();
-        File command = EmbedderFactory.getEffectiveMavenHome(grp);
-        for (String runtime : predefinedRuntimes) {
-            boolean bundledRuntime = runtime.isEmpty();
-            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
-                    MAVEN_RUNTIME_External(runtime);
-            mavenHomeDataModel.addElement(desc);
-        }
-        
-        if (!userDefinedMavenRuntimes.isEmpty()) {
-            mavenHomeDataModel.addElement(SEPARATOR);
-            for (String runtime : userDefinedMavenRuntimes) {
-                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
-                mavenHomeDataModel.addElement(desc);
+                if (!userDefinedMavenRuntimes.isEmpty()) {
+                    toAdd.add(SEPARATOR);
+                    for (String runtime : userDefinedMavenRuntimes) {
+                        String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
+                        toAdd.add(desc);
+                    }
+                }
+
+                toAdd.add(SEPARATOR);
+                toAdd.add(MAVEN_RUNTIME_Browse());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        comMavenHome.removeActionListener(listItemChangedListener);
+                        mavenHomeDataModel.removeAllElements();
+                        for (String s : toAdd) {
+                            mavenHomeDataModel.addElement(s);
+                        }
+                        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
+                        listDataChanged();
+                        lastSelected = comMavenHome.getSelectedIndex();
+                        comMavenHome.addActionListener(listItemChangedListener);
+                    }
+                });
             }
-        }
+        });
         
-        mavenHomeDataModel.addElement(SEPARATOR);
-        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
-        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
-        listDataChanged();
-        lastSelected = comMavenHome.getSelectedIndex();
-        comMavenHome.addActionListener(listItemChangedListener);
         
     }
     

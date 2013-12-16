@@ -2495,7 +2495,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
-                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second()).getIndex(pair.second().getIndexFolder());
+                    final Context ctx = pair.second();
+                    final FileObject indexFolder = ctx.getIndexFolder();
+                    if (indexFolder == null) {
+                        throw new IllegalStateException(
+                            String.format(
+                            "No index folder for context: %s",      //NOI18N
+                            ctx));
+                    }
+                    final DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(indexFolder);
                     if (index != null) {
                         usedIterables.offer(ci.getIndexablesFor(null));
                     }
@@ -3390,7 +3398,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NullAllowed final Iterable<? extends Indexable> indexables,
                 final boolean finished) throws IOException {
             try {
-                final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                final FileObject indexFolder = ctx.getIndexFolder();
+                if (indexFolder == null) {
+                    throw new IllegalStateException(
+                        String.format(
+                            "No index folder for context: %s",      //NOI18N
+                            ctx));
+                }
+                final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(indexFolder);
                 if (index != null) {
                     TEST_LOGGER.log(
                         Level.FINEST,
@@ -4147,7 +4162,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         justification="URLs have never host part")
         protected @Override boolean getDone() {
             if (depCtx == null) {
-                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, false);
+                depCtx = new DependenciesContext(
+                        scannedRoots2Dependencies,
+                        scannedBinaries2InvDependencies,
+                        scannedRoots2Peers,
+                        sourcesForBinaryRoots,
+                        false);
 
                 if (suspectFilesOrFileObjects.isEmpty()) {
                     depCtx.newBinariesToScan.addAll(scannedBinaries2InvDependencies.keySet());
@@ -4525,7 +4545,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             boolean restarted;
             if (depCtx == null) {
                 restarted = false;
-                depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, useInitialState);
+                depCtx = new DependenciesContext(
+                    scannedRoots2Dependencies,
+                    scannedBinaries2InvDependencies,
+                    scannedRoots2Peers,
+                    sourcesForBinaryRoots,
+                    useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
@@ -4541,9 +4566,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());                
 
                 if (useInitialState) {
-                    c = PathRegistry.getDefault().getUnknownRoots();
-                    checkRootCollection(c);
+                    c = PathRegistry.getDefault().getUnknownRoots();                    
                     LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
+                    depCtx.unknownRoots.addAll(c);
+                    depCtx.preInversedDeps = Util.findTransitiveReverseDependencies(
+                        depCtx.initialRoots2Deps,
+                        depCtx.initialRoots2Peers);
                     newRoots.addAll(c);
                 } // else computing the deps from scratch and so will find the 'unknown' roots
                 // by following the dependencies (#166715)
@@ -4663,7 +4691,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             final List<URL> missingRoots = new LinkedList<URL>();
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
-            scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);
+            scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);            
             for(URL root : depCtx.scannedRoots) {
                 List<URL> deps = depCtx.newRoots2Deps.get(root);
                 if (deps == null) {
@@ -4676,6 +4704,31 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 deps = depCtx.newRoots2Peers.get(root);
                 scannedRoots2Peers.put(root,deps);
             }
+            final Collection<URL> unknownToRemove = new HashSet<URL>();
+            if (!depCtx.unknownRoots.isEmpty()) {
+                final Map<URL,Collection<URL>> postInversedDeps =
+                    Util.findTransitiveReverseDependencies(scannedRoots2Dependencies, scannedRoots2Peers);
+                for (URL ur : depCtx.unknownRoots) {
+                    final Collection<URL> postUrInversedDeps = postInversedDeps.get(ur);
+                    boolean remove;
+                    if (postUrInversedDeps == null) {
+                        remove = true;
+                    } else  {
+                        postUrInversedDeps.removeAll(depCtx.unknownRoots);
+                        remove = postUrInversedDeps.isEmpty();
+                    }
+                    if (remove) {
+                        final Collection<URL> preUrInversedDeps = depCtx.preInversedDeps.get(ur);
+                        if (preUrInversedDeps != null) {
+                            preUrInversedDeps.removeAll(depCtx.unknownRoots);
+                            if (!preUrInversedDeps.isEmpty()) {
+                                unknownToRemove.add(ur);
+                            }
+                        }
+                    }
+                }
+            }
+            PathRegistry.getDefault().unregisterUnknownSourceRoots(unknownToRemove);
             scannedRoots2DependenciesLamport.incrementAndGet();
             if (!missingRoots.isEmpty()) {
                 StringBuilder log = new StringBuilder("Missing dependencies for roots: ");  //NOI18N
@@ -5811,7 +5864,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final Set<URL> scannedBinaries;
 
         private final Set<URL> sourcesForBinaryRoots;
-        private Set<URL> fullRescanSourceRoots;
+        private final Set<URL> unknownRoots;
+        private Map<URL,Collection<URL>> preInversedDeps;
+        private Set<URL> fullRescanSourceRoots;        
 
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
@@ -5839,7 +5894,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.newBinaries2InvDeps = new HashMap<URL, List<URL>>();
             this.newRoots2Peers = new HashMap<URL, List<URL>>();
             this.newRootsToScan = new ArrayList<URL>();
-            this.newBinariesToScan = new HashSet<URL>();
+            this.newBinariesToScan = new HashSet<URL>();            
 
             this.scannedRoots = new HashSet<URL>();
             this.scannedBinaries = new HashSet<URL>();
@@ -5848,7 +5903,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.fullRescanSourceRoots = new HashSet<URL>();
 
             this.useInitialState = useInitialState;
-            cycleDetector = new Stack<URL>();
+            this.cycleDetector = new Stack<URL>();
+            this.unknownRoots = new HashSet<URL>();
         }
 
         public @Override String toString() {

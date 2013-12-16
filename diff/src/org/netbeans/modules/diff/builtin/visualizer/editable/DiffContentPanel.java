@@ -56,6 +56,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.accessibility.AccessibleContext;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.*;
 import java.util.List;
@@ -103,7 +104,7 @@ class DiffContentPanel extends JPanel implements HighlightsContainer,Lookup.Prov
             editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
             editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
             editorPane.setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, Collections.singleton(
-                    KeyStroke.getAWTKeyStroke(KeyEvent.VK_ESCAPE, 0)));
+                    KeyStroke.getAWTKeyStroke(KeyEvent.VK_ESCAPE, InputEvent.SHIFT_DOWN_MASK)));
             
             editorPane.putClientProperty("errorStripeOnly", Boolean.TRUE);
             editorPane.putClientProperty("code-folding-enable", false);

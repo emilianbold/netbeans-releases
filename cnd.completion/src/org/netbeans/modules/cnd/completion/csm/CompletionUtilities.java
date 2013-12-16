@@ -46,7 +46,9 @@ package org.netbeans.modules.cnd.completion.csm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -59,10 +61,15 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
@@ -153,15 +160,15 @@ public class CompletionUtilities {
             for (int ind = idBlk.length - 1; ind >= 1; ind--) {
                 CsmCompletionResult result = query.query(target, baseDoc, idBlk[ind], true, false, false);
                 if (result != null && !result.getItems().isEmpty()) {
-                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFunctionsOnly, currentFile);
-                    out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false, currentFile);
+                    List<CsmObject> filtered = getAssociatedObjects(result.getItems(), searchFunctionsOnly, currentFile, dotPos);
+                    out = !filtered.isEmpty() ? filtered : getAssociatedObjects(result.getItems(), false, currentFile, dotPos);
                     if (filtered.size() > 1 && searchFunctionsOnly) {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idBlk[ind] - 1);
                         if (endOfMethod > -1) {
                             CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
                             if (resultx != null && !resultx.getItems().isEmpty()) {
-                                out = getAssociatedObjects(resultx.getItems(), false, currentFile);
+                                out = getAssociatedObjects(resultx.getItems(), false, currentFile, dotPos);
                             }
                         }
                     }                    
@@ -170,7 +177,7 @@ public class CompletionUtilities {
                         if (endOfMethod > -1) {
                             CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, true, false, false);
                             if (resultx != null && !resultx.getItems().isEmpty()) {
-                                out = getAssociatedObjects(resultx.getItems(), false, currentFile);
+                                out = getAssociatedObjects(resultx.getItems(), false, currentFile, dotPos);
                             }
                         }
                     }
@@ -233,7 +240,7 @@ public class CompletionUtilities {
     }
 
 
-    private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly, CsmFile contextFile) {
+    private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly, CsmFile contextFile, int offset) {
         List<CsmObject> visible = new ArrayList<CsmObject>();
         List<CsmObject> all = new ArrayList<CsmObject>();
         List<CsmObject> funcs = new ArrayList<CsmObject>();
@@ -262,10 +269,124 @@ public class CompletionUtilities {
         if (wantFuncsOnly) {
             out = !visibleFuncs.isEmpty() ? visibleFuncs : funcs;
         } else {
-            out = !visible.isEmpty() ? visible : all;
+            out = computeCandidatesList(visible, all, contextFile);
         }
         return out;
     }
+    
+    /**
+     * Computes candidates list using visible and invisible items.
+     * 
+     * @param visible
+     * @param all
+     * @param contextFile
+     * @return list of candidates
+     */
+    private static List<CsmObject> computeCandidatesList(List<CsmObject> visible, List<CsmObject> invisible, CsmFile contextFile) {
+        List<CsmObject> result;
+        
+        if (!visible.isEmpty()) {
+            result = visible;
+            
+            Map<CharSequence, List<CsmClassifier>> clsMap = null;
+
+            for (int i = 0; i < result.size(); i++) {
+                CsmObject candidate = result.get(i);
+                if (CsmKindUtilities.isTypedef(candidate)) {
+
+                    // Initilize classifiers map if needed
+                    if (clsMap == null) {
+                        clsMap = new HashMap<CharSequence, List<CsmClassifier>>();
+
+                        for (CsmObject obj : invisible) {
+                            if (CsmKindUtilities.isClass(obj) || CsmKindUtilities.isEnum(obj)) {
+                                CsmClassifier cls = (CsmClassifier) obj;
+                                
+                                List<CsmClassifier> classifiers;
+                                
+                                if (clsMap.containsKey(cls.getQualifiedName())) {
+                                    classifiers = clsMap.get(cls.getQualifiedName());
+                                } else {
+                                    classifiers = new ArrayList<CsmClassifier>();
+                                    clsMap.put(cls.getQualifiedName(), classifiers);
+                                }
+                                
+                                classifiers.add(cls);
+                            }
+                        }
+                    }
+
+                    // Handle typedef
+                    CsmTypedef td = (CsmTypedef) candidate;
+
+                    if (clsMap.containsKey(td.getQualifiedName())) {
+                        List<CsmClassifier> classifiers = clsMap.get(td.getQualifiedName());
+                        
+                        for (CsmClassifier cls : classifiers) {
+                            CsmFile clsFile = ((CsmOffsetable) cls).getContainingFile();
+                            if (clsFile != null && 
+                                (CsmIncludeResolver.getDefault().isObjectVisible(clsFile, contextFile) ||
+                                 CsmIncludeResolver.getDefault().isObjectVisible(contextFile, clsFile))) 
+                            {
+                                visible.add(i++, cls);
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            result = invisible;
+        }
+        
+        return result;
+    }
+    
+//    /**
+//     * Checks and filters typedefs which are in candidates list.
+//     * (For hyperlink mode)
+//     * 
+//     * @param candidates - list of candidates
+//     */
+//    private static void filterCandidateTypedefs(List<CsmObject> candidates, CsmFile file, int offset) {
+//        for (int i = 0; i < candidates.size(); i++) {
+//            CsmObject candidate = candidates.get(i);
+//            if (CsmKindUtilities.isTypedef(candidate)) {
+//                CsmTypedef td = (CsmTypedef) candidate;
+//                CsmType tdType = td.getType();
+//                CsmClassifier tdTypeClass = tdType != null ? tdType.getClassifier() : null;                
+//                
+//                // 1. Special case: typedef is a synonim of the class with the same name and the click was inside typedef
+//                if (CsmKindUtilities.isClassForwardDeclaration(tdTypeClass) || CsmKindUtilities.isEnumForwardDeclaration(tdTypeClass)) {
+//                    if (td.getQualifiedName().equals(tdTypeClass.getQualifiedName())) {
+//                        if (CsmKindUtilities.isOffsetable(tdTypeClass)) {
+//                            CsmOffsetable offsetable = (CsmOffsetable) tdTypeClass;
+//                            if (file.equals(offsetable.getContainingFile()) && offsetable.getStartOffset() <= offset && offsetable.getEndOffset() >= offset) {
+//                                CsmClassifier originalCls = CsmClassifierResolver.getDefault().getOriginalClassifier(tdTypeClass, offsetable.getContainingFile());
+//                                if (originalCls == null) {
+//                                    originalCls = tdTypeClass;
+//                                }
+//                                
+//                                boolean found = false;
+//                                
+//                                for (CsmObject obj : candidates) {
+//                                    if (obj.equals(originalCls)) {
+//                                        found = true;
+//                                        break;
+//                                    }
+//                                }
+//                                
+//                                if (found) {
+//                                    candidates.remove(i--);
+//                                } else {
+//                                    candidates.set(i, originalCls);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private static CsmObject getAssociatedObject(Object item) {
         if (item instanceof CsmResultItem) {

@@ -55,29 +55,29 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public final class SessionProgress implements Cancellable {
-    private final static ConcurrentMap<Session, SessionProgress> instances = new ConcurrentHashMap<>();
+    private final static ConcurrentMap<Session, SessionProgress> INSTANCE = new ConcurrentHashMap<>();
     private final ProgressHandle h;
     private volatile Session session;
-    private volatile boolean  isFinished;
-    private volatile boolean  isStarted;
+    private volatile boolean isFinished;
+    private volatile boolean isStarted;
 
     public static SessionProgress forSession(Session session) {
-	SessionProgress newval = new SessionProgress(session);
-	SessionProgress retval = instances.putIfAbsent(session, newval);
-	return (retval == null) ? newval : retval;
+        SessionProgress newval = new SessionProgress(session);
+        SessionProgress retval = INSTANCE.putIfAbsent(session, newval);
+        return (retval == null) ? newval : retval;
     }
 
     public static SessionProgress forSessionId(SessionId sessionId) {
-       Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
-       Session retval = null;
+        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        Session retval = null;
         for (Session session : sessions) {
-            SessionId id = (SessionId)session.lookupFirst( null , SessionId.class );
-            if (id != null &&  id.getId().equals( sessionId.getId() ) ) {
-               retval = session;
-               break;
-           }
-       }
-       return (retval != null) ? forSession(retval) : null;
+            SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+            if (id != null && id.getId().equals(sessionId.getId())) {
+                retval = session;
+                break;
+            }
+        }
+        return (retval != null) ? forSession(retval) : null;
     }
 
     private SessionProgress(Session session) {
@@ -94,7 +94,7 @@ public final class SessionProgress implements Cancellable {
     }
 
     void start() {
-	h.start();
+        h.start();
         isStarted = true;
     }
 
@@ -109,13 +109,14 @@ public final class SessionProgress implements Cancellable {
         if (isStarted && !isFinished) {
             isFinished = true;
             h.finish();
-            SessionId id = (SessionId)session.lookupFirst( null , SessionId.class );
+            SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
             if (id != null) {
                 synchronized (id) {
                     id.notifyAll();
                 }
             }
         }
-        instances.remove(session);
+        INSTANCE.remove(session);
     }
+
 }

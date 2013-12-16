@@ -120,7 +120,7 @@ public final class BeanImplementsBI {
     }
 
     private static void processAnnotation(Collection<String> businessInterFaces, TypeElement clazz, String annotClass) {
-        AnnotationMirror annLocal = JavaUtils.findAnnotation(clazz, EJBAPIAnnotations.LOCAL);
+        AnnotationMirror annLocal = JavaUtils.findAnnotation(clazz, annotClass);
         AnnotationValue value = JavaUtils.getAnnotationAttrValue(annLocal, EJBAPIAnnotations.VALUE);
         if (value != null) {
             for (AnnotationValue ifaceAttr : (List<? extends AnnotationValue>) value.getValue()) {

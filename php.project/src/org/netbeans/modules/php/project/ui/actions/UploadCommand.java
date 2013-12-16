@@ -75,6 +75,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
     public static final String ID = "upload"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
 
+
     public UploadCommand(PhpProject project) {
         super(project);
     }
@@ -127,6 +128,8 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             progressHandle.start();
             forUpload = remoteClient.prepareUpload(sources, filesToUpload);
 
+            RemoteUtils.fetchAllFiles(false, forUpload, sources, filesToUpload);
+
             // manage preselected files - it is just enough to touch the file
             if (preselectedFiles != null && preselectedFiles.length > 0) {
                 File baseLocalDir = FileUtil.toFile(sources);
@@ -150,7 +153,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 showDialog = false;
             }
             if (showDialog) {
-                forUpload = TransferFilesChooser.forUpload(forUpload, ProjectSettings.getLastUpload(getProject())).showDialog();
+                forUpload = TransferFilesChooser.forUpload(forUpload, RemoteUtils.getLastTimestamp(true, getProject())).showDialog();
             }
         } finally {
             progressHandle.finish();
@@ -205,4 +208,5 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             }
         }
     }
+
 }

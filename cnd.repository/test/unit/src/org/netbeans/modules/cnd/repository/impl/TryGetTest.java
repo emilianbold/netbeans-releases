@@ -46,11 +46,16 @@ package org.netbeans.modules.cnd.repository.impl;
 import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.*;
 import org.netbeans.junit.*;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.keys.TestLargeKey;
+import org.netbeans.modules.cnd.repository.keys.TestSmallKey;
+import org.netbeans.modules.cnd.repository.keys.TestValue;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 
 /**
  * Tests Repository.tryGet()
+ *
  * @author Vladimir Kvashin
  */
 public class TryGetTest extends GetPutTestBase {
@@ -74,43 +79,39 @@ public class TryGetTest extends GetPutTestBase {
     }
 
     public void testTryGet() {
-        _test(new SmallKey("small_1"), new Value("small_obj_1"));
-        _test(new LargeKey("large_1"), new Value("large_obj_1"));
+        _test(new TestSmallKey("small_1", getUnitID()), new TestValue("small_obj_1"));
+        _test(new TestLargeKey("large_1", getUnitID()), new TestValue("large_obj_1"));
 
     }
-    
     private final AtomicBoolean readFlag = new AtomicBoolean(false);
 
     @Override
-    protected void onReadHook(Factory factory, Persistent obj) {
+    public void onReadHook() {
         readFlag.set(true);
     }
 
-    private void _test(Key key, Value value) {
+    @Override
+    public void onWriteHook() {
+    }
 
-        repository.startup(0);
-        repository.put(key, value);
-
-        Persistent v2 = repository.get(key);
-        assertNotNull(v2);
-        assertEquals(value, v2);
-
-        readFlag.set(false);
-
-        v2 = _tryGet(key);
-        assertNotNull(v2);
-        assertEquals(value, v2);
-
-        repository.debugClear();
-
-    //v2 = _tryGet(key);
-    //assertNull(v2);
+    @Override
+    public void onRemoveHook() {
     }
     
-    private Persistent _tryGet(Key key) {
+    private void _test(Key key, TestValue value) {
+
+        Repository.startup(0);
+        Repository.put(key, value);
+
+        Persistent v2 = Repository.get(key);
+        assertNotNull(v2);
+        assertEquals(value, v2);
+
         readFlag.set(false);
-        Persistent p = repository.tryGet(key);
-        assertFalse("tryGet shouldn't cause reading object from disk", readFlag.get());
-        return p;
+
+//        RepositoryTestUtils.debugClear();
+
+        //v2 = _tryGet(key);
+        //assertNull(v2);
     }
 }

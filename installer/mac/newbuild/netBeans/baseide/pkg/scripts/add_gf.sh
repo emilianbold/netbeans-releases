@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 nb_dir=$1
 gf_dir=$2
 
@@ -12,20 +12,23 @@ fi
 if [ -d "$nb_dir" ] && [ -d "$gf_dir" ]
 then
   cd "$nb_dir" 
-  cd Contents/Resources/NetBeans*/etc
-  if [ -f netbeans.conf ]
-  then
-    echo netbeans.conf found: `pwd`/netbeans.conf
-    if  grep -q "J-Dcom.sun.aas.installRoot=$gf_dir" netbeans.conf
-    then
-       echo Glassfish "$gf_dir" has been already added
-    else
-       echo Adding "$gf_dir"...
-       cp netbeans.conf netbeans.conf_orig_gf
-       cat netbeans.conf_orig_gf  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dcom.sun.aas.installRoot='$gf_dir' |' > netbeans.conf
-    fi
+  cd Contents/Resources/NetBeans*/
+  curdir=`pwd`
+  dirname=`dirname "$0"`
+  jdk_home=`"$dirname"/get_current_jdk.sh`
+  "$jdk_home"/bin/java -cp \
+                           platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-glassfish-common.jar:enterprise/modules/ext/glassfish-tooling-sdk.jar \
+                           \
+                           org.netbeans.modules.glassfish.common.registration.AutomaticRegistration \
+                           \
+                           "$curdir/nb" \
+                           "$gf_dir/glassfish"
+  val=$?
+
+  if [ $val -eq 0 ] ; then
+     echo "GlassFish installed at $gf_dir integrated with NetBeans installed at $nb_dir"
   else
-    echo No netbeans.conf in: `pwd`
+     echo "GlassFish installed at $gf_dir was not integrated with NetBeans installed at $nb_dir, error code is $val"
   fi
 fi
 

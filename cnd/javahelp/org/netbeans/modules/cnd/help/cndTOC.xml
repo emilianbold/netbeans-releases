@@ -26,6 +26,7 @@
 			</tocitem>
 			<tocitem text="Creating and Modifying C/C++/Fortran Projects">
 				<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
+                                <tocitem text="Creating a C or C++ Project from a Binary File" target="CreatingCorC++ProjectBinary" />
 				<tocitem text="Configuring Code Assistance for Projects from Existing Sources" target="CodeAssistance" />
 				<tocitem text="Relocating the Code Assistance Cache for Version Controlled Projects" target="CodeAssistanceCache" />
 				<tocitem text="Setting the Main C/C++/Fortran Project" target="SettingMainCorC++Project." />
@@ -67,6 +68,7 @@
 			</tocitem>
 			<tocitem text="Navigating Source Files and Projects">
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
+				<tocitem text="Using Breadcrumb Navigation" target="UsingBreadcrumbs" />
 				<tocitem text="Switching Between Source and Header Files" target="SourceHeaderSwitch" />
 				<tocitem text="Going to an Included File" target="GoToInclude" />
 				<tocitem text="Going to a Symbol" target="GoToDeclaration" />

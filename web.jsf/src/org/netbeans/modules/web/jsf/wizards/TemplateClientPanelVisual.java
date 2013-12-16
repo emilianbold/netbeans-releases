@@ -100,7 +100,6 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
 
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
 
-    private final static String TAG_NAME = "ui:insert";    //NOI18N
     private final static String VALUE_NAME = "name";    //NOI18N
 
     /** Creates new form TemplateClientPanel */
@@ -424,7 +423,8 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                             ns = DefaultLibraryInfo.FACELETS.getLegacyNamespace();
                         }
                         if (ns != null) {
-                            List<OpenTag> foundNodes = findValue(htmlResult.root(ns).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
+                            String faceletsPrefix = htmlResult.getNamespaces().get(ns);
+                            List<OpenTag> foundNodes = findValue(htmlResult.root(ns).children(OpenTag.class), faceletsPrefix + ":insert", new ArrayList<OpenTag>()); // NOI18N
 
                             for (OpenTag node : foundNodes) {
                                 Attribute attr = node.getAttribute(VALUE_NAME);

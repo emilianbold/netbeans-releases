@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -167,6 +168,7 @@ public class APITestIssue extends TestIssue {
                 @Override public void closed() { }
                 @Override public boolean saveChanges() { return true; }
                 @Override public boolean discardUnsavedChanges() { return true; }
+                @Override public boolean isChanged() { return false; }
                 @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
                 @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             };

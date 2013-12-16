@@ -146,6 +146,10 @@ class MultiViewModel {
        return col;
     }
     
+    synchronized Map<MultiViewDescription, MultiViewElement> getCreatedElementsMap() {
+        return new HashMap<MultiViewDescription, MultiViewElement>(nestedElements);
+    }
+    
     /**
      * keeps track of already shown elements, so that componentOpened() is not called multiple Times on a single element.
      *

@@ -53,52 +53,45 @@ import org.netbeans.modules.php.dbgp.breakpoints.Utils;
 import org.netbeans.modules.php.dbgp.packets.FeatureGetCommand.Feature;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class InitMessage extends DbgpMessage {
+    private static final String IDEKEY = "idekey"; // NOI18N
+    private static final String FILE = "fileuri"; // NOI18N
 
-    private static final String IDEKEY  = "idekey";         // NOI18N
-
-    private static final String FILE    = "fileuri";        // NOI18N
-
-    InitMessage( Node node ) {
+    InitMessage(Node node) {
         super(node);
     }
 
     public String getSessionId() {
         // accessor to idekey attribute
-        return getAttribute(getNode(), IDEKEY );
+        return getAttribute(getNode(), IDEKEY);
     }
 
     public String getFileUri() {
-        return getAttribute(getNode(), FILE );
+        return getAttribute(getNode(), FILE);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command ) {
+    public void process(DebugSession session, DbgpCommand command) {
         setId(session);
         setShowHidden(session);
         setMaxDepth(session);
         setMaxChildren(session);
         setMaxDataSize(session);
-
-        setBreakpoints( session );
+        setBreakpoints(session);
         negotiateOutputStream(session);
         negotiateRequestedUrls(session);
-
         final String transactionId = session.getTransactionId();
-        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine() ?
-            new StepIntoCommand(transactionId) : new RunCommand(transactionId);
-        session.sendCommandLater( startCommand );
+        DbgpCommand startCommand = DebuggerOptions.getGlobalInstance().isDebuggerStoppedAtTheFirstLine()
+                ? new StepIntoCommand(transactionId)
+                : new RunCommand(transactionId);
+        session.sendCommandLater(startCommand);
     }
 
-    private void setMaxDataSize( DebugSession session ) {
+    private void setMaxDataSize(DebugSession session) {
         int optionsMaxData = DebuggerOptions.getGlobalInstance().getMaxData();
         FeatureSetCommand setCommand = new FeatureSetCommand(session.getTransactionId());
         setCommand.setFeature(Feature.MAX_DATA);
@@ -109,17 +102,19 @@ public class InitMessage extends DbgpMessage {
     }
 
     private void setShowHidden(DebugSession session) {
-        setFeature(session, Feature.SHOW_HIDDEN, "1");//NOI18N
+        setFeature(session, Feature.SHOW_HIDDEN, "1"); //NOI18N
     }
+
     private void setMaxDepth(DebugSession session) {
         setFeature(session, Feature.MAX_DEPTH, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxStructuresDepth()));
     }
+
     private void setMaxChildren(DebugSession session) {
         setFeature(session, Feature.MAX_CHILDREN, String.valueOf(DebuggerOptions.getGlobalInstance().getMaxChildren()));
     }
+
     private void setFeature(DebugSession session, Feature feature, String value) {
-        FeatureSetCommand setCommand = new FeatureSetCommand(
-                session.getTransactionId());
+        FeatureSetCommand setCommand = new FeatureSetCommand(session.getTransactionId());
         setCommand.setFeature(feature);
         setCommand.setValue(value);
         DbgpResponse response = session.sendSynchronCommand(setCommand);
@@ -140,28 +135,25 @@ public class InitMessage extends DbgpMessage {
         }
     }
 
-    private void setBreakpoints( DebugSession session ) {
+    private void setBreakpoints(DebugSession session) {
         SessionId id = session.getSessionId();
-        Breakpoint[] breakpoints =
-            DebuggerManager.getDebuggerManager().getBreakpoints();
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint breakpoint : breakpoints) {
-            if ( !(breakpoint instanceof AbstractBreakpoint)){
+            if (!(breakpoint instanceof AbstractBreakpoint)) {
                 continue;
             }
             AbstractBreakpoint brkpnt = (AbstractBreakpoint) breakpoint;
             BrkpntSetCommand command = Utils.getCommand(session, id, brkpnt);
-
             if (command == null) {
                 continue;
             }
-
             session.sendCommandLater(command);
         }
 
     }
 
-    private void setId( DebugSession session ) {
-        session.initConnection( this );
+    private void setId(DebugSession session) {
+        session.initConnection(this);
     }
 
 }

@@ -236,5 +236,15 @@ public class ParserSvnStatus implements ISVNStatus {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public String getMovedFromAbspath () {
+        return null;
+    }
+
+    @Override
+    public String getMovedToAbspath () {
+        return null;
+    }
+
 }
 

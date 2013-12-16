@@ -91,13 +91,23 @@ public class IntNodeProp extends Node.Property {
         }
     }
 
+    @Override
     public Object getValue() {
         return Integer.valueOf(intConfiguration.getValue());
     }
 
+    @Override
     public void setValue(Object v) {
         intConfiguration.setValue((String) v);
     }
+    
+    @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }    
 
     @Override
     public void restoreDefaultValue() {

@@ -82,12 +82,17 @@ public class CommentsTest extends GeneratorTestBase {
     public CommentsTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp(); 
+        CasualDiff.noInvalidCopyTos = true;
+    }
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
 //        suite.addTest(new CommentsTest("testMoveMethod171345"));
-        CasualDiff.noInvalidCopyTos = true;
         return suite;
     }
     
@@ -1832,7 +1837,7 @@ public class CommentsTest extends GeneratorTestBase {
                     @Override
                     public Void visitMethod(MethodTree mt, Void p) {
                         Tree nt = tm.setLabel(mt, mt.getName());
-                        final List<Comment> comments = tu.getComments(nt, true);
+                        final List<Comment> comments = tu.getComments(mt, true);
                         int size = comments.size();
                         if (size > 0) {
                             wc.rewrite(mt.getModifiers(), tm.addModifiersAnnotation(

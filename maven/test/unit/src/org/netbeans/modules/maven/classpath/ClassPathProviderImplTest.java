@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.classpath;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -75,6 +78,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
     protected @Override void setUp() throws Exception {
         clearWorkDir();
         d = FileUtil.toFileObject(getWorkDir());
+        System.setProperty("test.reload.sync", "true");
     }
 
     public void testClassPath() throws Exception {
@@ -136,7 +140,7 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
             @Override
             public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                return NexusRepositoryIndexerImpl.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
+                return NexusRepositoryIndexerImpl.Accessor.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
 
                     @Override
                     public void run(Result<NBVersionInfo> result) {
@@ -206,15 +210,59 @@ public class ClassPathProviderImplTest extends NbTestCase {
         FileObject src = FileUtil.createFolder(d, "src/main/java");
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.BOOT);
         assertNotNull(cp);
-        for (FileObject fo : cp.getRoots()) {
-            if (fo.getNameExt().equals("rt.jar")) {
-                fail("We don't want rt.jar on boot classpath: " + fo);
-            }
-            FileObject archive = FileUtil.getArchiveFile(fo);
-            if (archive != null && archive.getNameExt().equals("rt.jar")) {
-                fail("We don't want rt.jar on boot classpath: " + archive);
-            }
-        }
+        assertRtJar(cp, false);
+    }
+    
+    public void testDontIncludeJDKFromProfile() throws Exception {
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>1.0-SNAPSHOT</version>" +
+                "<name>Test</name>" +
+                "<build>\n" +
+                "  <plugins>\n" +
+                "    <plugin>\n" +
+                "      <groupId>org.apache.maven.plugins</groupId>\n" +
+                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
+                "      <version>2.3.2</version>\n" +
+                "      <configuration>\n" +
+                "      </configuration>\n" +
+                "    </plugin>\n" +
+                "  </plugins>\n" +
+                "</build>\n" +
+                "<profiles>\n" +
+                " <profile>\n" +
+                "  <id>bck2brwsr</id>\n" +
+                "  <build>\n" +
+                "  <plugins>\n" +
+                "    <plugin>\n" +
+                "      <groupId>org.apache.maven.plugins</groupId>\n" +
+                "      <artifactId>maven-compiler-plugin</artifactId>\n" +
+                "      <version>2.3.2</version>\n" +
+                "      <configuration>\n" +
+                "        <compilerArguments>\n" +
+                "          <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>\n" +
+                "        </compilerArguments>\n" +
+                "      </configuration>\n" +
+                "    </plugin>\n" +
+                "  </plugins>\n" +
+                "  </build>\n" +
+                " </profile>" +
+                "</profiles>" +
+                "</project>"
+        );
+        FileObject src = FileUtil.createFolder(d, "src/main/java");
+        ClassPath cp = ClassPath.getClassPath(src, ClassPath.BOOT);
+        assertNotNull(cp);
+        assertRtJar(cp, true);
+        selectProfile(d, "bck2brwsr");
+        ClassPath cp2 = ClassPath.getClassPath(src, ClassPath.BOOT);
+        assertSame("Supposedly same", cp, cp2);
+        assertRtJar(cp2, false);
     }
 
     private static void assertRoots(ClassPath cp, FileObject... files) {
@@ -312,6 +360,37 @@ public class ClassPathProviderImplTest extends NbTestCase {
         assertFalse(entries.get(1).includes("archetype-resources/src/main/"));
         assertFalse(entries.get(1).includes("archetype-resources/src/main/java/"));
         assertFalse(entries.get(1).includes("archetype-resources/src/main/java/X.java"));
+    }
+
+    private void assertRtJar(ClassPath cp, boolean shouldBeThere) {
+        for (FileObject fo : cp.getRoots()) {
+            if (fo.getNameExt().equals("rt.jar")) {
+                if (shouldBeThere) {
+                    return;
+                }
+                fail("We don't want rt.jar on boot classpath: " + fo);
+            }
+            FileObject archive = FileUtil.getArchiveFile(fo);
+            if (archive != null && archive.getNameExt().equals("rt.jar")) {
+                if (shouldBeThere) {
+                    return;
+                }
+                fail("We don't want rt.jar on boot classpath: " + archive);
+            }
+        }
+        assertFalse("We don't want rt.jar on cp, right?", shouldBeThere);
+    }
+
+    private void selectProfile(FileObject d, String cfgName) throws Exception {
+        M2ConfigProvider cp = ProjectManager.getDefault().findProject(d).getLookup().lookup(M2ConfigProvider.class);
+        boolean found = false;
+        for (M2Configuration cfg : cp.getConfigurations()) {
+            if (cfg.getActivatedProfiles().equals(Collections.singletonList(cfgName))) {
+                cp.setActiveConfiguration(cfg);
+                return;
+            }
+        }
+        fail("Configuration " + cfgName + " not found!");
     }
 
 }

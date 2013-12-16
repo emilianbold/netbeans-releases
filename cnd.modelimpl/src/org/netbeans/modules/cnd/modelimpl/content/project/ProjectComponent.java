@@ -116,14 +116,14 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
         KeyFactory.getDefaultFactory().writeKey(key, out);
     }
 
-    public static void setStable(Key key) {
-        Persistent p = RepositoryUtils.tryGet(key);
-        if (p != null) {
-            assert p instanceof ProjectComponent;
-            //ProjectComponent pc = (ProjectComponent) p;
-            // A workaround for #131701
-            //pc.putImpl();
-        }
-    }
+//    public static void setStable(Key key) {
+//        Persistent p = RepositoryUtils.tryGet(key);
+//        if (p != null) {
+//            assert p instanceof ProjectComponent;
+//            //ProjectComponent pc = (ProjectComponent) p;
+//            // A workaround for #131701
+//            //pc.putImpl();
+//        }
+//    }
 }
 

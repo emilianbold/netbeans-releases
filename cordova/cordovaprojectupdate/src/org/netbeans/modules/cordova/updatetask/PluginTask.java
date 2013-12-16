@@ -160,7 +160,9 @@ public class PluginTask extends Task {
             exec.createArg().setValue("-d");
             exec.createArg().setValue("plugin");
             exec.createArg().setValue("add");
-            exec.createArg().setValue(plugin.getUrl());
+            for (String arg : plugin.getUrl().split("\\s+")) {
+                exec.createArg().setValue(arg);
+            }
             exec.setFailonerror(true);
             exec.setResolveExecutable(true);
             exec.setSearchPath(true);

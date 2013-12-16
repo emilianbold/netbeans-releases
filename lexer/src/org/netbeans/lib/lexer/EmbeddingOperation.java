@@ -42,7 +42,6 @@
 
 package org.netbeans.lib.lexer;
 
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
@@ -83,99 +82,127 @@ public class EmbeddingOperation {
      * ETLs for sections joining.
      */
     public static <T extends TokenId, ET extends TokenId> EmbeddedTokenList<T,ET> embeddedTokenList(
-            TokenList<T> tokenList, int index, Set<Language<?>> embeddedLanguages, boolean initTokensInNew)
+            TokenList<T> tokenList, int index, Language<?> embeddedLanguage, boolean initTokens)
     {
-        TokenList<?> rootTokenList = tokenList.rootTokenList();
         TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
-//        @SuppressWarnings("unchecked")
         EmbeddedTokenList<T,?> existingEtl = tokenOrEmbedding.embedding();
-        AbstractToken<T> token = tokenOrEmbedding.token();
-        if (token.isFlyweight()) {
-            return null;
-        }
-        if (token.getClass() == JoinToken.class) {
-            // Currently do not allow to create embedding over token that is physically joined
-            return null;
-        }
-        // Now either existingEtl == null for no embedding yet or linked list of embedded token lists
-        // needs to be processed to find the embedded token list for requested language.
-        if (existingEtl != null) { // No embedding yet
+        if (existingEtl != null) {
             while (true) {
-                if (embeddedLanguages == null || embeddedLanguages.contains(existingEtl.languagePath().innerLanguage())) {
+                // embeddedLanguage != null here
+                if (embeddedLanguage == null || embeddedLanguage == existingEtl.language()) {
                     @SuppressWarnings("unchecked")
-                    EmbeddedTokenList<T,ET> etlUC = (EmbeddedTokenList<T,ET>) existingEtl;
+                    EmbeddedTokenList<T, ET> etlUC = (EmbeddedTokenList<T, ET>) existingEtl;
                     return etlUC;
                 }
-                EmbeddedTokenList<T,?> next = existingEtl.nextEmbeddedTokenList();
+                EmbeddedTokenList<T, ?> next = existingEtl.nextEmbeddedTokenList();
                 if (next == null) {
                     break;
                 }
                 existingEtl = next;
             }
         }
-        // Requested etl not found
-        if (token.isNoDefaultEmbedding()) {
+
+        // Determine whether there were unsuccessful embedding creation attempts
+        // for the given language (or for a default embedding)
+        AbstractToken<T> token = tokenOrEmbedding.token();
+        if (token.isFlyweight()) {
             return null;
         }
+
+        WrapTokenId<T> wid = token.wid();
+        LanguageIds failedEmbeddingLanguageIds = wid.languageIds();
+        // Current implementation only uses LanguageIds marking for "null" language
+        // to determine whether language embedding creation request was called or not.
+        if (failedEmbeddingLanguageIds == LanguageIds.NULL_LANGUAGE_ONLY) {
+            // Embedding creation already requested previously but did not produce embedding.
+            return null;
+        }
+//        int embeddedLid = (embeddedLanguage != null)
+//                ? LexerApiPackageAccessor.get().languageId(embeddedLanguage)
+//                : 0;
+//        if (failedEmbeddingLanguageIds.containsId(embeddedLid)) {
+//            return null;
+//        }
+
+        if (token.getClass() == JoinToken.class) {
+            // Currently do not allow to create embedding over token that is physically joined
+            return null;
+        }
+
         // If the tokenList is removed then do not create the embedding
         if (tokenList.isRemoved()) {
             return null;
         }
 
-        // Attempt to create the default embedding
+        // Attempt to create the embedding
         EmbeddingPresence ep;
+        TokenList<?> rootTokenList = tokenList.rootTokenList();
+        TokenHierarchyOperation<?,?> op = rootTokenList.tokenHierarchyOperation();
+        LanguagePath languagePath = tokenList.languagePath();
+        Language<T> language = tokenList.language();
+        LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.languageHierarchy(language);
+        LanguageOperation<T> languageOperation = LexerUtilsConstants.languageOperation(language);
         if (existingEtl != null) {
             ep = null;
         } else { // No embedding was created yet
             // Check embedding presence
-            ep = LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).embeddingPresence(token.id());
+            ep = languageOperation.embeddingPresence(token.id());
             if (ep == EmbeddingPresence.NONE) {
                 return null;
             }
         }
 
-        LanguagePath languagePath = tokenList.languagePath();
-        LanguageHierarchy<T> languageHierarchy = LexerUtilsConstants.innerLanguageHierarchy(languagePath);
         @SuppressWarnings("unchecked")
         LanguageEmbedding<ET> embedding = (LanguageEmbedding<ET>) LexerUtilsConstants.findEmbedding(
                 languageHierarchy, token, languagePath, tokenList.inputAttributes());
         if (embedding != null) {
             // Update the embedding presence ALWAYS_QUERY
             if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
-                LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
-                        setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
+                languageOperation.setEmbeddingPresence(token.id(), EmbeddingPresence.ALWAYS_QUERY);
             }
 
             // Check whether the token contains enough text to satisfy embedding's start and end skip lengths
-            if ((embeddedLanguages != null && !embeddedLanguages.contains(embedding.language()))
-                    || embedding.startSkipLength() + embedding.endSkipLength() > token.length()) {
+            if (embeddedLanguage != null && embeddedLanguage != embedding.language()) {
+                // Do not add info that embedding failed since default embedding may still be created
+                // if e.g. language == null.
+                return null;
+            }
+            
+            if (embedding.startSkipLength() + embedding.endSkipLength() > token.length()) {
+                // Add info that embedding failed
+                addFailedEmbedding(op, token, language, wid, failedEmbeddingLanguageIds, 0); // "null" language
+//                addFailedEmbedding(op, token, language, wid, failedEmbeddingLanguageIds, embeddedLid);
                 return null;
             }
 
             LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath,
                     embedding.language());
             EmbeddedTokenList<T,ET> etl = new EmbeddedTokenList<T, ET>(rootTokenList, embeddedLanguagePath, embedding);
-            
-            etl.reinit(token, token.offset(null), rootTokenList.modCount());
+            int rootModCount = rootTokenList.modCount();
+            if (tokenList instanceof EmbeddedTokenList) {
+                ((EmbeddedTokenList)tokenList).updateModCount(rootModCount);
+            }
+            int tokenStartOffset = tokenList.tokenOffset(index);
+            etl.reinit(token, tokenStartOffset, rootModCount);
 
             if (existingEtl == null) {
                 tokenList.setTokenOrEmbedding(index, etl);
             } else {
                 existingEtl.setNextEmbeddedTokenList(etl);
             }
-
-            if (initTokensInNew) {
-                TokenHierarchyOperation operation = rootTokenList.tokenHierarchyOperation();
+            
+            if (initTokens) {
                 if (embedding.joinSections()) {
-                    // Init corresponding TokenListList
-                    operation.tokenListList(embeddedLanguagePath);
+                    // Init corresponding TokenListList which should find just created ETL too
+                    op.tokenListList(embeddedLanguagePath);
                 } else { // sections not joined
                     // Check that there is no TLL in this case.
                     // If there would be one it would already have to run through its constructor
                     // which should have collected all the ETLs already (with initTokensInNew==false)
                     // and init tokens explicitly.
                     // Thus the following assert should always pass.
-                    assert (operation.existingTokenListList(embeddedLanguagePath) == null);
+                    TokenListList<?> tll;
+                    assert ((tll = op.existingTokenListList(embeddedLanguagePath)) == null) : "TLL exists for languagePath=" + languagePath + ":\n" + tll;
                     etl.initAllTokens();
                 }
             }
@@ -187,9 +214,8 @@ public class EmbeddingOperation {
                 sb.append(" ROOT-"); // NOI18N
                 LexerUtilsConstants.appendIdentityHashCode(sb, rootTokenList);
                 sb.append(" for ").append(embeddedLanguagePath.mimePath()). // NOI18N
-                        append(", ").append(embedding).append(": "). // NOI18N
-                        append(existingEtl.dumpInfo(null)).append(", initTokensInNew="). // NOI18N
-                        append(initTokensInNew).append('\n');
+                        append(", ").append(embedding).append(": "); // NOI18N
+                existingEtl.dumpInfo(sb);
                 LOG.fine(sb.toString());
                 if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
                     LOG.log(Level.INFO, "Natural embedding created by:", new Exception()); // NOI18N
@@ -199,19 +225,26 @@ public class EmbeddingOperation {
             return etl;
 
         } else { // No default embedding
-            AbstractToken<T> replacementToken = token.markNoDefaultEmbedding();
-            if (replacementToken != null) {
-                tokenList.setTokenOrEmbedding(index, replacementToken);
-            }
+            addFailedEmbedding(op, token, language, wid, failedEmbeddingLanguageIds, 0); // "null" language
+//            addFailedEmbedding(op, token, language, wid, failedEmbeddingLanguageIds, embeddedLid);
 
             // Update embedding presence to NONE
             if (ep == EmbeddingPresence.CACHED_FIRST_QUERY) {
-                LexerUtilsConstants.innerLanguageOperation(tokenList.languagePath()).
-                        setEmbeddingPresence(token.id(), EmbeddingPresence.NONE);
+                languageOperation.setEmbeddingPresence(token.id(), EmbeddingPresence.NONE);
             }
         }
 
         return null;
+    }
+
+    private static <T extends TokenId> void addFailedEmbedding(
+            TokenHierarchyOperation<?,?> op, AbstractToken<T> token, Language<T> language, WrapTokenId<T> wid,
+            LanguageIds failedEmbeddingLanguageIds, int failedEmbeddingLanguageId)
+    {
+        WrapTokenIdCache<T> cache = op.getWrapTokenIdCache(language);
+        failedEmbeddingLanguageIds = LanguageIds.get(failedEmbeddingLanguageIds, failedEmbeddingLanguageId);
+        wid = cache.findWid(wid.id(), failedEmbeddingLanguageIds);
+        token.setWid(wid);
     }
 
     /**
@@ -258,6 +291,21 @@ public class EmbeddingOperation {
         // even if the joinSections parameter would be false.
         LanguagePath languagePath = tokenList.languagePath();
         LanguagePath embeddedLanguagePath = LanguagePath.get(languagePath, embeddedLanguage);
+        TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
+        EmbeddedTokenList<T,?> existingEtl = tokenOrEmbedding.embedding();
+        if (existingEtl != null) {
+            while (true) {
+                if (embeddedLanguagePath == existingEtl.languagePath()) {
+                    return true; // Embedding already exists
+                }
+                EmbeddedTokenList<T,?> next = existingEtl.nextEmbeddedTokenList();
+                if (next == null) {
+                    break;
+                }
+                existingEtl = next;
+            }
+        }
+
         TokenListList<ET> tll = tokenHierarchyOperation.existingTokenListList(embeddedLanguagePath);
         if (tll != null && tll.joinSections()) {
             joinSections = true;
@@ -268,20 +316,6 @@ public class EmbeddingOperation {
         tokenHierarchyOperation.addLanguagePath(embeddedLanguagePath);
         // Make the embedded token list to be the first in the list
 
-        TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
-        EmbeddedTokenList<T,?> existingEtl = tokenOrEmbedding.embedding();
-        if (existingEtl != null) {
-            while (true) {
-                if (embeddedLanguagePath == existingEtl.languagePath()) {
-                    return true;
-                }
-                EmbeddedTokenList<T,?> next = existingEtl.nextEmbeddedTokenList();
-                if (next == null) {
-                    break;
-                }
-                existingEtl = next;
-            }
-        }
         AbstractToken<T> token = tokenOrEmbedding.token();
         if (startSkipLength + endSkipLength > token.length()) { // Check for appropriate size
             return false;
@@ -290,9 +324,13 @@ public class EmbeddingOperation {
             return false;
         }
 
-        int tokenStartOffset = token.offset(null);
         EmbeddedTokenList<T,ET> etl = new EmbeddedTokenList<T, ET>(rootTokenList, embeddedLanguagePath, embedding);
-        etl.reinit(token, tokenStartOffset, rootTokenList.modCount());
+        int rootModCount = rootTokenList.modCount();
+        if (tokenList instanceof EmbeddedTokenList) {
+            ((EmbeddedTokenList)tokenList).updateModCount(rootModCount);
+        }
+        int tokenStartOffset = tokenList.tokenOffset(index);
+        etl.reinit(token, tokenStartOffset, rootModCount);
 
         if (existingEtl == null) {
             tokenList.setTokenOrEmbedding(index, etl);
@@ -313,9 +351,9 @@ public class EmbeddingOperation {
             // etl.initAllTokens() will be called by TokenListListUpdate.collectAddedEmbeddings()
             new TokenHierarchyUpdate(eventInfo).updateCreateOrRemoveEmbedding(etl, true);
         } else { // tll == null
-            if (embedding.joinSections()) {
+            if (joinSections) {
                 // Force token list list creation only when joining sections
-                tll = tokenHierarchyOperation.tokenListList(etl.languagePath());
+                tll = tokenHierarchyOperation.tokenListList(embeddedLanguagePath);
             } else {
                 // Force initialization of the tokens of the ETL
                 etl.initAllTokens();
@@ -323,7 +361,7 @@ public class EmbeddingOperation {
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath()
-                    + ", " + embedding + ": " + etl.dumpInfo(null) + '\n');
+                    + ", " + embedding + ": " + etl.dumpInfo(new StringBuilder(256)) + '\n');
             if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
                 LOG.log(Level.INFO, "Explicit embedding created by:", new Exception());
             }
@@ -370,7 +408,7 @@ public class EmbeddingOperation {
             EmbeddedTokenList<T,?> lastEtl = null;
             while (etl != null) {
                 etl.updateModCount(rootModCount);
-                if (embeddedLanguage == etl.languagePath().innerLanguage()) {
+                if (embeddedLanguage == etl.language()) {
                     // The embedding with the given language exists
                     // Remove it from the chain
                     EmbeddedTokenList<T, ?> next = etl.nextEmbeddedTokenList();

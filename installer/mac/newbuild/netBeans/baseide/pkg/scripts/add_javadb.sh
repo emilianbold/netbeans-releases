@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh 
 nb_dir=$1
 javadb_dir=$2
 

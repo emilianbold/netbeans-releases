@@ -59,6 +59,7 @@ import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -66,26 +67,31 @@ import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEvent;
 import org.netbeans.modules.versioning.ui.history.RevisionNode.MessageProperty;
 import org.netbeans.modules.versioning.ui.history.HistoryComponent.Filter;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.DefaultOutlineCellRenderer;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.NodePopupFactory;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOp;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
+class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.HistoryChangeListener {
            
     private FileTablePanel tablePanel;             
 
@@ -267,6 +273,13 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]), 0);
                 } finally {
                     rootNode.loadingVCSFinished(currentDateFrom);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            tablePanel.repaint();
+                        }
+                    });
                     // XXX yet select the first node on
                 }
             }
@@ -515,7 +528,6 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 }
             }
             History.LOG.fine(sb.toString());
-            System.out.println(sb.toString());
         }
     }
 
@@ -564,13 +576,19 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 loadVCSEntries(proxies, false);
             }
             refreshTask = null;
-            tablePanel.revalidate();
-            tablePanel.repaint();
-            
-            int row = tablePanel.treeView.getOutline().getSelectedRow();
-            if(row > -1) {
-                scrollToVisible(row, 2);
-            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run () {
+                    tablePanel.revalidate();
+                    tablePanel.repaint();
+
+                    int row = tablePanel.treeView.getOutline().getSelectedRow();
+                    if(row > -1) {
+                        scrollToVisible(row, 2);
+                    }
+                }
+            });
         }
 
     } 
@@ -675,6 +693,74 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 getOutline().addMouseMotionListener(l);
                 getOutline().addMouseListener(l);
                 
+                setNodePopupFactory(new NodePopupFactory() {
+                    @Override
+                    public JPopupMenu createPopupMenu(int row, int column, Node[] selectedNodes, Component component) {
+
+                        Action[] actions = NodeOp.findActions (selectedNodes);
+                        JPopupMenu res = Utilities.actionsToPopup(actions, component);
+                        if ((component instanceof ETable) && (column >= 0)) {
+                            ETable et = (ETable)component;
+                            if (row >= 0) {
+                                Object val = et.getValueAt(row, column);
+                                val = et.transformValue(val);
+                                String s = NbBundle.getMessage(HistoryFileView.class, "LBL_QuickFilter");
+                                res.add(getQuickFilterPopup(et, column, val, s));
+                            } else if (et.getQuickFilterColumn() == column) {
+                                if (et.getQuickFilterColumn() != -1) {
+                                    String s = NbBundle.getMessage(HistoryFileView.class, "LBL_QuickFilter");
+                                    JMenu menu = new JMenu(s);
+                                    JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(et.getQuickFilterFormatStrings()[6]);
+                                    menu.add(noFilterItem);
+                                    res.add(menu);
+                                }
+                            }
+                        }
+                        return res;
+                    }
+                    
+                    private final String[] quickFilterFormatStrings = new String [] {
+                        "{0} == {1}", "{0} <> {1}", "{0} > {1}", 
+                        "{0} < {1}", "{0} >= {1}", "{0} <= {1}",
+                        NbBundle.getMessage(HistoryFileView.class, "LBL_NoFilter")
+                    };
+                    
+                    public JMenuItem getQuickFilterPopup(ETable et, int column, Object value, String label) {
+                        JMenu menu = new JMenu(label);
+                        String columnDisplayName = et.getColumnDisplayName(et.getColumnName(column));
+                        
+                        boolean isDate = value instanceof RevisionNode;
+                        
+                        JMenuItem equalsItem = et.getQuickFilterEqualsItem(column, value, 
+                                columnDisplayName, quickFilterFormatStrings[0], true);
+                        menu.add(equalsItem);
+                        
+                        JMenuItem notequalsItem = et.getQuickFilterEqualsItem(column, value, 
+                                columnDisplayName, quickFilterFormatStrings[1], false);
+                        menu.add(notequalsItem);
+                        
+                        if(isDate) {
+                            JMenuItem greaterItem = et.getQuickFilterCompareItem(column, value, 
+                                    columnDisplayName, quickFilterFormatStrings[2], true, false);
+                            menu.add(greaterItem);
+
+                            JMenuItem lessItem = et.getQuickFilterCompareItem(column, value, 
+                                    columnDisplayName, quickFilterFormatStrings[3], false, false);
+                            menu.add(lessItem);
+
+                            JMenuItem greaterEqualsItem = et.getQuickFilterCompareItem(column, value,
+                                    columnDisplayName, quickFilterFormatStrings[4], true, true);
+                            menu.add(greaterEqualsItem);
+
+                            JMenuItem lessEqualsItem = et.getQuickFilterCompareItem(column, value,
+                                    columnDisplayName, quickFilterFormatStrings[5], false, true);
+                            menu.add(lessEqualsItem);
+                            JMenuItem noFilterItem = et.getQuickFilterNoFilterItem(quickFilterFormatStrings[6]);
+                            menu.add(noFilterItem);
+                        }
+                        return menu;
+                    }                    
+                });
             }
 
             @Override
@@ -696,8 +782,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 setPropertyColumnDescription(RevisionNode.PROPERTY_NAME_LABEL, loc.getString("LBL_LocalHistory_Column_Label_Desc"));            // NOI18N            
 
                 // comparators
-                ETableColumn etc = (ETableColumn) getOutline().getColumnModel().getColumn(0);
+                ETableColumnModel m = (ETableColumnModel) getOutline().getColumnModel();
+                ETableColumn etc = (ETableColumn) m.getColumn(0);
                 etc.setNestedComparator(new NodeComparator(etc));
+                m.setColumnSorted(etc, false, 1);                
                 int idx = 1;
                 if(versioningSystem != null) {
                     setPropertyComparator(idx++);                    
@@ -787,9 +875,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     Node n = Visualizer.findNode(o);
                     if(HistoryRootNode.isLoadNext(n)) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("<html><font color=#0000FF>");    // NOI18N
+                        sb.append("<html>"); // NOI18N
+                        appendHyperlinkHTMLFont(sb);   
                         sb.append(delegate.getDisplayName(o));
-                        sb.append("</font></html>");                // NOI18N
+                        sb.append("</font></html>"); // NOI18N
                         return sb.toString();
                     }
                     return delegate.getDisplayName(o);
@@ -957,7 +1046,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 int start = spans[i++];
                 if(i == 1) {
                     sb.append(s.substring(0, start));
-                    sb.append("<font color=#0000FF><u>"); // NOI18N
+                    appendHyperlinkHTMLFont(sb); 
+                    sb.append("<u>"); // NOI18N
                 }
                 int end = spans[i++];
                 sb.append(s.substring(start, end));
@@ -1097,5 +1187,10 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             loadVCSEntries(History.toProxies(tc.getFiles()), false); 
         }
     }
-    
+
+    private static void appendHyperlinkHTMLFont(StringBuilder sb) {
+        sb.append("<font color=#");// NOI18N
+        sb.append(Integer.toHexString(ColorManager.getDefault().getLinkColor().getRGB() & 0xffffff));
+        sb.append(">"); // NOI18N
+    }
 }

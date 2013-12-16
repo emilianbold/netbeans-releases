@@ -193,7 +193,7 @@ public final class JSchChannelsSupport {
             if (s.isConnected() && availableChannels.get() > 0) {
                 log.log(Level.FINE, "availableChannels == {0}", new Object[]{availableChannels.get()}); // NOI18N
                 int remains = availableChannels.decrementAndGet();
-                log.log(Level.FINE, "Reuse session [{0}]. {1} channels remains...", new Object[]{System.identityHashCode(s), remains}); // NOI18N
+                log.log(Level.FINE, "Reuse session [{0}]. {1} channels remain...", new Object[]{System.identityHashCode(s), remains}); // NOI18N
                 return s;
             }
         }

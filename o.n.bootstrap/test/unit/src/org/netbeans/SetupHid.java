@@ -237,6 +237,7 @@ public abstract class SetupHid extends NbTestCase {
         createTestJAR("needs-foo", null);
         createTestJAR("recommends-foo", null);
         createTestJAR("prov-foo-depends-needs_foo", "prov-foo");
+        createTestJAR("agent", "agent");
         createTestJAR("api-mod-export-all", "exposes-api");
         createTestJAR("api-mod-export-none", "exposes-api");
         File exposesAPI = createTestJAR("api-mod-export-api", "exposes-api");

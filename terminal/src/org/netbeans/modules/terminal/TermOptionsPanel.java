@@ -48,7 +48,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
@@ -85,6 +89,7 @@ public final class TermOptionsPanel extends JPanel {
 	};
 
 	initComponents();
+	initCustomComponents();
 
 	term = new Term();
 	final String line1String = MSG_Hello() + "\r\n";	// NOI18N
@@ -97,6 +102,38 @@ public final class TermOptionsPanel extends JPanel {
 	previewPanel.add(term, BorderLayout.CENTER);
     }
 
+    private boolean changingSelectByWordText = false;
+    
+    private void initCustomComponents() {
+	selectByWordTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+	    @Override
+	    public void insertUpdate(DocumentEvent e) {
+		textChangeActionPerformed();
+	    }
+
+	    @Override
+	    public void removeUpdate(DocumentEvent e) {
+		textChangeActionPerformed();
+	    }
+
+	    @Override
+	    public void changedUpdate(DocumentEvent e) {
+		// ignore
+	    }
+
+	    private void textChangeActionPerformed() {
+		if (inApplyingModel) {
+		    return;
+		}
+		changingSelectByWordText = true;
+		String delimiters = selectByWordTextField.getText();
+		termOptions.setSelectByWordDelimiters(delimiters);
+		changingSelectByWordText = false;
+	    }
+	});
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -122,12 +159,14 @@ public final class TermOptionsPanel extends JPanel {
         historySizeSpinner = new javax.swing.JSpinner();
         tabSizeLabel = new javax.swing.JLabel();
         tabSizeSpinner = new javax.swing.JSpinner();
+        selectByWordLabel = new javax.swing.JLabel();
+        selectByWordTextField = new javax.swing.JTextField();
         clickToTypeCheckBox = new javax.swing.JCheckBox();
         ignoreKeymapCheckBox = new javax.swing.JCheckBox();
         lineWrapCheckBox = new javax.swing.JCheckBox();
         scrollOnInputCheckBox = new javax.swing.JCheckBox();
         scrollOnOutputCheckBox = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        previewLabel = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.descriptionLabel.text")); // NOI18N
@@ -202,6 +241,10 @@ public final class TermOptionsPanel extends JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(selectByWordLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.selectByWordLabel.text")); // NOI18N
+
+        selectByWordTextField.setText(org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.selectByWordTextField.text")); // NOI18N
+
         clickToTypeCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(clickToTypeCheckBox, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.clickToTypeCheckBox.text")); // NOI18N
         clickToTypeCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -241,7 +284,7 @@ public final class TermOptionsPanel extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(TermOptionsPanel.class, "TermOptionsPanel.previewLabel.text")); // NOI18N
 
         previewPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         previewPanel.setLayout(new java.awt.BorderLayout());
@@ -251,20 +294,6 @@ public final class TermOptionsPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tabSizeLabel)
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(scrollOnInputCheckBox)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(ignoreKeymapCheckBox)
-                                .addGap(18, 18, 18)
-                                .addComponent(lineWrapCheckBox))
-                            .addComponent(scrollOnOutputCheckBox))))
-                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
@@ -280,14 +309,14 @@ public final class TermOptionsPanel extends JPanel {
                             .addComponent(foregroundComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                             .addComponent(backgroundComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(selectionComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(selectByWordTextField)
+                            .addComponent(fontText)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(tabSizeSpinner, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE)
-                                        .addComponent(historySizeSpinner, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 103, Short.MAX_VALUE))
-                                    .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(fontText)))
+                                    .addComponent(fontSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(historySizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(tabSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(clickToTypeCheckBox, javax.swing.GroupLayout.Alignment.LEADING)
@@ -297,6 +326,21 @@ public final class TermOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(restoreButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(fontButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tabSizeLabel)
+                    .addComponent(previewLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scrollOnInputCheckBox)
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ignoreKeymapCheckBox)
+                                .addGap(18, 18, 18)
+                                .addComponent(lineWrapCheckBox))
+                            .addComponent(scrollOnOutputCheckBox)))
+                    .addComponent(selectByWordLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -333,6 +377,10 @@ public final class TermOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tabSizeLabel)
                     .addComponent(tabSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(selectByWordLabel)
+                    .addComponent(selectByWordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(clickToTypeCheckBox)
@@ -343,9 +391,9 @@ public final class TermOptionsPanel extends JPanel {
                     .addComponent(scrollOnInputCheckBox)
                     .addComponent(scrollOnOutputCheckBox))
                 .addGap(18, 18, 18)
-                .addComponent(jLabel1)
+                .addComponent(previewLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE))
+                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -388,16 +436,18 @@ public final class TermOptionsPanel extends JPanel {
 	    pe.setValue(termOptions.getFont());
 	    DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(), FontChooser_title());
 
-	    String defaultFont = FontChooser_defaultFont_label();
+	    String defaultFontString = FontChooser_defaultFont_label();
 	    dd.setOptions(new Object[]{DialogDescriptor.OK_OPTION,
-		defaultFont, DialogDescriptor.CANCEL_OPTION});  //NOI18N
+		defaultFontString, DialogDescriptor.CANCEL_OPTION});  //NOI18N
 	    DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
 	    if (dd.getValue() == DialogDescriptor.OK_OPTION) {
 		Font f = (Font) pe.getValue();
 		termOptions.setFont(f);
 		applyTermOptions();
-	    } else if (dd.getValue() == defaultFont) {
-		termOptions.setFont(null);
+	    } else if (dd.getValue() == defaultFontString) {
+		Font controlFont = UIManager.getFont("controlFont");			//NOI18N
+		int fontSize = (controlFont == null) ? 12 : controlFont.getSize();
+		termOptions.setFont(new Font("monospaced", Font.PLAIN, fontSize));	//NOI18N
 	    }
 	}
     }//GEN-LAST:event_fontButtonActionPerformed
@@ -470,6 +520,7 @@ public final class TermOptionsPanel extends JPanel {
 	    termOptions.setSelectionBackground(c);
 	}
     }//GEN-LAST:event_selectionComboBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.openide.awt.ColorComboBox backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
@@ -485,12 +536,14 @@ public final class TermOptionsPanel extends JPanel {
     private javax.swing.JLabel historySizeLabel;
     private javax.swing.JSpinner historySizeSpinner;
     private javax.swing.JCheckBox ignoreKeymapCheckBox;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox lineWrapCheckBox;
+    private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JButton restoreButton;
     private javax.swing.JCheckBox scrollOnInputCheckBox;
     private javax.swing.JCheckBox scrollOnOutputCheckBox;
+    private javax.swing.JLabel selectByWordLabel;
+    private javax.swing.JTextField selectByWordTextField;
     private org.openide.awt.ColorComboBox selectionComboBox;
     private javax.swing.JLabel selectionLabel;
     private javax.swing.JLabel tabSizeLabel;
@@ -529,6 +582,11 @@ public final class TermOptionsPanel extends JPanel {
 	    selectionComboBox.setSelectedColor(termOptions.getSelectionBackground());
 	    historySizeSpinner.setValue(termOptions.getHistorySize());
 	    tabSizeSpinner.setValue(termOptions.getTabSize());
+	    // Without this check we will get an
+	    // IllegalStateException: Attempt to mutate in notification
+	    if (!changingSelectByWordText) {
+		selectByWordTextField.setText(termOptions.getSelectByWordDelimiters());
+	    }
 	    clickToTypeCheckBox.setSelected(termOptions.getClickToType());
 	    scrollOnInputCheckBox.setSelected(termOptions.getScrollOnInput());
 	    scrollOnOutputCheckBox.setSelected(termOptions.getScrollOnOutput());
@@ -570,6 +628,7 @@ public final class TermOptionsPanel extends JPanel {
 	term.setHighlightColor(termOptions.getSelectionBackground());
 	term.setHistorySize(termOptions.getHistorySize());
 	term.setTabSize(termOptions.getTabSize());
+	term.setSelectByWordDelimiters(termOptions.getSelectByWordDelimiters());
 
 	term.setClickToType(termOptions.getClickToType());
 	term.setScrollOnInput(termOptions.getScrollOnInput());

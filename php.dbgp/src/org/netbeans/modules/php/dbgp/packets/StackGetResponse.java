@@ -45,7 +45,6 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.util.LinkedList;
 import java.util.List;
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -59,51 +58,43 @@ import org.netbeans.modules.php.project.api.PhpOptions;
 import org.openide.text.Line;
 import org.w3c.dom.Node;
 
-
 /**
  * @author ads
  *
  */
 public class StackGetResponse extends DbgpResponse {
+    private static final String STACK = "stack"; // NOI18N
 
-    private static final String STACK = "stack";        // NOI18N
-
-    StackGetResponse( Node node ) {
+    StackGetResponse(Node node) {
         super(node);
     }
 
-    public List<Stack> getStackElements(){
+    public List<Stack> getStackElements() {
         List<Stack> result = new LinkedList<>();
-        List<Node> nodes = getChildren( getNode() , STACK );
+        List<Node> nodes = getChildren(getNode(), STACK);
         for (Node node : nodes) {
-            result.add( new Stack( node ) );
+            result.add(new Stack(node));
         }
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
-        if ( !( command instanceof StackGetCommand )){
+    public void process(DebugSession session, DbgpCommand command) {
+        if (!(command instanceof StackGetCommand)) {
             return;
         }
         List<Stack> stacks = getStackElements();
-        annotateStackTrace(session , stacks);
+        annotateStackTrace(session, stacks);
 
-        DebugSession currentSession = SessionManager.getInstance().
-            getSession(session.getSessionId());
+        DebugSession currentSession = SessionManager.getInstance().getSession(session.getSessionId());
         // perform views update only if response appears in current session
-        if ( currentSession != session ){
+        if (currentSession != session) {
             return;
         }
-
         updateUIViews(session, stacks);
     }
 
-    private void updateUIViews( DebugSession session, List<Stack> stacks ) {
+    private void updateUIViews(DebugSession session, List<Stack> stacks) {
         // update call stack view
         IDESessionBridge bridge = session.getBridge();
         if (bridge != null) {
@@ -112,22 +103,19 @@ public class StackGetResponse extends DbgpResponse {
                 callStackModel.setCallStack(stacks);
             }
         }
-
         /*
          *  Send request for context names and request contexts.
          *  As result : Local View will be updated.
          */
         requestContextNames(session);
-
         // Update watch view.
-        updateWatchView( session );
-
+        updateWatchView(session);
         // Update breakpoints view.
-        updateBreakpointsView( session , stacks );
+        updateBreakpointsView(session, stacks);
     }
 
-    private void updateBreakpointsView( DebugSession session, List<Stack> stacks ) {
-        if ( stacks.isEmpty() ) {
+    private void updateBreakpointsView(DebugSession session, List<Stack> stacks) {
+        if (stacks.isEmpty()) {
             return;
         }
         IDESessionBridge bridge = session.getBridge();
@@ -135,18 +123,18 @@ public class StackGetResponse extends DbgpResponse {
             BreakpointModel breakpointModel = bridge.getBreakpointModel();
             if (breakpointModel != null) {
                 breakpointModel.setCurrentStack(
-                        stacks.get( 0 ) , session );
+                        stacks.get(0), session);
             }
         }
     }
 
-    public static void updateWatchView( DebugSession session ) {
+    public static void updateWatchView(DebugSession session) {
         if (PhpOptions.getInstance().isDebuggerWatchesAndEval()) {
-            Watch [] allWatches = DebuggerManager.getDebuggerManager().getWatches();
+            Watch[] allWatches = DebuggerManager.getDebuggerManager().getWatches();
             for (Watch watch : allWatches) {
                 String expression = watch.getExpression();
-                EvalCommand command = new EvalCommand( session.getTransactionId());
-                command.setData( expression );
+                EvalCommand command = new EvalCommand(session.getTransactionId());
+                command.setData(expression);
                 /* TODO : uncommented but it may cause following problems:
                  * I found a bug in XDEbug with eval command:
                  * after response to eval request it performs two actions:
@@ -165,27 +153,22 @@ public class StackGetResponse extends DbgpResponse {
         }
     }
 
-    private void requestContextNames( DebugSession session ) {
-        ContextNamesCommand contextNames = new ContextNamesCommand(
-                session.getTransactionId());
-        session.sendCommandLater( contextNames );
+    private void requestContextNames(DebugSession session) {
+        ContextNamesCommand contextNames = new ContextNamesCommand(session.getTransactionId());
+        session.sendCommandLater(contextNames);
     }
 
-    private void annotateStackTrace( DebugSession session,
-            List<Stack> stacks )
-    {
+    private void annotateStackTrace(DebugSession session, List<Stack> stacks) {
         session.getBridge().hideAnnotations();
         for (Stack stack : stacks) {
             int level = stack.getLevel();
             final int lineno = stack.getLine();
-            Line line = Utils.getLine(lineno > 0 ? lineno : 1,stack.getFileName() ,
-                    session.getSessionId()  );
-            if ( line != null ) {
-                if ( level == 0 ) {
+            Line line = Utils.getLine(lineno > 0 ? lineno : 1, stack.getFileName(), session.getSessionId());
+            if (line != null) {
+                if (level == 0) {
                     session.getBridge().showCurrentDebuggerLine(line);
-                }
-                else {
-                    session.getBridge().annotate( new CallStackAnnotation(line) );
+                } else {
+                    session.getBridge().annotate(new CallStackAnnotation(line));
                 }
             }
         }

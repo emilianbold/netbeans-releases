@@ -43,17 +43,15 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-
 /**
  * @author ads
  *
  */
 public class ExprCommand extends EvalCommand {
+    static final String EXPR = "expr"; // NOI18N
 
-    static final String EXPR = "expr";           // NOI18N
-
-    public ExprCommand( String transactionId ) {
-        super( EXPR, transactionId);
+    public ExprCommand(String transactionId) {
+        super(EXPR, transactionId);
     }
 
 }

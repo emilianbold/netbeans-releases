@@ -46,6 +46,7 @@ import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
+import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
 import org.netbeans.modules.css.prep.util.ValidationResult;
@@ -123,6 +124,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
     @Override
     public void save() throws IOException {
         Warnings.resetWarning(CssPreprocessorType.LESS);
+        LessExecutable.resetVersion();
         boolean fire = false;
         // path
         String originalPath = getOptions().getLessPath();

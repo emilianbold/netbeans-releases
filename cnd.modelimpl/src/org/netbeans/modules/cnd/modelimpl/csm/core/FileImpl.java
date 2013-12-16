@@ -452,6 +452,15 @@ public final class FileImpl implements CsmFile,
             return getFileLanguage();
         }
     }
+    
+    public String getContextLanguageFlavor(APTPreprocHandler.State ppState) {
+        FileImpl startFile = ppState == null ? null : Utils.getStartFile(ppState);
+        if (startFile != null && startFile != this) {
+            return startFile.getFileLanguageFlavor();
+        } else {
+            return getFileLanguageFlavor();
+        }
+    }
 
     public String getFileLanguage() {
         return Utils.getLanguage(fileType, getAbsolutePath().toString());
@@ -617,8 +626,9 @@ public final class FileImpl implements CsmFile,
                     }
                     
                     if (CndTraceFlags.TEXT_INDEX) {
-                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), getProjectImpl(true).getCacheLocation());
-                        aptIndexingWalker.index();
+                         int unitID = getProjectImpl(true).getUnitId();
+                         APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey());
+                         aptIndexingWalker.index();
                     }
                     
                     switch (curState) {
@@ -636,6 +646,7 @@ public final class FileImpl implements CsmFile,
                                     compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
+                                    parseParams.setLanguageFlavor(getContextLanguageFlavor(preprocHandler.getState()));
                                     _parse(parseParams);
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
@@ -674,6 +685,7 @@ public final class FileImpl implements CsmFile,
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
+                                    parseParams.setLanguageFlavor(getContextLanguageFlavor(preprocHandler.getState()));
                                     if (first) {
                                         compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
                                         _reparse(parseParams);
@@ -974,6 +986,7 @@ public final class FileImpl implements CsmFile,
         private final long lastParsed;
         private final long lastParsedCRC;
         private String language = APTLanguageSupport.GNU_CPP;
+        private String languageFlavor = APTLanguageSupport.FLAVOR_UNKNOWN;
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent, boolean triggerParsingActivity) {
             this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent, triggerParsingActivity);
@@ -1004,6 +1017,11 @@ public final class FileImpl implements CsmFile,
             this.language = language;
         }
         
+        private void setLanguageFlavor(String languageFlavor) {
+            assert languageFlavor != null : "null language flavor is not allowed";
+            this.languageFlavor = languageFlavor;
+        }        
+        
         private APTPreprocHandler getCurrentPreprocHandler() {
             assert curPreprocHandler != null : "null preprocHandler is not allowed";
             return curPreprocHandler;
@@ -1019,6 +1037,11 @@ public final class FileImpl implements CsmFile,
         }        
 
         @Override
+        public String getLanguageFlavor() {
+            return languageFlavor;
+        }
+
+        @Override
         public CsmFile getMainFile() {
             return fileImpl;
         }
@@ -1032,6 +1055,8 @@ public final class FileImpl implements CsmFile,
         }
         final APTFile fullAPT = getFileAPT(true);
         ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false, false, false);
+        params.setLanguage(getFileLanguage());
+        params.setLanguageFlavor(getFileLanguageFlavor());
         params.setCurrentPreprocHandler(handlers.iterator().next());
         synchronized (stateLock) {
             CsmParserResult parsing = _parse(params);
@@ -1337,9 +1362,12 @@ public final class FileImpl implements CsmFile,
             System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-        int flags = CPPParserEx.CPP_CPLUSPLUS;
+        int flags = APTLanguageSupport.getInstance().isLanguageC(getFileLanguage()) ? CPPParserEx.CPP_ANSI_C : CPPParserEx.CPP_CPLUSPLUS;
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+        }
+        if (APTLanguageSupport.FLAVOR_CPP11.equals(getFileLanguageFlavor())) {
+            flags |= CPPParserEx.CPP_FLAVOR_CPP11;
         }
         try {
             // use cached TS

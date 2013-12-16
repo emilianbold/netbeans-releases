@@ -45,38 +45,31 @@ package org.netbeans.modules.php.dbgp.packets;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.w3c.dom.Node;
-
 
 /**
  * @author ads
  *
  */
 public class TypeMapGetResponse extends DbgpResponse {
+    private static final String MAP = "map"; //NOI18N
 
-    private static final String MAP = "map";
-
-    TypeMapGetResponse( Node node ) {
+    TypeMapGetResponse(Node node) {
         super(node);
     }
 
-    public List<Map> getMaps(){
-        List<Node> nodes = getChildren( getNode(), MAP );
+    public List<Map> getMaps() {
+        List<Node> nodes = getChildren(getNode(), MAP);
         List<Map> result = new ArrayList<>();
         for (Node node : nodes) {
-            result.add( new Map( node ) );
+            result.add(new Map(node));
         }
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.dbgp.packets.DbgpMessage#process(org.netbeans.modules.php.dbgp.DebugSession, org.netbeans.modules.php.dbgp.packets.DbgpCommand)
-     */
     @Override
-    public void process( DebugSession session, DbgpCommand command )
-    {
+    public void process(DebugSession session, DbgpCommand command) {
     }
 
 }

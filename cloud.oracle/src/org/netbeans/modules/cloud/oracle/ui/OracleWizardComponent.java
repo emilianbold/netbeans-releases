@@ -43,29 +43,40 @@
 package org.netbeans.modules.cloud.oracle.ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
+import org.netbeans.modules.cloud.oracle.DataCenters;
+import org.netbeans.modules.web.common.api.Version;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  */
 public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
-    private ChangeListener l;
+    private static final Logger LOGGER = Logger.getLogger(OracleWizardComponent.class.getName());
+
     private static final String ADMIN_URL = "https://javaservices.%s.cloud.oracle.com"; // NOI18N
-    
+
+    private static final Version JCS_13_2 = Version.fromJsr277OrDottedNotationWithFallback("13.2");
+
     static final boolean SHOW_CLOUD_URLS = Boolean.getBoolean("oracle.cloud.dev");
     
-    private static String[] dataCenters = new String[] { 
+    private static final String[] DEFAULT_DATA_CENTERS = new String[] {
         "us1 [US Commercial 1]",  // NOI18N
         "us2 [US Commercial 2]",  // NOI18N
         "em1 [EMEA Commercial 1]",  // NOI18N
@@ -73,10 +84,32 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         "ap1 [APAC Commercial 1]",  // NOI18N
         "ap2 [APAC Commercial 2]",  // NOI18N
         " " };  // NOI18N
-    
+
+    private ChangeListener l;
+
     /** Creates new form OracleWizardComponent */
     public OracleWizardComponent() {
         initComponents();
+        String[] dataCenters = DEFAULT_DATA_CENTERS;
+
+        setCursor(Utilities.createProgressCursor(this));
+        disableModifications(true);
+        try {
+            try {
+                List<String> translated = new ArrayList<String>();
+                for (DataCenters.DataCenter d : DataCenters.getDataCenters()) {
+                    if (JCS_13_2.isBelowOrEqual(d.getJcsVersion())) { // NOI18N
+                        translated.add(d.getShortName() + " [" + d.getLongName() + "]"); // NOI18N
+                    }
+                }
+                translated.add(" "); // NOI18N
+                dataCenters = translated.toArray(new String[translated.size()]);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        } finally {
+            disableModifications(false);
+        }
         jDataCenterComboBox.setModel(new javax.swing.DefaultComboBoxModel(dataCenters));
         adminLabel.setVisible(SHOW_CLOUD_URLS);
         adminURLTextField.setVisible(SHOW_CLOUD_URLS);
@@ -103,7 +136,7 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         dbServiceNameTextField.setText("database"); // NOI18N
     }
 
-    void disableModifications(boolean disable) {
+    final void disableModifications(boolean disable) {
         adminURLTextField.setEditable(!disable);
         passwordField.setEditable(!disable);
         identityDomainTextField.setEditable(!disable);
@@ -300,14 +333,6 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     
     public String getUserName() {
         return userNameTextField.getText().trim();
-    }
-    
-    public static String getPrefixedUserName(String prefix, String username) {
-        if (username.startsWith(prefix+".")) {
-            return username;
-        } else {
-            return prefix + "." + username;
-        }
     }
     
     public String getDataCenter() {

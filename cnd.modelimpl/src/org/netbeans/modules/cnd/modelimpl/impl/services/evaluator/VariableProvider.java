@@ -203,6 +203,7 @@ public class VariableProvider {
 
                     int flags = CPPParserEx.CPP_CPLUSPLUS;
                     flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
+                    // TODO get flavor from variableFile?
                     try {
                         // use cached TS
                         TokenStream buildTokenStream = APTTokenStreamBuilder.buildTokenStream(variableName.replaceAll("(.*)::.*", "$1"), APTLanguageSupport.GNU_CPP); // NOI18N

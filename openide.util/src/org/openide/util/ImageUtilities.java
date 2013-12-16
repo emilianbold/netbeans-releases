@@ -117,6 +117,8 @@ public final class ImageUtilities {
     
     private static final Logger ERR = Logger.getLogger(ImageUtilities.class.getName());
     
+    private static final String DARK_LAF_SUFFIX = "_dark"; //NOI18N
+    
     private ImageUtilities() {
     }
 
@@ -133,7 +135,7 @@ public final class ImageUtilities {
      * @return icon's Image, or null, if the icon cannot be loaded.     
      */
     public static final Image loadImage(String resourceID) {
-        return getIcon(resourceID, false);
+        return loadImage(resourceID, false);
     }
     
     /**
@@ -148,24 +150,48 @@ public final class ImageUtilities {
      * <code>image.getProperty("url", null)</code> by returning the internal
      * {@link URL} of the found and loaded <code>resource</code>.
      * 
+     * <p>If the current look and feel is 'dark' (<code>UIManager.getBoolean("nb.dark.theme")</code>)
+     * then the method first attempts to load image <i>&lt;original file name&gt;<b>_dark</b>.&lt;original extension&gt;</i>.
+     * If such file doesn't exist the default one is loaded instead.
+     * </p>
+     * 
      * @param resource resource path of the image (no initial slash)
      * @param localized true for localized search
      * @return icon's Image or null if the icon cannot be loaded
      */
     public static final Image loadImage(String resource, boolean localized) {
-        return getIcon(resource, localized);
+        Image image = null;
+        if( isDarkLaF() ) {
+            image = getIcon(addDarkSuffix(resource), localized);
+        }
+        if( null == image )
+            image = getIcon( resource, localized );
+        return image;
     }
 
     /**
      * Loads an icon based on resource path.
      * Similar to {@link #loadImage(String, boolean)}, returns ImageIcon instead of Image.
+     * 
+     * <p>If the current look and feel is 'dark' (<code>UIManager.getBoolean("nb.dark.theme")</code>)
+     * then the method first attempts to load image <i>&lt;original file name&gt;<b>_dark</b>.&lt;original extension&gt;</i>.
+     * If such file doesn't exist the default one is loaded instead.
+     * </p>
+     * 
      * @param resource resource path of the icon (no initial slash)
      * @param localized localized resource should be used
      * @return ImageIcon or null, if the icon cannot be loaded.
      * @since 7.22
      */
     public static final ImageIcon loadImageIcon( String resource, boolean localized ) {
-        Image image = getIcon( resource, localized );
+        Image image = null;
+        if( isDarkLaF() ) {
+            image = getIcon(addDarkSuffix(resource), localized);
+            if( null != image ) {
+                return ( ImageIcon ) image2Icon( image );
+            }
+        }
+        image = getIcon( resource, localized );
         if( image == null ) {
             return null;
         }
@@ -174,6 +200,24 @@ public final class ImageUtilities {
             image = Toolkit.getDefaultToolkit().createImage( new FilteredImageSource( image.getSource(), imageFilter ) );
         }
         return ( ImageIcon ) image2Icon( image );
+    }
+    
+    private static boolean isDarkLaF() {
+        return UIManager.getBoolean("nb.dark.theme"); //NOI18N 
+    }
+    
+    /**
+     * 
+     * @param resourceName
+     * @return 
+     * @since 8.35
+     */
+    private static String addDarkSuffix( String resourceName ) {
+        int dotIndex = resourceName.lastIndexOf('.');
+        if( dotIndex > 0 ) {
+            return resourceName.substring(0, dotIndex) + DARK_LAF_SUFFIX + resourceName.substring(dotIndex);
+        }
+        return resourceName + DARK_LAF_SUFFIX;
     }
 
     private static RGBImageFilter getImageIconFilter() {

@@ -92,10 +92,10 @@ public class FileStatusCache {
      * Keeps cached statuses for managed files
      */
     private final Map<File, FileInformation> cachedFiles;
-    private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
+    private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<>(MAX_COUNT_UPTODATE_FILES);
     private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true, false);
-    private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
-    private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
+    private final HashSet<File> nestedRepositories = new HashSet<>(2); // mainly for logging
+    private final PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
     private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.UPTODATE), false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED), false);
@@ -103,13 +103,13 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), false);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
 
-    private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<File, File>(5);
+    private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<>(5);
     private final IgnoredFilesHandler ignoredFilesHandler;
     private final RequestProcessor.Task ignoredFilesHandlerTask;
     private static final boolean USE_IGNORE_INDEX = !Boolean.getBoolean("versioning.git.noignoreindex"); //NOI18N
 
     public FileStatusCache() {
-        cachedFiles = new HashMap<File, FileInformation>();
+        cachedFiles = new HashMap<>();
         conflictedFiles = createCacheIndex();
         modifiedFiles = createCacheIndex();
         ignoredFiles = createCacheIndex();
@@ -139,7 +139,7 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots(File... roots) {
-        refreshAllRoots(Arrays.asList(roots));
+        refreshAllRoots(Arrays.asList(roots), GitUtils.NULL_PROGRESS_MONITOR);
     }
     
     /**
@@ -147,17 +147,29 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots (final Collection<File> files) {
+        refreshAllRoots(files, GitUtils.NULL_PROGRESS_MONITOR);
+    }
+    
+    /**
+     * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
+     * @param files roots to refresh
+     * @param pm progress monitor able to cancel the running status scan
+     */
+    public void refreshAllRoots (final Collection<File> files, ProgressMonitor pm) {
         long startTime = 0;
         if (LOG.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
-            LOG.fine("refreshAll: starting for " + files.size() + " files."); //NOI18N
+            LOG.log(Level.FINE, "refreshAll: starting for {0} files.", files.size()); //NOI18N
         }
         if (files.isEmpty()) {
             return;
         }
-        HashMap<File, Collection<File>> rootFiles = new HashMap<File, Collection<File>>(5);
+        HashMap<File, Collection<File>> rootFiles = new HashMap<>(5);
 
         for (File file : files) {
+            if (pm.isCanceled()) {
+                return;
+            }
             // go through all files and sort them under repository roots
             file = FileUtil.normalizeFile(file);
             File repository = Git.getInstance().getRepositoryRoot(file);
@@ -173,14 +185,14 @@ public class FileStatusCache {
             addUnderRoot(rootFiles, repository, file);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime)); //NOI18N
+            LOG.log(Level.FINE, "refreshAll: starting status scan for {0} after {1}", new Object[]{rootFiles.values(), System.currentTimeMillis() - startTime}); //NOI18N
             startTime = System.currentTimeMillis();
         }
         if (!rootFiles.isEmpty()) {
-            refreshAllRoots(rootFiles);
+            refreshAllRoots(rootFiles, pm);
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("refreshAll: finishes status scan after " + (System.currentTimeMillis() - startTime)); //NOI18N
+            LOG.log(Level.FINE, "refreshAll: finishes status scan after {0}", (System.currentTimeMillis() - startTime)); //NOI18N
         }
     }
 
@@ -234,7 +246,7 @@ public class FileStatusCache {
                                     try {
                                         Thread.sleep(100);
                                     } catch (InterruptedException ex) { }
-                                    if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.UPTODATE))))).contains(file)) {
+                                    if (new HashSet<>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.UPTODATE))))).contains(file)) {
                                         LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
                                     }
                                 }
@@ -342,7 +354,7 @@ public class FileStatusCache {
      * @return File [] array of interesting files
      */
     public File [] listFiles (Collection<File> roots, EnumSet<Status> includeStatus) {
-        Set<File> set = new HashSet<File>();
+        Set<File> set = new HashSet<>();
 
         // get all files with given status underneath the roots files;
         // do it recusively if root isn't a flat folder
@@ -360,7 +372,7 @@ public class FileStatusCache {
      * @return
      */
     private FileInformation getInfo (File file) {
-        FileInformation info = null;
+        FileInformation info;
         synchronized (cachedFiles) {
             info = cachedFiles.get(file);
             synchronized (upToDateFiles) {
@@ -471,7 +483,7 @@ public class FileStatusCache {
                             upToDateAccess = 0;
                             if (LOG.isLoggable(Level.FINE)) {
                                 synchronized (upToDateFiles) {
-                                    LOG.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {new Integer(UTD_NOTIFY_NUMBER), upToDateFiles}); //NOI18N
+                                    LOG.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {UTD_NOTIFY_NUMBER, upToDateFiles}); //NOI18N
                                 }
                             }
                         }
@@ -563,9 +575,9 @@ public class FileStatusCache {
     }
     
     private void refreshStatusesBatch (Map<File, GitStatus> interestingFiles) {
-        List<ChangedEvent> events = new ArrayList<ChangedEvent>(interestingFiles.size());
+        List<ChangedEvent> events = new ArrayList<>(interestingFiles.size());
         synchronized (this) {
-            List<IndexUpdateItem> indexUpdates = new ArrayList<IndexUpdateItem>(interestingFiles.size());
+            List<IndexUpdateItem> indexUpdates = new ArrayList<>(interestingFiles.size());
             for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
                 // put the file's FI into the cache
                 File file = interestingEntry.getKey();
@@ -666,7 +678,7 @@ public class FileStatusCache {
         if(roots == null || roots.isEmpty()) {
             return Collections.<File>emptySet();
         }
-        Set<File> ret = new HashSet<File>();
+        Set<File> ret = new HashSet<>();
         for (File root : roots) {
             if(recursively) {
                 ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
@@ -702,7 +714,7 @@ public class FileStatusCache {
                 modified = modifiedFiles.get(root);
             }
         }
-        Set<File> values = new HashSet<File>(Arrays.asList(ignored));
+        Set<File> values = new HashSet<>(Arrays.asList(ignored));
         values.addAll(Arrays.asList(modified));
         return values;
     }
@@ -710,9 +722,9 @@ public class FileStatusCache {
     private void updateIndex(File file, FileInformation fi, boolean addToIndex) {
         File parent = file.getParentFile();
         if (parent != null) {
-            Set<File> conflicted = new HashSet<File>(Arrays.asList(conflictedFiles.get(parent)));
-            Set<File> modified = new HashSet<File>(Arrays.asList(modifiedFiles.get(parent)));
-            Set<File> ignored = new HashSet<File>(Arrays.asList(ignoredFiles.get(parent)));
+            Set<File> conflicted = new HashSet<>(Arrays.asList(conflictedFiles.get(parent)));
+            Set<File> modified = new HashSet<>(Arrays.asList(modifiedFiles.get(parent)));
+            Set<File> ignored = new HashSet<>(Arrays.asList(ignoredFiles.get(parent)));
             boolean modifiedChange = modified.remove(file);
             boolean conflictedChange = conflicted.remove(file);
             boolean ignoredChange = USE_IGNORE_INDEX && ignored.remove(file);
@@ -739,9 +751,9 @@ public class FileStatusCache {
     }
 
     private void updateIndexBatch (List<IndexUpdateItem> updates) {
-        Map<File, Set<File>> modifications = new HashMap<File, Set<File>>();
-        Map<File, Set<File>> conflicts = new HashMap<File, Set<File>>();
-        Map<File, Set<File>> ignores = new HashMap<File, Set<File>>();
+        Map<File, Set<File>> modifications = new HashMap<>();
+        Map<File, Set<File>> conflicts = new HashMap<>();
+        Map<File, Set<File>> ignores = new HashMap<>();
         for (IndexUpdateItem item : updates) {
             File file = item.getFile();
             File parent = file.getParentFile();
@@ -784,7 +796,7 @@ public class FileStatusCache {
     private Set<File> get (Map<File, Set<File>> cached, File parent, CacheIndex index) {
         Set<File> modified = cached.get(parent);
         if (modified == null) {
-            modified = new HashSet<File>(Arrays.asList(index.get(parent)));
+            modified = new HashSet<>(Arrays.asList(index.get(parent)));
             cached.put(parent, modified);
         }
         return modified;
@@ -834,7 +846,7 @@ public class FileStatusCache {
     
     private class IgnoredFilesHandler implements Runnable {
         
-        private final Set<File> toHandle = new LinkedHashSet<File>();
+        private final Set<File> toHandle = new LinkedHashSet<>();
         
         @Override
         public void run() {
@@ -897,9 +909,9 @@ public class FileStatusCache {
 
     public static class ChangedEvent {
 
-        private File file;
-        private FileInformation oldInfo;
-        private FileInformation newInfo;
+        private final File file;
+        private final FileInformation oldInfo;
+        private final FileInformation newInfo;
 
         public ChangedEvent(File file, FileInformation oldInfo, FileInformation newInfo) {
             this.file = file;

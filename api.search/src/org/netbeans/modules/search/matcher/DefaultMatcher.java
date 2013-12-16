@@ -162,7 +162,7 @@ public class DefaultMatcher extends AbstractMatcher {
                     || isApplicationXSource(subtype, fileObj);
         }
 
-        return false;
+        return mimeType.endsWith("+xml");                               //NOI18N
     }
 
     /**

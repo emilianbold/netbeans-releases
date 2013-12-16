@@ -120,7 +120,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             String pref = ccContext.getPrefix();
             //pref = pref == null ? "" : pref;
 
-            request.anchor = caretOffset
+            request.anchor = pref == null ? caretOffset : caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
                     // the 'upToOffset' flag set to false
                     - pref.length();
@@ -247,6 +247,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     @Override
     public Documentation documentElement(ParserResult info, ElementHandle element) {
+        if (element == null) {
+            return null;
+        }
         if (element instanceof IndexedElement) {
             final Documentation[] result = new Documentation[1];
             final IndexedElement indexedElement = (IndexedElement)element;
@@ -297,7 +300,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
 
         if (element instanceof JsDocumentationElement) {
-            return Documentation.create(((JsDocumentationElement) element).getDocumentation());
+            String documentation = ((JsDocumentationElement) element).getDocumentation();
+            return documentation != null ? Documentation.create(documentation) : null;
         }
 
         return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));

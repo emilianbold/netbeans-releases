@@ -43,6 +43,7 @@
 package org.netbeans.modules.git;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Callable;
@@ -498,6 +499,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         @Override
         public void publish(LogRecord record) {
             String message = record.getMessage();
+            message = MessageFormat.format(message, record.getParameters());
             if (message.startsWith("refreshAll: starting status scan for ") && (
                     message.contains(workdirFO.getPath() + ",")
                     || message.contains(workdirFO.getPath() + "]")

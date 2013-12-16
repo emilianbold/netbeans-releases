@@ -47,7 +47,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
-import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
+import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;

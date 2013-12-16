@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
@@ -51,56 +50,50 @@ import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.netbeans.modules.cnd.repository.util.Filter;
 
 /**
- * The cache that maps K to V
- * and stores the most frequently used pairs.
- * 
- * The class does NOT perform any synchronization!
- * It's a caller responsibility to syncronize access to this class
- * (Because as a rule, caller has to synchronize in any case -
- * for example, when it tries getting cache element, gets null, then creates
- * new value and puts it into cache)
- * 
+ * The cache that maps K to V and stores the most frequently used pairs.
+ *
+ * The class does NOT perform any synchronization! It's a caller responsibility
+ * to syncronize access to this class (Because as a rule, caller has to
+ * synchronize in any case - for example, when it tries getting cache element,
+ * gets null, then creates new value and puts it into cache)
+ *
  * @author Nickolay Dalmatov
  */
+public class RepositoryCacheMap<K, V> {
 
-public class RepositoryCacheMap<K,V>  {
-
-    private final TreeMap<K, RepositoryCacheValue<V>>   keyToValue;
-    private final TreeMap<RepositoryCacheValue<V>, K>   valueToKey;
-    
+    private final TreeMap<K, RepositoryCacheValue<V>> keyToValue;
+    private final TreeMap<RepositoryCacheValue<V>, K> valueToKey;
     private final int capacity;
-    private static final int DEFAULT_CAPACITY  = 20;
+    private static final int DEFAULT_CAPACITY = 20;
     private static AtomicInteger currentBornStamp = new AtomicInteger(0);
-    
     private static final boolean ASSERTIONS = Boolean.getBoolean("cnd.repository.cache.map.assert");
-    
-    static private final class RepositoryCacheValue<V>  implements Comparable<RepositoryCacheValue<V>> {
-        
-        public V                   value;
-        public AtomicInteger       frequency;
-        public AtomicBoolean       newBorn;
-        public final int           bornStamp;
-        
+
+    static private final class RepositoryCacheValue<V> implements Comparable<RepositoryCacheValue<V>> {
+
+        public V value;
+        public AtomicInteger frequency;
+        public AtomicBoolean newBorn;
+        public final int bornStamp;
+
         RepositoryCacheValue(final V value) {
             frequency = new AtomicInteger(1);
-            newBorn   = new AtomicBoolean(true);
+            newBorn = new AtomicBoolean(true);
             bornStamp = currentBornStamp.incrementAndGet();
             this.value = value;
         }
-        
+
         private int compareAdults(final RepositoryCacheValue<V> elemToCompare) {
             int ownValue = frequency.intValue();
             int objValue = elemToCompare.frequency.intValue();
 
             if (ownValue < objValue) {
                 return -1;
-            } else if (ownValue == objValue){
+            } else if (ownValue == objValue) {
                 ownValue = bornStamp;
                 objValue = elemToCompare.bornStamp;
-                
+
                 if (ownValue < objValue) {
                     return -1;
                 } else if (ownValue > objValue) {
@@ -112,11 +105,11 @@ public class RepositoryCacheMap<K,V>  {
                 return 1;
             }
         }
-        
+
         private int compareNewBorns(final RepositoryCacheValue<V> elemToCompare) {
             final int ownValue = bornStamp;
             final int objValue = elemToCompare.bornStamp;
-            
+
             if (ownValue < objValue) {
                 return -1;
             } else if (ownValue > objValue) {
@@ -125,12 +118,12 @@ public class RepositoryCacheMap<K,V>  {
                 return 0;
             }
         }
-        
+
         @Override
         public int compareTo(final RepositoryCacheValue<V> elemToCompare) {
             final boolean ownChildhood = newBorn.get();
             final boolean objChildhood = elemToCompare.newBorn.get();
-            
+
             if (ownChildhood && objChildhood) {
                 return compareNewBorns(elemToCompare);
             } else if (ownChildhood && !objChildhood) {
@@ -146,17 +139,15 @@ public class RepositoryCacheMap<K,V>  {
         public String toString() {
             return "RepositoryCacheValue {" + value + ", frq=" + frequency + ", nwBrn=" + newBorn + ", stmp=" + bornStamp + '}'; // NOI18N
         }
-
     }
-    
-    
+
     /**
      * Creates a new instance of RepositoryCacheMap
      */
     public RepositoryCacheMap(final int capacity) {
-        keyToValue      = new TreeMap<K, RepositoryCacheValue<V>>();
-        valueToKey      = new TreeMap<RepositoryCacheValue<V>, K>();
-        this.capacity   = (capacity > 0) ? capacity : DEFAULT_CAPACITY;
+        keyToValue = new TreeMap<K, RepositoryCacheValue<V>>();
+        valueToKey = new TreeMap<RepositoryCacheValue<V>, K>();
+        this.capacity = (capacity > 0) ? capacity : DEFAULT_CAPACITY;
     }
 
     public V get(final K key) {
@@ -170,36 +161,36 @@ public class RepositoryCacheMap<K,V>  {
         }
         return null;
     }
-    
+
     public V put(K key, V value) {
-        RepositoryCacheValue<V> entry = new RepositoryCacheValue<V> (value);
+        RepositoryCacheValue<V> entry = new RepositoryCacheValue<V>(value);
         try {
-            softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=" + key); //NOI18N
-            softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage"); //NOI18N
+            softAssert(!(keyToValue.size() < valueToKey.size()), "valueToKeyStorage contains more elements than keyToValueStorage key=", key); //NOI18N
+            softAssert(!(keyToValue.size() > valueToKey.size()), "keyToValueStorage contains more elements than valueToKeyStorage", null); //NOI18N
 
             if (keyToValue.size() < capacity) {
                 RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
-                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=", key); //NOI18N
                 valueToKey.put(entry, key);
             } else {
-                RepositoryCacheValue<V>   minValue = valueToKey.firstKey();
-                K minKey   = valueToKey.get(minValue);
+                RepositoryCacheValue<V> minValue = valueToKey.firstKey();
+                K minKey = valueToKey.get(minValue);
 
                 keyToValue.remove(minKey);
                 valueToKey.remove(minValue);
 
                 RepositoryCacheValue<V> oldValue = keyToValue.put(key, entry);
-                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=" + key); //NOI18N
+                softAssert(oldValue == null, "Value replacement in RepositoryCacheMap key=", key); //NOI18N
                 valueToKey.put(entry, key);
 
-                return  minValue.value;
+                return minValue.value;
             }
-        } catch( NoSuchElementException e ) {
-            e.printStackTrace();
-        } 
+        } catch (NoSuchElementException e) {
+            e.printStackTrace(System.err);
+        }
         return null;
     }
-    
+
     public V remove(K key) {
         RepositoryCacheValue<V> entry = keyToValue.remove(key);
         if (entry != null) {
@@ -208,52 +199,61 @@ public class RepositoryCacheMap<K,V>  {
         }
         return null;
     }
-    
+
     public Collection<V> remove(Filter<V> filter) {
         Collection<V> retSet = new ArrayList<V>(size());
         List<RepositoryCacheValue<V>> entriesToRemove = new ArrayList<RepositoryCacheValue<V>>(DEFAULT_CAPACITY);
-        for( RepositoryCacheValue<V> entry : valueToKey.keySet() ) {
-            if( filter.accept(entry.value) ) {
+        for (RepositoryCacheValue<V> entry : valueToKey.keySet()) {
+            if (filter.accept(entry.value)) {
                 retSet.add(entry.value);
                 entriesToRemove.add(entry);
             }
         }
-        for( RepositoryCacheValue<V> entry : entriesToRemove ) {
-                K removedKey = valueToKey.get(entry);
-                valueToKey.remove(entry);
-                keyToValue.remove(removedKey);
+        for (RepositoryCacheValue<V> entry : entriesToRemove) {
+            K removedKey = valueToKey.get(entry);
+            valueToKey.remove(entry);
+            keyToValue.remove(removedKey);
         }
         return retSet;
     }
-    
+
     public int size() {
         return keyToValue.size();
     }
-    
+
     public Collection<V> values() {
         Collection<V> retSet = new ArrayList<V>(size());
-        for( RepositoryCacheValue<V> entry : valueToKey.keySet() ) {
+        for (RepositoryCacheValue<V> entry : valueToKey.keySet()) {
             retSet.add(entry.value);
         }
         return retSet;
     }
-            
+
     public Collection<K> keys() {
         Collection<K> retSet = new ArrayList<K>(size());
-        for( K key : keyToValue.keySet() ) {
+        for (K key : keyToValue.keySet()) {
             retSet.add(key);
         }
         return retSet;
     }
-            
-    private void softAssert(boolean condition, String message) {
-        if( ASSERTIONS && ! condition ) {
+
+    private void softAssert(boolean condition, String message, K key) {
+        if (ASSERTIONS && !condition) {
             Exception ex = new Exception();
             StackTraceElement[] trace = ex.getStackTrace();
-            System.err.println(message);
-                for (int i=1; i < trace.length; i++) {
-                    System.err.println("\tat " + trace[i]); //NOI18N
-                }
+            if (key == null) {
+                System.err.println(message);
+            } else {
+                System.err.println(message+key);
+            }
+            for (int i = 1; i < trace.length; i++) {
+                System.err.println("\tat " + trace[i]); //NOI18N
+            }
         }
+    }
+
+    public static interface Filter<V> {
+
+        boolean accept(V value);
     }
 }

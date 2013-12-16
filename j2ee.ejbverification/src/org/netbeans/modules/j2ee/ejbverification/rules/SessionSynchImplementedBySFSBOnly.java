@@ -88,16 +88,14 @@ public final class SessionSynchImplementedBySFSBOnly {
         }
 
         if (ctx.getEjb() instanceof Session) {
-            if (Session.SESSION_TYPE_STATEFUL.equals(
-                    ((Session) ctx.getEjb()).getSessionType())) {
+            if (Session.SESSION_TYPE_STATEFUL.equals(ctx.getEjbData().getSessionType())) {
                 return problems; // OK, stateful session bean
             }
         }
         for (TypeMirror iface : ctx.getClazz().getInterfaces()) {
             String ifaceName = JavaUtils.extractClassNameFromType(iface);
             if (EJBAPIAnnotations.SESSION_SYNCHRONIZATION.equals(ifaceName)) {
-                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(),
-                        Bundle.SessionSynchImplementedBySFSBOnly_err());
+                ErrorDescription err = HintsUtils.createProblem(ctx.getClazz(), ctx.getComplilationInfo(), Bundle.SessionSynchImplementedBySFSBOnly_err());
                 problems.add(err);
             }
         }

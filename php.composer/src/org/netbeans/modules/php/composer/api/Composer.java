@@ -129,6 +129,17 @@ public final class Composer {
     }
 
     /**
+     * Invokes <code>composer install --no-dev</code> command.
+     * @param phpModule PHP module to run the command for
+     * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
+     *         or {@code null} if the executable cannot be run
+     * @since 0.16
+     */
+    public Future<Integer> installNoDev(PhpModule phpModule) {
+        return composer.installNoDev(phpModule);
+    }
+
+    /**
      * Invokes <code>composer update</code> command.
      * @param phpModule PHP module to run the command for
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
@@ -146,6 +157,17 @@ public final class Composer {
      */
     public Future<Integer> updateDev(PhpModule phpModule) {
         return composer.updateDev(phpModule);
+    }
+
+    /**
+     * Invokes <code>composer update --no-dev</code> command.
+     * @param phpModule PHP module to run the command for
+     * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
+     *         or {@code null} if the executable cannot be run
+     * @since 0.16
+     */
+    public Future<Integer> updateNoDev(PhpModule phpModule) {
+        return composer.updateNoDev(phpModule);
     }
 
     /**

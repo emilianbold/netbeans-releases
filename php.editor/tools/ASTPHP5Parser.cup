@@ -433,6 +433,7 @@ precedence left T_LOGICAL_OR;
 precedence left T_LOGICAL_XOR;
 precedence left T_LOGICAL_AND;
 precedence right T_PRINT;
+precedence right T_YIELD;
 precedence left T_EQUAL, T_PLUS_EQUAL,T_MINUS_EQUAL,T_MUL_EQUAL,T_DIV_EQUAL,T_CONCAT_EQUAL,T_MOD_EQUAL,T_AND_EQUAL,T_OR_EQUAL,T_XOR_EQUAL,T_SL_EQUAL,T_SR_EQUAL;
 precedence left T_QUESTION_MARK,T_SEMICOLON;
 precedence left T_BOOLEAN_OR;
@@ -2515,6 +2516,11 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = result;
 :}
 
+| T_YIELD:s
+{:
+    RESULT = new YieldExpression(sleft, sright, null);
+:}
+
 | T_FUNCTION:s is_reference:isReference
 T_OPEN_PARENTHESE parameter_list:paramList T_CLOSE_PARENTHESE lexical_vars:varsList
 T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
@@ -3044,12 +3050,7 @@ T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
 ;
 
 yield_expr ::=
-T_YIELD:s
-{:
-    RESULT = new YieldExpression(sleft, sright, null);
-:}
-
-| T_YIELD:s expr_without_variable:ewv
+T_YIELD:s expr_without_variable:ewv
 {:
     RESULT = new YieldExpression(sleft, ewvright, ewv);
 :}

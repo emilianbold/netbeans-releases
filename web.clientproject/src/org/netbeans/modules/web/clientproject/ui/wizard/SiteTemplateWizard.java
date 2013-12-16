@@ -43,12 +43,14 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -114,6 +116,8 @@ public class SiteTemplateWizard extends JPanel {
     @NbBundle.Messages("SiteTemplateWizard.loading=Loading...")
     private void initOnlineTemplates() {
         assert EventQueue.isDispatchThread();
+        // clear cache label
+        updateClearCacheLabel(false);
         // renderer
         onlineTemplateList.setCellRenderer(new TemplateListCellRenderer(onlineTemplateList.getCellRenderer()));
         // data
@@ -129,6 +133,23 @@ public class SiteTemplateWizard extends JPanel {
                 }
             }
         });
+    }
+
+    @NbBundle.Messages({
+        "SiteTemplateWizard.clearCache.ready=<html><a href=\"#\">Clear local cache</a></html>",
+        "SiteTemplateWizard.clearCache.running=Clearing...",
+    })
+    void updateClearCacheLabel(boolean clearing) {
+        assert EventQueue.isDispatchThread();
+        String label;
+        if (clearing) {
+            label = Bundle.SiteTemplateWizard_clearCache_running();
+        } else {
+            label = Bundle.SiteTemplateWizard_clearCache_ready();
+        }
+        clearCacheLabel.setText(label);
+        // fix ui
+        clearCacheLabel.setMaximumSize(clearCacheLabel.getPreferredSize());
     }
 
     private void initListeners() {
@@ -259,7 +280,7 @@ public class SiteTemplateWizard extends JPanel {
         archiveTemplateRadioButton.setEnabled(enable);
         onlineTemplateRadioButton.setEnabled(enable);
     }
-    
+
     void preSelectSiteTemplate(SiteTemplateImplementation impl) {
         if (!"NONE".equals(impl.getId()) && !"ARCHIVE".equals(impl.getId()))  { // NOI18N
             onlineTemplateRadioButton.setSelected(true);
@@ -349,6 +370,7 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateScrollPane = new javax.swing.JScrollPane();
         onlineTemplateList = new javax.swing.JList();
         onlineTemplateDescriptionLabel = new javax.swing.JLabel();
+        clearCacheLabel = new javax.swing.JLabel();
         onlineTemplateDescriptionScrollPane = new javax.swing.JScrollPane();
         onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
 
@@ -372,6 +394,16 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateDescriptionLabel.setLabelFor(onlineTemplateDescriptionTextPane);
         org.openide.awt.Mnemonics.setLocalizedText(onlineTemplateDescriptionLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.onlineTemplateDescriptionLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(clearCacheLabel, "CLEAR CACHE"); // NOI18N
+        clearCacheLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                clearCacheLabelMouseEntered(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                clearCacheLabelMousePressed(evt);
+            }
+        });
+
         onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -386,7 +418,8 @@ public class SiteTemplateWizard extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(onlineTemplateDescriptionLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(clearCacheLabel))
                     .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(onlineTemplateScrollPane)
                     .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)))
@@ -395,7 +428,7 @@ public class SiteTemplateWizard extends JPanel {
                     .addComponent(noTemplateRadioButton)
                     .addComponent(archiveTemplateRadioButton)
                     .addComponent(onlineTemplateRadioButton))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -410,17 +443,48 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(onlineTemplateRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
+                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateDescriptionLabel)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(onlineTemplateDescriptionLabel)
+                    .addComponent(clearCacheLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void clearCacheLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearCacheLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_clearCacheLabelMouseEntered
+
+    private void clearCacheLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearCacheLabelMousePressed
+        updateClearCacheLabel(true);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                Enumeration templates = onlineTemplatesListModel.elements();
+                while (templates.hasMoreElements()) {
+                    SiteTemplateImplementation template = (SiteTemplateImplementation) templates.nextElement();
+                    try {
+                        template.cleanup();
+                    } catch (IOException exc) {
+                        LOGGER.log(Level.INFO, "Cannot cleanuop site template: " + template.getId(), exc);
+                    }
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateClearCacheLabel(false);
+                    }
+                });
+            }
+        });
+    }//GEN-LAST:event_clearCacheLabelMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel archiveTemplatePanel;
     private javax.swing.JRadioButton archiveTemplateRadioButton;
+    private javax.swing.JLabel clearCacheLabel;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JRadioButton noTemplateRadioButton;
     private javax.swing.JLabel onlineTemplateDescriptionLabel;
@@ -475,6 +539,11 @@ public class SiteTemplateWizard extends JPanel {
 
         @Override
         public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
+            // noop
+        }
+
+        @Override
+        public void cleanup() {
             // noop
         }
 

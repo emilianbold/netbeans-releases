@@ -229,7 +229,7 @@ public class CsmStatementResolver {
                     }
                 }
                     
-                if (CsmKindUtilities.isLambda(fun)) {
+                if (CsmKindUtilities.isFunctionDefinition(fun) || CsmKindUtilities.isLambda(fun)) {
                     CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;
                     CsmCompoundStatement body = funDef.getBody();
                     if ((!CsmOffsetUtilities.sameOffsets(funDef, body) || body.getStartOffset() != body.getEndOffset()) && CsmOffsetUtilities.isInObject(body, offset)) {

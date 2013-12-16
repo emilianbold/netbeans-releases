@@ -67,43 +67,61 @@
           </preprocessorList>
         </cTool>
       </folder>
-      <item path="rfs_controller.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_controller.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_controller.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="rfs_filedata.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_filedata.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_filedata.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="rfs_preload.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_preload.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_preload_socks.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_preload_socks.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_preload_socks.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="rfs_protocol.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_protocol.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_protocol.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="rfs_test_env.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_test_env.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
-      <item path="rfs_util.c" ex="false" tool="0" flavor2="2">
+      <item path="rfs_util.c" ex="false" tool="0" flavor2="3">
         <cTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
-      </item>
-      <item path="rfs_util.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test/test_pkg_client.c" ex="false" tool="0" flavor2="2">
         <cTool>

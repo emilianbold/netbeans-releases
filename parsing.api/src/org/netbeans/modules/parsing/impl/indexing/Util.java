@@ -47,7 +47,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
@@ -257,6 +263,88 @@ public final class Util {
             @NonNull final File folder,
             @NonNull final File file) {
         return file.getAbsolutePath().startsWith(folder.getAbsolutePath());
+    }
+
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    public static Set<URL> findReverseSourceRoots(
+            @NonNull final URL thisSourceRoot,
+            @NonNull final Map<URL, List<URL>> deps,
+            @NonNull final Map<URL, List<URL>> peers) {
+        //Create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = findReverseDependencies(deps);
+        //Collect dependencies
+        final Set<URL> result = new HashSet<URL>();
+        final LinkedList<URL> todo = new LinkedList<URL> ();
+        todo.add (thisSourceRoot);
+        while (!todo.isEmpty()) {
+            final URL u = todo.removeFirst();
+            if (!result.contains(u)) {
+                result.add (u);
+                List<URL> ideps = inverseDeps.get(u);
+                if (ideps != null) {
+                    todo.addAll (ideps);
+                }
+                ideps = peers.get(u);
+                if (ideps != null) {
+                    todo.addAll (ideps);
+                }
+            }
+        }
+        return result;
+    }
+
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    public static Map<URL,Collection<URL>> findTransitiveReverseDependencies(
+            @NonNull final Map<URL, List<URL>> deps,
+            @NonNull final Map<URL, List<URL>> peers) {
+        //Create inverse dependencies
+        final Map<URL, List<URL>> inverseDeps = findReverseDependencies(deps);
+        //Collect dependencies
+        //Todo: Perf compute at once - top sort + calculate in order
+        final Map<URL,Collection<URL>> result = new HashMap<URL,Collection<URL>>();
+        for (URL thisSourceRoot : inverseDeps.keySet()) {
+            final LinkedList<URL> todo = new LinkedList<URL> ();
+            final Set<URL> partialResult = new HashSet<URL>();
+            todo.add (thisSourceRoot);
+            while (!todo.isEmpty()) {
+                final URL u = todo.removeFirst();
+                if (!partialResult.contains(u)) {
+                    partialResult.add (u);
+                    List<URL> ideps = inverseDeps.get(u);
+                    if (ideps != null) {
+                        todo.addAll (ideps);
+                    }
+                    ideps = peers.get(u);
+                    if (ideps != null) {
+                        todo.addAll (ideps);
+                    }
+                }
+            }
+            result.put(thisSourceRoot, partialResult);
+        }
+        return result;
+    }
+
+
+    @NonNull
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")
+    private static Map<URL,List<URL>> findReverseDependencies(@NonNull final Map<URL, List<URL>> deps) {
+        final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
+        for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
+            final URL u1 = entry.getKey();
+            final List<URL> l1 = entry.getValue();
+            for (URL u2 : l1) {
+                List<URL> l2 = inverseDeps.get(u2);
+                if (l2 == null) {
+                    l2 = new ArrayList<URL>();
+                    inverseDeps.put (u2,l2);
+                }
+                l2.add (u1);
+            }
+        }
+        return inverseDeps;
     }
 
     private Util() {

@@ -74,7 +74,6 @@
         
         <copy file="${basedir}/../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
-        <copy file="${basedir}/../commonfiles/clean_receipts.sh" tofile="${scriptsdir}/clean_receipts.sh"/>
         <copy file="${basedir}/../netBeans/baseide/build/scripts/env.sh" tofile="${scriptsdir}/env.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/addproduct_id.sh" tofile="${scriptsdir}/addproduct_id.sh"/>
         <copy file="${basedir}/../netBeans/baseide/pkg/scripts/add_tc.sh" tofile="${scriptsdir}/add_tc.sh"/>

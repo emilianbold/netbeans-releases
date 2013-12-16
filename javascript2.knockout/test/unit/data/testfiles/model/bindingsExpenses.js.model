@@ -68,9 +68,6 @@ init     : FUNCTION init [ANONYMOUS: false, DECLARED: true - init, MODIFIERS: PU
                        expenses      : OBJECT expenses [ANONYMOUS: false, DECLARED: true - expenses, MODIFIERS: PUBLIC, PROPERTY]
                                      # PROPERTIES
                                      length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                     price  : FUNCTION price [ANONYMOUS: false, DECLARED: false - price, MODIFIERS: PUBLIC, METHOD]
-                                            # PROPERTIES
-                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                      push   : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                             # PARAMETERS
                                             OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
@@ -120,9 +117,6 @@ ko       : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUBLIC,
                          expenses      : OBJECT expenses [ANONYMOUS: false, DECLARED: true - expenses, MODIFIERS: PUBLIC, PROPERTY]
                                        # PROPERTIES
                                        length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
-                                       price  : FUNCTION price [ANONYMOUS: false, DECLARED: false - price, MODIFIERS: PUBLIC, METHOD]
-                                              # PROPERTIES
-                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                        push   : FUNCTION push [ANONYMOUS: false, DECLARED: false - push, MODIFIERS: PUBLIC, METHOD]
                                               # PARAMETERS
                                               OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]

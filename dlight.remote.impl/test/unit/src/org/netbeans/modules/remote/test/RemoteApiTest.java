@@ -84,6 +84,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            RemoteFileSystemParallelReadTestCase.class,
            RemoteFileSystemParallelLsTestCase.class,
            RemoteFileSystemOffilneTestCase.class,
+           FssDispatchedHangupTestCase.class
         };
     }
     

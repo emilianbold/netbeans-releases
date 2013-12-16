@@ -43,8 +43,6 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.EventQueue;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
@@ -76,14 +74,12 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
-import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.team.spi.NBBugzillaUtils;
-import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -118,7 +114,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
-    private static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
+    static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -173,7 +169,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     private Map<String, TaskOperation> availableOperations;
 
-    private final PropertyChangeSupport support;
     private String recentChanges = "";
     private String tooltip = "";
 
@@ -181,36 +176,13 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
+    private boolean wasDuplicated;
 
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         super(task);
         this.repository = repo;
-        support = new PropertyChangeSupport(this);
         updateRecentChanges();
         updateTooltip();
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this issue that its data were changed
-     */
-    protected void fireDataChanged() {
-        support.firePropertyChange(IssueProvider.EVENT_ISSUE_DATA_CHANGED, null, null);
-    }
-
-    protected void fireUnsaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_CHANGED, null, null);
-    }
- 
-    protected void fireSaved() {
-        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     @Override
@@ -226,10 +198,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
-    }
-    
-    private void fireStatusChanged() {
-        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
     public void opened() {
@@ -701,6 +669,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
         setValue(m, ta, id);
+        wasDuplicated = true;
     }
 
     boolean canReassign() {
@@ -1002,6 +971,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
                 if (!wasNew) {
                     refresh();
+                    if (wasDuplicated && !submitCmd.hasFailed()) {
+                        try {
+                            BugzillaIssue dupe = repository.getIssueCache().getIssue(getFieldValue(IssueField.DUPLICATE_ID));
+                            if(dupe != null) {
+                                // if duplicate known on client then refresh to 
+                                // avoid potential mid-air ...
+                                dupe.refresh();
+                            }
+                        } finally {
+                            wasDuplicated = false;        
+                        }
+                    }
                 } else {
                     RepositoryResponse rr = submitCmd.getRepositoryResponse();
                     if(!submitCmd.hasFailed()) {
@@ -1376,7 +1357,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
         }
     }
-
+    
     @Override
     protected boolean synchronizeTask () {
         try {
@@ -1690,7 +1671,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         });
     }
 
-    private void dataChanged() {
+    private void dataChanged () {
         if (node != null) {
             node.fireDataChanged();
         }
@@ -1707,6 +1688,10 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (syncStateChanged) {
             fireStatusChanged();
         }
+    }
+
+    void fireChangeEvent () {
+        fireChanged();
     }
     
 }

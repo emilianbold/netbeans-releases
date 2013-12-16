@@ -205,7 +205,7 @@ public class Utilities {
         String projectUrl = Utilities.PROJECTS.get(projectName);
         File projectsDir = new File(System.getProperty("nbjunit.workdir"), "tmpdir");
         File projectZip = new File(projectsDir, projectName + ".zip");
-        if (!projectZip.exists()) {
+        if (!projectZip.exists() || projectZip.length()<1) {
             projectDownload(projectUrl, projectZip);
         }
         unzip(projectZip, workdir);
@@ -280,6 +280,10 @@ public class Utilities {
         }
 
         testResultsTag = allPerfDoc.getDocumentElement();
+        String buildNumber = System.getProperty("org.netbeans.performance.buildnumber");
+        if (buildNumber != null) {
+            testResultsTag.setAttribute("buildnumber", buildNumber);
+        }
 
         testTag = null;
         for (int i = 0; i < allPerfDoc.getElementsByTagName("Test").getLength(); i++) {

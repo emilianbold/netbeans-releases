@@ -55,16 +55,19 @@ import java.util.Collection;
  * @param <R> the implementation specific repository type
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
+ * @since 1.85
  */
 public interface RepositoryProvider<R, Q, I> {
 
     /**
      * A query from this repository was saved or removed.
+     * @since 1.85
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
     
     /**
      * The content of unsubmitted issues for the repository changes.
+     * @since 1.85
      */
     public static final String EVENT_UNSUBMITTED_ISSUES_CHANGED = "bugtracking.repository.unsubmittedIssues.changed"; //NOI18N
     
@@ -72,7 +75,8 @@ public interface RepositoryProvider<R, Q, I> {
      * Returns the repository info or null in case the repository is new and not saved yet.
      * 
      * @param r an implementation specific repository
-     * @return 
+     * @return a RepositoryInfo
+     * @since 1.85
      */
     public RepositoryInfo getInfo(R r);
     
@@ -80,31 +84,36 @@ public interface RepositoryProvider<R, Q, I> {
      * Returns the icon for this repository
      * 
      * @param r an implementation specific repository
-     * @return
+     * @return icon
+     * @since 1.85
      */
     public Image getIcon(R r);
 
     /**
-     * Returns an issue with the given ID.
+     * Returns issues with the given IDs.
      *
      * @param r an implementation specific repository
      * @param ids
-     * @return
+     * @return issues with the given id-s
+     * @since 1.85
      */
     public Collection<I> getIssues(R r, String... ids);
 
     /**
-     * Removes this repository from its connector.
+     * Notifies that the given repository was removed. 
+     * Release any bound resources if necessary.
      *
      * @param r an implementation specific repository
+     * @since 1.85
      */
-    public void remove(R r);
+    public void removed(R r);
 
     /**
-     * Returns the {@link BugtrackignController} for this repository.
+     * Returns the {@link RepositoryController} for this repository.
      * 
      * @param r an implementation specific repository
-     * @return
+     * @return a controller for this repository
+     * @since 1.85
      */
     public RepositoryController getController(R r);
 
@@ -113,10 +122,11 @@ public interface RepositoryProvider<R, Q, I> {
      *
      * @param r an implementation specific repository
      * 
-     * @return a new QueryProvider instance or null if it's not possible
+     * @return a new Query instance or <code>null</code> if it's not possible
      * to access the repository.
      * 
      * @see QueryProvider
+     * @since 1.85
      */
     public Q createQuery(R r); 
 
@@ -125,10 +135,11 @@ public interface RepositoryProvider<R, Q, I> {
      *
      * @param r an implementation specific repository
      * 
-     * @return return a new issue instance or null if it's not possible
+     * @return return a new Issue instance or <code>null</code> if it's not possible
      * to create an issue.
      * 
      * @see IssueProvider
+     * @since 1.85
      */
     public I createIssue(R r);
 
@@ -139,10 +150,11 @@ public interface RepositoryProvider<R, Q, I> {
      * @param summary 
      * @param description
      * 
-     * @return return a new issue instance or null if it's not possible
+     * @return return a new issue instance or <code>null</code> if it's not possible
      * to create an issue.
      * 
      * @see IssueProvider
+     * @since 1.85
      */
     public I createIssue(R r, String summary, String description);
     
@@ -151,6 +163,9 @@ public interface RepositoryProvider<R, Q, I> {
      * 
      * @param r an implementation specific repository
      * @return collection of queries
+     * @see QueryProvider#remove(java.lang.Object) 
+     * @since 1.85
+     * 
      */
     public Collection<Q> getQueries(R r);
 
@@ -169,13 +184,14 @@ public interface RepositoryProvider<R, Q, I> {
      * @param r an implementation specific repository
      * @param criteria
      * @return collection of issues
+     * @since 1.85
      */
     public Collection<I> simpleSearch(R r, String criteria);
     
     /**
      * Determines whether it is possible to attach files to an Issue for the given repository.
      * <p>
-     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)>
+     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)}
      * has to be implemented as well.
      * <p/>
      * 
@@ -183,6 +199,7 @@ public interface RepositoryProvider<R, Q, I> {
      * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
      * 
      * @see IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean) 
+     * @since 1.85
      */
     public boolean canAttachFiles(R r);
     
@@ -190,7 +207,8 @@ public interface RepositoryProvider<R, Q, I> {
      * Removes a PropertyChangeListener to the given repository.
      * 
      * @param r an implementation specific repository
-     * @param listener 
+     * @param listener a PropertyChangeListener 
+     * @since 1.85
      */
     public void removePropertyChangeListener(R r, PropertyChangeListener listener);
 
@@ -198,7 +216,8 @@ public interface RepositoryProvider<R, Q, I> {
      * Add a PropertyChangeListener to the given repository.
      * 
      * @param r an implementation specific repository
-     * @param listener 
+     * @param listener a PropertyChangeListener 
+     * @since 1.85
      */
     public void addPropertyChangeListener(R r, PropertyChangeListener listener);    
 }

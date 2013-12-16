@@ -239,6 +239,11 @@ public class GrailsArtifactWizardIterator implements WizardDescriptor.ProgressIn
         String suffix = sourceCategory.getSuffix();
         if (suffix == null) {
             artifact = dir.getFileObject(targetName, Templates.getTemplate(wiz).getExt());
+
+            // Even Domain/Controller classes don't have any suffix but still using groovy extension
+            if (artifact == null) {
+                artifact = dir.getFileObject(targetName, "groovy");
+            }
         } else {
             artifact = dir.getFileObject(targetName + suffix);
         }

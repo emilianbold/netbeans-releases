@@ -199,6 +199,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         int notificationCount = manager.getUnreadCount();
         setToolTipText(getToolTip(notificationCount, n));
         setIcon(getNotificationsIcon(notificationCount, n != null ? n.getCategory() == NotificationDisplayer.Category.ERROR : false));
+        setVisible(notificationCount > 0);
         currentNotification = n;
         if (null != currentNotification) {
             if (showBalloon) {
@@ -225,7 +226,6 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         } else {
             BalloonManager.dismiss();
         }
-        setVisible(notificationCount > 0);
     }
 
     private String getToolTip(int unread, NotificationImpl n) {

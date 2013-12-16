@@ -48,7 +48,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -60,8 +59,8 @@ public class EJBProblemContext {
     private final FileObject fileObject;
     private final TypeElement clazz;
     private final Ejb ejb;
+    private final SessionData sessionData;
     private final Project project;
-    private final EjbJarMetadata metadata;
     private final CompilationInfo complilationInfo;
     private final EjbJar ejbModule;
 
@@ -72,14 +71,14 @@ public class EJBProblemContext {
             FileObject fileObject,
             TypeElement clazz,
             Ejb ejb,
-            EjbJarMetadata metadata) {
+            SessionData sessionData) {
         this.complilationInfo = complilationInfo;
         this.project = project;
         this.ejbModule = ejbModule;
         this.fileObject = fileObject;
         this.clazz = clazz;
         this.ejb = ejb;
-        this.metadata = metadata;
+        this.sessionData = sessionData;
     }
     
     public CompilationInfo getComplilationInfo() {
@@ -98,8 +97,8 @@ public class EJBProblemContext {
         return ejb;
     }
 
-    public EjbJarMetadata getMetadata() {
-        return metadata;
+    public SessionData getEjbData() {
+        return sessionData;
     }
 
     public EjbJar getEjbModule() {
@@ -108,5 +107,33 @@ public class EJBProblemContext {
 
     public Project getProject() {
         return project;
+    }
+
+    /**
+     * Stores all data necessary for the hints computation, to precompute most of information.
+     */
+    public static class SessionData {
+
+        private final String[] businessLocal;
+        private final String[] businessRemote;
+        private final String sessionType;
+
+        public SessionData(String[] businessLocal, String[] businessRemote, String sessionType) {
+            this.businessLocal = businessLocal;
+            this.businessRemote = businessRemote;
+            this.sessionType = sessionType;
+        }
+
+        public String getSessionType() {
+            return sessionType;
+        }
+
+        public String[] getBusinessLocal() {
+            return businessLocal;
+        }
+
+        public String[] getBusinessRemote() {
+            return businessRemote;
+        }
     }
 }

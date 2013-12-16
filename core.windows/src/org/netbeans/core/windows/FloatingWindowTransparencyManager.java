@@ -128,7 +128,7 @@ public class FloatingWindowTransparencyManager {
         if( !NativeWindowSystem.getDefault().isWindowAlphaSupported() )
             return;
         
-        if( WinSysPrefs.HANDLER.getBoolean( WinSysPrefs.TRANSPARENCY_FLOATING, true) ) {
+        if( WinSysPrefs.HANDLER.getBoolean( WinSysPrefs.TRANSPARENCY_FLOATING, false) ) {
             TopComponent currentActive = TopComponent.getRegistry().getActivated();
             if( null != currentActive ) {
                 final WindowManagerImpl wm = WindowManagerImpl.getInstance();

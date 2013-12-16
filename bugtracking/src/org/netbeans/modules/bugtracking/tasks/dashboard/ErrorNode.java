@@ -51,7 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.LeafNode;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;

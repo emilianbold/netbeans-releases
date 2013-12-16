@@ -1028,7 +1028,26 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug235462.cpp", 105, 9, "bug235462.cpp", 63, 5);
         performTest("bug235462.cpp", 106, 9, "bug235462.cpp", 67, 5);
         performTest("bug235462.cpp", 107, 9, "bug235462.cpp", 72, 5);
+        performTest("bug235462.cpp", 109, 9, "bug235462.cpp", 25, 5);
     }      
+    
+    public void testBug239348() throws Exception { 
+        // Bug 239348 - Hyperlink to "private" typedef struct does not work
+        performTest("bug239348.h", 6, 11, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 7, 19, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 7, 22, "bug239348.cpp", 5, 3);
+        performTest("bug239348.h", 10, 6, "bug239348.cpp", 5, 3);
+    }     
+    
+    public void testBug238041() throws Exception {
+        // Bug 238041 - Function inside a function (in C) breaks parser 
+        performTest("bug238041.c", 4, 11, "bug238041.c", 4, 1);
+        performTest("bug238041.c", 5, 11, "bug238041.c", 5, 5);
+        performTest("bug238041.c", 6, 17, "bug238041.c", 5, 20);
+        performTest("bug238041.c", 6, 21, "bug238041.c", 4, 16);
+        performTest("bug238041.c", 7, 15, "bug238041.c", 2, 1);
+        performTest("bug238041.c", 10, 14, "bug238041.c", 5, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

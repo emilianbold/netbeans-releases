@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.server.TeamServerInstanceCustomizer;
 import org.netbeans.modules.team.server.TeamView;
 import org.netbeans.modules.team.server.api.TeamServerManager;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import static org.netbeans.modules.team.server.ui.common.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -146,6 +147,7 @@ public class AddInstanceAction extends AbstractAction {
                                             } else {
                                                 TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
                                             }
+                                            TeamUIUtils.activateTeamDashboard();
                                         }
                                     });
                                 }

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.23.1
+#Version 1.26.1
 
 CLSS public abstract interface java.beans.PropertyChangeListener
 intf java.util.EventListener
@@ -64,6 +64,7 @@ meth public java.lang.Object[] toArray()
 meth public java.lang.String toString()
 meth public void clear()
 supr java.lang.Object
+hfds MAX_ARRAY_SIZE
 
 CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
 cons protected init()
@@ -143,8 +144,8 @@ meth public {java.util.HashMap%1} get(java.lang.Object)
 meth public {java.util.HashMap%1} put({java.util.HashMap%0},{java.util.HashMap%1})
 meth public {java.util.HashMap%1} remove(java.lang.Object)
 supr java.util.AbstractMap<{java.util.HashMap%0},{java.util.HashMap%1}>
-hfds DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,loadFactor,modCount,serialVersionUID,size,table,threshold
-hcls Entry,EntryIterator,EntrySet,HashIterator,KeyIterator,KeySet,ValueIterator,Values
+hfds DEFAULT_INITIAL_CAPACITY,DEFAULT_LOAD_FACTOR,MAXIMUM_CAPACITY,entrySet,frontCache,frontCacheEnabled,loadFactor,modCount,serialVersionUID,size,table,threshold
+hcls Entry,EntryIterator,EntrySet,FrontCache,HashIterator,KeyIterator,KeySet,ValueIterator,Values
 
 CLSS public java.util.HashSet<%0 extends java.lang.Object>
 cons public init()

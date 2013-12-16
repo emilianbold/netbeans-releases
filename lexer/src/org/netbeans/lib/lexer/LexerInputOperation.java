@@ -106,7 +106,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
     
     protected Lexer<T> lexer;
     
-    protected final LanguageOperation<T> innerLanguageOperation;
+    protected final LanguageOperation<T> languageOperation;
 
     
     /**
@@ -114,10 +114,13 @@ public abstract class LexerInputOperation<T extends TokenId> {
      */
     private int flyTokenSequenceLength;
     
+    protected final WrapTokenIdCache<T> wrapTokenIdCache;
+    
     public LexerInputOperation(TokenList<T> tokenList, int tokenIndex, Object lexerRestartState) {
         this.tokenList = tokenList;
         LanguagePath languagePath = tokenList.languagePath();
-        this.innerLanguageOperation = LexerUtilsConstants.innerLanguageOperation(languagePath);
+        Language<T> language = tokenList.language();
+        this.languageOperation = LexerUtilsConstants.languageOperation(language);
         
         // Determine flyTokenSequenceLength setting
         while (--tokenIndex >= 0 && tokenList.tokenOrEmbedding(tokenIndex).token().isFlyweight()) {
@@ -133,6 +136,8 @@ public abstract class LexerInputOperation<T extends TokenId> {
                 lexerInput, tokenFactory, lexerRestartState,
                 languagePath, tokenList.inputAttributes());
         lexer = LexerSpiPackageAccessor.get().createLexer(languageHierarchy, info);
+
+        wrapTokenIdCache = tokenList.tokenHierarchyOperation().getWrapTokenIdCache(language);
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.INFO, "LexerInputOperation created for " +
@@ -217,7 +222,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
 //                        + ", " + token.dumpInfo() + '\n');
 //            }
             // Check if token id of the new token belongs to the language
-            Language<T> language = innerLanguageOperation.language();
+            Language<T> language = languageOperation.language();
             // Check that the id belongs to the language
             if (!isSkipToken(token) && !language.tokenIds().contains(token.id())) {
                 String msgPrefix = "Invalid TokenId=" + token.id()
@@ -278,7 +283,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
         AbstractToken<T> token;
         if ((token = checkSkipToken(id)) == null) {
             if (isFlyTokenAllowed()) {
-                token = innerLanguageOperation.getFlyweightToken(id, text);
+                token = languageOperation.getFlyweightToken(wrapTokenIdCache.plainWid(id), text);
                 flyTokenSequenceLength++;
             } else { // Create regular token
                 token = createDefaultTokenInstance(id);
@@ -332,7 +337,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
 
     protected AbstractToken<T> createDefaultTokenInstance(T id) {
-        return new DefaultToken<T>(id, tokenLength);
+        return new DefaultToken<T>(wrapTokenIdCache.plainWid(id), tokenLength);
     }
 
     public AbstractToken<T> createToken(T id, int length, PartType partType) {
@@ -363,7 +368,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
 
     protected AbstractToken<T> createPropertyTokenInstance(T id,
     TokenPropertyProvider<T> propertyProvider, PartType partType) {
-        return new PropertyToken<T>(id, tokenLength, propertyProvider, partType);
+        return new PropertyToken<T>(wrapTokenIdCache.plainWid(id), tokenLength, propertyProvider, partType);
     }
 
     public AbstractToken<T> createCustomTextToken(T id, int length, CharSequence customText) {
@@ -379,7 +384,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
     
     protected AbstractToken<T> createCustomTextTokenInstance(T id, CharSequence customText) {
-        return new CustomTextToken<T>(id, customText, tokenLength);
+        return new CustomTextToken<T>(wrapTokenIdCache.plainWid(id), customText, tokenLength);
     }
 
     public boolean isSkipTokenId(T id) {

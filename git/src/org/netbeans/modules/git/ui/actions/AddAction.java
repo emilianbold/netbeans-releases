@@ -67,6 +67,11 @@ public class AddAction extends SingleRepositoryAction {
     public AddAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected void performAction (File repository, final File[] roots, VCSContext context) {

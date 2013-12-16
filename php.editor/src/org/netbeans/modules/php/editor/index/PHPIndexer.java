@@ -45,7 +45,6 @@ package org.netbeans.modules.php.editor.index;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -79,6 +78,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbBundle;
 
@@ -96,9 +96,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     @NbBundle.Messages("PHPResolver=PHP Files")
     private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
     // a workaround for issue #132388
-    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList(
-        "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
-    );
+    private static final List<String> INDEXABLE_EXTENSIONS = FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE);
 
     public static final String FIELD_BASE = "base"; //NOI18N
     public static final String FIELD_EXTEND = "extend"; //NOI18N
@@ -264,24 +262,8 @@ public final class PHPIndexer extends EmbeddingIndexer {
         }
 
         private boolean isIndexable(Indexable indexable, Snapshot snapshot) {
-            // Cannot call file.getFileObject().getMIMEType() here for several reasons:
-            // (1) when cleaning up the index for deleted files, file.getFileObject().getMIMEType()
-            //   may return "content/unknown", and in some cases, file.getFileObject() returns null
-            // (2) file.getFileObject() can be expensive during startup indexing when we're
-            //   rapidly scanning through lots of directories to determine which files are
-            //   indexable. This is done using the java.io.File API rather than the more heavyweight
-            //   FileObject, and each file.getFileObject() will perform a FileUtil.toFileObject() call.
-            // Since the mime resolver for PHP is simple -- it's just based on the file extension,
-            // we perform the same check here:
-            //if (PHPLanguage.PHP_MIME_TYPE.equals(file.getFileObject().getMIMEType())) { // NOI18N
-
             FileObject fileObject = snapshot.getSource().getFileObject();
-
-            if (INDEXABLE_EXTENSIONS.contains(fileObject.getExt().toLowerCase())) {
-                return true;
-            }
-
-            return FileUtils.isPhpFile(fileObject);
+            return INDEXABLE_EXTENSIONS.contains(fileObject.getExt().toLowerCase());
         }
 
         @Override

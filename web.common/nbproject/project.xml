@@ -233,6 +233,7 @@
             <friend-packages>
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.modules.cloud.amazon</friend>
+                <friend>org.netbeans.modules.cloud.oracle</friend>
                 <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
@@ -251,6 +252,7 @@
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
+                <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.latte</friend>

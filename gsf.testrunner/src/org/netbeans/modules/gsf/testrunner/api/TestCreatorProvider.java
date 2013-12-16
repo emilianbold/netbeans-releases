@@ -101,6 +101,7 @@ public abstract class TestCreatorProvider {
         private String testClassName;
         private FileObject targetFolder;
         private Node[] activatedNodes;
+        private boolean integrationTests;
         
         public Context(Node[] activatedNodes) {
             this.activatedNodes = activatedNodes;
@@ -133,6 +134,15 @@ public abstract class TestCreatorProvider {
         public void setTestClassName(String testClassName) {
             this.testClassName = testClassName;
         }
+
+        public boolean isIntegrationTests() {
+            return integrationTests;
+        }
+
+        public void setIntegrationTests(boolean integrationTests) {
+            this.integrationTests = integrationTests;
+        }
+        
     }
     
 }

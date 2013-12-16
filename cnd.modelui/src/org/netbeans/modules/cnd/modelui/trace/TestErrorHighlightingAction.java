@@ -191,7 +191,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             public void done() {}
         };
 
-        CsmErrorProvider.getDefault().getErrors(request, response);
+        CsmErrorProvider.getAllErrors(request, response);
         out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time); // NOI18N
     }
 
@@ -234,8 +234,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
     private static class OffsetableImpl implements CsmOffsetable {
 
-        private CsmUID<CsmFile> fileUID;
-        private CsmErrorInfo errorInfo;
+        private final CsmUID<CsmFile> fileUID;
+        private final CsmErrorInfo errorInfo;
 
         public OffsetableImpl(CsmFile file, CsmErrorInfo errorInfo) {
             this.fileUID = UIDs.get(file);

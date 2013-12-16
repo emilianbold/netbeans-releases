@@ -100,7 +100,7 @@ public class CustomizerCloudGeneral extends javax.swing.JPanel implements HelpCt
         }
         
         if (!usernameField.getText().equals(instance.getUser())) {
-            instance.setUser(OracleWizardComponent.getPrefixedUserName(identityDomainField.getText(), usernameField.getText()));
+            instance.setUser(usernameField.getText());
             someChange = true;
             pwdChange = true;
         }

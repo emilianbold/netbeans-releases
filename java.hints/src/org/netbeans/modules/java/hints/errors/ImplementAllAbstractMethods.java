@@ -47,6 +47,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -62,7 +63,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -86,7 +89,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
+public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, OverrideErrorMessage<Boolean> {
 
     private static final String PREMATURE_EOF_CODE = "compiler.err.premature.eof"; // NOI18N
     
@@ -101,10 +104,34 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 "compiler.err.abstract.cant.be.instantiated", // NOI18N
                 "compiler.err.enum.constant.does.not.override.abstract")); // NOI18N
     }
-    
-    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
-        final List<Fix> result = new ArrayList<Fix>();
 
+    @NbBundle.Messages({
+        "ERR_CannotOverrideAbstractMethods=Inherited abstract methods are not accessible and could not be implemented"
+    })
+    @Override
+    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Boolean> data) {
+        TreePath path = deepTreePath(info, offset);
+        Element e = info.getTrees().getElement(path);
+        if (e == null || !e.getKind().isClass()) {
+            return null;
+        }
+        List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
+        Scope s = info.getTrees().getScope(path);
+        for (ExecutableElement ee : lee) {
+            if (!info.getTrees().isAccessible(s, ee, (DeclaredType)e.asType())) {
+                data.setData(true);
+                return Bundle.ERR_CannotOverrideAbstractMethods();
+                
+            }
+        }
+        return null;
+    }
+    
+    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Boolean> data) {
+        final List<Fix> result = new ArrayList<Fix>();
+        if (data != null && Boolean.TRUE == data.getData()) {
+            return null;
+        }
         analyze(offset, info, new Performer() {
             @Override
             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
@@ -119,6 +146,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 } else {
                     result.add(new FixImpl(info.getJavaSource(), offset, className));
                 }
+            }
+            public void inaccessibleMethod(ExecutableElement ee) {
+                
             }
         });
         
@@ -145,6 +175,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
 
         public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify);
         public void makeClassAbstract(TreePath toModify, String className);
+//        public void inaccessibleMethod(ExecutableElement ee);
 
     }
 

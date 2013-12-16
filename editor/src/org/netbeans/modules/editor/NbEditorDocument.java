@@ -95,6 +95,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
 
     /** Indent engine for the given kitClass. */
     public static final String INDENT_ENGINE = "indentEngine"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("NbEditorDocument", 1, false, false); //NOI18N
 
     /** Map of [Annotation, AnnotationDesc] */
     private HashMap annoMap;
@@ -279,7 +280,7 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                     
                     if (origValue == null) {
                         // XXX: workaround for #137528, touches project settings                        
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        RP.post(new Runnable() {
                             public void run() {
                                 IndentUtils.indentLevelSize(NbEditorDocument.this);
                             }

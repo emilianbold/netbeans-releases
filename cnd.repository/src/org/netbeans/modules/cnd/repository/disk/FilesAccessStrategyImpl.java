@@ -41,407 +41,201 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.repository.disk;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.Date;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.repository.impl.BaseRepository;
-import org.netbeans.modules.cnd.repository.impl.DelegateRepository;
-import org.netbeans.modules.cnd.repository.sfs.BufferedRWAccess;
-import org.netbeans.modules.cnd.repository.sfs.statistics.BaseStatistics;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import org.netbeans.modules.cnd.repository.Logger;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.disk.index.KeysListFile;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
+import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
+import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.storage.data.UTF;
+import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.Filter;
-import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
-import org.netbeans.modules.cnd.repository.sfs.FileRWAccess;
-import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
-import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  * Implements FilesAccessStrategy
+ *
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public class FilesAccessStrategyImpl implements FilesAccessStrategy {
-    
-    private class ConcurrentFileRWAccess extends BufferedRWAccess {
-       
-        public final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-        public final CharSequence unit;
+public final class FilesAccessStrategyImpl implements ReadLayerCapability, WriteLayerCapability {
 
-        public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
-            super(file, unitCodec);
-            this.unit = unit;
-        }
-
-        @Override
-        public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
-            try {
-                super.move(from, offset, size, newOffset);
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        public void move(long offset, int size, long newOffset) throws IOException {
-            try {
-                super.move(offset, size, newOffset); 
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        public void truncate(long size) throws IOException {
-            try {
-                super.truncate(size);
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        public long size() throws IOException {
-            try {
-                return super.size();
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        protected void writeBuffer() throws IOException {
-            try {
-                super.writeBuffer();
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
-            try {
-                return super.write(factory, object, offset);
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-
-        @Override
-        public Persistent read(PersistentFactory factory, long offset, int size) throws IOException {
-            try {
-                return super.read(factory, offset, size);
-            } catch (IOException e) {
-                onException(e);
-                throw e;
-            }
-        }
-        
-        private void onException(IOException e) {
-            synchronized (cacheLock) {
-                nameToFileCache.remove(new CacheFilterImpl(this));
-            }
-        }
-
-    }
-    
-    private static final class Lock {}
-
-    private final Object cacheLock = new Lock();
-    private final RepositoryCacheMap<String, ConcurrentFileRWAccess> nameToFileCache;
-    private final StorageAllocator storageAllocator;
-    
-    private static final int OPEN_FILES_LIMIT = Integer.getInteger("cnd.repository.files.cache", 20); // NOI18N
-    
     private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");
-    
+    private static final long PURGE_OLD_UNITS_TIMEOUT = 14 * 24 * 3600 * 1000l; // 14 days
+    private final ConcurrentHashMap<Integer, UnitStorage> unitStorageCache = new ConcurrentHashMap<Integer, UnitStorage>();
+    private final URI cacheLocationURI;
+    private final File cacheLocationFile;
     // Statistics
-    private int readCnt = 0;
-    private int readHitCnt = 0;
-    private int writeCnt = 0;
-    private int writeHitCnt = 0;
-    BaseStatistics<String> writeStatistics;
-    BaseStatistics<String> readStatistics;
-    private final UnitCodec unitCodec;
-    
-    public FilesAccessStrategyImpl(StorageAllocator storageAllocator, UnitCodec unitCodec) {
-        this.unitCodec = unitCodec;
-        this.storageAllocator = storageAllocator;
-        nameToFileCache = new RepositoryCacheMap<String, ConcurrentFileRWAccess>(OPEN_FILES_LIMIT);
-        if( Stats.multyFileStatistics ) {
+    private final AtomicInteger readCnt = new AtomicInteger();
+    private final AtomicInteger readHitCnt = new AtomicInteger();
+    private final AtomicInteger writeCnt = new AtomicInteger();
+    private final AtomicInteger writeHitCnt = new AtomicInteger();
+    private final BaseStatistics<String> writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM); // NOI18N
+    private final BaseStatistics<String> readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM); // NOI18N
+    private final LayerIndex layerIndex;
+    private final KeysListFile removedKeysFile;
+    private final String removedKeysTable = "removed-files";//NOI18N
+    private final boolean isWritable;
+    private static final java.util.logging.Logger log = Logger.getInstance();
+
+    public FilesAccessStrategyImpl(LayerIndex layerIndex, URI cacheLocation, 
+            LayerDescriptor layerDescriptor) {
+        this.layerIndex = layerIndex;
+        this.cacheLocationURI = cacheLocation;
+        this.cacheLocationFile = new File(cacheLocation.getRawPath());
+        this.isWritable = layerDescriptor.isWritable();
+        KeysListFile f = null;
+        RepositoryDataInputImpl din = null;
+        try {
+            final File file = new File(cacheLocationFile, removedKeysTable);
+            if (file.exists()) {
+                din = new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(file));
+                f = new KeysListFile(din);
+            } 
+        } catch (FileNotFoundException ex) {
+            //Exceptions.printStackTrace(ex);
+            f = null;
+        } catch (IOException ex) {
+            f = null;
+            //Exceptions.printStackTrace(ex);
+        }finally {
+            if (din != null) {
+                try {
+                    din.close();
+                } catch (IOException ex) {
+                }
+            }
+        }    
+        removedKeysFile = f == null ? new KeysListFile() : f;
+        if (Stats.multyFileStatistics) {
             resetStatistics();
         }
     }
     
+    /**
+     * @param unitId
+     * @throws IOException
+     */
     @Override
-    public Persistent read(Key key) throws IOException {
-        readCnt++; // always increment counters
-        if( Stats.multyFileStatistics ) {
-            readStatistics.consume(getBriefClassName(key), 1);
+    public void closeUnit(final int unitID, boolean cleanRepository) {
+        UnitStorage storage = unitStorageCache.remove(unitID);
+        if (storage != null) {
+            storage.close();
+            if (cleanRepository) {
+                storage.cleanUnitDirectory();
+            }            
         }
-        ConcurrentFileRWAccess fis = null;
-        try {
-            fis = getFile(key, true);
-            if( fis != null ) {
-                final PersistentFactory factory = key.getPersistentFactory();
-                assert factory != null;
-                long size = fis.size();
-                try {
-                    Persistent obj = fis.read(factory, 0, (int)size);
-                    if (RepositoryStatistics.ENABLED) {
-                        RepositoryStatisticsImpl.getInstance().logDataRead(key, (int) size);
-                    }
-                    return obj;
-                } catch(IllegalArgumentException e) {
-                    throw new IllegalArgumentException(e.getMessage()+". Key "+key.getClass().getName()); // NOI18N
-                }
-            }
-        } finally {
-            if (fis != null) {
-                fis.lock.readLock().unlock();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void write(Key key, Persistent object) throws IOException {
-        writeCnt++; // always increment counters
-        if( Stats.multyFileStatistics ) {
-            writeStatistics.consume(getBriefClassName(key), 1);
-        }
-        ConcurrentFileRWAccess fos = null;
-        try {
-            fos = getFile(key, false);
-            assert fos != null;
-            if (fos != null) {
-                final PersistentFactory factory = key.getPersistentFactory();
-                assert factory != null;
-                int size = fos.write(factory, object, 0);
-                fos.truncate(size);
-            } 
-        } finally {
-            if (fos != null) {
-                fos.lock.writeLock().unlock();
-            }
-        }
-        
-    }
-    
-    private ConcurrentFileRWAccess getFile(Key id, final boolean readOnly) throws IOException {
-        
-        assert id != null;
-        
-        String fileName = resolveFileName(id);
-        assert fileName != null;
-        
-        ConcurrentFileRWAccess   aFile = null;
-        boolean keepLocked = false;
-        
-        do {
-            synchronized (cacheLock) {
-                aFile = nameToFileCache.get(fileName);
-                if (aFile == null) {
-                    File fileToCreate = new File(fileName);
-                    CharSequence unit = id.getUnit();
-                    if (fileToCreate.exists()) {
-                        aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
-                        putFile(fileName, aFile);
-                    } else if (! readOnly) {
-                        String aDirName = fileToCreate.getParent();
-                        File aDir = new File(aDirName);
-                        if (aDir.exists() || aDir.mkdirs()) {
-                            aFile = new ConcurrentFileRWAccess(fileToCreate, unit); //NOI18N
-                            putFile(fileName, aFile);
-                        }
-                    }
-                } else if (!aFile.isValid()) {
-                    nameToFileCache.remove(new CacheFilterImpl(aFile));
-                    continue;
-                } else {
-                    if( readOnly ) {
-                        readHitCnt++;
-                    } else {
-                        writeHitCnt++;
-                    }
-                }
-            }
-            
-            if (aFile == null) {
-                break;
-            }
-            
-            try {
-                if (readOnly) {
-                    aFile.lock.readLock().lock();
-                } else {
-                    aFile.lock.writeLock().lock();
-                }
-                if (aFile.isValid()) {
-                    keepLocked = true;
-                    break;
-                } else if( TRACE_CONFLICTS ) {
-                    System.out.printf("invalid file descriptir when %s %s\n", readOnly ? "reading" : "writing", fileName); // NOI18N
-                }
-            }  finally {
-                if (!keepLocked) {
-                    if (readOnly) {
-                        aFile.lock.readLock().unlock();
-                    } else {
-                        aFile.lock.writeLock().unlock();
-                    }
-                }
-            }
-            
-        } while (true);
-        
-        return aFile;
-    }
-    
-    private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
-        assert Thread.holdsLock(cacheLock);
-        ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
-        if (removedFile != null) {
-            try {
-                removedFile.lock.writeLock().lock();
-                if (removedFile.isValid()) {
-                    removedFile.close();
-                }
-                
-            } finally {
-                removedFile.lock.writeLock().unlock();
-            }
-        }
-    }    
-    
-    @Override
-    public void remove(Key id) throws IOException{
-        
-        String fileName = resolveFileName(id);
-        assert fileName != null;
-        
-        ConcurrentFileRWAccess removedFile;
-        synchronized (cacheLock) {
-            removedFile = nameToFileCache.remove(fileName);
-        }
-        if (removedFile != null) {
-            try {
-                removedFile.lock.writeLock().lock();
-                
-                if (removedFile.isValid() ) {
-                    removedFile.close();
-                }
-                
-            }  finally {
-                removedFile.lock.writeLock().unlock();
-            }
-        }
-        
-        File toDelete = new File(fileName);
-        toDelete.delete();
-        
-    }
-    
-    @Override
-    public void closeUnit(final CharSequence unitName) throws IOException {
-        Filter<ConcurrentFileRWAccess> filter = new Filter<ConcurrentFileRWAccess>() {
-            @Override
-            public boolean accept(ConcurrentFileRWAccess value) {
-                return value.unit.equals(unitName);
-            }
-        };
-        Collection<ConcurrentFileRWAccess> removedFiles;
-        synchronized (cacheLock) {
-            removedFiles = nameToFileCache.remove(filter);
-        }
-        if (removedFiles != null) {
-            for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
-                try {
-                    fileToRemove.lock.writeLock().lock();
-                    if (fileToRemove.isValid()) {
-                        fileToRemove.close();
-                    }
-
-                } finally {
-                    fileToRemove.lock.writeLock().unlock();
-                }
-            }
-        }
-        if( Stats.multyFileStatistics ) {
+        if (Stats.multyFileStatistics) {
             printStatistics();
             resetStatistics();
         }
     }
-    
+
+    public void shutdown(boolean writable) {
+        maintenance(Long.MAX_VALUE);
+        for (Map.Entry<Integer, UnitStorage> entry : unitStorageCache.entrySet()) {
+            closeUnit(entry.getKey(), false);
+        }        
+        if (!writable) {
+            return;
+        }
+        RepositoryDataOutputImpl dos = null;
+        try {
+            
+            final File file = new File(cacheLocationFile, removedKeysTable);
+            //delete and create again
+            if (file.exists()) {
+                file.delete();
+            }
+            //store removed tables on disk
+            dos = new RepositoryDataOutputImpl(RepositoryImplUtil.getBufferedDataOutputStream(file));
+            removedKeysFile.write(dos);
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void remove(LayerKey key, boolean hasReadOnlyLayersInStorage) {
+        //do use now: implement delete from the writable layer and 
+        //remove and put to the removed_table
+        //when shutdown wtite it on the disk
+        //if put with the same key - remove from the table
+        //remove phisically
+        //add to the removed_table
+        //we can use FileIndex for removed objects
+        if (hasReadOnlyLayersInStorage) {
+            removedKeysFile.put(key);
+        }
+        UnitStorage unitStorage = getUnitStorage(key.getUnitId());       
+        unitStorage.remove(key);
+    }
+
+    /*package*/ void testCloseUnit(int unitId) throws IOException {
+        closeUnit(unitId, false);
+    }
+
     // package-local - for test purposes
     void printStatistics() {
-        System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n",  // NOI18N
-                readCnt, readHitCnt, percentage(readHitCnt, readCnt), writeCnt, writeHitCnt, percentage(writeHitCnt, writeCnt));
-        if( writeStatistics != null ) {
+        System.out.printf("\nFileAccessStrategy statistics: reads %d hits %d (%d%%) writes %d hits %d (%d%%)\n", // NOI18N
+                readCnt.get(), readHitCnt.get(), percentage(readHitCnt.get(), readCnt.get()), writeCnt.get(), writeHitCnt.get(), percentage(writeHitCnt.get(), writeCnt.get()));
+        if (writeStatistics != null) {
             readStatistics.print(System.out);
         }
-        if( writeStatistics != null ) {
+        if (writeStatistics != null) {
             writeStatistics.print(System.out);
         }
     }
-            
+
     private static int percentage(int numerator, int denominator) {
-        return (denominator == 0) ? 0 : numerator*100/denominator;
+        return (denominator == 0) ? 0 : numerator * 100 / denominator;
     }
-            
+
     private void resetStatistics() {
-        writeStatistics = new BaseStatistics<String>("Writes", BaseStatistics.LEVEL_MEDIUM); // NOI18N
-        readStatistics = new BaseStatistics<String>("Reads", BaseStatistics.LEVEL_MEDIUM); // NOI18N
-        readCnt = readHitCnt = writeCnt = writeHitCnt = 0;
+        writeStatistics.clear();
+        readStatistics.clear();
+        readCnt.set(0);
+        readHitCnt.set(0);
+        writeCnt.set(0);
+        writeHitCnt.set(0);
     }
-    
-    private final static char SEPARATOR_CHAR = '-';
-    
-    private String resolveFileName(Key id) throws IOException {
-        
-        assert id != null;
-        int size = id.getDepth();
-        
-        StringBuilder    nameBuffer = new StringBuilder(""); //NOI18N
 
-        for (int j = 0 ; j < id.getSecondaryDepth(); ++j) {
-            nameBuffer.append(id.getSecondaryAt(j)).append(SEPARATOR_CHAR);
-        }
-
-        if( size != 0 ) {
-            for (int i = 0 ; i < size; ++i) {
-                nameBuffer.append(id.getAt(i)).append(SEPARATOR_CHAR);
-            }
-        }
-
-        String fileName = nameBuffer.toString();
-
-        fileName = URLEncoder.encode(fileName, Stats.ENCODING);
-
-        fileName = storageAllocator.getUnitStorageName(id.getUnit()) + 
-                storageAllocator.reduceString(fileName);
-
-        return fileName;
-    }
-    
     private static String getBriefClassName(Object o) {
-        if( o == null ) {
+        if (o == null) {
             return "null"; // NOI18N
         } else {
             String name = o.getClass().getName();
@@ -449,90 +243,304 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             return (pos < 0) ? name : name.substring(pos + 1);
         }
     }
-    
-    /** 
-     * For test purposes ONLY! 
-     * Gets a collection of all cached files names
+
+    @Override
+    public String toString() {
+        return "FilesAccessStrategyImpl: " + cacheLocationURI.toString(); // NOI18N
+    }
+
+    @Override
+    public boolean knowsKey(LayerKey key) {
+        //check if not removed already
+        UnitStorage unitStorage = getUnitStorage(key.getUnitId());
+        FileStorage fileStorage = unitStorage.getFileStorage(key, isWritable);
+        if (fileStorage == null) {
+            return false;
+        }
+        try {
+            return fileStorage.hasKey(key);
+        } catch (IOException ex) {
+           // Exceptions.printStackTrace(ex);
+        }
+        return false;        
+    }
+
+    @Override
+    public ByteBuffer read(LayerKey key) {
+        readCnt.incrementAndGet(); // always increment counters
+        if (Stats.multyFileStatistics) {
+            readStatistics.consume(getBriefClassName(key), 1);
+        }
+        //check if not removed already
+        if (this.removedKeysFile.keySet().contains(key)) {
+            log.log(Level.FINE, " the key with unit id:{0} and behaviour: {1} is "
+                    + "removed from the layer, will not read from the disk", new Object[]{key.getUnitId(), key.getBehavior()});//NOI18N
+            return null;
+        }
+        UnitStorage unitStorage = getUnitStorage(key.getUnitId());
+        FileStorage fileStorage = unitStorage.getFileStorage(key, isWritable);
+         try {
+             if (fileStorage != null) {
+                log.log(Level.FINE, "Storage is found for the key with unit id:{0} and behaviour: {1} is "
+                        , new Object[]{key.getUnitId(), key.getBehavior()});                 
+                 return fileStorage.read(key);
+             }
+         } catch (IOException ex) {
+             RepositoryExceptions.throwException(this, key, ex);
+         }
+         return null;
+    }
+
+    @Override
+    public void write(LayerKey key, ByteBuffer data) {
+        writeCnt.incrementAndGet(); // always increment counters
+        if (Stats.multyFileStatistics) {
+            writeStatistics.consume(getBriefClassName(key), 1);
+        }
+        UnitStorage unitStorage = getUnitStorage(key.getUnitId());
+        FileStorage fileStorage = unitStorage.getFileStorage(key, true);
+        try {
+            if (fileStorage != null) {
+                fileStorage.write(key, data);
+            }
+        } catch (IOException ex) {
+            RepositoryExceptions.throwException(this, key, ex);
+        }
+
+    }
+
+    @Override
+    public void removeUnit(int unitIDInLayer) {
+        layerIndex.removeUnit(unitIDInLayer);
+        UnitStorage unitStorage = getUnitStorage(unitIDInLayer);
+        unitStorage.cleanUnitDirectory();
+    }
+
+    public void purgeAllDiskStorage() {
+        RepositoryImplUtil.deleteDirectory(cacheLocationFile, false);
+    }
+
+    /**
+     * For test purposes ONLY! - gets read hit count
      */
     // package-local
-    Collection<String> testGetCacheFileNames() {
-        synchronized( cacheLock ) {
-            return nameToFileCache.keys();
-        }
-    }
-    
-    public static FilesAccessStrategyImpl testGetStrategy(CacheLocation cacheLocation) {
-        DelegateRepository repository = (DelegateRepository) RepositoryAccessor.getRepository();
-        for (BaseRepository delegate : repository.testGetDelegates()) {
-            if (cacheLocation.equals(delegate.getCacheLocation())) {
-                return (FilesAccessStrategyImpl) delegate.getFilesAccessStrategy();
-            }
-        }
-        return null;
-    }
-
-    /** For test purposes ONLY! - gets read hit count */
-    // package-local
     int getReadHitCnt() {
-        return readHitCnt;
+        return readHitCnt.get();
     }
 
-    /** For test purposes ONLY! - gets read hit percentage */
+    /**
+     * For test purposes ONLY! - gets read hit percentage
+     */
     // package-local
     int getReadHitPercentage() {
-        return percentage(readHitCnt, readCnt);
+        return percentage(readHitCnt.get(), readCnt.get());
     }
 
-    /** For test purposes ONLY! - gets write hit count */
+    /**
+     * For test purposes ONLY! - gets write hit count
+     */
     // package-local
     int getWriteHitCnt() {
-        return writeHitCnt;
+        return writeHitCnt.get();
     }
 
-    /** For test purposes ONLY! - gets read hit percentage */
+    /**
+     * For test purposes ONLY! - gets read hit percentage
+     */
     // package-local
     int getWriteHitPercentage() {
-        return percentage(writeHitCnt, writeCnt);
+        return percentage(writeHitCnt.get(), writeCnt.get());
     }
 
-    /** For test purposes ONLY! - gets cache size */
-    // package-local
-    int getCacheSize() {
-        return nameToFileCache.size();
+    public void debugDump(LayerKey key) {
+        UnitStorage unitStorage = getUnitStorage(key.getUnitId());
+        unitStorage.debugDump(key);
     }
-    
+
     @Override
-    public void debugDump(Key key) {
-        assert key != null;
+    public boolean maintenance(long timeout) {
+        long start = System.currentTimeMillis();
+
+        for (UnitStorage storage : unitStorageCache.values()) {
+            long rest = timeout - (System.currentTimeMillis() - start);
+            if (rest <= 0) {
+                return true;
+            }
+            if (storage.maintenance(rest)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private UnitStorage getUnitStorage(int unitID) {
+        UnitStorage result = unitStorageCache.get(unitID);
+        if (result == null) {
+            result = new UnitStorage(cacheLocationFile, unitID);
+            unitStorageCache.put(unitID, result);
+        }
+        return result;
+    }
+
+    @Override
+    public int registerNewUnit(UnitDescriptor unitDescriptor) {
+        return layerIndex.registerUnit(unitDescriptor);
+    }
+
+    @Override
+    public int registerClientFileSystem(FileSystem fileSystem) {
+        return layerIndex.registerFileSystem(fileSystem);
+    }
+
+    @Override
+    public void storeFilesTable(Integer unitIDInLayer, List<CharSequence> filesList) {
         try {
-            String fileName = resolveFileName(key);
-            ls(new File(fileName));
+            layerIndex.storeFilesTable(unitIDInLayer, filesList);
         } catch (IOException ex) {
-            System.err.printf("Exception when dumping by key %s\n", key);
-            ex.printStackTrace(System.err);
+            Exceptions.printStackTrace(ex);
         }
     }
-    
-    private void ls(File file) {
-        System.err.printf("\tFile: %s\n\tExists: %b\n\tLength: %d\n\tModified: %s\n\n", file.getAbsolutePath(), file.exists(), file.length(), new Date(file.lastModified()));
+
+    Collection<LayerKey> removedTableKeySet() {
+        return removedKeysFile.keySet();
     }
-    
-    private static class CacheFilterImpl implements Filter<ConcurrentFileRWAccess> {
 
-        private final ConcurrentFileRWAccess value;
+    @Override
+    public int getMaintenanceWeight() throws IOException {
+        int weight = 0;
+        for (UnitStorage storage : unitStorageCache.values()) {
+            weight += storage.dblStorage.getFragmentationPercentage();
+        }
+        return weight;
+    }
 
-        public CacheFilterImpl(ConcurrentFileRWAccess value) {
-            this.value = value;
+    private static class UnitStorage {
+
+        private final DoubleFileStorage dblStorage;
+        private final SingleFileStorage singleStorage;
+        private final File baseDir;
+
+        private UnitStorage(File cacheLocationFile, int unitID) {
+            baseDir = new File(cacheLocationFile, "" + unitID); // NOI18N
+            dblStorage = new DoubleFileStorage(baseDir);
+            singleStorage = new SingleFileStorage(baseDir);
         }
 
-        @Override
-        public boolean accept(ConcurrentFileRWAccess v) {
-            return v == this.value;
+        private void close() {
+            try {
+                dblStorage.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private FileStorage getFileStorage(LayerKey key, boolean forWriting) {
+            FileStorage storage;
+            if (Key.Behavior.LargeAndMutable.equals(key.getBehavior())) {
+                storage = singleStorage;
+            } else {
+                storage = dblStorage;
+            }
+
+            if (!storage.open(forWriting)) {
+                return null;
+            }
+
+            return storage;
+        }
+
+
+        
+        private void remove(LayerKey key) {
+            FileStorage fileStorage = getFileStorage(key, true);
+            try {
+                if (fileStorage != null) {
+                    fileStorage.remove(key);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+                        
+        }
+        
+        private void debugDump(LayerKey key) {
+            // if (Key.Behavior.LargeAndMutable.equals(key.getBehavior())) {
+            dblStorage.debugDump(key);
+        }
+
+        /**
+         * Returns true if more time needed
+         * @param timeout
+         * @return 
+         */
+        private boolean maintenance(long timeout) {
+            try {
+                return dblStorage.maintenance(timeout);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return false;
         }
 
         @Override
         public String toString() {
-            return "Filter:" + value; // NOI18N
+            return "UnitStorage: " + dblStorage + " & " + singleStorage; // NOI18N
+        }
+
+        private void cleanUnitDirectory() {
+            RepositoryImplUtil.deleteDirectory(baseDir, true);
         }
     }
+    
+    private static class RepositoryDataInputImpl extends DataInputStream implements RepositoryDataInput {
+
+        public RepositoryDataInputImpl(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public CharSequence readCharSequenceUTF() throws IOException {
+            return UTF.readUTF(this);
+        }
+
+        @Override
+        public int readUnitId() throws IOException {
+            return readInt();
+        }
+
+        @Override
+        public FileSystem readFileSystem() throws IOException {
+            throw new InternalError();
+        }
+    }    
+    
+    private static class RepositoryDataOutputImpl extends DataOutputStream implements RepositoryDataOutput {
+
+        public RepositoryDataOutputImpl(OutputStream in) {
+            super(in);
+        }
+
+        @Override
+        public void writeCharSequenceUTF(CharSequence seq) throws IOException {
+            UTF.writeUTF(seq, this);
+        }
+
+        @Override
+        public void writeUnitId(int unitId) throws IOException {
+            writeInt(unitId);
+        }
+
+        @Override
+        public void writeFileSystem(FileSystem fileSystem) throws IOException {
+            writeInt(0);
+        }
+
+        @Override
+        public void commit() {
+            
+        }
+
+        
+    }        
 }

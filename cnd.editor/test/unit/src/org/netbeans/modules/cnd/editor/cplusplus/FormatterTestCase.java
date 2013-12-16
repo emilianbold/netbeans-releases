@@ -5665,4 +5665,49 @@ public class FormatterTestCase extends EditorBase {
               + "    int a{(int) 123};\n" 
               + "};\n");
     }
+    
+    public void test238995_2() {
+        setLoadDocumentText(
+                "ClassA::ClassA() :\n" +
+                "      memberX(),\n" +
+                "      memberY(),\n" +
+                "      memberZ()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "namespace X\n" +
+                "{\n" +
+                "\n" +
+                "    ClassB::ClassB() :\n" +
+                "          memberX(),\n" +
+                "          memberY(),\n" +
+                "          memberZ()\n" +
+                "    {\n" +
+                "    }\n" +
+                "};\n"
+                );
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                putInt(EditorOptions.constructorListContinuationIndent, 6);
+        reformat();
+        assertDocumentText("Incorrect constructor list in namespace",
+                "ClassA::ClassA() :\n" +
+                "      memberX(),\n" +
+                "      memberY(),\n" +
+                "      memberZ()\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "namespace X\n" +
+                "{\n" +
+                "\n" +
+                "    ClassB::ClassB() :\n" +
+                "          memberX(),\n" +
+                "          memberY(),\n" +
+                "          memberZ()\n" +
+                "    {\n" +
+                "    }\n" +
+                "};\n"
+                );
+    }
 }

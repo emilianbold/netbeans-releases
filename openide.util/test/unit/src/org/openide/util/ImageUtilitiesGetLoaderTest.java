@@ -51,6 +51,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.*;
 import java.util.*;
+import javax.swing.JButton;
 
 /**
  *
@@ -59,8 +60,8 @@ import java.util.*;
 public class ImageUtilitiesGetLoaderTest extends TestCase {
     static {
         System.setProperty("org.openide.util.Lookup", "org.openide.util.ImageUtilitiesGetLoaderTest$Lkp");
-
-
+        
+        JButton ignore = new javax.swing.JButton();
         Logger l = Logger.getLogger("");
         Handler[] arr = l.getHandlers();
         for (int i = 0; i < arr.length; i++) {
@@ -68,6 +69,8 @@ public class ImageUtilitiesGetLoaderTest extends TestCase {
         }
         l.addHandler(new ErrMgr());
         l.setLevel(Level.ALL);
+        assertEquals(Level.ALL, l.getLevel());
+        assertNotNull(ignore);
     }
     
     

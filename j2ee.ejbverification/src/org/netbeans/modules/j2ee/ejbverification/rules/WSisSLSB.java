@@ -108,10 +108,8 @@ public final class WSisSLSB {
                 return null; // ok, interfaces can have @WebService without ejb annotations
             }
             if (ctx.getEjb() instanceof Session) {
-                Session session = (Session) ctx.getEjb();
-
-                if (Session.SESSION_TYPE_STATELESS.equals(session.getSessionType())
-                        || Session.SESSION_TYPE_SINGLETON.equals(session.getSessionType())) {
+                if (Session.SESSION_TYPE_STATELESS.equals(ctx.getEjbData().getSessionType())
+                        || Session.SESSION_TYPE_SINGLETON.equals(ctx.getEjbData().getSessionType())) {
                     return Collections.emptyList(); //OK
                 }
             }

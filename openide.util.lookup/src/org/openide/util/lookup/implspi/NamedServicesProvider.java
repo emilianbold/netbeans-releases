@@ -74,7 +74,8 @@ import org.openide.util.lookup.Lookups;
  */
 public abstract class NamedServicesProvider {
     private static final Map<String,Reference<Lookup>> namedServicesProviders = Collections.synchronizedMap(new HashMap<String,Reference<Lookup>>());
-
+    private static ThreadLocal<Boolean> IN = new ThreadLocal<Boolean>();
+    
     public static Lookup forPath(String path) {
 
         Reference<Lookup> ref = namedServicesProviders.get(path);
@@ -83,14 +84,13 @@ public abstract class NamedServicesProvider {
             return lkp;
         }
         NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
-        if (prov != null &&
-            /* avoid stack overflow during initialization */
-            !path.startsWith(
-                "URLStreamHandler/"
-                /*URLStreamHandlerRegistrationProcessor.REGISTRATION_PREFIX*/
-            )
-        ) {
-            lkp = prov.create(path);
+        if (prov != null && IN.get() == null) {
+            IN.set(true);
+            try {
+                lkp = prov.create(path);
+            } finally {
+                IN.set(null);
+            }
         } else {
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
             if (l == null) {

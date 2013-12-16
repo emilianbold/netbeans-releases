@@ -26,6 +26,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -71,7 +72,7 @@ public class TraceModelBase {
         model = createModel();
         model.startup();
         if (clearCache) {
-            RepositoryUtils.cleanCashes();
+            RepositoryTestUtils.deleteDefaultCacheLocation();
         }
         currentIncludePaths = quoteIncludePaths;
     }
@@ -94,8 +95,7 @@ public class TraceModelBase {
     protected final void shutdown(boolean clearCache) {
         model.shutdown();
         if (clearCache){
-            RepositoryUtils.cleanCashes();
-            RepositoryUtils.debugClear();
+            RepositoryTestUtils.deleteDefaultCacheLocation();
         }
     }
 

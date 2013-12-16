@@ -54,14 +54,17 @@ import org.openide.util.NbBundle;
  */
 public final class BugzillaOptions extends AdvancedOption {
 
+    @Override
     public String getDisplayName () {
         return NbBundle.getMessage (BugzillaOptions.class, "BugzillaOptions.displayName");    // NOI18N
     }
 
+    @Override
     public String getTooltip () {
         return NbBundle.getMessage (BugzillaOptions.class, "BugzillaOptions.toolTip");        // NOI18N
     }
 
+    @Override
     public OptionsPanelController create () {
         return new BugzillaOptionsController ();
     }

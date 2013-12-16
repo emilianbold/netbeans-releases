@@ -294,31 +294,33 @@ public class TestSession {
             project = new WeakReference<Project>(prj);
         }
 	assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
-        Report report = new Report(getCurrentSuite().getName(), prj);
+        TestSuite currentSuite = getCurrentSuite();
+        assert currentSuite != null : "Currently running suite was null for projectURI: " + projectURI; //NOI18N
+        Report report = new Report(currentSuite.getName(), prj);
         report.setElapsedTimeMillis(timeInMillis);
 	boolean isTestNG = Manager.getInstance().getTestingFramework().equals(Manager.TESTNG_TF);
-        for (Testcase testcase : getCurrentSuite().getTestcases()) {
-	    report.reportTest(testcase);
-	    if (!isTestNGConfigMethod(testcase, isTestNG)) {
-		report.setTotalTests(report.getTotalTests() + 1);
-		if (testcase.getStatus() == Status.PASSED) {
-		    report.setPassed(report.getPassed() + 1);
-		} else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
-		    report.setPassedWithErrors(report.getPassedWithErrors() + 1);
-		} else if (testcase.getStatus() == Status.ERROR) {
-		    report.setErrors(report.getErrors() + 1);
-		} else if (testcase.getStatus() == Status.FAILED) {
-		    report.setFailures(report.getFailures() + 1);
-		} else if (testcase.getStatus() == Status.PENDING) {
-		    report.setPending(report.getPending() + 1);
-		} else if (testcase.getStatus() == Status.SKIPPED) {
-		    report.setSkipped(report.getSkipped() + 1);
-		    report.setSkipped(true);
-		} else if (testcase.getStatus() == Status.ABORTED) {
-		    report.setAborted(report.getAborted()+ 1);
-		    report.setAborted(true);
-		}
-	    }
+        for (Testcase testcase : currentSuite.getTestcases()) {
+            report.reportTest(testcase);
+            if (!isTestNGConfigMethod(testcase, isTestNG)) {
+                report.setTotalTests(report.getTotalTests() + 1);
+                if (testcase.getStatus() == Status.PASSED) {
+                    report.setPassed(report.getPassed() + 1);
+                } else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
+                    report.setPassedWithErrors(report.getPassedWithErrors() + 1);
+                } else if (testcase.getStatus() == Status.ERROR) {
+                    report.setErrors(report.getErrors() + 1);
+                } else if (testcase.getStatus() == Status.FAILED) {
+                    report.setFailures(report.getFailures() + 1);
+                } else if (testcase.getStatus() == Status.PENDING) {
+                    report.setPending(report.getPending() + 1);
+                } else if (testcase.getStatus() == Status.SKIPPED) {
+                    report.setSkipped(report.getSkipped() + 1);
+                    report.setSkipped(true);
+                } else if (testcase.getStatus() == Status.ABORTED) {
+                    report.setAborted(report.getAborted()+ 1);
+                    report.setAborted(true);
+                }
+            }
         }
         addReportToSessionResult(report);
         return report;

@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -89,7 +90,9 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
     private Properties cache;
     private boolean recheck = true;
-    private List<String> defaults = new ArrayList<String>();
+    private final List<String> defaults = new ArrayList<String>();
+    private final AtomicBoolean enabledSet = new AtomicBoolean(false);
+    private boolean enabled = false;
 
 
     private final RequestProcessor RP = new RequestProcessor("Download checkstyle plugin classpath", 1);
@@ -282,10 +285,14 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     Properties getCache() {
-        String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+        if (enabledSet.compareAndSet(false, true)) { //#238910
+            String en = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+            enabled = en != null && Boolean.parseBoolean(en);
+        }
+        
         synchronized (this) {
         if (cache == null || recheck) {
-            if (enabled != null && Boolean.parseBoolean(enabled)) {
+            if (enabled) {
                     try {
                         cache = RequestProcessor.getDefault().submit(new Callable<Properties>() {
                                 @Override
@@ -339,6 +346,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+            enabledSet.compareAndSet(true, false);
             synchronized (this) {
                 recheck = true;
             }

@@ -106,6 +106,14 @@ public class DevelopmentHostNodeProp extends Node.Property {
     }
 
     @Override
+    public Object getValue(String attributeName) {
+        if (attributeName.equals("canAutoComplete")) { //NOI18N
+            return Boolean.FALSE;
+        }
+        return super.getValue(attributeName);
+    }        
+    
+    @Override
     public void setValue(Object value) {
         configuration.setValue((String) value, true);
     }

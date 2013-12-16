@@ -80,6 +80,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.normalizePath(fileObject));
+        assert this.absPath != null : "no path for " + fileObject;
         this.fileSystem = getFileSystem(fileObject);
         this.fileObject = new WeakReference<FileObject>(fileObject);
         this.bufType = MIMENames.isCppOrCOrFortran(fileObject.getMIMEType()) ? APTFileBuffer.BufferType.START_FILE : APTFileBuffer.BufferType.INCLUDED;

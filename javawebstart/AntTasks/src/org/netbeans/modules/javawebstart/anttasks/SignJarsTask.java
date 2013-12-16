@@ -41,7 +41,13 @@ package org.netbeans.modules.javawebstart.anttasks;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -52,19 +58,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.taskdefs.ManifestException;
+import org.apache.tools.ant.taskdefs.Move;
 import org.apache.tools.ant.taskdefs.SignJar;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.util.FileUtils;
+import org.apache.tools.zip.ZipOutputStream;
 
 /**
  * 
  * @author Milan Kubec
  * @author Petr Somol
+ * @author Tomas Zezula
  */
 public class SignJarsTask extends Task {
     
@@ -77,6 +91,12 @@ public class SignJarsTask extends Task {
 
     private static final String SIG_START = "META-INF/"; //NOI18N
     private static final String SIG_END = ".SF"; //NOI18N
+    private static final String MANIFEST = "META-INF/MANIFEST.MF";  //NOI18N
+    private static final String UTF_8 = "UTF-8";    //NOI18N
+    private static final String ATTR_CODEBASE = "Codebase"; //NOI18N
+    private static final String ATTR_PERMISSIONS = "Permissions";   //NOI18N
+    private static final String ATTR_APPLICATION_NAME = "Application-Name"; //NOI18N
+
     
     private int compIndex = 1;
     
@@ -180,6 +200,21 @@ public class SignJarsTask extends Task {
         // for already signed files generate component jnlp file
         log("Files already signed by requested alias: " + alreadySigned.toString(), Project.MSG_VERBOSE); //NOI18N
         
+        try {
+            extendLibrariesManifests(getProject(), mainJar, files2sign);
+            for (File signedLib : alreadySigned) {
+                getProject().log(
+                    String.format(
+                        "Not adding security attributes into library: %s the library is already signed.",
+                        safeRelativePath(getProject().getBaseDir(),signedLib)),
+                    Project.MSG_WARN);
+            }
+        } catch (IOException ex) {
+            getProject().log(
+            "Failed to extend libraries manifests: " + ex.getMessage(), //NOI18N
+            Project.MSG_WARN);
+        }
+
         StringBuilder signedJarsBuilder = new StringBuilder();
         SignJar signJar = (SignJar) getProject().createTask("signjar"); //NOI18N
         signJar.setLocation(getLocation());
@@ -338,6 +373,168 @@ public class SignJarsTask extends Task {
             }
         }
         return sb.toString();
+    }
+
+    private static void extendLibrariesManifests(
+        final Project prj,
+        final File mainJar,
+        final List<? extends File> libraries) throws IOException {
+        String codebase = null;
+        String permissions = null;
+        String appName = null;
+        final JarFile jf = new JarFile(mainJar);
+        try {
+            final java.util.jar.Manifest mf = jf.getManifest();
+            if (mf != null) {
+                final Attributes attrs = mf.getMainAttributes();
+                codebase = attrs.getValue(ATTR_CODEBASE);
+                permissions = attrs.getValue(ATTR_PERMISSIONS);
+                appName = attrs.getValue(ATTR_APPLICATION_NAME);
+            }
+        } finally {
+            jf.close();
+        }
+        prj.log(
+            String.format(
+                "Application: %s manifest: Codebase: %s, Permissions: %s, Application-Name: %s",    //NOI18N
+                safeRelativePath(prj.getBaseDir(), mainJar),
+                codebase,
+                permissions,
+                appName),
+            Project.MSG_VERBOSE);
+        if (codebase != null || permissions != null || appName != null) {
+            for (File library : libraries) {
+                try {
+                    extendLibraryManifest(prj, library, codebase, permissions, appName);
+                } catch (ManifestException mex) {
+                    throw new IOException(mex);
+                }
+            }
+        }
+    }
+
+    private static void extendLibraryManifest(
+        final Project prj,
+        final File library,
+        final String codebase,
+        final String permissions,
+        final String appName) throws IOException, ManifestException {
+        org.apache.tools.ant.taskdefs.Manifest manifest = null;
+        Move mv = new Move();
+        final File tmpFile = new File(String.format("%s.tmp", library.getAbsolutePath()));
+        mv.setFile(library);
+        mv.setTofile(tmpFile);
+        mv.execute();
+        boolean success = false;
+        try {
+            final Map<String,String> extendedAttrs = new HashMap<String,String>();
+            final org.apache.tools.zip.ZipFile zf = new org.apache.tools.zip.ZipFile(tmpFile);
+            try {                
+                final org.apache.tools.zip.ZipEntry manifestEntry = zf.getEntry(MANIFEST);
+                if (manifestEntry != null) {
+                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName(UTF_8));    //NOI18N
+                    try {
+                        manifest = new org.apache.tools.ant.taskdefs.Manifest(in);
+                    } finally {
+                        in.close();
+                    }
+                } else {
+                    manifest = new org.apache.tools.ant.taskdefs.Manifest();
+                }
+                final org.apache.tools.ant.taskdefs.Manifest.Section mainSection = manifest.getMainSection();                
+                String attr = mainSection.getAttributeValue(ATTR_CODEBASE);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_CODEBASE,
+                        codebase));
+                    extendedAttrs.put(ATTR_CODEBASE, codebase);
+                }
+                attr = mainSection.getAttributeValue(ATTR_PERMISSIONS);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_PERMISSIONS,
+                        permissions));
+                    extendedAttrs.put(ATTR_PERMISSIONS, permissions);
+                }
+                attr = mainSection.getAttributeValue(ATTR_APPLICATION_NAME);
+                if (attr == null) {
+                    mainSection.addAttributeAndCheck(new org.apache.tools.ant.taskdefs.Manifest.Attribute(
+                        ATTR_APPLICATION_NAME,
+                        appName));
+                    extendedAttrs.put(ATTR_APPLICATION_NAME, appName);
+                }
+                if (!extendedAttrs.isEmpty()) {
+                    final Enumeration<? extends org.apache.tools.zip.ZipEntry> zent = zf.getEntries();
+                    final ZipOutputStream out = new ZipOutputStream(library);
+                    try {
+                        while (zent.hasMoreElements()) {
+                            final org.apache.tools.zip.ZipEntry entry = zent.nextElement();
+                            final InputStream in = zf.getInputStream(entry);
+                            try {
+                                out.putNextEntry(entry);
+                                if (MANIFEST.equals(entry.getName())) {
+                                    final PrintWriter manifestOut = new PrintWriter(new OutputStreamWriter(out, Charset.forName(UTF_8)));
+                                    manifest.write(manifestOut);
+                                    manifestOut.flush();
+                                } else {
+                                    copy(in,out);
+                                }
+                            } finally {
+                                in.close();
+                            }
+                        }
+                    } finally {
+                        out.close();
+                    }
+                    success = true;
+                    final StringBuilder message = new StringBuilder("Updating library ").   //NOI18N
+                        append(safeRelativePath(prj.getBaseDir(), library)).
+                        append(" manifest");    //NOI18N
+                    for (Map.Entry<String,String> e : extendedAttrs.entrySet()) {
+                        message.append(String.format(" %s: %s,", e.getKey(), e.getValue()));
+                    }
+                    message.deleteCharAt(message.length()-1);
+                    prj.log(message.toString(), Project.MSG_VERBOSE);
+                }
+            } finally {
+                zf.close();
+            }
+        } finally {
+            if (success) {
+                final Delete del = new Delete();
+                del.setFile(tmpFile);
+                del.execute();
+            } else {
+                final Delete rm = new Delete();
+                rm.setFile(library);
+                rm.setQuiet(true);
+                rm.execute();
+                mv = new Move();
+                mv.setFile(tmpFile);
+                mv.setTofile(library);
+                mv.execute();
+            }
+        }
+    }
+
+    private static void copy(final InputStream in, final OutputStream out) throws IOException {
+        final byte[] BUFFER = new byte[4096];
+        int len;
+        for (;;) {
+            len = in.read(BUFFER);
+            if (len == -1) {
+                return;
+            }
+            out.write(BUFFER, 0, len);
+        }
+    }
+
+    private static String safeRelativePath(File from, File to) {
+        try {
+            return FileUtils.getRelativePath(from, to);
+        } catch (Exception ex) {
+            return to.getAbsolutePath();
+        }
     }
     
 }

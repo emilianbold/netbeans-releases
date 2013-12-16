@@ -60,25 +60,26 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public class TestKey implements Key, SelfPersistent {
     
-    private String key;
-    private String unit;
-    private int unitId;
-    private Behavior behavior;
+    private final String key;
+    private final String unit;
+    private final int unitId;
+    private final Behavior behavior;
     
     @Override
     public Behavior getBehavior() {
 	return Behavior.Default;
     }
     
-    public TestKey(String key, String unit, Behavior behavior) {
+    public TestKey(String key, int unitId, String unit, Behavior behavior) {
 	this.key = key;
         this.unit = unit;
+        this.unitId = unitId;
         this.behavior = behavior;
     }
     
 
     public TestKey(RepositoryDataInput stream) throws IOException {
-        this(stream.readUTF(), stream.readUTF(), 
+        this(stream.readUTF(), stream.readInt(), stream.readUTF(),
                 stream.readBoolean() ? Behavior.LargeAndMutable : Behavior.Default);
     }
     
@@ -109,14 +110,10 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final boolean equals(UnitsConverter unitsConverter, Key object) {
+    public final boolean equals(int thisUnitID, Key object, int objectUnitID) {
         if (object == null || (this.getClass() != object.getClass())) {
             return false;
         }        
-        if ((unitsConverter != null  && unitsConverter.clientToLayer(unitId) != unitsConverter.clientToLayer(object.getUnitId())) || 
-                unitsConverter == null && unitId != ((TestKey)object).unitId) {
-            return false;
-        }
         final TestKey other = (TestKey) object;
         if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
             return false;
@@ -147,24 +144,21 @@ public class TestKey implements Key, SelfPersistent {
     }
 
     @Override
-    public final int hashCode(UnitsConverter unitsConverter) {
+    public final int hashCode(int unitID) {
         int hash = this.key != null ? this.key.hashCode() : 0;
         hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
         hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash + (unitsConverter == null ? unitId : unitsConverter.clientToLayer(unitId));
+        return hash + unitID;
     }
 
     @Override
     public final int hashCode() {
-        int hash = this.key != null ? this.key.hashCode() : 0;
-        hash = 59 * hash + (this.unit != null ? this.unit.hashCode() : 0);
-        hash = 59 * hash + (this.behavior != null ? this.behavior.hashCode() : 0);
-        return hash + unitId;
+         return hashCode(unitId);
     }
     
     @Override
     public String toString() {
-	return unit + ':' + key + ' ' + behavior;
+	return unitId + ' ' + unit + ':' + key + ' ' + behavior;
     }
 
     @Override
@@ -180,6 +174,7 @@ public class TestKey implements Key, SelfPersistent {
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         output.writeUTF(key);
+        output.writeInt(unitId);
         output.writeUTF(unit);
         output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }

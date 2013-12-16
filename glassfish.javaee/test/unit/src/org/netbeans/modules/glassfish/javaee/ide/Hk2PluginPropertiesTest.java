@@ -44,7 +44,7 @@ package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.glassfish.tools.ide.utils.NetUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -89,33 +89,38 @@ public class Hk2PluginPropertiesTest {
             ServerSocket ss = new ServerSocket(0);
             int port = ss.getLocalPort();
             boolean expResult = true;
-            boolean result = ServerUtils.isRunningRemote(host, port);
+            boolean result = NetUtils.isPortListeningRemote(
+                    host, port, NetUtils.PORT_CHECK_TIMEOUT);
             assertEquals(expResult, result);
             ss.close();
-            result = ServerUtils.isRunningRemote(host, port);
+            result = NetUtils.isPortListeningRemote(
+                    host, port, NetUtils.PORT_CHECK_TIMEOUT);
             expResult = false;
             assertEquals(expResult, result);
             port = 4848;
             try {
                 ss = new ServerSocket(port);
+            // It looks like there is an app server running, let's pound on it.
             } catch (IOException ioe) {
-                // it looks like there is an app server running... let's pound on it
-                System.out.println("isRunning "+host+":4848");
+                System.out.println("isRunning " + host + ":4848");
                 poundOnIt(host, port, true);
             } finally {
                 ss.close();
             }
         } else {
             System.out.println("isRunning "+host+":4848");
-            poundOnIt(host, 4848, ServerUtils.isRunningRemote(host, 4848));
+            poundOnIt(host, 4848, NetUtils.isPortListeningRemote(
+                    host, 4848, NetUtils.PORT_CHECK_TIMEOUT));
         }
     }
 
     private void poundOnIt(String host, int port, boolean expResult) {
-        boolean result = ServerUtils.isRunningRemote(host, port);
+        boolean result = NetUtils.isPortListeningRemote(
+                host, port, NetUtils.PORT_CHECK_TIMEOUT);
         assertEquals(expResult, result);
         for (int i = 0; result && i < 4000; i++) {
-            ServerUtils.isRunningRemote(host, port);
+            NetUtils.isPortListeningRemote(
+                    host, port, NetUtils.PORT_CHECK_TIMEOUT);
         }
     }
 

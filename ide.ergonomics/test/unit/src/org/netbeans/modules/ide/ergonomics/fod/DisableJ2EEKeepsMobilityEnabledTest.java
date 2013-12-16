@@ -90,7 +90,7 @@ public class DisableJ2EEKeepsMobilityEnabledTest extends NbTestCase {
             if (f.getCodeNames().contains("org.netbeans.modules.j2ee.kit")) {
                 j2ee = f;
             }
-            if (f.getCodeNames().contains("org.netbeans.modules.mobility.kit")) {
+            if (f.getCodeNames().contains("org.netbeans.modules.j2me.kit")) {
                 mobility = f;
             }
         }
@@ -106,7 +106,7 @@ public class DisableJ2EEKeepsMobilityEnabledTest extends NbTestCase {
             if (uu.getCodeName().equals("fod.org.netbeans.modules.j2ee.kit")) {
                 j2eeUE = uu.getInstalled();
             }
-            if (uu.getCodeName().equals("fod.org.netbeans.modules.mobility.kit")) {
+            if (uu.getCodeName().equals("fod.org.netbeans.modules.j2me.kit")) {
                 mobilityUE = uu.getInstalled();
             }
         }

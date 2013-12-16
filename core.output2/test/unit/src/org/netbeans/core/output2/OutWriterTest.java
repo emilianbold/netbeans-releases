@@ -521,7 +521,7 @@ public class OutWriterTest extends NbTestCase {
 
         OutWriter ow = new OutWriter();
 
-        ow.write("Months:\nJanuary\nFebruary\rMarch\r\nApril\n\rMay");
+        ow.write("Months:\nJanuary\nFebruary\nMarch\r\nApril\n\r\nMay");
 
         assertEquals("January\n", ow.getLines().getLine(1));
         assertEquals("February\n", ow.getLines().getLine(2));
@@ -529,6 +529,25 @@ public class OutWriterTest extends NbTestCase {
         assertEquals("April\n", ow.getLines().getLine(4));
         assertEquals("\n", ow.getLines().getLine(5));
         assertEquals("May", ow.getLines().getLine(6));
+    }
+
+    public void testCarriageReturn() throws IOException {
+
+        OutWriter ow = new OutWriter();
+
+        ow.write("Test\rRewrite\n");
+        ow.write("Original\rNew\n");
+
+        ow.write("Test1");
+        ow.write("\rReplace1\n");
+
+        ow.write("Test2");
+        ow.write("\rRep2\n");
+
+        assertEquals("Rewrite\n", ow.getLines().getLine(0));
+        assertEquals("New\n", ow.getLines().getLine(1));
+        assertEquals("Replace1\n", ow.getLines().getLine(2));
+        assertEquals("Rep2\n", ow.getLines().getLine(3));
     }
 
     public void testBackspaceChars() throws IOException {

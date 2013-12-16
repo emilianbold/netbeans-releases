@@ -287,6 +287,7 @@ tokens {
     public static final int CPP_ANSI_C			= 0x10;
     public static final int CPP_KandR_C			= 0x20;
     
+    public static final int CPP_FLAVOR_CPP11            = 0x40;
 
     /** Switches legacy warnings on */
     protected static final boolean reportOddWarnings = Boolean.getBoolean("cnd.parser.odd.warnings");
@@ -360,10 +361,24 @@ tokens {
 	} else {
 	    lang = UNKNOWN_LANG;
 	}
+
+        if ((flags & CPP_FLAVOR_CPP11) > 0) {
+            langFlavor = FLAVOR_CPP11;
+        } else {
+            langFlavor = FLAVOR_UNKNOWN;
+        }
     }
 
     boolean isCPlusPlus() {
 	return lang == CPLUSPLUS;
+    }
+
+    boolean isCPlusPlus11() {
+        return isCPlusPlus() && langFlavor == FLAVOR_CPP11;
+    }
+
+    boolean isC() {
+        return lang == ANSI_C;
     }
 
 	protected static final int tsInvalid   = 0x0;
@@ -433,6 +448,10 @@ tokens {
 	protected static final  int CPLUSPLUS	= 0x2;
 	protected static final  int ANSI_C	= 0x4;
 	protected static final  int KandR_C	= 0x8;
+
+        // Language Flavors
+        protected static final  int FLAVOR_UNKNOWN  = 0x0;
+        protected static final  int FLAVOR_CPP11    = 0x1;
 
         protected static final int ERROR_LIMIT = 100;
 	private int errorCount = 0;
@@ -552,6 +571,9 @@ tokens {
 
 	protected
 	int lang;
+
+	protected
+	int langFlavor;
 
 	// Symbol table management stuff
 	//CPPDictionary *symbols;
@@ -1946,7 +1968,9 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
               declarator[declOther, 0]) => 
             (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
-            (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
+            (   options {warnWhenFollowAmbig = false;} : 
+                {isCPlusPlus11()}? sc = cpp11_storage_class_specifier
+            |   {!isCPlusPlus11()}? sc = storage_class_specifier
             |   tq = cv_qualifier 
             |   literal_inline {ds = dsINLINE;}
             |   LITERAL__Noreturn
@@ -2028,9 +2052,22 @@ typeof_param :
             expression
         ;
 
+
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
-    :   LITERAL_auto        {sc = scAUTO;}
-    |   LITERAL_register    {sc = scREGISTER;}
+    :
+        LITERAL_auto {sc = scAUTO;}
+    |
+        sc = common_storage_class_specifier
+    ;
+
+cpp11_storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
+    :
+        sc = common_storage_class_specifier
+    ;
+
+common_storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
+    :
+        LITERAL_register    {sc = scREGISTER;}
     |   LITERAL_static      {sc = scSTATIC;}
     |   LITERAL_extern      {sc = scEXTERN;}
     |   LITERAL_mutable     {sc = scMUTABLE;}
@@ -2040,7 +2077,7 @@ storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     |   LITERAL___global {sc = scOTHER;}
     |   LITERAL___hidden {sc = scOTHER;}
     |   LITERAL_thread_local {sc = scOTHER;}
-	;
+    ;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
 	:  (literal_const|LITERAL_const_cast)	{tq = tqCONST;} 
@@ -3516,6 +3553,16 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
 	|
+                // Function definition in C language
+                {isC()}?
+                ((LITERAL___extension__)?
+                    (options {greedy=true;} :function_attribute_specification!)?
+                    declaration_specifiers[false, false]
+                    (options {greedy=true;} :function_attribute_specification!)? 
+                    function_declarator[true, false, false] LCURLY
+                ) =>
+                external_declaration {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);} // TODO: refactor this
+        |
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (IDENT IDENT) => pro_c_statement
                 {if (statementTrace>=1)
 			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());

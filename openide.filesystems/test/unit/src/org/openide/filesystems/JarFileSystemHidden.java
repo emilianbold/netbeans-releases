@@ -42,14 +42,28 @@
 
 package org.openide.filesystems;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import sun.security.tools.KeyTool;
 
 /**
  *
@@ -120,4 +134,212 @@ public class JarFileSystemHidden extends NbTestCase {
         }
     }
 
+    /**
+     * Test for bug 238632.
+     *
+     * @throws java.io.IOException
+     */
+    public void testBrokenSignature() throws IOException {
+
+        clearWorkDir();
+        File dir = getWorkDir();
+        File jarFile = new File(dir, "file.jar");
+        File keystoreFile = new File(dir, "keystore.jks");
+
+        // create the jar
+        Manifest manifest = new Manifest();
+        try {
+            OutputStream os = new FileOutputStream(jarFile);
+            JarOutputStream jos = new JarOutputStream(os, manifest);
+            jos.close();
+        } catch (IOException ioe) {
+            ioe.printStackTrace(System.out);
+            return;
+        }
+        try {
+            // create a key store
+            KeyTool.main(new String[]{"-genkey",
+                "-alias", "t_alias",
+                "-keyalg", "RSA",
+                "-storepass", "testpass",
+                "-keypass", "testpass",
+                "-dname", "CN=Test, OU=QA, O=Test Org, L=Test Village,"
+                + " S=Testonia, C=Test Republic",
+                "-keystore", keystoreFile.getAbsolutePath()});
+        } catch (Exception ex) {
+            ex.printStackTrace(System.out);
+            return;
+        }
+
+        // sign the jar
+        try {
+            sun.security.tools.JarSigner.main(new String[]{
+                "-keystore", keystoreFile.getAbsolutePath(),
+                "-storepass", "testpass",
+                jarFile.getAbsolutePath(),
+                "t_alias"});
+        } catch (Exception ex) {
+            ex.printStackTrace(System.out);
+            return;
+        }
+
+        // break the signature
+        File brokenJar = new File(dir, "broken.jar");
+        File extractDir = new File(dir, "extracted");
+        extractDir.mkdir();
+        unzip(jarFile, extractDir);
+        damageSignature(extractDir);
+        zip(extractDir, brokenJar);
+
+        // check the broken MANIFEST.MF can be read
+        FileSystem fs = new JarFileSystem(brokenJar);
+        FileObject rootFO = fs.getRoot();
+        FileObject manifestFO = rootFO.getFileObject("META-INF/MANIFEST.MF");
+        assertNotNull(manifestFO);
+        InputStream is = manifestFO.getInputStream();
+        try {
+            is.read();
+        } finally {
+            is.close();
+        }
+    }
+
+    private void unzip(File zipFile, File targetDirectory)
+            throws FileNotFoundException, IOException {
+
+        InputStream fis = new FileInputStream(zipFile);
+        try {
+            ZipInputStream zis = new ZipInputStream(fis);
+            try {
+                ZipEntry entry;
+                while ((entry = zis.getNextEntry()) != null) {
+                    if (entry.isDirectory()) {
+                        continue;
+                    }
+                    String name = entry.getName();
+                    String[] parts = name.split("/");
+                    File file = targetDirectory;
+                    for (int i = 0; i < parts.length - 1; i++) {
+                        file = new File(file, parts[i]);
+                    }
+                    file.mkdirs();
+                    file = new File(file, parts[parts.length - 1]);
+                    OutputStream os = new FileOutputStream(file);
+                    try {
+                        BufferedOutputStream bos = new BufferedOutputStream(os);
+                        byte[] buffer = new byte[1024];
+                        int read;
+                        try {
+                            while ((read = zis.read(buffer)) != -1) {
+                                bos.write(buffer, 0, read);
+                            }
+                        } finally {
+                            bos.close();
+                        }
+                    } finally {
+                        os.close();
+                    }
+                }
+            } finally {
+                zis.close();
+            }
+        } finally {
+            fis.close();
+        }
+    }
+
+    private void zip(File directory, File targetZipFile)
+            throws FileNotFoundException, IOException {
+
+        OutputStream os = new FileOutputStream(targetZipFile);
+        try {
+            ZipOutputStream zos = new ZipOutputStream(os);
+            try {
+                zipFiles("", directory, zos);
+            } finally {
+                zos.close();
+            }
+        } finally {
+            os.close();
+        }
+    }
+
+    private void zipFiles(String path, File root, ZipOutputStream zos)
+            throws IOException {
+
+        for (File f : root.listFiles()) {
+            ZipEntry ze = new ZipEntry(path + f.getName());
+            zos.putNextEntry(ze);
+            if (f.isDirectory()) {
+                zipFiles(ze.getName() + "/", f, zos);
+            } else {
+                InputStream fis = new FileInputStream(f);
+                try {
+                    BufferedInputStream bis = new BufferedInputStream(fis);
+                    try {
+                        byte[] buffer = new byte[1024];
+                        int read;
+                        while ((read = bis.read(buffer)) != -1) {
+                            zos.write(buffer, 0, read);
+                        }
+                    } finally {
+                        bis.close();
+                    }
+                } finally {
+                    fis.close();
+                }
+            }
+        }
+    }
+
+    /**
+     * Replace the first equals character in META-INF/T_ALIAS.SF "=" found
+     * after text "Digest-Manifest-Main-Attributes" with character "!".
+     */
+    private void damageSignature(File extractDir)
+            throws FileNotFoundException, IOException {
+
+        File metaInfFile = new File(extractDir, "META-INF");
+        File tAliasSfFile = new File(metaInfFile, "T_ALIAS.SF");
+        FileInputStream fis = new FileInputStream(tAliasSfFile);
+        StringBuilder sb = new StringBuilder();
+        try {
+            BufferedInputStream bis = new BufferedInputStream(fis);
+            try {
+                InputStreamReader isr = new InputStreamReader(bis, "UTF-8");
+                try {
+                    char[] buffer = new char[1024];
+                    int read;
+                    while ((read = isr.read(buffer)) != -1) {
+                        sb.append(buffer, 0, read);
+                    }
+                } finally {
+                    isr.close();
+                }
+            } finally {
+                bis.close();
+            }
+        } finally {
+            fis.close();
+        }
+        int mainAttsStart = sb.indexOf("Digest-Manifest-Main-Attributes");
+        int replacePos = sb.indexOf("=", mainAttsStart);
+        sb.replace(replacePos, replacePos + 1, "!");
+        FileOutputStream fos = new FileOutputStream(tAliasSfFile);
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            try {
+                PrintStream ps = new PrintStream(bos);
+                try {
+                    ps.append(sb);
+                } finally {
+                    ps.close();
+                }
+            } finally {
+                bos.close();
+            }
+        } finally {
+            fos.close();
+        }
+    }
 }

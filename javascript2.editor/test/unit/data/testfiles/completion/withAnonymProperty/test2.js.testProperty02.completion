@@ -1,0 +1,6 @@
+Code completion result for source line:
+gg.l|anguage;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+FIELD      language: String                [PUBLIC]   Controllers.js
+FIELD      link: String                    [PUBLIC]   Controllers.js

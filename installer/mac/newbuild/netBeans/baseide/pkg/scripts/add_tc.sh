@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 nb_dir=$1
 tc_dir=$2
 

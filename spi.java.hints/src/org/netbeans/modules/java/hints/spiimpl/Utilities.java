@@ -369,7 +369,8 @@ public class Utilities {
 
             offset = "switch ($$foo) {".length();
             patternTreeErrors = currentPatternTreeErrors;
-            patternTree = toAttribute = ((SwitchTree) switchTree).getCases().get(0);
+            toAttribute =  switchTree;
+            patternTree = ((SwitchTree) switchTree).getCases().get(0);
         }
 
         if (patternTree == null || isErrorTree(patternTree)) {

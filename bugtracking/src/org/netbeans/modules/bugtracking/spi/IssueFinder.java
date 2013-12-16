@@ -53,6 +53,7 @@ package org.netbeans.modules.bugtracking.spi;
  * 
  * @author Tomas Stupka
  * @author Marian Petras
+ * @since 1.85
  */
 public interface IssueFinder {
 
@@ -82,6 +83,7 @@ public interface IssueFinder {
      * @param  text  text to be searched for references
      * @return  non-{@code null} array of boundaries of hyperlink references
      *          in the given text
+     * @since 1.85
      */
     public int[] getIssueSpans(CharSequence text);
 
@@ -95,6 +97,7 @@ public interface IssueFinder {
      * 
      * @param  issueHyperlinkText  text that refers to a bug/issue
      * @return  unique identifier of the bug/issue
+     * @since 1.85
      */
     public String getIssueId(String issueHyperlinkText);
 

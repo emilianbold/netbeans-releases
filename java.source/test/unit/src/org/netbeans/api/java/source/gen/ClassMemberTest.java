@@ -1030,7 +1030,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
-    
+
     public void testAddArrayMember() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -1049,7 +1049,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "import java.util.List;\n" +
             "\n" +
             "public class Test {\n" +
-            "    \n" +
+            "\n" +
             "    public List<E>[] newlyCreatedMethod() {\n" + 
             "    }\n" +
             "    \n" +
@@ -1106,7 +1106,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
-            "    \n" +
+            "\n" +
             "    public char newlyCreatedMethod() {\n" +
             "        char returnValue = taragui();\n" +
             "        char expectedValue = 'c';\n" + 

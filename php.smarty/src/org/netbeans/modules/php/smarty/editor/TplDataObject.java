@@ -55,6 +55,7 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -119,6 +120,9 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
 
     public static final String DEFAULT_CHARSET_NAME = Charset.defaultCharset().name();
 
+    // @GuardedBy("this")
+    private Integer showEncodingWarnings;
+
     public TplDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet set = getCookieSet();
@@ -126,11 +130,11 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         set.assign(SaveAsCapable.class, new SaveAsCapable() {
 
             @Override
-            public void saveAs( FileObject folder, String fileName ) throws IOException {
-                TplEditorSupport es = getCookie( TplEditorSupport.class );
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                TplEditorSupport es = getLookup().lookup(TplEditorSupport.class);
                 try {
                     es.updateEncoding();
-                    es.saveAs( folder, fileName );
+                    es.saveAs(folder, fileName);
                 } catch (UserCancelException e) {
                     //ignore, just not save anything
                 }
@@ -165,7 +169,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         return 1;
     }
 
-        /** Creates new Cookie */
+    @Override
     public <T extends Cookie> T createCookie(Class<T> klass) {
         if (klass.isAssignableFrom(TplEditorSupport.class)) {
             return klass.cast(getTplEditorSupport());
@@ -181,8 +185,18 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         return tplEditorSupport;
     }
 
-    // Package accessibility for TplEditorSupport:
-    CookieSet getCookieSet0() {
+    /*package*/ synchronized void setShowEncodingWarnings(Integer value) {
+        showEncodingWarnings = value;
+    }
+
+    /*package*/ synchronized Integer getShowEncodingWarnings() {
+        if (showEncodingWarnings == null) {
+            return null;
+        }
+        return showEncodingWarnings;
+    }
+
+    /*package*/ CookieSet getCookieSet0() {
         return getCookieSet();
     }
 
@@ -191,7 +205,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         InputStream is = null;
         try {
             FileObject pf = getPrimaryFile();
-            if(!pf.isValid()) {
+            if (!pf.isValid()) {
                 return null;
             }
             is = pf.getInputStream();
@@ -308,7 +322,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         @Override
         public Charset getEncoding(FileObject file) {
             assert file != null;
-            if(callingFEQ.get()) {
+            if (callingFEQ.get()) {
                 //we are calling to the FEQ from within this method so
                 //we must not return anything to prevent cycling
                 return null;
@@ -331,16 +345,16 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             }
         }
 
-        private Charset cache (final Charset encoding) {
+        private Charset cache(final Charset encoding) {
 
             if (!listeningOnContentChange.getAndSet(true)) {
                 final FileObject primaryFile = getPrimaryFile();
-                primaryFile.addFileChangeListener(FileUtil.weakFileChangeListener(new FileChangeAdapter(){
+                primaryFile.addFileChangeListener(FileUtil.weakFileChangeListener(new FileChangeAdapter() {
                     @Override
                     public void fileChanged(FileEvent fe) {
                         cachedEncoding = null;
                     }
-                },primaryFile));
+                }, primaryFile));
             }
             cachedEncoding = encoding;
             LOG.log(Level.FINEST, "TplDataObject.getFileEncoding noncached {0}", new Object[] {encoding});   //NOI18N
@@ -350,20 +364,23 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
 
         private class ProxyCharset extends Charset {
 
-            public ProxyCharset (Charset charset) {
-                super (charset.name(), new String[0]);         //NOI18N
+            public ProxyCharset(Charset charset) {
+                super(charset.name(), new String[0]);         //NOI18N
             }
 
+            @Override
             public boolean contains(Charset c) {
                 return false;
             }
 
+            @Override
             public CharsetDecoder newDecoder() {
-                return new HtmlDecoder (this);
+                return new HtmlDecoder(this);
             }
 
+            @Override
             public CharsetEncoder newEncoder() {
-                return new HtmlEncoder (this);
+                return new HtmlEncoder(this);
             }
         }
 
@@ -373,16 +390,17 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             private CharBuffer remainder;
             private CharsetEncoder encoder;
 
-            public HtmlEncoder (Charset cs) {
-                super(cs, 1,2);
+            public HtmlEncoder(Charset cs) {
+                super(cs, 1, 2);
             }
 
 
+            @Override
             protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
                 if (buffer == null) {
                     assert encoder != null;
-                    if (remainder!=null) {
-                        CoderResult result = encoder.encode(remainder,out,false);
+                    if (remainder != null) {
+                        CoderResult result = encoder.encode(remainder, out, false);
                         if (!remainder.hasRemaining()) {
                             remainder = null;
                         }
@@ -391,25 +409,23 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                     return result;
                 }
                if (buffer.remaining() == 0 || (buffer.position() > 0 && in.limit() == 0)) {
-                   return handleHead (in,out);
-               }
-               else if (buffer.remaining() < in.remaining()) {
+                   return handleHead(in, out);
+               } else if (buffer.remaining() < in.remaining()) {
                    int limit = in.limit();
-                   in.limit(in.position()+buffer.remaining());
+                   in.limit(in.position() + buffer.remaining());
                    buffer.put(in);
                    in.limit(limit);
-                   return handleHead (in, out);
-               }
-               else {
+                   return handleHead(in, out);
+               } else {
                    buffer.put(in);
                    return CoderResult.UNDERFLOW;
                }
             }
 
-            private CoderResult handleHead (CharBuffer in, ByteBuffer out) {
+            private CoderResult handleHead(CharBuffer in, ByteBuffer out) {
                 String encoding = null;
                 try {
-                    encoding = getEncoding ();
+                    encoding = getEncoding();
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -417,16 +433,11 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                     buffer = null;
                     throwUnknownEncoding();
                     return null;
-                }
-                else {
+                } else {
                     Charset c;
                     try {
                         c = cache(Charset.forName(encoding));
-                    } catch (UnsupportedCharsetException e) {
-                        buffer = null;
-                        throwUnknownEncoding();
-                        return null;
-                    } catch (IllegalCharsetNameException e) {
+                    } catch (UnsupportedCharsetException | IllegalCharsetNameException e) {
                         buffer = null;
                         throwUnknownEncoding();
                         return null;
@@ -436,15 +447,14 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 }
             }
 
-            private CoderResult flushHead (CharBuffer in , ByteBuffer out) {
+            private CoderResult flushHead(CharBuffer in , ByteBuffer out) {
                 buffer.flip();
-                CoderResult r = encoder.encode(buffer,out, in==null);
+                CoderResult r = encoder.encode(buffer, out, in == null);
                 if (r.isOverflow()) {
                     remainder = buffer;
                     buffer = null;
                     return r;
-                }
-                else {
+                } else {
                     buffer = null;
                     if (in == null) {
                         return r;
@@ -453,13 +463,10 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 }
             }
 
-            private String getEncoding () throws IOException {
+            private String getEncoding() throws IOException {
                 String text = buffer.asReadOnlyBuffer().flip().toString();
-                InputStream in = new ByteArrayInputStream(text.getBytes(DEFAULT_CHARSET_NAME));
-                try {
+                try (InputStream in = new ByteArrayInputStream(text.getBytes(DEFAULT_CHARSET_NAME))) {
                     return getFileEncoding(in);
-                } finally {
-                    in.close();
                 }
             }
 
@@ -469,11 +476,9 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 if (buffer != null) {
                     res = handleHead(null, out);
                     return res;
-                }
-                else if (remainder != null) {
+                } else if (remainder != null) {
                     encoder.encode(remainder, out, true);
-                }
-                else {
+                } else {
                     CharBuffer empty = (CharBuffer) CharBuffer.allocate(0).flip();
                     encoder.encode(empty, out, true);
                 }
@@ -495,51 +500,48 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             private ByteBuffer remainder;
             private CharsetDecoder decoder;
 
-            public HtmlDecoder (Charset cs) {
-                super (cs,1,2);
+            public HtmlDecoder(Charset cs) {
+                super(cs, 1, 2);
             }
 
+            @Override
             protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
                 if (buffer == null) {
                     assert decoder != null;
-                    if (remainder!=null) {
+                    if (remainder != null) {
                         ByteBuffer tmp = ByteBuffer.allocate(remainder.remaining() + in.remaining());
                         tmp.put(remainder);
                         tmp.put(in);
                         tmp.flip();
-                        CoderResult result = decoder.decode(tmp,out,false);
+                        CoderResult result = decoder.decode(tmp, out, false);
                         if (tmp.hasRemaining()) {
                             remainder = tmp;
-                        }
-                        else {
+                        } else {
                             remainder = null;
                         }
                         return result;
-                    }
-                    else {
+                    } else {
                         return decoder.decode(in, out, false);
                     }
                }
                if (buffer.remaining() == 0) {
-                   return handleHead (in,out);
-               }
-               else if (buffer.remaining() < in.remaining()) {
+                   return handleHead(in, out);
+               } else if (buffer.remaining() < in.remaining()) {
                    int limit = in.limit();
-                   in.limit(in.position()+buffer.remaining());
+                   in.limit(in.position() + buffer.remaining());
                    buffer.put(in);
                    in.limit(limit);
-                   return handleHead (in, out);
-               }
-               else {
+                   return handleHead(in, out);
+               } else {
                    buffer.put(in);
                    return CoderResult.UNDERFLOW;
                }
             }
 
-            private CoderResult handleHead (ByteBuffer in, CharBuffer out) {
+            private CoderResult handleHead(ByteBuffer in, CharBuffer out) {
                 String encoding = null;
                 try {
-                    encoding = getEncoding ();
+                    encoding = getEncoding();
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
@@ -547,16 +549,11 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                     buffer = null;
                     throwUnknownEncoding();
                     return null;
-                }
-                else {
+                } else {
                     Charset c;
                     try {
                         c = cache(Charset.forName(encoding));
-                    } catch (UnsupportedCharsetException e) {
-                        buffer = null;
-                        throwUnknownEncoding();
-                        return null;
-                    } catch (IllegalCharsetNameException e) {
+                    } catch (UnsupportedCharsetException | IllegalCharsetNameException e) {
                         buffer = null;
                         throwUnknownEncoding();
                         return null;
@@ -566,15 +563,14 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 }
             }
 
-            private CoderResult flushHead (ByteBuffer in , CharBuffer out) {
+            private CoderResult flushHead(ByteBuffer in, CharBuffer out) {
                 buffer.flip();
-                CoderResult r = decoder.decode(buffer,out, in==null);
+                CoderResult r = decoder.decode(buffer, out, in == null);
                 if (r.isOverflow()) {
                     remainder = buffer;
                     buffer = null;
                     return r;
-                }
-                else {
+                } else {
                     buffer = null;
                     if (in == null) {
                         return r;
@@ -583,14 +579,10 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 }
             }
 
-            private String getEncoding () throws IOException {
+            private String getEncoding() throws IOException {
                 byte[] arr = buffer.array();
-                ByteArrayInputStream in = new ByteArrayInputStream (arr);
-                try {
+                try (ByteArrayInputStream in = new ByteArrayInputStream(arr)) {
                     return getFileEncoding(in);
-                }
-                finally {
-                    in.close();
                 }
             }
 
@@ -600,11 +592,9 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
                 if (buffer != null) {
                     res = handleHead(null, out);
                     return res;
-                }
-                else if (remainder != null) {
+                } else if (remainder != null) {
                     decoder.decode(remainder, out, true);
-                }
-                else {
+                } else {
                     ByteBuffer empty = (ByteBuffer) ByteBuffer.allocate(0).flip();
                     decoder.decode(empty, out, true);
                 }

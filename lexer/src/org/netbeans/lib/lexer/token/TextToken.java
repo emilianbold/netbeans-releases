@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer.token;
 
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.TokenList;
+import org.netbeans.lib.lexer.WrapTokenId;
 
 /**
  * Token with an explicit text - either serving a flyweight token
@@ -77,17 +78,17 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
      * <br/>
      * The token can be made flyweight by using <code>makeFlyweight()</code>.
      *
-     * @param id non-null identification of the token.
+     * @param wid non-null identification of the token.
      * @param text non-null text of the token.
      */
-    public TextToken(T id, CharSequence text) {
-        super(id);
+    public TextToken(WrapTokenId<T> wid, CharSequence text) {
+        super(wid);
         assert (text != null);
         this.text = text;
     }
     
-    private TextToken(T id, int rawOffset, CharSequence text) {
-        super(id, rawOffset);
+    private TextToken(WrapTokenId<T> wid, int rawOffset, CharSequence text) {
+        super(wid, rawOffset);
         assert (text != null);
         this.text = text;
     }
@@ -102,24 +103,8 @@ public class TextToken<T extends TokenId> extends AbstractToken<T> {
         return text;
     }
 
-    @Override
-    public boolean isNoDefaultEmbedding() {
-        return false;
-    }
-
-    @Override
-    public AbstractToken<T> markNoDefaultEmbedding() {
-        CustomTextToken<T> token = new CustomTextToken<T>(id(), text, text.length());
-        token.setTokenList(tokenList);
-        AbstractToken<T> t = token.markNoDefaultEmbedding();
-        assert (t == null);
-        return token;
-    }
-    
-    
-    
     public final TextToken<T> createCopy(TokenList<T> tokenList, int rawOffset) {
-        TextToken<T> token = new TextToken<T>(id(), rawOffset, text);
+        TextToken<T> token = new TextToken<T>(wid(), rawOffset, text);
         token.setTokenList(tokenList);
         return token;
     }

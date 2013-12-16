@@ -746,7 +746,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             }
         }
-        private List<String> getRegisteredGlassFishV3Locations(File nbLocation) throws IOException{
+        private List<String> getRegisteredGlassFishLocations(File nbLocation) throws IOException{
             //temporary solution
             List<String> result = new ArrayList<String>();
             for(String nbattrs : new String[] {"nb/config/GlassFishEE6WC/Instances/.nbattrs", "nb/config/GlassFishEE6/Instances/.nbattrs"}) {
@@ -900,21 +900,17 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                             List<Product> glassfishesAppservers = Registry.getInstance().queryProducts(
                                     new OrFilter(
                                     new ProductFilter("glassfish",
-                                    SystemUtils.getCurrentPlatform()),
-                                    new ProductFilter("sjsas",
                                     SystemUtils.getCurrentPlatform())));
                             addProductCheckBox(glassfishesAppservers, gfLocations);
                         }
-                        List<String> gfModLocations = getRegisteredGlassFishV3Locations(installLocation);
+                        List<String> gfModLocations = getRegisteredGlassFishLocations(installLocation);
                         if (!gfModLocations.isEmpty()) {
-                            List<Product> glassfishV3servers = Registry.getInstance().queryProducts(
+                            List<Product> glassfishservers = Registry.getInstance().queryProducts(
                                     new OrFilter(
                                     new ProductFilter("glassfish-mod",
-                                    SystemUtils.getCurrentPlatform()),
-                                    new ProductFilter("glassfish-mod-sun",
                                     SystemUtils.getCurrentPlatform())));
 
-                            addProductCheckBox(glassfishV3servers, gfModLocations);
+                            addProductCheckBox(glassfishservers, gfModLocations);
                         }
 
 

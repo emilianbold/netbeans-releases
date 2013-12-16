@@ -51,6 +51,8 @@ import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,8 +75,14 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.query.Bundle;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -300,9 +308,23 @@ public class QueryParameters {
         void resetChanged();        
     }
     
+    private final ChangeSupport support = new ChangeSupport(this);
+    void addChangeListener(ChangeListener l) {
+        support.addChangeListener(l);
+    }
+
+    void removeChangeListener(ChangeListener l) {
+        support.removeChangeListener(l);
+    }    
+
+    protected void fireStateChanged() {
+        support.fireChange();
+    }
+        
     static abstract class AbstractParameter implements Parameter {
         
         private final Column column;
+        
         
         public AbstractParameter(Column column) {
             this.column = column;
@@ -334,7 +356,7 @@ public class QueryParameters {
         }
     }
     
-    static class ComboParameter extends AbstractParameter {
+    class ComboParameter extends AbstractParameter {
         
         private final JComboBox combo;
         private int selectedIdx = -1;
@@ -344,8 +366,9 @@ public class QueryParameters {
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
             combo.setRenderer(new ParameterRenderer());
+            addListener(combo);
         }
-        
+
         public Collection getValues() {
             Object item = combo.getSelectedItem();
             return item != null ? Collections.singleton(item) : null;
@@ -419,7 +442,7 @@ public class QueryParameters {
         }
     }
 
-    static class ListParameter extends AbstractParameter {
+    class ListParameter extends AbstractParameter {
         
         private final JList list;
         private int[] selectedIndices = new int[0];
@@ -429,6 +452,7 @@ public class QueryParameters {
             this.list = list;
             list.setModel(new DefaultListModel());
             list.setCellRenderer(new ParameterRenderer());
+            addListener(list);
         }
         
         private Collection getValues() {
@@ -535,7 +559,7 @@ public class QueryParameters {
         }
     }
 
-    static class TextFieldParameter extends AbstractParameter {
+    class TextFieldParameter extends AbstractParameter {
         
         private final JTextField txt;
         private String text = ""; // NOI18N
@@ -543,8 +567,9 @@ public class QueryParameters {
         public TextFieldParameter(Column column, JTextField txt) {
             super(column);
             this.txt = txt;
+            addListener(txt);
         }
-        
+
         void setValue(String s) {
             txt.setText(s); 
         }
@@ -588,7 +613,7 @@ public class QueryParameters {
         }
     }
 
-    static class ByTextParameter implements Parameter {
+    class ByTextParameter implements Parameter {
         
         private final JTextField txt;
         private final JCheckBox chkSummary;
@@ -601,6 +626,9 @@ public class QueryParameters {
             this.txt = txt;
             this.chkSummary = chkSummary;
             this.chkDescriptionOrComment = chkDescription;
+            addListener(txt);
+            addListener(chkSummary);
+            addListener(chkDescriptionOrComment);
         }
 
         @Override
@@ -693,7 +721,7 @@ public class QueryParameters {
         }
     }
     
-    static class ByPeopleParameter implements Parameter {
+    class ByPeopleParameter implements Parameter {
         
         private final JList list;
         private final JCheckBox creatorCheckField;
@@ -712,6 +740,11 @@ public class QueryParameters {
             this.ownerCheckField = ownerCheckField;
             this.commenterCheckField = commenterCheckField;
             this.ccCheckField = ccCheckField;
+            addListener(list);
+            addListener(creatorCheckField);
+            addListener(ownerCheckField);
+            addListener(commenterCheckField);
+            addListener(ccCheckField);
         }
         
         public void setValues(Collection<TaskUserProfile> values, boolean creator, boolean owner, boolean commenter, boolean cc) {
@@ -865,7 +898,7 @@ public class QueryParameters {
         }
     }
     
-    static class ByDateParameter implements Parameter {
+    class ByDateParameter implements Parameter {
         
         private final JComboBox cbo;
         private final JTextField fromField;
@@ -882,6 +915,9 @@ public class QueryParameters {
             DefaultComboBoxModel model = new DefaultComboBoxModel(new Column[] {Column.CREATION, Column.MODIFICATION});
             cbo.setModel(model);
             cbo.setRenderer(new ParameterRenderer());
+            addListener(cbo);
+            addListener(fromField);
+            addListener(toField);
         }
         
         public void setValues(Column c, String from, String to) {
@@ -1015,12 +1051,13 @@ public class QueryParameters {
         }
     }
     
-    static class CheckBoxParameter extends AbstractParameter {
+    class CheckBoxParameter extends AbstractParameter {
         private final JCheckBox chk;
         private boolean selected;
         public CheckBoxParameter(JCheckBox chk, Column column) {
             super(column);
             this.chk = chk;
+            addListener(chk);
         }
         
         public void setValues(Object... values) {
@@ -1072,6 +1109,50 @@ public class QueryParameters {
         public void resetChanged() {
             selected = chk.isSelected();
         }
+    }
+
+    public void addListener(JComboBox combo) {
+        combo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fireStateChanged();
+            }
+        });
+    }
+        
+    private void addListener(JCheckBox chk) {
+        chk.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                fireStateChanged();
+            }
+        });
+    }
+        
+    private void addListener(JTextField txt) {
+        txt.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireStateChanged();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireStateChanged();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireStateChanged();
+            }
+        });
+    }
+    
+    private void addListener(JList list) {
+        list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                fireStateChanged();
+            }
+        });
     }
 
     private static class ParameterRenderer extends DefaultListCellRenderer {

@@ -42,9 +42,12 @@
 package org.netbeans.modules.javascript.karma.util;
 
 import java.io.File;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +75,18 @@ public final class FileUtils {
 
 
     private FileUtils() {
+    }
+
+    public static List<File> sortFiles(Collection<File> files) {
+        final Collator collator = Collator.getInstance();
+        List<File> sortedFiles = new ArrayList<>(files);
+        Collections.sort(sortedFiles, new Comparator<File>() {
+            @Override
+            public int compare(File file1, File file2) {
+                return collator.compare(file1.getName(), file2.getName());
+            }
+        });
+        return sortedFiles;
     }
 
     /**

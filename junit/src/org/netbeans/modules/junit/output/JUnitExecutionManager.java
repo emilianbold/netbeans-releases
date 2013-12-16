@@ -181,6 +181,19 @@ public class JUnitExecutionManager implements RerunHandler{
                 Exceptions.printStackTrace(ex);
             }
         } else {
+            String includes = properties.getProperty("includes", "**"); //NOI18N
+            if (!includes.equals("**")){ //NOI18N
+                //"Test File(s)/Package(s)" action was invoked in the first place
+                try {
+                    properties.setProperty("ignore.failing.tests", "true"); //NOI18N
+                    properties.setProperty("nb.wait.for.caches", "true"); //NOI18N
+                    properties.setProperty("nb.internal.action.name", ActionProvider.COMMAND_TEST); //NOI18N
+                    runAnt(FileUtil.toFileObject(scriptFile), targets, properties);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return;
+            }
             Project project = testSession.getProject();
             if(ProjectManager.getDefault().isValid(project)) {
                 ActionProvider actionProvider = project.getLookup().lookup(ActionProvider.class);

@@ -122,10 +122,12 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
                 Value v = entry.getValue();
                 if (v instanceof TraceValue) {
                     TraceValue value = (TraceValue) v;
-                    hits += value.getHitsCount();
-                    savedTime += value.getHitsCount() * value.getCalculationTime();
-                    if (value.getResult() == null) {
-                        nullResolved++;
+                    if (value.getCalculationTime() != Integer.MAX_VALUE) {
+                        hits += value.getHitsCount();
+                        savedTime += value.getHitsCount() * value.getCalculationTime();
+                        if (value.getResult() == null) {
+                            nullResolved++;
+                        }
                     }
                 }
             }

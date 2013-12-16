@@ -42,7 +42,6 @@
 package org.netbeans.modules.notifications.center;
 
 import java.awt.Color;
-import java.awt.Event;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
@@ -51,11 +50,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -75,8 +71,8 @@ import org.netbeans.modules.notifications.Utils;
 import org.netbeans.swing.etable.ETable;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.QuickSearch;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -113,6 +109,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private QuickSearch quickSearch;
     private final QuickSearch.Callback filterCallback;
     private JLabel lblEmptyDetails;
+    private final Font italicFont;
 
     public NotificationCenterTopComponent() {
         notificationManager = NotificationCenterManager.getInstance();
@@ -120,6 +117,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         tableRefreshTimer = new Timer(TABLE_REFRESH_PERIOD, new RefreshTimerListener());
         tableRefreshTimer.stop();
         tableKeyListener = new TableKeyListener();
+        italicFont = new JLabel().getFont().deriveFont(Font.ITALIC);
         setName(NbBundle.getMessage(NotificationCenterTopComponent.class, "CTL_NotificationCenterTopComponent"));
         setToolTipText(NbBundle.getMessage(NotificationCenterTopComponent.class, "HINT_NotificationCenterTopComponent"));
     }
@@ -130,7 +128,7 @@ public final class NotificationCenterTopComponent extends TopComponent {
         Color color = Utils.getTextBackground();
         detailsPanel.setBackground(new Color(color.getRed(), color.getGreen(), color.getBlue()));
         lblEmptyDetails = new JLabel(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_EmptyDetails"), JLabel.CENTER);
-        lblEmptyDetails.setFont(lblEmptyDetails.getFont().deriveFont(Font.ITALIC));
+        lblEmptyDetails.setFont(italicFont);
         lblEmptyDetails.setEnabled(false);
 
         splitPane.setRightComponent(detailsPanel);
@@ -333,6 +331,14 @@ public final class NotificationCenterTopComponent extends TopComponent {
             }
         });
         super.addNotify();
+    }
+
+    /**
+     * Defines task list Help ID
+     */
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(NotificationCenterTopComponent.class);
     }
 
     void writeProperties(java.util.Properties p) {

@@ -41,94 +41,93 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.menus;
 
+import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.ValidatePopupMenuOnNodes;
 import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of popup menu on nodes in Projects View.
- * @author  mmirilovic@netbeans.org
+ *
+ * @author mmirilovic@netbeans.org
  */
 public class ProjectsViewPopupMenuTest extends ValidatePopupMenuOnNodes {
 
     protected static ProjectsTabOperator projectsTab = null;
 
-    /** Creates a new instance of ProjectsViewPopupMenu */
+    /**
+     * Creates a new instance of ProjectsViewPopupMenu
+     *
+     * @param testName test name
+     */
     public ProjectsViewPopupMenuTest(String testName) {
         super(testName);
     }
 
-    /** Creates a new instance of ProjectsViewPopupMenu */
+    /**
+     * Creates a new instance of ProjectsViewPopupMenu
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public ProjectsViewPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(ProjectsViewPopupMenuTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(ProjectsViewPopupMenuTest.class)
+                .suite();
     }
 
-    
     public void testProjectNodePopupMenuProjects() {
         testNode(getProjectNode("PerformanceTestData"));
     }
-    
-    public void testSourcePackagesPopupMenuProjects(){
+
+    public void testSourcePackagesPopupMenuProjects() {
         testNode(new SourcePackagesNode("PerformanceTestData"));
     }
-    
-    public void testTestPackagesPopupMenuProjects(){
+
+    public void testTestPackagesPopupMenuProjects() {
         testNode(new Node(getProjectNode("PerformanceTestData"), CommonUtilities.TEST_PACKAGES));
     }
-    
-    public void testPackagePopupMenuProjects(){
-        testNode(new Node(new SourcePackagesNode("PerformanceTestData"),  "org.netbeans.test.performance"));
+
+    public void testPackagePopupMenuProjects() {
+        testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance"));
     }
-    
-    public void testJavaFilePopupMenuProjects(){
-        testNode(new Node(new SourcePackagesNode("PerformanceTestData"),  "org.netbeans.test.performance|Main.java"));
+
+    public void testJavaFilePopupMenuProjects() {
+        testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
     }
-    
-    public void testTxtFilePopupMenuProjects(){
-        testNode(new Node(new SourcePackagesNode("PerformanceTestData"),  "org.netbeans.test.performance|textfile.txt"));
+
+    public void testTxtFilePopupMenuProjects() {
+        testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|textfile.txt"));
     }
-    
-    public void testPropertiesFilePopupMenuProjects(){
-        testNode(new Node(new SourcePackagesNode("PerformanceTestData"),  "org.netbeans.test.performance|Bundle20kB.properties"));
+
+    public void testPropertiesFilePopupMenuProjects() {
+        testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Bundle20kB.properties"));
     }
-    
-    public void testXmlFilePopupMenuProjects(){
+
+    public void testXmlFilePopupMenuProjects() {
         testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|xmlfile.xml"));
     }
 
-/* commented until IZ 159587 is fixed    
-    public void testNBProjectNodePopupMenuProjects() {
-        testNode(getProjectNode("SystemProperties"));
-    }*/
-    
-    
-    public void testNode(Node node){
+    public void testNode(Node node) {
         dataObjectNode = node;
         doMeasurement();
     }
-    
+
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
+
         return projectsTab.getProjectRootNode(projectName);
     }
-
 }

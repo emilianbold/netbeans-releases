@@ -105,6 +105,8 @@ namespace bug235462 {
         zoo(a, pb);
         zoo(b, pb);
         zoo(b, b);
+        
+        roo((const AAA*)pa, (const BBB*)pb);
 
         return 0;
     } 

@@ -255,4 +255,14 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument outputDoc = getDocument("indent/output_newlineInTags.xml");
         assert (compare(formattedDoc, outputDoc));
     }
+    
+    public void testFormatTagAtLineStartAfterContent238985() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_tagAtStatOfLine.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_tagAtStatOfLine.xml");
+        assert (compare(formattedDoc, outputDoc));
+    }
 }

@@ -254,12 +254,13 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         // Create join token
         // realTokenStartOffset is already advanced by tokenLength so first decrease it
         realTokenStartOffset -= tokenLength;
-        JoinToken<T> joinToken = new JoinToken<T>(id, tokenLength, propertyProvider, partType);
+        WrapTokenId<T> wid = wrapTokenIdCache.plainWid(id);
+        JoinToken<T> joinToken = new JoinToken<T>(wid, tokenLength, propertyProvider, partType);
         int joinPartCountEstimate = readText.tokenListIndex - activeTokenListIndex + 1;
         @SuppressWarnings("unchecked")
         PartToken<T>[] parts = new PartToken[joinPartCountEstimate];
         int partLength = activeTokenListEndOffset - realTokenStartOffset;
-        PartToken<T> partToken = new PartToken<T>(id, partLength, propertyProvider, PartType.START, joinToken, 0, 0);
+        PartToken<T> partToken = new PartToken<T>(wid, partLength, propertyProvider, PartType.START, joinToken, 0, 0);
         partToken.setRawOffset(realTokenStartOffset); // realTokenStartOffset already decreased by tokenLength
         parts[0] = partToken;
         int partIndex = 1;
@@ -283,7 +284,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
                 partPartType = PartType.MIDDLE;
             }
 
-            partToken = new PartToken<T>(id, partLength, propertyProvider, partPartType, joinToken, partIndex, partTextOffset);
+            partToken = new PartToken<T>(wid, partLength, propertyProvider, partPartType, joinToken, partIndex, partTextOffset);
             // realTokenStartOffset still points to start of activeTokenList
             partToken.setRawOffset(realTokenStartOffset); // ETL.startOffset() will be subtracted upon addition to ETL
             partTextOffset += partLength;

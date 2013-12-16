@@ -106,7 +106,7 @@ public class SelectedProjectNode extends LeafNode {
      * Get the icon displayed by a expanded set. Typically this is just the
      * icon the look and feel supplies for trees
      */
-    private static final org.netbeans.modules.team.commons.treelist.ColorManager colorManager = org.netbeans.modules.team.commons.treelist.ColorManager.getDefault();
+    private static final org.netbeans.modules.team.commons.ColorManager colorManager = org.netbeans.modules.team.commons.ColorManager.getDefault();
     static Icon getExpandedIcon() {
         Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
         assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N

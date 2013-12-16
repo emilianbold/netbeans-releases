@@ -41,21 +41,18 @@
  */
 package org.netbeans.modules.php.dbgp;
 
-
-
 /**
  * @author ads
  *
  */
 public interface ModelNode {
-
     String getIconBase();
 
     String getType();
 
     String getValue() throws UnsufficientValueException;
 
-    ModelNode[] getChildren( int from, int to );
+    ModelNode[] getChildren(int from, int to);
 
     int getChildrenSize();
 
@@ -66,4 +63,5 @@ public interface ModelNode {
     String getShortDescription();
 
     boolean isLeaf();
+
 }

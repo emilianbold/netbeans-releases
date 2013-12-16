@@ -259,23 +259,24 @@ public class FaceletsLibrarySupport {
      * This method obtains a library instances for the elements declared by annotation without a library descriptor.
      */
     private synchronized void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
-        if (declaredFacesComponentsCache.get() == null) {
-            Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
+        Collection<? extends Library> libraries = declaredFacesComponentsCache.get();
+        if (libraries == null) {
+            libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
             declaredFacesComponentsCache.set(libraries);
+        }
 
-            // remove all FacesComponentLibraries
-            Iterator<Map.Entry<String, Library>> iterator = faceletsLibraries.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, Library> entry = iterator.next();
-                if (entry.getValue().getType() == LibraryType.COMPONENT) {
-                    iterator.remove();
-                }
+        // remove all FacesComponentLibraries
+        Iterator<Map.Entry<String, Library>> iterator = faceletsLibraries.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Library> entry = iterator.next();
+            if (entry.getValue().getType() == LibraryType.COMPONENT) {
+                iterator.remove();
             }
+        }
 
-            // add the refreshed ones
-            for (Library library : libraries) {
-                faceletsLibraries.put(library.getDefaultNamespace(), library);
-            }
+        // add the refreshed ones
+        for (Library library : libraries) {
+            faceletsLibraries.put(library.getDefaultNamespace(), library);
         }
     }
 

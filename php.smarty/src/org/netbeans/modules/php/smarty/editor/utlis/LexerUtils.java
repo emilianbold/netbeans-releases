@@ -39,7 +39,10 @@
 package org.netbeans.modules.php.smarty.editor.utlis;
 
 import java.util.List;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -49,7 +52,7 @@ import org.netbeans.modules.php.smarty.editor.TplKit;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -62,25 +65,28 @@ public final class LexerUtils {
     private LexerUtils() {
     }
 
-    public static final boolean isVariablePart(int character) {
+    public static boolean isVariablePart(int character) {
         return Character.isJavaIdentifierPart(character);
     }
 
-    public static final boolean isWS(int character) {
+    public static boolean isWS(int character) {
         return Character.isWhitespace(character);
     }
 
-    public static final void relexerOpenedTpls() {
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+    public static void relexerOpenedTpls() {
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                TopComponent[] topComponents = WindowManager.getDefault().getOpenedTopComponents(WindowManager.getDefault().findMode("editor"));
+                TopComponent[] topComponents = WindowManager.getDefault().getOpenedTopComponents(WindowManager.getDefault().findMode("editor")); //NOI18N
                 for (TopComponent topComponent : topComponents) {
-                    if (topComponent instanceof CloneableEditor) {
-                        final Document doc = ((CloneableEditor) topComponent).getEditorPane().getDocument();
-                        if (((CloneableEditor) topComponent).getEditorPane().getEditorKit() instanceof TplKit) {
-                            ((TplKit) ((CloneableEditor) topComponent).getEditorPane().getEditorKit()).initLexerColoringListener(doc);
+                    if (topComponent instanceof CloneableEditorSupport.Pane) {
+                        JEditorPane cesEditorPane = ((CloneableEditorSupport.Pane) topComponent).getEditorPane();
+                        EditorKit editorKit = cesEditorPane.getEditorKit();
+
+                        final Document doc = cesEditorPane.getDocument();
+                        if (editorKit instanceof TplKit) {
+                            ((TplKit) (editorKit)).initLexerColoringListener(doc);
                         }
                         NbEditorDocument nbdoc = (NbEditorDocument) doc;
                         nbdoc.runAtomic(new Runnable() {

@@ -266,7 +266,6 @@ public class HighlightsViewUtils {
                     textLayoutOffset + startIndex - viewStartOffset);
             TextLayout renderTextLayout = textLayout;
             Boolean showNonPrintingChars = null;
-            boolean log = LOG.isLoggable(Level.FINEST);
             // For regular textLayout do aggregation of rendered parts into compound area
             // to decrease TL.draw() invocations.
             // Unfortunately using java.awt.geom.Area on Mac OSX results in white horizontal lines
@@ -295,11 +294,15 @@ public class HighlightsViewUtils {
                         TextHitInfo endHit = TextHitInfo.leading(renderEndOffset - textLayoutOffset);
                         renderPartAlloc = TextLayoutUtils.getRealAlloc(textLayout, textLayoutRect, startHit, endHit);
                         if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
-                            ViewHierarchyImpl.PAINT_LOG.finer("      Fragment: hit<" + // NOI18N
+                            ViewHierarchyImpl.PAINT_LOG.finer("      View-Id=" + view.getDumpId() + // NOI18N
+                                    ", startOffset=" + view.getStartOffset() + // NOI18N
+                                    ", Fragment: hit<" + // NOI18N
                                     startHit.getCharIndex() + "," + endHit.getCharIndex() + // NOI18N
                                     ">, text='" + DocumentUtilities.getText(docView.getDocument()).subSequence( // NOI18N
                                     hiStartOffset, renderEndOffset) + "', fAlloc=" + // NOI18N
-                                    ViewUtils.toString(renderPartAlloc.getBounds()) + '\n');
+                                    ViewUtils.toString(renderPartAlloc.getBounds()) + ", Ascent=" + // NOI18N
+                                    ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + ", Color=" + // NOI18N
+                                    ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
                         }
                     } else { // No text layout => Newline or TAB(s)
                         if (showNonPrintingChars == null) {
@@ -386,17 +389,6 @@ public class HighlightsViewUtils {
                             paintStrikeThrough(g, textLayoutRect, strikeThroughValue, attrs, docView);
                         }
                         g.setClip(origClip);
-                        if (log) {
-                            Document doc = docView.getDocument();
-                            CharSequence text = DocumentUtilities.getText(doc).subSequence(hiStartOffset, hiEndOffset);
-                            // Here it's assumed that 'text' var contains the same content as (possibly cached)
-                            // textLayout but if textLayout caching would be broken then they could differ.
-                            LOG.finest(view.getDumpId() + ":paint-txt: \"" + CharSequenceUtilities.debugText(text) + // NOI18N
-                                    "\", XY[" + ViewUtils.toStringPrec1(textLayoutRect.getX()) + ";"
-                                    + ViewUtils.toStringPrec1(textLayoutRect.getY()) + "(B" + // NOI18N
-                                    ViewUtils.toStringPrec1(docView.op.getDefaultAscent()) + // NOI18N
-                                    ")], color=" + ViewUtils.toString(g.getColor()) + '\n'); // NOI18N
-                        }
 
                     } else { // Part does not hit clip
                         if (clipBounds != null && (renderPartBounds.getX() > clipBounds.getMaxX())) {

@@ -483,7 +483,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         });
         
         filenameTextField.addKeyListener(new TextFieldKeyListener());
-        
+        filenameTextField.addKeyListener(new AltUpHandler());
+
         fnl.setLabelFor(filenameTextField);
         filenameTextField.addFocusListener(
                 new FocusAdapter() {
@@ -834,6 +835,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         tree.addTreeExpansionListener(new TreeExpansionHandler());
         TreeKeyHandler keyHandler = new TreeKeyHandler();
         tree.addKeyListener(keyHandler);
+        tree.addKeyListener(new AltUpHandler());
         tree.addFocusListener(keyHandler);
         tree.addMouseListener(dirHandler);
         tree.addFocusListener(dirHandler);
@@ -863,6 +865,16 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 && "1.6.0_16".compareTo(System.getProperty("java.version")) >=0;//NOI18N
     }
 
+    private class AltUpHandler extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent evt) {
+            if(evt.getKeyCode() == KeyEvent.VK_UP && (evt.getModifiers() & KeyEvent.ALT_MASK) == KeyEvent.ALT_MASK) {
+                Action action = getChangeToParentDirectoryAction();
+                action.actionPerformed(new ActionEvent(evt.getSource(), 0, ""));
+            }
+        }        
+    }
+    
     /** 
      * Handles keyboard quick search in tree and delete action.
      */
@@ -2327,7 +2339,11 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     
                     if(!node.isLeaf()) {
                         newFolderAction.enable(file);
-                        setDirectorySelected(true);
+                        // see BasicFileChooserUI.valueChanged and issue #239192
+                        if (getFileChooser().getFileSelectionMode() == JFileChooser.FILES_ONLY) {
+                            setDirectorySelected(true);
+                            setDirectory(file);
+                        }
                     }
                 }
             }
@@ -2913,7 +2929,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         public void updateTree(final File file) {
             validationParams = new ValidationParams(file);
             handleValidationParamasChanges();
-                        
+
         }
 
         public void attachFileChooser(final FileChooserUIImpl ui) {
@@ -2972,7 +2988,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
             final FileNode node = new FileNode(file);
             node.loadChildren(fileChooser, true);
-            return new ValidationResult(Boolean.TRUE, node, true, file);
+            return new ValidationResult(Boolean.TRUE, node, directoryChanged, file);
         }
         
 

@@ -78,6 +78,11 @@ public class LogAction extends SearchHistoryAction {
     public LogAction () {
         super(ICON_RESOURCE);
     }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
     
     @Override
     protected String getBaseName(Node[] nodes) {

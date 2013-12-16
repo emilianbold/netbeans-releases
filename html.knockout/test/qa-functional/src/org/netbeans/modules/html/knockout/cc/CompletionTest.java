@@ -260,10 +260,12 @@ public class CompletionTest extends GeneralKnockout {
     JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
     openDataProjects("sample");
     openFile("index.html", "sample");
-    evt.waitNoEvent(2000);
+    waitScanFinished();
 
     EditorOperator eo = new EditorOperator("index.html");
     eo.setCaretPosition("t.", false);
+    eo.pressMouse();
+    evt.waitNoEvent(3000);
     eo.typeKey(' ', InputEvent.CTRL_MASK);
 
     CompletionInfo completion = getCompletion();

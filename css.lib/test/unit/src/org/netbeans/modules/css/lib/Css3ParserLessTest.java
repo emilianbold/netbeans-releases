@@ -660,18 +660,45 @@ public class Css3ParserLessTest extends CssTestBase {
 
     public void testEscapedString() {
         assertParses("@str: \"hello\";");
-        
+
         assertParses("@var: ~\"xyz\";");
-        
+
         assertParses("@var: ~`\"@{str}\".toUpperCase() + '!'`;");
     }
 
 //    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
 //    public void testMixinCallAsSelector() {
 //        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
-//        
+//
 //        assertParses(".subnav-fixed {\n"
 //                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
 //                + "}");
 //    }
+
+    public void testIssue236388() {
+        assertParses("@media only screen and (min-width: 768px) {\n" +
+                "    @import \"_grid.less\";\n" +
+                "    @import \"_768up.less\";\n" +
+                "}");
+    }
+
+    public void testIssue237976_01() {
+        assertParses(".img-responsive(@display: block; @disp: block) {\n" +
+                "  height: auto;\n" +
+                "}");
+    }
+
+    public void testIssue237976_02() {
+        assertParses(".img-responsive2(@display: block;) {\n" +
+                "  height: auto;\n" +
+                "}");
+    }
+
+    public void issue237975_01() {
+        assertParses("@import (less) \"theme\";");
+    }
+
+    public void issue237975_02() {
+        assertParses("@import (css) \"theme\";");
+    }
 }

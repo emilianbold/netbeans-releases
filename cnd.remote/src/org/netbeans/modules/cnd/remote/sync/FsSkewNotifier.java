@@ -142,9 +142,9 @@ public class FsSkewNotifier {
                 if (sb.length() > 0) {
                     if (i == unitVlues.length - 1) {
                         sb.append(' ');
-                        sb.append(NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_And"));
+                        sb.append(and);
                     } else {
-                        sb.append(NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Comma"));                       
+                        sb.append(comma);                       
                     }
                     sb.append(' ');
                 }

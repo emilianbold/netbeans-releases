@@ -188,6 +188,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     return LanguageFlavor.C89;
                 } else if (options.indexOf("-std=c99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
+                } else if (options.indexOf("-std=c11") >= 0) { // NOI18N
+                    return LanguageFlavor.C11;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
                 if (options.indexOf("-std=c++0x") >= 0 || // NOI18N

@@ -46,6 +46,7 @@ package org.netbeans.lib.lexer.inc;
 
 import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -134,6 +135,11 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
     }
 
     @Override
+    public Language<T> language() {
+        return tokenList.language();
+    }
+
+    @Override
     public LanguagePath languagePath() {
         return tokenList.languagePath();
     }
@@ -211,6 +217,11 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
     @Override
     public boolean isRemoved() {
         return false;
+    }
+
+    @Override
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        return sb;
     }
 
     @Override

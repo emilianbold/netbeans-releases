@@ -113,7 +113,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
      * Constructs TestSuite that adds tests specified by classes parameters
      * @param name suite name
      * @param defaultSection default section for @ForAllEnvironments annotation
-     * @param testClass test class to add.
+     * @param testClasses test class to add.
      * The <? extends NativeExecutionBaseTestCase> is probably too strong - <? extends TestCase> would be sufficient
      * (the only check is the search for 2-parammeter constructor that takes String and ExecutinEnvironmant);
      * the intention was rather to explain what it's used for than to restrict.

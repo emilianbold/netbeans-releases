@@ -91,11 +91,11 @@ public abstract class CsmIncludeResolver {
      * Checks visibility of CSM object
      * 
      * @param currentFile - current file
-     * @param item - CSM object
+     * @param item - CSM object (file as well)
      * @return - visibility of CSM object
      */
     public abstract boolean isObjectVisible(CsmFile currentFile, CsmObject item);
-
+    
     /**
      * Finds best include directive for CSM object in format 
      * #include "file.h" or #include <file.h> or #include_next <file.h>

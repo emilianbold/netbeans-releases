@@ -365,6 +365,8 @@ public final class Manager {
     /**
      */
     @NbBundle.Messages({"# {0} - project", "LBL_NotificationDisplayer_title=Tests finished successfully for project: {0}",
+        "# {0} - project", 
+        "LBL_NotificationDisplayer_NoTestsExecuted_title=No tests executed for project: {0}",
         "LBL_NotificationDisplayer_detailsText=Open Test Results Window"})
     private void displayInWindow(final TestSession session,
                                  final ResultDisplayHandler displayHandler,
@@ -399,11 +401,12 @@ public final class Manager {
                         } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
+                            String title = session.getSessionResult().getTotal() == 0 ? Bundle.LBL_NotificationDisplayer_NoTestsExecuted_title(projectname) : Bundle.LBL_NotificationDisplayer_title(projectname);
                             
                             if(bubbleTask.cancel()) {
                                 bubbleTask.schedule(0);
                             }
-                            bubbleNotification = NotificationDisplayer.getDefault().notify(Bundle.LBL_NotificationDisplayer_title(projectname), icon,
+                            bubbleNotification = NotificationDisplayer.getDefault().notify(title, icon,
                                     Bundle.LBL_NotificationDisplayer_detailsText(), new ActionListener() {
 
                                 @Override

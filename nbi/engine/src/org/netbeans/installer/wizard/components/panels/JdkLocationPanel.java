@@ -547,6 +547,17 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         return version != null ? JavaUtils.isRecommended(version) : true;
     }
     
+    public boolean isArchitectureMatching(String jdkPath) {
+        if (jdkPath == null || jdkPath.isEmpty()) {
+            return true;
+        }
+        
+        File jdkFile = new File(jdkPath);
+        JavaUtils.JavaInfo info = JavaUtils.getInfo(jdkFile);
+        
+        return info.getArch().endsWith("64") == SystemUtils.getNativeUtils().isSystem64Bit();
+    }
+    
     private Version getVersion(File file) {
         Version version = JavaUtils.getVersion(file);
         

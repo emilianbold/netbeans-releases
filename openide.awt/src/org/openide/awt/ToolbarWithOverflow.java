@@ -134,10 +134,10 @@ public class ToolbarWithOverflow extends JToolBar {
     public ToolbarWithOverflow(String name, int orientation) {
         super(name, orientation);
         setupOverflowButton();
-        popup = new JPopupMenu();
+        popup = new SafePopupMenu();
         popup.setBorderPainted(false);
         popup.setBorder(BorderFactory.createEmptyBorder());
-        overflowToolbar = new JToolBar("overflowToolbar", orientation == HORIZONTAL ? VERTICAL : HORIZONTAL);
+        overflowToolbar = new SafeToolBar("overflowToolbar", orientation == HORIZONTAL ? VERTICAL : HORIZONTAL);
         overflowToolbar.setFloatable(false);
         overflowToolbar.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
     }
@@ -462,5 +462,42 @@ public class ToolbarWithOverflow extends JToolBar {
         System.arraycopy(toolbarComps, 0, comps, 0, toolbarComps.length);
         System.arraycopy(overflowComps, 0, comps, toolbarComps.length, overflowComps.length);
         return comps;
+    }
+    
+    private static class SafeToolBar extends JToolBar {
+        
+        public SafeToolBar( String name, int orientation ) {
+            super( name, orientation );
+        }
+        
+        @Override
+        public void updateUI() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    superUpdateUI();
+                }
+            });
+        }
+
+        final void superUpdateUI() {
+            super.updateUI();
+        }
+    }
+    
+    private static class SafePopupMenu extends JPopupMenu {
+        @Override
+        public void updateUI() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    superUpdateUI();
+                }
+            });
+        }
+
+        final void superUpdateUI() {
+            super.updateUI();
+        }
     }
 }

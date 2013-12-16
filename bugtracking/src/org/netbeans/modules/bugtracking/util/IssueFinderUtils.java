@@ -90,9 +90,15 @@ public class IssueFinderUtils {
 
             if (++issueFindersWithResults == 1) {
                 result = subresult;
-            } else {
-                assert result != null;
-                result = append(result, subresult);
+            }
+//            else {
+//                assert result != null;   
+//                result = append(result, subresult);
+//            }
+            if(result != null && result.length >= 2) {
+                // TODO first catch wins. we could be smarter here and try to 
+                // evaluate file ownership - see RepositoryQuery
+                break;
             }
         }
         //PENDING: check for overlaping intervals if issueFindersWithResults > 1

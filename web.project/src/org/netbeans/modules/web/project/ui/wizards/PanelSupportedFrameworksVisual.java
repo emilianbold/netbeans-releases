@@ -303,7 +303,10 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         properties.setProperty("name", (String) settings.getProperty("name")); // NOI18N
 
         // FIXME I left string here for compatibility reasons (frameworks)
-        properties.setProperty(ProjectServerWizardPanel.J2EE_LEVEL, ((Profile) settings.getProperty(ProjectServerWizardPanel.J2EE_LEVEL)).toPropertiesString()); // NOI18N
+        Profile profile = (Profile) settings.getProperty(ProjectServerWizardPanel.J2EE_LEVEL);
+        if (profile != null) {
+            properties.setProperty(ProjectServerWizardPanel.J2EE_LEVEL, profile.toPropertiesString());
+        }
         properties.setProperty("serverInstanceID", (String) settings.getProperty("serverInstanceID")); // NOI18N
         properties.setProperty("setSourceLevel", (String) settings.getProperty("setSourceLevel")); // NOI18N
 

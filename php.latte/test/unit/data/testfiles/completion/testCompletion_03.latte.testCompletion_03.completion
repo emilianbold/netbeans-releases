@@ -5,7 +5,7 @@ RULE       bytes:precision=2                          Helper
 RULE       capitalize                                 Helper
 RULE       dataStream:mimetype=NULL                   Helper
 RULE       date:'format'                              Helper
-RULE       firstLower                                 Helper
+RULE       firstUpper                                 Helper
 RULE       implode:glue=''                            Helper
 RULE       indent:level=1:char='\t'                   Helper
 RULE       length                                     Helper
@@ -20,7 +20,7 @@ RULE       replace:search:replace=''                  Helper
 RULE       replaceRE:pattern:replace=''               Helper
 RULE       strip                                      Helper
 RULE       striptags                                  Helper
-RULE       substr:offset:length=stringLeg             Helper
+RULE       substr:offset:length=stringLen             Helper
 RULE       toAscii                                    Helper
 RULE       trim:charlist=' \t\n\r\0\x0B\x             Helper
 RULE       truncate:length:append='…'                 Helper

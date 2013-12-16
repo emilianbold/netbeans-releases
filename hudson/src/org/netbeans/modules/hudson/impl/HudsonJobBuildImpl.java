@@ -113,7 +113,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
             building = _building.get();
             result = _result.get();
         }
-        return result;
+        return result != null ? result : Result.NOT_BUILT;
     }
 
     private Collection<? extends HudsonJobChangeItem> changes;

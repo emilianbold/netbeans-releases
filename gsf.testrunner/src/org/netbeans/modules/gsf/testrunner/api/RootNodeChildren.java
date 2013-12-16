@@ -47,15 +47,16 @@ package org.netbeans.modules.gsf.testrunner.api;
 import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.openide.nodes.Children;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Marian Petras
  */
-final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
+final class RootNodeChildren extends ChildFactory<TestsuiteNode> {
 
     /** */
     private volatile int filterMask;
@@ -66,15 +67,13 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
     /** */
     private volatile int failedSuites;
     /** */
-    private volatile boolean live = false;
-    /** */
     private String runningSuiteName;
     /** */
     private TestsuiteNode runningSuiteNode;
 
     private final TestSession session;
 
-    private List<TestsuiteNode> suiteNodes = new ArrayList<TestsuiteNode>();
+    private final List<TestsuiteNode> suiteNodes;
     
     /**
      * Creates a new instance of ReportRootNode
@@ -83,8 +82,50 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         super();
         this.filterMask = filterMask;
         this.session = session;
-        live = true;                      //PENDING
-        setKeys(suiteNodes);
+        suiteNodes = Collections.synchronizedList(new ArrayList<TestsuiteNode>());
+        refresh(false);
+    }
+    
+    @Override
+    protected boolean createKeys(List<TestsuiteNode> toPopulate) {
+        synchronized (suiteNodes) {
+            for (TestsuiteNode suite : suiteNodes) {
+                Report report = suite.getReport();
+                if ((report != null) && !isMaskApplied(report, filterMask)) {
+                    toPopulate.add(suite);
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected Node createNodeForKey(TestsuiteNode suite) {
+        Report report = suite.getReport();
+        if ((suite != runningSuiteNode) && (report != null) && isMaskApplied(report, filterMask)) {
+            return null;
+        } else {
+            return suite;
+        }
+    }
+
+    void notifyTestSuiteFinished() {
+        synchronized (suiteNodes) {
+            if (suiteNodes.size() > 0) {
+                suiteNodes.get(suiteNodes.size() - 1).notifyTestSuiteFinished();
+            }
+        }
+    }
+    
+    private boolean isNewRunningSuite() {
+        synchronized (suiteNodes) {
+            for (TestsuiteNode node : suiteNodes) {
+                if (node.getDisplayName().equals(runningSuiteName)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     /**
@@ -104,15 +145,13 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         
         runningSuiteName = suiteName;
         
-        if (live) {
-            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(suiteName, filterMask != 0);
+        if (!isNewRunningSuite()) {
+            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(runningSuiteName, filterMask != 0);
             runningSuiteNode.setFilterMask(filterMask);
+            notifyTestSuiteFinished();
             suiteNodes.add(runningSuiteNode);
-            addNotify();
         }
-        
-        assert runningSuiteName != null;
-        assert (runningSuiteNode != null) == live;
+        refresh(false);
     }
 
     /**
@@ -132,16 +171,14 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
 
         runningSuiteName = suite.getName();
 
-        if (live) {
-            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(suite.getName(), filterMask != 0);
+        if (!isNewRunningSuite()) {
+            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(runningSuiteName, filterMask != 0);
             runningSuiteNode.setFilterMask(filterMask);
             runningSuiteNode.setSuite(suite);
+            notifyTestSuiteFinished();
             suiteNodes.add(runningSuiteNode);
-            addNotify();
         }
-
-        assert runningSuiteName != null;
-        assert (runningSuiteNode != null) == live;
+        refresh(false);
     }
 
     Collection<Report> getReports(){
@@ -152,10 +189,6 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
      */
     public TestsuiteNode displayReport(final Report report) {
         assert EventQueue.isDispatchThread();
-        assert (runningSuiteNode != null)
-               == (live && (runningSuiteName != null)) 
-               // for tracking down #136415
-               : "runningSuiteNode: " + runningSuiteNode + ", live: " + live + ", runningSuiteName: " + runningSuiteName;
         
         TestsuiteNode correspondingNode;
         
@@ -165,35 +198,29 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         if (!reports.contains(report))
             reports.add(report);
 
-        final boolean isPassedSuite = updateStatistics(report);
+        updateStatistics(report);
         
-        if (runningSuiteName != null) {
-            
-            if (live) {
-                correspondingNode = runningSuiteNode;
-                if (report.completed || !isMaskApplied(report, filterMask)){
-                    correspondingNode.displayReport(report);
-                }
-                if (report.completed && isMaskApplied(report, filterMask)) {
-                    runningSuiteNode = null;
-                    refreshKey(correspondingNode);
-                }
-            } else {
-                correspondingNode = null;
+        if (runningSuiteNode != null) {
+            if (report.completed || !isMaskApplied(report, filterMask)) {
+                runningSuiteNode.displayReport(report);
             }
+            if (report.completed && isMaskApplied(report, filterMask)) {
+                runningSuiteNode = null;
+            }
+            correspondingNode = runningSuiteNode;
         } else {
-            if (live && !(report.completed && isMaskApplied(report, filterMask))) {
+            if (!(report.completed && isMaskApplied(report, filterMask))) {
                 correspondingNode = getNode(report);
-                refreshKey(correspondingNode);
             } else {
                 correspondingNode = null;
             }
         }
-
+        
         if (report.completed){
             runningSuiteName = null;
             runningSuiteNode = null;
         }
+        refresh(false);
         return correspondingNode;
     }
     
@@ -208,7 +235,7 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
             reports.addAll(newReports);
         }
         
-        if (!live) {
+        if (runningSuiteNode == null) {
             for (Report report : reports) {
                 updateStatistics(report);
             }
@@ -233,8 +260,8 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
                     nodesToAdd = toAdd.toArray(new Node[toAdd.size()]);
                 }
             }
-            addNotify();
         }
+        refresh(false);
     }
     
     /**
@@ -263,78 +290,24 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         return !report.containsFailed();
     }
     
-    // PENDING - synchronization
-    
-    /**
-     */
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        
-        live = true;                      //PENDING
-        setKeys(suiteNodes);
-    }
-    
-    /**
-     */
-    @Override
-    protected void removeNotify() {
-        super.removeNotify();
-        live = false;
-        setKeys(EMPTY_NODE_ARRAY);
-    }
-    
-    /**
-     * Adds all nodes matching the current filter (if the filter is enabled)
-     * or all nodes generally (if the filter is off).
-     */
-/*
-    private void addAllMatchingNodes() {
-        final boolean filterOn = filtered;
-        final int matchingNodesCount = filterOn ? failedSuites
-                                                : failedSuites + passedSuites;
-        final int nodesCount = ((runningSuiteNode != null) && (reports == null || !reports.contains(runningSuiteNode.getReport())))
-                               ? matchingNodesCount + 1
-                               : matchingNodesCount;
-        if (nodesCount != 0) {
-            List<TestsuiteNode> nodesToAdd = new ArrayList<TestsuiteNode>();
-            for(Report report: reports){
-                if (!filterOn || report.containsFailed()) {
-                    TestsuiteNode node = getNode(report);
-                    node.setFiltered(filtered);
-                    nodesToAdd.add(node);
-                }
-
-            }
-
-            if ((runningSuiteNode != null) && (reports == null || !reports.contains(runningSuiteNode.getReport()))) {
-                nodesToAdd.add(runningSuiteNode);
-            }
-            add(nodesToAdd.toArray(new TestsuiteNode[nodesToAdd.size()]));
-        }
-    }
-  
-    private void removeAllNodes() {
-        remove(getNodes());
-    }
-*/
-    /**
-     */
     private TestsuiteNode getNode(final Report report) {
-        for(TestsuiteNode node: suiteNodes){
-            if (node.getReport() == report){
-                return node;
+        synchronized (suiteNodes) {
+            for (TestsuiteNode node : suiteNodes) {
+                if (node.getReport() == null || node.getReport() == report) {
+                    return node;
+                }
             }
         }
         TestsuiteNode node = new TestsuiteNode(report, filterMask != 0);
         node.setFilterMask(filterMask);
+        notifyTestSuiteFinished();
         suiteNodes.add(node);
         return node;
     }
     
     /**
      */
-    synchronized void setFilterMask(final int filterMask) {
+    void setFilterMask(final int filterMask) {
         assert EventQueue.isDispatchThread();
         
         if (filterMask == this.filterMask) {
@@ -342,63 +315,17 @@ final class RootNodeChildren extends Children.Keys<TestsuiteNode> {
         }
         this.filterMask = filterMask;
         
-        if (!live || (reports == null)) {
+        if (reports == null) {
             return;
         }
-/*
-        if (filtered) {
-            removePassedSuites();
-        } else {
-            addPassedSuites();
-        }
- */
-        for(TestsuiteNode suite: suiteNodes){
-            suite.setFilterMask(filterMask);
-            refreshKey(suite);
-        }
-
-    }
-
-/*
-    private synchronized void removePassedSuites() {
-        assert EventQueue.isDispatchThread();
-        assert live;
-
-        List<Node> nodesToRemove = new ArrayList<Node>();
-        final Node[] nodes = getNodes();
-        for (int index = 0; index < nodes.length; index++) {
-            TestsuiteNode node = (TestsuiteNode) nodes[index];
-            Report report = node.getReport();
-            if (report == null) {
-                continue;
-            }
-            if (!report.containsFailed() && (node != runningSuiteNode)) {
-                nodesToRemove.add(node);
-            } else {
-                node.setFiltered(filtered);
-            }
-        }
-        remove(nodesToRemove.toArray(new Node[nodesToRemove.size()]));
-    }
-    
-    private void addPassedSuites() {
-        assert EventQueue.isDispatchThread();
-        assert live;
         
-        removeAllNodes();
-        addAllMatchingNodes();
-    }
-*/
-    private static final TestsuiteNode[] EMPTY_NODE_ARRAY = new TestsuiteNode[0];
-
-    @Override
-    protected Node[] createNodes(TestsuiteNode suite) {
-        Report report = suite.getReport();
-        if ((suite != runningSuiteNode) && (report != null) && isMaskApplied(report, filterMask)){
-            return EMPTY_NODE_ARRAY;
-        }else{
-            return new Node[]{suite};
+        synchronized (suiteNodes) {
+            for (TestsuiteNode suite : suiteNodes) {
+                suite.setFilterMask(filterMask);
+                refresh(false);
+            }
         }
+
     }
     
     private boolean isMaskApplied(Report report, int mask){

@@ -193,12 +193,14 @@ class RemoteSyncActions {
                 }
             } catch (PathMapperException ex) {
                 tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_MAPPING", ex.getFile().getAbsolutePath()));
+                errCnt++;
             } catch (CancellationException ex) {
                 cancelled = true;
             } catch (InterruptedIOException ex) {
                 cancelled = true;
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "ERR_CONNECT", envName));
+                errCnt++;
             } finally {
                 progressHandle.finish();
             }

@@ -48,7 +48,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Collections;
@@ -73,8 +72,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.ejbverification.EJBProblemContext.SessionData;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.spi.editor.hints.Severity;
@@ -89,7 +91,7 @@ import org.openide.util.Exceptions;
 public class HintsUtils {
 
     private static final Logger LOG = Logger.getLogger(HintsUtils.class.getName());
-    private static final String CACHED_CONTEXT = "cached-ejbProblemContext";
+    private static final String CACHED_CONTEXT = "cached-ejbProblemContext-";
 
     public static ErrorDescription createProblem(Element subject, CompilationInfo cinfo,
             String description) {
@@ -233,18 +235,32 @@ public class HintsUtils {
     }
 
     /**
-     * Gets problem context used by standard EJB hints.
+     * Gets problem context used by standard EJB hints. This method can be used for @TriggerTreeKind based hints.
      * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
      *
      * @param context Hints API context
      * @return EJB hint's context
      */
     public static EJBProblemContext getOrCacheContext(HintContext context) {
-        Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT);
+        Element element = context.getInfo().getTrees().getElement(context.getPath());
+        String elementType = element.asType().toString();
+        return getOrCacheContext(context, elementType);
+    }
+
+    /**
+     * Gets problem context used by standard EJB hints.
+     * Uses cached value if found, otherwise creates a new one which stores into the CompilationInfo.
+     *
+     * @param context Hints API context
+     * @param elementType FQN of the element where should be hint applied
+     * @return EJB hint's context
+     */
+    public static EJBProblemContext getOrCacheContext(HintContext context, String elementType) {
+        Object cached = context.getInfo().getCachedValue(CACHED_CONTEXT + elementType);
         if (cached == null) {
-            LOG.log(Level.FINEST, "HintContext doesn't contain cached EJBProblemContext which is going to be created.");
+            LOG.log(Level.FINEST, "HintContext doesn''t contain cached EJBProblemContext which is going to be created for type: {0}", elementType);
             EJBProblemContext newContext = createEJBProblemContext(context);
-            context.getInfo().putCachedValue(CACHED_CONTEXT, newContext, CompilationInfo.CacheClearPolicy.ON_SIGNATURE_CHANGE);
+            context.getInfo().putCachedValue(CACHED_CONTEXT + elementType, newContext, CompilationInfo.CacheClearPolicy.ON_SIGNATURE_CHANGE);
             return newContext;
         } else {
             LOG.log(Level.FINEST, "EJBProblemContext cached value used.");
@@ -252,8 +268,7 @@ public class HintsUtils {
         }
     }
 
-    private static EJBProblemContext createEJBProblemContext(HintContext context) {
-        final EJBProblemContext[] result = new EJBProblemContext[1];
+    private static EJBProblemContext createEJBProblemContext(final HintContext context) {
         final CompilationInfo info = context.getInfo();
         final FileObject file = info.getFileObject();
 
@@ -273,37 +288,37 @@ public class HintsUtils {
         }
 
         try {
-            ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
+            return ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, EJBProblemContext>() {
                 @Override
-                public Void run(EjbJarMetadata metadata) {
+                public EJBProblemContext run(EjbJarMetadata metadata) {
+                    long startTime = Calendar.getInstance().getTimeInMillis();
                     String ejbVersion = metadata.getRoot().getVersion().toString();
                     if (!HintsUtils.isEjb30Plus(ejbVersion)) {
                         return null; // Only EJB 3.0+ are supported
                     }
-                    for (Tree tree : info.getCompilationUnit().getTypeDecls()) {
-                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
-                            long startTime = Calendar.getInstance().getTimeInMillis();
-                            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
-                            TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
+                    TypeElement javaClass = (TypeElement) info.getTrees().getElement(context.getPath());
+                    Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
 
-                            Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
-
-                            result[0] = new EJBProblemContext(
-                                    info,
-                                    project,
-                                    ejbModule,
-                                    file,
-                                    javaClass,
-                                    ejb,
-                                    metadata);
-
-                            if (LOG.isLoggable(Level.FINE)) {
-                                long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
-                                LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
-                            }
+                    // precompute EJB information
+                    String[] businessLocal = new String[0];
+                    String[] businessRemote = new String[0];
+                    String sessionType = "";
+                    try {
+                        if (ejb instanceof Session) {
+                            Session session = ((Session) ejb);
+                            businessLocal = session.getBusinessLocal();
+                            businessRemote = session.getBusinessRemote();
+                            sessionType = session.getSessionType();
                         }
+                    } catch (VersionNotSupportedException ex) {
+                        LOG.log(Level.INFO, ex.getMessage(), ex);
                     }
-                    return null;
+
+                    if (LOG.isLoggable(Level.FINE)) {
+                        long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+                        LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
+                    }
+                    return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
                 }
             });
         } catch (MetadataModelException ex) {
@@ -311,6 +326,6 @@ public class HintsUtils {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return result[0];
+        return null;
     }
 }

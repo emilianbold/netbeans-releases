@@ -48,11 +48,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffConfig;
@@ -129,33 +132,14 @@ public class LogCommand extends GitCommand {
         } else {
             RevWalk walk = new RevWalk(repository);
             RevWalk fullWalk = new RevWalk(repository);
-            Map<String, GitBranch> allBranches;
-            Map<String, RevCommit> branchCommits;
             DiffConfig diffConfig = repository.getConfig().get(DiffConfig.KEY);
-            List<RevFlag> branchFlags;
+            Map<RevFlag, List<GitBranch>> branchFlags;
             if (fetchBranchInfo) {
-                allBranches = Utils.getAllBranches(repository, getClassFactory(), new DelegatingGitProgressMonitor(monitor));
-                branchFlags = new ArrayList<>(allBranches.size());
-                branchCommits = new LinkedHashMap<>(allBranches.size());
-                for (Map.Entry<String, GitBranch> e : allBranches.entrySet()) {
-                    if (e.getKey() != GitBranch.NO_BRANCH) {
-                        RevFlag flag = walk.newFlag(e.getKey());
-                        branchFlags.add(flag);
-                        try {
-                            RevCommit branchHeadCommit = walk.parseCommit(repository.resolve(e.getValue().getId()));
-                            branchHeadCommit.add(flag);
-                            branchHeadCommit.carry(flag);
-                            walk.markStart(branchHeadCommit);
-                        } catch (IOException ex) {
-                            LOG.log(Level.INFO, null, ex);
-                        }
-                    }
-                }
-                walk.carry(branchFlags);
+                Map<String, GitBranch> allBranches = Utils.getAllBranches(repository, getClassFactory(), new DelegatingGitProgressMonitor(monitor));
+                branchFlags = new HashMap<>(allBranches.size());
+                markBranchFlags(allBranches, walk, branchFlags);
             } else {
-                allBranches = Collections.<String, GitBranch>emptyMap();
-                branchCommits = Collections.<String, RevCommit>emptyMap();
-                branchFlags = Collections.<RevFlag>emptyList();
+                branchFlags = Collections.<RevFlag, List<GitBranch>>emptyMap();
             }
             try {
                 RevFlag interestingFlag = walk.newFlag("RESULT_FLAG"); //NOI18N
@@ -191,7 +175,7 @@ public class LogCommand extends GitCommand {
                 for (Iterator<RevCommit> it = walk.iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
                     RevCommit commit = it.next();
                     addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(commit),
-                            getAffectedBranches(commit, allBranches, branchFlags), repository));
+                            getAffectedBranches(commit, branchFlags), repository));
                     --remaining;
                 }
             } catch (MissingObjectException ex) {
@@ -203,6 +187,45 @@ public class LogCommand extends GitCommand {
                 fullWalk.release();
             }
         } 
+    }
+
+    private void markBranchFlags (Map<String, GitBranch> allBranches, RevWalk walk, Map<RevFlag, List<GitBranch>> branchFlags) {
+        int i = 1;
+        Set<String> usedFlags = new HashSet<>();
+        Repository repository = getRepository();
+        for (Map.Entry<String, GitBranch> e : allBranches.entrySet()) {
+            if (e.getKey() != GitBranch.NO_BRANCH) {
+                String flagId = e.getValue().getId();
+                if (usedFlags.contains(flagId)) {
+                    for (Map.Entry<RevFlag, List<GitBranch>> e2 : branchFlags.entrySet()) {
+                        if (e2.getKey().toString().equals(flagId)) {
+                            e2.getValue().add(e.getValue());
+                        }
+                    }
+                } else {
+                    usedFlags.add(flagId);
+                    if (i < 25) {
+                        i = i + 1;
+                        RevFlag flag = walk.newFlag(flagId);
+                        List<GitBranch> branches = new ArrayList<>(allBranches.size());
+                        branches.add(e.getValue());
+                        branchFlags.put(flag, branches);
+                        try {
+                            RevCommit branchHeadCommit = walk.parseCommit(repository.resolve(e.getValue().getId()));
+                            branchHeadCommit.add(flag);
+                            branchHeadCommit.carry(flag);
+                            walk.markStart(branchHeadCommit);
+                        } catch (IOException ex) {
+                            LOG.log(Level.INFO, null, ex);
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "Out of available flags for branches: {0}", allBranches.size()); //NOI18N
+                        break;
+                    }
+                }
+            }
+        }
+        walk.carry(branchFlags.keySet());
     }
 
     @Override
@@ -295,13 +318,13 @@ public class LogCommand extends GitCommand {
         return commit;
     }
 
-    private Map<String, GitBranch> getAffectedBranches (RevCommit commit, Map<String, GitBranch> allBranches,
-            List<RevFlag> branchFlags) {
-        Map<String, GitBranch> affected = new LinkedHashMap<>(allBranches.size());
-        for (RevFlag flag : branchFlags) {
-            GitBranch b;
-            if (commit.has(flag) && (b = allBranches.get(flag.toString())) != null) {
-                affected.put(b.getName(), b);
+    private Map<String, GitBranch> getAffectedBranches (RevCommit commit, Map<RevFlag, List<GitBranch>> flags) {
+        Map<String, GitBranch> affected = new LinkedHashMap<>();
+        for (Map.Entry<RevFlag, List<GitBranch>> e : flags.entrySet()) {
+            if (commit.has(e.getKey())) {
+                for (GitBranch b : e.getValue()) {
+                    affected.put(b.getName(), b);
+                }
             }
         }
         return affected;

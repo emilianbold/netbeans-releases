@@ -101,8 +101,12 @@ public class JsParserResult extends ParserResult {
     }
 
     public Model getModel() {
+        return getModel(false);
+    }
+    
+    public Model getModel(boolean forceCreate) {
         synchronized (this) {
-            if (model == null) {
+            if (model == null || forceCreate) {
                 model = ModelFactory.getModel(this);
 
                 if (LOGGER.isLoggable(Level.FINEST)) {

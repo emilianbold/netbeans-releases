@@ -65,9 +65,8 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.repository.api.CacheLocation;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
+import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -82,8 +81,6 @@ import org.openide.util.CharSequences;
  */
 public class APTSerializeUtils {
 
-    private static final RepositoryTranslation translator = RepositoryAccessor.getTranslator();
-
     private APTSerializeUtils() {
     }
 
@@ -91,28 +88,33 @@ public class APTSerializeUtils {
      * @param cacheLocation can be null, in this case standard location 
      * ${userdir}/var/cache/cnd/model will be used
      */
-    public static int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
-        return translator.getUnitId(unitName, cacheLocation);
+    public static int getUnitId(UnitDescriptor unitDescriptor) {
+        return Repository.getUnitId(unitDescriptor);
+    }
+
+    public static int getUnitId(UnitDescriptor unitDescriptor, int sourceUnitId) {
+        return Repository.getUnitId(unitDescriptor, sourceUnitId);
     }
 
     public static CharSequence getUnitName(int unitIndex) {
-        return translator.getUnitName(unitIndex);
+        return Repository.getUnitName(unitIndex);
     }
 
     public static CharSequence getUnitNameSafe(int unitIndex) {
-        return translator.getUnitNameSafe(unitIndex);
+        CharSequence unitName = Repository.getUnitName(unitIndex);
+        return unitName == null ? "Unit-" + unitIndex : unitName; // NOI18N
     }
 
     public static int getFileIdByName(int unitId, CharSequence fileName) {
-        return translator.getFileIdByName(unitId, fileName);
+        return Repository.getFileIdByName(unitId, fileName);
     }
 
     public static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
-        return translator.getFileNameByIdSafe(unitId, fileId);
+        return Repository.getFileNameByIdSafe(unitId, fileId);
     }
 
     public static CharSequence getFileNameById(int unitId, int fileId) {
-        return translator.getFileNameById(unitId, fileId);
+        return Repository.getFileNameById(unitId, fileId);
     }
 
     public static void writeFileNameIndex(CharSequence st, RepositoryDataOutput aStream, int unitId) throws IOException {
@@ -165,9 +167,9 @@ public class APTSerializeUtils {
     // to many recurse calls to writeObject on writing "next" field
     // let's try to reduce depth of recursion by depth of tree
     
-    private static final int CHILD = 1;
-    private static final int SIBLING = 2;
-    private static final int END_APT = 3;
+    private static final short CHILD = 1;
+    private static final short SIBLING = 2;
+    private static final short END_APT = 3;
     
     static private void writeTree(ObjectOutputStream out, APT root) throws IOException {
         assert (root != null) : "there must be something to write"; // NOI18N
@@ -197,7 +199,7 @@ public class APTSerializeUtils {
         assert (root != null) : "there must be something to read"; // NOI18N
         APT node = root;
         do {
-            int kind = in.readShort();
+            short kind = in.readShort();
             switch (kind) {
                 case END_APT:
                     return;
@@ -281,7 +283,7 @@ public class APTSerializeUtils {
     }
     
     public static APTMacroMap.State readMacroMapState(RepositoryDataInput input) throws IOException {
-        int handler = input.readShort();
+        short handler = input.readShort();
         APTMacroMap.State state;
         if (handler == MACRO_MAP_FILE_STATE_IMPL) {
             state = new APTFileMacroMap.FileStateImpl(input);

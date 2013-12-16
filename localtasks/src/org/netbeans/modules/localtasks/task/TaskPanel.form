@@ -55,7 +55,7 @@
             </DimensionLayout>
           </Layout>
         </Container>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnAddTaskReference">
+        <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnAddTaskReference">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/localtasks/task/Bundle.properties" key="TaskPanel.btnAddTaskReference.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -374,7 +374,7 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnCancel">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnCancel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/localtasks/task/Bundle.properties" key="TaskPanel.btnCancel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -397,7 +397,7 @@
                 <Property name="focusable" type="boolean" value="false"/>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnDismiss">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnDismiss">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/localtasks/task/Bundle.properties" key="TaskPanel.btnDismiss.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -420,7 +420,7 @@
                 <Property name="focusable" type="boolean" value="false"/>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnFinish">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnFinish">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/localtasks/task/Bundle.properties" key="TaskPanel.btnFinish.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -443,7 +443,7 @@
                 <Property name="focusable" type="boolean" value="false"/>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="btnOpen">
+            <Component class="org.netbeans.modules.bugtracking.commons.LinkButton" name="btnOpen">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/localtasks/task/Bundle.properties" key="TaskPanel.btnOpen.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -519,7 +519,7 @@
                 <Property name="axis" type="int" value="1"/>
               </Layout>
             </Container>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="attributesSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attributesSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -532,7 +532,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="referencesSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="referencesSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
@@ -548,7 +548,7 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel" name="attachmentsSection">
+            <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attachmentsSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>

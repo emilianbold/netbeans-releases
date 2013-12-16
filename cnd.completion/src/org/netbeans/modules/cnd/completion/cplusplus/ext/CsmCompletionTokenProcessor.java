@@ -1102,7 +1102,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case TYPE:
                                     if (getValidExpID(peekExp2()) != METHOD_OPEN) {
                                         popExp();
-                                        pushExp(createTokenExp(VARIABLE));
+                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                        for (int i = 0; i < top.getTokenCount(); i++) {
+                                            // qualifiers
+                                            var.addToken(top.getTokenID(i), top.getTokenOffset(i), top.getTokenText(i));
+                                        }
+                                        pushExp(var);
                                         break;
                                     } else {
                                         popExp(); // top
@@ -2853,7 +2858,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         return true;        
     }
     
-    private class OffsetableToken {
+    private static class OffsetableToken {
         Token<TokenId> token;
         int offset;
         boolean macro;

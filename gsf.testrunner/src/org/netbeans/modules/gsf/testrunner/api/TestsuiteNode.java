@@ -78,8 +78,8 @@ public class TestsuiteNode extends AbstractNode {
      * The max line length to display in the messages.
      * 
      * By default, the max line length for the messages in the Test Results
-     * window will be set to 120 for the GTK look and feel, and won't be limited
-     * for other look and feels. For any look and feel a user can change the
+     * window will be set to 120 for the GTK look and feel or JDK8, and won't be limited
+     * for other look and feels or JDKs. For any look and feel or JDK a user can change the
      * default setting via the system property
      * {@code testrunner.max.msg.line.length=MAX_LINE_LENGTH},
      * where  {@code MAX_LINE_LENGTH} is a desired value.
@@ -90,12 +90,13 @@ public class TestsuiteNode extends AbstractNode {
      */
     static final int MAX_MSG_LINE_LENGTH = 
           Integer.getInteger("testrunner.max.msg.line.length", //NOI18N
-                             isGTK() ? 120 : Integer.MAX_VALUE);
+                             isGTK() || isJDK8() ? 120 : Integer.MAX_VALUE);
 
     protected String suiteName;
     protected TestSuite suite;
     protected Report report;
     protected int filterMask = 0;
+    private TestsuiteNodeChildren children;
 
     /**
      *
@@ -124,14 +125,31 @@ public class TestsuiteNode extends AbstractNode {
     protected TestsuiteNode(final Report report,
                           final String suiteName,
                           final boolean filtered, Lookup lookup) {
-        super(report != null ? new TestsuiteNodeChildren(report, 0)
-                             : Children.LEAF, lookup);
+        super(Children.LEAF, lookup);
         this.report = report; 
-        this.suiteName = (report != null) ? report.getSuiteClassName() : suiteName;
+        this.suiteName = (report != null) ? report.getSuiteClassName() : (suiteName != null ? suiteName : TestSuite.ANONYMOUS_SUITE);
         
         assert this.suiteName != null;
         
         setDisplayName();
+        children = null;
+    }
+
+    /**
+     *  Update icon, display name and children of this TestsuiteNode
+     */
+    void notifyTestSuiteFinished() {
+        fireIconChange();
+        setDisplayName();
+        getTestsuiteNodeChildren().notifyTestSuiteFinished();
+    }
+    
+    private TestsuiteNodeChildren getTestsuiteNodeChildren() {
+        if (children == null) {
+            children = new TestsuiteNodeChildren(report, filterMask);
+            setChildren(Children.create(children, true));
+        }
+        return children;
     }
 
     /**
@@ -211,12 +229,7 @@ public class TestsuiteNode extends AbstractNode {
         suiteName = report.getSuiteClassName();
         
         setDisplayName();
-        Children ch = getChildren();
-        if (ch instanceof TestsuiteNodeChildren){
-            ((TestsuiteNodeChildren)ch).addNotify();
-        }else{
-            setChildren(new TestsuiteNodeChildren(report, filterMask));
-        }
+        getTestsuiteNodeChildren().setReport(report);
         if (DISPLAY_TOOLTIPS) {
             setShortDescription(toTooltipText(getOutput()));
         }
@@ -347,11 +360,7 @@ public class TestsuiteNode extends AbstractNode {
             return;
         }
         this.filterMask = filterMask;
-        
-        Children children = getChildren();
-        if (children != Children.LEAF) {
-            ((TestsuiteNodeChildren) children).setFilterMask(filterMask);
-        }
+        getTestsuiteNodeChildren().setFilterMask(filterMask);
     }
     
     /**
@@ -424,6 +433,15 @@ public class TestsuiteNode extends AbstractNode {
      */
     private static boolean isGTK() {
         return "GTK".equals(UIManager.getLookAndFeel().getID());
+    }
+    
+    /**
+     * Checks whether the currently used JDK version is 1.8.x_xx
+     *
+     * @return {@code true} if the currently used JDK version is 8, otherwise {@code false}.
+     */
+    private static boolean isJDK8() {
+        return Integer.parseInt(System.getProperty("java.version").split("\\.")[1]) == 8;
     }
 
 }

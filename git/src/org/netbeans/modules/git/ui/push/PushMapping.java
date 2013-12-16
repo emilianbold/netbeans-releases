@@ -69,7 +69,7 @@ public abstract class PushMapping extends ItemSelector.Item {
     private static final String COLOR_CONFLICT = GitUtils.getColorString(AnnotationColorProvider.getInstance().CONFLICT_FILE.getActualColor());
     
     protected PushMapping (String localName, String localId, String remoteName, String remoteId, boolean conflict, boolean preselected) {
-        super(preselected);
+        super(preselected, localName == null);
         this.localName = localName;
         this.remoteName = remoteName == null ? localName : remoteName;
         if (localName == null) {
@@ -137,8 +137,8 @@ public abstract class PushMapping extends ItemSelector.Item {
         return tooltip;
     }
     
-    public final boolean isDeletion () {
-        return localName == null;
+    public final String getLocalName () {
+        return localName;
     }
 
     @Override

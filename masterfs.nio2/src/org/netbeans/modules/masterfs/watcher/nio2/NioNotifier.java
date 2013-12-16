@@ -90,7 +90,14 @@ public class NioNotifier extends Notifier<WatchKey> {
 
     @Override
     protected String nextEvent() throws IOException, InterruptedException {
-        WatchKey key = watcher.take();
+        WatchKey key;
+        try {
+            key = watcher.take();
+        } catch (ClosedWatchServiceException cwse) { // #238261
+            @SuppressWarnings({"ThrowableInstanceNotThrown"})
+            InterruptedException ie = new InterruptedException();
+            throw (InterruptedException) ie.initCause(cwse);
+        }
         Path dir = (Path)key.watchable();
                
         String res = dir.toAbsolutePath().toString();

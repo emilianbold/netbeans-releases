@@ -137,31 +137,23 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
         return isEndedPhp;
     }
 
-    /*public void setAST(AST ast) {
-    	this.ast = ast;
+    public boolean useAspTagsAsPhp() {
+        return asp_tags;
     }
-    */
-        public PHPVersion getPHPVersion() {
-                return PHPVersion.PHP_5;
-        }
 
-        public boolean useAspTagsAsPhp () {
-            return asp_tags;
-        }
+    public void reset(java.io.Reader reader) {
+        yyreset(reader);
+    }
 
-        public void reset(java.io.Reader reader) {
-            yyreset(reader);
-        }
+    public void setState(int state) {
+        yybegin(state);
+    }
 
-        public void setState(int state) {
-            yybegin(state);
-        }
+    public int getState() {
+        return yystate();
+    }
 
-        public int getState() {
-            return yystate();
-        }
-
-        public void setInScriptingState() {
+    public void setInScriptingState() {
 		yybegin(ST_IN_SCRIPTING);
 	}
 

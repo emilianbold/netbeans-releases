@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.commons.treelist;
 
+import org.netbeans.modules.team.commons.ColorManager;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import java.awt.BorderLayout;
@@ -101,6 +102,9 @@ final class RendererPanel extends JPanel {
             expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    if (!node.isLoaded()) {
+                        return;
+                    }
                     node.setExpanded(!node.isExpanded());
                 }
             });
@@ -149,7 +153,8 @@ final class RendererPanel extends JPanel {
         setForeground(foreground);
         
         if (null != expander) {
-            expander.setIcon(node.isExpanded() ? getExpandedIcon() : getCollapsedIcon());
+            expander.setEnabled(node.isLoaded());
+            expander.setIcon(node.isLoaded() ? node.isExpanded() ? getExpandedIcon() : getCollapsedIcon() : EMPTY_ICON);
             expander.setPressedIcon(expander.getIcon());
         }
         Border border = null;

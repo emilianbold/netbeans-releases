@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
@@ -137,6 +138,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             functionImplEx.initClassOrNspNames(ast);
         functionImplEx.setClassOrNspNames(classOrNspNames);        
         
+        // IZ#237907 initialize FQN
+        functionImplEx.getUniqueName();
         if (register) {
             postObjectCreateRegistration(register, functionImplEx);
         } else {
@@ -154,7 +157,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     /** @return either class or namespace */
     protected CsmObject findOwner() {
 	CharSequence[] cnn = classOrNspNames;
-	if( cnn != null ) {
+	if( cnn != null && cnn.length > 0) {
             Resolver resolver = ResolverFactory.createResolver(this);
             try {
                 CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
@@ -238,7 +241,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
-                        if (id != null && level == 0) {
+                        if (id != null && level == 0 && id.length()>0) {
                             l.add(manager.getString(id));
                         }
                         break;
@@ -383,6 +386,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 registerInProject();
                 postFunctionImpExCreateRegistration(fileContent, true, this);
                 fixed = true;
+                RepositoryUtils.put(this);
             }
         }
         return fixed;
