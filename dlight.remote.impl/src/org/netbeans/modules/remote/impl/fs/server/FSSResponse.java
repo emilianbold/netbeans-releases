@@ -80,20 +80,26 @@ import org.openide.util.NotImplementedException;
         }
     }
 
+    public interface Listener {
+        void packageAdded(FSSResponse.Package pkg);
+    }
+    
     private final int requestId;
     private final FSSRequestKind requestKind;
     private final String requestPath;
     private final Disposer<FSSResponse> disposer;
+    private final Listener listener;
     
     private final Object lock = new Object();
     private final LinkedList<Package> packages = new LinkedList<Package>();
     private ExecutionException exception = null;
 
-    public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer) {
+    public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer, Listener listener) {
         this.requestId = request.getId();
         this.requestKind = request.getKind();
         this.requestPath = request.getPath();
         this.disposer = disposer;
+        this.listener = listener;
     }
     
     public boolean hasPackages() {
@@ -155,8 +161,11 @@ import org.openide.util.NotImplementedException;
             packages.addLast(pkg);
             lock.notifyAll();
         }
+        if (listener != null) {
+            listener.packageAdded(pkg);
+        }
     }
-    
+
     public void failed(ExecutionException exception) {
         synchronized (lock) {
             this.exception = exception;
@@ -165,7 +174,7 @@ import org.openide.util.NotImplementedException;
     }
 
     public void cancel() {
-        new NotImplementedException().printStackTrace();
+        new NotImplementedException().printStackTrace(System.err);
     }
 
     void dispose() {
