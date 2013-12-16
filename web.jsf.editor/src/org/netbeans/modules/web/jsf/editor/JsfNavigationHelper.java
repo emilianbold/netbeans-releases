@@ -42,15 +42,13 @@
 package org.netbeans.modules.web.jsf.editor;
 
 import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -93,15 +91,7 @@ public class JsfNavigationHelper {
      * @return HTML token sequence moved at given offset or {@code null}
      */
     static TokenSequence getTokenSequenceAtCaret(TokenHierarchy th, int caretOffset) {
-        List<TokenSequence> seqs = th.embeddedTokenSequences(caretOffset, false);
-        TokenSequence ts = null;
-        for (TokenSequence _ts : seqs) {
-            if (_ts.language() == HTMLTokenId.language()) {
-                ts = _ts;
-                break;
-            }
-        }
-
+        TokenSequence ts = Utils.getJoinedHtmlSequence(th, caretOffset);
         if (ts == null) {
             return null;
         }

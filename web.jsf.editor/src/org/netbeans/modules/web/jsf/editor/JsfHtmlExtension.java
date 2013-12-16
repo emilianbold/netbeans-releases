@@ -67,12 +67,10 @@ import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
-import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
-import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
 
@@ -382,8 +380,12 @@ public class JsfHtmlExtension extends HtmlExtension {
     public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
         assert result instanceof HtmlParserResult;
         HtmlParserResult htmlresult = (HtmlParserResult) result;
-        Element leaf = htmlresult.findByPhysicalRange(caretOffset, true);
+        int embeddedOffset = result.getSnapshot().getEmbeddedOffset(caretOffset);
+        if (embeddedOffset == -1) {
+            return DeclarationLocation.NONE;
+        }
 
+        Element leaf = htmlresult.findByPhysicalRange(embeddedOffset, true);
         if (leaf == null || leaf.type() != ElementType.OPEN_TAG) {
             return DeclarationLocation.NONE;
         }
@@ -403,7 +405,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             return DeclarationLocation.NONE;
         }
 
-        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(result.getSnapshot().getTokenHierarchy(), caretOffset);
+        TokenSequence ts = JsfNavigationHelper.getTokenSequenceAtCaret(result.getSnapshot().getTokenHierarchy(), embeddedOffset);
         if (ts == null) {
             return DeclarationLocation.NONE;
         }
@@ -415,16 +417,16 @@ public class JsfHtmlExtension extends HtmlExtension {
             while (ts.movePrevious()) {
                 if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
                     String tag = CharSequenceUtilities.toString(ts.token().text());
-                    return JsfNavigationHelper.goToReferencedFile(htmlresult, caretOffset, tag, attribute, value);
+                    return JsfNavigationHelper.goToReferencedFile(htmlresult, embeddedOffset, tag, attribute, value);
                 } else if (ts.token().id() == HTMLTokenId.ARGUMENT && attribute.isEmpty()) {
                     attribute = CharSequenceUtilities.toString(ts.token().text());
                 }
             }
         } else {
             if (lib instanceof CompositeComponentLibrary) {
-                return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
+                return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, embeddedOffset, lib);
             } else if (lib instanceof FacesComponentLibrary) {
-                return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
+                return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, embeddedOffset, (FacesComponentLibrary) lib);
             }
         }
 
