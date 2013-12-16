@@ -273,6 +273,13 @@ class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.Hi
                     rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]), 0);
                 } finally {
                     rootNode.loadingVCSFinished(currentDateFrom);
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            tablePanel.repaint();
+                        }
+                    });
                     // XXX yet select the first node on
                 }
             }
@@ -569,13 +576,19 @@ class HistoryFileView implements PreferenceChangeListener, VCSHistoryProvider.Hi
                 loadVCSEntries(proxies, false);
             }
             refreshTask = null;
-            tablePanel.revalidate();
-            tablePanel.repaint();
-            
-            int row = tablePanel.treeView.getOutline().getSelectedRow();
-            if(row > -1) {
-                scrollToVisible(row, 2);
-            }
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run () {
+                    tablePanel.revalidate();
+                    tablePanel.repaint();
+
+                    int row = tablePanel.treeView.getOutline().getSelectedRow();
+                    if(row > -1) {
+                        scrollToVisible(row, 2);
+                    }
+                }
+            });
         }
 
     } 
