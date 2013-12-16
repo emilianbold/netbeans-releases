@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -61,6 +60,7 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -95,7 +95,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private final Object refLock = new RefLock();    
 
     private static final class MagicLock {}
-    private final Object magicLock = new MagicLock();    
+    private final Object magicLock = new MagicLock();
+    
+    private volatile RemoteFileSystemTransport.Warmup warmup;
 
     /*package*/ RemoteDirectory(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteDirectory parent, String remotePath, File cache) {
@@ -501,33 +503,87 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public void setAttribute(String attrName, Object value) throws IOException {
         if (attrName.equals("warmup")) { // NOI18N
-            if (Boolean.getBoolean("remote.fs_server.warmup")) {
-                warmup();
+            if (Boolean.TRUE.equals(value) && RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
+                setFlag(MASK_WARMUP, true);   
             }
         } else {
             super.setAttribute(attrName, value);
         }
     }
-    
-    private void warmup() {
-        FSSTransport fsReader = FSSTransport.getInstance(getExecutionEnvironment());
-        if (fsReader != null && fsReader.isValid()) {
-            fsReader.warmap(getPath());
-        }
+
+    @Override
+    public RemoteDirectory getParent() {
+        return (RemoteDirectory) super.getParent(); // see constructor
     }
-    
+
+    private boolean isFlaggedForWarmup() {
+        if(getFlag(MASK_WARMUP)) {
+            return true;
+        } else {
+            RemoteDirectory p = getParent();
+            if (p != null) {
+                return p.isFlaggedForWarmup();
+            }
+        }
+        return false;
+    }
+
+    private RemoteFileSystemTransport.Warmup getWarmup() {
+        RemoteFileSystemTransport.Warmup w = warmup;
+        if (w == null) {
+            RemoteDirectory p = getParent();
+            if (p != null) {
+                return p.getWarmup();
+            }
+        }
+        return w;
+    }
+
+    private Map<String, DirEntry> toMap(DirEntryList entryList) {
+        Map<String, DirEntry> map = new HashMap<String, DirEntry>();
+        for (DirEntry entry : entryList.getEntries()) {
+            map.put(entry.getName(), entry);
+        }
+        return map;
+    }
+            
+    private static final AtomicInteger warmupHints = new AtomicInteger();
+    private static final AtomicInteger warmupReqs = new AtomicInteger();
+    private static final AtomicInteger readEntryReqs = new AtomicInteger();
+
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
+        }
+        readEntryReqs.incrementAndGet();
+        try {
+            if (isFlaggedForWarmup()) {
+                warmupReqs.incrementAndGet();
+                DirEntryList entryList = null;
+                RemoteFileSystemTransport.Warmup w = getWarmup();
+                if (w == null) {
+                    warmup = RemoteFileSystemTransport.createWarmup(getExecutionEnvironment(), getPath());
+                    if (warmup != null) {
+                        entryList = warmup.get(getPath());
+                    }
+                } else {
+                    entryList = w.tryGet(getPath());
+                }
+                if (entryList != null) {
+                    warmupHints.incrementAndGet();
+                    return toMap(entryList);
+                }
+            }
+        } finally {
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                RemoteLogger.finest("Warmup hits: {0} of {1} (total {2} dir.read reqs)", warmupHints.get(), warmupReqs.get(), readEntryReqs.get());
+            }
         }
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
             DirEntryList entryList = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());            
-            for (DirEntry entry : entryList.getEntries()) {
-                newEntries.put(entry.getName(), entry);
-            }
-            
+            newEntries = toMap(entryList);
         }
         if (canLs && !isAutoMount()) {
             return newEntries;
