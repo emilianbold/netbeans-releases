@@ -45,6 +45,7 @@
 package org.netbeans.core.multiview;
 
 import org.netbeans.core.api.multiview.MultiViewPerspective;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 
 /**
  * delegate to implement by MultiViewTopComponent
@@ -64,4 +65,8 @@ public interface MultiViewHandlerDelegate {
         void requestActive(MultiViewPerspective desc);
 
         void requestVisible(MultiViewPerspective desc);
+
+        void addMultiViewDescription(MultiViewDescription descr, int position);
+        
+        void removeMultiViewDescription(MultiViewDescription descr);
 }
