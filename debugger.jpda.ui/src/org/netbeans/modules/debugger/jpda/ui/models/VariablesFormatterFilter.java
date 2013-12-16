@@ -463,8 +463,18 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         if (!(variable instanceof ObjectVariable)) {
             return original.getValueAt (variable, columnID);
         }
-        return getValueAt(original, variable, columnID,
-                          new FormattersLoopControl());
+        try {
+            Object val = getValueAt(original, variable, columnID,
+                                    new FormattersLoopControl());
+            VariablesTableModel.setErrorValueMsg(variable, null);
+            VariablesTableModel.setErrorToStringMsg(variable, null);
+            return val;
+        } catch (InvalidExpressionException iex) {
+            String errorMsg = VariablesTableModel.getMessage(iex);
+            VariablesTableModel.setErrorValueMsg(variable, errorMsg);
+            VariablesTableModel.setErrorToStringMsg(variable, errorMsg);
+            return errorMsg;
+        }
     }
     
     private Object getValueAt (
@@ -472,7 +482,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
         Variable variable,
         String columnID,
         FormattersLoopControl formatters
-    ) throws UnknownTypeException {
+    ) throws UnknownTypeException, InvalidExpressionException {
         if (!(variable instanceof ObjectVariable)) {
             return original.getValueAt (variable, columnID);
         }
@@ -502,7 +512,7 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable t = itex.getTargetException();
                     if (t instanceof InvalidExpressionException) {
-                        return VariablesTableModel.getMessage((InvalidExpressionException) t);
+                        throw (InvalidExpressionException) t;
                     } else {
                         Exceptions.printStackTrace(t);
                     }

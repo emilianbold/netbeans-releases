@@ -400,13 +400,20 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(int c) {
         doWrite(new String(new char[]{(char)c}), 0, 1);
-        lines.checkLimits();
+        checkLimits();
+    }
+
+    private void checkLimits() {
+        int shift = lines.checkLimits();
+        if (lineStart > 0) {
+            lineStart -= shift;
+        }
     }
     
     @Override
     public synchronized void write(char data[], int off, int len) {
         doWrite(new CharArrayWrapper(data), off, len);
-        lines.checkLimits();
+        checkLimits();
     }
     
     /** write buffer size in chars */
@@ -448,6 +455,23 @@ class OutWriter extends PrintWriter {
                     written = false;
                 }
                 char c = s.charAt(i);
+                if (lastChar == '\r' && c != '\n') { // \r without following \n
+                    int p;
+                    for (p = charBuff.position(); p > 0; p--) {
+                        char charP1 = charBuff.get(p - 1);
+                        if (charP1 == '\n') {
+                            break;
+                        }
+                        if (charP1 == '\t') {
+                            lineCLVT -= lines.removeLastTab();
+                        }
+                        skipped++;
+                        charBuff.position(p - 1);
+                    }
+                    if (p == 0) {
+                        clearLine();
+                    }
+                }
                 if (c == '\t') {
                     charBuff.put(c);
                     tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
@@ -470,18 +494,18 @@ class OutWriter extends PrintWriter {
                         lineCharLengthWithTabs -= removedInfo.second();
                     }
                     skipped += Math.abs(skip);
-                } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {
+                } else if (c == '\n') {
                     charBuff.put('\n');
                     int pos = charBuff.position() * 2;
                     ByteBuffer bf = (ByteBuffer) byteBuff.position(pos);
                     write(bf, lineCLVT, true);
                     written = true;
-                } else if (c == '\n') {
-                    skipped += 1;
-                    assert lastChar == '\r';
-                } else {
+                } else if (c != '\r') {
                     charBuff.put(c);
                     lineCLVT++;
+                } else {
+                    assert c == '\r';
+                    skipped++;
                 }
                 lastChar = c;
             }
@@ -518,13 +542,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[]) {
         doWrite(new CharArrayWrapper(data), 0, data.length);
-        lines.checkLimits();
+        checkLimits();
     }
 
     @Override
     public synchronized void println() {
         printLineEnd();
-        lines.checkLimits();
+        checkLimits();
     }
 
     private void printLineEnd() {
@@ -540,13 +564,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(String s, int off, int len) {
         doWrite(s, off, len);
-        lines.checkLimits();
+        checkLimits();
     }
 
     @Override
     public synchronized void write(String s) {
         doWrite(s, 0, s.length());
-        lines.checkLimits();
+        checkLimits();
     }
 
     public synchronized void println(String s, OutputListener l) {
@@ -571,7 +595,7 @@ class OutWriter extends PrintWriter {
             printLineEnd();
         }
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, outKind, c, b);
-        lines.checkLimits();
+        checkLimits();
     }
     private Color ansiColor;
     private Color ansiBackground;
@@ -620,7 +644,7 @@ class OutWriter extends PrintWriter {
             }
             text = m.end();
             if ("K".equals(m.group(3)) && "2".equals(m.group(1))) {     //NOI18N
-                clearLineANSI();
+                clearLine();
                 continue;
             } else if (!"m".equals(m.group(3))) {                       //NOI18N
                 continue; // not a SGR ANSI sequence
@@ -689,9 +713,9 @@ class OutWriter extends PrintWriter {
 
     /**
      * Clears the current line. Called when ANSI sequence "\u001B[2K" is
-     * detected.
+     * detected, or a CR (\r) character not followed by LN (\n) is reached.
      */
-    private void clearLineANSI() {
+    private void clearLine() {
         //NOI18N
         Pair<Integer, Integer> r = lines.removeCharsFromLastLine(-1);
         try {
@@ -709,7 +733,7 @@ class OutWriter extends PrintWriter {
         if (info != null) {
             lines.addLineInfo(line, info, important);
         }
-        lines.checkLimits();
+        checkLimits();
     }
 
     /**

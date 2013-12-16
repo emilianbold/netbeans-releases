@@ -58,6 +58,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -181,10 +182,16 @@ public final class MultiViewPeer implements PropertyChangeListener {
     
     public void setMultiViewDescriptions(MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
         assert context == null;
+        _setMultiViewDescriptions(descriptions, defaultDesc);
+    }
+    
+    private void _setMultiViewDescriptions(MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
+        Map<MultiViewDescription, MultiViewElement> createdElements = Collections.emptyMap();
         if (model != null) {
             model.removeElementSelectionListener(selListener);
+            createdElements = model.getCreatedElementsMap();
         }
-        model = new MultiViewModel(descriptions, defaultDesc, factory);
+        model = new MultiViewModel(descriptions, defaultDesc, factory, createdElements);
         model.addElementSelectionListener(selListener);
         tabs.setModel(model);
     }
@@ -607,6 +614,9 @@ public final class MultiViewPeer implements PropertyChangeListener {
         int currIndexSplit = 0;
 
         for (int i = 0; i < descs.length; i++) {
+            if( descs[i] instanceof RuntimeMultiViewDescription ) {
+                continue; //don't store multiview elements added at runtime
+            }
             if (!fromMime) {
                 out.writeObject(descs[i]);
             } else {
@@ -933,9 +943,114 @@ public final class MultiViewPeer implements PropertyChangeListener {
 //            return model.getMVComponentForDescription(desc);
 //        }
         
+        @Override
+        public void addMultiViewDescription(MultiViewDescription descr, int position) {
+            if( -1 != splitOrientation )
+                peerClearSplit(0);
+            MultiViewDescription[] oldDesc = model.getDescriptions();
+            if( position < 0 || position >= oldDesc.length/2 )
+                position = oldDesc.length/2;
+            RuntimeMultiViewDescription wrapper = new RuntimeMultiViewDescription(descr, false);
+            RuntimeMultiViewDescription splitWrapper = new RuntimeMultiViewDescription(descr, true);
+            MultiViewDescription[] newDesc = new MultiViewDescription[oldDesc.length+2];
+            int index = 0;
+            for( int i=0; i<newDesc.length/2; i++ ) {
+                if( i == position ) {
+                    newDesc[2*i] = wrapper;
+                    newDesc[2*i+1] = splitWrapper;
+                } else {
+                    newDesc[2*i] = oldDesc[index++];
+                    newDesc[2*i+1] = oldDesc[index++];
+                }
+            }
+            _setMultiViewDescriptions(newDesc, null);
+            tabs.changeActiveManually(wrapper);
+        }
         
+        @Override
+        public void removeMultiViewDescription(MultiViewDescription descr) {
+            MultiViewDescription[] oldDesc = model.getDescriptions();
+            int position = -1;
+            for( int i=0; i<oldDesc.length/2; i++ ) {
+                if( oldDesc[2*i] instanceof RuntimeMultiViewDescription ) {
+                    RuntimeMultiViewDescription runtimeDesc = (RuntimeMultiViewDescription) oldDesc[2*i];
+                    if( runtimeDesc.delegate.equals(descr) ) {
+                        position = i;
+                        break;
+    }
+                }
+            }
+            if( position < 0 )
+                return; //trying to remove multiview description that isn't in our model
+    
+            if( -1 != splitOrientation )
+                peerClearSplit(0);
+
+            MultiViewDescription[] newDesc = new MultiViewDescription[oldDesc.length-2];
+            int index = 0;
+            for( int i=0; i<oldDesc.length/2; i++ ) {
+                if( i == position ) {
+                    continue;
+                }
+                newDesc[index++] = oldDesc[2*i];
+                newDesc[index++] = oldDesc[2*i+1];
+            }
+            _setMultiViewDescriptions(newDesc, null);
+            tabs.changeActiveManually(newDesc[0]);
+            model.setActiveDescription(newDesc[0]);
+            showCurrentElement();
+        }
     }
     
+    private static class RuntimeMultiViewDescription implements ContextAwareDescription {
+        private final MultiViewDescription delegate;
+        private final boolean split;
+        
+        public RuntimeMultiViewDescription( MultiViewDescription delegate, boolean split ) {
+            this.delegate = delegate;
+            this.split = split;
+        }
+
+        @Override
+        public ContextAwareDescription createContextAwareDescription(Lookup context, boolean isSplitDescription) {
+            return new RuntimeMultiViewDescription(delegate, isSplitDescription);
+        }
+
+        @Override
+        public boolean isSplitDescription() {
+            return split;
+        }
+
+        @Override
+        public int getPersistenceType() {
+            return delegate.getPersistenceType();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return delegate.getDisplayName();
+        }
+
+        @Override
+        public Image getIcon() {
+            return delegate.getIcon();
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return delegate.getHelpCtx();
+        }
+
+        @Override
+        public String preferredID() {
+            return delegate.preferredID();
+        }
+
+        @Override
+        public MultiViewElement createElement() {
+            return delegate.createElement();
+        }
+    }
 
     private class AccessTogglesAction extends AbstractAction {
         

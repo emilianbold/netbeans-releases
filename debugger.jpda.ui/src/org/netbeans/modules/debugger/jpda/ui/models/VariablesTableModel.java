@@ -105,6 +105,8 @@ public class VariablesTableModel implements TableModel, Constants {
     
     private static final Map<Variable, Object> mirrors = new WeakHashMap<Variable, Object>();
     private static final Map<Variable, String> values = new WeakHashMap<Variable, String>();
+    private static final Map<Variable, String> errorValueMsg = new WeakHashMap<Variable, String>();
+    private static final Map<Variable, String> errorToStringMsg = new WeakHashMap<Variable, String>();
     private final Map<Variable, Value> origValues = new WeakHashMap<Variable, Value>();
     private static final Set<Variable> checkReadOnlyMutables = new WeakSet<Variable>();
     
@@ -128,9 +130,13 @@ public class VariablesTableModel implements TableModel, Constants {
 
             if (row instanceof ObjectVariable)
                 try {
-                    return ((ObjectVariable) row).getToStringValue ();
+                    String toStr = ((ObjectVariable) row).getToStringValue ();
+                    setErrorToStringMsg((ObjectVariable) row, null);
+                    return toStr;
                 } catch (InvalidExpressionException ex) {
-                    return getMessage (ex);
+                    String errorMsg = getMessage (ex);
+                    setErrorToStringMsg((ObjectVariable) row, errorMsg);
+                    return errorMsg;
                 }
             else
             if (row instanceof Variable) {
@@ -164,8 +170,12 @@ public class VariablesTableModel implements TableModel, Constants {
             if (row instanceof JPDAWatch) {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
-                if (e != null)
-                    return BoldVariablesTableModelFilter.toHTML(">" + e + "<", false, false, Color.RED);
+                if (e != null) {
+                    setErrorValueMsg(w, e);
+                    return e;
+                } else {
+                    setErrorValueMsg(w, null);
+                }
             }
             if (row instanceof Variable) {
                 Variable var = (Variable) row;
@@ -248,6 +258,38 @@ public class VariablesTableModel implements TableModel, Constants {
     static String getValueOf(Variable var) {
         synchronized (mirrors) {
             return values.get(var);
+        }
+    }
+    
+    static String getErrorValueMsg(Variable v) {
+        synchronized (errorValueMsg) {
+            return errorValueMsg.get(v);
+        }
+    }
+    
+    static void setErrorValueMsg(Variable v, String errorMsg) {
+        synchronized (errorValueMsg) {
+            if (errorMsg != null) {
+                errorValueMsg.put(v, errorMsg);
+            } else {
+                errorValueMsg.remove(v);
+            }
+        }
+    }
+    
+    static String getErrorToStringMsg(Variable v) {
+        synchronized (errorToStringMsg) {
+            return errorToStringMsg.get(v);
+        }
+    }
+    
+    static void setErrorToStringMsg(Variable v, String errorMsg) {
+        synchronized (errorToStringMsg) {
+            if (errorMsg != null) {
+                errorToStringMsg.put(v, errorMsg);
+            } else {
+                errorToStringMsg.remove(v);
+            }
         }
     }
     
@@ -466,7 +508,7 @@ public class VariablesTableModel implements TableModel, Constants {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     /** 
      * Registers given listener.
      * 
@@ -523,6 +565,6 @@ public class VariablesTableModel implements TableModel, Constants {
             p.close();
             m += " \n"+s.toString();
         }
-        return BoldVariablesTableModelFilter.toHTML(">" + m + "<", false, false, Color.RED);
+        return m;
     }
 }

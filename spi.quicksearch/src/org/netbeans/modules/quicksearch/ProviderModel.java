@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,7 +70,7 @@ public final class ProviderModel {
 
     private List<Category> categories;
     
-    private HashSet<String> knownCommands;
+    private LinkedHashSet<String> knownCommands;
 
     private ProviderModel () {
     }
@@ -96,7 +96,7 @@ public final class ProviderModel {
     
     public boolean isKnownCommand(String command) {
         if (knownCommands == null) {
-            knownCommands = new HashSet<String>();
+            knownCommands = new LinkedHashSet<String>();
             for (Category cat : getCategories()) {
                 knownCommands.add(cat.getCommandPrefix());
             }

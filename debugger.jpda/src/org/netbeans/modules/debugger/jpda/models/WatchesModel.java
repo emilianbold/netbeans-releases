@@ -375,7 +375,8 @@ public class WatchesModel implements TreeModel {
             }
             String e = evaluatedWatch.getExceptionDescription();
             if (e != null) {
-                return ">" + e + "<"; // NOI18N
+                throw new InvalidExpressionException(e);
+                //return ">" + e + "<"; // NOI18N
             } else {
                 return evaluatedWatch.getToStringValue();
             }
