@@ -258,7 +258,7 @@ public class FaceletsLibrarySupport {
     /**
      * This method obtains a library instances for the elements declared by annotation without a library descriptor.
      */
-    private synchronized void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
+    private void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
         Collection<? extends Library> libraries = declaredFacesComponentsCache.get();
         if (libraries == null) {
             libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
