@@ -88,6 +88,7 @@ import org.openide.util.RequestProcessor;
 public class FaceletsLibrarySupport {
 
     private static final RequestProcessor RP = new RequestProcessor(FaceletsLibrarySupport.class);
+    private static final RequestProcessor FC_REFRESH_RP = new RequestProcessor("FLSFacesComponentsRefresh", 1);
 
     private JsfSupportImpl jsfSupport;
 
@@ -106,7 +107,8 @@ public class FaceletsLibrarySupport {
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
-    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<>();
+    private RequestProcessor.Task facesComponentsRefreshTask;
+    private volatile Collection<? extends Library> facesComponentsCache = new ArrayList<>();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
         @Override
@@ -184,6 +186,9 @@ public class FaceletsLibrarySupport {
     /** @return URI -> library map */
     public synchronized Map<String, Library> getLibraries() {
         if (faceletsLibraries == null) {
+            // preload FacesComponents
+            refreshFacesComponentsCache(0);
+
             //not initialized yet, or invalidated by checkLibraryDescriptorsUpToDate()
             faceletsLibraries = findLibraries();
 
@@ -259,11 +264,7 @@ public class FaceletsLibrarySupport {
      * This method obtains a library instances for the elements declared by annotation without a library descriptor.
      */
     private void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
-        Collection<? extends Library> libraries = declaredFacesComponentsCache.get();
-        if (libraries == null) {
-            libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
-            declaredFacesComponentsCache.set(libraries);
-        }
+        refreshFacesComponentsCache(300);
 
         // remove all FacesComponentLibraries
         Iterator<Map.Entry<String, Library>> iterator = faceletsLibraries.entrySet().iterator();
@@ -275,7 +276,7 @@ public class FaceletsLibrarySupport {
         }
 
         // add the refreshed ones
-        for (Library library : libraries) {
+        for (Library library : facesComponentsCache) {
             faceletsLibraries.put(library.getDefaultNamespace(), library);
         }
     }
@@ -441,6 +442,12 @@ public class FaceletsLibrarySupport {
 
     }
 
+    private synchronized void refreshFacesComponentsCache(int timeToWait) {
+        if (facesComponentsRefreshTask == null || facesComponentsRefreshTask.isFinished()) {
+            facesComponentsRefreshTask = FC_REFRESH_RP.post(new RefreshFacesComponentsTask(), timeToWait);
+        }
+    }
+
 
 //    private void debugLibraries() {
 //        System.out.println("Facelets Libraries:");  //NOI18N
@@ -465,6 +472,15 @@ public class FaceletsLibrarySupport {
         //will be ignored
         public void addTagLibrary(Library lib) {
             libraries.add(lib);
+        }
+    }
+
+    private final class RefreshFacesComponentsTask implements Runnable {
+
+        @Override
+        public void run() {
+            Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
+            facesComponentsCache = libraries;
         }
     }
 }
