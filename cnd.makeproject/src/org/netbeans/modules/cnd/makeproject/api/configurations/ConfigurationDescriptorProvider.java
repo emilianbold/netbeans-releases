@@ -64,12 +64,15 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public abstract class ConfigurationDescriptorProvider {
@@ -485,27 +488,41 @@ public abstract class ConfigurationDescriptorProvider {
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (!projectDescriptor.isModified()) {
-                synchronized (readLock) {
-                    if (!projectDescriptor.isModified()) {
-                        // Don't reload if descriptor is modified in memory.
-                        // This also prevents reloading when descriptor is being saved.
-                        LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
-                        synchronized(isOpened) {
-                            if (isOpened.get()) {
-                                needReload = true;
-                                hasTried = false;
-                            }
-                        }
-                        RP.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                getConfigurationDescriptor(true);
-                            }
-                        });
+            AtomicBoolean writeLock = MakeConfigurationDescriptor.getWriteLock(project);
+            if (writeLock.get()) {
+                // configuration is being saved right now
+                return;
+            }
+            if (projectDescriptor.isModified()) {
+                // Ask user if descriptor is modified in memory.
+                String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
+                if (CndUtils.isStandalone()) {
+                    System.err.print(txt);
+                    System.err.println(NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText.auto")); //NOI18N
+                } else {
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt,
+                            NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationTitle"), // NOI18N
+                            NotifyDescriptor.YES_NO_OPTION);
+                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                        return;
                     }
                 }
+            }
+            synchronized (readLock) {
+                LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
+                synchronized(isOpened) {
+                    if (isOpened.get()) {
+                        needReload = true;
+                        hasTried = false;
+                    }
+                }
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        getConfigurationDescriptor(true);
+                    }
+                });
             }
         }
 
