@@ -161,7 +161,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public SimpleTestFailedHandler() {
-            super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
+            super("%TEST_FAILED%\\stime=([0-9]+).*\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -206,7 +206,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         private List<String> output;
 
         public SimpleTestErrorHandler() {
-            super("%TEST_ERROR%\\stime=(.+)\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
+            super("%TEST_ERROR%\\stime=([0-9]+).*\\stestname=(.+) \\((.+)\\)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -261,7 +261,7 @@ public class CndUnitHandlerFactory implements TestHandlerFactory {
         }
 
         public SimpleTestFinishedHandler() {
-            super("%TEST_FINISHED%\\stime=(.+)\\s+(.+) \\((.+)\\)"); //NOI18N
+            super("%TEST_FINISHED%\\stime=([0-9]+).*\\s+(.+) \\((.+)\\)"); //NOI18N
         }
 
         @Override
