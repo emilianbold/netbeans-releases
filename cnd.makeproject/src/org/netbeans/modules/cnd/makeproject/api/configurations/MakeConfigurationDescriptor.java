@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -171,7 +172,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     
-    private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
+    private static ConcurrentHashMap<String, AtomicBoolean> projectWriteLocks = new ConcurrentHashMap<String, AtomicBoolean>();
 
     public MakeConfigurationDescriptor(FileObject projectDirFO) {
         this(null, projectDirFO, projectDirFO);
@@ -1039,6 +1040,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public void setModified(boolean modified) {
         //System.out.println("setModified - " + modified);
         if (this.modified != modified) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Set configuration "+getBaseDir()+" modified="+modified, new Exception());
+            }
             this.modified = modified;
             if (modified && getConfs() != null) {
                 Configuration[] confs = getConfs().toArray();
@@ -1107,9 +1111,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
     }
 
-    private static Object getWriteLock(Project project) {
-        Object lock = new Object();
-        Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
+    static AtomicBoolean getWriteLock(Project project) {
+        AtomicBoolean lock = new AtomicBoolean(false);
+        AtomicBoolean oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
     }
 
@@ -1128,12 +1132,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (project == null) {
                 return;
             }
-            synchronized (getWriteLock(project)) {
+            AtomicBoolean writeLock = getWriteLock(project);
+            synchronized (writeLock) {
+                writeLock.set(true);
                 FullRemoteExtension.configurationSaving(MakeConfigurationDescriptor.this);
                 try {
                     ret = saveWorker(extraMessage);
                 } finally {
                     FullRemoteExtension.configurationSaved(MakeConfigurationDescriptor.this, ret);
+                    writeLock.set(false);
                 }
             }
         }
