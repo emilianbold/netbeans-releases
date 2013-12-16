@@ -53,7 +53,10 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URL;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -65,6 +68,9 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -79,6 +85,9 @@ public final class JavaIndex {
     private static final String CLASSES = "classes"; //NOI18N
     private static final String APT_SOURCES = "sources";    //NOI18N
     private static final String ATTR_FILE_NAME = "attributes.properties"; //NOI18N
+    private static final int SLIDING_WINDOW = 1000;
+    private static final RequestProcessor RP = new RequestProcessor(JavaIndex.class);
+    private static final RequestProcessor.Task SAVER = RP.create(new Saver());
     
     //Single line cache for index properties
     private static final Object cacheLock = new Object();
@@ -86,6 +95,8 @@ public final class JavaIndex {
     private static URL cacheRoot;
     //@GuardedBy("cacheLock")
     private static Reference<Properties> cacheValue;
+    //@GuardedBy("cacheLock")
+    private static final Queue<Pair<URL,Properties>> savePending = new ArrayDeque<>();
     
 
     public static File getIndex(Context c) {
@@ -158,7 +169,7 @@ public final class JavaIndex {
             if (attributeValue != null) {
                 if (!checkOnly) {
                     p.setProperty(attributeName, attributeValue);
-                    storeProperties(root, p);
+                    storeProperties(root, p, false);
                 }
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log (
@@ -186,7 +197,7 @@ public final class JavaIndex {
             } else {
                 p.remove(attributeName);
             }
-            storeProperties(root, p);
+            storeProperties(root, p, false);
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log (
@@ -209,7 +220,7 @@ public final class JavaIndex {
         } else {
             p.remove(attributeName);
         }
-        storeProperties(root, p);
+        storeProperties(root, p, true);
     }
 
     public static String getAttribute(URL root, String attributeName, String defaultValue) throws IOException {
@@ -220,6 +231,11 @@ public final class JavaIndex {
     private static Properties loadProperties(URL root) throws IOException {
         synchronized (cacheLock) {
             Properties result;
+            for (Pair<URL,Properties> active : savePending) {
+                if (active.first().equals(root)) {
+                    return active.second();
+                }
+            }
             if (cacheRoot != null && cacheRoot.equals(root)) {
                 result = cacheValue == null ? null : cacheValue.get();
                 if (result != null) {
@@ -251,17 +267,47 @@ public final class JavaIndex {
         }
     }
 
-    private static void storeProperties(URL root, Properties p) throws IOException {
+    private static void storeProperties(URL root, Properties p, boolean barrier) throws IOException {
         synchronized (cacheLock) {
-            final File f = getAttributeFile(root);
-            final OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
-            try {
-                p.store(out, ""); //NOI18N
-            } finally {
-                out.close();
+            if (barrier) {
+                for (Iterator<Pair<URL,Properties>> it = savePending.iterator();
+                    it.hasNext();) {
+                    final Pair<URL,Properties> pending = it.next();
+                    if (pending.first().equals(root)) {
+                        it.remove();
+                        break;
+                    }
+                }
+                storeImpl(root, p);
+            } else {
+                boolean alreadyStoring = false;
+                for (Pair<URL,Properties> pending : savePending) {
+                    if (pending.first().equals(root)) {
+                        alreadyStoring = true;
+                        break;
+                    }
+                }
+                if (!alreadyStoring) {
+                    savePending.offer(Pair.<URL,Properties>of(root,p));
+                }
+                SAVER.schedule(SLIDING_WINDOW);
             }
+        }
+    }
+
+    private static void storeImpl(
+            @NonNull final URL root,
+            @NonNull final Properties p) throws IOException {
+        if (!Thread.holdsLock(cacheLock)) {
+            throw new IllegalStateException("Requires cacheLock");  //NOI18N
+        }
+        final File f = getAttributeFile(root);
+        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(f))) {
+            p.store(out, ""); //NOI18N
+        }
+        if (cacheRoot == null || cacheRoot.equals(root)) {
             cacheRoot = root;
-            cacheValue = new SoftReference<Properties>(p);
+            cacheValue = new SoftReference<>(p);
         }
     }
 
@@ -316,4 +362,25 @@ public final class JavaIndex {
     }
 
     private JavaIndex() {}
+
+    private static final class Saver implements Runnable {
+        @Override
+        public void run() {
+            synchronized (cacheLock) {
+                final Pair<URL,Properties> car = savePending.peek();
+                if (car != null) {
+                    try {
+                        storeImpl(car.first(), car.second());
+                    }catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    } finally {
+                        savePending.remove();
+                        if (!savePending.isEmpty()) {
+                            SAVER.setPriority(SLIDING_WINDOW);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
