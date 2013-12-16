@@ -143,6 +143,7 @@ public class TestResourceUriAction extends NodeAction  {
                                             SSLSocketFactory sf = getSSLSocketFactory();
                                             ((HttpsURLConnection)connection).setSSLSocketFactory(sf);
                                             ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
+                                                @Override
                                                 public boolean verify(String string, SSLSession sSLSession) {
                                                     // accept all hosts
                                                     return true;
@@ -263,7 +264,7 @@ public class TestResourceUriAction extends NodeAction  {
         return true;
     }
     
-    // Install the trust manager for retriever
+    // Install the trust manager
     private SSLSocketFactory getSSLSocketFactory() {
         TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
