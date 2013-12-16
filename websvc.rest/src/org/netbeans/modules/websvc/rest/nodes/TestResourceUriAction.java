@@ -48,8 +48,17 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -58,7 +67,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.support.LogUtils;
+import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.xml.retriever.Retriever;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -116,7 +128,35 @@ public class TestResourceUriAction extends NodeAction  {
                             httpConnection.setRequestMethod("GET"); //NOI18N
                             httpConnection.connect();
                             int responseCode = httpConnection.getResponseCode();
-                            // for secured web services the response code is 405: we should allow to show the response
+                                                        
+                            // test if response hasn't been redirected (response code 302)
+                            if (HttpURLConnection.HTTP_MOVED_TEMP == responseCode) {
+                                // get new location
+                                String location = httpConnection.getHeaderField("Location"); //NOI18N
+                                if (location != null) {
+                                    httpConnection.disconnect();
+                                    url = new URL(location);
+                                    connection = url.openConnection();
+                                    if (connection instanceof HttpURLConnection) {
+                                        // test for secured https connection
+                                        if (connection instanceof HttpsURLConnection) {
+                                            SSLSocketFactory sf = getSSLSocketFactory();
+                                            ((HttpsURLConnection)connection).setSSLSocketFactory(sf);
+                                            ((HttpsURLConnection)connection).setHostnameVerifier(new HostnameVerifier() {
+                                                public boolean verify(String string, SSLSession sSLSession) {
+                                                    // accept all hosts
+                                                    return true;
+                                                }
+                                            });
+                                        }
+                                        
+                                        ((HttpURLConnection)connection).setRequestMethod("GET"); //NOI18N
+                                        connection.connect();
+                                        responseCode = ((HttpURLConnection)connection).getResponseCode();
+                                    }
+                                }
+                            }
+                            
                             if (HttpURLConnection.HTTP_OK == responseCode
                                     || HttpURLConnection.HTTP_BAD_METHOD == responseCode) {
                                 connectionOK = true;
@@ -221,6 +261,52 @@ public class TestResourceUriAction extends NodeAction  {
     @Override
     public boolean asynchronous() {
         return true;
+    }
+    
+    // Install the trust manager for retriever
+    private SSLSocketFactory getSSLSocketFactory() {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType)
+                throws CertificateException {
+                    // ask user to accept the unknown certificate
+                    if (certs!=null) {
+                        for (int i=0; i<certs.length; i++) {
+                            DialogDescriptor desc = new DialogDescriptor(Retriever.getCertificationPanel(certs[i]),
+                                    NbBundle.getMessage(WsdlRetriever.class,"TTL_CertifiedWebSite"),
+                                    true,
+                                    DialogDescriptor.YES_NO_OPTION,
+                                    DialogDescriptor.YES_OPTION,
+                                    null);
+                            DialogDisplayer.getDefault().notify(desc);
+                            if (!DialogDescriptor.YES_OPTION.equals(desc.getValue())) {
+                                throw new CertificateException(
+                                        NbBundle.getMessage(WsdlRetriever.class,"ERR_NotTrustedCertificate"));
+                            }
+                        } // end for
+                    }
+                }
+            }
+        };
+        
+        
+        try {
+            SSLContext sslContext = SSLContext.getInstance("SSL"); //NOI18N
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            return sslContext.getSocketFactory();
+        } catch (java.security.GeneralSecurityException e) {
+            Logger.getLogger(TestResourceUriAction.class.getName()).log(Level.WARNING, "Can not init SSL Context", e);
+            return null;
+        }
+    
     }
 
 }
