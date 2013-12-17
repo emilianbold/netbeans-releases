@@ -13,7 +13,7 @@
                 <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate4-persistence"/>
             </file>
             <file name="hibernate-persistence-modelgen.xml" url="hibernate-persistence-modelgen.xml">
-                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate4-persistence-modelgen"/>
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate4-persistencemodelgen"/>
             </file>
         </folder>
     </folder>
