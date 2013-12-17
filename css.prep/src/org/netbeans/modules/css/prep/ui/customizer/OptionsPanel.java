@@ -222,6 +222,7 @@ public class OptionsPanel extends JPanel {
     void enablePanel(boolean enabled) {
         watchLabel.setEnabled(enabled);
         mappingsTable.setEnabled(enabled);
+        mappingsInfoLabel.setEnabled(enabled);
         addButton.setEnabled(enabled);
         configureExecutablesButton.setEnabled(enabled);
         if (enabled) {
