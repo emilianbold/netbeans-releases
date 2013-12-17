@@ -59,6 +59,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -133,6 +135,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
             throw new ExceptionInInitializerError(x);
         }
     }
+
+    // -J-Dorg.openide.awt.MenuBar.level=FINE
+    private static final Logger LOG = Logger.getLogger(MenuBar.class.getName());
 
     /** Don't call this constructor or this class will not get
      * initialized properly. This constructor is only for externalization.
@@ -254,6 +259,10 @@ public class MenuBar extends JMenuBar implements Externalizable {
                     !ks.isOnKeyRelease());
             }
             
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("MenuBar.processKeyBinding(): Key binding translation:\n  " + ks + "\n  -> " + newStroke + // NOI18N
+                        "\n  " + e + "\n  -> " + newEvent + "\n\n"); // NOI18N
+            }
             boolean result = super.processKeyBinding (newStroke, newEvent, 
                 condition, pressed);
             
