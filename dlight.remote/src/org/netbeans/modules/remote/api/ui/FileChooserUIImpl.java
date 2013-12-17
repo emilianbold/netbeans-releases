@@ -2007,13 +2007,16 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             // Get the canonical (full) path. This has the side
             // benefit of removing extraneous chars from the path,
             // for example /foo/bar/ becomes /foo/bar
-            File canonical = null;
-            try {
-                canonical = directory.getCanonicalFile();
-            } catch (IOException e) {
-                // Maybe drive is not ready. Can't abort here.
-                canonical = directory;
-            }
+            
+            //as a side effect there will be a problem with symlinks
+            //so just use the directory, do not use getCanonicalFile()
+            File canonical = directory;
+//            try {
+//                canonical = directory.getCanonicalFile();
+//            } catch (IOException e) {
+//                // Maybe drive is not ready. Can't abort here.
+//                canonical = directory;
+//            }
             
             // create File instances of each directory leading up to the top
             File sf = useShellFolder? getShellFolderForFile(canonical) : canonical;
