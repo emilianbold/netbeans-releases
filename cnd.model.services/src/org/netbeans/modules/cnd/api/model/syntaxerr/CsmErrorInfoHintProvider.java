@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,57 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
+package org.netbeans.modules.cnd.api.model.syntaxerr;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.Lookup;
 
 /**
- * A trivial CsmErrorInfo implementation
- * @author Vladimir Kvashin
+ *
+ * @author alsimon
  */
-public class SimpleErrorInfo implements CsmErrorInfo {
-
-    private int startOffset;
-    private int endOffset;
-    private String text;
-    private Severity severity;
-
-    public SimpleErrorInfo(int startOffset, int endOffset, String text) {
-        this(startOffset, endOffset, text, Severity.ERROR);
+public abstract class CsmErrorInfoHintProvider {
+    private static final Default DEFAULT = new Default();
+    protected CsmErrorInfoHintProvider() {
     }
 
-    public SimpleErrorInfo(int startOffset, int endOffset, String text, Severity severity) {
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-        this.text = text;
-        this.severity = severity;
+    public static List<Fix> getFixes(CsmErrorInfo info) {      
+        List<Fix> out = DEFAULT.getFixesImpl(info);
+        if (out.isEmpty()) {
+            out = Collections.<Fix>emptyList();
+        }
+        return out;
     }
+    
+    // add extra fixes to already found bag and return that bag (or create new bag and return)
+    protected abstract List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound);
+    
+    //
+    // Implementation part
+    //
+    private static final class Default {
 
-    @Override
-    public int getStartOffset() {
-        return startOffset;
-    }
+        protected final Lookup.Result<CsmErrorInfoHintProvider> res;        
 
-    @Override
-    public int getEndOffset() {
-        return endOffset;
-    }
+        public Default() {
+            res = Lookup.getDefault().lookupResult(CsmErrorInfoHintProvider.class);
+        }
 
-    @Override
-    public String getMessage() {
-        return text;
-    }
-
-    @Override
-    public Severity getSeverity() {
-        return severity;
-    }
+        protected List<Fix> getFixesImpl(CsmErrorInfo info) {
+            List<Fix> bag = new ArrayList<Fix>(0);
+            for( CsmErrorInfoHintProvider provider : res.allInstances() ) {
+                bag = provider.doGetFixes(info, bag);
+            }
+            return bag;
+        }
+   }
 }

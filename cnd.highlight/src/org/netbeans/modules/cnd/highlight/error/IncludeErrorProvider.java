@@ -123,11 +123,6 @@ public final class IncludeErrorProvider extends CsmErrorProvider {
         public Severity getSeverity() {
             return severity;
         }
-
-        @Override
-        public List<Fix> getFixes() {
-            return Collections.<Fix>emptyList();
-        }
     }
 
     private static String decorateWithExtraHyperlinkTip(String tooltip) {

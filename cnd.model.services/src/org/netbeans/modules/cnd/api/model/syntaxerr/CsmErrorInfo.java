@@ -80,7 +80,4 @@ public interface CsmErrorInfo {
      * Gets error end offset 
      */
     public int getEndOffset();
-    
-    List<Fix> getFixes();
-
 }

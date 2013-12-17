@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -53,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -61,6 +63,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -278,10 +282,40 @@ public final class IdentifierErrorProvider extends CsmErrorProvider {
         public int getEndOffset() {
             return endOffset;
         }
-        
+    }
+    
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 9000)
+    public final static class IdentifiersHintProvider extends CsmErrorInfoHintProvider {
+
         @Override
-        public List<Fix> getFixes() {
-            return Collections.<Fix>emptyList();
+        protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
+            if (info instanceof ErrorInfoImpl) {
+                alreadyFound.add(new DisableHintFix());
+            }
+            return alreadyFound;
+        }
+    }
+    
+    private static class DisableHintFix implements EnhancedFix {
+
+        DisableHintFix() {
+        }
+
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(IdentifierErrorProvider.class, "DisableHint"); // NOI18N
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            OptionsDisplayer.getDefault().open("Editor/MarkOccurrences/text/x-cnd+sourcefile"); // NOI18N
+            return null;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            //Hint opening options dialog should always be the lastest in offered list
+            return Integer.toString(Integer.MAX_VALUE);
         }
     }
 }
