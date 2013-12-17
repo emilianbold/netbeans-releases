@@ -39,15 +39,30 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.impl.spi;
 
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author vkvashin
+ * @author mtishkov
  */
-public interface LayerExceptionsListener {
-
-    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
+public interface LayerListener {
+     /**
+     * You can also register this listener as a service
+     */
+    public static final String PATH = "CND/RepositoryLayerListener"; //NOI18N
+/**
+     * Invoked once a repository is created.
+     * 
+     * Use case is as follows. 
+     * Indexing resides in the same directory repository resides;
+     * and we need to check index consistency when we open a repository:
+     * if index is corrupted, then repository is invalid either 
+     * 
+     * @param layerDescriptor
+     *
+     * @return true if it is OK to open repository,
+     * false if repository data should be considered corrupted
+     */
+    boolean layerOpened(LayerDescriptor layerDescriptor);        
 }

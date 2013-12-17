@@ -44,19 +44,58 @@ package org.netbeans.modules.cnd.indexing.impl;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.repository.api.Repository;
+import org.netbeans.modules.cnd.repository.api.RepositoryListener;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Egor Ushakov <gorrus@netbeans.org>
  */
-public final class TextIndexStorageManager {
+@ServiceProvider(path=LayerListener.PATH, service=org.netbeans.modules.cnd.repository.impl.spi.LayerListener.class)
+public final class TextIndexStorageManager implements LayerListener{
 
     public static final String FIELD_IDS = "ids"; // NOI18N
     public static final String FIELD_UNIT_ID = "unitId"; // NOI18N
+    private static final Object lock = new Object();
     // storageID <-> storage
     private static final Map<Integer, TextIndexStorage> storages = new HashMap<Integer, TextIndexStorage>();
+    
+
+    @OnStart
+    public static class Startup implements Runnable, RepositoryListener {
+        @Override
+        public void run() {
+            Repository.registerRepositoryListener(this);
+        } 
+
+        @Override
+        public boolean unitOpened(int unitId) {
+            return true;
+        }
+
+        @Override
+        public void unitRemoved(int unitId) {
+            if (unitId < 0) {
+                return;
+            }
+            synchronized (lock) {
+                TextIndexStorage index = TextIndexStorageManager.get(unitId);
+                if (index != null) {
+                    index.unitRemoved(unitId);
+                }
+            }            
+            
+        }                 
+
+        @Override
+        public void unitClosed(int unitId) {
+        }
+    }    
 
     @OnStop
     public static class Shutdown implements Runnable {
@@ -68,21 +107,37 @@ public final class TextIndexStorageManager {
     }
 
     public static TextIndexStorage get(int unitID) {
-        LayeringSupport ls = Repository.getLayeringSupport(unitID);
-        if (ls == null) {
-            return null;
-        }
-        Integer storageID = Integer.valueOf(ls.getStorageID());
-        TextIndexStorage storage;
+        synchronized (lock) {
+            LayeringSupport ls = Repository.getLayeringSupport(unitID);
+            if (ls == null) {
+                return null;
+            }
+            Integer storageID = Integer.valueOf(ls.getStorageID());
+            TextIndexStorage storage;
+            synchronized (storages) {
+                storage = storages.get(storageID);
+                if (storage == null) {
+                    storage = new TextIndexStorage(ls);
+                    storages.put(storageID, storage);
+                }
+            }
+            return storage;
+        } 
+    }
+
+    @Override
+    public boolean layerOpened(LayerDescriptor layerDescriptor) {
+        boolean isOK = true;
         synchronized (storages) {
-            storage = storages.get(storageID);
-            if (storage == null) {
-                storage = new TextIndexStorage(ls);
-                storages.put(storageID, storage);
+            for (TextIndexStorage textIndexStorage : storages.values()) {
+                isOK &= textIndexStorage.isValid();
             }
         }
-        return storage;
+        return isOK;
+
     }
+    
+    
 
     public static void shutdown() {
         synchronized (storages) {
@@ -92,4 +147,5 @@ public final class TextIndexStorageManager {
             storages.clear();
         }
     }
+    
 }

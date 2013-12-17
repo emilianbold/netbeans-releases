@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.repository.storage;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -179,7 +177,6 @@ public final class StorageManager {
                 }
             }
         }
-
         return storage.getUnitID(unitDescriptor);
     }
 

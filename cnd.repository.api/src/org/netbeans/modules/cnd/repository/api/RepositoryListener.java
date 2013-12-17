@@ -69,4 +69,11 @@ public interface RepositoryListener {
      * @param unitId
      */
     void unitClosed(int unitId);
+    
+    /**
+     * invoked once a unit is removed
+     *
+     * @param unitId
+     */
+    void unitRemoved(int unitId);        
 }

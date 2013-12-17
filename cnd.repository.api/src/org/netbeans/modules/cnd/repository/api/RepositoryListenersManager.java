@@ -45,7 +45,9 @@
 package org.netbeans.modules.cnd.repository.api;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -82,7 +84,7 @@ import org.openide.util.lookup.Lookups;
         }        
         return toOpen;
     }
-
+    
 
     public void fireUnitClosedEvent(final int unitId) {
         for (RepositoryListener theListener : listeners) {
