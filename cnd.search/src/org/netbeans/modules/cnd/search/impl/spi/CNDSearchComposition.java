@@ -144,7 +144,7 @@ public final class CNDSearchComposition extends SearchComposition<SearchResult> 
             return;
         }
 
-        if (env.isRemote() && HostInfoUtils.isHostInfoAvailable(env)) {
+        if (env.isRemote() && !HostInfoUtils.isHostInfoAvailable(env)) {
             return;
         }
 
