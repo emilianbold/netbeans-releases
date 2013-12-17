@@ -98,7 +98,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
@@ -189,12 +188,11 @@ public class ImportProject implements PropertyChangeListener {
     private boolean runMake;
     private String includeDirectories = ""; // NOI18N
     private String macros = ""; // NOI18N
-    private String consolidationStrategy = ConsolidationStrategy.FILE_LEVEL;
     private Iterator<SourceFolderInfo> sources;
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private FileObject configureFileObject;
-    private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
+    private final Map<Step, State> importResult = new EnumMap<>(Step.class);
     private final CountDownLatch waitSources = new CountDownLatch(1);
     private final AtomicInteger openState = new AtomicInteger(0);
     private Interrupter interrupter;
@@ -239,7 +237,7 @@ public class ImportProject implements PropertyChangeListener {
         toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         defaultToolchain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         
-        List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
+        List<SourceFolderInfo> list = new ArrayList<>();
         list.add(new SourceFolderInfo() {
 
             @Override
@@ -273,7 +271,6 @@ public class ImportProject implements PropertyChangeListener {
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);
         configureRunFolder = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_RUN_FOLDER);
         configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS);
-        consolidationStrategy = (String) wizard.getProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL); 
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS); 
         sources = it;
@@ -297,7 +294,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     public Set<FileObject> create() throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
+        Set<FileObject> resultSet = new HashSet<>();
         MakeConfiguration extConf = MakeConfiguration.createConfiguration(projectFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, null, hostUID, toolchain, defaultToolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
         workingDirRel = CndPathUtilities.normalizeSlashes(workingDirRel);
@@ -315,7 +312,7 @@ public class ImportProject implements PropertyChangeListener {
         // Include directories
         if (includeDirectories != null && includeDirectories.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(includeDirectories, ";"); // NOI18N
-            List<String> includeDirectoriesVector = new ArrayList<String>();
+            List<String> includeDirectoriesVector = new ArrayList<>();
             while (tokenizer.hasMoreTokens()) {
                 String includeDirectory = tokenizer.nextToken();
                 includeDirectory = CndPathUtilities.toRelativePath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(includeDirectory));
@@ -323,12 +320,12 @@ public class ImportProject implements PropertyChangeListener {
                 includeDirectoriesVector.add(includeDirectory);
             }
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
-            extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(new ArrayList<String>(includeDirectoriesVector));
+            extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(new ArrayList<>(includeDirectoriesVector));
         }
         // Macros
         if (macros != null && macros.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
-            ArrayList<String> list = new ArrayList<String>();
+            ArrayList<String> list = new ArrayList<>();
             while (tokenizer.hasMoreTokens()) {
                 list.add(tokenizer.nextToken());
             }
@@ -337,7 +334,7 @@ public class ImportProject implements PropertyChangeListener {
             extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
         }
         // Add makefile and configure script to important files
-        ArrayList<String> importantItems = new ArrayList<String>();
+        ArrayList<String> importantItems = new ArrayList<>();
         if (makefilePath != null && makefilePath.length() > 0) {
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
             makefilePath = CndPathUtilities.normalizeSlashes(makefilePath);
@@ -923,7 +920,7 @@ public class ImportProject implements PropertyChangeListener {
                         FileObject fo = FileUtil.toFileObject(execLog);
                         try
                           {
-                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-exec.log"); // NOI18N
+                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-exec"); // NOI18N
                           } catch (IOException ex) {
                               ex.printStackTrace(System.err);
                           }
@@ -934,7 +931,7 @@ public class ImportProject implements PropertyChangeListener {
                         FileObject fo = FileUtil.toFileObject(makeLog);
                         try
                           {
-                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-build.log"); // NOI18N
+                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-build"); // NOI18N
                           } catch (IOException ex) {
                               ex.printStackTrace(System.err);
                           }
@@ -1279,7 +1276,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     public Map<Step, State> getState(){
-        return new EnumMap<Step, State>(importResult);
+        return new EnumMap<>(importResult);
     }
 
     public Project getProject(){
@@ -1402,15 +1399,14 @@ public class ImportProject implements PropertyChangeListener {
         return false;
     }
 
-    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
+    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<>();
 
     private boolean discoveryByExecLog(File execLog, boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, execLog.getAbsolutePath());
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
@@ -1464,7 +1460,6 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<String, Object>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                 if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
@@ -1499,10 +1494,9 @@ public class ImportProject implements PropertyChangeListener {
     private boolean dicoveryByBuildLog(File makeLog, boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
@@ -1528,10 +1522,9 @@ public class ImportProject implements PropertyChangeListener {
     private void discoveryMacrosByBuildLog(File makeLog) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
@@ -1551,10 +1544,9 @@ public class ImportProject implements PropertyChangeListener {
     private boolean discoveryByDwarf(boolean does) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
@@ -1576,10 +1568,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void discoveryByModel() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
-        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("model-folder"); // NOI18N
         provider.getProperty("folder").setValue(nativeProjectPath); // NOI18N
         if (manualCA) {
@@ -1610,7 +1601,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     static final class RfsListenerImpl implements RfsListener {
-        private final Map<String, File> storage = new HashMap<String, File>();
+        private final Map<String, File> storage = new HashMap<>();
         private final ExecutionEnvironment execEnv;
 
         RfsListenerImpl(ExecutionEnvironment execEnv) {
@@ -1624,7 +1615,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         void download() {
-            Map<String, File> copy = new HashMap<String, File>(storage);
+            Map<String, File> copy = new HashMap<>(storage);
             for(Map.Entry<String, File> entry : copy.entrySet()) {
                 downloadImpl(entry.getKey(),entry.getValue());
             }
