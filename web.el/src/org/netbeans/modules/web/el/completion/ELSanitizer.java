@@ -122,7 +122,15 @@ public final class ELSanitizer {
         if (result.trim().isEmpty()) {
             result += ADDED_SUFFIX;
         }
-        result = thirdPass(result);
+
+        // resolve completion invoked within the EL
+        if (relativeOffset > 0 && relativeOffset < result.length()) {
+            String exprEnd = result.substring(relativeOffset);
+            String exprStart = result.substring(0, relativeOffset);
+            result = thirdPass(exprStart, exprEnd) + exprEnd;
+        } else {
+            result = thirdPass(result, ""); //NOI18N
+        }
         return cleanExpression.prefix + result + cleanExpression.suffix;
     }
 
@@ -132,7 +140,7 @@ public final class ELSanitizer {
         return expression.substring(0, relativeOffset);
     }
 
-    private static String thirdPass(String expression) {
+    private static String thirdPass(String expression, String ending) {
         String spaces = "";
         if (expression.endsWith(" ")) {
             int lastNonWhiteSpace = findLastNonWhiteSpace(expression);
@@ -170,15 +178,12 @@ public final class ELSanitizer {
                             // for started lambda expression - e.g. #{[1,4].stream().peek(i->|)}
                         return expression.substring(0, expression.length() - 1) + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText();
                     }
-                    return expression;
                 }
             }
             // sanitizes cases where the expressions ends with dot and spaces,
             // e.g. #{foo.  }
             if (ELTokenId.DOT == elToken) {
-                if (expression.startsWith(ELTokenId.LPAREN.fixedText())
-                        && !expression.contains(ELTokenId.RPAREN.fixedText())) {
-                    // for opened classname call - e.g. #{(java.}
+                if (unbalancedLeftParen(expression + ending)) {
                     return expression + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText() + spaces ;
                 } else {
                     return expression + ADDED_SUFFIX + spaces ;
@@ -214,6 +219,10 @@ public final class ELSanitizer {
 
     private static boolean unbalancedLeftBracket(String expression) {
         return (expression.indexOf(ELTokenId.LBRACKET.fixedText()) > expression.indexOf(ELTokenId.RBRACKET.fixedText()));
+    }
+
+    private static boolean unbalancedLeftParen(String expression) {
+        return (expression.indexOf(ELTokenId.LPAREN.fixedText()) > expression.indexOf(ELTokenId.RPAREN.fixedText()));
     }
 
     // package private for tests
