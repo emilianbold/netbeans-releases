@@ -56,7 +56,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
@@ -83,7 +82,7 @@ public class EditorOptions {
     private EditorOptions() {
     }
 
-    private static boolean TRACE = false;
+    private static final boolean TRACE = false;
     //indents
     /**
      * How many spaces should be added to the statement that continues
@@ -666,7 +665,6 @@ public class EditorOptions {
     }
 
     public static List<String> getAllStyles(CodeStyle.Language language) {
-        String styles = null;
         StringBuilder def = new StringBuilder();
         for(String s: PREDEFINED_STYLES){
             if (def.length() > 0){
@@ -674,7 +672,7 @@ public class EditorOptions {
             }
             def.append(s);
         }
-        styles = CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).get(LIST_OF_STYLES_PROPERTY, def.toString()); // NOI18N
+        String styles = CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).get(LIST_OF_STYLES_PROPERTY, def.toString()); // NOI18N
         List<String> res = new ArrayList<String>();
         StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
         while(st.hasMoreTokens()) {
@@ -733,7 +731,7 @@ public class EditorOptions {
         updateSimplePreferences(MimeLookup.getLookup(language.toMime()).lookup(Preferences.class), codeStyle);
     }
 
-    private static Set<String> set = new HashSet<String>();
+    private static final Set<String> set = new HashSet<String>();
     private static void updateSimplePreferences(Preferences p, CodeStyle codeStyle) {
         if (p != null) {
             if (TRACE) {
@@ -751,12 +749,12 @@ public class EditorOptions {
                 if (TRACE) {
                     System.err.println("Set language "+codeStyle+" preferences from CND storage");
                     System.err.println(SimpleValueNames.TAB_SIZE+"="+codeStyle.getTabSize());
-                    System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+codeStyle.getTabSize());
+                    System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+codeStyle.indentSize());
                     System.err.println(SimpleValueNames.EXPAND_TABS+"="+codeStyle.expandTabToSpaces());
                     System.err.println(SimpleValueNames.INDENT_SHIFT_WIDTH+"="+codeStyle.indentSize());
                 }
                 p.putInt(SimpleValueNames.TAB_SIZE, codeStyle.getTabSize());
-                p.putInt(SimpleValueNames.SPACES_PER_TAB, codeStyle.getTabSize());
+                p.putInt(SimpleValueNames.SPACES_PER_TAB, codeStyle.indentSize());
                 p.putBoolean(SimpleValueNames.EXPAND_TABS, codeStyle.expandTabToSpaces());
                 p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, codeStyle.indentSize());
             } else {
@@ -765,13 +763,13 @@ public class EditorOptions {
                     if (TRACE) {
                         System.err.println("Set language "+codeStyle+" preferences from Global storage");
                         System.err.println(SimpleValueNames.TAB_SIZE+"="+global.getInt(SimpleValueNames.TAB_SIZE, tabSizeDefault));
-                        System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+global.getInt(SimpleValueNames.SPACES_PER_TAB, tabSizeDefault));
                         System.err.println(SimpleValueNames.EXPAND_TABS+"="+global.getBoolean(SimpleValueNames.EXPAND_TABS, expandTabToSpacesDefault));
+                        System.err.println(SimpleValueNames.SPACES_PER_TAB+"="+global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault));
                         System.err.println(SimpleValueNames.INDENT_SHIFT_WIDTH+"="+global.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, indentSizeDefault));
                     }
                     p.remove(SimpleValueNames.TAB_SIZE);
-                    p.remove(SimpleValueNames.SPACES_PER_TAB);
                     p.remove(SimpleValueNames.EXPAND_TABS);
+                    p.remove(SimpleValueNames.SPACES_PER_TAB);
                     p.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
                 }
             }
