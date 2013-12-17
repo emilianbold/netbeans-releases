@@ -252,8 +252,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                             }
                         }
                     });
-                    initialActive = null; //here we reset the initial active field value to prevent this block from happening exactly once.
                 }
+                initialActive = null; //here we reset the initial active field value to prevent this block from happening exactly once.
             }
             _active = active;
         }

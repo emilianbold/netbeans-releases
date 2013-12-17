@@ -278,7 +278,7 @@ public final class HighlightProvider  {
             if (pb != null) {
                 try {
                     desc = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity(info), info.getMessage(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                            getSeverity(info), info.getMessage(), info.getFixes(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

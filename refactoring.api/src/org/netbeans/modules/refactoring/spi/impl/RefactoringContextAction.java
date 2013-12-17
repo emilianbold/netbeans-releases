@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -120,6 +122,15 @@ public final class RefactoringContextAction extends AbstractAction implements Co
                     comps[0] = item;
                     // update menu items to reflect Action.isEnabled
                     ((Actions.MenuItem) item).synchMenuPresenters(comps);
+                } else if(item instanceof JMenu) {
+                    JMenu jMenu = (JMenu) item;
+                    for (Component subItem : jMenu.getMenuComponents()) {
+                        if (subItem instanceof Actions.MenuItem) {
+                            comps[0] = (JComponent) subItem;
+                            // update menu items to reflect Action.isEnabled
+                            ((Actions.MenuItem) subItem).synchMenuPresenters(comps);
+                        }
+                    }
                 }
             }
             // returns most up-to date items

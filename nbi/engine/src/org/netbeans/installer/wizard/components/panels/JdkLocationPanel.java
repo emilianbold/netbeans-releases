@@ -549,13 +549,17 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     
     public boolean isArchitectureMatching(String jdkPath) {
         if (jdkPath == null || jdkPath.isEmpty()) {
-            return true;
+            return true; // Better to suppose the arch is matching then to confuse user.
         }
         
         File jdkFile = new File(jdkPath);
         JavaUtils.JavaInfo info = JavaUtils.getInfo(jdkFile);
         
-        return info.getArch().endsWith("64") == SystemUtils.getNativeUtils().isSystem64Bit();
+        if (info == null) {
+            return true; // Better to suppose the arch is matching then to confuse user.
+        }
+        
+        return info.getArch().endsWith("64") || !SystemUtils.getNativeUtils().isSystem64Bit();
     }
     
     private Version getVersion(File file) {

@@ -160,9 +160,7 @@ public class CompletionSanityTest extends GeneralJSP {
         file.pressKey(KeyEvent.VK_ESCAPE);
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-        file.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(1000);
-        assertEquals("Incorrectly completed text", "<jsp:include page=\"WEB-INF/tags/newtag_file.tag\"", file.getText(file.getLineNumber()).trim());
+        assertEquals("Incorrectly completed text", "<jsp:include page=\"WEB-INF/tags/\"", file.getText(file.getLineNumber()).trim());
 
         endTest();
     }
@@ -227,9 +225,7 @@ public class CompletionSanityTest extends GeneralJSP {
         file.pressKey(KeyEvent.VK_ESCAPE);
         file.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-        file.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(1000);
-        assertEquals("Incorrect include", "<%@include file=\"WEB-INF/tags/newtag_file.tag\"%>", file.getText(file.getLineNumber()).trim());
+        assertEquals("Incorrect include", "<%@include file=\"WEB-INF/tags/\"%>", file.getText(file.getLineNumber()).trim());
 
         endTest();
     }
