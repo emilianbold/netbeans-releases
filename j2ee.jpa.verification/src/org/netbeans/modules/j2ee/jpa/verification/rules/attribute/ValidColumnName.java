@@ -87,6 +87,10 @@ public class ValidColumnName extends JPAEntityAttributeCheck {
     private static Collection<ErrorDescription> getErr(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib, String msgKey, String msgPar) {
         Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
 
+        if(elementTree == null) {
+            return null;
+        }
+        
         Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
                 ctx.getCompilationInfo(), elementTree);
 

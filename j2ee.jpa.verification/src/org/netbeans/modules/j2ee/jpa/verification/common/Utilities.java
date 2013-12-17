@@ -122,38 +122,39 @@ public class Utilities {
         
         Tree startSearchingForNameIndentifierBehindThisTree = null;
         
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
-            startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
-            
-        } else if (tree.getKind() == Tree.Kind.METHOD){
-            startSearchingForNameIndentifierBehindThisTree = ((MethodTree)tree).getReturnType();
-        } else if (tree.getKind() == Tree.Kind.VARIABLE){
-            startSearchingForNameIndentifierBehindThisTree = ((VariableTree)tree).getType();
-        }
-        
-        if (startSearchingForNameIndentifierBehindThisTree != null){
-            int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(),
-                    startSearchingForNameIndentifierBehindThisTree);
-            
-            TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
-            
-            if (tokenSequence != null){
-                boolean eob = false;
-                tokenSequence.move(searchStart);
-                
-                do{
-                    eob = !tokenSequence.moveNext();
-                }
-                while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
-                
-                if (!eob){
-                    Token identifier = tokenSequence.token();
-                    startOffset = identifier.offset(info.getTokenHierarchy());
-                    endOffset = startOffset + identifier.length();
+        if(tree != null) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
+                startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
+
+            } else if (tree.getKind() == Tree.Kind.METHOD){
+                startSearchingForNameIndentifierBehindThisTree = ((MethodTree)tree).getReturnType();
+            } else if (tree.getKind() == Tree.Kind.VARIABLE){
+                startSearchingForNameIndentifierBehindThisTree = ((VariableTree)tree).getType();
+            }
+
+            if (startSearchingForNameIndentifierBehindThisTree != null){
+                int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(),
+                        startSearchingForNameIndentifierBehindThisTree);
+
+                TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
+
+                if (tokenSequence != null){
+                    boolean eob = false;
+                    tokenSequence.move(searchStart);
+
+                    do{
+                        eob = !tokenSequence.moveNext();
+                    }
+                    while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
+
+                    if (!eob){
+                        Token identifier = tokenSequence.token();
+                        startOffset = identifier.offset(info.getTokenHierarchy());
+                        endOffset = startOffset + identifier.length();
+                    }
                 }
             }
         }
-        
         return new TextSpan(startOffset, endOffset);
     }
     
