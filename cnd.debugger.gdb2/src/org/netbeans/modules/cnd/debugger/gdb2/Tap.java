@@ -72,7 +72,7 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
     private final StringBuilder interceptBuffer = new StringBuilder();
     private final LinkedList<String> interceptedLines = new LinkedList<String>();
 
-    private final StringBuilder putBuf = new StringBuilder();
+    private final StringBuilder toTermBuf = new StringBuilder();
     private MIProxy miProxy;
 
     public Tap() {
@@ -135,7 +135,8 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
     }
 
     private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
-
+    private static final boolean TRACING = true;
+    
     // interface MICommandInjector
     @Override
     public void inject(String cmd) {
@@ -145,12 +146,14 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
             @Override
             public void run() {
                 // echo
-                toDTE.putChars(KeyProcessing.ESCAPES.BOLD_SEQUENCE, 0, KeyProcessing.ESCAPES.BOLD_SEQUENCE.length);
-                toDTE.putChars(cmda, 0, cmda.length);
-                toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
-                toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
-                toDTE.flush();
-
+                if (TRACING) {
+                    toDTE.putChars(KeyProcessing.ESCAPES.BOLD_SEQUENCE, 0, KeyProcessing.ESCAPES.BOLD_SEQUENCE.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
+                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                    toDTE.flush();
+                }
+                
                 // send to gdb
                 sendQueue.post(new Runnable() {
                     @Override
@@ -170,12 +173,14 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                // echo
-                toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
-                toDTE.putChars(cmda, 0, cmda.length);
-                // toDTE.putChar(char_CR);			// tack on a CR
-                toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
-                toDTE.flush();
+                if (TRACING) {
+                    // echo
+                    toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
+                    toDTE.putChars(cmda, 0, cmda.length);
+                    // toDTE.putChar(char_CR);			// tack on a CR
+                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                    toDTE.flush();
+                }
             }
         });
 
@@ -186,15 +191,12 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
      * Process character from gdb to console.
      */
     private void processCharFromGdb(char c) {
-        putBuf.append(c);
+        toTermBuf.append(c);
 
         interceptBuffer.append(c);
 
+        // detected EOL
         if (c == KeyProcessing.ESCAPES.CHAR_LF) {
-		// detected EOL
-
-            // Map NL to NLCR
-            putBuf.append(KeyProcessing.ESCAPES.CHAR_CR);
 
             String line = interceptBuffer.toString();
             synchronized (interceptedLines) {
@@ -202,31 +204,42 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
             }
             interceptBuffer.delete(0, interceptBuffer.length());
 
+            // Map NL to NLCR
+            toTermBuf.append(KeyProcessing.ESCAPES.CHAR_CR);
+
             // do some pattern recognition and alternative colored output.
             if (line.startsWith("~")) { // NOI18N
                 // comment line
-                putBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
-                putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
-            } else if (line.startsWith("&")) { // NOI18N
-                // output
-                putBuf.insert(0, KeyProcessing.ESCAPES.BROWN_SEQUENCE);
-                putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
+                toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+            } else if (line.startsWith("&") || line.startsWith("*") || line.startsWith("=")) { // NOI18N
+                if (TRACING) {
+                    // output
+                    toTermBuf.insert(0, KeyProcessing.ESCAPES.BROWN_SEQUENCE);
+                    toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                } else {
+                    toTermBuf.delete(0, toTermBuf.length());
+                }      
             } else {
                 int caretx = line.indexOf('^');
                 if (caretx != -1) {
-                    if (line.startsWith("^error,", caretx)) { // NOI18N
-                        // error
-                        putBuf.insert(0, KeyProcessing.ESCAPES.RED_SEQUENCE);
-                        putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                    if (TRACING) {
+                        if (line.startsWith("^error,", caretx)) { // NOI18N
+                            // error
+                            toTermBuf.insert(0, KeyProcessing.ESCAPES.RED_SEQUENCE);
+                            toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                        }
+                    } else {
+                        toTermBuf.delete(0, toTermBuf.length());
                     }
                 }
             }
-
-            // toDTE.putChars(put_buf, 0, put_length);
-            char chars[] = new char[putBuf.length()];
-            putBuf.getChars(0, putBuf.length(), chars, 0);
-            toDTE.putChars(chars, 0, putBuf.length());
-            putBuf.delete(0, putBuf.length());
+            if (toTermBuf.length() > 0) {
+                char chars[] = new char[toTermBuf.length()];
+                toTermBuf.getChars(0, toTermBuf.length(), chars, 0);
+                toDTE.putChars(chars, 0, toTermBuf.length());
+                toTermBuf.delete(0, toTermBuf.length());
+            }
         }
     }
 
