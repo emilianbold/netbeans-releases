@@ -149,25 +149,33 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
      */
     @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof AbstractBreakpoint)) {
-            return;
+        JSLineBreakpoint lb = null;
+        AbstractBreakpoint ab = null;
+        if (breakpoint instanceof JSLineBreakpoint) {
+            lb = (JSLineBreakpoint) breakpoint;
+        } else if (breakpoint instanceof AbstractBreakpoint) {
+            ab = (AbstractBreakpoint) breakpoint;
+        } else {
+            return ;
         }
-        final AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
+        final Breakpoint b = (lb != null) ? lb : ab;
         synchronized (breakpointImpls) {
-            if (breakpointImpls.containsKey(ab)) {
+            if (breakpointImpls.containsKey(b)) {
                 return ;
             }
         }
-        final WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
+        final WebKitBreakpointManager bm = (lb != null) ?
+                                            createWebKitBreakpointManager(lb) :
+                                            createWebKitBreakpointManager(ab);
         synchronized (breakpointImpls) {
-            if (breakpointImpls.containsKey(ab)) {
+            if (breakpointImpls.containsKey(b)) {
                 // Added in between, destroy the one created redundantly.
                 bm.destroy();
                 return ;
             }
-            breakpointImpls.put(ab, bm);
+            breakpointImpls.put(b, bm);
         }
-        if (ab.isEnabled()) {
+        if (b.isEnabled()) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -182,14 +190,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
      */
     @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof AbstractBreakpoint)) {
+        if (!(breakpoint instanceof AbstractBreakpoint) &&
+            !(breakpoint instanceof JSLineBreakpoint)) {
             return;
         }
         //breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
-        final AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
         final WebKitBreakpointManager bm;
         synchronized (breakpointImpls) {
-            bm = breakpointImpls.remove(ab);
+            bm = breakpointImpls.remove(breakpoint);
         }
         if (bm != null) {
             RP.post(new Runnable() {

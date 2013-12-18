@@ -399,7 +399,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     @Override
     public void nodeDestroyed(NodeEvent ev) {
         node = Node.EMPTY;
-        QUEUE.runSafe(new VisualizerEvent.Destroyed(getChildren(false), ev, this));
+        QUEUE.runSafe(new VisualizerEvent.Destroyed(getChildren(false), ev));
     }
 
     /** Change in the node properties (icon, etc.)

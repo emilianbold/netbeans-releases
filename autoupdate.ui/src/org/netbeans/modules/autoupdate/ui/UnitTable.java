@@ -147,6 +147,9 @@ public final class UnitTable extends JTable {
     @Override
     public Component prepareRenderer (TableCellRenderer renderer,
             int rowIndex, int vColIndex) {
+        if (rowIndex < 0 || vColIndex < 0) {
+            return null;
+        }
         Component c = super.prepareRenderer (renderer, rowIndex, vColIndex);
         Color bgColor = getBackground ();
         Color bgColorDarker = getDarkerColor(bgColor);

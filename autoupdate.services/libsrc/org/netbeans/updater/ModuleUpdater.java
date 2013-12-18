@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -424,8 +424,10 @@ public final class ModuleUpdater extends Thread {
                                         // #220807 - NoClassDefFoundError: updater/XMLUtil
                                         version.addFileWithCrc(pathTo, Long.toString(destFile.exists() ? UpdateTracking.getFileCRC(destFile) : 0));
                                         
-                                        // skip updater.jar
-                                        continue;
+                                        if (destFile.exists()) {
+                                            // skip updater.jar
+                                            continue;
+                                        }
                                     }
                                     // path without netbeans prefix
                                     if ( destFile.exists() ) {

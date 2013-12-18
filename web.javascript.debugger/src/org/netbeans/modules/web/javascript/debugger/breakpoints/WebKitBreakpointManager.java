@@ -172,7 +172,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 }
             }
             URL curl = d.getConnectionURL();
-            if (curl != null) {
+            if (curl != null && lb.getFileObject() != null) {
                 String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
                 url = reformatFileURL(url);
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
