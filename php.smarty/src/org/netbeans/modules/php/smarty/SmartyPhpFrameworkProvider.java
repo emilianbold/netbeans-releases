@@ -139,16 +139,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         return enabled != null && enabled;
     }
 
-    /**
-     * Temporary method for updating Smarty php module preferences to use
-     * boolean value instead of flag for {@code #PROP_SMARTY_AVAILABLE).
-     */
-    private void updateSmartyAvailableProperty(Preferences preferences) {
-        if (preferences.get(PROP_SMARTY_AVAILABLE, "0").equals("1")) { //NOI18N
-            preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-        }
-    }
-
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
         return new File[0];
