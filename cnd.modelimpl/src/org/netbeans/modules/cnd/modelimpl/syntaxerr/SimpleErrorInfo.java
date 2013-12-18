@@ -87,9 +87,4 @@ public class SimpleErrorInfo implements CsmErrorInfo {
     public Severity getSeverity() {
         return severity;
     }
-
-    @Override
-    public List<Fix> getFixes() {
-        return Collections.<Fix>emptyList();
-    }
 }

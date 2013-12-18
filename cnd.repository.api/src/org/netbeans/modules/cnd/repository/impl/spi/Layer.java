@@ -54,7 +54,7 @@ import org.openide.filesystems.FileSystem;
  */
 public interface Layer {
 
-    public boolean startup(int persistMechanismVersion);
+    public boolean startup(int persistMechanismVersion, boolean recreate);
 
     public void shutdown();
 
@@ -63,7 +63,6 @@ public interface Layer {
     public void closeUnit(int unitIdInLayer, boolean cleanRepository,
             Set<Integer> requiredUnits);
 
-    public void setExceptionsListener(LayerExceptionsListener listener);
 
     //TODO: should be FSPath table
     public List<CharSequence> getFileNameTable(int unitIdInLayer);

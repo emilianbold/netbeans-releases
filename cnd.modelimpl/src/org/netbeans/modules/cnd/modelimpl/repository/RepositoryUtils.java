@@ -411,11 +411,12 @@ public final class RepositoryUtils {
         public void unitClosed(int unitId) {
             parent.unitClosed(unitId);
         }
-
-//        @Override
-//        public void unitRemoved(int unitId, CharSequence unitName) {
-//            parent.unitRemoved(unitId, unitName);
-//        }
+        
+        
+        @Override
+        public void unitRemoved(int unitId) {
+            parent.unitRemoved(unitId);
+        }
 
         @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {

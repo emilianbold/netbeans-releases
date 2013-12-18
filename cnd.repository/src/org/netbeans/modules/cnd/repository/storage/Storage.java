@@ -55,9 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.FilePath;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.Layer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerFactory;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStrea
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -112,7 +114,9 @@ import org.openide.util.Lookup;
 
         this.storageID = storageID;
         this.storageMask = unitIDConverter;
-        this.layers = Collections.unmodifiableList(createLayers(layerDescriptors, persistMechanismVersion));
+        final Collection<? extends LayerListener> lst =
+                Lookups.forPath(LayerListener.PATH).lookupAll(LayerListener.class);
+        this.layers = Collections.unmodifiableList(createLayers(layerDescriptors, lst, persistMechanismVersion));
         assert layers != null;// && layers.size() > 0;
         // Initialize layerDescriptors list with descriptors of created layers
         // only.
@@ -123,7 +127,7 @@ import org.openide.util.Lookup;
             }
             descriptors.add(layer.getLayerDescriptor());
         }
-        this.layerDescriptors = Collections.unmodifiableList(descriptors);
+        this.layerDescriptors = Collections.unmodifiableList(descriptors);                
         this.layeringSupport = new LayeringSupportImpl();
     }
 
@@ -200,7 +204,7 @@ import org.openide.util.Lookup;
         }
     }
 
-    private List<Layer> createLayers(List<LayerDescriptor> layerDescriptors, int persistMechanismVersion) {
+    private List<Layer> createLayers(List<LayerDescriptor> layerDescriptors, Collection<? extends LayerListener> lst, int persistMechanismVersion) {
         Collection<? extends LayerFactory> factories = Lookup.getDefault().lookupAll(LayerFactory.class);
         List<Layer> result = new ArrayList<Layer>();
 
@@ -213,10 +217,16 @@ import org.openide.util.Lookup;
                 }
             }
             if (layer != null) {
-                boolean success = layer.startup(persistMechanismVersion);
+                //TODO: exceptions listener
+                // layer.setExceptionsListener(exceptionsListener);
+                //check if layer can be opened by other layering clients
+                boolean isOK = true;
+                for (LayerListener layerListener : lst) {
+                    isOK &= layerListener.layerOpened(layerDescriptor);
+                }                
+                boolean success = layer.startup(persistMechanismVersion, !isOK);
+                //ant check if layers is correct from the other layering clients point of view
                 if (success) {
-                    //TODO: exceptions listener
-                    // layer.setExceptionsListener(exceptionsListener);
                     result.add(layer);
                 }
             }
@@ -615,7 +625,7 @@ import org.openide.util.Lookup;
     }
 
     private class LayeringSupportImpl implements LayeringSupport {
-
+        
         @Override
         public List<LayerDescriptor> getLayerDescriptors() {
             return Storage.this.getLayerDescriptors();

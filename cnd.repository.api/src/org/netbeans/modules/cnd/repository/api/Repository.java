@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.repository.impl.ShuttedDownRepositoryImpl;
 import org.netbeans.modules.cnd.repository.impl.UninitializedRepositoryImpl;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.RepositoryImplementation;
 import org.netbeans.modules.cnd.repository.impl.spi.RepositoryImplementationFactory;
@@ -145,7 +146,7 @@ public final class Repository {
     public static void registerRepositoryListener(RepositoryListener listener) {
         RepositoryListenersManager.getInstance().registerListener(listener);
     }    
-    
+              
     public static void unregisterRepositoryListener(RepositoryListener listener) {
         RepositoryListenersManager.getInstance().unregisterListener(listener);
     }

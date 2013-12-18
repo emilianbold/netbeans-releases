@@ -83,9 +83,6 @@ public interface DiscoveryDescriptor {
     String getExecLog();
     void setExecLog(String logFile);
 
-    String getLevel();
-    void setLevel(String level);
-
     List<ProjectConfiguration> getConfigurations();
     void setConfigurations(List<ProjectConfiguration> configuration);
 

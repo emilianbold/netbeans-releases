@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author Alexander Simon
+ * @author mtishkov
  */
-public interface FileModelProvider {
-    FileModel getFileModel(ProjectBase project);
+public interface LayerListener {
+     /**
+     * You can also register this listener as a service
+     */
+    public static final String PATH = "CND/RepositoryLayerListener"; //NOI18N
+/**
+     * Invoked once a repository is created.
+     * 
+     * Use case is as follows. 
+     * Indexing resides in the same directory repository resides;
+     * and we need to check index consistency when we open a repository:
+     * if index is corrupted, then repository is invalid either 
+     * 
+     * @param layerDescriptor
+     *
+     * @return true if it is OK to open repository,
+     * false if repository data should be considered corrupted
+     */
+    boolean layerOpened(LayerDescriptor layerDescriptor);        
 }

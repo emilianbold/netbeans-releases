@@ -57,6 +57,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.EditorEvent;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -277,8 +279,9 @@ public final class HighlightProvider  {
             ErrorDescription desc = null;
             if (pb != null) {
                 try {
+                    List<Fix> fixes = CsmErrorInfoHintProvider.getFixes(info);
                     desc = ErrorDescriptionFactory.createErrorDescription(
-                            getSeverity(info), info.getMessage(), info.getFixes(), doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
+                            getSeverity(info), info.getMessage(), fixes, doc, pb.getBegin().getPosition(), pb.getEnd().getPosition());
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

@@ -290,6 +290,7 @@ public class ProjectBridge {
                 }
             }
         }
+        compilePath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, compilePath);
         if (isDifferentCompilePath(filePath, compilePath)){
             ordinary.add(getRelativepath(compilePath));
         }
