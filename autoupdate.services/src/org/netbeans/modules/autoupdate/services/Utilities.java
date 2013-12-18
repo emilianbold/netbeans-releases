@@ -297,9 +297,7 @@ public class Utilities {
         try {
             try {
                 XMLUtil.write (doc, bos, "UTF-8"); // NOI18N
-                if (bos != null) {
-                    bos.close ();
-                }
+                bos.close ();
                 fos = new FileOutputStream (dest);
                 is = new ByteArrayInputStream (bos.toByteArray ());
                 FileUtil.copy (is, fos);
@@ -310,21 +308,17 @@ public class Utilities {
                 if (fos != null) {
                     fos.close ();
                 }
-                if (bos != null) {
-                    bos.close ();
-                }
+                bos.close ();
             }
         } catch (java.io.FileNotFoundException fnfe) {
             Exceptions.printStackTrace (fnfe);
         } catch (java.io.IOException ioe) {
             Exceptions.printStackTrace (ioe);
         } finally {
-            if (bos != null) {
-                try {
-                    bos.close ();
-                } catch (Exception x) {
-                    Exceptions.printStackTrace (x);
-                }
+            try {
+                bos.close ();
+            } catch (IOException x) {
+                Exceptions.printStackTrace (x);
             }
         }
     }
@@ -355,7 +349,7 @@ public class Utilities {
             content.append(UpdateTracking.PATH_SEPARATOR);
         }
         
-        if (content == null || content.length () == 0) {
+        if (content.length () == 0) {
             return ;
         }
         
@@ -629,8 +623,7 @@ public class Utilities {
             DependencyAggregator deco = DependencyAggregator.getAggregator(d);
             int type = d.getType();
             String name = d.getName();
-            for (Iterator<ModuleInfo> it = deco.getDependening().iterator(); it.hasNext();) {
-                ModuleInfo depMI = it.next();
+            for (ModuleInfo depMI : deco.getDependening()) {
                 Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                 if (depM == null) {
                     continue;
@@ -997,9 +990,7 @@ public class Utilities {
             is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
-            if (is != null) {
-                is.close ();
-            }
+            is.close ();
         } catch (SAXException saxe) {
             getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
@@ -1031,7 +1022,7 @@ public class Utilities {
     private static Node getModuleLastVersion (Node version) {
         Node attrLast = version.getAttributes ().getNamedItem (UpdateTracking.ATTR_LAST);
         assert attrLast != null : "ELEMENT_VERSION must contain ATTR_LAST attribute.";
-        if (Boolean.valueOf (attrLast.getNodeValue ()).booleanValue ()) {
+        if (Boolean.valueOf (attrLast.getNodeValue ())) {
             return version;
         } else {
             return null;
@@ -1091,6 +1082,7 @@ public class Utilities {
         return m != null && !m.isEnabled () && ! m.isAutoload () && ! m.isEager ();
     }
     
+    @SuppressWarnings("null")
     public static boolean isElementInstalled (UpdateElement el) {
         assert el != null : "Invalid call isElementInstalled with null parameter.";
         if (el == null) {
@@ -1200,6 +1192,7 @@ public class Utilities {
         }
     }    
     
+    @SuppressWarnings("null")
     public static boolean canWriteInCluster (File cluster) {
         assert cluster != null : "dir cannot be null";
         if (cluster == null) {
