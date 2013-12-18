@@ -130,7 +130,7 @@ class SftpSupport {
     //
     private final ExecutionEnvironment execEnv;
 
-    private LinkedList<ChannelSftp> spareChannels = new LinkedList<ChannelSftp>();
+    private final LinkedList<ChannelSftp> spareChannels = new LinkedList<ChannelSftp>();
     
     // just a primitive statistics
     private int currBusyChannels = 0;
