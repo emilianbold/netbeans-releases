@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.util;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -49,19 +49,18 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.awt.HtmlBrowser;
 
 /**
  *
  * @author ondra
  */
-public class SwitchToCliPanel extends javax.swing.JPanel {
+public class NotifyHtmlPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form SwitchToCliPanel
      */
-    public SwitchToCliPanel () {
+    public NotifyHtmlPanel () {
         initComponents();
         Document doc = msgPanel.getDocument();
         if (doc instanceof HTMLDocument) { // Issue 185505
@@ -76,7 +75,7 @@ public class SwitchToCliPanel extends javax.swing.JPanel {
         msgPanel.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
     }
 
-    void setText (String text) {
+    public void setText (String text) {
         msgPanel.setText(text);
     }
     /**
@@ -92,7 +91,7 @@ public class SwitchToCliPanel extends javax.swing.JPanel {
         msgPanel = new javax.swing.JTextPane();
 
         msgPanel.setBackground(new Color(0, 0, 0, 0));
-        msgPanel.setContentType("text/html");
+        msgPanel.setContentType("text/html"); // NOI18N
         msgPanel.setEditable(false);
         msgPanel.setOpaque(false);
         msgPanel.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
