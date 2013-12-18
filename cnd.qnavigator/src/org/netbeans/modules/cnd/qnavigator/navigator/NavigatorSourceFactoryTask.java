@@ -73,7 +73,9 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
 
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
-        canceled = new AtomicBoolean(false);
+        synchronized (this) {
+            canceled = new AtomicBoolean(false);
+        }
         if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
@@ -86,7 +88,7 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
                 CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
                 JTextComponent comp = EditorRegistry.lastFocusedComponent();
                 if (comp instanceof JEditorPane) {
-                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp);
+                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp, null);
                 }
             }
         }
