@@ -187,6 +187,9 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 delegatePropertyEditor.removePropertyChangeListener(l);
             }
         }*/
+        if (currentValue == value) {
+            return ;
+        }
         this.currentValue = value;
         Class clazz;
         Object valueMirror;
