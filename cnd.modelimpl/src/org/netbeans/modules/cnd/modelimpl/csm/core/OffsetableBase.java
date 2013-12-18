@@ -151,7 +151,12 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     
     @Override
     public CharSequence getText() {
-        return getContainingFile().getText(getStartOffset(), getEndOffset());
+        CsmFile containingFile = getContainingFile();
+        if (containingFile != null) {
+            return containingFile.getText(getStartOffset(), getEndOffset());
+        } else {
+            return ""; // NOI18N
+        }
     }
 
     @Override

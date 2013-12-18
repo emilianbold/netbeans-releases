@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config;
+package org.netbeans.modules.javaee.wildfly.config.xml.jms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
+import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -53,84 +53,54 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  * @author Petr Hejl
  */
-public class JB7DatasourceHandler extends DefaultHandler {
+public class JB7MessageDestinationHandler extends DefaultHandler {
 
-    private final List<JBossDatasource> datasources = new ArrayList<JBossDatasource>();
+    private final List<JBossMessageDestination> messageDestinations = new ArrayList<JBossMessageDestination>();
 
-    private StringBuilder content = new StringBuilder();
+    private boolean isDestinations;
 
-    private boolean isDatasources;
+    private boolean isDestination;
 
-    private boolean isDatasource;
+    private final List<String> jndiNames = new ArrayList<String>();
 
-    private boolean isSecurity;
-
-    private String jndiName;
-
-    private String url;
-
-    private String driverClass;
-
-    private String username;
-
-    private String password;
-
-    public List<JBossDatasource> getDatasources() {
-        return datasources;
+    public List<JBossMessageDestination> getMessageDestinations() {
+        return messageDestinations;
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        content.setLength(0);
-        if ("datasources".equals(qName)) {
-            isDatasources = true;
-        } else if (isDatasources && "datasource".equals(qName)) {
-            isDatasource = true;
-            jndiName = attributes.getValue("jndi-name");
-        } else if (isDatasource && "security".equals(qName)) {
-            isSecurity = true;
+        if ("jms-destinations".equals(qName)) {
+            isDestinations = true;
+        } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
+            isDestination = true;
+        } else if (isDestination && "entry".equals(qName)) {
+            jndiNames.add(attributes.getValue("name"));
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        // FIXME XADataSources support ???
-        if (isSecurity) {
-            if ("security".equals(qName)) {
-                isSecurity = false;
-            } else if ("user-name".equals(qName)) {
-                username = content.toString();
-            } else if ("password".equals(qName)) {
-                password = content.toString();
-            }
-        } else if (isDatasource) {
-            if ("datasource".equals(qName)) {
-                isDatasource = false;
-                if (jndiName != null && url != null) {
-                    datasources.add(new JBossDatasource(
-                            jndiName, url, username, password, driverClass));
-                } else {
-                    Logger.getLogger(JB7DatasourceHandler.class.getName()).log(Level.INFO, "Malformed datasource found");
+        if (isDestination) {
+            if ("jms-queue".equals(qName)) {
+                isDestination = false;
+                for (String name : jndiNames) {
+                    messageDestinations.add(new JBossMessageDestination(name, Type.QUEUE));
                 }
-            } else if ("connection-url".equals(qName)) {
-                url = content.toString();
-            } else if ("driver-class".equals(qName)) {
-                // not manadatory
-                driverClass = content.toString();
+                jndiNames.clear();
+            } else if ("jms-topic".equals(qName)) {
+                isDestination = false;
+                for (String name : jndiNames) {
+                    messageDestinations.add(new JBossMessageDestination(name, Type.TOPIC));
+                }
+                jndiNames.clear();
             }    
-        } else if (isDatasources) {
-            if ("datasources".equals(qName)) {
-                isSecurity = false;
-                isDatasource = false;
-                isDatasources = false;
+        } else if (isDestinations) {
+            if ("jms-destinations".equals(qName)) {
+                jndiNames.clear();
+                isDestination = false;
+                isDestinations = false;
             }
         }
     }
 
-    @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        if (isDatasource) {
-            content.append(ch, start, length);
-        }
-    }
 }

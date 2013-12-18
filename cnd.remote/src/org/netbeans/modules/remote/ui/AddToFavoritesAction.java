@@ -86,6 +86,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "AddToFavoritesAction", position = 600)
 public class AddToFavoritesAction extends SingleHostAction {
 
+    private static final String FILE_CHOOSER_KEY = "remote.add.favorite"; //NOI18N
     private JMenu popupMenu;
 
     @Override
@@ -326,7 +327,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                             return;
                         }
 //Non UI Thread:
-                        final String dir = RemoteFileUtil.getCurrentChooserFile(env);
+                        final String dir = RemoteFileUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
                         final Callable<String> homeDirCallable =  new Callable<String>() {
                             @Override
                             public String call() throws Exception {
@@ -367,7 +368,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                                             }
                                         } else {
                                             String lastPath = rootFO.getParent() == null ? rootFO.getPath() : rootFO.getParent().getPath();
-                                            RemoteFileUtil.setCurrentChooserFile(lastPath, env);
+                                            RemoteFileUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
                                         }
                                     }
                                     if (rootFO != null) {
@@ -389,7 +390,7 @@ public class AddToFavoritesAction extends SingleHostAction {
 
     static FileObject getRemoteFileObject(final ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
         //Non UI Thread:
-        final String curDir = RemoteFileUtil.getCurrentChooserFile(env);
+        final String curDir = RemoteFileUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
         final Callable<String> homeDirCallable = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -426,7 +427,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             return null;
         }
         String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(lastPath, env);
+        RemoteFileUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
         return fo;
     }
 
