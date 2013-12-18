@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -103,6 +103,7 @@ public class Utilities {
     public static final String UPDATE_DIR = "update"; // NOI18N
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
+    public static final String RUNNING_DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download-in-progress"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
     public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
@@ -272,7 +273,7 @@ public class Utilities {
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
-                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution()).getName());
+                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution(), false).getName());
 
                 root.appendChild( module );
                 isEmpty = false;
@@ -1058,7 +1059,7 @@ public class Utilities {
             if (cluster.equals (c)) {
                 Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
                 module.setAttribute(ATTR_NBM_NAME,
-                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution()).getName ());
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution(), false).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
                 isEmpty = false;
@@ -1207,7 +1208,7 @@ public class Utilities {
         if (cluster.exists () && cluster.isDirectory ()) {
             File dir4test;
             File update = new File (cluster, UPDATE_DIR);
-            File download = new File (cluster, DOWNLOAD_DIR);
+            File download = new File (cluster, RUNNING_DOWNLOAD_DIR);
             if (download.exists ()) {
                 dir4test = download;
             } else if (update.exists ()) {
