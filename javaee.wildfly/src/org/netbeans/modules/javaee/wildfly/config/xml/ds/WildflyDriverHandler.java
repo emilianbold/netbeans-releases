@@ -39,45 +39,61 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config.xml;
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
-import java.io.File;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
+import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author ehugonnet
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class XMLDocumentRepository {
+public class WildflyDriverHandler extends AbstractHierarchicalHandler {
 
-    private static final String LOAD_EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    private WildflyDriver driver;
+    private StringBuilder buffer;
 
-    public Document loadDocument(File xmlFile) {
-        try {
-            SAXParserFactory spf = SAXParserFactory.newInstance();
-            SAXParser sp = spf.newSAXParser();
-            sp.getXMLReader().setFeature(LOAD_EXTERNAL_DTD_FEATURE, false);
-            SAXReader reader = new SAXReader(false);
-            return reader.read(xmlFile);
-        } catch (SAXException ex) {
-
-            Exceptions.printStackTrace(ex);
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (DocumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+    public WildflyDriverHandler(DefaultHandler parent, XMLReader parser) {
+        super(parent, parser);
     }
-    
-    public void query(Document document, String query) {
-       // document.createXPath(query)
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("driver".equals(qName)) {
+            driver = new WildflyDriver(attributes.getValue(uri, "name"));
+        } else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName) || "driver-class".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (buffer != null) {
+            buffer.append(ch, start, length);
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if ("driver".equals(qName)) {
+            end(uri, localName, qName);
+        } else if ("driver-class".equals(qName)) {
+            driver.setDriverClass(buffer.toString());
+        } else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName)) {
+            if (null == driver.getDriverClass()) {
+                driver.setDriverClass("");
+            }
+        }/*else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName) || "driver-class".equals(qName)) {
+         driver.setDriverClass(buffer.toString());
+         } */
+
+    }
+
+    public WildflyDriver getDriver() {
+        return driver;
     }
 }

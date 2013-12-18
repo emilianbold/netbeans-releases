@@ -39,67 +39,64 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config;
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
+import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Petr Hejl
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JB7MessageDestinationHandler extends DefaultHandler {
+public class WildflySecurityHandler extends AbstractHierarchicalHandler {
 
-    private final List<JBossMessageDestination> messageDestinations = new ArrayList<JBossMessageDestination>();
+    private StringBuilder buffer;
+    private String username;
+    private String password;
 
-    private boolean isDestinations;
-
-    private boolean isDestination;
-
-    private final List<String> jndiNames = new ArrayList<String>();
-
-    public List<JBossMessageDestination> getMessageDestinations() {
-        return messageDestinations;
+    public WildflySecurityHandler(DefaultHandler parent, XMLReader parser) {
+        super(parent, parser);
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("jms-destinations".equals(qName)) {
-            isDestinations = true;
-        } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
-            isDestination = true;
-        } else if (isDestination && "entry".equals(qName)) {
-            jndiNames.add(attributes.getValue("name"));
+        if ("user-name".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+        else if ("password".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (buffer != null) {
+            buffer.append(ch, start, length);
         }
     }
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (isDestination) {
-            if ("jms-queue".equals(qName)) {
-                isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.QUEUE));
-                }
-                jndiNames.clear();
-            } else if ("jms-topic".equals(qName)) {
-                isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.TOPIC));
-                }
-                jndiNames.clear();
-            }    
-        } else if (isDestinations) {
-            if ("jms-destinations".equals(qName)) {
-                jndiNames.clear();
-                isDestination = false;
-                isDestinations = false;
-            }
+        if ("user-name".equals(qName)) {
+            username = buffer.toString();
+        }
+        else if ("password".equals(qName)) {
+            password = buffer.toString();
+        }
+        else if ("security".equals(qName)) {
+            end(uri, localName, qName);
         }
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 }

@@ -64,6 +64,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
 import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
 import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
+import org.netbeans.modules.javaee.wildfly.config.xml.ConfigurationParser;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileLock;
@@ -76,6 +77,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Libor Kotouc
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public final class JBossDatasourceManager implements DatasourceManager {
 
@@ -85,9 +87,8 @@ public final class JBossDatasourceManager implements DatasourceManager {
 
     private static final String JBossDSdotXML = "jboss-ds.xml"; // NOI18N
 
-    private final FileObject serverDir;
-
     private final FileObject deployDir;
+    private final FileObject configFile;
 
     private final WildFlyDeploymentManager dm;
 
@@ -96,20 +97,15 @@ public final class JBossDatasourceManager implements DatasourceManager {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String deployDirPath = ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         deployDir = FileUtil.toFileObject(new File(deployDirPath));
-        String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-        serverDir = FileUtil.toFileObject(new File(serverDirPath));
+        configFile = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
     }
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        try {
-            return this.dm.getClient().listDatasources();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            throw new ConfigurationException("", ex);
-        }
+        return ConfigurationParser.INSTANCE.listDatasources(configFile);
     }
 
+    @Override
     public void deployDatasources(Set<Datasource> datasources)
             throws ConfigurationException, DatasourceAlreadyExistsException {
 
