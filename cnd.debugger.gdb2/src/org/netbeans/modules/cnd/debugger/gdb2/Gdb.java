@@ -49,19 +49,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.terminalemulator.Term;
-import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
@@ -75,13 +70,11 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -646,6 +639,7 @@ public class Gdb {
 
     public final void setDebugger(GdbDebuggerImpl debugger) {
         this.debugger = debugger;
+        tap().setDebugger(debugger);
 	debugger.getNDI().setLoadSuccess(false);
     }
 
@@ -728,228 +722,6 @@ public class Gdb {
 	    notify(new NotifyDescriptor.Message(panel));
     }
     
-    /**
-     * Tap into the io between gdb and Term.
-     * - It echoes stuff it gets from gdb to the Term while accumulating
-     *   lines and sending them on to the MI processor via
-     *   MIProxy.processLine(). 
-     *   In this sense it works a bit like the unix 'tee(1)' command.
-     * - It passes on stuff typed by the user on to gdb.
-     * - It allows commands to be sent to gdb programmatically via 
-     *   MICommandInjector.inject()
-     * - It allows informative message to be printed via
-     *   MICommandInjector.log().
-     *
-     * It also colorizes lines.
-     * - Injected commands   destined to gdb is in bold black.
-     * - Stuff typed by user destined to gdb is in bold blue.
-     * - Error and informative message from the ide (MIInjector.log) are
-     *   printed in blue but not forwarded to gdb.
-     * - gdb console stream ouptut (~) is echoed in green.
-     * - gdb errors are echoed in red.
-     *
-     * Modelled after org.netbeans.lib.terminalemulator.LineDiscipline
-     * "put" is from process to console.
-     * "send" is from "keyboard" to process.
-     */
-    static class Tap
-        extends org.netbeans.lib.terminalemulator.TermStream
-        implements MICommandInjector {
-
-        // characters from gdb accumulate here and are forwarded to the tap
-        private StringBuilder interceptBuffer = new StringBuilder();
-        private final LinkedList<String> interceptedLines = new LinkedList<String>();
-
-	/* OLD
-        // buffer for accumulating incoming (from process) characters (via
-        // putChar[s]) before forwaring them via toDTE.putChars().
-        private int put_capacity = 16;
-        private int put_length = 0;
-        private char put_buf[] = new char[put_capacity];
-	*/
-	StringBuilder putBuf = new StringBuilder();
-        private MIProxy miProxy;
-
-        public Tap() {
-        }
-
-        public void flush() {
-            toDTE.flush();
-        }
-
-        /**
-         * Put character from gdb to console.
-         */
-        public void putChar(char c) {
-            // OLD put_length = 0;
-            processChar(c);
-            // OLD toDTE.putChars(put_buf, 0, put_length);
-            dispatchInterceptedLines();
-        }
-
-        /**
-         * Put characters from gdb to console.
-         */
-        public void putChars(char[] buf, int offset, int count) {
-            // OLD put_length = 0;
-            for (int bx = 0; bx < count; bx++) {
-                processChar(buf[offset + bx]);
-            }
-            // OLD toDTE.putChars(put_buf, 0, put_length);
-            dispatchInterceptedLines();
-        }
-
-        /**
-         * Send character typed into console to gdb
-         */
-        public void sendChar(char c) {
-            CndUtils.assertTrueInConsole(false, "should not be used; KeyProcessingStream should send only lines");
-            toDCE.sendChar(c);
-        }
-
-        /**
-         * Send character typed into console to gdb
-         */
-        public void sendChars(char c[], int offset, int count) {
-            String line = String.valueOf(c, offset, count);
-            CndUtils.assertTrueInConsole(line.length() == 0 || line.endsWith("\n"), "KeyProcessingStream should send only lines");
-            toDCE.sendChars(c, offset, count);
-        }
-
-        private void setMiProxy(MIProxy miProxy) {
-            this.miProxy = miProxy;
-        }
-
-        private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
-
-        // interface MICommandInjector
-        public void inject(String cmd) {
-            final char[] cmda = cmd.toCharArray();
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // echo
-                    toDTE.putChars(KeyProcessing.ESCAPES.BOLD_SEQUENCE, 0, KeyProcessing.ESCAPES.BOLD_SEQUENCE.length);
-                    toDTE.putChars(cmda, 0, cmda.length);
-                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
-                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
-                    toDTE.flush();
-
-                    // send to gdb
-                    sendQueue.post(new Runnable() {
-                        public void run() {
-                            toDCE.sendChars(cmda, 0, cmda.length);
-                        }
-                    });
-                }
-            });
-        }
-
-        // interface MICommandInjector
-        public void log(String cmd) {
-            final char[] cmda = cmd.toCharArray();
-
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    // echo
-                    toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
-                    toDTE.putChars(cmda, 0, cmda.length);
-                    // toDTE.putChar(char_CR);			// tack on a CR
-                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
-                    toDTE.flush();
-                }
-            });
-
-            // don't send to gdb
-        }
-
-        /**
-         * Process character from gdb to console.
-         */
-        private void processChar(char c) {
-            appendChar(c);
-
-            interceptBuffer.append(c);
-
-            if (c == KeyProcessing.ESCAPES.CHAR_LF) {
-		// detected EOL
-
-		// Map NL to NLCR
-                appendChar(KeyProcessing.ESCAPES.CHAR_CR);
-
-		String line = interceptBuffer.toString();
-                synchronized (interceptedLines) {
-                    interceptedLines.addLast(line);
-                }
-                interceptBuffer = new StringBuilder();
-
-		// do some pattern recognition and alternative colored output.
-		if (line.startsWith("~")) { // NOI18N
-		    // comment line
-		    putBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
-		    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
-		} else if (line.startsWith("&")) { // NOI18N
-		    // output
-		    putBuf.insert(0, KeyProcessing.ESCAPES.BROWN_SEQUENCE);
-		    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
-		} else {
-		    int caretx = line.indexOf('^');
-		    if (caretx != -1) {
-			if (line.startsWith("^error,", caretx)) { // NOI18N
-			    // error
-			    putBuf.insert(0, KeyProcessing.ESCAPES.RED_SEQUENCE);
-			    putBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
-			}
-		    }
-		}
-
-		// toDTE.putChars(put_buf, 0, put_length);
-		char chars[] = new char[putBuf.length()];
-		putBuf.getChars(0, putBuf.length(), chars, 0);
-		toDTE.putChars(chars, 0, putBuf.length());
-		putBuf = new StringBuilder();
-            }
-        }
-
-        private void appendChar(char c) {
-	    /* OLD
-            // SHOULD use StringBuilder or the faster non-MT variation
-            if (put_length >= put_capacity) {
-                int new_capacity = put_capacity * 2;
-                if (new_capacity < 0) {
-                    new_capacity = Integer.MAX_VALUE;
-                }
-                char new_buf[] = new char[new_capacity];
-                System.arraycopy(put_buf, 0, new_buf, 0, put_length);
-                put_buf = new_buf;
-                put_capacity = new_capacity;
-            }
-            put_buf[put_length++] = c;
-	    */
-	    putBuf.append(c);
-        }
-
-        private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
-
-        private void dispatchInterceptedLines() {
-            synchronized (interceptedLines) {
-                while (!interceptedLines.isEmpty()) {
-                    final String line = interceptedLines.removeFirst();
-
-                    processingQueue.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                miProxy.processLine(line);
-                            } catch (Exception e) {
-                                Exceptions.printStackTrace(new Exception("when processing line: " + line, e)); //NOI18N
-                            }
-                        }
-                    });
-                }
-            }
-        }
-    }
     static final String versionString = "GNU gdb";		// NOI18N
     
     void setGdbIdleHandler(Runnable handler) {

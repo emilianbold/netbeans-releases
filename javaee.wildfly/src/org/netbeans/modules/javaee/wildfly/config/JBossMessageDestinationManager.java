@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javaee.wildfly.config;
 
+import org.netbeans.modules.javaee.wildfly.config.xml.jms.JB7MessageDestinationHandler;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -66,33 +67,38 @@ import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * 
  * @author Petr Hejl
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public final class JBossMessageDestinationManager implements MessageDestinationDeployment {
 
     private static final Logger LOGGER = Logger.getLogger(JBossMessageDestinationManager.class.getName());
 
     private final FileObject serverDir;
+    private final FileObject configFile;
 
     private final boolean isAs7;
 
     public JBossMessageDestinationManager(String serverUrl, boolean isAs7) {
-        String serverDirPath = InstanceProperties.getInstanceProperties(serverUrl).getProperty(
-                JBPluginProperties.PROPERTY_SERVER_DIR);
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(serverUrl);
+        String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
+        FileObject config = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
+        if (config == null) {
+            config = serverDir.getFileObject("configuration/standalone.xml");
+        }
+        if (config == null) {
+            config = serverDir.getFileObject("configuration/domain.xml");
+        }
+        this.configFile = config;
         this.isAs7 = isAs7;
     }
 
     @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         Set<MessageDestination> messageDestinations = new HashSet<MessageDestination>();
-
-        FileObject config = serverDir.getFileObject("configuration/standalone.xml");
-        if (config == null) {
-            config = serverDir.getFileObject("configuration/domain.xml");
-        }
-        if (config == null || !config.isData()) {
+        if (configFile == null || !configFile.isData()) {
             LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"));
             return messageDestinations;
         }
@@ -100,7 +106,7 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser parser = factory.newSAXParser();
             JB7MessageDestinationHandler handler = new JB7MessageDestinationHandler();
-            InputStream is = new BufferedInputStream(config.getInputStream());
+            InputStream is = new BufferedInputStream(configFile.getInputStream());
             try {
                 parser.parse(is, handler);
             } finally {

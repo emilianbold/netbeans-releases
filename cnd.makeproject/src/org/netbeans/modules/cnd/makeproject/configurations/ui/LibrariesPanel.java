@@ -296,8 +296,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            final String chooser_key = "AddLibrary"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -314,7 +315,13 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 return;
             }
             lastSelectedFilter = fileChooser.getFileFilter();
-            for(File libFile: fileChooser.getSelectedFiles()) {
+            final File[] files = fileChooser.getSelectedFiles();
+            if (files == null || files.length == 0) {
+                return;
+            }            
+            File selectedFolder = files[0].getParentFile();
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
+            for(File libFile: files) {
                 String libName = libFile.getName();
                 if (libName.startsWith("lib")) // NOI18N
                 {
@@ -339,8 +346,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            final String chooser_key = "AddLibraryFile"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -358,7 +366,13 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 return;
             }
             lastSelectedFilter = fileChooser.getFileFilter();
-            for(File libFile: fileChooser.getSelectedFiles()) {
+            final File[] files = fileChooser.getSelectedFiles();
+            if (files == null || files.length == 0) {
+                return;
+            }                        
+            File selectedFolder = files[0].getParentFile();
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);            
+            for(File libFile: files) {
                 // FIXUP: why are baseDir UNIX path when remote?
                 String path = ProjectSupport.toProperPath(baseDir.getFileObject(), libFile.getPath(), project);
                 path = CndPathUtilities.normalizeSlashes(path);
