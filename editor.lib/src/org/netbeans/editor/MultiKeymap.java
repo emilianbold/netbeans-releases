@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Keymap;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.DefaultEditorKit;
@@ -72,6 +74,9 @@ public class MultiKeymap implements Keymap {
     
     private static final boolean compatibleIgnoreNextTyped
         = Boolean.getBoolean("netbeans.editor.keymap.compatible");
+
+    // -J-Dorg.netbeans.editor.MultiKeymap.level=FINE
+    private static final Logger LOG = Logger.getLogger(MultiKeymap.class.getName());
 
     /** Action that does nothing */
     public static final Action EMPTY_ACTION = new AbstractAction() {
@@ -298,6 +303,14 @@ public class MultiKeymap implements Keymap {
             a = delegate.getAction(key);
         }
 
+        if (LOG.isLoggable(Level.FINE)) {
+            String msg = "MultiKeymap.getActionImpl():\n  KEY=" + key + "\n  ACTION=" + a; // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.INFO, msg, new Exception());
+            } else {
+                LOG.fine(msg + "\n\n"); // NOI18N
+            }
+        }
         return a;
     }
     

@@ -619,6 +619,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
                         !existingPathsChanged,
+                        false,
                         scannedRoots2DependenciesLamport,
                         suspendSupport.getSuspendStatus(),
                         logContext),
@@ -677,7 +678,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (entry == null || entry.includes(fo)) {
                         Work wrk;
                         if (fo.equals(root.second())) {
-                            if (scannedRoots2Dependencies.get(root.first()) == EMPTY_DEPS) {
+                            if (scannedRoots2Dependencies.get(root.first()) == NONEXISTENT_ROOT) {
                                 //For first time seeing valid root do roots work to recalculate dependencies
                                 wrk = new RootsWork(
                                     scannedRoots2Dependencies,
@@ -685,6 +686,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     scannedRoots2Peers,
                                     sourcesForBinaryRoots,
                                     false,
+                                    true,
                                     scannedRoots2DependenciesLamport,
                                     suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null).addRoots(Collections.singleton(root.first())));
@@ -1249,7 +1251,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final String PROP_OWNING_SOURCE_UNKNOWN_IN = RepositoryUpdater.class.getName() + "-owning-source-root-unknown-in"; //NOI18N
     private static final String INDEX_DOWNLOAD_FOLDER = "index-download";   //NOI18N
 
-    /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
+    /* test */ static final List<URL> UNKNOWN_ROOT = Collections.unmodifiableList(new LinkedList<URL>());
+    /* test */ static final List<URL> NONEXISTENT_ROOT = Collections.unmodifiableList(new LinkedList<URL>());
     /* test */ volatile static Source unitTestActiveSource;
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -1734,7 +1737,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             //If deps == EMPTY_DEPS needs to be rescanned (keep it in oldRoots,
             //it will be removed from scannedRoots2Dependencies and readded from
             //scannedRoots
-            if (deps != null && deps != EMPTY_DEPS) {
+            if (deps != null && deps != UNKNOWN_ROOT &&
+                (deps != NONEXISTENT_ROOT || !ctx.refreshNonExistentDeps)) {
                 ctx.oldRoots.remove(rootURL);
                 return true;
             }
@@ -1744,7 +1748,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         final FileObject rootFo = URLMapper.findFileObject(rootURL);
         if (rootFo == null) {
-            ctx.newRoots2Deps.put(rootURL, EMPTY_DEPS);
+            ctx.newRoots2Deps.put(rootURL, NONEXISTENT_ROOT);
             return true;
         }
 
@@ -3605,7 +3609,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 //If the root is unknown add it into scannedRoots2Depencencies to allow listening on changes under this root
                 if (!scannedRoots2Depencencies.containsKey(root)) {
-                    scannedRoots2Depencencies.put(root, EMPTY_DEPS);
+                    scannedRoots2Depencencies.put(root, UNKNOWN_ROOT);
                 }
             }
             TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
@@ -4167,6 +4171,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scannedBinaries2InvDependencies,
                         scannedRoots2Peers,
                         sourcesForBinaryRoots,
+                        false,
                         false);
 
                 if (suspectFilesOrFileObjects.isEmpty()) {
@@ -4413,6 +4418,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private final Set<URL> sourcesForBinaryRoots;
         private final AtomicLong scannedRoots2DependenciesLamport;
         private boolean useInitialState;
+        private boolean refreshNonExistentDeps;
 
         private DependenciesContext depCtx;
         protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
@@ -4430,6 +4436,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Map<URL,List<URL>> scannedRoots2Peers,
                 Set<URL> sourcesForBinaryRoots,
                 boolean useInitialState,
+                boolean refreshNonExistentDeps,
                 @NonNull final AtomicLong scannedRoots2DependenciesLamport,
                 @NonNull final SuspendStatus suspendStatus,
                 @NullAllowed LogContext logCtx) {
@@ -4439,6 +4446,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.scannedRoots2Peers = scannedRoots2Peers;
             this.sourcesForBinaryRoots = sourcesForBinaryRoots;
             this.useInitialState = useInitialState;
+            this.refreshNonExistentDeps = refreshNonExistentDeps;
             this.scannedRoots2DependenciesLamport = scannedRoots2DependenciesLamport;
         }
 
@@ -4550,7 +4558,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     scannedBinaries2InvDependencies,
                     scannedRoots2Peers,
                     sourcesForBinaryRoots,
-                    useInitialState);
+                    useInitialState,
+                    refreshNonExistentDeps);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
@@ -4697,7 +4706,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 if (deps == null) {
                     //binDeps not a part of newRoots2Deps, cycle in dependencies?
                     //rescue by EMPTY_DEPS and log
-                    deps = EMPTY_DEPS;
+                    deps = UNKNOWN_ROOT;
                     missingRoots.add(root);
                 }
                 scannedRoots2Dependencies.put(root, deps);
@@ -4742,7 +4751,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for(URL root : depCtx.scannedBinaries) {
                 List<URL> deps = depCtx.newBinaries2InvDeps.get(root);
                 if (deps == null) {
-                    deps = EMPTY_DEPS;
+                    deps = UNKNOWN_ROOT;
                 }
                 scannedBinaries2InvDependencies.put(root, deps);
             }
@@ -4792,10 +4801,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public @Override boolean absorb(Work newWork) {
             if (newWork.getClass().equals(RootsWork.class)) {
-                if (!((RootsWork) newWork).useInitialState) {
+                final RootsWork rw = (RootsWork) newWork;
+                if (!rw.useInitialState) {
                     // the new work does not use initial state and so should not we
-                    useInitialState = ((RootsWork) newWork).useInitialState;
-                    LOGGER.fine("Absorbing " + newWork + ", updating useInitialState to " + useInitialState); //NOI18N
+                    useInitialState = rw.useInitialState;
+                    LOGGER.log(
+                        Level.FINE,
+                        "Absorbing {0}, updating useInitialState to {1}",   //NOI18N
+                        new Object[]{
+                            rw,
+                            useInitialState
+                        });
+                }
+                if (rw.refreshNonExistentDeps) {
+                    refreshNonExistentDeps = rw.refreshNonExistentDeps;
                 }
                 return true;
             } else {
@@ -4998,7 +5017,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     boolean preregistered = false;
                     boolean success = false;
                     if (preregisterIn != null && !preregisterIn.containsKey(source)) {
-                        preregisterIn.put(source, EMPTY_DEPS);
+                        preregisterIn.put(source, UNKNOWN_ROOT);
                         preregistered = true;
                     }
                     LogContext lctx = getLogContext();
@@ -5361,6 +5380,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 scannedBinaries2InvDependencies,
                 scannedRoots2Peers,
                 sourcesForBinaryRoots,
+                true,
                 true,
                 scannedRoots2DependenciesLamport,
                 suspendStatus,
@@ -5870,6 +5890,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
+        private final boolean refreshNonExistentDeps;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
@@ -5879,7 +5900,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Map<URL,List<URL>>  scannedBinaries2InvDependencies,
                 final Map<URL,List<URL>>  scannedRoots2Peers,
                 final Set<URL> sourcesForBinaryRoots,
-                boolean useInitialState) {
+                final boolean useInitialState,
+                final boolean refreshNonExistentDeps) {
             assert scannedRoots2Deps != null;
             assert scannedBinaries2InvDependencies != null;
             
@@ -5903,6 +5925,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.fullRescanSourceRoots = new HashSet<URL>();
 
             this.useInitialState = useInitialState;
+            this.refreshNonExistentDeps = refreshNonExistentDeps;
             this.cycleDetector = new Stack<URL>();
             this.unknownRoots = new HashSet<URL>();
         }
