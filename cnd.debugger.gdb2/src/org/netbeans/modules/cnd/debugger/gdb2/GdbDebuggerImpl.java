@@ -85,6 +85,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
@@ -998,6 +1004,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
 
+    // command typed directly in terminal
+    private final class TermCommandImpl extends MiCommandImpl {
+
+        public TermCommandImpl(String cmd) {
+            super(cmd);
+        }  
+
+        @Override
+        protected void onError(MIRecord record) {
+            String errMsg = getErrMsg(record);
+            if (!errMsg.isEmpty()) {
+                gdb.tap().printError(errMsg);
+            } else {
+                super.onError(record);
+            } 
+        }
+    }
+       
     /**
      * Handle the output of "info proc".
      */
@@ -4209,8 +4233,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
                     if (template == null) {
-                        // we are unable to create handlers for breakpoints created in console
-                        return;
+                        // prepare to create handlers for breakpoints created in console
+                        template = prepareTemplate(result);
                     }
 		    handler = handlerExpert.newHandler(template, result, null);
 		    break;
@@ -4272,6 +4296,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    private NativeBreakpoint prepareTemplate(MIResult result) {
+        NativeBreakpointType type;
+        MIValue bkptValue = result.value();
+        MITList props = bkptValue.asTuple();
+        String typeVal = props.getConstValue("type"); //NOI18N
+        if ("catchpoint".equals(typeVal)) { //NOI18N
+            type = new SysCallBreakpointType();
+        } else if ("breakpoint".equals(typeVal)) { //NOI18N
+            type = new LineBreakpointType();
+            String origLoc = props.getConstValue("original-location"); //NOI18N
+            if (origLoc != null) {
+                if (origLoc.startsWith("*")) { //NOI18N
+                    type = new InstructionBreakpointType();
+                } else if (!origLoc.contains(":")) { //NOI18N
+                    type = new FunctionBreakpointType();
+                }
+            }
+        } else {
+            type = new ExceptionBreakpointType();
+        }
+        return type.newInstance(NativeBreakpoint.SUBBREAKPOINT);
+    }
+    
     private void deleteForReplace(int rt, Handler targetHandler){
         // Don't use
         //	postDeleteHandler(hid);
@@ -4993,6 +5040,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// no-op for now
     }
     
+    /*package*/void sendTerminalTypedCommand(String termLine) {
+        TermCommandImpl cmd = new TermCommandImpl(termLine);
+        gdb.sendCommand(cmd);
+    }
+     
     private void send(String commandStr, boolean reportError) {
         MiCommandImpl cmd = new MiCommandImpl(commandStr);
         if (!reportError) {

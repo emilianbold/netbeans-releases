@@ -38,6 +38,46 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.debugger.gdb2;
 
@@ -66,7 +106,7 @@ import org.openide.util.RequestProcessor;
  * Modelled after org.netbeans.lib.terminalemulator.LineDiscipline "put" is from
  * process to console. "send" is from "keyboard" to process.
  */
-public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements MICommandInjector {
+/*package*/ class Tap extends org.netbeans.lib.terminalemulator.TermStream implements MICommandInjector {
 
     // characters from gdb accumulate here and are forwarded to the tap
     private final StringBuilder interceptBuffer = new StringBuilder();
@@ -74,8 +114,9 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
 
     private final StringBuilder toTermBuf = new StringBuilder();
     private MIProxy miProxy;
+    private GdbDebuggerImpl debugger;
 
-    public Tap() {
+    /*package*/ Tap() {
     }
 
     @Override
@@ -125,17 +166,42 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
      */
     @Override
     public void sendChars(char c[], int offset, int count) {
-        String line = String.valueOf(c, offset, count);
+        final String line = String.valueOf(c, offset, count);
         CndUtils.assertTrueInConsole(line.length() == 0 || line.endsWith("\n"), "KeyProcessingStream should send only lines");
-        toDCE.sendChars(c, offset, count);
+        String cmd = line.trim();
+        // on empty cmd use last cmd from history
+        if (cmd.isEmpty()) {
+            cmd = getLastCmd();
+            if (!cmd.trim().isEmpty()) {
+                // echo to term to show user
+                c = cmd.toCharArray();
+                offset = 0;
+                count = c.length;
+                toDTE.putChars(c, offset, count);
+                toDTE.flush();
+            }
+        } else {
+            setLastCmd(cmd);
+        }
+        if (debugger != null) {
+            debugger.sendTerminalTypedCommand(cmd);
+        } else {
+            // as fallback while debugger is not yet initialized
+            toDCE.sendChars(c, offset, count);
+            toDCE.flush();
+        }
     }
 
     /*package*/ void setMiProxy(MIProxy miProxy) {
         this.miProxy = miProxy;
     }
 
+    /*package*/ void setDebugger(GdbDebuggerImpl debugger) {
+        this.debugger = debugger;
+    }
+
     private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
-    private static final boolean TRACING = true;
+    private static final boolean TRACING_IN_CONSOLE = CndUtils.getBoolean("cnd.gdb.trace.console", false); // NOI18N
     
     // interface MICommandInjector
     @Override
@@ -146,7 +212,7 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
             @Override
             public void run() {
                 // echo
-                if (TRACING) {
+                if (TRACING_IN_CONSOLE) {
                     toDTE.putChars(KeyProcessing.ESCAPES.BOLD_SEQUENCE, 0, KeyProcessing.ESCAPES.BOLD_SEQUENCE.length);
                     toDTE.putChars(cmda, 0, cmda.length);
                     toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
@@ -165,6 +231,23 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
         });
     }
 
+    /*package*/void printError(String errMsg) {
+        final char[] cmda = errMsg.toCharArray();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                // echo
+                toDTE.putChars(KeyProcessing.ESCAPES.RED_SEQUENCE, 0, KeyProcessing.ESCAPES.RED_SEQUENCE.length);
+                toDTE.putChars(cmda, 0, cmda.length);
+                toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
+                toDTE.putChar(KeyProcessing.ESCAPES.CHAR_LF);			// tack on a CR
+                toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                toDTE.flush();
+            }
+        });
+    }
+    
     // interface MICommandInjector
     @Override
     public void log(String cmd) {
@@ -173,14 +256,12 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (TRACING) {
-                    // echo
-                    toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
-                    toDTE.putChars(cmda, 0, cmda.length);
-                    // toDTE.putChar(char_CR);			// tack on a CR
-                    toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
-                    toDTE.flush();
-                }
+                // echo
+                toDTE.putChars(KeyProcessing.ESCAPES.LOG_SEQUENCE, 0, KeyProcessing.ESCAPES.LOG_SEQUENCE.length);
+                toDTE.putChars(cmda, 0, cmda.length);
+                // toDTE.putChar(char_CR);			// tack on a CR
+                toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                toDTE.flush();
             }
         });
 
@@ -213,7 +294,7 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
                 toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
                 toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
             } else if (line.startsWith("&") || line.startsWith("*") || line.startsWith("=")) { // NOI18N
-                if (TRACING) {
+                if (TRACING_IN_CONSOLE) {
                     // output
                     toTermBuf.insert(0, KeyProcessing.ESCAPES.BROWN_SEQUENCE);
                     toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
@@ -223,7 +304,7 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
             } else {
                 int caretx = line.indexOf('^');
                 if (caretx != -1) {
-                    if (TRACING) {
+                    if (TRACING_IN_CONSOLE) {
                         if (line.startsWith("^error,", caretx)) { // NOI18N
                             // error
                             toTermBuf.insert(0, KeyProcessing.ESCAPES.RED_SEQUENCE);
@@ -262,5 +343,14 @@ public class Tap extends org.netbeans.lib.terminalemulator.TermStream implements
                 });
             }
         }
+    }
+
+    private String lastCmd = "";
+    private String getLastCmd() {
+        return lastCmd + "\r\n";
+    }
+
+    private void setLastCmd(String cmd) {
+        lastCmd = cmd.trim();
     }
 }

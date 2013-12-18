@@ -639,6 +639,7 @@ public class Gdb {
 
     public final void setDebugger(GdbDebuggerImpl debugger) {
         this.debugger = debugger;
+        tap().setDebugger(debugger);
 	debugger.getNDI().setLoadSuccess(false);
     }
 
