@@ -148,6 +148,17 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case DOXYGEN_COMMENT:
                     case PREPROCESSOR_DIRECTIVE:
                         break;
+                    case GTGT:
+                        if (back) {
+                            depth += 2;
+                        } else {
+                            if (depth == 1) {
+                                // end of template
+                                return true;
+                            }
+                            depth -= 2;
+                        }
+                        break;
                     case GT:
                         if (back) {
                             depth++;
