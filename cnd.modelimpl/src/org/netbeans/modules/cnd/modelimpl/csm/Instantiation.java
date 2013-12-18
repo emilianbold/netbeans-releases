@@ -266,6 +266,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 }
             }
             return newClass;
+        } else if (CsmKindUtilities.isFunctionPointerClassifier(template)) {
+            // Function pointer
+            return new FunctionPointerClassifier((CsmFunctionPointerClassifier) template, mapping);
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
         } else if (template instanceof CsmTypeAlias) {
@@ -720,6 +723,44 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return false;
         }
     }
+    
+    private static class FunctionPointerClassifier extends Instantiation<CsmFunctionPointerClassifier> implements CsmFunctionPointerClassifier {
+        
+        private final CsmType retType;
+        
+        public FunctionPointerClassifier(CsmFunctionPointerClassifier function, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(function, mapping);
+            this.retType = createType(function.getReturnType(), FunctionPointerClassifier.this);
+        }
+
+        @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            return declaration.getScopeElements();
+        }
+
+        public boolean isTemplate() {
+            return ((CsmTemplate)declaration).isTemplate();
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return declaration.getSignature();
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return retType;
+        }
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            Collection<CsmParameter> res = new ArrayList<CsmParameter>();
+            Collection<CsmParameter> parameters = declaration.getParameters();
+            for (CsmParameter param : parameters) {
+                res.add(new Parameter(param, this));
+            }
+            return res;
+        }
+    }
 
     private static class Field extends Instantiation<CsmField> implements CsmField {
         private final CsmType type;
@@ -1162,6 +1203,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
                 type instanceof NestedType) {
             return new NestedType(type, instantiation);
+        }
+        if (CsmKindUtilities.isFunctionPointerType(type)) {
+            return new TypeFunPtr((CsmFunctionPointerType) type, instantiation);
         }
         return new Type(type, instantiation);       
     }
@@ -1638,6 +1682,33 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
             indent(out, indent).append("END OF ").append(instName);// NOI18N
             return out.toString();
+        }
+    }
+    
+    private static class TypeFunPtr extends Type implements CsmFunctionPointerType {
+
+        public TypeFunPtr(CsmFunctionPointerType type, CsmInstantiation instantiation) {
+            super((CsmType)type, instantiation);
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return createType(((CsmFunctionPointerType) originalType).getReturnType(), instantiation);
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return ((CsmFunctionPointerType) originalType).getScope();
+        }
+
+        @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            return ((CsmFunctionPointerType) originalType).getScopeElements();
+        }
+
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            return ((CsmFunctionPointerType) originalType).getParameters();
         }
     }
 

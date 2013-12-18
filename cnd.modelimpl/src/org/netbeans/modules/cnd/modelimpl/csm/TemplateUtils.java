@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -388,6 +389,16 @@ public class TemplateUtils {
         if (type instanceof NestedType) {
             NestedType nestedType = (NestedType) type;
             type = NestedType.create(checkTemplateType(nestedType.getParent(), scope, additionalParams), nestedType);
+        }
+        
+        // Check return type in function pointer
+        if (CsmKindUtilities.isFunctionPointerType(type)) {
+            TypeFunPtrImpl fpt = (TypeFunPtrImpl) type;
+            CsmType returnType = fpt.getReturnType();
+            CsmType newReturnType = checkTemplateType(returnType, scope, additionalParams);
+            if (newReturnType != returnType) {
+                fpt.setReturnType(newReturnType);
+            }
         }
         
         // Check instantiation parameters
