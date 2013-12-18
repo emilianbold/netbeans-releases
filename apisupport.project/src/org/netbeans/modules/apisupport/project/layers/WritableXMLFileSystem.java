@@ -1443,27 +1443,42 @@ public final class WritableXMLFileSystem extends AbstractFileSystem
         }
         if (cookie.getStatus() == TreeEditorCookie.STATUS_OK || cookie.getStatus() == TreeEditorCookie.STATUS_NOT) {
             // Document was modified, and reparsed OK. See what changed.
-            RequestProcessor.getDefault().post(new Runnable() {
+            if (System.getProperty("Run-OpenDocRoot-Synchronously") == null || !System.getProperty("Run-OpenDocRoot-Synchronously").equals("true")) {
+                RequestProcessor.getDefault().post(new Runnable() {
 
-                @Override
-                public void run() {
-                    try {
-                        WritableXMLFileSystem.this.setDoc(cookie.openDocumentRoot());
-                        Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
-                        while (e.hasMoreElements()) {
-                            FileObject fo = (FileObject) e.nextElement();
-                            // fo.refresh() does not work
-                            refreshResource(fo.getPath(), true);
+                    @Override
+                    public void run() {
+                        try {
+                            WritableXMLFileSystem.this.setDoc(cookie.openDocumentRoot());
+                            Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
+                            while (e.hasMoreElements()) {
+                                FileObject fo = (FileObject) e.nextElement();
+                                // fo.refresh() does not work
+                                refreshResource(fo.getPath(), true);
+                            }
+                        } catch (TreeException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        } catch (IOException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
-                    } catch (TreeException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                    } catch (IOException e) {
-                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                    }
 
+                    }
+                });
+            } else {
+                try {
+                    doc = cookie.openDocumentRoot();
+                    Enumeration<? extends FileObject> e = existingFileObjects(getRoot());
+                    while (e.hasMoreElements()) {
+                        FileObject fo = (FileObject) e.nextElement();
+                        // fo.refresh() does not work
+                        refreshResource(fo.getPath(), true);
+                    }
+                } catch (TreeException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                } catch (IOException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
-            });
-        }
+            }        }
     }
     
 }

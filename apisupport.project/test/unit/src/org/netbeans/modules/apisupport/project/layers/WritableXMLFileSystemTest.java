@@ -644,6 +644,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     }
 
     public void testTextualModificationsFired() throws Exception {
+        System.setProperty("Run-OpenDocRoot-Synchronously","true");
         Layer l = new Layer("<folder name='f'><file name='x'/></folder><file name='y'/>");
         FileSystem fs = l.read();
         Listener fcl = new Listener();
@@ -667,6 +668,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         assertNotNull(fs.findResource("f/x2"));
         assertNotNull(fs.findResource("z"));
+        System.setProperty("Run-OpenDocRoot-Synchronously","false");
     }
 
     @RandomlyFails // NB-Core-Build #4187
