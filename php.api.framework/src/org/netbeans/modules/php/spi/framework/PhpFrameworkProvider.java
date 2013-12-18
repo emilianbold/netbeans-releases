@@ -268,21 +268,31 @@ public abstract class PhpFrameworkProvider {
     }
 
     /**
-     * This method is called when the PHP module is opened in the IDE but only if is is extended by this framework.
-     * It is suitable to make any initialization of this framework here but usually it is not needed to override this method.
+     * This method is called when the PHP module is opened in the IDE. It is suitable to make any detection/initialization
+     * of this framework here but usually it is not needed to override this method.
+     * <p>
+     * <b>WARNING:</b> This method is called for all PHP modules (with or without this framework present,
+     * this is usually useful for framework detection in such {@link PhpModule PHP module}).
+     * <p>
      * @param phpModule the PHP module that is being opened in the IDE
      * @see #isInPhpModule(PhpModule)
      * @see #phpModuleClosed(PhpModule)
+     * @see PhpModule#notifyPropertyChanged(java.beans.PropertyChangeEvent)
      */
     public void phpModuleOpened(PhpModule phpModule) {
     }
 
     /**
-     * This method is called when the PHP module is closed in the IDE but only if is is extended by this framework.
-     * It is suitable to make any clean up of this framework here but usually it is not needed to override this method.
+     * This method is called when the PHP module is closed in the IDE. It is suitable to make any clean up
+     * of this framework here but usually it is not needed to override this method.
+     * <p>
+     * <b>WARNING:</b> This method is called for all PHP modules (with or without this framework present,
+     * this is usually useful for framework clean up in such {@link PhpModule PHP module}).
+     * <p>
      * @param phpModule the PHP module that is being closed in the IDE
      * @see #isInPhpModule(PhpModule)
      * @see #phpModuleOpened(PhpModule)
+     * @see PhpModule#notifyPropertyChanged(java.beans.PropertyChangeEvent)
      */
     public void phpModuleClosed(PhpModule phpModule) {
     }
