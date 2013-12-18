@@ -64,6 +64,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationController;
@@ -81,7 +82,7 @@ import org.openide.util.Exceptions;
  * @author Martin Entlicher
  */
 class AST2Bytecode {
-    
+
     /** Creates a new instance of AST2Bytecode */
     private AST2Bytecode() {
     }
@@ -254,6 +255,16 @@ class AST2Bytecode {
                                         return null; // Unsupported
                                     }
                                     methodClassType = ElementUtilities.getBinaryName(te)+array;
+                                } else if (k == TypeKind.UNION) {
+                                    UnionType ut = (UnionType) type;
+                                    type = getUnionType(types, ut.getAlternatives());
+                                    if (type == null) {
+                                        // No union super type found.
+                                        ErrorManager.getDefault().notify(new IllegalStateException("No union type found from "+ut+", alternatives = "+ut.getAlternatives()));
+                                        return null;
+                                    }
+                                    TypeElement te = (TypeElement) types.asElement(type);
+                                    methodClassType = ElementUtilities.getBinaryName(te)+array;
                                 } else if (type instanceof PrimitiveType) {
                                     methodClassType = type.toString()+array;
                                 } else {
@@ -401,6 +412,58 @@ class AST2Bytecode {
         }
          */
         return operations.toArray(new EditorContext.Operation[] {});
+    }
+    
+    private static TypeMirror getUnionType(Types types, List<? extends TypeMirror> tms) {
+        int n = tms.size();
+        List<TypeMirror>[] superTypes = new List[n];
+        for (int i = 0; i < n; i++) {
+            superTypes[i] = new ArrayList<TypeMirror>();
+            TypeMirror tm = tms.get(i);
+            TypeElement te = (TypeElement) types.asElement(tm);
+            superTypes[i].add(te.getSuperclass());
+        }
+        TypeMirror unionType;
+        while ((unionType = findUnion(types, superTypes)) == null) {
+            boolean noSuper = true;
+            for (int i = 0; i < n; i++) {
+                TypeMirror lastTM = superTypes[i].get(superTypes[i].size() - 1);
+                TypeElement te = (TypeElement) types.asElement(lastTM);
+                if (te == null) {
+                    continue;
+                }
+                TypeMirror superclass = te.getSuperclass();
+                if (superclass != null) {
+                    superTypes[i].add(superclass);
+                    noSuper = false;
+                }
+            }
+            if (noSuper) {
+                break;
+            }
+        }
+        return unionType;
+    }
+    
+    private static TypeMirror findUnion(Types types, List<TypeMirror>[] sTypes) {
+        for (TypeMirror tm : sTypes[0]) {
+            if (isInTypes(types, tm, sTypes, 1)) {
+                return tm;
+            }
+        }
+        return null;
+    }
+    
+    private static boolean isInTypes(Types types, TypeMirror tm, List<TypeMirror>[] sTypes, int from) {
+        if (from >= sTypes.length) {
+            return true;
+        }
+        for (TypeMirror testTM : sTypes[from]) {
+            if (types.isSameType(tm, testTM)) {
+                return isInTypes(types, tm, sTypes, from + 1);
+            }
+        }
+        return false;
     }
     
     /*private static void assignNext(EditorContext.Operation op,
