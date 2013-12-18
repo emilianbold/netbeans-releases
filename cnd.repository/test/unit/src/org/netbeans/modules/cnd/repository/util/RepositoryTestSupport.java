@@ -51,6 +51,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
@@ -92,14 +93,19 @@ public class RepositoryTestSupport {
                 CndUtils.threadsDump();
             }
         }
-        for (FileImpl file : map.values()) {
-            CsmTracer tracer = new CsmTracer(printStream);
-            tracer.setDeep(true);
-            tracer.setDumpTemplateParameters(false);
-            tracer.setTestUniqueName(false);
-            tracer.dumpModel(file);
+        CsmCacheManager.enter();
+        try {
+            for (FileImpl file : map.values()) {
+                CsmTracer tracer = new CsmTracer(printStream);
+                tracer.setDeep(true);
+                tracer.setDumpTemplateParameters(false);
+                tracer.setTestUniqueName(false);
+                tracer.dumpModel(file);
+            }        
+            dumpCsmProjectContainers(project, System.out);
+        } finally {
+            CsmCacheManager.leave();
         }
-        dumpCsmProjectContainers(project, System.out);
     }
 
     public static void dumpCsmProjectContainers(CsmProject project, PrintStream printStream) {

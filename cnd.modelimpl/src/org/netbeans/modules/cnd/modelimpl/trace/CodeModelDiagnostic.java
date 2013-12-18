@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -309,10 +310,15 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
-            for (CsmFile csmFile : allFiles) {
-                new CsmTracer(printOut).dumpModel(csmFile);
-            }            
+            CsmCacheManager.enter();
+            try {
+                Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+                for (CsmFile csmFile : allFiles) {
+                    new CsmTracer(printOut).dumpModel(csmFile);
+                }    
+            } finally {
+                CsmCacheManager.leave();
+            }
         }
     }    
 
@@ -388,8 +394,13 @@ public final class CodeModelDiagnostic {
                     }
                 }
             }
-            for (CsmProject prj : projects) {
-                new CsmTracer(printOut).dumpModel(prj);
+            CsmCacheManager.enter();
+            try {            
+                for (CsmProject prj : projects) {
+                    new CsmTracer(printOut).dumpModel(prj);
+                }
+            } finally {
+                CsmCacheManager.leave();
             }
         }
     }    
