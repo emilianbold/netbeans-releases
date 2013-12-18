@@ -56,8 +56,8 @@ public class AutodetectionPanel extends JPanel {
     private final PhpModule phpModule;
 
     @NbBundle.Messages({
-        "AutodetectionPanel.msg.autodetect=There was found Smarty in project {0}. Click to enable Smarty support there.",
-        "AutodetectionPanel.lbl.ignore=Do not show again for {0}"
+        "AutodetectionPanel.msg.autodetect=Smarty templates detected in project {0}. Click to enable its support.",
+        "AutodetectionPanel.lbl.ignore=Do not show this again"
     })
     public AutodetectionPanel(PhpModule phpModule) {
         this.phpModule = phpModule;
@@ -65,7 +65,7 @@ public class AutodetectionPanel extends JPanel {
         initComponents();
         descriptionLabel.setText("<html><a href=\"#\">" + Bundle.AutodetectionPanel_msg_autodetect(phpModule.getDisplayName())); //NOI18N
         descriptionLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        ignoreLabel.setText("<html><a href=\"#\">" + Bundle.AutodetectionPanel_lbl_ignore(phpModule.getDisplayName())); //NOI18N
+        ignoreLabel.setText("<html><a href=\"#\">" + Bundle.AutodetectionPanel_lbl_ignore()); //NOI18N
         ignoreLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 

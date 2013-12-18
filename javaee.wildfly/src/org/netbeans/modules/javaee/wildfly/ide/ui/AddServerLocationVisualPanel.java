@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Ivan Sidorkin
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public class AddServerLocationVisualPanel extends javax.swing.JPanel {
     
@@ -299,6 +300,9 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         String newLoc = browseInstallLocation();
         if (newLoc != null && !"".equals(newLoc)) {
             locationTextField.setText(newLoc);
+            if(configurationTextField.getText() == null || configurationTextField.getText().isEmpty()) {
+                configurationTextField.setText(newLoc + "/standalone/configuration/standalone.xml");
+            }
         }
     }
     

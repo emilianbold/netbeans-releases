@@ -47,6 +47,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.api.queries.PhpVisibilityQuery;
+import org.netbeans.modules.php.api.queries.Queries;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.ui.notification.AutodetectionPanel;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
@@ -206,15 +208,15 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * @param fo directory where to seek
      * @return {@code true} if any Smarty template found, {@code false} otherwise
      */
-    private static boolean detectSmartyTemplate(FileObject fo) {
-        if (!fo.isValid()) {
+    private static boolean detectSmartyTemplate(FileObject fo, PhpVisibilityQuery visibilityQuery) {
+        if (!fo.isValid() || !visibilityQuery.isVisible(fo)) {
             return false;
         }
 
         assert fo.isFolder();
         for (FileObject child : fo.getChildren()) {
             if (child.isFolder()) {
-                if (detectSmartyTemplate(child)) {
+                if (detectSmartyTemplate(child, visibilityQuery)) {
                     return true;
                 }
             } else if (hasSmartyTemplateExtension(child)) {
@@ -248,7 +250,8 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
             long startTime = System.currentTimeMillis();
             LOGGER.log(Level.FINEST, "Smarty templates autodetection started.");
             FileObject sourceDirectory = phpModule.getSourceDirectory();
-            if (sourceDirectory != null && detectSmartyTemplate(sourceDirectory)) {
+            PhpVisibilityQuery visibilityQuery = Queries.getVisibilityQuery(phpModule);
+            if (sourceDirectory != null && detectSmartyTemplate(sourceDirectory, visibilityQuery)) {
                 NotificationDisplayer.getDefault().notify(
                         Bundle.SmartyPhpFrameworkProvider_tit_smarty_template_autodetection(),
                         NotificationDisplayer.Priority.LOW.getIcon(),
