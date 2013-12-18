@@ -48,92 +48,85 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.text.Line;
-
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
-import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
-import org.netbeans.modules.cnd.debugger.gdb2.actions.GdbStartActionProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
-
-
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointMsg;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointOp;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointPlan;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
-
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIUserInteraction;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
-
-import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointMsg;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointOp;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointPlan;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointProvider;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
+import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
+import org.netbeans.modules.cnd.debugger.gdb2.actions.GdbStartActionProvider;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIUserInteraction;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -1011,6 +1004,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
     }
 
+    // command typed directly in terminal
+    private final class TermCommandImpl extends MiCommandImpl {
+
+        public TermCommandImpl(String cmd) {
+            super(cmd);
+        }  
+
+        @Override
+        protected void onError(MIRecord record) {
+            String errMsg = getErrMsg(record);
+            if (!errMsg.isEmpty()) {
+                gdb.tap().printError(errMsg);
+            } else {
+                super.onError(record);
+            } 
+        }
+    }
+       
     /**
      * Handle the output of "info proc".
      */
@@ -4222,8 +4233,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
                     if (template == null) {
-                        // we are unable to create handlers for breakpoints created in console
-                        return;
+                        // prepare to create handlers for breakpoints created in console
+                        template = prepareTemplate(result);
                     }
 		    handler = handlerExpert.newHandler(template, result, null);
 		    break;
@@ -4285,6 +4296,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    private NativeBreakpoint prepareTemplate(MIResult result) {
+        NativeBreakpointType type;
+        MIValue bkptValue = result.value();
+        MITList props = bkptValue.asTuple();
+        String typeVal = props.getConstValue("type"); //NOI18N
+        if ("catchpoint".equals(typeVal)) { //NOI18N
+            type = new SysCallBreakpointType();
+        } else if ("breakpoint".equals(typeVal)) { //NOI18N
+            type = new LineBreakpointType();
+            String origLoc = props.getConstValue("original-location"); //NOI18N
+            if (origLoc != null) {
+                if (origLoc.startsWith("*")) { //NOI18N
+                    type = new InstructionBreakpointType();
+                } else if (!origLoc.contains(":")) { //NOI18N
+                    type = new FunctionBreakpointType();
+                }
+            }
+        } else {
+            type = new ExceptionBreakpointType();
+        }
+        return type.newInstance(NativeBreakpoint.SUBBREAKPOINT);
+    }
+    
     private void deleteForReplace(int rt, Handler targetHandler){
         // Don't use
         //	postDeleteHandler(hid);
@@ -5006,6 +5040,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// no-op for now
     }
     
+    /*package*/void sendTerminalTypedCommand(String termLine) {
+        TermCommandImpl cmd = new TermCommandImpl(termLine);
+        gdb.sendCommand(cmd);
+    }
+     
     private void send(String commandStr, boolean reportError) {
         MiCommandImpl cmd = new MiCommandImpl(commandStr);
         if (!reportError) {
