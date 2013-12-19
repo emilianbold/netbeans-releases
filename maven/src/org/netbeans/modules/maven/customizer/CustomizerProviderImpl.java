@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.customizer;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -98,6 +99,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -144,7 +146,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
                "TIT_Unloadable=Project unlodable"
     })
     @Override
-    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
+    public void showCustomizer( final String preselectedCategory, String preselectedSubCategory ) {
         if (project.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
             NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(TXT_Unloadable(), TIT_Unloadable());
             nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
@@ -165,20 +167,27 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
 
 //            handle.getPOMModel().startTransaction();
 //            project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
-            OptionListener listener = new OptionListener();
-            Lookup context = Lookups.fixed(new Object[] { project, handle, handle2});
-            Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N
-                                             context, 
-                                             preselectedCategory, 
-                                             new ActionListener() {
-                                                @Override
-                                                public void actionPerformed(ActionEvent ae) {
-                                                    //noop
-                                                }
-                                            }, listener, HELP_CTX);
-            dialog.setTitle( TIT_Project_Properties(ProjectUtils.getInformation(project).getDisplayName()));
-            dialog.setModal(true);
-            dialog.setVisible(true);
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                @Override
+                public void run() {
+                    assert EventQueue.isDispatchThread();
+                    OptionListener listener = new OptionListener();
+                    Lookup context = Lookups.fixed(new Object[] { project, handle, handle2});
+                    Dialog dialog = ProjectCustomizer.createCustomizerDialog("Projects/org-netbeans-modules-maven/Customizer", //NOI18N
+                                                     context,
+                                                     preselectedCategory,
+                                                     new ActionListener() {
+                                                        @Override
+                                                        public void actionPerformed(ActionEvent ae) {
+                                                            //noop
+                                                        }
+                                                    }, listener, HELP_CTX);
+                    dialog.setTitle( TIT_Project_Properties(ProjectUtils.getInformation(project).getDisplayName()));
+                    dialog.setModal(true);
+                    dialog.setVisible(true);
+                }
+            });
         } catch (FileNotFoundException ex) {
             if ("No pom file exists.".equals(ex.getMessage())) { //NOI18N
                 //#157020
