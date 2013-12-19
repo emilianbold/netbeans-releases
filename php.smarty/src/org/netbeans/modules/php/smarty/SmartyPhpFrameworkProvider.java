@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -231,6 +232,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @CheckForNull
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean getSmartyPropertyEnabled(PhpModule phpModule) {
         Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
         String available = preferences.get(PROP_SMARTY_AVAILABLE, null);
