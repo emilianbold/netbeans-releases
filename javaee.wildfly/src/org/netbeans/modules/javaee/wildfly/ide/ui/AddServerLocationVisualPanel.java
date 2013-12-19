@@ -83,6 +83,20 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
                 locationChanged();
             }                    
         });
+        configurationTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                locationChanged();
+            }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                locationChanged();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                locationChanged();
+            }                    
+        });
     }
     
     public String getInstallLocation() {

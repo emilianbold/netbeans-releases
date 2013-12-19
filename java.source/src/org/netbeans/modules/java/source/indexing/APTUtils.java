@@ -418,19 +418,22 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (cp == null) {
             cp = ClassPath.EMPTY;
         }
-        for (FileObject fo : cp.getRoots()) {
-            final URL u = fo.toURL();
-            final File f = FileUtil.archiveOrDirForURL(u);
-            if (f != null) {
-                if (b.length() > 0) {
-                    b.append(File.pathSeparatorChar);
+        for (final ClassPath.Entry cpe : cp.entries()) {
+            final FileObject fo = cpe.getRoot();
+            if (fo != null) {
+                final URL u = fo.toURL();
+                final File f = FileUtil.archiveOrDirForURL(u);
+                if (f != null) {
+                    if (b.length() > 0) {
+                        b.append(File.pathSeparatorChar);
+                    }
+                    b.append(f.getAbsolutePath());
+                } else {
+                    if (b.length() > 0) {
+                        b.append(File.pathSeparatorChar);
+                    }
+                    b.append(u);
                 }
-                b.append(f.getAbsolutePath());
-            } else {
-                if (b.length() > 0) {
-                    b.append(File.pathSeparatorChar);
-                }
-                b.append(u);
             }
         }
         return b.toString();

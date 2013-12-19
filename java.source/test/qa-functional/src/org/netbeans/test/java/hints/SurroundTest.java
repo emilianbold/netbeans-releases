@@ -50,6 +50,8 @@ import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -69,7 +71,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(13,1);
+	editor.setCaretPosition(52,1);
 	String pattern = ".*"+
         "try \\{.*"+
         "    System.out.println\\(\"line1\"\\);.*"+
@@ -85,7 +87,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(18,1);
+	editor.setCaretPosition(57,1);
 	String pattern = ".*"+
         "FileReader fr = null;.*"+
         "try \\{.*"+
@@ -106,7 +108,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(24,1);
+	editor.setCaretPosition(62,1);
 	String pattern = ".*"+
         "try \\{.*"+
         "    new FileReader\\(\"b\"\\);.*"+
@@ -123,7 +125,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(34,1);
+	editor.setCaretPosition(73,1);
 	String pattern = ".*"+
         "\\} catch\\(FileNotFoundException exception\\) \\{.*"+
         "    try \\{.*"+
@@ -139,7 +141,7 @@ public class SurroundTest extends HintsTestCase {
         String file = "Surround";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(13,1);
+	editor.setCaretPosition(52,1);
 	String pattern = ".*"+
         "System.out.println\\(\"line1\"\\);.*"+
         "try \\{.*"+
@@ -211,7 +213,7 @@ public class SurroundTest extends HintsTestCase {
         TestRunner.run(SurroundTest.class);       
     }
     
-    public static Test suite() {
+    public static Test suite() {        
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(SurroundTest.class).enableModules(".*").clusters(".*"));
     }
