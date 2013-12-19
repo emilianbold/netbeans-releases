@@ -41,72 +41,73 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.wildfly;
+package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import java.util.Vector;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+import java.io.IOException;
+import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
+
 /**
- *
- * @author whd
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBTargetModuleID implements TargetModuleID {
+public class StartModuleCookieImpl implements StartModuleCookie {
 
-    private Target target;
-    private String jar_name;
-    private String context_url;
 
-    private Vector childs = new Vector();
-    private TargetModuleID  parent = null;
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("JBoss start", 1); // NOI18N
 
-    JBTargetModuleID(Target target) {
-        this(target, "");
-    }
+    private final String fileName;
 
-    public JBTargetModuleID(Target target, String jar_name) {
-        this.target = target;
-        this.jar_name = jar_name;
+    private final Lookup lookup;
 
-    }
-    public void setContextURL(String context_url) {
-        this.context_url = context_url;
-    }
-    public void setJARName(String jar_name) {
-        this.jar_name = jar_name;
+    private final ModuleType type;
+
+    private boolean isRunning;
+
+    public StartModuleCookieImpl(String fileName, Lookup lookup) {
+        this(fileName, ModuleType.WAR, lookup);
     }
 
-    public void setParent(JBTargetModuleID parent) {
-        this.parent = parent;
-
+    public StartModuleCookieImpl(String fileName, ModuleType type, Lookup lookup) {
+        this.lookup = lookup;
+        this.fileName = fileName;
+        this.type = type;
+        this.isRunning = false;
     }
 
-    public void addChild(JBTargetModuleID child) {
-        childs.add(child);
-        child.setParent(this);
+    @Override
+    public Task start() {
+        final WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
+        final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(StartModuleCookieImpl.class,
+                "LBL_StartProgress", nameWoExt));
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                isRunning = true;
+                try {
+                    dm.getClient().startModule(fileName);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                handle.finish();
+                isRunning = false;
+            }
+        };
+        handle.start();
+        return PROCESSOR.post(r);
     }
 
-    public TargetModuleID[] getChildTargetModuleID() {
-        return (TargetModuleID[]) childs.toArray(new TargetModuleID[childs.size()]);
+    public boolean isRunning() {
+        return isRunning;
     }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public String getModuleID() {
-        return jar_name ;
-    }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID getParentTargetModuleID() {
 
-        return parent;
-    }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target getTarget() {
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public String getWebURL() {
-        return context_url;//"http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    public String toString() {
-        return getModuleID() +  hashCode();
-    }
 }
