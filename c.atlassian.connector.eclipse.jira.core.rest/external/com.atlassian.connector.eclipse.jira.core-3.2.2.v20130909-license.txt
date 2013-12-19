@@ -1,5 +1,5 @@
 Name: Jira  Connector
-Version: 3.0.4
+Version: 3.2.2
 License: EPL-v10
 OSR: 11720
 Origin: http://confluence.atlassian.com/display/IDEPLUGIN/
