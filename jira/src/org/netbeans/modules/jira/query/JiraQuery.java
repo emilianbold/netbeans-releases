@@ -110,12 +110,6 @@ public class JiraQuery {
             // enforce controller creation
             getController();
         }
-        if(repository instanceof KenaiRepository) {
-            boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-            if(autoRefresh) {
-                getRepository().scheduleForRefresh(this);
-            }
-        }
     }
 
     public String getDisplayName() {

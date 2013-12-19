@@ -43,11 +43,7 @@
  */
 package org.netbeans.modules.jira.options;
 
-import java.awt.Color;
-import java.awt.Image;
-import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -59,10 +55,6 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
     /** Creates new form SvnOptionsPanel */
     public JiraOptionsPanel() {
         initComponents();
-        errorLabel.setForeground(new Color(153,0,0));
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/jira/resources/error.gif"); //NOI18N
-        errorLabel.setIcon(new ImageIcon(img));
-        errorLabel.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -75,32 +67,10 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
         jScrollPane2.setBorder(null);
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.jLabel1.text")); // NOI18N
-
-        issuesTextField.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.issuesTextField.text")); // NOI18N
-        issuesTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                issuesTextFieldActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.jLabel3.text")); // NOI18N
-
-        queriesTextField.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.queriesTextField.text")); // NOI18N
-        queriesTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                queriesTextFieldActionPerformed(evt);
-            }
-        });
-
-        errorLabel.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.errorLabel.text")); // NOI18N
 
         buttonGroup1.add(xmlrpcRadioButton);
         xmlrpcRadioButton.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.xmlrpcRadioButton.text")); // NOI18N
@@ -118,82 +88,38 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(73, 73, 73)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(73, 73, 73)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(errorLabel)))
-                        .addGap(0, 194, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(restRadioButton)
-                            .addComponent(xmlrpcRadioButton)
-                            .addComponent(jLabel4))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap())
+                    .addComponent(jLabel2)
+                    .addComponent(restRadioButton)
+                    .addComponent(xmlrpcRadioButton)
+                    .addComponent(jLabel4)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel1)
-                            .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(restRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(xmlrpcRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4)))
-                .addGap(28, 28, 28)
-                .addComponent(errorLabel)
+                .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(restRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(xmlrpcRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4)
+                .addGap(50, 50, 50)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void issuesTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_issuesTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_issuesTextFieldActionPerformed
-
-    private void queriesTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queriesTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_queriesTextFieldActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    final javax.swing.JLabel errorLabel = new javax.swing.JLabel();
-    final javax.swing.JTextField issuesTextField = new javax.swing.JTextField();
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane2;
-    final javax.swing.JTextField queriesTextField = new javax.swing.JTextField();
     final javax.swing.JRadioButton restRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JRadioButton xmlrpcRadioButton = new javax.swing.JRadioButton();
     // End of variables declaration//GEN-END:variables

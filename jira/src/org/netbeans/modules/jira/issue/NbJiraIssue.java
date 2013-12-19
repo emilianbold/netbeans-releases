@@ -500,7 +500,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        repository.scheduleForRefresh(getNbTask());
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getKey()});
     }
 
@@ -513,7 +512,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 editorClosed();
             }
         });
-        repository.stopRefreshing(getNbTask());
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getKey()});
     }
 

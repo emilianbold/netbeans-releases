@@ -626,10 +626,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void opened() {
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(query.getDisplayName());
-        if(autoRefresh) {
-            scheduleForRefresh();
-        }
         if(query.isSaved()) {
             setIssueCount(query.getSize()); // XXX this probably won't work
                                             // if the query is alredy open and
@@ -659,17 +655,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             if(refreshTask != null) {
                 refreshTask.cancel();
             }
-        }
-        if(query.isSaved()) {
-            if(!(query.getRepository() instanceof KenaiRepository)) {
-                repository.stopRefreshing(query);
-            }
-        }
-    }
-
-    protected void scheduleForRefresh() {
-        if(query.isSaved()) {
-            repository.scheduleForRefresh(query);
         }
     }
 

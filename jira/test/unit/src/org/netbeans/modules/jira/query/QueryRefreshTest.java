@@ -116,66 +116,6 @@ public class QueryRefreshTest extends NbTestCase {
         assertFalse(lh.isDone());    // but this one wasn't yet
     }
 
-    public void testQueryOpenAndRefresh() throws Throwable {
-        final String summary = "summary" + System.currentTimeMillis();
-        final String queryName = "refreshtest";
-
-        JiraRepository repo = JiraTestUtil.getRepository();
-        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
-        FilterDefinition fd = cp.createFilterDefinition();
-        fd.setContentFilter(cp.createContentFilter(summary, true, false, false, false));
-        final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
-//        selectTestProject(jq);
-        assertEquals(0, jq.getIssues().size());
-        jq.refresh(); // refresh the query - so it won't be refreshed via first time open
-        
-        Collection<NbJiraIssue> issues = jq.getIssues();
-        assertEquals(0, issues.size());
-
-        JiraTestUtil.createIssue(summary, "desc", "Bug");
-
-        JiraConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
-        JiraConfig.getInstance().setQueryAutoRefresh(queryName, true);
-
-        LogHandler refreshHandler = new LogHandler("refresh finish -", LogHandler.Compare.STARTS_WITH, 120);
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
-        Jira.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                // init columndescriptors before opening query to prevent some "do not call in awt asserts"
-                NbJiraIssue.getColumnDescriptors(JiraTestUtil.getRepository());
-                JiraUtils.openQuery(jq);
-            }
-        }).waitFinished();
-        schedulingHandler.waitUntilDone();
-        refreshHandler.waitUntilDone();
-
-        assertTrue(schedulingHandler.isDone());
-        assertTrue(refreshHandler.isDone());
-
-        issues = jq.getIssues();
-        assertEquals(1, issues.size());
-    }
-
-    public void testKenaiQueryNoAutoRefresh() throws Throwable {
-        final String summary = "summary" + System.currentTimeMillis();
-        final String queryName = "refreshtest";
-        JiraConfig.getInstance().setQueryRefreshInterval(0); // would mean refresh imediately
-        JiraConfig.getInstance().setQueryAutoRefresh(queryName, false);
-
-        LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH, 120);
-
-        // create query
-        JiraRepository repo = JiraTestUtil.getRepository();
-        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
-        FilterDefinition fd = cp.createFilterDefinition();
-        fd.setContentFilter(cp.createContentFilter(summary, true, false, false, false));
-        final JiraQuery jq = new KenaiQuery(queryName, repo, fd, JiraTestUtil.TEST_PROJECT, true, false);
-
-        // query was created yet it wasn't refreshed
-        assertFalse(schedulingHandler.isDone());
-
-    }
-
     // XXX can't get this running
 //    public void testKenaiQueryAutoRefresh() throws Throwable {
 //        final String summary = "summary" + System.currentTimeMillis();

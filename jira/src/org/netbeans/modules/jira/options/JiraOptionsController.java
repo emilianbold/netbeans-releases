@@ -44,17 +44,12 @@
 package org.netbeans.modules.jira.options;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import javax.swing.AbstractAction;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.REST;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
-import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.LifecycleManager;
 import org.openide.awt.Notification;
@@ -66,11 +61,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public final class JiraOptionsController extends OptionsPanelController implements DocumentListener, ActionListener {
+public final class JiraOptionsController extends OptionsPanelController {
     
     private final JiraOptionsPanel panel;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private boolean valid = false;
     private Notification restartNotification;
 
     public JiraOptionsController() {
@@ -79,15 +73,6 @@ public final class JiraOptionsController extends OptionsPanelController implemen
     
     @Override
     public void update() {
-        panel.issuesTextField.getDocument().removeDocumentListener(this); // #163955 - do not fire change events on load
-        panel.queriesTextField.getDocument().removeDocumentListener(this);
-        panel.issuesTextField.setText(JiraConfig.getInstance().getIssueRefreshInterval() + "");  // NOI18N
-        panel.queriesTextField.setText(JiraConfig.getInstance().getQueryRefreshInterval() + ""); // NOI18N
-        panel.issuesTextField.getDocument().addDocumentListener(this);
-        panel.queriesTextField.getDocument().addDocumentListener(this);
-        panel.restRadioButton.addActionListener(this);
-        panel.xmlrpcRadioButton.addActionListener(this);
-  
         JiraConnectorProvider.Type connectorType = JiraConfig.getInstance().getActiveConnector();
         switch(connectorType) {
             case REST:
@@ -101,14 +86,6 @@ public final class JiraOptionsController extends OptionsPanelController implemen
     
     @Override
     public void applyChanges() {
-        String queryRefresh = panel.queriesTextField.getText().trim();
-        int r = queryRefresh.equals("") ? 0 : Integer.parseInt(queryRefresh);   // NOI18N
-        JiraConfig.getInstance().setQueryRefreshInterval(r);
-
-        String issueRefresh = panel.issuesTextField.getText().trim();
-        r = issueRefresh.equals("") ? 0 : Integer.parseInt(issueRefresh);       // NOI18N
-        JiraConfig.getInstance().setIssueRefreshInterval(r);
-        
         boolean connectorChanged = connectorChanged();
         JiraConnectorProvider.Type currentConnector = JiraConfig.getInstance().getActiveConnector();
         if(panel.restRadioButton.isSelected()) {
@@ -129,31 +106,12 @@ public final class JiraOptionsController extends OptionsPanelController implemen
     
     @Override
     public boolean isValid() {
-        validate(false);
-        return valid;
-    }
-
-    private boolean isValidRefreshValue(String s) {
-        if(!s.equals("")) {                                                     // NOI18N
-            try {
-                int i = Integer.parseInt(s);
-                if(i < 5) {
-                    panel.errorLabel.setText(NbBundle.getMessage(JiraOptionsController.class, "MSG_MUST_BE_GREATER_THEN_5"));
-                    return false;
-                }
-            } catch (NumberFormatException e) {
-                panel.errorLabel.setText(NbBundle.getMessage(JiraOptionsController.class, "MSG_INVALID_VALUE"));
-                return false;
-            }
-        }
         return true;
     }
 
     @Override
     public boolean isChanged() {
-        return connectorChanged() ||
-               !panel.issuesTextField.getText().trim().equals(JiraConfig.getInstance().getIssueRefreshInterval() + "") ||  // NOI18N
-               !panel.queriesTextField.getText().trim().equals(JiraConfig.getInstance().getQueryRefreshInterval() + "");   // NOI18N
+        return connectorChanged();
     }
         
     private boolean connectorChanged() {
@@ -187,44 +145,6 @@ public final class JiraOptionsController extends OptionsPanelController implemen
         support.removePropertyChangeListener(l);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        validate(true);
-    }
-    
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        validate(true);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        validate(true);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-        validate(true);
-    }
-
-    private void validate(boolean fireEvents) {
-        boolean oldValid = valid;
-        panel.errorLabel.setVisible(false);
-        panel.errorLabel.setText("");                                           // NOI18N
-
-        String queryRefresh = panel.queriesTextField.getText().trim();
-        String issueRefresh = panel.issuesTextField.getText().trim();
-
-        valid = isValidRefreshValue(queryRefresh) &&
-                isValidRefreshValue(issueRefresh);
-
-        panel.errorLabel.setVisible(!valid);
-
-        if(fireEvents && oldValid != valid) {
-            support.firePropertyChange(new PropertyChangeEvent(this, OptionsPanelController.PROP_VALID, oldValid, valid));
-        }
-    }
-    
     @NbBundle.Messages({"CTL_Restart=Restart IDE",
                         "CTL_RestartClickHere=Click here to restart IDE before the JIRA connector change will have any effect."})
     private void askForRestart() {

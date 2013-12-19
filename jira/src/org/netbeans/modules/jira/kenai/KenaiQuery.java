@@ -65,10 +65,6 @@ public class KenaiQuery extends JiraQuery {
         this.project = project;
         this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         controller = createControler(repository, this, jf);
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
-        }
     }
 
     @Override
