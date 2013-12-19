@@ -295,4 +295,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new IntroduceSuggestion(), "testIssue239277.php", "Bat::$bar^z;");
     }
 
+    public void testIssue239640() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue239640.php", "public function __construct(array $get = array(), array $post = array()^);");
+    }
+
 }
