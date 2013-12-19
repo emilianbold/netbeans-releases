@@ -132,7 +132,7 @@ public class GuiUtilities {
         // java project
         opc.selectProject(Bundle.getString(
                 "org.netbeans.modules.java.j2seproject.ui.wizards.Bundle",
-                "Templates/Project/Standard/emptyJ2SE.xml"));
+                "TXT_NewJavaApp"));
         opc.next();
         
         // set project name, no main class, created in workdir
@@ -201,8 +201,7 @@ public class GuiUtilities {
         
         op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,
                 "Templates/Classes"));
-        op.selectFileType(Bundle.getString(JAVA_BUNDLE_PATH,
-                "Templates/Classes/Package"));
+        op.selectFileType("Java Package");
         op.next();
         
         JTextFieldOperator tfp = new JTextFieldOperator(op, 0);

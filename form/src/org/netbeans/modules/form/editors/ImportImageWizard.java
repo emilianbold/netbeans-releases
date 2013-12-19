@@ -53,6 +53,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
@@ -357,7 +359,15 @@ class ImportImageWizard extends WizardDescriptor {
                 cpfChooser.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1); // NOI18N
             }
             if (setTargetFolder) {
-                cpfChooser.setSelectedFile(wizard.targetFolder);
+                try {
+                    cpfChooser.setSelectedFile(wizard.targetFolder);
+                } catch (IllegalArgumentException ex) {
+                    // Bug 216368 - sometimes targetFolder (package selected in icon editor) is not
+                    // found among source roots determined from execution classpath in ClassPathFileChooser
+                    // Cause unknown (SourceForBinaryQuery giving bad results?) but not a reason to throw exception on user.
+                    Logger.getLogger(ImportImageWizard.class.getName()).log(Level.INFO,
+                            "Folder "+wizard.targetFolder+" not found on classpath of "+wizard.fileInProject, ex); // NOI18N
+                }
                 setTargetFolder = false;
             }
             return cpfChooser;

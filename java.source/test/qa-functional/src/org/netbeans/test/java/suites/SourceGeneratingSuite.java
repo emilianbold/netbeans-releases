@@ -68,6 +68,8 @@ public class SourceGeneratingSuite {
                 .addTest(MethodElem.class)
                 .addTest(SourceElem.class)
                 .addTest(SuperClassInterfaces.class)
+                .enableModules(".*")
+                .clusters(".*")
                 );
     }
 }

@@ -1,4 +1,4 @@
-Type Element: testCreateOuterInterface 148 307
+Type Element: testCreateOuterInterface 2332 2491
 public class testCreateOuterInterface {
     
     /** Creates a new instance of testCreateOuterInterface */
@@ -6,8 +6,6 @@ public class testCreateOuterInterface {
     }
     
 }
-Executable Element: <init> 259 300
+Executable Element: <init> 2443 2484
 public testCreateOuterInterface() {
     }
-Type Element: Iface 310 328
-interface Iface{ }
