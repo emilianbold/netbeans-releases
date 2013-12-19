@@ -98,6 +98,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.maven.customizer.Bundle.*;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -105,8 +106,15 @@ import org.openide.util.NbBundle.Messages;
  *for panel creation delegates to M2CustomizerPanelProvider instances.
  * @author Milos Kleint 
  */
-@ProjectServiceProvider(service={CustomizerProvider.class, CustomizerProviderImpl.class}, projectType="org-netbeans-modules-maven")
-public class CustomizerProviderImpl implements CustomizerProvider {
+@ProjectServiceProvider(
+    service = {
+        CustomizerProvider.class,
+        CustomizerProvider2.class,
+        CustomizerProviderImpl.class
+    },
+    projectType = "org-netbeans-modules-maven"
+)
+public class CustomizerProviderImpl implements CustomizerProvider2 {
     public static final HelpCtx HELP_CTX = new HelpCtx("maven_settings");
     
     private final Project project;
@@ -136,6 +144,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                "TXT_Unloadable=Project is unloadable, you have to fix the problems before accessing the project properties dialog. Show Problem Resolution dialog?",
                "TIT_Unloadable=Project unlodable"
     })
+    @Override
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         if (project.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
             NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(TXT_Unloadable(), TIT_Unloadable());
