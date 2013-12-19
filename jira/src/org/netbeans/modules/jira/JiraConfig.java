@@ -45,6 +45,7 @@ package org.netbeans.modules.jira;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import org.netbeans.modules.jira.client.spi.Priority;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
@@ -63,8 +64,7 @@ public class JiraConfig {
     private static final String QUERY_LAST_REFRESH  = "jira.query_last_refresh";    // NOI18N
     private static final String QUERY_AUTO_REFRESH  = "jira.query_auto_refresh_";   // NOI18N
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
-    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//    private static final String ACTIVE_CONNECTOR_CNB= "jira.active_connector";      // NOI18N    
+    private static final String ACTIVE_CONNECTOR_CNB= "jira.active_connector";      // NOI18N    
     private static final String PREF_SECTION_COLLAPSED = "collapsedSection"; //NOI18N
     private static final String PREF_TASK = "task."; //NOI18N
     private static final String DELIMITER           = "<=>";                        // NOI18N
@@ -166,22 +166,21 @@ public class JiraConfig {
         return QUERY_NAME + repositoryID + DELIMITER + queryName;
     }
 
-    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//    public JiraConnectorProvider.Type getActiveConnector() {
-//        String cnb = getPreferences().get(ACTIVE_CONNECTOR_CNB, null);
-//        if(cnb == null) {
-//            return null;
-//        }
-//        JiraConnectorProvider.Type[] vs = JiraConnectorProvider.Type.values();
-//        for (JiraConnectorProvider.Type type : vs) {
-//            if(cnb.equals(type.getCnb())) {
-//                return type;
-//            }
-//        }
-//        return JiraConnectorProvider.Type.XMLRPC;
-//    }
-//    
-//    public void setActiveConnector(JiraConnectorProvider.Type type) {
-//        getPreferences().put(ACTIVE_CONNECTOR_CNB, type.getCnb());
-//    }    
+    public JiraConnectorProvider.Type getActiveConnector() {
+        String cnb = getPreferences().get(ACTIVE_CONNECTOR_CNB, JiraConnectorProvider.Type.XMLRPC.getCnb());
+        if(cnb == null) {
+            return JiraConnectorProvider.Type.XMLRPC;
+}
+        JiraConnectorProvider.Type[] vs = JiraConnectorProvider.Type.values();
+        for (JiraConnectorProvider.Type type : vs) {
+            if(cnb.equals(type.getCnb())) {
+                return type;
+            }
+        }
+        return JiraConnectorProvider.Type.XMLRPC;
+    }
+    
+    public void setActiveConnector(JiraConnectorProvider.Type type) {
+        getPreferences().put(ACTIVE_CONNECTOR_CNB, type.getCnb());
+    }    
 }

@@ -42,9 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.jira.xmlrpc;
 
-import org.openide.modules.ModuleInstall;
+import java.util.logging.Level;
+import org.netbeans.modules.jira.client.spi.JiraConnectorLifecycleManager;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.openide.util.Exceptions;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkUtil;
 
 
 /**
@@ -53,27 +60,27 @@ import org.openide.modules.ModuleInstall;
  *
  * <p>It's registered and instantiated from module manifest.
  *
- * @author Tomas Stupka, Ondra Vrabec
+ * @author Tomas Stupka
  */
-public final class ModuleLifecycleManager extends ModuleInstall  {
-    
-    static boolean instantiated = false;
-    @Override
-    public void close() {
-        if(!instantiated) {
-            return;
-        }
-        Jira.getInstance().shutdown();
-    }
+public final class XMLRPCConnectorLifecycleManager extends JiraConnectorLifecycleManager {
 
     @Override
-    public void validate() throws IllegalStateException {
-
+    public void validate() {
     }
 
     @Override
     public void restored() {
-        
+        if( JiraConnectorSupport.getActiveConnector() != JiraConnectorProvider.Type.XMLRPC ) {
+            // HACK! this one shouldn't be the active connector!
+            // we can't have both jira connectors sunning at the same time (equinox complains),
+            // the Jira module guarantees that this bundle isn't accessed 
+            Bundle bundle = FrameworkUtil.getBundle(com.atlassian.connector.eclipse.internal.jira.core.JiraCorePlugin.class);
+            try {
+                bundle.stop();
+            } catch (BundleException ex) {
+                JiraConnectorSupport.LOG.log(Level.WARNING, null, ex);
+            }
+        }
     }
     
 }

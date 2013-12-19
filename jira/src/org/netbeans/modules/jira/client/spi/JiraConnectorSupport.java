@@ -42,40 +42,15 @@
 
 package org.netbeans.modules.jira.client.spi;
 
-import java.awt.HeadlessException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Collection;
-import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraConnectorFactory;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.REST;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -85,7 +60,7 @@ public final class JiraConnectorSupport {
     
     private static JiraConnectorSupport instance;
 
-    protected final static Logger LOG = Logger.getLogger(JiraConnectorProvider.class.getName());
+    public final static Logger LOG = Logger.getLogger(JiraConnectorProvider.class.getName());
     private JiraConnectorProvider connector;
     private JiraConnectorProvider.Type connectorType;
 
@@ -98,174 +73,55 @@ public final class JiraConnectorSupport {
         return instance;
     }
 
-    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//    public synchronized void setConnectorType(JiraConnectorProvider.Type type) {
-//        this.connectorType = type;
-//    }
-    
     public synchronized JiraConnectorProvider getConnector() {
         if (connector == null) {
             if(connectorType == null) {
-                connectorType = XMLRPC;
+                connectorType = JiraConfig.getInstance().getActiveConnector();
             }
             connector = forType(connectorType);
-            // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//            if(connector == null) {
-//                Jira.LOG.log(Level.WARNING, "Connector {0} not available for JIRA", connectorType.getCnb());
-//                switch(connectorType) {
-//                    case REST:
-//                        connectorType = XMLRPC;
-//                        tryFallback();
-//                        break;
-//                    case XMLRPC:
-//                        connectorType = REST;
-//                        tryFallback();
-//                        break;
-//                }
-//            }
-            Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", connector != null ? connector.getType() : "NULL");
+            if(connector == null) {
+                Jira.LOG.log(Level.WARNING, "Connector {0} not available for JIRA", connectorType.getCnb());
+                switch(connectorType) {
+                    case REST:
+                        connectorType = XMLRPC;
+                        tryFallback();
+                        break;
+                    case XMLRPC:
+                        connectorType = REST;
+                        tryFallback();
+                        break;
+        }
+            }
         }
         return connector;
     }
 
-    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//    private void tryFallback() {
-//        Jira.LOG.log(Level.WARNING, "Falling back on ", connectorType.getCnb());
-//        JiraConfig.getInstance().setActiveConnector(connectorType);
-//        enableConnector(connectorType);
-//        connector = forType(connectorType);
-//    }
+    private void tryFallback() {
+        Jira.LOG.log(Level.WARNING, "Falling back on ", connectorType.getCnb());
+        JiraConfig.getInstance().setActiveConnector(connectorType);
+        connector = forType(connectorType);
+    }
     
-    /**
-     *
-     * @param type
-     * @return
-     */
     private JiraConnectorProvider forType(JiraConnectorProvider.Type type) {
-        Collection<? extends JiraConnectorProvider> connectors = Lookup.getDefault().lookupAll(JiraConnectorProvider.class);
+        Collection<? extends JiraConnectorFactory> connectors = Lookup.getDefault().lookupAll(JiraConnectorFactory.class);
         if(LOG.isLoggable(Level.FINE)) {
-            for (JiraConnectorProvider p : connectors) {
+            for (JiraConnectorFactory p : connectors) {
                 LOG.log(Level.FINE, "registered JIRA Connector : {0}", p.toString());
             }
         }
-        for (JiraConnectorProvider p : connectors) {
-            if(p.getType() == type) {
-                return p;
+        
+        for (JiraConnectorFactory f : connectors) {
+            if(f.forType() == type) {
+                // we made sure there will be only 1 conector for a session
+                JiraConnectorProvider c = f.create(); 
+                Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", c != null ? f.forType() : "NULL");
+                return c;
             }
         }
-        return null; // XXX handle this
+        return null; 
     }
 
-    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
-//    @NbBundle.Messages({"MSG_Install_Warning_Title=JIRA Connector installation",
-//                       "# {0} - to be enabled a plugins display name", "# {1} - to be disabled a plugins display name",
-//                       "MSG_Install_Warning=In order to finish installing the {0} functionality,\n"
-//                               + "the IDE needs to disable the existing {1} functionality.\n"
-//                               + "You can switch back to {1}\n"
-//                               + "by enabling it in (Tools > Plugins).\n\n"
-//                               + "It is neccessary to restart the IDE after this installation completes."})
-//    public static JiraConnectorProvider.Type enableConnector(JiraConnectorProvider.Type toEnable) {
-//        JiraConnectorProvider.Type toDisable = toEnable == XMLRPC ? REST : XMLRPC;
-//        
-//        if(changeConnectorConfig(toEnable, true)) {
-//            JiraConfig.getInstance().setActiveConnector(toEnable);
-//            changeConnectorConfig(toDisable, false);
-//            return toEnable;
-//        } else {
-//            Jira.LOG.log(Level.FINE, "JIRA did no succed disabling {0}. Falling back on ", toDisable.getCnb());
-//            changeConnectorConfig(toDisable, true);
-//            return toDisable;
-//        }
-//    }
-//
-//    public static boolean changeConnectorConfig(JiraConnectorProvider.Type type, boolean enable) {
-//        String cnb = type.getCnb();
-//        
-//        Jira.LOG.log(Level.INFO, "JIRA is trying to {0} module {1}", new Object[] {enable ? "enable" : "disable", cnb});
-//        
-//        FileLock lock = null;
-//        OutputStream os = null;
-//        try {
-//            String newModuleXML = "Modules/" + cnb.replace('.', '-') + ".xml"; // NOI18N
-//            FileObject fo = FileUtil.getConfigFile(newModuleXML);
-//            if (fo == null) {
-//                return true;
-//            }
-//            Document document = readModuleDocument(fo);
-//            NodeList list = document.getDocumentElement().getElementsByTagName("param"); // NOI18N
-//            int n = list.getLength();
-//            for (int j = 0; j < n; j++) {
-//                Element node = (Element) list.item(j);
-//                if ("enabled".equals(node.getAttribute("name"))) {
-//                    // NOI18N
-//                    Text text = (Text) node.getChildNodes().item(0);
-//                    String value = text.getNodeValue();
-//                    if (Boolean.valueOf(value) != enable) {
-//                        text.setNodeValue(Boolean.valueOf(enable).toString());
-//
-//                        lock = fo.lock();
-//                        os = fo.getOutputStream(lock);
-//                        XMLUtil.write(document, os, "UTF-8"); // NOI18N
-//            
-//                        if(enable) {
-//                            Jira.LOG.log(Level.INFO, "JIRA enabled module {0}", cnb);
-//                        } else {
-//                            Jira.LOG.log(Level.INFO, "JIRA disabled module {0}", cnb);
-//                        }
-//                        break;
-//                    } else {
-//                        Jira.LOG.log(Level.INFO, " {0} already {1}", new Object[] {cnb, enable ? "enabled" : "disabled"});
-//                    }
-//                } 
-//            }
-//            return true;
-//
-//        }catch (ParserConfigurationException | SAXException | IOException | DOMException | MissingResourceException | HeadlessException e) {
-//            Jira.LOG.log(Level.INFO, null, e);
-//        } finally {
-//            if (os != null) try { os.close(); } catch (IOException ex) {}
-//            if (lock != null) lock.releaseLock();
-//        }
-//        return false;
-//    }
-//
-//    private static Document readModuleDocument(FileObject fo) throws ParserConfigurationException, SAXException, IOException {
-//        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-//        dbf.setValidating(false);
-//        DocumentBuilder parser = dbf.newDocumentBuilder();
-//        
-//        ParserSupport ps = new ParserSupport();
-//        parser.setEntityResolver(ps);
-//        parser.setErrorHandler(ps);
-//        Document document;
-//        try (InputStream is = fo.getInputStream()) {
-//            document = parser.parse(is);
-//        }
-//        return document;
-//    }
-//
-//    private static class ParserSupport implements ErrorHandler, EntityResolver {
-//        @Override
-//        public InputSource resolveEntity(String publicId, String systemId) {
-//            return new InputSource(new ByteArrayInputStream(new byte[0]));
-//        }
-//
-//        @Override
-//        public void error(SAXParseException exception) {
-//            Jira.LOG.log(Level.INFO, null, exception);
-//        }
-//
-//        @Override
-//        public void fatalError(SAXParseException exception) {
-//            Jira.LOG.log(Level.INFO, null, exception);
-//        }
-//
-//        @Override
-//        public void warning(SAXParseException exception) {
-//            Jira.LOG.log(Level.INFO, null, exception);
-//        }
-//    }
-    
-    
-
+    public static JiraConnectorProvider.Type getActiveConnector() {
+        return JiraConfig.getInstance().getActiveConnector();
+}
 }

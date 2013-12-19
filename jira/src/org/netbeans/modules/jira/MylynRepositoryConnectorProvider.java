@@ -39,11 +39,11 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jira.xmlrpc;
+package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.mylyn.util.RepositoryConnectorProvider;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -56,25 +56,8 @@ import org.openide.util.lookup.ServiceProviders;
     @ServiceProvider(service = MylynRepositoryConnectorProvider.class)
 })
 public final class MylynRepositoryConnectorProvider implements RepositoryConnectorProvider {
-
-    private static MylynRepositoryConnectorProvider INSTANCE;
-    
-    private final JiraRepositoryConnector rc;
-
-    public MylynRepositoryConnectorProvider () {
-        rc = new JiraRepositoryConnector();
-    }
-
-    static MylynRepositoryConnectorProvider getInstance () {
-        if (INSTANCE == null) {
-            INSTANCE = Lookup.getDefault().lookup(MylynRepositoryConnectorProvider.class);
-        }
-        return INSTANCE;
-    }
-    
     @Override
-    public JiraRepositoryConnector getConnector () {
-        return rc;
+    public AbstractRepositoryConnector getConnector () {
+        return JiraConnectorSupport.getInstance().getConnector().getRepositoryConnector();
     }
-    
 }

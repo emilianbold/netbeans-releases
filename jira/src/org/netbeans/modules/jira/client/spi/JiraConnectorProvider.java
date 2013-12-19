@@ -49,6 +49,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -58,6 +59,7 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.netbeans.modules.mylyn.util.RepositoryConnectorProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -85,7 +87,10 @@ public abstract class JiraConnectorProvider {
         }
     }
     
-    public abstract Type getType();
+    public interface JiraConnectorFactory {
+        public JiraConnectorProvider create();
+        public Type forType();
+    } 
 
     public abstract AbstractRepositoryConnector getRepositoryConnector();
  
@@ -273,10 +278,15 @@ public abstract class JiraConnectorProvider {
                 Method wrapperMethod = null;
                 for(Method m : wrapper.getDelegate().getClass().getMethods()) {
                     if(m.getName().equals(method.getName())) {
+                        if(m.getName().equals("equals")) {
+                             wrapperMethod = m;
+                             break;
+                        }
                         Class<?>[] pts = m.getParameterTypes();
                         if(  ( args == null || args.length == 0 ) &&
                              (  pts == null ||  pts.length == 0 ) ) {
                             wrapperMethod = m;
+                            break;
                         } else if(pts.length == args.length) {
                             boolean allTypes = true;
                             for (int i = 0; i < pts.length; i++) {
@@ -295,7 +305,7 @@ public abstract class JiraConnectorProvider {
                     }
                 }
                 if(wrapperMethod == null) {
-                    throw new NoSuchMethodException(method.getName() + " " + method.getParameterTypes());
+                    throw new NoSuchMethodException(wrapper.getDelegate().getClass().getName() + "." + method.getName() + " " + Arrays.toString(method.getParameterTypes()));
                 }
                 Object ret = wrapperMethod.invoke(wrapper.getDelegate(), args);
                 Class<?> ct = method.getReturnType().getComponentType();
@@ -327,10 +337,10 @@ public abstract class JiraConnectorProvider {
         }
     }    
     
-    protected <C> C[] convert(Class<C> c, Proxy[] proxies) {
-        Object a = Array.newInstance(c, proxies.length);
+    protected <C> C[] convert(Class<C> wrapperClass, Object[] proxies) {
+        Object a = Array.newInstance(wrapperClass, proxies.length);
         for (int i = 0; i < proxies.length; i++) {
-            Array.set(a, i, getDelegate(proxies[i]));
+            Array.set(a, i, getDelegate((Proxy)proxies[i]));
         }
         return (C[]) a;
     }

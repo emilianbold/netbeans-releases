@@ -43,23 +43,14 @@
  */
 package org.netbeans.modules.jira.options;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import javax.swing.AbstractAction;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.ModuleLifecycleManager;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.REST;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
@@ -84,10 +75,6 @@ public final class JiraOptionsController extends OptionsPanelController implemen
 
     public JiraOptionsController() {
         panel = new JiraOptionsPanel();
-        
-        // XXX hide util both, rest and xmlrpc are provided
-        panel.restRadioButton.setVisible(false);
-        panel.xmlrpcRadioButton.setVisible(false);
     }
     
     @Override
@@ -101,16 +88,15 @@ public final class JiraOptionsController extends OptionsPanelController implemen
         panel.restRadioButton.addActionListener(this);
         panel.xmlrpcRadioButton.addActionListener(this);
   
-        // XXX hide util both, rest and xmlrpc are provided
-//        JiraConnectorProvider.Type connectorType = JiraConfig.getInstance().getActiveConnector();
-//        switch(connectorType) {
-//            case REST:
-//                panel.restRadioButton.setSelected(true);
-//                break;
-//            case XMLRPC:
-//                panel.xmlrpcRadioButton.setSelected(true);
-//                break;
-//        }
+        JiraConnectorProvider.Type connectorType = JiraConfig.getInstance().getActiveConnector();
+        switch(connectorType) {
+            case REST:
+                panel.restRadioButton.setSelected(true);
+                break;
+            case XMLRPC:
+                panel.xmlrpcRadioButton.setSelected(true);
+                break;
+    }
     }
     
     @Override
@@ -123,24 +109,17 @@ public final class JiraOptionsController extends OptionsPanelController implemen
         r = issueRefresh.equals("") ? 0 : Integer.parseInt(issueRefresh);       // NOI18N
         JiraConfig.getInstance().setIssueRefreshInterval(r);
         
-        // XXX hide util both, rest and xmlrpc are provided
-//        boolean connectorChanged = connectorChanged();
-//        JiraConnectorProvider.Type currentConnector = JiraConfig.getInstance().getActiveConnector();
-//        if(panel.restRadioButton.isSelected()) {
-//            JiraConfig.getInstance().setActiveConnector(REST);
-//        } else {
-//            JiraConfig.getInstance().setActiveConnector(XMLRPC);
-//        }
-//    
-//        if(connectorChanged && currentConnector != null) {
-//            // disable the current conector, the active has to be set on new start. 
-//            // See ModuleLifecycleManager
-//            JiraConnectorSupport.changeConnectorConfig(currentConnector, false);
-//                    
-//            askForRestart();
-////            JiraConnectorSupport.getInstance().enableConnector(JiraConfig.getInstance().getActiveConnector());
-//        }
+        boolean connectorChanged = connectorChanged();
+        JiraConnectorProvider.Type currentConnector = JiraConfig.getInstance().getActiveConnector();
+        if(panel.restRadioButton.isSelected()) {
+            JiraConfig.getInstance().setActiveConnector(REST);
+        } else {
+            JiraConfig.getInstance().setActiveConnector(XMLRPC);
+        }
                 
+        if(connectorChanged && currentConnector != null) {
+            askForRestart();
+    }
     }
     
     @Override
@@ -178,14 +157,13 @@ public final class JiraOptionsController extends OptionsPanelController implemen
     }
         
     private boolean connectorChanged() {
-        // XXX hide util both, rest and xmlrpc are provided
-//        JiraConnectorProvider.Type connectorType = JiraConfig.getInstance().getActiveConnector();
-//        switch(connectorType) {
-//            case REST:
-//                return panel.xmlrpcRadioButton.isSelected();
-//            case XMLRPC:
-//                return panel.restRadioButton.isSelected();
-//        }   
+        JiraConnectorProvider.Type connectorType = JiraConfig.getInstance().getActiveConnector();
+        switch(connectorType) {
+            case REST:
+                return panel.xmlrpcRadioButton.isSelected();
+            case XMLRPC:
+                return panel.restRadioButton.isSelected();
+        }   
         return false;
     }
     
@@ -247,24 +225,23 @@ public final class JiraOptionsController extends OptionsPanelController implemen
         }
     }
     
-    // XXX hide util both, rest and xmlrpc are provided
-//    @NbBundle.Messages({"CTL_Restart=Restart IDE",
-//                        "CTL_RestartClickHere=Click here to restart IDE before the JIRA connector change will have any effect."})
-//    private void askForRestart() {
-//        if( null != restartNotification ) {
-//            restartNotification.clear();
-//}
-//        restartNotification = NotificationDisplayer.getDefault().notify( 
-//                Bundle.CTL_Restart(),
-//                ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/restart.png", true ), //NOI18N
-//                Bundle.CTL_RestartClickHere(), new AbstractAction(){
-//                    @Override
-//                    public void actionPerformed(ActionEvent e) {
-//                        LifecycleManager.getDefault().markForRestart();
-//                        LifecycleManager.getDefault().exit();
-//                    }
-//                },
-//                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
-//    }    
+    @NbBundle.Messages({"CTL_Restart=Restart IDE",
+                        "CTL_RestartClickHere=Click here to restart IDE before the JIRA connector change will have any effect."})
+    private void askForRestart() {
+        if( null != restartNotification ) {
+            restartNotification.clear();
+        }
+        restartNotification = NotificationDisplayer.getDefault().notify( 
+                Bundle.CTL_Restart(),
+                ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/restart.png", true ), //NOI18N
+                Bundle.CTL_RestartClickHere(), new AbstractAction(){
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        LifecycleManager.getDefault().markForRestart();
+                        LifecycleManager.getDefault().exit();
+                    }
+                },
+                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
+    }    
     
 }

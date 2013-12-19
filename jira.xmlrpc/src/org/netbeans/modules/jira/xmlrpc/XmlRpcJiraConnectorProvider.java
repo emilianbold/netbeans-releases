@@ -43,6 +43,7 @@
 package org.netbeans.modules.jira.xmlrpc;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraServiceUnavailableException;
@@ -105,7 +106,6 @@ import org.openide.util.lookup.ServiceProviders;
  *
  * @author Tomas Stupka
  */
-@ServiceProviders({@ServiceProvider(service = JiraConnectorProvider.class)})
 public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 
     private AbstractRepositoryConnector jrc;
@@ -121,14 +121,9 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
     }
     
     @Override
-    public Type getType() {
-        return Type.XMLRPC;
-    }
-
-    @Override
     public AbstractRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
-            jrc = MylynRepositoryConnectorProvider.getInstance().getConnector();
+            jrc = new JiraRepositoryConnector();
             MylynSupport.getInstance().addRepositoryListener(JiraClientFactory.getDefault());
         }
         return jrc;
@@ -230,7 +225,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         return createWrapper(
                 IssueTypeFilter.class, 
                 new com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter(
-                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.IssueType.class, (Proxy[])issueTypes)));
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.IssueType.class, issueTypes)));
     }
     
     @Override
@@ -238,7 +233,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         return createWrapper(
                 ComponentFilter.class, 
                 new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter(
-                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Component.class, (Proxy[])components), 
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Component.class, components), 
                     empty));
     }
 
@@ -247,7 +242,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
         return createWrapper(
                 VersionFilter.class, 
                 new com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter(
-                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Version.class, (Proxy[])versions), 
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Version.class, versions), 
                     empty, b, b0));
     }
 
@@ -255,21 +250,21 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
     public StatusFilter createStatusFilter(JiraStatus[] statuses) {
         return createWrapper(
                 StatusFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus.class, (Proxy[])statuses));
+                convert(com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus.class, statuses));
     }
 
     @Override
     public ResolutionFilter createResolutionFilter(Resolution[] resolutions) {
         return createWrapper(
                 ResolutionFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Resolution.class, (Proxy[])resolutions));
+                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Resolution.class, resolutions));
     }
 
     @Override
     public PriorityFilter createPriorityFilter(Priority[] priorities) {
         return createWrapper(
             PriorityFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Priority.class, (Proxy[])priorities));
+                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Priority.class, priorities));
     }
 
     @Override

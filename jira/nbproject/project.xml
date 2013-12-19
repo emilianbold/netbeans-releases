@@ -16,7 +16,7 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -24,7 +24,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
