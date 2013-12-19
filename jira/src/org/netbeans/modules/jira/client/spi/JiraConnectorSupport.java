@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
 public final class JiraConnectorSupport {
     
@@ -80,7 +80,7 @@ public final class JiraConnectorSupport {
             }
             connector = forType(connectorType);
             if(connector == null) {
-                Jira.LOG.log(Level.WARNING, "Connector {0} not available for JIRA", connectorType.getCnb());
+                Jira.LOG.log(Level.WARNING, "Connector {0} not available for JIRA", connectorType.getCnb()); // NOI18N
                 switch(connectorType) {
                     case REST:
                         connectorType = XMLRPC;
@@ -90,14 +90,14 @@ public final class JiraConnectorSupport {
                         connectorType = REST;
                         tryFallback();
                         break;
-        }
+                }
             }
         }
         return connector;
     }
 
     private void tryFallback() {
-        Jira.LOG.log(Level.WARNING, "Falling back on ", connectorType.getCnb());
+        Jira.LOG.log(Level.WARNING, "Falling back on ", connectorType.getCnb()); // NOI18N
         JiraConfig.getInstance().setActiveConnector(connectorType);
         connector = forType(connectorType);
     }
@@ -106,7 +106,7 @@ public final class JiraConnectorSupport {
         Collection<? extends JiraConnectorFactory> connectors = Lookup.getDefault().lookupAll(JiraConnectorFactory.class);
         if(LOG.isLoggable(Level.FINE)) {
             for (JiraConnectorFactory p : connectors) {
-                LOG.log(Level.FINE, "registered JIRA Connector : {0}", p.toString());
+                LOG.log(Level.FINE, "registered JIRA Connector : {0}", p.toString()); // NOI18N
             }
         }
         
@@ -114,7 +114,7 @@ public final class JiraConnectorSupport {
             if(f.forType() == type) {
                 // we made sure there will be only 1 conector for a session
                 JiraConnectorProvider c = f.create(); 
-                Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", c != null ? f.forType() : "NULL");
+                Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", c != null ? f.forType() : "NULL"); // NOI18N
                 return c;
             }
         }

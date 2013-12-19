@@ -161,12 +161,16 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
 
     @Override
     public FilterDefinition createFilterDefinition() {
-        return createWrapper(FilterDefinition.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition());
+        return createWrapper(
+                FilterDefinition.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition());
     }
 
     @Override
     public ContentFilter createContentFilter(String queryString, boolean searchSummary, boolean searchDescription, boolean searchEnvironment, boolean searchComments) {
-        return createWrapper(ContentFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter(queryString, searchSummary, searchDescription, searchEnvironment, searchComments));
+        return createWrapper(
+                ContentFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter(queryString, searchSummary, searchDescription, searchEnvironment, searchComments));
     }
 
     @Override
@@ -185,39 +189,52 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
     @Override
     public ProjectFilter createProjectFilter(Project project) {
         com.atlassian.connector.eclipse.internal.jira.core.model.Project p = getDelegate((Proxy)project);
-        return createWrapper(ProjectFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter(p));
+        return createWrapper(
+                ProjectFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter(p));
     }
     
     @Override
     public ProjectFilter createProjectFilter(Project[] projects) {
         return createWrapper(
                 ProjectFilter.class, 
-                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter(convert(com.atlassian.connector.eclipse.internal.jira.core.model.Project.class, projects)));
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter(
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Project.class, projects)));
     }
 
     @Override
     public UserFilter createNobodyFilter() {
-        return createWrapper(NobodyFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter());
+        return createWrapper(
+                NobodyFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter());
     }
 
     @Override
     public UserFilter createCurrentUserFilter() {
-        return createWrapper(CurrentUserFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter());
+        return createWrapper(
+                CurrentUserFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter());
     }
 
     @Override
     public UserFilter createSpecificUserFilter(String user) {
-        return createWrapper(SpecificUserFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter(user));
+        return createWrapper(
+                SpecificUserFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter(user));
     }
 
     @Override
     public UserFilter createUserInGroupFilter(String group) {
-        return createWrapper(UserInGroupFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter(group));
+        return createWrapper(
+                UserInGroupFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter(group));
     }
 
     @Override
     public DateRangeFilter createDateRangeFilter(Date from, Date to) {
-        return createWrapper(DateRangeFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter(from, to));
+        return createWrapper(
+                DateRangeFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter(from, to));
     }
 
     @Override
@@ -250,26 +267,31 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
     public StatusFilter createStatusFilter(JiraStatus[] statuses) {
         return createWrapper(
                 StatusFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus.class, statuses));
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter(
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus.class, statuses)));
     }
 
     @Override
     public ResolutionFilter createResolutionFilter(Resolution[] resolutions) {
         return createWrapper(
                 ResolutionFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Resolution.class, resolutions));
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter(
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Resolution.class, resolutions)));
     }
 
     @Override
     public PriorityFilter createPriorityFilter(Priority[] priorities) {
         return createWrapper(
             PriorityFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Priority.class, priorities));
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter(
+                    convert(com.atlassian.connector.eclipse.internal.jira.core.model.Priority.class, priorities)));
     }
 
     @Override
     public EstimateVsActualFilter createEstimateVsActualFilter(long l, long l0) {
-        return createWrapper(EstimateVsActualFilter.class, new com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter(l, l0));
+        return createWrapper(
+                EstimateVsActualFilter.class, 
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter(l, l0));
     }
         
     @Override
