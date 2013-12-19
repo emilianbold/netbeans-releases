@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.LinkedList;
+import java.util.Arrays;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
@@ -75,6 +76,7 @@ import org.openide.util.RequestProcessor;
     private final StringBuilder toTermBuf = new StringBuilder();
     private MIProxy miProxy;
     private GdbDebuggerImpl debugger;
+    private boolean prompted = false;
 
     /*package*/ Tap() {
     }
@@ -126,6 +128,8 @@ import org.openide.util.RequestProcessor;
      */
     @Override
     public void sendChars(char c[], int offset, int count) {
+        prompted = false;
+        
         final String line = String.valueOf(c, offset, count);
         CndUtils.assertTrueInConsole(line.length() == 0 || line.endsWith("\n"), "KeyProcessingStream should send only lines");
         String cmd = line.trim();
@@ -275,14 +279,30 @@ import org.openide.util.RequestProcessor;
                     }
                 }
             }
+            
+            System.out.println("> "+ toTermBuf.toString());
+            
             if (toTermBuf.length() > 0) {
-                char chars[] = new char[toTermBuf.length()];
-                toTermBuf.getChars(0, toTermBuf.length(), chars, 0);
-                toDTE.putChars(chars, 0, toTermBuf.length());
-                toTermBuf.delete(0, toTermBuf.length());
+                boolean sendFlag = true;
+                if (toTermBuf.toString().trim().equals(PROMPT)) {
+                    if (prompted) {
+                        sendFlag = false;
+                    } else {
+                        prompted = true;
+                    }
+                } else {
+                    prompted = false;
+                }
+                if (sendFlag) {
+                    char chars[] = new char[toTermBuf.length()];
+                    toTermBuf.getChars(0, toTermBuf.length(), chars, 0);
+                    toDTE.putChars(chars, 0, toTermBuf.length());
+                    toTermBuf.delete(0, toTermBuf.length());
+                }
             }
         }
     }
+    private static final String PROMPT = "(gdb)";
 
     private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
 
