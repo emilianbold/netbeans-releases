@@ -110,6 +110,10 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        if (snapshot == null) {
+            return;
+        }
+
         long startTime = System.currentTimeMillis();
         FileObject fileObject = snapshot.getSource().getFileObject();
         if (!PARSE_BIG_FILES && fileIsTooBig(fileObject)) {
