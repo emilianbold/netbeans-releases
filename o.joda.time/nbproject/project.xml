@@ -3,12 +3,12 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>com.atlassian.connector.eclipse.commons.core</code-name-base>
+           <code-name-base>org.joda.time</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>com-atlassian-connector-eclipse-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.commons.core_3.2.0.v20130212.jar</binary-origin>
+               <runtime-relative-path>org-joda-time.jar</runtime-relative-path>
+                <binary-origin>external/org.joda.time_1.6.0.v20081202-0100.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

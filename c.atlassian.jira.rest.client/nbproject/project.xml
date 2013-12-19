@@ -3,12 +3,12 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>com.atlassian.connector.eclipse.commons.core</code-name-base>
+           <code-name-base>com.atlassian.jira.rest.client</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>com-atlassian-connector-eclipse-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.commons.core_3.2.0.v20130212.jar</binary-origin>
+               <runtime-relative-path>com-atlassian-jira-rest-client.jar</runtime-relative-path>
+                <binary-origin>external/com.atlassian.jira.rest.client_1.1.0.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -3,12 +3,12 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>com.atlassian.connector.eclipse.commons.core</code-name-base>
+           <code-name-base>com.sun.jersey</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>com-atlassian-connector-eclipse-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.commons.core_3.2.0.v20130212.jar</binary-origin>
+               <runtime-relative-path>com-sun-jersey.jar</runtime-relative-path>
+                <binary-origin>external/com.sun.jersey_1.5.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
