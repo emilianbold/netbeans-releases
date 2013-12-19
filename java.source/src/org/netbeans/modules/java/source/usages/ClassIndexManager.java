@@ -62,6 +62,7 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -162,10 +163,27 @@ public final class ClassIndexManager {
         return index[0];
     }
 
+    @CheckForNull
     public ClassIndexImpl createUsagesQuery (
-            final URL root,
+            @NonNull final URL root,
             final boolean source) throws IOException {
-        assert root != null;
+        final TransactionContext txc = TransactionContext.get();
+        if (txc == null) {
+            throw new IllegalStateException("Not in transaction");  //NOI18N
+        }
+        return createUsagesQuery(
+            root,
+            source,
+            txc.get(ClassIndexEventsTransaction.class));
+    }
+
+    @CheckForNull
+    public ClassIndexImpl createUsagesQuery (
+            @NonNull final URL root,
+            final boolean source,
+            @NonNull final ClassIndexEventsTransaction cietx) throws IOException {
+        Parameters.notNull("root", root);   //NOI18N
+        Parameters.notNull("cietx", cietx); //NOI18N
         synchronized (internalLock) {
             if (invalid) {
                 return null;
@@ -181,7 +199,7 @@ public final class ClassIndexManager {
                             ClassIndexImpl.Type.EMPTY,
                             source ? ClassIndexImpl.Type.SOURCE : ClassIndexImpl.Type.BINARY);
                     this.instances.put(root,qi);
-                    markAddedRoot(root);
+                    markAddedRoot(cietx, root);
                 }
             }
             if (source && qi.getType() == ClassIndexImpl.Type.BINARY){
@@ -194,9 +212,9 @@ public final class ClassIndexManager {
                         ClassIndexImpl.Type.SOURCE);
                 this.instances.put(root,qi);
                 this.transientInstances.remove(root);
-                markAddedRoot(root);
+                markAddedRoot(cietx, root);
             } else if (pair.second()) {
-                markAddedRoot(root);
+                markAddedRoot(cietx, root);
             }
             return qi;
         }
@@ -279,9 +297,10 @@ public final class ClassIndexManager {
         return Pair.<ClassIndexImpl,Boolean>of(index,promoted);
     }
 
-    private void markAddedRoot(@NonNull URL root) {
-        final TransactionContext txCtx = TransactionContext.get();
-        txCtx.get(ClassIndexEventsTransaction.class).rootAdded(root);
+    private void markAddedRoot(
+        @NonNull ClassIndexEventsTransaction cietx,
+        @NonNull URL root) {
+        cietx.rootAdded(root);
     }
 
     private void markRemovedRoot(@NonNull URL root) {
