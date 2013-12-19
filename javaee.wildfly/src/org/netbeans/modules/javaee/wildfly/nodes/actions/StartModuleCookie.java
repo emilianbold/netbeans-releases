@@ -41,72 +41,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.wildfly;
 
-import java.util.Vector;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+package org.netbeans.modules.javaee.wildfly.nodes.actions;
+
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor.Task;
+
 /**
- *
- * @author whd
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBTargetModuleID implements TargetModuleID {
-
-    private Target target;
-    private String jar_name;
-    private String context_url;
-
-    private Vector childs = new Vector();
-    private TargetModuleID  parent = null;
-
-    JBTargetModuleID(Target target) {
-        this(target, "");
-    }
-
-    public JBTargetModuleID(Target target, String jar_name) {
-        this.target = target;
-        this.jar_name = jar_name;
-
-    }
-    public void setContextURL(String context_url) {
-        this.context_url = context_url;
-    }
-    public void setJARName(String jar_name) {
-        this.jar_name = jar_name;
-    }
-
-    public void setParent(JBTargetModuleID parent) {
-        this.parent = parent;
-
-    }
-
-    public void addChild(JBTargetModuleID child) {
-        childs.add(child);
-        child.setParent(this);
-    }
-
-    public TargetModuleID[] getChildTargetModuleID() {
-        return (TargetModuleID[]) childs.toArray(new TargetModuleID[childs.size()]);
-    }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public String getModuleID() {
-        return jar_name ;
-    }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID getParentTargetModuleID() {
-
-        return parent;
-    }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target getTarget() {
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public String getWebURL() {
-        return context_url;//"http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    public String toString() {
-        return getModuleID() +  hashCode();
-    }
+public interface StartModuleCookie extends Node.Cookie {
+    
+    public Task start();
+    
+    public boolean isRunning();
 }
