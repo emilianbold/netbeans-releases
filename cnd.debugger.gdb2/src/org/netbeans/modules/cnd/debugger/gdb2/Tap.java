@@ -280,8 +280,6 @@ import org.openide.util.RequestProcessor;
                 }
             }
             
-            System.out.println("> "+ toTermBuf.toString());
-            
             if (toTermBuf.length() > 0) {
                 boolean sendFlag = true;
                 if (toTermBuf.toString().trim().equals(PROMPT)) {
@@ -302,7 +300,7 @@ import org.openide.util.RequestProcessor;
             }
         }
     }
-    private static final String PROMPT = "(gdb)";
+    private static final String PROMPT = "(gdb)"; // NOI18N
 
     private final RequestProcessor processingQueue = new RequestProcessor("GDB output processing", 1); // NOI18N
 
