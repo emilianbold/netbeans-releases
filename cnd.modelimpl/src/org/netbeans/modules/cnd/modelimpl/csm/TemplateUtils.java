@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -377,11 +378,11 @@ public class TemplateUtils {
         return res;
     }
     
-    public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
+    public static CsmType checkTemplateType(CsmType type, CsmObject scope) {
         return checkTemplateType(type, scope, null);
     }
     
-    public static CsmType checkTemplateType(CsmType type, CsmScope scope, List<CsmTemplateParameter> additionalParams) {
+    public static CsmType checkTemplateType(CsmType type, CsmObject scope, List<CsmTemplateParameter> additionalParams) {
         if (!(type instanceof TypeImpl)) {            
             return type;
         }

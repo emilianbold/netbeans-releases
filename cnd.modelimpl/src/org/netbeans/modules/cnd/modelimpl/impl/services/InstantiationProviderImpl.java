@@ -176,7 +176,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         CsmSpecializationParameter defaultValue = getTemplateParameterDefultValue(template, templateParam, i);
                         if (CsmKindUtilities.isTypeBasedSpecalizationParameter(defaultValue)) {
                             CsmType defaultType = ((CsmTypeBasedSpecializationParameter)defaultValue).getType();
-                            defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) template));
+                            defaultType = TemplateUtils.checkTemplateType(defaultType, template);
                             if (defaultType != null) {
                                 mapping.put(templateParam, new TypeBasedSpecializationParameterImpl(defaultType));
                             }
