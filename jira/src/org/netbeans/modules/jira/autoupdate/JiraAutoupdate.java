@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
-import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Set;
@@ -52,6 +50,8 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraVersion;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
@@ -68,12 +68,12 @@ public class JiraAutoupdate {
     private static JiraAutoupdate instance;
     static {
         String version = System.getProperty("netbeans.t9y.jira.supported.version"); // NOI18N
-        SUPPORTED_JIRA_VERSION = version != null ? new JiraVersion(version) : new JiraVersion("5.0"); // NOI18N
+        SUPPORTED_JIRA_VERSION = JiraConnectorSupport.getInstance().getConnector().createJiraVersion(version != null ? version : "5.0"); // NOI18N
     }
     static final String JIRA_MODULE_CODE_NAME = "org.netbeans.modules.jira"; // NOI18N
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$"); // NOI18N
     
-    private final Set<JiraRepository> repos = new WeakSet<JiraRepository>();
+    private final Set<JiraRepository> repos = new WeakSet<>();
     
     private final AutoupdateSupport support = new AutoupdateSupport(new AutoupdateCallback(), JIRA_MODULE_CODE_NAME, NbBundle.getMessage(Jira.class, "LBL_ConnectorName"));
 
@@ -103,15 +103,14 @@ public class JiraAutoupdate {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 JiraConfiguration conf = repository.getConfiguration();
-                ServerInfo info = conf.getServerInfo();
-                v[0] = info.getVersion();
+                v[0] = conf.getServerVersion();
             }
         };
         repository.getExecutor().execute(cmd, false, false, false);
         if(cmd.hasFailed()) {
             return null; // be optimistic at this point
         }
-        return new JiraVersion(v[0]);
+        return JiraConnectorSupport.getInstance().getConnector().createJiraVersion(v[0]);
     }
 
     public AutoupdateSupport getAutoupdateSupport() {
@@ -125,7 +124,7 @@ public class JiraAutoupdate {
     public JiraVersion getVersion(String desc) {
         Matcher m = VERSION_PATTERN.matcher(desc);
         if(m.matches()) {
-            return new JiraVersion(m.group(1)) ;
+            return JiraConnectorSupport.getInstance().getConnector().createJiraVersion(m.group(1)) ;
         }
         return null;
     }
@@ -152,7 +151,7 @@ public class JiraAutoupdate {
 
         @Override
         public boolean isSupportedVersion(String version) {
-            return JiraAutoupdate.this.isSupportedVersion(new JiraVersion(version));
+            return JiraAutoupdate.this.isSupportedVersion(JiraConnectorSupport.getInstance().getConnector().createJiraVersion(version));
         }
     };    
 }

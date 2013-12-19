@@ -6,25 +6,6 @@
             <code-name-base>org.netbeans.modules.jira</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>com.atlassian.connector.eclipse.jira.core</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.sun.mail.javax.mail</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>javax.wsdl</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.apache.commons.logging</code-name-base>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.eclipse.core.runtime</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -35,7 +16,7 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -43,12 +24,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.monitor.ui.dummy</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -229,6 +205,10 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.jira.xmlrpc</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.languages.diff</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -245,7 +225,11 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.jira.xmlrpc</friend>
+                <friend>org.netbeans.modules.jira.rest</friend>
+                <package>org.netbeans.modules.jira.client.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

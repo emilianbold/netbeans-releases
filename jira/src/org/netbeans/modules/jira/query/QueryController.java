@@ -42,27 +42,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.DateRangeFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.EstimateVsActualFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.IssueTypeFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.PriorityFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ResolutionFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.VersionFilter;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -104,6 +83,29 @@ import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidato
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.ComponentFilter;
+import org.netbeans.modules.jira.client.spi.ContentFilter;
+import org.netbeans.modules.jira.client.spi.DateRangeFilter;
+import org.netbeans.modules.jira.client.spi.EstimateVsActualFilter;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.IssueTypeFilter;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.NamedFilter;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.PriorityFilter;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.ProjectFilter;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.ResolutionFilter;
+import org.netbeans.modules.jira.client.spi.StatusFilter;
+import org.netbeans.modules.jira.client.spi.UserFilter;
+import org.netbeans.modules.jira.client.spi.Version;
+import org.netbeans.modules.jira.client.spi.VersionFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -263,12 +265,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     public FilterDefinition getFilterDefinition() {
         assert modifiable;
-        FilterDefinition fd = new FilterDefinition();
+        JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd =  connectorProvider.createFilterDefinition();
 
         // text search
         String text = panel.queryTextField.getText().trim();
         if(!text.equals("")) {                                                  // NOI18N
-            fd.setContentFilter(new ContentFilter(
+            fd.setContentFilter(connectorProvider.createContentFilter(
                     text,
                     panel.summaryCheckBox.isSelected(),
                     panel.descriptionCheckBox.isSelected(),
@@ -278,35 +281,35 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
         List<Project> projects = getValues(panel.projectList);
         if(projects.size() > 0) {
-            fd.setProjectFilter(new ProjectFilter(projects.toArray(new Project[projects.size()])));
+            fd.setProjectFilter(connectorProvider.createProjectFilter(projects.toArray(new Project[projects.size()])));
         }
         List<IssueType> types = getValues(panel.typeList);
         if(types.size() > 0) {
-            fd.setIssueTypeFilter(new IssueTypeFilter(types.toArray(new IssueType[types.size()])));
+            fd.setIssueTypeFilter(connectorProvider.createIssueTypeFilter(types.toArray(new IssueType[types.size()])));
         }
         List<Component> components = getValues(panel.componentsList);
         if(components.size() > 0) {
-            fd.setComponentFilter(new ComponentFilter(components.toArray(new Component[components.size()]),components.isEmpty()));
+            fd.setComponentFilter(connectorProvider.createComponentFilter(components.toArray(new Component[components.size()]),components.isEmpty()));
         }
         List<Version> versions = getValues(panel.fixForList);
         if(versions.size() > 0) {
-            fd.setFixForVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
+            fd.setFixForVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
         }
         versions = getValues(panel.affectsVersionList);
         if(versions.size() > 0) {
-            fd.setReportedInVersionFilter(new VersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
+            fd.setReportedInVersionFilter(connectorProvider.createVersionFilter(versions.toArray(new Version[versions.size()]), versions.isEmpty(), true, false));
         }
         List<JiraStatus> statuses = getValues(panel.statusList);
         if(statuses.size() > 0) {
-            fd.setStatusFilter(new StatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
+            fd.setStatusFilter(connectorProvider.createStatusFilter(statuses.toArray(new JiraStatus[statuses.size()])));
         }
         List<Resolution> resolutions = getValues(panel.resolutionList);
         if(resolutions.size() > 0) {
-            fd.setResolutionFilter(new ResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
+            fd.setResolutionFilter(connectorProvider.createResolutionFilter(resolutions.toArray(new Resolution[resolutions.size()])));
         }
         List<Priority> priorities = getValues(panel.priorityList);
         if(priorities.size() > 0) {
-            fd.setPriorityFilter(new PriorityFilter(priorities.toArray(new Priority[priorities.size()])));
+            fd.setPriorityFilter(connectorProvider.createPriorityFilter(priorities.toArray(new Priority[priorities.size()])));
         }
 
         if(reporterUserSearch != null) {
@@ -324,7 +327,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         Long min = getLongValue(panel.ratioMinTextField);
         Long max = getLongValue(panel.ratioMaxTextField);
         if(min != null || max != null) {
-            EstimateVsActualFilter estimateFilter = new EstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
+            EstimateVsActualFilter estimateFilter = connectorProvider.createEstimateVsActualFilter(min != null ? min : 0, max != null ? max : 0);
             fd.setEstimateVsActualFilter(estimateFilter);
         }
 
@@ -366,7 +369,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         Date from = getDateValue(fromTxt);
         Date to = getDateValue(toTxt);
         if (from != null || to != null) {
-            return new DateRangeFilter(from, to);
+            return JiraConnectorSupport.getInstance().getConnector().createDateRangeFilter(from, to);
         }
         return null;
     }

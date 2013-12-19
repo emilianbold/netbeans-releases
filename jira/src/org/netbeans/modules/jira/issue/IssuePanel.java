@@ -41,13 +41,6 @@
  */
 package org.netbeans.modules.jira.issue;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import com.atlassian.connector.eclipse.internal.jira.core.model.User;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -137,6 +130,13 @@ import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.SchedulePicker;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.User;
+import org.netbeans.modules.jira.client.spi.Version;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -391,8 +391,8 @@ public class IssuePanel extends javax.swing.JPanel {
         componentList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof com.atlassian.connector.eclipse.internal.jira.core.model.Component) {
-                    value = ((com.atlassian.connector.eclipse.internal.jira.core.model.Component)value).getName();
+                if (value instanceof org.netbeans.modules.jira.client.spi.Component) {
+                    value = ((org.netbeans.modules.jira.client.spi.Component)value).getName();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
@@ -1157,7 +1157,7 @@ public class IssuePanel extends javax.swing.JPanel {
         List<String> keys = new ArrayList<String>(values.length);
         for (int i=0; i<values.length; i++) {
             switch (field) {
-                case COMPONENT: keys.add(((com.atlassian.connector.eclipse.internal.jira.core.model.Component)values[i]).getId()); break;
+                case COMPONENT: keys.add(((org.netbeans.modules.jira.client.spi.Component)values[i]).getId()); break;
                 case AFFECTSVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 case FIXVERSIONS: keys.add(((Version)values[i]).getId()); break;
                 default: throw new UnsupportedOperationException();
@@ -1239,11 +1239,11 @@ public class IssuePanel extends javax.swing.JPanel {
         panel.add(label3, c);
     }
 
-    private List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> componentsByIds(String projectId, List<String> componentIds) {
+    private List<org.netbeans.modules.jira.client.spi.Component> componentsByIds(String projectId, List<String> componentIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<com.atlassian.connector.eclipse.internal.jira.core.model.Component> components = new ArrayList<com.atlassian.connector.eclipse.internal.jira.core.model.Component>(componentIds.size());
+        List<org.netbeans.modules.jira.client.spi.Component> components = new ArrayList<org.netbeans.modules.jira.client.spi.Component>(componentIds.size());
         for (String id : componentIds) {
-            com.atlassian.connector.eclipse.internal.jira.core.model.Component component = config.getComponentById(projectId, id);
+            org.netbeans.modules.jira.client.spi.Component component = config.getComponentById(projectId, id);
             if(component != null) {
                 components.add(component);
             }
@@ -1253,7 +1253,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
     private List<Version> versionsByIds(String projectId, List<String> versionIds) {
         JiraConfiguration config = issue.getRepository().getConfiguration();
-        List<Version> versions = new ArrayList<Version>(versionIds.size());
+        List<Version> versions = new ArrayList<>(versionIds.size());
         for (String id : versionIds) {
             Version version = config.getVersionById(projectId, id);
             if(version != null) {
@@ -2434,7 +2434,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
                         // Reload components
                         DefaultListModel componentModel = new DefaultListModel();
-                        for (com.atlassian.connector.eclipse.internal.jira.core.model.Component component : config.getComponents(project)) {
+                        for (org.netbeans.modules.jira.client.spi.Component component : config.getComponents(project)) {
                             componentModel.addElement(component);
                         }
                         componentList.setModel(componentModel);

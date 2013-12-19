@@ -42,13 +42,6 @@
 
 package org.netbeans.modules.jira.util;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import com.atlassian.connector.eclipse.internal.jira.core.model.User;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,7 +54,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
@@ -69,6 +61,14 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.User;
+import org.netbeans.modules.jira.client.spi.Version;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -404,7 +404,7 @@ public class JiraUtils {
                     break;
                 case COMPONENT:
                     if (!projectId.isEmpty()) {
-                        com.atlassian.connector.eclipse.internal.jira.core.model.Component comp = config.getComponentById(projectId, value);
+                        Component comp = config.getComponentById(projectId, value);
                         if (comp != null) {
                             value = comp.getName();
                         }

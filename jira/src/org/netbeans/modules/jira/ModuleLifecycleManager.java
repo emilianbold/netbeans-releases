@@ -44,7 +44,38 @@
 
 package org.netbeans.modules.jira;
 
+import java.awt.HeadlessException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.MissingResourceException;
+import java.util.logging.Level;
+import javax.swing.JOptionPane;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
+import org.openide.modules.Modules;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /**
@@ -55,7 +86,8 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Tomas Stupka, Ondra Vrabec
  */
-public final class ModuleLifecycleManager extends ModuleInstall{
+public final class ModuleLifecycleManager extends ModuleInstall  {
+    
     static boolean instantiated = false;
     @Override
     public void close() {
@@ -64,4 +96,19 @@ public final class ModuleLifecycleManager extends ModuleInstall{
         }
         Jira.getInstance().shutdown();
     }
+
+    @Override
+    public void validate() throws IllegalStateException {
+        // XXX do not enable/disable connectors until both rest and xmlrpc are provided
+//        JiraConnectorProvider.Type activeCnb = JiraConfig.getInstance().getActiveConnector();
+//        activeCnb = JiraConnectorSupport.enableConnector(activeCnb != null ? activeCnb : JiraConnectorProvider.Type.XMLRPC);
+//        // ensure the enabeld connector is set once and for the whole nb session
+//        JiraConnectorSupport.getInstance().setConnectorType(activeCnb); 
+}
+
+    @Override
+    public void restored() {
+        
+    }
+    
 }

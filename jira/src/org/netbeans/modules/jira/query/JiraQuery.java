@@ -42,10 +42,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
@@ -61,6 +57,11 @@ import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
+import org.netbeans.modules.jira.client.spi.NamedFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -202,7 +203,7 @@ public class JiraQuery {
                                 iquery = runningQuery;
                             }
                         }
-                        JiraUtil.setQuery(repository.getTaskRepository(), runningQuery, jiraFilter);
+                        JiraConnectorSupport.getInstance().getConnector().setQuery(repository.getTaskRepository(), runningQuery, jiraFilter);
                         SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
                                 .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
                         QueryProgressListener list = new QueryProgressListener();

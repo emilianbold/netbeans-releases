@@ -73,9 +73,11 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         jScrollPane2.setBorder(null);
 
@@ -99,6 +101,14 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
 
         errorLabel.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.errorLabel.text")); // NOI18N
 
+        buttonGroup1.add(xmlrpcRadioButton);
+        xmlrpcRadioButton.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.xmlrpcRadioButton.text")); // NOI18N
+
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.jLabel2.text")); // NOI18N
+
+        buttonGroup1.add(restRadioButton);
+        restRadioButton.setText(org.openide.util.NbBundle.getMessage(JiraOptionsPanel.class, "JiraOptionsPanel.restRadioButton.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -118,7 +128,12 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
                         .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(errorLabel)))
+                        .addComponent(errorLabel))
+                    .addComponent(xmlrpcRadioButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2))
+                    .addComponent(restRadioButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -131,7 +146,13 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(221, 221, 221)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addGap(8, 8, 8)
+                .addComponent(xmlrpcRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(restRadioButton)
+                .addGap(139, 139, 139)
                 .addComponent(errorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -148,12 +169,16 @@ public class JiraOptionsPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     final javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     final javax.swing.JTextField issuesTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane2;
     final javax.swing.JTextField queriesTextField = new javax.swing.JTextField();
+    final javax.swing.JRadioButton restRadioButton = new javax.swing.JRadioButton();
+    final javax.swing.JRadioButton xmlrpcRadioButton = new javax.swing.JRadioButton();
     // End of variables declaration//GEN-END:variables
 
 }

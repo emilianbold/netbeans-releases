@@ -39,42 +39,85 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import org.netbeans.modules.mylyn.util.RepositoryConnectorProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
+package org.netbeans.modules.jira.client.spi;
 
 /**
  *
- * @author Ondrej Vrabec
+ * @author tomas
  */
-@ServiceProviders({
-    @ServiceProvider(service = RepositoryConnectorProvider.class),
-    @ServiceProvider(service = MylynRepositoryConnectorProvider.class)
-})
-public final class MylynRepositoryConnectorProvider implements RepositoryConnectorProvider {
+public interface JiraConstants {
 
-    private static MylynRepositoryConnectorProvider INSTANCE;
-    
-    private final JiraRepositoryConnector rc;
+    public String getATTRIBUTE_LINK_PREFIX();
 
-    public MylynRepositoryConnectorProvider () {
-        rc = new JiraRepositoryConnector();
-    }
+    public String getMETA_TYPE();
 
-    static MylynRepositoryConnectorProvider getInstance () {
-        if (INSTANCE == null) {
-            INSTANCE = Lookup.getDefault().lookup(MylynRepositoryConnectorProvider.class);
-        }
-        return INSTANCE;
-    }
-    
-    @Override
-    public JiraRepositoryConnector getConnector () {
-        return rc;
-    }
-    
+    public String getJiraAttribute_ISSUE_KEY_id();
+
+    public String getJiraAttribute_SUMMARY_id();
+
+    public String getJiraAttribute_DESCRIPTION_id();
+
+    public String getJiraAttribute_PRIORITY_id();
+
+    public String getJiraAttribute_RESOLUTION_id();
+
+    public String getJiraAttribute_PROJECT_id();
+
+    public String getJiraAttribute_COMPONENTS_id();
+
+    public String getJiraAttribute_AFFECTSVERSIONS_id();
+
+    public String getJiraAttribute_FIXVERSIONS_id();
+
+    public String getJiraAttribute_ENVIRONMENT_id();
+
+    public String getJiraAttribute_USER_REPORTER_id();
+
+    public String getJiraAttribute_USER_ASSIGNED_id();
+
+    public String getJiraAttribute_TYPE_id();
+
+    public String getJiraAttribute_CREATION_DATE_id();
+
+    public String getJiraAttribute_MODIFICATION_DATE_id();
+
+    public String getJiraAttribute_DUE_DATE_id();
+
+    public String getJiraAttribute_ESTIMATE_id();
+
+    public String getJiraAttribute_INITIAL_ESTIMATE_id();
+
+    public String getJiraAttribute_ACTUAL_id();
+
+    public String getJiraAttribute_PARENT_ID_id();
+
+    public String getJiraAttribute_PARENT_KEY_id();
+
+    public String getJiraAttribute_SUBTASK_IDS_id();
+
+    public String getJiraAttribute_SUBTASK_KEYS_id();
+
+    public String getATTRIBUTE_CUSTOM_PREFIX();
+
+    public String getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW();
+
+    public String getWorkLogConverter_TYPE_WORKLOG();
+
+    public String getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG();
+
+    public String getWorkLogConverter_AUTOR_key();
+
+    public String getWorkLogConverter_START_DATE_key();
+
+    public String getWorkLogConverter_TIME_SPENT_key();
+
+    public String getWorkLogConverter_COMMENT_key();
+
+    public String getMETA_SUB_TASK_TYPE();
+
+    public String getPARENT_ID_id();
+
+    public JiraVersion getMIN_VERSION();
+
 }

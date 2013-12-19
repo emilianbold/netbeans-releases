@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.io.File;
 import java.util.Collection;
 import javax.swing.ListModel;
@@ -56,6 +53,11 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
+import org.netbeans.modules.jira.client.spi.ContentFilter;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.Project;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -84,7 +86,7 @@ public class QueryRefreshTest extends NbTestCase {
         JiraTestUtil.initClient(getWorkDir());
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
-        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));        
+        JiraTestUtil.cleanProject(JiraTestUtil.getProject());        
     }
 
     public static Test suite () {
@@ -94,12 +96,12 @@ public class QueryRefreshTest extends NbTestCase {
     public void testQueryOpenNoRefresh() throws Throwable {
         final String summary = "summary" + System.currentTimeMillis();
         final String queryName = "refreshtest";
-        RepositoryResponse rr = JiraTestUtil.createIssue(summary, "desc", "Bug");
-        assertNotNull(rr.getTaskId());
+        NbJiraIssue issue = JiraTestUtil.createIssue(summary, "desc", "Bug");
 
         JiraRepository repo = JiraTestUtil.getRepository();
-        FilterDefinition fd = new FilterDefinition();
-        fd.setContentFilter(new ContentFilter(summary, true, true, true, true));
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = cp.createFilterDefinition();
+        fd.setContentFilter(cp.createContentFilter(summary, true, true, true, true));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
         assertEquals(0,jq.getIssues().size());
 
@@ -119,8 +121,9 @@ public class QueryRefreshTest extends NbTestCase {
         final String queryName = "refreshtest";
 
         JiraRepository repo = JiraTestUtil.getRepository();
-        FilterDefinition fd = new FilterDefinition();
-        fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = cp.createFilterDefinition();
+        fd.setContentFilter(cp.createContentFilter(summary, true, false, false, false));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
 //        selectTestProject(jq);
         assertEquals(0, jq.getIssues().size());
@@ -129,8 +132,7 @@ public class QueryRefreshTest extends NbTestCase {
         Collection<NbJiraIssue> issues = jq.getIssues();
         assertEquals(0, issues.size());
 
-        RepositoryResponse rr = JiraTestUtil.createIssue(summary, "desc", "Bug");
-        assertNotNull(rr.getTaskId());
+        JiraTestUtil.createIssue(summary, "desc", "Bug");
 
         JiraConfig.getInstance().setQueryRefreshInterval(1); // 1 minute
         JiraConfig.getInstance().setQueryAutoRefresh(queryName, true);
@@ -164,8 +166,9 @@ public class QueryRefreshTest extends NbTestCase {
 
         // create query
         JiraRepository repo = JiraTestUtil.getRepository();
-        FilterDefinition fd = new FilterDefinition();
-        fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = cp.createFilterDefinition();
+        fd.setContentFilter(cp.createContentFilter(summary, true, false, false, false));
         final JiraQuery jq = new KenaiQuery(queryName, repo, fd, JiraTestUtil.TEST_PROJECT, true, false);
 
         // query was created yet it wasn't refreshed
