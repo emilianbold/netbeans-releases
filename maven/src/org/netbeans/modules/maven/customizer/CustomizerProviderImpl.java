@@ -74,7 +74,6 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.model.Utilities;
