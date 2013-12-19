@@ -1,1 +1,0 @@
-OpenIDE-Module: com.atlassian.jira.rest.client
