@@ -98,12 +98,16 @@ public final class JiraConnectorSupport {
         return instance;
     }
 
-    public synchronized void setConnectorType(JiraConnectorProvider.Type type) {
-        this.connectorType = type;
-    }
+    // XXX do not enable/disable connectors until both rest and xmlrpc are provided
+//    public synchronized void setConnectorType(JiraConnectorProvider.Type type) {
+//        this.connectorType = type;
+//    }
     
     public synchronized JiraConnectorProvider getConnector() {
         if (connector == null) {
+            if(connectorType == null) {
+                connectorType = XMLRPC;
+            }
             connector = forType(connectorType);
             // XXX do not enable/disable connectors until both rest and xmlrpc are provided
 //            if(connector == null) {
@@ -119,7 +123,7 @@ public final class JiraConnectorSupport {
 //                        break;
 //                }
 //            }
-            Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", connectorType.getCnb());
+            Jira.LOG.log(Level.INFO, "Selected JIRA connector is {0}", connector != null ? connector.getType() : "NULL");
         }
         return connector;
     }
