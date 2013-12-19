@@ -256,6 +256,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         disStateModel().addListener(disassembly);
     }
 
+    @Override
     public String debuggerType() {
         return "gdb"; // NOI18N
     }
@@ -266,8 +267,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     /**
      * 
-     * Return true if it's OK to send messages to gdb
+     * @return true if it's OK to send messages to gdb
      */
+    @Override
     public boolean isConnected() {
         // See "README.startup"
         if (gdb == null || !gdb.connected() || postedKillEngine) {
@@ -380,6 +382,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
                 }
@@ -387,6 +390,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         } else {
             CndRemote.validate(gdi.getHostName(), new Runnable() {
+                @Override
                 public void run() {
                     start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
                 }
@@ -534,6 +538,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     */
 
     // interface Gdb.Factory.Listener
+    @Override
     public void assignGdb(Gdb tentativeGdb) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.assignGdb()\n"); // NOI18N
@@ -546,6 +551,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface Gdb.Factory.Listener
+    @Override
     public void assignIOPack(IOPack ioPack) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.assignIOPack()\n"); // NOI18N
@@ -554,6 +560,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface gdb.Factory.Listener
+    @Override
     public void connectFailed(String toWhom, String why, IOPack ioPack) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.connectFailed()\n"); // NOI18N
@@ -723,10 +730,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
+    @Override
     public void shutDown() {
 	postKill();
     }
 
+    @Override
     public final void stepInto() {
         sendResumptive("-exec-step"); // NOI18N
     }
@@ -739,10 +748,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive("-exec-run"); // NOI18N
     }
 
+    @Override
     public final void stepOver() {
         sendResumptive("-exec-next"); // NOI18N
     }
 
+    @Override
     public final void stepOut() {
         send("-stack-select-frame 0"); // NOI18N
         execFinish();
@@ -761,6 +772,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 method);
     }
 
+    @Override
     public final void stepTo(String function) {     //FIXUP null function case!
         if (function != null) {
             send("-break-insert -t " + function);    //NOI18N
@@ -768,6 +780,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public final void go() {
         if (state().isProcess) {
             sendResumptive("-exec-continue"); // NOI18N
@@ -971,10 +984,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    }
 	}
 
+        @Override
 	protected void onRunning(MIRecord record) {
 	    unexpected("running", command()); // NOI18N
 	}
 
+        @Override
 	protected void onError(MIRecord record) {
             if (failureChain == null && reportError) {
 		genericFailure(record);
@@ -985,20 +1000,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 	}
 
+        @Override
 	protected void onExit(MIRecord record) {
 	    unexpected("exit", command()); // NOI18N
 	    kill();
 	    finish();
 	}
 
+        @Override
 	protected void onStopped(MIRecord record) {
 	    unexpected("stopped", command()); // NOI18N
 	}
 
+        @Override
 	protected void onOther(MIRecord record) {
 	    unexpected("other", command()); // NOI18N
 	}
 
+        @Override
 	protected void onUserInteraction(MIUserInteraction ui) {
 	    unexpected("userinteraction", command()); // NOI18N
 	}
@@ -1186,6 +1205,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void rerun() {
         if (true /* LATER !state.isRunning */) {
 	    //
@@ -1308,6 +1328,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
     private static final boolean ENABLE_PRETTY_PRINTING = !Boolean.getBoolean("gdb.pretty.disable"); //NOI18N
 
+    @Override
     public FileMapper fmap() {
         return fmap;
     }
@@ -1438,6 +1459,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             public void run() {
                 if (Log.Bpt.fix6810534) {
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             initialAction();
                         }
@@ -1449,15 +1471,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
+    @Override
     public OptionClient getOptionClient() {
         return null;
     }
 
+    @Override
     public String getDebuggingOption(String name) {
         notImplemented("getDebuggingOption");	// NOI18N
         return null;
     }
 
+    @Override
     public void setOption(String name, String value) {
         notImplemented("setOption() " + name + " " + value );	// NOI18N
     }
@@ -1626,10 +1651,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private boolean get_threads = false; // indicate Thread View open/close
 
     // interface NativeDebugger
+    @Override
     public boolean isMultiThreading() {
         return false;
     }
 
+    @Override
     public void registerThreadModel(ThreadModel model) {
         if (Log.Variable.mi_threads) {
             System.out.println("registerThreadModel " + model); // NOI18N
@@ -1645,10 +1672,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Thread[] getThreads() {
         return threads;
     }
 
+    @Override
     public void makeThreadCurrent(Thread thread) {
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
@@ -1955,6 +1984,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // SHOULD factor with DbxDebuggerImpl's stackMasked
     private boolean get_frames = false; // indicate Stack View open/close
 
+    @Override
     public void registerStackModel(StackModel model) {
         if (Log.Variable.mi_frame) {
             System.out.println("registerStackModel " + model); // NOI18N
@@ -1984,6 +2014,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
      */
 
+    @Override
     public void postVerboseStack(boolean v) {
     }
 
@@ -2000,6 +2031,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return null;
     }
 
+    @Override
     public void moreFrame() {
 	return;
     }
@@ -2427,6 +2459,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postCreateWatch(int routingToken, NativeWatch newWatch) {
     }
 
+    @Override
     public boolean watchError(int rt, Error error) {
         return false;
     }
@@ -2442,6 +2475,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebuggerImpl
+    @Override
     protected void restoreWatch(NativeWatch template) {
 	// We don't create watches on the gdb side so there's
 	// nothing to post. Instead we use MI-based "var"s and scan
@@ -2515,6 +2549,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         variableBag.remove_count = 0;
     }
 
+    @Override
     public void registerWatchModel(WatchModel model) {
         if (Log.Variable.mi_vars) {
             System.out.println("registerWatchModel " + model); // NOI18N
@@ -2752,6 +2787,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * Can be used for future when MI support dynamic type.
      */
     // interface NativeDebugger
+    @Override
     public void setDynamicType(boolean b) {
         String cmdString;
 	if (b) {
@@ -2764,33 +2800,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isDynamicType() {
 	return dynamicType;
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isStaticMembers() {
 	return true; // always show static members
     }
 
     // interface NativeDebugger
+    @Override
     public void setStaticMembers(boolean b) {
 	// no-op
 	// GDB TODO
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isInheritedMembers() {
 	return true; // always show inherited members
     }
 
     // interface NativeDebugger
+    @Override
     public void setInheritedMembers(boolean b) {
 	// no-op
 	// GDB TODO
     }
 
     // interface NativeDebugger
+    @Override
     public String[] formatChoices() {
 	return new String[] {
 	    "binary", "octal", "decimal", "hexadecimal", "natural" // NOI18N
@@ -3005,6 +3047,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private boolean get_locals = false; // indicate Locals View open/close
     private GdbVariable[] local_vars = new GdbVariable[0];
 
+    @Override
     public void registerLocalModel(LocalModel model) {
         if (Log.Variable.mi_vars) {
             System.out.println("registerLocalModel " + model); // NOI18N
@@ -3021,10 +3064,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Variable[] getLocals() {
         return local_vars;
     }
 
+    @Override
     public int getLocalsCount() {
         return local_vars.length;
     }
@@ -3681,8 +3726,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     /**
-     * Resue this session with a new debug target
+     * Reuse this session with a new debug target
+     * @param di
      */
+    @Override
     public void reuse(NativeDebuggerInfo di) {
         // Tell gdb what to debug
         debug((GdbDebuggerInfo) di);
@@ -3906,6 +3953,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private class DisController extends ControllerSupport {
 
+        @Override
 	protected void setBreakpointHelp(String address) {
 	    // Similar to ToggleBreakpointActionProvider.doAction
 	    NativeBreakpoint b = NativeBreakpoint.newInstructionBreakpoint(address);
@@ -3952,6 +4000,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	 */
 
         // interface Controller
+        @Override
         public void requestDis(boolean withSource) {
             GdbFrame currentFrame = getCurrentFrame();
             if (currentFrame == null) {
@@ -3976,6 +4025,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         // interface Controller
+        @Override
         public void requestDis(String start, int count, boolean withSource) {
 	    /* 
 	    System.out.printf("DisController.requestDis(%s, %d)\n",
@@ -3995,6 +4045,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void registerDisassembly(Disassembly dis) {
 	//assert w == null || w == disassemblerWindow();
 
@@ -4024,15 +4075,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // implement NativeDebuggerImpl
+    @Override
     protected DisFragModel disModel() {
 	return disModel;
     }
 
     // implement NativeDebuggerImpl
+    @Override
     public Controller disController() {
 	return disController;
     }
 
+    @Override
     public GdbDisassembly getDisassembly() {
         return disassembly;
     }
@@ -4053,6 +4107,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //	    disStateModel().updateStateModel(visitedLocation, false);
     }
 
+    @Override
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }
@@ -4097,6 +4152,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private static final int MEMORY_READ_WIDTH = 16;
     
+    @Override
     public void requestMems(String start, String length, FormatOption format) {
         int lines;
         try {
@@ -4177,6 +4233,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void registerEvaluationWindow(EvaluationWindow w) {
     }
 
@@ -4328,6 +4385,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final int hid = targetHandler.getId();
         MICommand deleteCmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
 
+            @Override
             protected void onDone(MIRecord record) {
 		// Don't use deleteHandlerById ... it ties back to
 		// owning NB's ...
@@ -4443,6 +4501,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     };
 
+    @Override
     public void runFailed() {
         setStatusText(Catalog.get("RunFailed")); // NOI18N
         stateSetRunning(false);
@@ -4830,6 +4889,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         notImplemented("postVarContinuation");	// NOI18N
     }
 
+    @Override
     protected void postVarContinuation(int rt, VarContinuation vc) {
         notImplemented("postVarContinuation");	// NOI18N
     }
@@ -4921,6 +4981,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Called when this session has been switched to
      * 'redundant' is true when we double-click on the same session.
+     * @param redundant
      */
     @Override
     public void activate(boolean redundant) {
@@ -4942,6 +5003,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Called when this session has been switched away from
      * 'redundant' is true when we double-click on the same session.
+     * @param redundant
      */
     @Override
     public void deactivate(boolean redundant) {
@@ -4952,52 +5014,63 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void setCurrentDisLine(Line l) {
         notImplemented("setCurrentDisLine");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public Line getCurrentDisLine() {
         return null;
     }
 
+    @Override
     public void notifyUnsavedFiles(String file[]) {
     }
 
     // interface NativeDebugger
+    @Override
     public void stepOutInst() {
         execFinish();
     }
 
     // interface NativeDebugger
+    @Override
     public void stepOverInst() {
         sendResumptive("-exec-next-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void stepInst() {
         sendResumptive("-exec-step-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void postRestoring(boolean restoring) {
     }
 
     // interface NativeDebugger
+    @Override
     public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         notImplemented("forkThisWay");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void fix() {
         notImplemented("fix");	// NOI18N
     }
 
+    @Override
     public FormatOption[] getEvalFormats() {
         return null; // gdb does not support eval formats
     }
 
     // interface NativeDebugger
+    @Override
     public void exprEval(FormatOption format, final String expr) {
         String cmdString = "-data-evaluate-expression " + "\"" + quoteValue(expr) + "\""; // NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
@@ -5010,6 +5083,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     res = record.error();
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         EvaluationWindow evalWindow = EvaluationWindow.getDefault();
                         evalWindow.open();
@@ -5025,17 +5099,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void execute(String cmd) {
         notImplemented("execute");	// NOI18N
     }
 
 
     // implement NativeDebuggerImpl
+    @Override
     protected void stopUpdates() {
 	// no-op for now
     }
 
     // implement NativeDebuggerImpl
+    @Override
     protected void startUpdates() {
 	// no-op for now
     }
