@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -69,11 +70,14 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
+import org.netbeans.modules.javaee.wildfly.ide.commands.JBModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -202,8 +206,30 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        return new TargetModuleID[]{};
+        List<TargetModuleID> result = new ArrayList<TargetModuleID>();
+        Collection<JBModule> modules;
+        try {
+            modules = getClient().listRunningModules();
+
+            if (ModuleType.EJB.equals(mt)) {
+                for (JBModule module : modules) {
+                    if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
+                        result.add(new JBTargetModuleID(targets[0], module.getArchiveName()));
+                    }
+                }
+            } else if (ModuleType.WAR.equals(mt)) {
+                for (JBModule module : modules) {
+                    if (module.getArchiveName().endsWith("war") && module.isRunning()) {
+                        JBTargetModuleID moduleId = new JBTargetModuleID(targets[0], module.getArchiveName());
+                        moduleId.setContextURL(module.getUrl());
+                        result.add(moduleId);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result.toArray(new TargetModuleID[result.size()]);
     }
 
     @Override

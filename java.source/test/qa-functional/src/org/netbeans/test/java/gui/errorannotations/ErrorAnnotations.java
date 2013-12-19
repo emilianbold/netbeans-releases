@@ -63,6 +63,7 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.java.JavaTestCase;
@@ -77,7 +78,7 @@ import org.netbeans.test.java.Utilities;
 public class ErrorAnnotations extends JavaTestCase {
 
     // default timeout for actions in miliseconds
-    private static final int ACTION_TIMEOUT = 1500;
+    private static final int ACTION_TIMEOUT = 2000;
 
     // name of sample project
     private static final String TEST_PROJECT_NAME = "default";
@@ -128,9 +129,9 @@ public class ErrorAnnotations extends JavaTestCase {
         log(editor.getText());
         Object[] annots = editor.getAnnotations();
         assertNotNull(annots);
-        assertEquals(1, annots.length);
+        assertEquals(annots.length,1);
         assertEquals("org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
-        assertEquals("class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[0]));
+        assertEquals("class, interface, or enum expected\n----\n(Alt-Enter shows hints)", EditorOperator.getAnnotationShortDescription(annots[0]));
     }    
 
     /**
@@ -147,8 +148,12 @@ public class ErrorAnnotations extends JavaTestCase {
         log(editor.getText());
         Object[] annots = editor.getAnnotations();
 
-        // there should be no annotations
-        assertEquals(annots.length, 0);
+        // logging found annotations
+        for (Object annot : annots) {
+            log("Anotation: "+EditorOperator.getAnnotationShortDescription(annot));
+        }
+        // there should be 3 annotations - missing javadoc, create subclass and create test case
+        assertEquals(1,annots.length);
     }
 
     /**
@@ -165,16 +170,16 @@ public class ErrorAnnotations extends JavaTestCase {
         assertNotNull("There are not any annotations.", annots);
         assertEquals("There are not one annotation", 2, annots.length);
         assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
-        assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[0]));
+        assertEquals("Wrong annotation short description", "class, interface, or enum expected\n----\n(Alt-Enter shows hints)", EditorOperator.getAnnotationShortDescription(annots[0]));
         assertEquals("Wrong annotation type ", "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[1]));
-        assertEquals("Wrong annotation short description", "class, interface, or enum expected", EditorOperator.getAnnotationShortDescription(annots[1]));
+        assertEquals("Wrong annotation short description", "class, interface, or enum expected\n----\n(Alt-Enter shows hints)", EditorOperator.getAnnotationShortDescription(annots[1]));
     }
 
     /**
      * Simple annotations tests - tries a simple error.
      */
     public void testAnnotationsSimple3() {               
-        editor.replace(TEST_CLASS_NAME, TEST_CLASS_NAME + "xxx", 3);
+        editor.replace(TEST_CLASS_NAME, TEST_CLASS_NAME + "xxx", 2);
 
         Utilities.takeANap(ACTION_TIMEOUT);
         log(editor.getText());
@@ -182,8 +187,8 @@ public class ErrorAnnotations extends JavaTestCase {
         Object[] annots = editor.getAnnotations();
         assertNotNull("There are not any annotations.", annots);
         assertEquals("There are more than  one annotation: " + String.valueOf(annots.length), 1, annots.length);
-        assertEquals("Wrong annotation type: " + EditorOperator.getAnnotationType(annots[0]), "org-netbeans-spi-editor-hints-parser_annotation_err", EditorOperator.getAnnotationType(annots[0]));
-        assertEquals("Wrong annotation short description.","invalid method declaration; return type required", EditorOperator.getAnnotationShortDescription(annots[0]));                
+        assertEquals("Wrong annotation type: " + EditorOperator.getAnnotationType(annots[0]), "org-netbeans-spi-editor-hints-parser_annotation_err_fixable", EditorOperator.getAnnotationType(annots[0]));
+        assertEquals("Wrong annotation short description.","invalid method declaration; return type required\n----\n(Alt-Enter shows hints)", EditorOperator.getAnnotationShortDescription(annots[0]));                
     }
 
     public void testChangeCloseDiscart() {                                

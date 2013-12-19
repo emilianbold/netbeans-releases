@@ -61,10 +61,12 @@ public static Test suite() {
                 NbModuleSuite.createConfiguration(AddElementHintTest.class)
                 .addTest(AddElementHintTest.class)
                 .addTest(AddImportTest.class)
-                .addTest(HintsTest.class)
-                .addTest(ImplAllAbstractTest.class)
-                .addTest(IntroduceInlineTest.class)
+//                .addTest(HintsTest.class)
+//                .addTest(ImplAllAbstractTest.class)
+//                .addTest(IntroduceInlineTest.class)
                 .addTest(SurroundTest.class)
+                .enableModules(".*")
+                .clusters(".*")
                 
                 );
     }

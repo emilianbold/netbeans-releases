@@ -516,7 +516,15 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
                     } else {
                         Exceptions.printStackTrace(t);
                     }
-                } catch (Exception ex) {
+                } catch (NoSuchMethodException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (UnknownTypeException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
