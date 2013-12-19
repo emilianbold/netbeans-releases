@@ -219,21 +219,17 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        if (!isNew()) {
-            repository.scheduleForRefresh(getNbTask());
-        }
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
     public void closed () {
+        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 editorClosed();
             }
         });
-        if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
-        repository.stopRefreshing(getNbTask());
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 

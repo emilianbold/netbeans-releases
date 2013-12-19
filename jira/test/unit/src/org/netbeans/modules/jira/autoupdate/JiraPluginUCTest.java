@@ -42,12 +42,13 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import java.io.IOException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.bugtracking.commons.AutoupdatePluginUCTestCase;
 import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.JiraTestUtil;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraVersion;
 import org.openide.util.NbBundle;
 
 /**
@@ -137,10 +138,10 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
         
     public void testIsSupported() {
         JiraAutoupdate jau = JiraAutoupdate.getInstance();
-        assertTrue(jau.isSupportedVersion(JiraVersion.MIN_VERSION));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.0")));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.3.1")));
-        assertTrue(jau.isSupportedVersion(new JiraVersion("3.8.0")));
+        assertTrue(jau.isSupportedVersion(JiraTestUtil.getJiraConstants().getMIN_VERSION()));
+        assertTrue(jau.isSupportedVersion(createJiraVersion("3.3.0")));
+        assertTrue(jau.isSupportedVersion(createJiraVersion("3.3.1")));
+        assertTrue(jau.isSupportedVersion(createJiraVersion("3.8.0")));
         assertTrue(jau.isSupportedVersion(getLower(JiraAutoupdate.SUPPORTED_JIRA_VERSION.toString())));
     }
 
@@ -154,11 +155,11 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
     public void testGetVersion() {
         JiraAutoupdate jau = JiraAutoupdate.getInstance();
 
-        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
-        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
-        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1").toString());
-        assertEquals(new JiraVersion("1.1.1").toString(), jau.getVersion("version 1.1.1").toString());
-        assertEquals(new JiraVersion("1.1").toString(), jau.getVersion("version 1.1").toString());
+        assertEquals(createJiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(createJiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1 test").toString());
+        assertEquals(createJiraVersion("1.1.1").toString(), jau.getVersion("test version 1.1.1").toString());
+        assertEquals(createJiraVersion("1.1.1").toString(), jau.getVersion("version 1.1.1").toString());
+        assertEquals(createJiraVersion("1.1").toString(), jau.getVersion("version 1.1").toString());
     }
 
     public void testGotVersion() {
@@ -174,7 +175,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + major + "." + minor + "." + ++micro));
+        return createJiraVersion(new String("" + major + "." + minor + "." + ++micro));
     }
 
     private JiraVersion getHigherMinor(String version) {
@@ -182,7 +183,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + major + "." + ++minor + "." + micro));
+        return createJiraVersion(new String("" + major + "." + ++minor + "." + micro));
     }
 
     private JiraVersion getHigherMajor(String version) {
@@ -190,7 +191,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
         int major = segments.length > 0 ? toInt(segments[0]) : 0;
         int minor = segments.length > 1 ? toInt(segments[1]) : 0;
         int micro = segments.length > 2 ? toInt(segments[2]) : 0;
-        return new JiraVersion(new String("" + ++major + "." + minor + "." + micro));
+        return createJiraVersion(new String("" + ++major + "." + minor + "." + micro));
     }
 
     private JiraVersion getLower(String version) {
@@ -207,7 +208,7 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
                 major--;
             }
         }
-        return new JiraVersion(new String("" + major + "." + minor + "." + ++micro));
+        return createJiraVersion(new String("" + major + "." + minor + "." + ++micro));
     }
 
     private int toInt(String segment) {
@@ -237,5 +238,8 @@ public class JiraPluginUCTest extends AutoupdatePluginUCTestCase {
     protected String getCNB() {
         return JiraAutoupdate.JIRA_MODULE_CODE_NAME;
     }
-
+    
+    private JiraVersion createJiraVersion(String string) {
+        return JiraConnectorSupport.getInstance().getConnector().createJiraVersion(string);
+    }
 }
