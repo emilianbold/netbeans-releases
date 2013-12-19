@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,32 +42,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javaee.wildfly.config;
+package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- *
- * @author Libor Kotouc
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBossMessageDestination implements MessageDestination {
-
-    public static final String QUEUE_PREFIX = "queue/";
-    public static final String TOPIC_PREFIX = "topic/";
-    private String name;
-    private Type type;
+public interface StopModuleCookie extends Node.Cookie {
     
-    public JBossMessageDestination(String name, Type type) {
-        this.name = name;
-        this.type = type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Type getType() {
-        return type;
-    }
+    public Task stop();
     
+    public boolean isRunning();
 }

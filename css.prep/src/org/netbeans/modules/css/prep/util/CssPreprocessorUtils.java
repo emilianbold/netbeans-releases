@@ -105,8 +105,12 @@ public final class CssPreprocessorUtils {
         projectPreferences.setEnabled(project, true);
         projectPreferences.setMappings(project, getDefaultMappings(type));
         CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
-        assert customizerProvider != null : "CustomizerProvider2 not found in lookup of project " + project.getClass().getName();
-        customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+        // #204164
+        if (customizerProvider == null) {
+            LOGGER.log(Level.WARNING, "CustomizerProvider2 not found in lookup of project {0}", project.getClass().getName());
+        } else {
+            customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+        }
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {

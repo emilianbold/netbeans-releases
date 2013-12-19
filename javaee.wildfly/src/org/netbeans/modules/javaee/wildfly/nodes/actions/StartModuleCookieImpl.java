@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,33 +41,73 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-package org.netbeans.modules.javaee.wildfly.config;
-
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import java.io.IOException;
+import javax.enterprise.deploy.shared.ModuleType;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- *
- * @author Libor Kotouc
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBossMessageDestination implements MessageDestination {
+public class StartModuleCookieImpl implements StartModuleCookie {
 
-    public static final String QUEUE_PREFIX = "queue/";
-    public static final String TOPIC_PREFIX = "topic/";
-    private String name;
-    private Type type;
-    
-    public JBossMessageDestination(String name, Type type) {
-        this.name = name;
+
+    private static final RequestProcessor PROCESSOR = new RequestProcessor("JBoss start", 1); // NOI18N
+
+    private final String fileName;
+
+    private final Lookup lookup;
+
+    private final ModuleType type;
+
+    private boolean isRunning;
+
+    public StartModuleCookieImpl(String fileName, Lookup lookup) {
+        this(fileName, ModuleType.WAR, lookup);
+    }
+
+    public StartModuleCookieImpl(String fileName, ModuleType type, Lookup lookup) {
+        this.lookup = lookup;
+        this.fileName = fileName;
         this.type = type;
+        this.isRunning = false;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public Task start() {
+        final WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
+        final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(StartModuleCookieImpl.class,
+                "LBL_StartProgress", nameWoExt));
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                isRunning = true;
+                try {
+                    dm.getClient().startModule(fileName);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                handle.finish();
+                isRunning = false;
+            }
+        };
+        handle.start();
+        return PROCESSOR.post(r);
     }
 
-    public Type getType() {
-        return type;
+    public boolean isRunning() {
+        return isRunning;
     }
-    
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.javaee.wildfly.config;
-
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 /**
  *
- * @author Libor Kotouc
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBossMessageDestination implements MessageDestination {
+public class JBModule {
 
-    public static final String QUEUE_PREFIX = "queue/";
-    public static final String TOPIC_PREFIX = "topic/";
-    private String name;
-    private Type type;
-    
-    public JBossMessageDestination(String name, Type type) {
-        this.name = name;
-        this.type = type;
+    private final String archiveName;
+    private String url;
+    private boolean running;
+
+    public JBModule(String archiveName) {
+        this.archiveName = archiveName;
     }
 
-    public String getName() {
-        return name;
+    public JBModule(String archiveName, boolean running) {
+        this.archiveName = archiveName;
+        this.running = running;
     }
 
-    public Type getType() {
-        return type;
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JBModule other = (JBModule) obj;
+        if ((this.archiveName == null) ? (other.archiveName != null) : !this.archiveName.equals(other.archiveName)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Get the value of url
+     *
+     * @return the value of url
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Set the value of url
+     *
+     * @param url new value of url
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * Get the value of running
+     *
+     * @return the value of running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * Get the value of archiveName
+     *
+     * @return the value of archiveName
+     */
+    public String getArchiveName() {
+        return archiveName;
+    }
+
 }

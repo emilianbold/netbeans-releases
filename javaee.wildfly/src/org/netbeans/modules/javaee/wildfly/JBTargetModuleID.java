@@ -50,7 +50,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
  *
  * @author whd
  */
-class JBTargetModuleID implements TargetModuleID {
+public class JBTargetModuleID implements TargetModuleID {
 
     private Target target;
     private String jar_name;
@@ -63,7 +63,7 @@ class JBTargetModuleID implements TargetModuleID {
         this(target, "");
     }
 
-    JBTargetModuleID(Target target, String jar_name) {
+    public JBTargetModuleID(Target target, String jar_name) {
         this.target = target;
         this.jar_name = jar_name;
 
