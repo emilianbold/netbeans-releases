@@ -784,11 +784,11 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         Map<String, String[]> returnMap = new HashMap<String, String[]>();
         // Obtain all tld files under WEB-INF folder
         FileObject fo;
-        if (webInf != null && webInf.isFolder()) {
+        if (webInf != null && webInf.isFolder() && webInf.isValid()) {
             Enumeration<? extends FileObject> en = webInf.getChildren(true);
             while (en.hasMoreElements()) {
                 fo = en.nextElement();
-                if (fo.getExt().equals("tld")) { // NOI18N
+                if (fo.getExt().equals("tld") && fo.isValid()) { // NOI18N
                     String path;
                     if (wmRoot != null && ContextUtil.isInSubTree(wmRoot, fo)) {
                         path = "/" + ContextUtil.findRelativePath(wmRoot, fo); // NOI18N
