@@ -956,7 +956,13 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     public boolean isExcluded() {
         ItemConfiguration itemConfiguration = getItemConfiguration(getMakeConfiguration());
         if (itemConfiguration != null) {
-            return itemConfiguration.getExcluded().getValue();
+            boolean value = itemConfiguration.getExcluded().getValue();
+            if (value) {
+                if (getMakeConfiguration().getCodeAssistanceConfiguration().includeInCA(this)) {
+                    return false;
+                }
+            }
+            return value;
         }
         return true;
     }
