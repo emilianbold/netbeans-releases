@@ -70,6 +70,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -939,54 +941,28 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(
+            final TransactionContext txctx = TransactionContext.beginStandardTransaction(
                     context.getRootURI(),
                     true,
                     context.isAllFilesIndexing(),
                     context.checkForEditorModifications());
-            boolean vote = true;
             try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
-                final boolean classIndexConsistent = uq != null ?
-                    uq.getState() != ClassIndexImpl.State.NEW ?
-                        true: //Already checked
-                        uq.isValid():
-                    true;
-
-                if (!classIndexConsistent) {
-                    vote = false;
-                }
-
-                FileObject root = context.getRoot();
-
-                if (root == null) {
-                    return vote;
-                }
-
-                if (APTUtils.get(root).verifyAttributes(context.getRoot(), false)) {
-                    vote = false;
-                }
-
-                if (ensureSourcePath(root)) {
-                    JavaIndex.LOG.fine("forcing reindex due to source path change"); //NOI18N
-                    vote = false;
-                }
-
-                if (JavaIndex.ensureAttributeValue(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null)) {
-                    JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
-                    vote = false;
-                }
-
-                if (!JavaFileFilterListener.getDefault().startListeningOn(context.getRoot())) {
-                    JavaIndex.LOG.fine("Forcing reindex due to changed JavaFileFilter"); // NOI18N
-                    vote = false;
-                }
-                return vote;
-            } catch (IOException ioe) {
-                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
+                return JavaIndexerWorker.reduce(
+                    Boolean.TRUE,
+                    JavaIndexerWorker.Bool.AND,
+                    new IndexCheck(context, txctx.get(ClassIndexEventsTransaction.class)),
+                    new MetadataCheck(context));
+            } catch (final ExecutionException ee) {
+                JavaIndex.LOG.log(
+                    Level.WARNING,
+                    "Exception while checking cache validity for root: "+context.getRootURI(),//NOI18N
+                    ee.getCause());
+                return false;
+            } catch (InterruptedException ie) {
+                //Ending
                 return false;
             }
-        }        
+        }
 
         @Override
         public void scanFinished(final Context context) {            
@@ -1103,22 +1079,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public int hashCode() {
             return getIndexerName().hashCode();
-        }
-
-        private static boolean ensureSourcePath(final @NonNull FileObject root) throws IOException {
-            final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
-            String srcPathStr;
-            if (srcPath != null) {
-                final StringBuilder sb = new StringBuilder();
-                for (ClassPath.Entry entry : srcPath.entries()) {
-                    sb.append(entry.getURL()).append(' ');  //NOI18N
-                }
-                srcPathStr = sb.toString();
-            } else {
-                srcPathStr = "";    //NOI18N
-            }
-            return JavaIndex.ensureAttributeValue(root.getURL(), SOURCE_PATH, srcPathStr);
-        }
+        }        
     }
 
     public static final class CompileTuple {
@@ -1182,6 +1143,21 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
+    private static boolean ensureSourcePath(final @NonNull FileObject root) throws IOException {
+        final ClassPath srcPath = ClassPath.getClassPath(root, ClassPath.SOURCE);
+        String srcPathStr;
+        if (srcPath != null) {
+            final StringBuilder sb = new StringBuilder();
+            for (ClassPath.Entry entry : srcPath.entries()) {
+                sb.append(entry.getURL()).append(' ');  //NOI18N
+            }
+            srcPathStr = sb.toString();
+        } else {
+            srcPathStr = "";    //NOI18N
+        }
+        return JavaIndex.ensureAttributeValue(root.toURL(), SOURCE_PATH, srcPathStr);
+    }
+
     private static final Set<String> JDK7AndLaterWarnings = new HashSet<String>(Arrays.asList(
             "compiler.warn.diamond.redundant.args", 
             "compiler.warn.diamond.redundant.args.1",
@@ -1226,6 +1202,82 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean isTypeOf(String mimeType) {
             return JavaDataLoader.JAVA_MIME_TYPE.equals(mimeType);
+        }
+    }
+    
+    private static abstract class Check implements Callable<Boolean> {
+        
+        protected final Context ctx;
+        
+        protected Check(@NonNull final Context ctx) {
+            Parameters.notNull("ctx", ctx); //NOI18N
+            this.ctx = ctx;
+        }        
+    }
+
+    private static final class IndexCheck extends Check {
+
+        private final ClassIndexEventsTransaction cietx;
+        
+        IndexCheck(
+            @NonNull final Context ctx,
+            @NonNull final ClassIndexEventsTransaction cietx) {
+            super(ctx);
+            Parameters.notNull("cietx", cietx); //NOI18N
+            this.cietx = cietx;
+        }
+
+        @NonNull
+        @Override
+        public Boolean call() throws Exception {
+            boolean vote = true;
+            final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(
+                ctx.getRootURI(),
+                true,
+                cietx);
+            final boolean classIndexConsistent = uq != null ?
+                uq.getState() != ClassIndexImpl.State.NEW ?
+                    true: //Already checked
+                    uq.isValid():
+                true;
+
+            if (!classIndexConsistent) {
+                vote = false;
+            }            
+            return vote;            
+        }
+
+    }
+
+    private static final class MetadataCheck extends Check {
+        MetadataCheck(@NonNull final Context ctx) {
+            super(ctx);
+        }
+
+        @NonNull
+        @Override
+        public Boolean call() throws Exception {
+            boolean vote = true;
+            FileObject root = ctx.getRoot();
+            if (root == null) {
+                return vote;
+            }
+            if (APTUtils.get(root).verifyAttributes(ctx.getRoot(), false)) {
+                vote = false;
+            }
+            if (ensureSourcePath(root)) {
+                JavaIndex.LOG.fine("forcing reindex due to source path change"); //NOI18N
+                vote = false;
+            }
+            if (JavaIndex.ensureAttributeValue(ctx.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, null)) {
+                JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
+                vote = false;
+            }
+            if (!JavaFileFilterListener.getDefault().startListeningOn(ctx.getRoot())) {
+                JavaIndex.LOG.fine("Forcing reindex due to changed JavaFileFilter"); // NOI18N
+                vote = false;
+            }
+            return vote;
         }
     }
 }
