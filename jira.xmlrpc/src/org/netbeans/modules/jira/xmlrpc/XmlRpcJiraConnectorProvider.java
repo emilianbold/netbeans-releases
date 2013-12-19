@@ -197,7 +197,7 @@ public class XmlRpcJiraConnectorProvider extends JiraConnectorProvider {
     public ProjectFilter createProjectFilter(Project[] projects) {
         return createWrapper(
                 ProjectFilter.class, 
-                convert(com.atlassian.connector.eclipse.internal.jira.core.model.Project.class, (Proxy[])projects));
+                new com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter(convert(com.atlassian.connector.eclipse.internal.jira.core.model.Project.class, projects)));
     }
 
     @Override
