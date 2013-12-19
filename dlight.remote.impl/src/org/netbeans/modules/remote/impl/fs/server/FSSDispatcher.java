@@ -311,9 +311,14 @@ import org.openide.util.RequestProcessor;
 
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
+        return dispatch(request, null);
+    }
+    
+    public FSSResponse dispatch(FSSRequest request, FSSResponse.Listener listener) throws IOException, ConnectException, 
+            CancellationException, InterruptedException, ExecutionException {
         FSSResponse response = null;
         if (request.needsResponse()) {
-            response = new FSSResponse(request, this);
+            response = new FSSResponse(request, this, listener);
             synchronized (responseLock) {
                 RemoteLogger.assertNull(responses.get(request.getId()),
                         "response should be null for id {0}", request.getId()); // NOI18N

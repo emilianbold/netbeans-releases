@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.litemodel.api;
+
+package org.netbeans.modules.cnd.api.model.syntaxerr;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public interface Declaration {
-
-    String getReferencedType();
-
-    String getFileName();
-
-    int getLine();
-
-    Kind getKind();
-
-    String getQName();
-
-    public static enum Kind {
-        namespace,
-        SUN_class_template,
-        SUN_struct_template,
-        SUN_union_template,
-        SUN_dtor,
-        SUN_function_template,
-        class_type,
-        structure_type,
-        union_type,
-        enumeration_type,
-        const_type,
-        pointer_type,
-        reference_type,
-        array_type,
-        ptr_to_member_type,
-        subprogram,
-        inlined_subroutine,
-        member,
-        enumerator,
-        typedef,
-        inheritance,
-        friend,
-        variable;
+public abstract class CsmErrorInfoHintProvider {
+    private static final Default DEFAULT = new Default();
+    protected CsmErrorInfoHintProvider() {
     }
+
+    public static List<Fix> getFixes(CsmErrorInfo info) {      
+        List<Fix> out = DEFAULT.getFixesImpl(info);
+        if (out.isEmpty()) {
+            out = Collections.<Fix>emptyList();
+        }
+        return out;
+    }
+    
+    // add extra fixes to already found bag and return that bag (or create new bag and return)
+    protected abstract List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound);
+    
+    //
+    // Implementation part
+    //
+    private static final class Default {
+
+        protected final Lookup.Result<CsmErrorInfoHintProvider> res;        
+
+        public Default() {
+            res = Lookup.getDefault().lookupResult(CsmErrorInfoHintProvider.class);
+        }
+
+        protected List<Fix> getFixesImpl(CsmErrorInfo info) {
+            List<Fix> bag = new ArrayList<Fix>(0);
+            for( CsmErrorInfoHintProvider provider : res.allInstances() ) {
+                bag = provider.doGetFixes(info, bag);
+            }
+            return bag;
+        }
+   }
 }

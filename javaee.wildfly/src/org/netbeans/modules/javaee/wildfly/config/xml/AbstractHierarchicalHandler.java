@@ -39,67 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config;
+package org.netbeans.modules.javaee.wildfly.config.xml;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Petr Hejl
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JB7MessageDestinationHandler extends DefaultHandler {
+public class AbstractHierarchicalHandler extends DefaultHandler {
 
-    private final List<JBossMessageDestination> messageDestinations = new ArrayList<JBossMessageDestination>();
+    protected final DefaultHandler parent;
+    protected final XMLReader parser;
 
-    private boolean isDestinations;
-
-    private boolean isDestination;
-
-    private final List<String> jndiNames = new ArrayList<String>();
-
-    public List<JBossMessageDestination> getMessageDestinations() {
-        return messageDestinations;
+    public AbstractHierarchicalHandler(DefaultHandler parent, XMLReader parser) {
+        this.parent = parent;
+        this.parser = parser;
     }
 
-    @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("jms-destinations".equals(qName)) {
-            isDestinations = true;
-        } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
-            isDestination = true;
-        } else if (isDestination && "entry".equals(qName)) {
-            jndiNames.add(attributes.getValue("name"));
-        }
+    public void start(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        parser.setContentHandler(this);
+        parser.setEntityResolver(this);
+        parser.setErrorHandler(this);
+        parser.setDTDHandler(this);
+        startElement(uri, localName, qName, attributes);
     }
 
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (isDestination) {
-            if ("jms-queue".equals(qName)) {
-                isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.QUEUE));
-                }
-                jndiNames.clear();
-            } else if ("jms-topic".equals(qName)) {
-                isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.TOPIC));
-                }
-                jndiNames.clear();
-            }    
-        } else if (isDestinations) {
-            if ("jms-destinations".equals(qName)) {
-                jndiNames.clear();
-                isDestination = false;
-                isDestinations = false;
-            }
-        }
+    public void end(String uri, String localName, String qName) throws SAXException {
+        parser.setContentHandler(parent);
+        parser.setEntityResolver(parent);
+        parser.setErrorHandler(parent);
+        parser.setDTDHandler(parent);
+        parent.endElement(uri, localName, qName);
     }
-
 }

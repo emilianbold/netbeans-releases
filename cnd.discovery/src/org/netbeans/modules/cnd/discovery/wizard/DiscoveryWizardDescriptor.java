@@ -70,7 +70,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
     public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
     public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
-    public static final String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
     public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
     public static final String INCLUDED = "DW:included"; // NOI18N
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
@@ -203,15 +202,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
     
     @Override
-    public String getLevel(){
-        return (String) getProperty(CONSOLIDATION_STRATEGY);
-    }
-    @Override
-    public void setLevel(String level){
-        putProperty(CONSOLIDATION_STRATEGY, level);
-    }
-    
-    @Override
     public List<ProjectConfiguration> getConfigurations(){
         return (List<ProjectConfiguration>) getProperty(CONFIGURATIONS);
     }
@@ -251,7 +241,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         setRootFolder(null);
         setBuildResult(null);
         setAditionalLibraries(null);
-        setLevel(null);
         setConfigurations(null);
         setIncludedFiles(null);
     }
@@ -325,7 +314,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
-        private WizardDescriptor wizard;
+        private final WizardDescriptor wizard;
         public DiscoveryWizardDescriptorAdapter(WizardDescriptor wizard){
             this.wizard = wizard;
         }
@@ -440,15 +429,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         @Override
-        public String getLevel(){
-            return (String) wizard.getProperty(CONSOLIDATION_STRATEGY);
-        }
-        @Override
-        public void setLevel(String level){
-            wizard.putProperty(CONSOLIDATION_STRATEGY, level);
-        }
-        
-        @Override
         public List<ProjectConfiguration> getConfigurations(){
             return (List<ProjectConfiguration>) wizard.getProperty(CONFIGURATIONS);
         }
@@ -513,7 +493,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setBuildResult(null);
             setAditionalLibraries(null);
             setBuildLog(null);
-            setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);
         }
@@ -570,7 +549,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     }
 
     private static class DiscoveryWizardClone implements DiscoveryDescriptor{
-        private Map<String, Object> map;
+        private final Map<String, Object> map;
         
         public DiscoveryWizardClone(Map<String, Object> map){
             this.map = map;
@@ -686,15 +665,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         
         @Override
-        public String getLevel(){
-            return (String) map.get(CONSOLIDATION_STRATEGY);
-        }
-        @Override
-        public void setLevel(String level){
-            map.put(CONSOLIDATION_STRATEGY, level);
-        }
-        
-        @Override
         public List<ProjectConfiguration> getConfigurations(){
             return (List<ProjectConfiguration>) map.get(CONFIGURATIONS);
         }
@@ -759,7 +729,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             setBuildResult(null);
             setAditionalLibraries(null);
             setBuildLog(null);
-            setLevel(null);
             setConfigurations(null);
             setIncludedFiles(null);
         }

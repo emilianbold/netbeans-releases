@@ -211,10 +211,16 @@ public class FoldingSideBar extends JComponent {
     private void drawLineGraphics(Graphics g, int line, int logLine,
             int nextLogLine, int offset, int lineHeight, int descent) {
 
-        int currOffset = lines.getFoldOffsets().get(line);
-        int nextOffset = line + 1 < lines.getFoldOffsets().size()
-                ? lines.getFoldOffsets().get(line + 1) : 0;
-
+        int currOffset;
+        int nextOffset;
+        try {
+            currOffset = lines.getFoldOffsets().get(line);
+            nextOffset = line + 1 < lines.getFoldOffsets().size()
+                    ? lines.getFoldOffsets().get(line + 1) : 0;
+        } catch (IndexOutOfBoundsException ioobe) { // Some lines were removed.
+            LOG.log(Level.FINE, null, ioobe);
+            return;
+        }
         int startY = logLine * lineHeight + offset;
         int endY = nextLogLine * lineHeight + offset;
         if (nextOffset == 1) {

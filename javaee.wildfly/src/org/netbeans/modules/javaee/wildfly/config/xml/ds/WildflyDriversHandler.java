@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
-package org.netbeans.modules.cnd.litemodel.api;
-
+import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
+import java.util.HashMap;
 import java.util.Map;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Alexander Simon
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public interface Model {
-    Map<String, Declaration> getFile(String path);
+public class WildflyDriversHandler extends AbstractHierarchicalHandler {
+
+    private final Map<String, WildflyDriver> drivers = new HashMap<String, WildflyDriver>();
+    
+    private WildflyDriverHandler childHandler;
+
+    public WildflyDriversHandler(DefaultHandler parent, XMLReader parser) {
+        super(parent, parser);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("driver".equals(qName)) {
+            childHandler = new WildflyDriverHandler(this, parser);
+            childHandler.start(uri, localName, qName, attributes);
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if ("drivers".equals(qName)) {
+            end(uri, localName, qName);
+        }
+        else if ("driver".equals(qName)) {
+            drivers.put(childHandler.getDriver().getName(), childHandler.getDriver());
+        }
+    }
+
+    public Map<String, WildflyDriver>  getDrivers() {
+        return drivers;
+    }
 }

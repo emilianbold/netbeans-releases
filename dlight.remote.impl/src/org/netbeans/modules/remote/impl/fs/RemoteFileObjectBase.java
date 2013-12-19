@@ -82,7 +82,7 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
     private final File cache;
-    private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
+    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private FileLock lock;
     private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
@@ -102,6 +102,7 @@ public abstract class RemoteFileObjectBase {
     private static final byte CHECK_CAN_WRITE = 2;
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
+    protected static final byte MASK_WARMUP = 16;
     
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {

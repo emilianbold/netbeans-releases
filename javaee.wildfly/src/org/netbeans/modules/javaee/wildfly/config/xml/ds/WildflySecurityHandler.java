@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,66 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Alexander Simon
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public interface FileModelProvider {
-    FileModel getFileModel(ProjectBase project);
+public class WildflySecurityHandler extends AbstractHierarchicalHandler {
+
+    private StringBuilder buffer;
+    private String username;
+    private String password;
+
+    public WildflySecurityHandler(DefaultHandler parent, XMLReader parser) {
+        super(parent, parser);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("user-name".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+        else if ("password".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (buffer != null) {
+            buffer.append(ch, start, length);
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if ("user-name".equals(qName)) {
+            username = buffer.toString();
+        }
+        else if ("password".equals(qName)) {
+            password = buffer.toString();
+        }
+        else if ("security".equals(qName)) {
+            end(uri, localName, qName);
+        }
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 }

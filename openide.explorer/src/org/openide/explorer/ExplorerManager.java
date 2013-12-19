@@ -1010,7 +1010,8 @@ bigloop:
                     // compare paths to root
                     Node n_selection = newSel.get(newSel.indexOf(n_remove));
 
-                    if (!Arrays.equals(NodeOp.createPath(n_remove, null), NodeOp.createPath(n_selection, null))) {
+                    if (!Arrays.equals(NodeOp.createPath(n_remove, null), NodeOp.createPath(n_selection, null))
+                            || isInParentChildren(n_remove)) {
                         it.remove();
                     }
                 }
@@ -1027,6 +1028,11 @@ bigloop:
             setSelectedNodes0(selNodes);
             
             
+        }
+
+        private boolean isInParentChildren (Node node) {
+            Node parent = node.getParentNode();
+            return parent != null && Arrays.asList(parent.getChildren().getNodes()).contains(node);
         }
     }
 }

@@ -41,43 +41,60 @@
  */
 package org.netbeans.modules.javaee.wildfly.config.xml;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.javaee.wildfly.config.xml.ds.WildflyDatasourcesHandler;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.xml.sax.SAXException;
 
 /**
  *
- * @author ehugonnet
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class XMLDocumentRepository {
+public class ConfigurationParser {
 
     private static final String LOAD_EXTERNAL_DTD_FEATURE = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+    private static final Map<String, String> NAMESPACES = new HashMap<String, String>();
 
-    public Document loadDocument(File xmlFile) {
+    static {
+        NAMESPACES.put("ds", "urn:jboss:domain:datasources:2.0");
+    }
+
+    public static final ConfigurationParser INSTANCE = new ConfigurationParser();
+
+    public Set<Datasource> listDatasources(FileObject xmlFile) {
+        InputStream data = null;
         try {
+            data = xmlFile.getInputStream();
             SAXParserFactory spf = SAXParserFactory.newInstance();
             SAXParser sp = spf.newSAXParser();
             sp.getXMLReader().setFeature(LOAD_EXTERNAL_DTD_FEATURE, false);
-            SAXReader reader = new SAXReader(false);
-            return reader.read(xmlFile);
+            WildflyDatasourcesHandler handler = new WildflyDatasourcesHandler(sp.getXMLReader());
+            sp.parse(data, handler);
+            return handler.getDatasources();
         } catch (SAXException ex) {
-
             Exceptions.printStackTrace(ex);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (DocumentException ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (data != null) {
+                try {
+                    data.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         return null;
-    }
-    
-    public void query(Document document, String query) {
-       // document.createXPath(query)
     }
 }

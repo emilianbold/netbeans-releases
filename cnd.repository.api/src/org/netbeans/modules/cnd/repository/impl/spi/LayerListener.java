@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.litemodel.api;
-
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
  *
- * @author Alexander Simon
+ * @author mtishkov
  */
-public abstract class ModelAccessor {
-    private static final ModelAccessor EMPTY = new Empty();
-
-    /** default instance */
-    private static ModelAccessor defaultAccessor;
-
-    protected ModelAccessor() {
-    }
-
-    /** Static method to obtain the resolver.
-     * @return the resolver
+public interface LayerListener {
+     /**
+     * You can also register this listener as a service
      */
-    public static ModelAccessor getDefault() {
-        /*no need for sync synchronized access*/
-        if (defaultAccessor != null) {
-            return defaultAccessor;
-        }
-        defaultAccessor = Lookup.getDefault().lookup(ModelAccessor.class);
-        return defaultAccessor == null ? EMPTY : defaultAccessor;
-    }
-
-    public abstract Model createModel(Project project, ModelKind kind);
-
-    private static final class Empty extends ModelAccessor {
-        private Empty() {
-        }
-
-        @Override
-        public Model createModel(Project project, ModelKind kind) {
-            return new Model(){
-
-                @Override
-                public Map<String, Declaration> getFile(String path) {
-                    return Collections.<String, Declaration>emptyMap();
-                }
-            };
-        }
-    }
-
-    public enum ModelKind {
-        FULL,
-        TOP_LEVEL_DECLARATIONS,
-        TOP_LEVEL_DECLARATIONS_IN_COMPILATION_UNIT
-    }
+    public static final String PATH = "CND/RepositoryLayerListener"; //NOI18N
+/**
+     * Invoked once a repository is created.
+     * 
+     * Use case is as follows. 
+     * Indexing resides in the same directory repository resides;
+     * and we need to check index consistency when we open a repository:
+     * if index is corrupted, then repository is invalid either 
+     * 
+     * @param layerDescriptor
+     *
+     * @return true if it is OK to open repository,
+     * false if repository data should be considered corrupted
+     */
+    boolean layerOpened(LayerDescriptor layerDescriptor);        
 }

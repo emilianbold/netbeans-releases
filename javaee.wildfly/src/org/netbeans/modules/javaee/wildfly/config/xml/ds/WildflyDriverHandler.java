@@ -39,15 +39,61 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.impl.spi;
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author vkvashin
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public interface LayerExceptionsListener {
+public class WildflyDriverHandler extends AbstractHierarchicalHandler {
 
-    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
+    private WildflyDriver driver;
+    private StringBuilder buffer;
+
+    public WildflyDriverHandler(DefaultHandler parent, XMLReader parser) {
+        super(parent, parser);
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("driver".equals(qName)) {
+            driver = new WildflyDriver(attributes.getValue(uri, "name"));
+        } else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName) || "driver-class".equals(qName)) {
+            buffer = new StringBuilder();
+        }
+
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (buffer != null) {
+            buffer.append(ch, start, length);
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if ("driver".equals(qName)) {
+            end(uri, localName, qName);
+        } else if ("driver-class".equals(qName)) {
+            driver.setDriverClass(buffer.toString());
+        } else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName)) {
+            if (null == driver.getDriverClass()) {
+                driver.setDriverClass("");
+            }
+        }/*else if ("xa-datasource-class".equals(qName) || "datasource-class".equals(qName) || "driver-class".equals(qName)) {
+         driver.setDriverClass(buffer.toString());
+         } */
+
+    }
+
+    public WildflyDriver getDriver() {
+        return driver;
+    }
 }

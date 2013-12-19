@@ -317,10 +317,49 @@ public class RemoteFileUtil {
         String envID = ExecutionEnvironmentFactory.toUniqueID(env);
         pref.put("ProjectPath"+envID, folder); // NOI18N
     }
+    
+    /**
+     * Returns the folder last used for selecting files.
+     * FileChooserBuilder.RemoteFileChooserImpl.
+     * @param key
+     * @param env
+     * @return File the path to last selected file.
+     */
+    public static String getCurrentChooserFile(String key, ExecutionEnvironment env) {
+        if (env.isLocal()) {
+            if (FileChooser.getCurrentChooserFile() != null) {
+                return FileChooser.getCurrentChooserFile().getPath();
+            }
+            return null;
+        } else {
+            Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+            String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+            return pref.get("FileChooserPath"+envID + key, null); // NOI18N
+        }
+    }    
+    /**
+     * Sets the folder last used for creating a new project.
+     * @param key
+     * @param path
+     * @param env
+     */
+    public static void setCurrentChooserFile(String key, String path, ExecutionEnvironment env) {
+        if (path == null) {
+            return;
+        }
+        if (env.isLocal()) {
+            FileChooser.setCurrentChooserFile(new File(path));
+        } else {
+            Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
+            String envID = ExecutionEnvironmentFactory.toUniqueID(env);
+            pref.put("FileChooserPath"+envID + key, path); // NOI18N
+        }
+    }    
 
     /**
      * Returns the folder last used for selecting files.
      * FileChooserBuilder.RemoteFileChooserImpl.
+     * @param env
      * @return File the path to last selected file.
      */
     public static String getCurrentChooserFile(ExecutionEnvironment env) {
@@ -335,10 +374,11 @@ public class RemoteFileUtil {
             return pref.get("FileChooserPath"+envID, null); // NOI18N
         }
     }
-    
+                
     /**
      * Sets the folder last used for creating a new project.
-     * @param folder the path to be set as last used.
+     * @param path
+     * @param env
      */
     public static void setCurrentChooserFile(String path, ExecutionEnvironment env) {
         if (path == null) {

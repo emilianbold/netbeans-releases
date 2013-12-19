@@ -258,7 +258,16 @@ public class ProjectsRootNode extends AbstractNode {
         @Override
         public void addNotify() {         
             OpenProjectList.getDefault().addPropertyChangeListener(this);
-            setKeys( getKeys() );
+            if (Boolean.getBoolean("test.projectnode.sync")) {
+                setKeys( getKeys());
+            } else {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setKeys( getKeys() );
+                    }                
+                });
+            }
         }
         
         @Override

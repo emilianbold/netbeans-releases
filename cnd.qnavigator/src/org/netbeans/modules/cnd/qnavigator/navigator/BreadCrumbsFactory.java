@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -65,7 +66,7 @@ public final class BreadCrumbsFactory {
     private BreadCrumbsFactory(){
     }
     
-    public static void createBreadCrumbs(long caretLineNo, Node selectedNode, JEditorPane jEditorPane, DataObject cdo) {
+    public static void createBreadCrumbs(long caretLineNo, Node selectedNode, JEditorPane jEditorPane, DataObject cdo, final AtomicBoolean canceled) {
         if (!(selectedNode instanceof CppDeclarationNode)) {
             return;
         }
@@ -103,6 +104,9 @@ public final class BreadCrumbsFactory {
                 break;
             }
         }
+        if (canceled != null && canceled.get()) {
+            return;
+        }
         boolean deep = false;
         BreadcrumbsElement selected = breadcrumbsElement;
         if (selected instanceof BreadcrumbsElementImpl &&
@@ -120,7 +124,7 @@ public final class BreadCrumbsFactory {
                 }
             }
         }
-        RP.post(new Body(selected, doc, caretLineNo, deep));
+        RP.post(new Body(selected, doc, caretLineNo, deep, canceled));
     }
     
     private static final class Body implements Runnable {
@@ -128,20 +132,28 @@ public final class BreadCrumbsFactory {
         private final long caretLineNo;
         private final Document doc;
         private final boolean deep;
+        private final AtomicBoolean canceled;
         
-        private Body(BreadcrumbsElement selected, Document doc, long caretLineNo, boolean deep) {
+        private Body(BreadcrumbsElement selected, Document doc, long caretLineNo, boolean deep, AtomicBoolean canceled) {
             this.selected = selected;
             this.caretLineNo = caretLineNo;
             this.doc = doc;
             this.deep = deep;
+            this.canceled = canceled;
         }
 
         @Override
         public void run() {
             if (deep) {
                 while (true) {
+                    if (canceled != null && canceled.get()) {
+                        return;
+                    }
                     boolean advance = false;
                     for (BreadcrumbsElement child : selected.getChildren()) {
+                        if (canceled != null && canceled.get()) {
+                            return;
+                        }
                         if (child instanceof StatementNode) {
                             int start = ((StatementNode) child).getStartOffset();
                             int end = ((StatementNode) child).getEndOffset();

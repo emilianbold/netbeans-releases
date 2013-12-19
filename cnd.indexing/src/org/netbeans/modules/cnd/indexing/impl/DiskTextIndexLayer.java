@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +56,7 @@ import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.indexing.spi.TextIndexLayer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -113,7 +116,7 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
             LOG.log(Level.FINE, "Cnd Text Index query for {0}:\n\t{1}", new Object[]{text, res});
             return res;
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
         }
         return Collections.<CndTextIndexKey>emptyList();
     }
@@ -127,7 +130,39 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
     public LayerDescriptor getDescriptor() {
         return layerDescriptor;
     }
+            
+    @Override
+    public boolean isValid() {
+        try {
+            return index.getStatus() != Index.Status.INVALID;
+        } catch (IOException ex) {
+            //Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }    
 
+    @Override
+    public void unitRemoved(int unitId) {
+         if (unitId < 0) {
+            return;
+        }
+        try {
+            String unitPrefix = toPrimaryKeyPrefix(unitId);
+            Collection<? extends IndexDocument> queryRes = index.query(TextIndexStorageManager.FIELD_UNIT_ID, unitPrefix, Queries.QueryKind.EXACT, "_sn"); // NOI18N
+            TreeSet<String> keys = new TreeSet<String>();
+            for (IndexDocument doc : queryRes) {
+                keys.add(doc.getPrimaryKey());
+            }
+            for (String pk : keys) {
+                index.removeDocument(pk);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InterruptedException ex) {
+            // don't report interrupted exception
+        }      
+    }    
+    
     @Override
     public void shutdown() {
         store();
@@ -168,6 +203,11 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
         }
         LOG.log(Level.FINE, "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start);
     }
+    
+    private String toPrimaryKeyPrefix(int unitId) {
+        //return String.valueOf(unitCodec.unmaskRepositoryID(unitId));
+        return String.valueOf(((long) (unitId) << 32));
+    }    
 
     private String toPrimaryKey(CndTextIndexKey key) {
 //        return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
