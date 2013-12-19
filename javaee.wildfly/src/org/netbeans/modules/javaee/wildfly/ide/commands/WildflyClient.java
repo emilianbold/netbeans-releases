@@ -58,17 +58,18 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
-import org.netbeans.modules.javaee.wildfly.JBTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
 import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
+import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDatasourceNode;
+import org.netbeans.modules.javaee.wildfly.nodes.JBDestinationNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBWebModuleNode;
 import org.openide.util.Lookup;
@@ -86,6 +87,11 @@ public class WildflyClient {
     private static final String EJB3_SUBSYSTEM = "ejb3"; // NOI18N
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
+
+    private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
+    private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
+    private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
+    private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
 
     private final String serverAddress;
     private final int serverPort;
@@ -532,6 +538,104 @@ public class WildflyClient {
         }
     }
 
+    public Collection<JBDestinationNode> listDestinations(Lookup lookup) throws IOException {
+        Set<MessageDestination> destinations = listDestinations();
+        List<JBDestinationNode> modules = new ArrayList<JBDestinationNode>(destinations.size());
+        for (MessageDestination destination : destinations) {
+            modules.add(new JBDestinationNode(destination.getName(), destination, lookup));
+        }
+        return modules;
+    }
+
+    public Set<MessageDestination> listDestinations() throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            Set<MessageDestination> destinations = new HashSet<MessageDestination>();
+            // ModelNode
+            final Object readHornetQServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "CHILD_TYPE")), HORNETQ_SERVER_TYPE);
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readHornetQServers);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object hornetqServer : names) {
+                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
+                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.QUEUE));
+                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.TOPIC));
+                }
+            }
+            return destinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    private Set<JBossMessageDestination> getJMSDestinationForServer(String serverName, Type messageType) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            Set<JBossMessageDestination> listedDestinations = new HashSet<JBossMessageDestination>();
+            // ModelNode
+            final Object readQueues = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "OP")),
+                    getModelDescriptionConstant(cl, "READ_CHILDREN_RESOURCES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            values.put(HORNETQ_SERVER_TYPE, serverName);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            if (messageType == Type.QUEUE) {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSQUEUE_TYPE);
+            } else {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSTOPIC_TYPE);
+            }
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readQueues);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List destinations = modelNodeAsList(cl, readResult(cl, response));
+                for (Object detination : destinations) {
+                    List entries = modelNodeAsList(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, detination), "entries"));
+                    for (Object entry : entries) {
+                        listedDestinations.add(new JBossMessageDestination(modelNodeAsString(cl, entry), messageType));
+                    }
+                }
+            }
+            return listedDestinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     private Object createClient(WildFlyDeploymentFactory.WildFlyClassLoader cl) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
@@ -713,6 +817,22 @@ public class WildflyClient {
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asString", (Class<?>[]) null);
         return (String) method.invoke(modelNode, (Object[]) null);
+    }
+
+    private static String modelNodeAsPropertyForName(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
+        Object property = method.invoke(modelNode, (Object[]) null);
+        method = property.getClass().getMethod("getName", (Class<?>[]) null);
+        return (String) method.invoke(property, (Object[]) null);
+    }
+
+    private static Object modelNodeAsPropertyForValue(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
+        Object property = method.invoke(modelNode, (Object[]) null);
+        method = property.getClass().getMethod("getValue", (Class<?>[]) null);
+        return method.invoke(property, (Object[]) null);
     }
 
     // List<ModelNode>

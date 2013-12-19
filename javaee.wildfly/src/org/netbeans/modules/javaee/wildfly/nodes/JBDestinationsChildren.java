@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,33 +41,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-package org.netbeans.modules.javaee.wildfly.config;
-
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Libor Kotouc
+ * @author Michal Mocnak
  */
-public class JBossMessageDestination implements MessageDestination {
+public class JBDestinationsChildren extends JBAsyncChildren implements Refreshable {
 
-    public static final String QUEUE_PREFIX = "queue/";
-    public static final String TOPIC_PREFIX = "topic/";
-    private String name;
-    private Type type;
-    
-    public JBossMessageDestination(String name, Type type) {
-        this.name = name;
-        this.type = type;
+    private static final Logger LOGGER = Logger.getLogger(JBDestinationsChildren.class.getName());
+
+    private final Lookup lookup;
+
+    public JBDestinationsChildren(Lookup lookup) {
+        this.lookup = lookup;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
+
     }
 
-    public Type getType() {
-        return type;
+    class WildflyDestinationsNodeUpdater implements Runnable {
+
+        List<JBDestinationNode> keys = new ArrayList<JBDestinationNode>();
+
+        @Override
+        public void run() {
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listDestinations(lookup));
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
+        }
     }
-    
+
+    @Override
+    protected void addNotify() {
+        updateKeys();
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(java.util.Collections.EMPTY_SET);
+    }
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof JBDestinationNode) {
+            return new Node[]{(JBDestinationNode) key};
+        }
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
+            return new Node[]{Util.createWaitNode()};
+        }
+        return null;
+    }
+
 }
