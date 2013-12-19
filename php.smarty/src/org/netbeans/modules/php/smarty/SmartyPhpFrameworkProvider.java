@@ -39,16 +39,21 @@
 package org.netbeans.modules.php.smarty;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.queries.PhpVisibilityQuery;
 import org.netbeans.modules.php.api.queries.Queries;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.ui.notification.AutodetectionPanel;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
@@ -60,6 +65,7 @@ import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -139,16 +145,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         return enabled != null && enabled;
     }
 
-    /**
-     * Temporary method for updating Smarty php module preferences to use
-     * boolean value instead of flag for {@code #PROP_SMARTY_AVAILABLE).
-     */
-    private void updateSmartyAvailableProperty(Preferences preferences) {
-        if (preferences.get(PROP_SMARTY_AVAILABLE, "0").equals("1")) { //NOI18N
-            preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-        }
-    }
-
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
         return new File[0];
@@ -199,7 +195,16 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public void phpModuleOpened(final PhpModule phpModule) {
         if (getSmartyPropertyEnabled(phpModule) == null) {
-            RP.schedule(new SmartyAutodetectionJob(phpModule), 1, TimeUnit.MINUTES);
+            try {
+                ParserManager.parseWhenScanFinished(FileUtils.PHP_MIME_TYPE, new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        RP.post(new SmartyAutodetectionJob(phpModule));
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
@@ -227,6 +232,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @CheckForNull
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
     private static Boolean getSmartyPropertyEnabled(PhpModule phpModule) {
         Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
         String available = preferences.get(PROP_SMARTY_AVAILABLE, null);
