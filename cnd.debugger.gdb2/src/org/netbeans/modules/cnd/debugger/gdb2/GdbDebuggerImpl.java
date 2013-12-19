@@ -4240,7 +4240,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
 //        notImplemented("registerArrayBrowserWindow()");	// NOI18N
 //    }
-    void newAsyncBreakpoint(MIRecord record) {
+    /*package*/ void newAsyncBreakpoint(MIRecord record) {
         Integer rt = cliBreakpointsRTs.poll();
         if (rt == null) {
             rt = 0;
@@ -4252,6 +4252,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIResult result = (MIResult) record.results().get(0);
             replaceHandler(rt, result, bp);
         }
+    }
+    
+    /*package*/ void deleteAsyncBreakpoint(MIRecord record) {
+        String id = record.results().getConstValue("id");   // NOI18N
+        int hid = Integer.parseInt(id);
+        bm().deleteHandlerById(0, hid);
     }
 
     private void newHandlers(int rt, MIRecord record, BreakpointPlan bp) {

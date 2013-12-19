@@ -556,9 +556,13 @@ public class GdbHandlerExpert implements HandlerExpert {
 //		}
 //	    }
             
-            String funcString = ((FunctionBreakpoint)template).getFunction();
+            MIValue funcValue = props.valueOf("func"); // NOI18N
+            String funcString = funcValue.toString();
+            if (funcString == null) {
+                funcString = ((FunctionBreakpoint) template).getFunction();
+            }
 
-	    fb.setFunction(funcString);
+            fb.setFunction(funcString);
 
 	} else if (template instanceof InstructionBreakpoint) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;
