@@ -1,9 +1,8 @@
 Name: Guava
 Version: 13.0.0
 License: Apache-2.0
-OSR: 
-Origin: 
-Description: 
+Origin: https://code.google.com/p/guava-libraries/
+Description: collections, caching, primitives support, concurrency libraries, common annotations, string processing, I/O, and so forth
 
 
                                  Apache License
