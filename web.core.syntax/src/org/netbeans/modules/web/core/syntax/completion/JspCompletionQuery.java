@@ -190,7 +190,10 @@ public class JspCompletionQuery {
                 }
             }
             if(tokenPart.endsWith(">") && !tokenPart.endsWith("/>")) {
-                result.addItem(sup.getAutocompletedEndTag(offset));
+                CompletionItem autocompletedEndTag = sup.getAutocompletedEndTag(offset);
+                if (autocompletedEndTag != null) {
+                    result.addItem(autocompletedEndTag);
+                }
             }
             
             

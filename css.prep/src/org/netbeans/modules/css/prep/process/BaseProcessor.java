@@ -154,7 +154,7 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project, fileObject);
+        FileObject webRoot = getWebRoot(project, fileObject);
         File target = getTargetFile(project, webRoot, file);
         if (target == null) {
             // not found
@@ -188,11 +188,11 @@ abstract class BaseProcessor {
         assert originalName != null : fileObject;
         assert originalExtension != null : fileObject;
         File originalFile = new File(FileUtil.toFile(fileObject).getParentFile(), originalName + "." + originalExtension); // NOI18N
-        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), originalFile));
+        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), originalFile));
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
-        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
+        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
     }
 
     private void deleteFile(File file) {
@@ -233,6 +233,18 @@ abstract class BaseProcessor {
             return null;
         }
         return target;
+    }
+
+    // #237600
+    @CheckForNull
+    private FileObject getWebRoot(Project project, FileObject fileObject) {
+        // try to resolve webroot even if input file is not underneath webroot
+        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project, fileObject);
+        if (webRoot != null) {
+            return webRoot;
+        }
+        // simply get some webroot
+        return CssPreprocessorUtils.getWebRoot(project);
     }
 
 }
