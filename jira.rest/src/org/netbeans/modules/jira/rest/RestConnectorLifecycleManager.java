@@ -48,8 +48,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.jira.client.spi.JiraConnectorLifecycleManager;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkUtil;
@@ -81,7 +79,7 @@ public final class RestConnectorLifecycleManager extends JiraConnectorLifecycleM
             } catch (BundleException ex) {
                 JiraConnectorSupport.LOG.log(Level.WARNING, null, ex);
             }
-        }
+        } 
     }
     
 }
