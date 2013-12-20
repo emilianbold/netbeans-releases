@@ -112,7 +112,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.23.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

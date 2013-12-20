@@ -501,13 +501,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public void setAttribute(String attrName, Object value) throws IOException {
-        if (attrName.equals("warmup")) { // NOI18N
-            if (Boolean.TRUE.equals(value) && RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
-                setFlag(MASK_WARMUP, true);   
-            }
-        } else {
-            super.setAttribute(attrName, value);
+    public void warmup() {
+        if (RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
+            setFlag(MASK_WARMUP, true);   
         }
     }
 

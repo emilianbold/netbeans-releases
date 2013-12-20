@@ -813,6 +813,9 @@ public abstract class RemoteFileObjectBase {
         }
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
+    
+    public void warmup() {
+    }
 
     @Override
     public boolean equals(Object obj) {
