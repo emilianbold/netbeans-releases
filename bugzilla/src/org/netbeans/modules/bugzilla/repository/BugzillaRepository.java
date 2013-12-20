@@ -112,12 +112,6 @@ public class BugzillaRepository {
     private BugzillaExecutor executor;
     private Image icon;
     private BugzillaConfiguration bc;
-    private RequestProcessor refreshProcessor;
-
-    private final Set<NbTask> issuesToRefresh = new WeakSet<NbTask>(5);
-    private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
-    private Task refreshIssuesTask;
-    private Task refreshQueryTask;
 
     private PropertyChangeSupport support;
     
@@ -442,7 +436,6 @@ public class BugzillaRepository {
         Bugzilla.LOG.log(Level.FINE, "removing query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().removeQuery(this, query);
         getQueriesIntern().remove(query);
-        stopRefreshing(query);
         fireQueryListChanged();
     }
 
@@ -662,120 +655,6 @@ public class BugzillaRepository {
         return conf;
     }
 
-    private void setupIssueRefreshTask() {
-        if(refreshIssuesTask == null) {
-            refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
-                @Override
-                public void run() {
-                    Set<NbTask> tasks;
-                    synchronized(issuesToRefresh) {
-                        tasks = new HashSet<NbTask>(issuesToRefresh);
-                    }
-                    if(tasks.isEmpty()) {
-                        Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
-                        return;
-                    }
-                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
-                    try {
-                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory()
-                                .createSynchronizeTasksCommand(taskRepository, tasks);
-                        getExecutor().execute(cmd, false);
-                    } catch (CoreException ex) {
-                        // should not happen
-                        Bugzilla.LOG.log(Level.WARNING, null, ex);
-                    }
-                    scheduleIssueRefresh();
-                }
-            });
-            scheduleIssueRefresh();
-        }
-    }
-
-    private void setupQueryRefreshTask() {
-        if(refreshQueryTask == null) {
-            refreshQueryTask = getRefreshProcessor().create(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Set<BugzillaQuery> queries;
-                        synchronized(refreshQueryTask) {
-                            queries = new HashSet<BugzillaQuery>(queriesToRefresh);
-                        }
-                        if(queries.isEmpty()) {
-                            Bugzilla.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
-                            return;
-                        }
-                        for (BugzillaQuery q : queries) {
-                            Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
-                            QueryController qc = q.getController();
-                            qc.autoRefresh();
-                        }
-                    } finally {
-                        scheduleQueryRefresh();
-                    }
-                }
-            });
-            scheduleQueryRefresh();
-        }
-    }
-
-    private void scheduleIssueRefresh() {
-        int delay = BugzillaConfig.getInstance().getIssueRefreshInterval();
-        Bugzilla.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
-        if(delay < 5 && System.getProperty("netbeans.t9y.bugzilla.force.refresh.delay") == null) {
-            Bugzilla.LOG.log(Level.WARNING, " wrong issue refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_ISSUE_REFRESH}); // NOI18N
-            delay = BugzillaConfig.DEFAULT_ISSUE_REFRESH;
-        }
-        refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
-    }
-
-    private void scheduleQueryRefresh() {
-        String schedule = System.getProperty("netbeans.t9y.bugzilla.force.refresh.schedule", "");
-        if(!schedule.isEmpty()) {
-            int delay = Integer.parseInt(schedule);
-            refreshQueryTask.schedule(delay); 
-            return;
-        }
-        
-        int delay = BugzillaConfig.getInstance().getQueryRefreshInterval();
-        Bugzilla.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
-        if(delay < 5) {
-            Bugzilla.LOG.log(Level.WARNING, " wrong query refresh delay {0}. Falling back to default {0}", new Object[] {delay, BugzillaConfig.DEFAULT_QUERY_REFRESH}); // NOI18N
-            delay = BugzillaConfig.DEFAULT_QUERY_REFRESH;
-        }
-        refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
-    }
-
-    public void scheduleForRefresh (NbTask task) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
-        synchronized(issuesToRefresh) {
-            issuesToRefresh.add(task);
-        }
-        setupIssueRefreshTask();
-    }
-
-    public void stopRefreshing (NbTask task) {
-        Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
-        synchronized(issuesToRefresh) {
-            issuesToRefresh.remove(task);
-        }
-    }
-
-    public void scheduleForRefresh(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
-        synchronized(queriesToRefresh) {
-            queriesToRefresh.add(query);
-        }
-        setupQueryRefreshTask();
-    }
-
-    public void stopRefreshing(BugzillaQuery query) {
-        Bugzilla.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
-        synchronized(queriesToRefresh) {
-            queriesToRefresh.remove(query);
-        }
-    }
-
     public void refreshAllQueries() {
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -789,14 +668,7 @@ public class BugzillaRepository {
             }
         });
     }
-
-    private RequestProcessor getRefreshProcessor() {
-        if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Bugzilla refresh - " + getDisplayName()); // NOI18N
-        }
-        return refreshProcessor;
-    }
-
+    
     @Override
     public String toString() {
         return super.toString() + " (" + getDisplayName() + ')';        //NOI18N

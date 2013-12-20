@@ -124,7 +124,7 @@ public class GconfNetworkProxy {
             LOGGER.log(Level.INFO, "GConf system proxy resolver: manual - http for all ({0})", httpProxyAll); //NOI18N
             LOGGER.log(Level.INFO, "GConf system proxy resolver: manual - http host ({0})", httpProxyHost); //NOI18N
             LOGGER.log(Level.INFO, "GConf system proxy resolver: manual - http port ({0})", httpProxyPort); //NOI18N
-            LOGGER.log(Level.INFO, "GConf system proxy resolver: manual - ho proxy hosts ({0})", noProxyHosts); //NOI18N
+            LOGGER.log(Level.INFO, "GConf system proxy resolver: manual - no proxy hosts ({0})", noProxyHosts); //NOI18N
             
             if (httpProxyAll != null && Boolean.parseBoolean(httpProxyAll)) {
                 return new NetworkProxySettings(httpProxyHost, httpProxyPort, getNoProxyHosts(noProxyHosts));
