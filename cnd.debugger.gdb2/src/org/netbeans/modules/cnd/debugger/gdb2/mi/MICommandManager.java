@@ -167,11 +167,11 @@ class MICommandManager {
             // an error happened somewhere
             // delete all unanswered commands
             cmd = pendingCommands.poll();
-            echo(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
+            gdbLogger.logMessage(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
             cmd = pendingCommands.peek();
         }
 	if (cmd == null || cmd.getToken() != token) {
-	    echo(String.format("No command for record %s\n\r", record)); // NOI18N
+	    gdbLogger.logMessage(String.format("No command for record %s\n\r", record)); // NOI18N
             streamMessages.clear();
             consoleMessages.clear();
 	    return;
