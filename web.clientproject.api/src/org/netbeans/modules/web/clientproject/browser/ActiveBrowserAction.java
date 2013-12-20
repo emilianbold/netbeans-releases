@@ -399,8 +399,12 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     }
 
     private Image badgeImageWithArrow(Image im) {
+        // #235642
+        assert im != null : "Image must be provided";
+        Image arrow = ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"); // NOI18N
+        assert arrow != null : "Arrow image must be found";
         return ImageUtilities.mergeImages(im,
-            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"),
+            arrow,
             isSmallToolbarIcon() ? 20 : 28, isSmallToolbarIcon() ? 6 : 10); // NOI18N
     }
 
