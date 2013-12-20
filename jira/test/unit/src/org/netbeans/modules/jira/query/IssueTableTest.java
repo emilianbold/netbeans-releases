@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +51,9 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -71,7 +72,7 @@ public class IssueTableTest extends IssuetableTestFactory {
     protected void setUp() throws Exception {    
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
-        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));        
+        JiraTestUtil.cleanProject(JiraTestUtil.getProject());        
     }
 
     @Override
@@ -83,8 +84,9 @@ public class IssueTableTest extends IssuetableTestFactory {
         final String queryName = "columnstest";
 
         JiraRepository repo = JiraTestUtil.getRepository();
-        FilterDefinition fd = new FilterDefinition();
-        fd.setContentFilter(new ContentFilter("glb", true, true, true, true));
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = cp.createFilterDefinition();
+        fd.setContentFilter(cp.createContentFilter("glb", true, true, true, true));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, false, true); // false = not saved
         assertEquals(0, jq.getIssues().size());
         queries.put(queryName, jq);

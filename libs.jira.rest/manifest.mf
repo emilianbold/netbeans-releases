@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.libs.jira.rest
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jira/rest/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+Netigso-Export-Package: com.atlassian.jira.rest.client,com.atlassian.jira.rest.client.auth,com.atlassian.jira.rest.client.domain,com.atlassian.jira.rest.client.domain.input,com.atlassian.jira.rest.client.internal,com.atlassian.jira.rest.client.internal.domain,com.atlassian.jira.rest.client.internal.domain.input,com.atlassian.jira.rest.client.internal.jersey,com.atlassian.jira.rest.client.internal.json,com.atlassian.jira.rest.client.internal.json.gen

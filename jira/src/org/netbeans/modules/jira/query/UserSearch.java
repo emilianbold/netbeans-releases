@@ -42,17 +42,19 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.NobodyFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.SpecificUserFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.UserInGroupFilter;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.ListModel;
+import org.netbeans.modules.jira.client.spi.CurrentUserFilter;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.NobodyFilter;
+import org.netbeans.modules.jira.client.spi.SpecificUserFilter;
+import org.netbeans.modules.jira.client.spi.UserFilter;
+import org.netbeans.modules.jira.client.spi.UserInGroupFilter;
 
 /**
  *
@@ -155,7 +157,7 @@ class UserSearch implements ItemListener {
     }
 
     private class NobodySearch extends UserSearchItem {
-        private final UserFilter filter = new NobodyFilter();
+        private UserFilter filter = JiraConnectorSupport.getInstance().getConnector().createNobodyFilter();
         public NobodySearch(String displayName) {
             super(displayName);
         }
@@ -173,7 +175,7 @@ class UserSearch implements ItemListener {
         }
     }
     private class CurrentUserSearch extends UserSearchItem {
-        private final UserFilter filter = new CurrentUserFilter();
+        private UserFilter filter = JiraConnectorSupport.getInstance().getConnector().createCurrentUserFilter();
         public CurrentUserSearch() {
             super("Current User");
         }
@@ -196,7 +198,7 @@ class UserSearch implements ItemListener {
         }
         @Override
         public UserFilter getFilter(UserSearch us) {
-            return new SpecificUserFilter(us.getTextField().getText());
+            return JiraConnectorSupport.getInstance().getConnector().createSpecificUserFilter(us.getTextField().getText());
         }
         @Override
         public void selected(UserSearch us) {
@@ -218,7 +220,7 @@ class UserSearch implements ItemListener {
         }
         @Override
         public UserFilter getFilter(UserSearch us) {
-            return new UserInGroupFilter(us.getTextField().getText());
+            return JiraConnectorSupport.getInstance().getConnector().createUserInGroupFilter(us.getTextField().getText());
         }
         @Override
         public void selected(UserSearch us) {
