@@ -455,6 +455,10 @@ public class Util {
             //choose default/first provider
             provider = getPreferredProvider(project);
         }
+        if (provider == null) {
+            //sometimes project may not report any provider as supported, use eclipselink as a base
+            provider = ProviderUtil.ECLIPSELINK_PROVIDER;
+        }
         //add necessary libraries before pu creation
         Library lib = null;
         boolean libIsAdded = false;//used to check if lib was added to compile classpath
