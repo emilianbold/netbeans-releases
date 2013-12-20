@@ -58,12 +58,14 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.javaee.wildfly.JBTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
 import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
 import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
@@ -228,7 +230,7 @@ public class WildflyClient {
         return (Future) method.invoke(clientLocal, modelNode, operationMessageHandler);
     }
 
-    public Collection<JBModule> listRunningModules() throws IOException {
+    public Collection<JBModule> listAvailableModules() throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<JBModule> modules = new ArrayList<JBModule>();
@@ -309,6 +311,46 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
+    
+    
+    public String getWebModuleURL(String webModuleName) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBWebModuleNode> modules = new ArrayList<JBWebModuleNode>();
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, webModuleName);
+            // ModelNode
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDeployments);
+            String httpPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object result = readResult(cl, response);
+                // List<ModelNode>
+                List webapps = modelNodeAsList(cl, result);
+                for (Object application : webapps) {
+                    String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "NAME")));
+                    if (applicationName.endsWith(".war")) {
+                        // ModelNode
+                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                        if (modelNodeIsDefined(cl, deployment)) {
+                            return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                            }
+                    }
+                }
+            }
+            return "";
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
 
     public Collection<JBEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
         try {
@@ -344,6 +386,30 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
+    
+    public boolean startModule(JBTargetModuleID tmid) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, tmid.getModuleID());
+            // ModelNode
+            Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_REDEPLOY_OPERATION"), deploymentAddressModelNode);
+            Object result = executeOnModelNode(cl, enableDeployment);
+            if(isSuccessfulOutcome(cl, result)) {
+                tmid.setContextURL(getWebModuleURL(tmid.getModuleID()));
+                return true;
+            }
+            return false;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
 
     public boolean startModule(String moduleName) throws IOException {
         try {
@@ -352,7 +418,8 @@ public class WildflyClient {
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, moduleName);
             // ModelNode
             Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_REDEPLOY_OPERATION"), deploymentAddressModelNode);
-            return isSuccessfulOutcome(cl, executeOnModelNode(cl, enableDeployment));
+            Object result = executeOnModelNode(cl, enableDeployment);
+            return isSuccessfulOutcome(cl, result);
         } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
         } catch (NoSuchMethodException ex) {
