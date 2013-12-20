@@ -8,7 +8,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>com-atlassian-connector-eclipse-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.atlassian.connector.eclipse.commons.core_3.2.0.v20130212.jar</binary-origin>
+                <binary-origin>external/com.atlassian.connector.eclipse.commons.core_3.2.2.v20130909.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
