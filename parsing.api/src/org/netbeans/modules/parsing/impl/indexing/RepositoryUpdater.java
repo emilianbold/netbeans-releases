@@ -4560,7 +4560,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     sourcesForBinaryRoots,
                     useInitialState,
                     refreshNonExistentDeps);
-                final List<URL> newRoots = new LinkedList<URL>();
+                final Collection<URL> newRoots = new HashSet<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
