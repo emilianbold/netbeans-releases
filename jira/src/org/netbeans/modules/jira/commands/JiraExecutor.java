@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.jira.commands;
 
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraServiceUnavailableException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -56,6 +54,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.autoupdate.JiraAutoupdate;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -128,10 +128,9 @@ public class JiraExecutor {
             } catch (IOException ioe) {
                 // XXX
                 Throwable cause = ioe.getCause();
-                if(cause instanceof JiraException) {
-                    JiraException je = (JiraException) cause;
-                    Jira.LOG.log(Level.INFO, null, je);
-                    throw new WrapperException(je.getMessage(), je);
+                if(JiraConnectorSupport.getInstance().getConnector().isJiraException(cause)) {
+                    Jira.LOG.log(Level.INFO, null, cause);
+                    throw new WrapperException(cause.getMessage(), cause);
                 }
                 throw ioe;
             } catch (CoreException ce) {
@@ -292,8 +291,7 @@ public class JiraExecutor {
             if (msg != null) {
                 msg = msg.toLowerCase();
             }
-            if (ex.getCause() instanceof JiraServiceUnavailableException
-                    || HOST_NOT_FOUND_ERROR.equals(msg)) {
+            if (JiraConnectorSupport.getInstance().getConnector().isJiraException(ex.getCause()) || HOST_NOT_FOUND_ERROR.equals(msg)) {
                 return ex.getMessage();
             }
             return null;

@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.jira.util;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import org.netbeans.modules.jira.client.spi.Project;
 
 /**
  *

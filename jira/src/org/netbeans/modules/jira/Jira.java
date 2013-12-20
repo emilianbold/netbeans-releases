@@ -42,14 +42,11 @@
 
 package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Logger;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
@@ -58,6 +55,9 @@ import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.Priority;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -71,7 +71,7 @@ import org.openide.util.RequestProcessor;
  */
 public class Jira {
 
-    private JiraRepositoryConnector jrc;
+    private AbstractRepositoryConnector jrc;
     private static Jira instance;
     private JiraStorageManager storageManager;
 
@@ -116,17 +116,16 @@ public class Jira {
         return rp;
     }
 
-    public JiraRepositoryConnector getRepositoryConnector() {
+    public AbstractRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
-            jrc = MylynRepositoryConnectorProvider.getInstance().getConnector();
-            MylynSupport.getInstance().addRepositoryListener(JiraClientFactory.getDefault());
+            jrc = JiraConnectorSupport.getInstance().getConnector().getRepositoryConnector();
         }
         return jrc;
     }
 
     public JiraClient getClient(TaskRepository repo) {
         // XXX init repo connenction?
-        return JiraClientFactory.getDefault().getJiraClient(repo);
+        return JiraConnectorSupport.getInstance().getConnector().getClient(repo);
     }
 
     public JiraStorageManager getStorageManager () {

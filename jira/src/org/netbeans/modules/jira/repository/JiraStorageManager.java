@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jira.repository;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -59,6 +58,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.FileUtils;
 import org.netbeans.modules.jira.util.JiraUtils;
