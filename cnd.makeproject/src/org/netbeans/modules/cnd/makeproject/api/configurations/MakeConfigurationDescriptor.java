@@ -872,6 +872,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 ccFiles = true;
             }
+            if (makeConfiguration.getCodeAssistanceConfiguration().getIncludeInCA().getDirty()) {
+                makeConfiguration.getCodeAssistanceConfiguration().getIncludeInCA().setDirty(false);
+                cFiles = true;
+                ccFiles = true;
+            }
             if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                 makeConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
                 ccFiles = true;
