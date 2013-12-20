@@ -169,17 +169,18 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         for (Target target : targets) {
             moduleIds.add(new JBTargetModuleID(target, deployment.getModuleFile().getName()));
         }
-        final WildflyProgressObject progress = new WildflyProgressObject(moduleIds.toArray(new TargetModuleID[targets.length]));
+        TargetModuleID[] tmids = moduleIds.toArray(new TargetModuleID[targets.length]);
+        final WildflyProgressObject progress = new WildflyProgressObject(tmids);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
             } else {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
+                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
+            progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
         }
         return progress;
     }
@@ -209,7 +210,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         List<TargetModuleID> result = new ArrayList<TargetModuleID>();
         Collection<JBModule> modules;
         try {
-            modules = getClient().listRunningModules();
+            modules = getClient().listAvailableModules();
 
             if (ModuleType.EJB.equals(mt)) {
                 for (JBModule module : modules) {
@@ -246,8 +247,30 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        return new TargetModuleID[]{};
+        List<TargetModuleID> result = new ArrayList<TargetModuleID>();
+        Collection<JBModule> modules;
+        try {
+            modules = getClient().listAvailableModules();
+
+            if (ModuleType.EJB.equals(mt)) {
+                for (JBModule module : modules) {
+                    if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
+                        result.add(new JBTargetModuleID(targets[0], module.getArchiveName()));
+                    }
+                }
+            } else if (ModuleType.WAR.equals(mt)) {
+                for (JBModule module : modules) {
+                    if (module.getArchiveName().endsWith("war")) {
+                        JBTargetModuleID moduleId = new JBTargetModuleID(targets[0], module.getArchiveName());
+                        moduleId.setContextURL(module.getUrl());
+                        result.add(moduleId);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result.toArray(new TargetModuleID[result.size()]);
     }
 
     @Override

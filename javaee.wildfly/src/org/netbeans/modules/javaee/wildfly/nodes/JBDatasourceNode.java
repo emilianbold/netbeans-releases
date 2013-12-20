@@ -43,13 +43,18 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -64,11 +69,35 @@ public class JBDatasourceNode extends AbstractNode {
         setDisplayName(ds.getJndiName());
         setName(name);
         setShortDescription(ds.getDisplayName());
+        initProperties(ds);
+    }
+
+    protected void initProperties(Datasource ds) {
+        addProperty("Driver", ds.getDriverClassName());
+        addProperty("JndiName", ds.getJndiName());
+        addProperty("Url", ds.getUrl());
+        addProperty("Username", ds.getUsername());
+        addProperty("Password", ds.getPassword());
+    }
+
+    private void addProperty(String name, String value) {
+        String displayName = NbBundle.getMessage(JBDatasourceNode.class, "LBL_Resources_Datasources_Datasource_" + name);
+        String description = NbBundle.getMessage(JBDatasourceNode.class, "DESC_Resources_Datasources_Datasource_" + name);
+        PropertySupport ps = new SimplePropertySupport(name, value, displayName, description);
+        getSheet().get(Sheet.PROPERTIES).put(ps);
+    }
+    
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        setSheet(sheet);
+        return sheet;
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[]{
+            SystemAction.get(PropertiesAction.class),
             SystemAction.get(UndeployModuleAction.class)
         };
     }
