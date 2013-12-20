@@ -2051,8 +2051,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
     
     public boolean hasProjectCustomizer() {
-        boolean ret = getActiveConfiguration().isCustomConfiguration();
-        return ret;
+        MakeConfiguration activeConfiguration = getActiveConfiguration();
+        if (activeConfiguration != null) {
+            return activeConfiguration.isCustomConfiguration();
+        }
+        return false;
     }
     
     public MakeProjectCustomizer getProjectCustomizer() {
