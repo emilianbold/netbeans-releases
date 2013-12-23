@@ -553,7 +553,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         readEntryReqs.incrementAndGet();
         try {
-            if (isFlaggedForWarmup()) {
+            if (isFlaggedForWarmup() && !forceRefresh) {
                 warmupReqs.incrementAndGet();
                 DirEntryList entryList = null;
                 RemoteFileSystemTransport.Warmup w = getWarmup();
