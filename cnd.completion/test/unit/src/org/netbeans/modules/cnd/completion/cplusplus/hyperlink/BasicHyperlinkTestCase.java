@@ -1049,6 +1049,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug238041.c", 10, 14, "bug238041.c", 5, 5);
     }
     
+    public void testBug239739() throws Exception {
+        // Bug 239739 - regression in inaccuracy tests
+        performTest("bug239739.cpp", 12, 12, "bug239739.cpp", 6, 9);
+        performTest("bug239739.cpp", 13, 14, "bug239739.cpp", 6, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

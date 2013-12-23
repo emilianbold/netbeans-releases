@@ -164,6 +164,10 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         return createType(ast, null, file, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
     }
+    
+    public static TypeImpl createType(AST asts[], CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(asts, null, file, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }    
 
     static int getReferenceValue(CsmType type) {
         if (type.isRValueReference()) {
@@ -177,12 +181,35 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         return createType(ast, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
     }
+
+    public static TypeImpl createType(AST asts[], CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(asts, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }    
     
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         return createType(ast, classifier, file, content, ptrOperator, arrayDepth, parent, scope, null, inFunctionParameters, inTypedef);
     }
-
+    
+    public static TypeImpl createType(AST asts[], CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(asts, classifier, file, content, ptrOperator, arrayDepth, parent, scope, null, inFunctionParameters, inTypedef);
+    }    
+    
     public static TypeImpl createType(AST ast, 
+                                      CsmClassifier classifier, 
+                                      CsmFile file, 
+                                      FileContent content, 
+                                      AST ptrOperator, 
+                                      int arrayDepth, 
+                                      CsmType parent, 
+                                      CsmScope scope, 
+                                      List<CsmTemplateParameter> additionalTemplateParams,
+                                      boolean inFunctionParameters, 
+                                      boolean inTypedef) 
+    {
+        return createType(new AST[]{ast}, classifier, file, content, ptrOperator, arrayDepth, parent, scope, additionalTemplateParams, inFunctionParameters, inTypedef);
+    }    
+
+    public static TypeImpl createType(AST asts[], 
                                       CsmClassifier classifier, 
                                       CsmFile file, 
                                       FileContent content, 
@@ -223,6 +250,7 @@ public class TypeFactory {
 
         boolean functionPointerType = false;
         
+        AST ast = asts[0];
         AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
         
         if (typeStart != null && typeStart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(typeStart.getFirstChild())) {
@@ -231,9 +259,9 @@ public class TypeFactory {
             type = new DeclTypeImpl(typeStart, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         } else if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
-        } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
+        } else if (TypeFunPtrImpl.isFunctionPointerParamList(asts, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
-            ((TypeFunPtrImpl)type).init(ast, scope, inFunctionParameters, inTypedef);
+            ((TypeFunPtrImpl)type).init(asts, scope, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
             type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));

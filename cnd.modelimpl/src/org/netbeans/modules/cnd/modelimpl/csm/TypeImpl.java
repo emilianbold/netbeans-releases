@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -311,8 +312,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return OffsetableBase.getEndOffset(ast);
         }
         ast = getLastNode(ast, greedy);
-        if( ast instanceof CsmAST ) {
-            return ((CsmAST) ast).getEndOffset();
+        if( ast instanceof OffsetableAST ) {
+            return ((OffsetableAST) ast).getEndOffset();
         }
         return OffsetableBase.getEndOffset(node);
     }

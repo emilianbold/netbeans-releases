@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 
 /**
  *
@@ -85,7 +86,7 @@ public class AstRendererException extends Exception {
     }
     
     private static int getStartOffset(AST node) {
-        CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+        OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
         if( csmAst != null ) {
             return csmAst.getOffset();
         }

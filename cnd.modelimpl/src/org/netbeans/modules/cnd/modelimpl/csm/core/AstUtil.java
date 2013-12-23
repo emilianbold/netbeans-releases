@@ -44,14 +44,16 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.antlr.ASTVisitor;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.PrintStream;
 import java.util.Collection;
+import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableFakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;
 
@@ -335,10 +337,10 @@ public class AstUtil {
         }
     }    
 
-    public static CsmAST getFirstCsmAST(AST node) {
+    public static OffsetableAST getFirstCsmAST(AST node) {
         if( node != null ) {
-            if( node instanceof CsmAST ) {
-                return (CsmAST) node;
+            if( node instanceof OffsetableAST ) {
+                return (OffsetableAST) node;
             }
             else {
                 return getFirstCsmAST(node.getFirstChild());
@@ -346,6 +348,18 @@ public class AstUtil {
         }
         return null;
     }
+    
+    public static OffsetableFakeAST getFirstOffsetableAST(AST node) {
+        if( node != null ) {
+            if( node instanceof OffsetableFakeAST ) {
+                return (OffsetableFakeAST) node;
+            }
+            else {
+                return getFirstOffsetableAST(node.getFirstChild());
+            }
+        }
+        return null;
+    }    
 
     public static String toString(AST ast) {
         final StringBuilder out = new StringBuilder();
@@ -433,7 +447,7 @@ public class AstUtil {
         if (ast == null) {
             return "<null>"; // NOI18N
         }
-        CsmAST startAst = getFirstCsmAST(ast);
+        OffsetableAST startAst = getFirstCsmAST(ast);
         AST endAst = getLastChildRecursively(ast);
         if (startAst != null && endAst != null) {
             StringBuilder sb = new StringBuilder();// NOI18N
@@ -458,7 +472,7 @@ public class AstUtil {
             return null;
         }
         
-        AST firstClonedNode = new FakeAST();
+        AST firstClonedNode = createClone(source);
         AST currentClonedAST = firstClonedNode;
         AST prevClonedAST = null;
         
@@ -473,10 +487,14 @@ public class AstUtil {
             }
             source = source.getNextSibling();
             prevClonedAST = currentClonedAST;
-            currentClonedAST = new FakeAST();
+            currentClonedAST = createClone(source);
         }
         
         return firstClonedNode;
+    }
+    
+    private static AST createClone(AST ast) {
+        return ast instanceof OffsetableAST ? new OffsetableFakeAST() : new FakeAST();
     }
 }
 

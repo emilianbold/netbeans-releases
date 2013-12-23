@@ -125,8 +125,8 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         this.returnType = type;
     }
     
-    void init(AST ast, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
-        initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
+    void init(AST asts[], CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        initFunctionPointerParamList(asts, this, inFunctionParameters, inTypedef);
         
         // Initialize scope
         this.scopeRef = scope;
@@ -135,7 +135,8 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             assert scopeUID != null;
         }
         
-        // Initialize return type        
+        // Initialize return type   
+        AST ast = asts[0];
         AST typeASTStart = ast;
         AST typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_BUILTIN);
         if (typeASTEnd != null) {
@@ -146,9 +147,12 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         if (typeASTEnd == null) {
             typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_COMPOUND);
             if (typeASTEnd == null) {
-                typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
-                typeASTStart = typeASTEnd;
-            }
+                typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+                if (typeASTEnd == null) {
+                    typeASTEnd = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_TYPE_DECLTYPE);
+                    typeASTStart = typeASTEnd;                    
+                }
+            }            
         }
         
         AST fakeTypeAst = AstUtil.cloneAST(typeASTStart, typeASTEnd);
@@ -262,15 +266,22 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         return true;
     }
 
-    public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters) {
-        return isFunctionPointerParamList(ast, inFunctionParameters, false);
+    public static boolean isFunctionPointerParamList(AST asts[], boolean inFunctionParameters) {
+        return isFunctionPointerParamList(asts, inFunctionParameters, false);
     }
 
-    public static boolean isFunctionPointerParamList(AST ast, boolean inFunctionParameters, boolean inTypedef) {
-        return initFunctionPointerParamList(ast, null, inFunctionParameters, inTypedef);
+    public static boolean isFunctionPointerParamList(AST asts[], boolean inFunctionParameters, boolean inTypedef) {
+        return initFunctionPointerParamList(asts, null, inFunctionParameters, inTypedef);
     }
 
-    private static boolean initFunctionPointerParamList(AST ast, TypeFunPtrImpl instance, boolean inFunctionParams, boolean inTypedef) {
+    private static boolean initFunctionPointerParamList(AST asts[], TypeFunPtrImpl instance, boolean inFunctionParams, boolean inTypedef) {
+        AST ast = asts[asts.length - 1];
+        
+        AST separator = AstUtil.findSiblingOfType(ast, CPPTokenTypes.COMMA);
+        if (separator != null) {
+            ast = AstUtil.cloneAST(ast, separator);
+        }
+        
         FileContent fileContent = null;
         AST next = null;
         // find opening brace

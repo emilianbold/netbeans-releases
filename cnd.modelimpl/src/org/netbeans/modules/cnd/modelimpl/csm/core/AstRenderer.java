@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MutableObject;
@@ -492,7 +493,7 @@ public class AstRenderer {
     }
 
     private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction) {
-        CsmAST csmAST = AstUtil.getFirstCsmAST(name);
+        OffsetableAST csmAST = AstUtil.getFirstCsmAST(name);
 
         StringBuilder varName = new StringBuilder(AstUtil.getText(name));
         AST next = name.getNextSibling();
@@ -1031,8 +1032,7 @@ public class AstRenderer {
             AST firstChild = ast.getFirstChild();
             if (firstChild != null) {
                 if (firstChild.getType() == CPPTokenTypes.LITERAL_typedef) {
-                    //return createTypedef(ast, file, container);
-
+                    AST typeBeginning = null;
                     AST classifier = null;
                     int arrayDepth = 0;
                     AST nameToken = null;
@@ -1053,12 +1053,14 @@ public class AstRenderer {
                             case CPPTokenTypes.CSM_EXPRESSION:
                                 if (typeof) {
                                     classifier = curr.getFirstChild();
+                                    typeBeginning = classifier;
                                 }
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                                 if (!cpp11StyleFunction) {
                                     classifier = curr;
+                                    typeBeginning = classifier;
                                 }
                                 break;
                             case CPPTokenTypes.LITERAL_enum:
@@ -1078,7 +1080,8 @@ public class AstRenderer {
                             case CPPTokenTypes.LITERAL_class:
                                 AST next = curr.getNextSibling();
                                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
-                                    classifier = next;
+                                    classifier = curr;
+                                    typeBeginning = classifier;
                                     cfdi = createForwardClassDeclaration(ast, container, file, scope);
                                 }
                                 break;
@@ -1113,10 +1116,10 @@ public class AstRenderer {
                                     planB = true;
                                 }                    
                                 if(planB) {
-                                    if (cfdi != null) {
-                                        typeImpl = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
+;                                    if (cfdi != null) {
+                                        typeImpl = TypeFactory.createType(new AST[]{classifier, typeBeginning}, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
                                     } else if (classifier != null) {
-                                        typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
+                                        typeImpl = TypeFactory.createType(new AST[]{classifier, typeBeginning}, file, ptrOperator, arrayDepth, null, scope, false, true);
                                     } else if (results.getEnclosingClassifier() != null) {
                                         typeImpl = TypeFactory.createType(results.getEnclosingClassifier(), ptrOperator, arrayDepth, ast, file);
                                     }
@@ -1135,6 +1138,7 @@ public class AstRenderer {
                                 name = "";
                                 nameToken = null;
                                 arrayDepth = 0;
+                                typeBeginning = curr.getNextSibling();
                                 break;
                                 
                             case CPPTokenTypes.POINTERTO:
