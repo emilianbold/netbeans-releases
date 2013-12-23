@@ -735,6 +735,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean changed = true;
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
             for (DirEntry newEntry : newEntries.values()) {
@@ -775,6 +776,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } 
                             if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                entriesToFireChangedRO.add(newEntry);
                                 changed = fire = true;
                             } 
                             if (!newEntry.isSameUser(oldEntry)) {
@@ -889,6 +891,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         new FileRenameEvent(directChild2Rename.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
                 fireFileRenamedEvent(this.getListeners(), 
                         new FileRenameEvent(this.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
+                fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
             }
         } finally {
             writeLock.unlock();
@@ -1098,6 +1101,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } 
                             if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                entriesToFireChangedRO.add(newEntry);
                                 changed = fire = true;
                             } 
                             if (!newEntry.isSameUser(oldEntry)) {
@@ -1218,22 +1222,26 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     }
                 }
-                for (DirEntry entry : entriesToFireChangedRO) {
-                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
-                    if (fo != null) {
-                        if (fo.isPendingRemoteDelivery()) {
-                            RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
-                        } else {
-                            fo.fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
-                        }
-                    }
-                }
+                fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
                 //fireFileChangedEvent(getListeners(), new FileEvent(this));
             }
         } finally {
             writeLock.unlock();
         }
         return storage;
+    }
+    
+    private void fireReadOnlyChangedEventsIfNeed(List<DirEntry> entriesToFireChangedRO) {
+        for (DirEntry entry : entriesToFireChangedRO) {
+            RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+            if (fo != null) {
+                if (fo.isPendingRemoteDelivery()) {
+                    RemoteLogger.getInstance().log(Level.FINE, "Skipping change r/o event for pending file {0}", fo);
+                } else {
+                    fo.fireReadOnlyChangedEvent();
+                }
+            }
+        }
     }
     
     private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected) {
