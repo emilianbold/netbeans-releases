@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.util.Arrays;
@@ -66,7 +65,7 @@ final class KeyProcessing {
         // move caret to start/end of line
         private static final char CHAR_SOH = (char) 1; // ^A ASCII Start of heading
         private static final char CHAR_ENQ = (char) 5; // ^E ASCII Enquiry
-        
+
         private static final char CHAR_BS = (char) 8; // ^H ASCII BackSpace
         static final char CHAR_LF = (char) 10; // ^J ASCII LineFeed
         static final char CHAR_CR = (char) 13; // ^M ASCII CarriageReturn
@@ -78,10 +77,12 @@ final class KeyProcessing {
         private static final char[] BS_SEQUENCE = {CHAR_BS, CHAR_SP, CHAR_BS};
         // erase to the start/end of line sequence
         private static final char[] BS_SOL_SEQUENCE = {CHAR_ESC, '[', '1', 'K'};
+        // erase the entire line
+        private static final char[] BS_EL_SEQUENCE = {CHAR_ESC, '[', '2', 'K'};
         private static final char[] BS_EOL_SEQUENCE = {CHAR_ESC, '[', 'K'};
         // erase specified amount of symbols
         private static final String DEL_SEQUENCE_FMT = "\033[%dP"; // NOI18N
-        
+
         static final char[] BOLD_SEQUENCE = {CHAR_ESC, '[', '1', 'm'};
         static final char[] BLUEBOLD_SEQUENCE = {CHAR_ESC, '[', '1', ';', '3', '4', 'm'};
         static final char[] RED_SEQUENCE = {CHAR_ESC, '[', '3', '1', 'm'};
@@ -89,7 +90,7 @@ final class KeyProcessing {
         static final char[] BROWN_SEQUENCE = {CHAR_ESC, '[', '5', '0', 'm'};
         static final char[] GREEN_SEQUENCE = {CHAR_ESC, '[', '5', '1', 'm'};
         static final char[] LOG_SEQUENCE = {CHAR_ESC, '[', '5', '2', 'm'};
-        
+
         static final char[] RESET_SEQUENCE = {CHAR_ESC, '[', '0', 'm'};
 
         // pressed DEL key (as sequence)
@@ -110,15 +111,16 @@ final class KeyProcessing {
 
         private static final Logger STREAM_LOG = Logger.getLogger(Gdb.class.getName());
         private static final char FIRST_PRINTABLE = ' '; // NOI18N
-        private static final char[] wrapCR = new char[]{ESCAPES.CHAR_CR};
-        private static final char[] wrapNL = new char[]{ESCAPES.CHAR_LF};
+        private final History history = new History();
 
         private static class History {
 
             private static final int MAX_SIZE = 100;
             private final LinkedList<String> list;
             private ListIterator<String> iter;
-            private boolean lastCallIsNext = false;
+
+            private boolean forward = false;
+            private boolean lastIsTmp = false;
 
             public History() {
                 list = new LinkedList<String>();
@@ -126,38 +128,61 @@ final class KeyProcessing {
             }
 
             public void add(final String string) {
-                if (list.size() > MAX_SIZE) {
-                    list.removeFirst();
+                if (lastIsTmp) {
+                    list.removeLast();
+                    lastIsTmp = false;
+                } else {
+                    if (list.size() > MAX_SIZE) {
+                        list.removeFirst();
+                    }
                 }
                 list.addLast(string);
                 iter = list.listIterator(list.size());
+                forward = false;
             }
 
             public String previous() {
-                if (lastCallIsNext) {
+                if (forward && iter.hasPrevious()) {
                     iter.previous();
                 }
-                lastCallIsNext = false;
+                forward = false;
                 if (iter.hasPrevious()) {
                     return iter.previous();
                 } else {
-                    return "";
+                    return (!list.isEmpty())
+                            ? list.getFirst()
+                            : "";
                 }
             }
 
             public String next() {
-                if (!lastCallIsNext) {
+                if (!forward && iter.hasNext()) {
                     iter.next();
                 }
-                lastCallIsNext = true;
+                forward = true;
                 if (iter.hasNext()) {
                     return iter.next();
                 } else {
-                    return "";
+                    return (!list.isEmpty())
+                            ? list.getLast()
+                            : "";
                 }
             }
+
+            public boolean isLastTmp() {
+                return lastIsTmp;
+            }
+
+            public boolean isLast() {
+                return !iter.hasNext();
+            }
+
+            public void setTmp(final String elem) {
+                add(elem);
+                lastIsTmp = true;
+            }
         }
-        
+
         private final StringBuilder line = new StringBuilder();
         private int charIdxInLine;
         private int send_buf_sz = 2;
@@ -214,11 +239,11 @@ final class KeyProcessing {
 
         private boolean processCharSequences(char[] chars, int offset, int count) {
             String seq = String.valueOf(chars, offset, count);
-            
-            if (ESCAPES.UP_SEQUENCE.equals(seq)) {
-                // history up
-            } else if (ESCAPES.DOWN_SEQUENCE.equals(seq)) {
-                // history down
+
+            if (false && ESCAPES.UP_SEQUENCE.equals(seq)) {
+                historyUp();
+            } else if (false && ESCAPES.DOWN_SEQUENCE.equals(seq)) {
+                historyDown();
             } else if (ESCAPES.LEFT_SEQUENCE.equals(seq)) {
                 moveCaretLeft(charIdxInLine - 1);
             } else if (ESCAPES.RIGHT_SEQUENCE.equals(seq)) {
@@ -235,12 +260,13 @@ final class KeyProcessing {
             }
             return true;
         }
-        
+
         private void sendCharImpl(char c) {
             if (c == ESCAPES.CHAR_CR || c == ESCAPES.CHAR_LF) {
                 toDTE.putChar(ESCAPES.CHAR_CR);
                 toDTE.putChar(ESCAPES.CHAR_LF);
                 toDTE.flush();
+                history.add(line.toString());
                 line.append('\n');
                 int nchars = line.length();
                 char[] tmp = send_buf(nchars);
@@ -275,6 +301,8 @@ final class KeyProcessing {
             } else if (c < FIRST_PRINTABLE) {
             } else {
                 // update line content
+
+
                 if (charIdxInLine == line.length()) {
                     // end of line
                     line.append(c);
@@ -341,6 +369,12 @@ final class KeyProcessing {
             }
         }
 
+        private void cleanLine() {
+            line.delete(0, line.length());
+            toDTE.putChars(ESCAPES.BS_EL_SEQUENCE, 0, ESCAPES.BS_EL_SEQUENCE.length);
+            toDTE.putChar(ESCAPES.CHAR_CR);
+        }
+
         private void deleteRightImpl(int nrTermPositions) {
             assert nrTermPositions > 0;
             // prepare DEL sequence
@@ -351,7 +385,7 @@ final class KeyProcessing {
             delSeq.getChars(0, nchars, tmp, 0);
             toDTE.putChars(tmp, 0, nchars);
         }
-        
+
         private void printPostfixKeepCaret() {
             if (charIdxInLine < line.length()) {
                 int oldCaretIdx = charIdxInLine;
@@ -392,7 +426,28 @@ final class KeyProcessing {
                 assert requestedIdx == charIdxInLine : charIdxInLine + " different from " + requestedIdx;
             }
         }
+
+        private void historyUp() {
+            if (history.isLast()) {
+                history.setTmp(line.toString());
+                history.previous();
+            }
+            
+            cleanLine();
+
+            String prev = history.previous();
+
+            line.append(prev);
+            toDTE.putChars(prev.toCharArray(), 0, prev.length());
+            charIdxInLine = prev.length();
+        }
+
+        private void historyDown() {
+            cleanLine();
+            String next = history.next();
+            line.append(next);
+            toDTE.putChars(next.toCharArray(), 0, next.length());
+            charIdxInLine = next.length();
+        }
     }
-    
 }
-//    end - Temporary block

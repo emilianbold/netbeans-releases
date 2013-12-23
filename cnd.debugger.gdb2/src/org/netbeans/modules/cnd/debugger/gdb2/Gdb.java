@@ -824,6 +824,7 @@ public class Gdb {
                     debugger.newAsyncBreakpoint(record);
                 } else if (record.cls().equals("breakpoint-modified")) { //NOI18N
                 } else if (record.cls().equals("breakpoint-deleted")) { //NOI18N
+                    debugger.deleteAsyncBreakpoint(record);
                 } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N

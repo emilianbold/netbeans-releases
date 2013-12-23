@@ -178,11 +178,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     // and reload any modified files if the project is unmodified
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
-        try {
-            dir.setAttribute("warmup", Boolean.TRUE); // NOI18N
-        } catch (IOException ex) {
-           ex.printStackTrace(System.err);
-        }
+        FileSystemProvider.warmup(dir);
         try {
             this.fileSystem = dir.getFileSystem();
         } catch (FileStateInvalidException ex) {

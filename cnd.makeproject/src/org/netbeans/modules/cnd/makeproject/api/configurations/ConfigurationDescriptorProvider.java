@@ -494,6 +494,9 @@ public abstract class ConfigurationDescriptorProvider {
                 return;
             }
             if (projectDescriptor.isModified()) {
+                if (interrupter.cancelled()) {
+                    return;
+                }
                 // Ask user if descriptor is modified in memory.
                 String txt = NbBundle.getMessage(ConfigurationDescriptorProvider.class, "MakeConfigurationDescriptor.UpdateConfigurationText", project.getProjectDirectory().getPath()); //NOI18N
                 if (CndUtils.isStandalone()) {

@@ -48,8 +48,10 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -376,11 +378,11 @@ public class TemplateUtils {
         return res;
     }
     
-    public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
+    public static CsmType checkTemplateType(CsmType type, CsmObject scope) {
         return checkTemplateType(type, scope, null);
     }
     
-    public static CsmType checkTemplateType(CsmType type, CsmScope scope, List<CsmTemplateParameter> additionalParams) {
+    public static CsmType checkTemplateType(CsmType type, CsmObject scope, List<CsmTemplateParameter> additionalParams) {
         if (!(type instanceof TypeImpl)) {            
             return type;
         }
@@ -388,6 +390,16 @@ public class TemplateUtils {
         if (type instanceof NestedType) {
             NestedType nestedType = (NestedType) type;
             type = NestedType.create(checkTemplateType(nestedType.getParent(), scope, additionalParams), nestedType);
+        }
+        
+        // Check return type in function pointer
+        if (CsmKindUtilities.isFunctionPointerType(type)) {
+            TypeFunPtrImpl fpt = (TypeFunPtrImpl) type;
+            CsmType returnType = fpt.getReturnType();
+            CsmType newReturnType = checkTemplateType(returnType, scope, additionalParams);
+            if (newReturnType != returnType) {
+                fpt.setReturnType(newReturnType);
+            }
         }
         
         // Check instantiation parameters

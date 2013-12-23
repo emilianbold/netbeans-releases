@@ -84,6 +84,9 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -134,6 +137,7 @@ import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
@@ -1365,12 +1369,12 @@ abstract public class CsmCompletionQuery {
             return out;
         }
 
-        private CsmType extractFunctionType(Collection<CsmFunction> mtdList, CsmCompletionExpression genericNameExp, List<CsmType> typeList) {
+        private CsmType extractFunctionType(Collection<? extends CsmFunctional> mtdList, CsmCompletionExpression genericNameExp, List<CsmType> typeList) {
             CsmType out = null;
             if (mtdList.isEmpty()) {
                 return null;
             }
-            for (CsmFunction fun : mtdList) {
+            for (CsmFunctional fun : mtdList) {
                 CsmObject entity = fun;
 
                 if (CsmKindUtilities.isConstructor(entity)) {
@@ -1384,10 +1388,10 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 
-                if (CsmKindUtilities.isClassifier(entity)) {
+                if (CsmKindUtilities.isFunctional(entity)) {
+                    out = ((CsmFunctional) entity).getReturnType();
+                } else if (CsmKindUtilities.isClassifier(entity)) {
                     out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false);
-                } else if (CsmKindUtilities.isFunction(entity)) {
-                    out = ((CsmFunction) entity).getReturnType();
                 }
                 if (out != null) {
                     break;
@@ -2460,7 +2464,8 @@ abstract public class CsmCompletionQuery {
                         // want to resolve "method"
                         // otherwise we need all in current context
                         if (!methodOpen || openingSource) {
-                            Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
+                            // Methods, operators and function pointers classifiers
+                            Collection<CsmFunctional> mtdList = new LinkedHashSet<CsmFunctional>();
                             if (first && !(isConstructor && lastType != null)) { // already resolved for constructor
                                 // resolve all functions in context
                                 int varPos = mtdNameExp.getTokenOffset(0);
@@ -2516,9 +2521,13 @@ abstract public class CsmCompletionQuery {
                                             CsmType varType = ((CsmVariable) object).getType();
                                             if (varType != null) {
                                                 CsmClassifier cls = getClassifier(varType, contextFile, endOffset);
-                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                                if (funCall != null) {
-                                                    mtdList.add(funCall);
+                                                if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                                    mtdList.add((CsmFunctional) cls);
+                                                } else {
+                                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                                    if (funCall != null) {
+                                                        mtdList.add(funCall);
+                                                    }
                                                 }
                                             }
                                         }
@@ -2526,9 +2535,13 @@ abstract public class CsmCompletionQuery {
                                 }
                                 if (lastType != null && (!last || findType)) {
                                     CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
-                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                    if (funCall != null) {
-                                        mtdList.add(funCall);
+                                    if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                        mtdList.add((CsmFunctional) cls);
+                                    } else {
+                                        CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                        if (funCall != null) {
+                                            mtdList.add(funCall);
+                                        }
                                     }
                                 }
                             } else {
@@ -2553,23 +2566,27 @@ abstract public class CsmCompletionQuery {
                                                     if (fldType != null) {
                                                         if (CsmKindUtilities.isFunctionPointerType(fldType)) {
                                                             // that was a function-type field
-                                                            lastType = fldType;
+                                                            lastType = ((CsmFunctionPointerType) fldType).getReturnType();
                                                         } else {
                                                             // variable like function definition (IZ#159422)
                                                             CsmClassifier cls = fldType.getClassifier();
                                                             if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                                                                 CsmType type = ((CsmTypedef) cls).getType();
                                                                 if (CsmKindUtilities.isFunctionPointerType(type)) {
-                                                                    lastType = type;
+                                                                    lastType = ((CsmFunctionPointerType) type).getReturnType();
                                                                 }
                                                             }
                                                         }
                                                         if (lastType == null) {
                                                             // field can have type with defined "operator()"
                                                             CsmClassifier cls = getClassifier(fldType, contextFile, endOffset);
-                                                            CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                                            if (funCall != null) {
-                                                                lastType = funCall.getReturnType();
+                                                            if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                                                lastType = ((CsmFunction) cls).getReturnType();
+                                                            } else {
+                                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                                                if (funCall != null) {
+                                                                    lastType = funCall.getReturnType();
+                                                                }
                                                             }
                                                         }
                                                         if (lastType != null) {
@@ -2653,7 +2670,7 @@ abstract public class CsmCompletionQuery {
                             }
                             String parmStr = "*"; // NOI18N
                             List<CsmType> typeList = getTypeList(item, 1);
-                            Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen, true);
+                            Collection<CsmFunctional> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen, true);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
                                 parmStr = formatTypeList(typeList, methodOpen);
@@ -2743,7 +2760,7 @@ abstract public class CsmCompletionQuery {
             }
             return cont;
         }
-
+        
         private boolean checkQualifier(CsmCompletionExpression exp, CppTokenId qualifier) {
             // start and end are set to default values for CsmCompletionExpression.TYPE
             int start = 0;

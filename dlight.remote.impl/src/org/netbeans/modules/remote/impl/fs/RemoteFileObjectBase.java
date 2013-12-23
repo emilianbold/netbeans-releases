@@ -438,8 +438,12 @@ public abstract class RemoteFileObjectBase {
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
-            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
+            fireReadOnlyChangedEvent();
         }
+    }
+
+    final void fireReadOnlyChangedEvent() {
+        fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
     }
 
     final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
@@ -812,6 +816,9 @@ public abstract class RemoteFileObjectBase {
             validity = getFlag(MASK_VALID) ? " [invalid] (flagged)" : " [invalid]"; //NOI18N
         }
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
+    }
+    
+    public void warmup() {
     }
 
     @Override

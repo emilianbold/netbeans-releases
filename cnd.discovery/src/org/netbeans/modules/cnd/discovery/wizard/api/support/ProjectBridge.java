@@ -97,7 +97,7 @@ public class ProjectBridge {
     private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     private boolean startedModification;
     private final Project project;
-    private final Set<Project> resultSet = new HashSet<Project>();
+    private final Set<Project> resultSet = new HashSet<>();
     private Map<String,Item> canonicalItems;
     private SnapShot delta;
     
@@ -199,7 +199,7 @@ public class ProjectBridge {
      * @param needAdd list of needed extensions of header files.
      */
     public boolean checkForNewExtensions(Set<String> needAdd){
-        Set<String> extensions = new HashSet<String>();
+        Set<String> extensions = new HashSet<>();
         for(String name : needAdd){
             int i = name.replace('\\', '/').lastIndexOf('/');
             if (i >= 0){
@@ -213,7 +213,7 @@ public class ProjectBridge {
                 }
             }
         }
-        Set<Item> old = new HashSet<Item>(Arrays.asList(getAllSources()));
+        Set<Item> old = new HashSet<>(Arrays.asList(getAllSources()));
         if (extensions.contains("xml")) { //NOI18N
             assert false : "Extension '.xml' cannot be a header extension"; //NOI18N
             extensions.remove("xml"); //NOI18N
@@ -232,7 +232,7 @@ public class ProjectBridge {
 
     private Item findByCanonicalName(String path){
         if (canonicalItems == null) {
-            canonicalItems = new HashMap<String,Item>();
+            canonicalItems = new HashMap<>();
             for(Item item : makeConfigurationDescriptor.getProjectItems()){
                 canonicalItems.put(item.getCanonicalPath(),item);
             }
@@ -410,7 +410,7 @@ public class ProjectBridge {
     }
 
     public Map<String,Folder> prefferedFolders(){
-        Map<String,Folder> folders = new HashMap<String,Folder>();
+        Map<String,Folder> folders = new HashMap<>();
         for(Item item : getAllSources()){
             String path = item.getAbsPath();
             if (Utilities.isWindows()) {
@@ -429,10 +429,10 @@ public class ProjectBridge {
             }
         }
         Folder root = makeConfigurationDescriptor.getLogicalFolders();
-        Set<Folder> roots = new HashSet<Folder>(root.getFolders());
+        Set<Folder> roots = new HashSet<>(root.getFolders());
         roots.add(root);
         while(true) {
-            Map<String,Folder> delta = new HashMap<String,Folder>();
+            Map<String,Folder> delta = new HashMap<>();
             for(Map.Entry<String,Folder> entry : folders.entrySet()) {
                 String path = entry.getKey();
                 Folder folder = entry.getValue();
@@ -597,6 +597,14 @@ public class ProjectBridge {
             excl.setValue(exclude);
         }
         //itemConfiguration.setTool(Tool.CustomTool);
+    }
+
+    public static boolean getExclude(Item item){
+        ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
+        if (itemConfiguration == null) {
+            return true;
+        }
+        return itemConfiguration.getExcluded().getValue();
     }
     
     public static boolean setHeaderTool(Item item){
@@ -852,7 +860,7 @@ public class ProjectBridge {
         return isChanged;
     }
 
-    private Map<String, String> cache = new HashMap<String, String>();
+    private Map<String, String> cache = new HashMap<>();
     private String getString(String s) {
         String res = cache.get(s);
         if (res == null) {
@@ -910,7 +918,7 @@ public class ProjectBridge {
             systemIncludePaths = systemIncludePathsC;
         }
         if (systemIncludePaths == null) {
-            systemIncludePaths = new ArrayList<String>();
+            systemIncludePaths = new ArrayList<>();
             CompilerSet compilerSet = getCompilerSet();
             AbstractCompiler compiler;
             if (compilerSet != null) {
@@ -944,7 +952,7 @@ public class ProjectBridge {
             macros = optionToMacrosC;
         }
         if (macros == null) {
-            macros = new HashMap<String,List<String>>();
+            macros = new HashMap<>();
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
             AbstractCompiler compiler;
@@ -961,7 +969,7 @@ public class ProjectBridge {
                                 if (!macro.isHidden()) {
                                     List<String> list = macros.get(macro.getFlags());
                                     if (list == null) {
-                                        list = new ArrayList<String>();
+                                        list = new ArrayList<>();
                                         macros.put(macro.getFlags(), list);
                                     }
                                     list.add(macro.getMacro());
@@ -991,7 +999,7 @@ public class ProjectBridge {
             macros = optionToUndefinedMacrosC;
         }
         if (macros == null) {
-            macros = new HashMap<String,List<String>>();
+            macros = new HashMap<>();
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
                 AbstractCompiler compiler;
@@ -1008,7 +1016,7 @@ public class ProjectBridge {
                                 if (macro.isHidden()) {
                                     List<String> list = macros.get(macro.getFlags());
                                     if (list == null) {
-                                        list = new ArrayList<String>();
+                                        list = new ArrayList<>();
                                         macros.put(macro.getFlags(), list);
                                     }
                                     list.add(macro.getMacro());
@@ -1052,7 +1060,7 @@ public class ProjectBridge {
             systemMacroDefinitions = systemMacroDefinitionsC;
         }
         if (systemMacroDefinitions == null) {
-            systemMacroDefinitions = new HashMap<String,String>();
+            systemMacroDefinitions = new HashMap<>();
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
                 AbstractCompiler compiler;

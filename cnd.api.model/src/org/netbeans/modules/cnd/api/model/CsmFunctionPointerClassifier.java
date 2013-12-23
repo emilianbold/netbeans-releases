@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+package org.netbeans.modules.cnd.api.model;
 
 /**
  *
- * @author Alexander Simon
+ * @author petrk
  */
-final class ExternalFilesChildren extends BaseMakeViewChildren {
-
-    public ExternalFilesChildren(Folder folder, MakeLogicalViewProvider provider) {
-        super(folder, provider);
-    }
-
-    @Override
-    protected Node[] createNodes(Object key) {
-        if (key instanceof LoadingNode) {
-            return new Node[]{(Node) key};
-        }
-        if (!(key instanceof Item)) {
-            System.err.println("wrong item in external files folder " + key); // NOI18N
-            return null;
-        }
-        Item item = (Item) key;
-        DataObject fileDO = item.getDataObject();
-        Node node;
-        if (fileDO != null && fileDO.isValid()) {
-            node = new ViewItemNode(this, getFolder(), item, fileDO, provider.getProject(), true);
-        } else {
-            node = new BrokenViewItemNode(this, getFolder(), item, provider.getProject());
-        }
-        return new Node[]{node};
-    }
-
-    @Override
-    protected Collection<Object> getKeys(AtomicBoolean canceled) {
-        return getFolder().getElements();
-    }
+public interface CsmFunctionPointerClassifier extends CsmFunctional, CsmClassifier, CsmOffsetableDeclaration, CsmScope {
 }

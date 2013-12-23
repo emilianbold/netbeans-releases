@@ -433,4 +433,8 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
     }
+    
+    @Override
+    public void warmup(FileObject fo) {        
+    }
 }

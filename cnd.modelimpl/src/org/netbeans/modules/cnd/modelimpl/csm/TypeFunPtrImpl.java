@@ -50,10 +50,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
@@ -108,11 +114,16 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     }
     
     // package-local - for facory only
-    TypeFunPtrImpl(CsmClassifier classifier, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters) {
-        super(classifier, pointerDepth, reference, arrayDepth, _const, file, startOffset, endOffset);
-        functionParameters = parameters;
-        returnType = null;
+    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters, CsmType returnType) {
+        super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        this.functionParameters = parameters;
+        this.returnType = returnType;
     }    
+    
+    // package-local
+    void setReturnType(CsmType type) {
+        this.returnType = type;
+    }
     
     void init(AST ast, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
@@ -143,6 +154,47 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         AST fakeTypeAst = AstUtil.cloneAST(typeASTStart, typeASTEnd);
         
         initFunctionReturnType(fakeTypeAst, this, this, getContainingFile());
+    }
+
+    @Override
+    public CsmClassifier getClassifier() {
+        return getClassifier(null, false);
+    }
+
+    @Override
+    public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
+        if (instantiations != null && !instantiations.isEmpty()) {
+            CsmClassifier classifier = new FunctionPointerImpl(this);
+            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            CsmObject obj = classifier;
+            if (ip instanceof InstantiationProviderImpl) {
+                Resolver resolver = ResolverFactory.createResolver(this);
+                try {
+                    if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                        ListIterator<CsmInstantiation> iter = instantiations.listIterator(instantiations.size());
+                        while (iter.hasPrevious()) {
+                            CsmInstantiation instantiation = iter.previous();
+                            obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) obj, instantiation, false);
+                        }
+                    } else {
+                        return null;
+                    }
+                } finally {
+                    ResolverFactory.releaseResolver(resolver);
+                }
+            } else {
+                obj = ip.instantiate((CsmTemplate) classifier, this);
+            }
+            if (CsmKindUtilities.isClassifier(obj)) {
+                return (CsmClassifier)obj;
+            }
+        }
+        return new FunctionPointerImpl(this);
+    }
+
+    @Override
+    public CharSequence getClassifierText() {
+        return getReturnType().getClassifierText();
     }
 
     @Override
@@ -429,6 +481,140 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     public void dispose() {
         super.dispose();
     }
+    
+    // Dummy classifier for function pointer
+    private static class FunctionPointerImpl implements CsmFunctionPointerClassifier, CsmTemplate {
+
+        private final TypeFunPtrImpl type;
+
+        public FunctionPointerImpl(TypeFunPtrImpl type) {
+            this.type = type;
+        }
+
+        @Override
+        public CharSequence getDisplayName() {
+            return getName();
+        }
+
+        @Override
+        public List<CsmTemplateParameter> getTemplateParameters() {
+            return null;
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return false;
+        }
+
+        @Override
+        public boolean isSpecialization() {
+            return false;
+        }
+
+        @Override
+        public boolean isTemplate() {
+            return false;
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return type.getReturnType();
+        }
+
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            return type.getParameters();
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return FunctionImpl.createSignature(getName(), getParameters(), null, type.isConst());
+        }
+
+        @Override
+        public CsmDeclaration.Kind getKind() {
+            return CsmDeclaration.Kind.FUNCTION;
+        }
+
+        @Override
+        public CharSequence getUniqueName() {
+            return type.getCanonicalText(); // NOI18N
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            return String.valueOf(getReturnType().getCanonicalText()) + getSignature(); // NOI18N
+        }
+
+        @Override
+        public CharSequence getName() {
+            return ""; // NOI18N
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return type.getScope();
+        }
+
+        @Override
+        public boolean isValid() {
+            return type.isValid();
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return type.getContainingFile();
+        }
+
+        @Override
+        public int getStartOffset() {
+            return type.getStartOffset();
+        }
+
+        @Override
+        public int getEndOffset() {
+            return type.getEndOffset();
+        }
+
+        @Override
+        public Position getStartPosition() {
+            return type.getStartPosition();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            return type.getEndPosition();
+        }
+
+        @Override
+        public CharSequence getText() {
+            return type.getText();
+        }
+
+        @Override
+        public Collection<CsmScopeElement> getScopeElements() {
+            return type.getScopeElements();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FunctionPointerImpl) {
+                FunctionPointerImpl other = (FunctionPointerImpl) obj;
+                return Objects.equals(other.getQualifiedName(), getQualifiedName());
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return getQualifiedName().hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(getQualifiedName());
+        }
+    }    
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
@@ -438,6 +624,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         output.writeShort(functionPointerDepth);
         PersistentUtils.writeParameters(functionParameters, output);
         UIDObjectFactory.getDefaultFactory().writeUID(scopeUID, output);
+        PersistentUtils.writeType(returnType, output);
     }
 
     public TypeFunPtrImpl(RepositoryDataInput input) throws IOException {
@@ -445,5 +632,6 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         functionPointerDepth = input.readShort();
         functionParameters = PersistentUtils.readParameters(input);
         scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
+        returnType = PersistentUtils.readType(input);
     }
 }
