@@ -826,6 +826,9 @@ public final class J2MEPlatform extends JavaPlatform {
     public static FileObject findTool(final String toolName, final Collection<FileObject> installFolders) {
         assert toolName != null;
         for ( final FileObject root : installFolders ) {
+            if (root == null) {
+                continue;
+            }
             final FileObject bin = root.getFileObject("bin");             //NOI18N
             if (bin == null) {
                 continue;

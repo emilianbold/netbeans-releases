@@ -94,8 +94,9 @@ public class ExcludeFromCommitAction extends AbstractAction implements Presenter
         return false;
     }
     
+    @Override
     public JMenuItem getMenuPresenter() {
-        JCheckBoxMenuItem item = new JCheckBoxMenuItem(this);
+        JMenuItem item = new JMenuItem(this);
         if (status != -1) item.setSelected(status == 2);
         Mnemonics.setLocalizedText(item, item.getText());
         return item;

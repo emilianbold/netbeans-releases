@@ -1824,35 +1824,36 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             }
             { // libraries
-                final Set<String> ids = libraryIds == null ? PathRecognizerRegistry.getDefault().getLibraryIds() : libraryIds;
-                for (String id : ids) {
-                    if (cancelRequest.isRaised()) {
-                        return false;
-                    }
+                if (libraryIds != null) {
+                    for (String id : libraryIds) {
+                        if (cancelRequest.isRaised()) {
+                            return false;
+                        }
 
-                    ClassPath cp = ClassPath.getClassPath(rootFo, id);
-                    if (cp != null) {
-                        for (ClassPath.Entry entry : cp.entries()) {
-                            if (cancelRequest.isRaised()) {
-                                return false;
-                            }
-
-                            final URL sourceRoot = entry.getURL();
-                            if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
-                                deps.add(sourceRoot);
-//                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
-//                                        rootURL, sourceRoot, cp, id
-//                                    });
-                                assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
-                                if (!findDependencies(
-                                        sourceRoot,
-                                        ctx,
-                                        sourceIds,
-                                        libraryIds,
-                                        binaryLibraryIds,
-                                        cancelRequest,
-                                        suspendStatus)) {
+                        ClassPath cp = ClassPath.getClassPath(rootFo, id);
+                        if (cp != null) {
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                if (cancelRequest.isRaised()) {
                                     return false;
+                                }
+
+                                final URL sourceRoot = entry.getURL();
+                                if (!sourceRoot.equals(rootURL) && !ctx.cycleDetector.contains(sourceRoot)) {
+                                    deps.add(sourceRoot);
+    //                                    LOGGER.log(Level.FINEST, "#1- {0}: adding dependency on {1}, from {2} with id {3}", new Object [] {
+    //                                        rootURL, sourceRoot, cp, id
+    //                                    });
+                                    assert PathRegistry.noHostPart(sourceRoot) : sourceRoot;
+                                    if (!findDependencies(
+                                            sourceRoot,
+                                            ctx,
+                                            sourceIds,
+                                            libraryIds,
+                                            binaryLibraryIds,
+                                            cancelRequest,
+                                            suspendStatus)) {
+                                        return false;
+                                    }
                                 }
                             }
                         }
@@ -4560,7 +4561,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     sourcesForBinaryRoots,
                     useInitialState,
                     refreshNonExistentDeps);
-                final List<URL> newRoots = new LinkedList<URL>();
+                final Collection<URL> newRoots = new HashSet<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
                 checkRootCollection(c);
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N

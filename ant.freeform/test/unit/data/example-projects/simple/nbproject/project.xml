@@ -58,6 +58,18 @@
                         </arity>
                     </context>
                 </action>
+                <action name="compile.single.noseparator">
+                    <target>compile-some-files</target>
+                    <context>
+                        <property>files</property>
+                        <folder>${src.dir}</folder>
+                        <pattern>\.java$</pattern>
+                        <format>relative-path</format>
+                        <arity>
+                            <separated-files/>
+                        </arity>
+                    </context>
+                </action>
                 <action name="compile.single">
                     <target>ant-compile-some-files</target>
                     <context>

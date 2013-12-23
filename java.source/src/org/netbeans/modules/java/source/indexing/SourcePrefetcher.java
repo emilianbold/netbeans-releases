@@ -45,34 +45,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.concurrent.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Zezula
  */
 class SourcePrefetcher implements Iterator<CompileTuple>, /*Auto*/Closeable {
-    
-    private static final Logger LOG = Logger.getLogger(SourcePrefetcher.class.getName());
-    private static final int DEFAULT_PROC_COUNT = 2;
-    private static final int DEFAULT_BUFFER_SIZE = 1024*1024;
-    private static final int MIN_PROC = 4;
-    private static final int MIN_FILES = 10;    //Trivial problem size
-    private static final boolean PREFETCH_DISABLED = Boolean.getBoolean("SourcePrefetcher.disabled");   //NOI18N
-    private static final int PROC_COUNT = Integer.getInteger("SourcePrefetcher.proc.count", DEFAULT_PROC_COUNT);    //NOI18N
-    
-    /*test - never change it during IDE run*/
-    static int BUFFER_SIZE = Integer.getInteger("SourcePrefetcher.buffer.size", DEFAULT_BUFFER_SIZE); //NOI18N
-    /*test*/ static Boolean TEST_DO_PREFETCH;
-    
+       
     private final Iterator<? extends CompileTuple> iterator;
     //@NotThreadSafe
     private boolean active;
@@ -122,200 +105,6 @@ class SourcePrefetcher implements Iterator<CompileTuple>, /*Auto*/Closeable {
     static SourcePrefetcher create(
             @NonNull final Collection<? extends CompileTuple> files,
             @NonNull final SuspendStatus suspendStatus) {
-        return new SourcePrefetcher(getIterator(files, suspendStatus));
-    }
-    
-    private static abstract class SuspendableIterator implements Iterator<CompileTuple> {
-        
-        private final SuspendStatus suspendStatus;
-        
-        protected SuspendableIterator(@NonNull final SuspendStatus suspendStatus) {
-            assert suspendStatus != null;
-            this.suspendStatus = suspendStatus;
-        }
-        
-        protected final void safePark() {
-            try {
-                suspendStatus.parkWhileSuspended();
-            } catch (InterruptedException ex) {
-                //NOP - safe to ignore
-            }
-        }
-    }
-    
-    private static final class NopRemoveItDecorator extends SuspendableIterator {
-        
-        private final Iterator<? extends CompileTuple> delegate;
-        
-        private NopRemoveItDecorator(
-                @NonNull final Iterator<? extends CompileTuple> delegate,
-                @NonNull final SuspendStatus suspendStatus) {
-            super(suspendStatus);
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return delegate.hasNext();
-        }
-
-        @Override
-        public CompileTuple next() {
-            return delegate.next();
-        }
-
-        @Override
-        public void remove() {
-            //NOP
-        }
-        
-    }
-    
-    private static final class ConcurrentIterator extends SuspendableIterator implements /*Auto*/Closeable {
-        
-        private static final CompileTuple DUMMY = new CompileTuple(null, null);
-        
-        private static final RequestProcessor RP = new RequestProcessor(
-                SourcePrefetcher.class.getName(),
-                PROC_COUNT,
-                false,
-                false);
-
-        private final CompletionService<CompileTuple> cs;
-        private final Semaphore sem;
-        //@NotThreadSafe
-        private int count;
-        //@NotThreadSafe
-        private CompileTuple active;
-        private volatile boolean closed;
-        
-
-        private ConcurrentIterator(
-                @NonNull final Iterable<? extends CompileTuple> files,
-                @NonNull final SuspendStatus suspendStatus) {
-            super(suspendStatus);
-            this.cs = new ExecutorCompletionService<CompileTuple>(RP);
-            this.sem = new Semaphore(BUFFER_SIZE);
-            
-            for (final CompileTuple ct : files) {
-                cs.submit(new Callable<CompileTuple>() {
-                    @NonNull
-                    @Override
-                    public CompileTuple call() throws Exception {
-                        safePark();
-                        if (closed) {
-                            LOG.finest("Skipping prefetch due to close.");  //NOI18N
-                            return ct;
-                        }
-                        final int len = Math.min(BUFFER_SIZE,ct.jfo.prefetch());
-                        if (LOG.isLoggable(Level.FINEST) && 
-                            (sem.availablePermits() - len) < 0) {
-                            LOG.finest("Buffer full");  //NOI18N
-                        }
-                        sem.acquire(len);
-                        return ct;
-                    }
-                });
-                count++;
-            }
-        }
-        
-        @Override
-        public boolean hasNext() {
-            ensureNotClosed();
-            return count > 0;
-        }
-
-        @Override
-        public CompileTuple next() {
-            ensureNotClosed();
-            if (active != null) {
-                throw new IllegalStateException("Call remove to free resources");   //NOI18N
-            }
-            if (!hasNext()) {
-                throw new IllegalStateException("No more tuples."); //NOI18N
-            }
-            safePark();
-            try {
-                active = cs.take().get();
-            } catch (InterruptedException ex) {
-                active = DUMMY;
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                active = DUMMY;
-                final Throwable rootCause = ex.getCause();
-                if (rootCause instanceof IOException) {
-                    LOG.log(Level.INFO, rootCause.getLocalizedMessage());
-                } else {
-                    Exceptions.printStackTrace(ex);
-                }
-            } finally {
-                count--;
-            }
-            return active == DUMMY ? null : active;
-        }
-        
-        @Override
-        public void remove() {
-            ensureNotClosed();
-            if (active == null) {
-                throw new IllegalStateException("Call next before remove");   //NOI18N
-            }
-            try {
-                if (active != DUMMY) {                    
-                    final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
-                    sem.release(len);
-                }
-            } finally {
-                active = null;
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            ensureNotClosed();
-            closed = true;
-            //Actually the threads may be blocked in semaphore requiring at most PROC_COUNT * BUFFER_SIZE grants
-            //as we are at the end of the life cycle it's safe to break invariants and unblock the
-            //threads.
-            sem.release(PROC_COUNT * BUFFER_SIZE);
-        }
-
-        private void ensureNotClosed() {
-            if (closed) {
-                throw new IllegalStateException("Already closed SourcePrefetcher instance.");
-            }
-        }
-        
-    }
-    
-    private static Iterator<? extends CompileTuple> getIterator(
-            @NonNull final Collection<? extends CompileTuple> files,
-            @NonNull final SuspendStatus suspendStatus) {
-        final int procCount = Runtime.getRuntime().availableProcessors();
-        final int probSize = files.size();
-        LOG.log(
-            Level.FINER,
-            "Proc Count: {0} File count: {1} Prefetch disabled: {2}",  //NOI18N
-            new Object[]{
-                procCount,
-                probSize,
-                PREFETCH_DISABLED}
-        );
-        final boolean supportsPar = procCount >= MIN_PROC && probSize > MIN_FILES;
-        final boolean doPrefetch = TEST_DO_PREFETCH != null?
-                TEST_DO_PREFETCH:
-                supportsPar && !PREFETCH_DISABLED;
-        if (doPrefetch) {
-            LOG.log(
-                Level.FINE,
-                "Using concurrent iterator, {0} workers",    //NOI18N
-                PROC_COUNT);
-            return new ConcurrentIterator(files, suspendStatus);
-        } else {
-            LOG.fine("Using sequential iterator");    //NOI18N
-            return new NopRemoveItDecorator(files.iterator(), suspendStatus);
-        }
-    }
-    
+        return new SourcePrefetcher(JavaIndexerWorker.getCompileTupleIterator(files, suspendStatus));
+    }    
 }

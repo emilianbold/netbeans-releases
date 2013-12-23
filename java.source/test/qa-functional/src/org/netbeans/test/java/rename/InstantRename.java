@@ -274,6 +274,8 @@ public class InstantRename extends JavaTestCase {
                     "testRenameUndo",
                     "testRenamePart",
                     "testRenameCopyPaste")
+                .clusters(".*")
+                .enableModules(".*")
            );
     }
 

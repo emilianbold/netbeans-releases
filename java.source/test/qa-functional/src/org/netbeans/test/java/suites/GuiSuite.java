@@ -63,6 +63,8 @@ public class GuiSuite {
                 .addTest(ErrorAnnotations.class)
                 .addTest(FixImportsTest.class)
                 .addTest(NewFileWizardTest.class)
+                .enableModules(".*")
+                .clusters(".*")
                 );
     }
 }

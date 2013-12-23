@@ -1,7 +1,6 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
@@ -29,6 +28,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.Priority;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;

@@ -70,9 +70,7 @@ public class BugzillaConfig {
     private static BugzillaConfig instance = null;
     private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
     private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
-    private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
     private static final String QUERY_LAST_REFRESH  = "bugzilla.query_last_refresh";    // NOI18N
-    private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
     private static final String ATTACH_LOG          = "bugzilla.attach_log";            // NOI18N;
     private static final String PREF_SECTION_COLLAPSED = "collapsedSection"; //NOI18N
@@ -95,22 +93,6 @@ public class BugzillaConfig {
 
     private Preferences getPreferences() {
         return NbPreferences.forModule(BugzillaConfig.class);
-    }
-
-    public void setQueryRefreshInterval(int i) {
-        getPreferences().putInt(QUERY_REFRESH_INT, i);
-    }
-
-    public void setIssueRefreshInterval(int i) {
-        getPreferences().putInt(ISSUE_REFRESH_INT, i);
-    }
-
-    public int getQueryRefreshInterval() {
-        return getPreferences().getInt(QUERY_REFRESH_INT, DEFAULT_QUERY_REFRESH);
-    }
-
-    public int getIssueRefreshInterval() {
-        return getPreferences().getInt(ISSUE_REFRESH_INT, DEFAULT_ISSUE_REFRESH);
     }
 
     public boolean getAttachLogFile() {

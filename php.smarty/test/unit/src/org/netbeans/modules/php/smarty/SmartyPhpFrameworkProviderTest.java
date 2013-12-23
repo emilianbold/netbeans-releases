@@ -91,16 +91,6 @@ public class SmartyPhpFrameworkProviderTest extends NbTestCase {
         assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
     }
 
-    public void testProjectWithOldSmartyPropertyFlag() throws Exception {
-        PhpModule phpModule = getPhpModule(createPhpProject());
-        assert phpModule != null : "PHP module must exist!";
-
-        Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
-        preferences.put(SmartyPhpFrameworkProvider.PROP_SMARTY_AVAILABLE, "1");
-
-        assertTrue(SmartyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule));
-    }
-
     public void testProjectWithNewSmartyPropertyFlag() throws Exception {
         PhpModule phpModule = getPhpModule(createPhpProject());
         assert phpModule != null : "PHP module must exist!";

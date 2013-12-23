@@ -50,7 +50,7 @@ public class AddElementHintTest extends HintsTestCase{
         String file = "addHint";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(34,1);
+        editor.setCaretPosition(72,1);
         new EventTool().waitNoEvent(750);
         useHint("Create Field",new String[]{"Create Parameter a",
         "Create Local Variable a",
@@ -62,7 +62,7 @@ public class AddElementHintTest extends HintsTestCase{
         String file = "addHint";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(28,1);
+        editor.setCaretPosition(66,1);
         new EventTool().waitNoEvent(750);
         useHint("Create Field",new String[]{"Create Parameter g",
         "Create Local Variable g",
@@ -76,7 +76,7 @@ public class AddElementHintTest extends HintsTestCase{
         target = new EditorOperator("Element1");
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(7,1);                
+        editor.setCaretPosition(45,1);                
         new EventTool().waitNoEvent(750);
         useHint("Create Field",new String[]{"Create Field field in org.netbeans.test.java.hints.HintsTest.Element1"},
                 ".*int field;.*");
@@ -88,7 +88,7 @@ public class AddElementHintTest extends HintsTestCase{
         target = new EditorOperator("Element1");
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(8,1);                
+        editor.setCaretPosition(46,1);                
         new EventTool().waitNoEvent(750);
         useHint("Create Field",new String[]{"Create Field statField in org.netbeans.test.java.hints.HintsTest.Element1"},
                 ".*static String statField;.*");
