@@ -341,9 +341,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         //TODO based on a property? or UI option? can this backfire?
         //#224526 
         //execute in encoding that is based on project.build.sourceEncoding to have the output of exec:exec, surefire:test and others properly encoded.
-        String enc = config.getMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
-        if (enc != null && !enc.equals(Charset.defaultCharset().name())) {
-            toRet.add("-Dfile.encoding=" + enc);
+        if (config.getMavenProject() != null) {
+            String enc = config.getMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
+            if (enc != null && !enc.equals(Charset.defaultCharset().name())) {
+                toRet.add("-Dfile.encoding=" + enc);
+            }
         }
 
         if (config.isOffline() != null && config.isOffline().booleanValue()) {
