@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -234,7 +235,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
         node = (id != null) ? id : node;
         if( node != null ) {
-            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
             if( csmAst != null ) {
                 return csmAst.getOffset();
             }
