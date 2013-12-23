@@ -437,8 +437,12 @@ public abstract class RemoteFileObjectBase {
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
-            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
+            fireReadOnlyChangedEvent();
         }
+    }
+
+    final void fireReadOnlyChangedEvent() {
+        fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
     }
 
     final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
