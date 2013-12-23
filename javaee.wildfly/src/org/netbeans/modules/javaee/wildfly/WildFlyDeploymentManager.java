@@ -149,7 +149,10 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED, ""));
+                for(TargetModuleID tmid : tmids) {
+                    ((JBTargetModuleID) tmid).setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
+                    progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                }
             } else {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ""));
             }
@@ -165,16 +168,19 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        List<TargetModuleID> moduleIds = new ArrayList<TargetModuleID>(targets.length);
+        List<JBTargetModuleID> moduleIds = new ArrayList<JBTargetModuleID>(targets.length);
         for (Target target : targets) {
             moduleIds.add(new JBTargetModuleID(target, deployment.getModuleFile().getName()));
         }
-        TargetModuleID[] tmids = moduleIds.toArray(new TargetModuleID[targets.length]);
+        JBTargetModuleID[] tmids = moduleIds.toArray(new JBTargetModuleID[targets.length]);
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                for(JBTargetModuleID tmid : tmids) {
+                    tmid.setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
+                    progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                }                
             } else {
                 progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
             }
@@ -289,12 +295,12 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING, null));
         try {
             if (client.startModule(tmids[0].getModuleID())) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                         ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+            progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                     ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
         }
         return progress;
@@ -312,7 +318,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject undeploy(TargetModuleID[] tmids) throws IllegalStateException {
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
-        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+        progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
         try {
             if (client.undeploy(tmids[0].getModuleID())) {

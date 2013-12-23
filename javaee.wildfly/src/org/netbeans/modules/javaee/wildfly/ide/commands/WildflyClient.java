@@ -311,8 +311,7 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
-    
-    
+
     public String getWebModuleURL(String webModuleName) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
@@ -327,16 +326,12 @@ public class WildflyClient {
             if (isSuccessfulOutcome(cl, response)) {
                 // ModelNode
                 Object result = readResult(cl, response);
-                // List<ModelNode>
-                List webapps = modelNodeAsList(cl, result);
-                for (Object application : webapps) {
-                    String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "NAME")));
-                    if (applicationName.endsWith(".war")) {
-                        // ModelNode
-                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
-                        if (modelNodeIsDefined(cl, deployment)) {
-                            return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
-                            }
+                String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, result, getClientConstant(cl, "NAME")));
+                if (applicationName.endsWith(".war")) {
+                    // ModelNode
+                    Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, result, getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                    if (modelNodeIsDefined(cl, deployment)) {
+                        return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
                     }
                 }
             }
@@ -386,7 +381,7 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
-    
+
     public boolean startModule(JBTargetModuleID tmid) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
@@ -395,7 +390,7 @@ public class WildflyClient {
             // ModelNode
             Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_REDEPLOY_OPERATION"), deploymentAddressModelNode);
             Object result = executeOnModelNode(cl, enableDeployment);
-            if(isSuccessfulOutcome(cl, result)) {
+            if (isSuccessfulOutcome(cl, result)) {
                 tmid.setContextURL(getWebModuleURL(tmid.getModuleID()));
                 return true;
             }
