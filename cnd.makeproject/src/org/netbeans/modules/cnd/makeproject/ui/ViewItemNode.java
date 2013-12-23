@@ -61,6 +61,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.actions.CreateProjectAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugDialogAction;
@@ -416,8 +417,14 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     public void stateChanged(ChangeEvent e) {
         Object source = e.getSource();
         if (source instanceof FileObject) {
+            // See CsmCodeAssistanceProvider.fireChanges(CsmFile file)
             if (source.equals(item.getFileObject())) {
-                EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
+                EventQueue.invokeLater(new VisualUpdater());
+            }
+        } else if (source instanceof NativeProject) {
+            // See CsmCodeAssistanceProvider.fireChanges(CsmProject project)
+            if (source.equals(item.getNativeProject())) {
+                EventQueue.invokeLater(new VisualUpdater());
             }
         } else {
             EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
@@ -426,7 +433,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     private static final class ViewItemTransferable extends ExTransferable.Single {
 
-        private ViewItemNode node;
+        private final ViewItemNode node;
 
         public ViewItemTransferable(ViewItemNode node, int operation) throws ClassNotFoundException {
             super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));

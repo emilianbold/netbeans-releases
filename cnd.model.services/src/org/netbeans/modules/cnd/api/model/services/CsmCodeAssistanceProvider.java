@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 
@@ -89,24 +90,6 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
         }
     }
     
-    private void fireChanges(CsmFile file) {
-        if (file == null) {
-            return;
-        }
-        FileObject fileObject = file.getFileObject();
-        if (fileObject == null) {
-            return;
-        }
-        ChangeEvent changeEvent = new ChangeEvent(fileObject);
-        List<ChangeListener> list;
-        synchronized (lock) {
-            list = new ArrayList<ChangeListener>(listeners.keySet());
-        }
-        for (ChangeListener listener : list) {
-            listener.stateChanged(changeEvent);
-        }
-    }
-    
     @Override
     public void projectParsingStarted(CsmProject project) {
     }
@@ -117,6 +100,7 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
 
     @Override
     public void projectParsingFinished(CsmProject project) {
+        fireChanges(project);
     }
 
     @Override
@@ -125,6 +109,7 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
 
     @Override
     public void projectLoaded(CsmProject project) {
+        fireChanges(project);
     }
 
     @Override
@@ -142,6 +127,38 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
     @Override
     public void fileParsingFinished(CsmFile file) {
         fireChanges(file);
+    }
+
+    private void fireChanges(CsmFile file) {
+        if (file == null) {
+            return;
+        }
+        FileObject fileObject = file.getFileObject();
+        if (fileObject == null) {
+            return;
+        }
+        ChangeEvent changeEvent = new ChangeEvent(fileObject);
+        List<ChangeListener> list;
+        synchronized (lock) {
+            list = new ArrayList<ChangeListener>(listeners.keySet());
+        }
+        for (ChangeListener listener : list) {
+            listener.stateChanged(changeEvent);
+        }
+    }
+
+    private void fireChanges(CsmProject project) {
+        Object platformProject = project.getPlatformProject();
+        if (platformProject instanceof NativeProject) {
+            ChangeEvent changeEvent = new ChangeEvent(platformProject);
+            List<ChangeListener> list;
+            synchronized (lock) {
+                list = new ArrayList<ChangeListener>(listeners.keySet());
+            }
+            for (ChangeListener listener : list) {
+                listener.stateChanged(changeEvent);
+            }
+        }
     }
 
     @Override
