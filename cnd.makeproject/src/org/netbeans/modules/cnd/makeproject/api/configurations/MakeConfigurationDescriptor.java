@@ -872,6 +872,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 makeConfiguration.getCCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
                 ccFiles = true;
             }
+            if (makeConfiguration.getCodeAssistanceConfiguration().getIncludeInCA().getDirty()) {
+                makeConfiguration.getCodeAssistanceConfiguration().getIncludeInCA().setDirty(false);
+                cFiles = true;
+                ccFiles = true;
+            }
             if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().isCppStandardChanged()) {
                 makeConfiguration.getCCCompilerConfiguration().getCppStandard().setDirty(false);
                 ccFiles = true;
@@ -2051,8 +2056,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
     
     public boolean hasProjectCustomizer() {
-        boolean ret = getActiveConfiguration().isCustomConfiguration();
-        return ret;
+        MakeConfiguration activeConfiguration = getActiveConfiguration();
+        if (activeConfiguration != null) {
+            return activeConfiguration.isCustomConfiguration();
+        }
+        return false;
     }
     
     public MakeProjectCustomizer getProjectCustomizer() {

@@ -454,4 +454,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).removeFileSystemProblemListener(listener);
     }
+    
+    @Override
+    public void warmup(FileObject fo) {        
+        if (fo instanceof RemoteFileObject) {
+            ((RemoteFileObject) fo).getImplementor().warmup();
+        }
+    }    
 }

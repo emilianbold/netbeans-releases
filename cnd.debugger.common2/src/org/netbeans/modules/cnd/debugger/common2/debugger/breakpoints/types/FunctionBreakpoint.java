@@ -69,6 +69,9 @@ public final class FunctionBreakpoint extends NativeBreakpoint {
     } 
 
     public void setFunction(String function) {
+        if (function == null) {
+            function = "<func>"; // NOI18N
+        }
 	this.function.set(function);
     } 
 

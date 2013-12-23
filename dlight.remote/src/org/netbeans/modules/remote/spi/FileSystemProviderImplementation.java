@@ -97,5 +97,5 @@ public interface FileSystemProviderImplementation {
     public char getFileSeparatorChar();
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
-
+    void warmup(FileObject fo);
 }

@@ -540,7 +540,6 @@ public class TypeFactory {
                                            CsmType returnType)
     {
         return new TypeFunPtrImpl(
-                returnType.getClassifier(), 
                 file, 
                 pointerDepth,
                 reference, 
@@ -548,7 +547,8 @@ public class TypeFactory {
                 _const, 
                 startOffset, 
                 endOffset, 
-                functionParams
+                functionParams,
+                returnType
         );
     }
     

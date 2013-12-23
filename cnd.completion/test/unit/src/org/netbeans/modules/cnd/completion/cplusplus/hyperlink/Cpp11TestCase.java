@@ -289,4 +289,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug224031.cpp", 15, 56, "bug224031.cpp", 15, 51);        
         performTest("bug224031.cpp", 15, 65, "bug224031.cpp", 15, 60);        
     }    
+    
+    public void bug238913() throws Exception {
+        // Bug 238913 - Function types are not supported
+        performTest("bug238913.cpp", 20, 14, "bug238913.cpp", 4, 9);
+        performTest("bug238913.cpp", 23, 17, "bug238913.cpp", 4, 9);
+        performTest("bug238913.cpp", 26, 13, "bug238913.cpp", 4, 9);
+        performTest("bug238913.cpp", 29, 13, "bug238913.cpp", 4, 9);
+    }
 }

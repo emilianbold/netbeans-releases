@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -384,9 +385,9 @@ public final class CompletionSupport implements DocumentListener {
      * @param acceptMoreParameters useful for code completion to get
      *   even the methods with more parameters.
      */
-    public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
+    public static <T extends CsmFunctional> Collection<T> filterMethods(Collection<T> methodList, List parmTypeList,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
-        Collection<CsmFunction> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
+        Collection<T> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
             // it seems that this call couldn't filter anything
             result = filterMethods(result, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, true);
@@ -399,17 +400,17 @@ public final class CompletionSupport implements DocumentListener {
         return result;
     }
     
-    private static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
+    private static <T extends CsmFunctional> Collection<T> filterMethods(Collection<T> methodList, List parmTypeList,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams, boolean ignoreConstAndRef) {
         assert (methodList != null);
         if (parmTypeList == null) {
-            return methodList;
+            return (Collection<T>) methodList;
         }
 
-        List<CsmFunction> ret = new ArrayList<CsmFunction>();
+        List<T> ret = new ArrayList<T>();
         int parmTypeCnt = parmTypeList.size();
         int maxMatched = acceptIfSameNumberParams ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        for (CsmFunction m : methodList) {
+        for (T m : methodList) {
             // Use constructor conversion to allow to use it too for the constructors
             CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
             int minParamLenght = 0;
@@ -494,16 +495,16 @@ public final class CompletionSupport implements DocumentListener {
      * 
      * @return candidates
      */
-    private static Collection<CsmFunction> accurateFilterMethods(Collection<CsmFunction> methods, List paramTypes) {
+    private static <T extends CsmFunctional> Collection<T> accurateFilterMethods(Collection<T> methods, List paramTypes) {
         if (methods.size() <= 1) {
             return methods;
         }
         
-        List<OverloadingCandidate> candidates = new ArrayList<OverloadingCandidate>();
+        List<OverloadingCandidate<T>> candidates = new ArrayList<OverloadingCandidate<T>>();
         
         int paramsCnt = paramTypes.size();
         
-        for (CsmFunction m : methods) {
+        for (T m : methods) {
             CsmParameter[] methodParams = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
             int minParamLenght = 0;
             for (CsmParameter parameter : methodParams) {
@@ -540,11 +541,11 @@ public final class CompletionSupport implements DocumentListener {
         
         Collections.sort(candidates);
         
-        List<CsmFunction> result = new ArrayList<CsmFunction>();
+        List<T> result = new ArrayList<T>();
         
-        OverloadingCandidate prev = null;
+        OverloadingCandidate<T> prev = null;
         
-        for (OverloadingCandidate candidate : candidates) {
+        for (OverloadingCandidate<T> candidate : candidates) {
             if (prev != null) {
                 if (candidate.compareTo(prev) != 0) {
                     break;
@@ -563,7 +564,7 @@ public final class CompletionSupport implements DocumentListener {
      * @param conversions
      * @return true if there are no conflicts
      */
-    private static boolean checkTemplateAcceptable(CsmFunction function, List<Conversion> conversions) {
+    private static boolean checkTemplateAcceptable(CsmFunctional function, List<Conversion> conversions) {
         if (CsmKindUtilities.isTemplate(function)) {
             Map<String, String> map = new HashMap<String, String>();
             
@@ -704,19 +705,19 @@ public final class CompletionSupport implements DocumentListener {
     /**
      * Represents function with a list of conversions needed to call it.
      */
-    private static class OverloadingCandidate implements Comparable<OverloadingCandidate> {
+    private static class OverloadingCandidate<T extends CsmFunctional> implements Comparable<OverloadingCandidate<T>> {
         
-        public final CsmFunction function;
+        public final T function;
         
         public final List<Conversion> conversions;
 
-        public OverloadingCandidate(CsmFunction function, List<Conversion> conversions) {
+        public OverloadingCandidate(T function, List<Conversion> conversions) {
             this.function = function;
             this.conversions = conversions;
         }
 
         @Override
-        public int compareTo(OverloadingCandidate o) {
+        public int compareTo(OverloadingCandidate<T> o) {
             if (conversions.isEmpty() && o.conversions.isEmpty())  {
                 return 0;
             } else if (o.conversions.isEmpty()) {

@@ -375,8 +375,8 @@ public class DiscoveryProjectGeneratorImpl {
     private Folder getOrCreateFolder(Folder folder, String name, AbstractRoot used) {
         Folder added = null;
         Folder[] folders = folder.getFoldersAsArray();
-        for (int i = 0; i < folders.length; i++) {
-            String root = folders[i].getAbsolutePath();
+        for (Folder folder1 : folders) {
+            String root = folder1.getAbsolutePath();
             String orphan = used.getFolder();
             if (root != null && orphan != null && orphan.startsWith(root)) {
                 String[] splitRoot = root.split("\\/"); // NOI18N
@@ -391,7 +391,7 @@ public class DiscoveryProjectGeneratorImpl {
                 }
                 if (lastEquals == splitRoot.length - 1) {
                     // ophan is subfolder of root
-                    added = folders[i];
+                    added = folder1;
                     for(int j = lastEquals + 1; j < splitOrphan.length; j++) {
                         Folder found = null;
                         for(Folder current : added.getFoldersAsArray()) {
@@ -409,8 +409,8 @@ public class DiscoveryProjectGeneratorImpl {
                     break;
                 }
             }
-            if (name != null && name.equals(folders[i].getName())) {
-                added = folders[i];
+            if (name != null && name.equals(folder1.getName())) {
+                added = folder1;
                 break;
             }
         }
@@ -526,7 +526,7 @@ public class DiscoveryProjectGeneratorImpl {
             first = false;
         }
         for (Item item : folder.getItemsAsArray()) {
-            if (item.isExcluded()){
+            if (projectBridge.getExclude(item)){
                 continue;
             }
             CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);

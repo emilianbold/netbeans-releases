@@ -290,12 +290,12 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public String addAction() {
-            final String chooser_key = "IncludesPanel";
+            final String chooser_key = "IncludesPanel"; // NOI18N
             String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"),
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"), // NOI18N
                                                       JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {

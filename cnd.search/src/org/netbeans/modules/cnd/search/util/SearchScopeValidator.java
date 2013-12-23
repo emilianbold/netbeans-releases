@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,80 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
+package org.netbeans.modules.cnd.search.util;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.UTFDataFormatException;
+import java.util.List;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
 
-/**
- *
- * @author Alexander Simon
- */
-public class CompileLineStorage {
-    private File file;
-    
-    public CompileLineStorage() {
-        try {
-            file = File.createTempFile("lines", ".log"); // NOI18N
-            file.deleteOnExit();
-        } catch (IOException ex) {
+public class SearchScopeValidator {
+
+    private HostInfo.OSFamily localhostOSFamily;
+
+    public SearchScopeValidator() {
+        ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+        if (HostInfoUtils.isHostInfoAvailable(local)) {
+            try {
+                localhostOSFamily = HostInfoUtils.getHostInfo(local).getOSFamily();
+            } catch (Exception ign) {
+                // localhost -- not reachable
+            }
         }
     }
 
-    private final int MAX_STRING_LENGTH = 65535/3 - 4;
-    public synchronized int putCompileLine(String line) {
-        if (file != null) {
-            RandomAccessFile os= null;
-            try {
-                os = new RandomAccessFile(file, "rw"); // NOI18N
-                int res = (int) os.length();
-                os.seek(res);
-                try {
-                    os.writeUTF(line);
-                } catch (UTFDataFormatException ex) {
-                    if (line.length() > MAX_STRING_LENGTH) {
-                        line = line.substring(0, MAX_STRING_LENGTH)+" ..."; // NOI18N
-                        os.writeUTF(line);
-                    }
-                }
-                return res;
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                if (os != null) {
-                    try {
-                        os.close();
-                    } catch (IOException ex) {
-                    }
-                }
+    public boolean isSearchAllowed(final SearchInfo searchInfo) {
+        try {
+            if (searchInfo == null) {
+                return false;
             }
-        }
-        return -1;
-    }
-    
-    public synchronized String getCompileLine(int handler) {
-        if (file != null && handler >= 0) {
-            RandomAccessFile is= null;
-            try {
-                is = new RandomAccessFile(file, "r"); // NOI18N
-                is.seek(handler);
-                return is.readUTF();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
+
+            List<SearchRoot> searchRoots = searchInfo.getSearchRoots();
+
+            for (SearchRoot searchRoot : searchRoots) {
+                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(searchRoot.getFileObject());
+
+                if (env.isLocal()) {
+                    if (!localhostOSFamily.isUnix()) {
+                        return false;
+                    }
+                } else {
+                    if (HostInfoUtils.isHostInfoAvailable(env)
+                            && !HostInfoUtils.getHostInfo(env).getOSFamily().isUnix()) {
+                        return false;
                     }
                 }
+
             }
+        } catch (IOException ex) {
+            return false;
+        } catch (ConnectionManager.CancellationException ex) {
+            return false;
         }
-        return null;
+        return true;
     }
 }
