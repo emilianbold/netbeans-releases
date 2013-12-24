@@ -96,7 +96,7 @@ import org.openide.util.Parameters;
  * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
-    private static final Map<ExecutionEnvironment, Map<String,String>> tempEnv = new WeakHashMap<ExecutionEnvironment, Map<String, String>>();
+    private static final Map<ExecutionEnvironment, Map<String,String>> tempEnv = new WeakHashMap<>();
 
     private BrokenReferencesSupport() {
     }
@@ -115,8 +115,8 @@ public final class BrokenReferencesSupport {
     public static boolean isIncorrectPlatform(ConfigurationDescriptorProvider projectDescriptorProvider) {
         if (projectDescriptorProvider.gotDescriptor()) {
             Configuration[] confs = projectDescriptorProvider.getConfigurationDescriptor().getConfs().toArray();
-            for (int i = 0; i < confs.length; i++) {
-                MakeConfiguration conf = (MakeConfiguration) confs[i];
+            for (Configuration cf : confs) {
+                MakeConfiguration conf = (MakeConfiguration) cf;
                 if (conf.getDevelopmentHost().isLocalhost()
                         && CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
                     return true;
@@ -148,7 +148,7 @@ public final class BrokenReferencesSupport {
                         ExecutionEnvironment ee = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
                         if (ConnectionManager.getInstance().isConnectedTo(ee)) {
                             try {
-                                List<String> res = new ArrayList<String>();
+                                List<String> res = new ArrayList<>();
                                 HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
                                 Map<String, String> environment = hostInfo.getEnvironment();
                                 for(String var : environmentVariables.getValue()) {
@@ -177,7 +177,7 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getReferenceProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         final List<BrokenLinks.BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project);
         if (!brokenLinks.isEmpty()) {
             ProjectProblemsProvider.ProjectProblem error =
@@ -192,7 +192,7 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getPlatformProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         if (BrokenReferencesSupport.isIncorrectPlatform(project.getLookup().lookup(ConfigurationDescriptorProvider.class))) {
             final ProjectProblemsProvider.ProjectProblem error =
                     ProjectProblemsProvider.ProjectProblem.createError(
@@ -206,7 +206,7 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getEnvProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         final UnsetEnvVar unset = getUndefinedEnvVars(project);
         if (unset != null && !unset.getUndefinedEnvVars().isEmpty()) {
             final ProjectProblemsProvider.ProjectProblem error =
@@ -221,7 +221,7 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getFormattingStyleProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         List<Style> styles = getUndefinedFormattingStyles(project);
         if (styles != null && !styles.isEmpty()) {
             for(Style style : styles) {
@@ -264,7 +264,7 @@ public final class BrokenReferencesSupport {
         if (!project.isProjectFormattingStyle()) {
             return null;
         }
-        List<Style> list = new ArrayList<Style>();
+        List<Style> list = new ArrayList<>();
         Style s = undefinedStyle(project, MIMENames.C_MIME_TYPE);
         if (s != null) {
             list.add(s);
@@ -282,7 +282,7 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getVersionProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         if (BrokenReferencesSupport.isIncorectVersion(project)) {
             ProjectProblemsProvider.ProjectProblem error =
                     ProjectProblemsProvider.ProjectProblem.createError(
@@ -299,8 +299,8 @@ public final class BrokenReferencesSupport {
         final MakeConfigurationDescriptor mcd = cdp.getConfigurationDescriptor();
         Configuration[] confs = mcd.getConfs().toArray();
         boolean save = false;
-        for (int i = 0; i < confs.length; i++) {
-            MakeConfiguration conf = (MakeConfiguration) confs[i];
+        for (Configuration cf : confs) {
+            MakeConfiguration conf = (MakeConfiguration) cf;
             if (conf.getDevelopmentHost().isLocalhost()) {
                 final int platform1 = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform();
                 final int platform2 = conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue();
@@ -365,7 +365,7 @@ public final class BrokenReferencesSupport {
                             new Mutex.Action<Collection<? extends ProjectProblemsProvider.ProjectProblem>>() {
                         @Override
                         public Collection<? extends ProjectProblemsProvider.ProjectProblem> run() {
-                            final Set<ProjectProblemsProvider.ProjectProblem> newProblems = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+                            final Set<ProjectProblemsProvider.ProjectProblem> newProblems = new LinkedHashSet<>();
                             Set<? extends ProjectProblem> versionProblems = getVersionProblems(project);
                             newProblems.addAll(versionProblems);
                             if (versionProblems.isEmpty()) {
@@ -427,12 +427,25 @@ public final class BrokenReferencesSupport {
         }
     }
 
-    private static class PlatformResolverImpl implements ProjectProblemResolver {
-
-        private final MakeProject project;
+    private static abstract class BaseProjectProblemResolver implements ProjectProblemResolver {
+        protected final MakeProject project;
+        
+        public BaseProjectProblemResolver(MakeProject project) {
+            this.project = project;
+        }
+        
+        protected final void updateProblems() {
+            ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
+            if(pp instanceof ProjectProblemsProviderImpl) {
+                    ((ProjectProblemsProviderImpl)pp).propertyChange(null);
+            }
+        }
+    }
+    
+    private static class PlatformResolverImpl extends BaseProjectProblemResolver {
 
         public PlatformResolverImpl(MakeProject project) {
-            this.project = project;
+            super(project);
         }
 
         @Override
@@ -446,6 +459,7 @@ public final class BrokenReferencesSupport {
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 BrokenReferencesSupport.reInitWithRemovedPrivate(project);
+                updateProblems();
                 return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
             } else {
                 return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
@@ -470,12 +484,9 @@ public final class BrokenReferencesSupport {
         }
     }
 
-    private static class VersionResolverImpl implements ProjectProblemResolver {
-
-        private final MakeProject project;
-
+    private static class VersionResolverImpl extends BaseProjectProblemResolver {
         public VersionResolverImpl(MakeProject project) {
-            this.project = project;
+            super(project);
         }
 
         @Override
@@ -489,6 +500,7 @@ public final class BrokenReferencesSupport {
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 BrokenReferencesSupport.reInitWithUnsupportedVersion(project);
+                updateProblems();
                 return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
             } else {
                 //if (negativeAction != null) {
@@ -516,13 +528,11 @@ public final class BrokenReferencesSupport {
         }
     }
 
-    private static class ToolCollectionResolverImpl implements ProjectProblemResolver {
-
+    private static class ToolCollectionResolverImpl extends BaseProjectProblemResolver {
         private final List<BrokenLinks.BrokenLink> brokenLinks;
-        private final MakeProject project;
 
         public ToolCollectionResolverImpl(MakeProject project, List<BrokenLinks.BrokenLink> brokenLinks) {
-            this.project = project;
+            super(project);
             this.brokenLinks = brokenLinks;
         }
 
@@ -536,6 +546,7 @@ public final class BrokenReferencesSupport {
             Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
             dialog.setVisible(true);
             dialog.dispose();
+            updateProblems();
             return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
         }
         
@@ -557,13 +568,11 @@ public final class BrokenReferencesSupport {
         }
     }
 
-    private static class EnvResolverImpl implements ProjectProblemResolver {
-
-        private final MakeProject project;
+    private static class EnvResolverImpl extends BaseProjectProblemResolver {
         private final UnsetEnvVar unset;
 
         public EnvResolverImpl(MakeProject project, UnsetEnvVar unset) {
-            this.project = project;
+            super(project);
             this.unset = unset;
         }
 
@@ -580,7 +589,7 @@ public final class BrokenReferencesSupport {
                     if (val != null && !val.trim().isEmpty()) {
                         Map<String, String> temporaryEnv = getTemporaryEnv(unset.getExecutionEnvironment());
                         if (temporaryEnv == null) {
-                            temporaryEnv = new HashMap<String, String>();
+                            temporaryEnv = new HashMap<>();
                             tempEnv.put(unset.getExecutionEnvironment(), temporaryEnv);
                         }
                         // TODO: HostInfo().getEnvironment() is not modifieble. There is no way to set additional env directly in the HostInfo.
@@ -593,10 +602,7 @@ public final class BrokenReferencesSupport {
                     }
                 }
                 if (success) {
-                    ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
-                    if(pp instanceof ProjectProblemsProviderImpl) {
-                            ((ProjectProblemsProviderImpl)pp).propertyChange(null);
-                    }
+                    updateProblems();
                     NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
                     if (nativeProject instanceof NativeProjectProvider) {
                         ((NativeProjectProvider) nativeProject).fireFilesPropertiesChanged();
@@ -627,7 +633,7 @@ public final class BrokenReferencesSupport {
     
     public static final class UnsetEnvVar {
         private final Collection<String> undefinedEnvVars;
-        private final Map<String, String> edit = new HashMap<String, String>();
+        private final Map<String, String> edit = new HashMap<>();
         private final ExecutionEnvironment ee;
         private final HostInfo hostInfo;
         private UnsetEnvVar(Collection<String> undefinedEnvVars, ExecutionEnvironment ee, HostInfo hostInfo) {
@@ -681,22 +687,18 @@ public final class BrokenReferencesSupport {
         }
     }
     
-    private static class StyleResolverImpl implements ProjectProblemResolver {
-        private final MakeProject project;
+    private static class StyleResolverImpl extends BaseProjectProblemResolver {
         private final Style style;
 
         private StyleResolverImpl(MakeProject project, Style style) {
-            this.project = project;
+            super(project);
             this.style = style;
         }
         
         @Override
         public Future<ProjectProblemsProvider.Result> resolve() {
             FormattingPropPanel.createStyle(style.aStyle, style.mime);
-            ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
-            if(pp instanceof ProjectProblemsProviderImpl) {
-                ((ProjectProblemsProviderImpl)pp).propertyChange(null);
-            }            
+            updateProblems();
             return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
         }
         
