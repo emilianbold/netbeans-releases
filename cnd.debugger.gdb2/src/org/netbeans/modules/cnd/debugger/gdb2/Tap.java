@@ -312,14 +312,4 @@ import org.openide.util.RequestProcessor;
             }
         }
     }
-
-    private String lastCmd = ""; //NOI18N
-
-    private String getLastCmd() {
-        return lastCmd + "\r\n"; //NOI18N
-    }
-
-    private void setLastCmd(String cmd) {
-        lastCmd = cmd.trim();
-    }
 }

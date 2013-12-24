@@ -269,13 +269,15 @@ final class KeyProcessing {
 
         private void sendCharImpl(char c) {
             if (c == ESCAPES.CHAR_CR || c == ESCAPES.CHAR_LF) {
-                if (line.length() == 0) {
+                if (line.toString().trim().length() == 0) {
                     // if line is empty, repeat the last command
                     String last = history.getLast();
                     int nchars = last.length() + 1;
                     char[] tmp = send_buf(nchars);
                     last.getChars(0, nchars - 1, tmp, 0);
                     tmp[nchars - 1] = c;
+
+                    cleanLine();
 
                     sendChars(tmp, 0, nchars);
                 } else {
@@ -387,6 +389,7 @@ final class KeyProcessing {
 
         private void cleanLine() {
             line.delete(0, line.length());
+            charIdxInLine = 0;
             toDTE.putChars(ESCAPES.BS_EL_SEQUENCE, 0, ESCAPES.BS_EL_SEQUENCE.length);
             toDTE.putChar(ESCAPES.CHAR_CR);
         }
