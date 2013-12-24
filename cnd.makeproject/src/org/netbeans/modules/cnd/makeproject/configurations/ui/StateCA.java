@@ -73,7 +73,7 @@ public enum StateCA {
                 } 
                 return source ? ExcludedSource : ExcludedHeader;
             default:
-                throw new IllegalStateException("unexpected CodeAssistance.State " + caState);
+                throw new IllegalStateException("unexpected CodeAssistance.State " + caState); // NOI18N
         }
     }
     
