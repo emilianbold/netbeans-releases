@@ -88,6 +88,7 @@ import org.openide.util.RequestProcessor;
 
     /**
      * Put character from gdb to console.
+     *
      * @param c
      */
     @Override
@@ -98,6 +99,7 @@ import org.openide.util.RequestProcessor;
 
     /**
      * Put characters from gdb to console.
+     *
      * @param buf
      * @param offset
      * @param count
@@ -112,6 +114,7 @@ import org.openide.util.RequestProcessor;
 
     /**
      * Send character typed into console to gdb
+     *
      * @param c
      */
     @Override
@@ -122,6 +125,7 @@ import org.openide.util.RequestProcessor;
 
     /**
      * Send character typed into console to gdb
+     *
      * @param c
      * @param offset
      * @param count
@@ -129,24 +133,10 @@ import org.openide.util.RequestProcessor;
     @Override
     public void sendChars(char c[], int offset, int count) {
         prompted = false;
-        
+
         final String line = String.valueOf(c, offset, count);
         CndUtils.assertTrueInConsole(line.length() == 0 || line.endsWith("\n"), "KeyProcessingStream should send only lines");
         String cmd = line.trim();
-        // on empty cmd use last cmd from history
-        if (cmd.isEmpty()) {
-            cmd = getLastCmd();
-            if (!cmd.trim().isEmpty()) {
-                // echo to term to show user
-                c = cmd.toCharArray();
-                offset = 0;
-                count = c.length;
-                toDTE.putChars(c, offset, count);
-                toDTE.flush();
-            }
-        } else {
-            setLastCmd(cmd);
-        }
         if (debugger != null) {
             debugger.sendTerminalTypedCommand(cmd);
         } else {
@@ -166,7 +156,7 @@ import org.openide.util.RequestProcessor;
 
     private final RequestProcessor sendQueue = new RequestProcessor("GDB send queue", 1); // NOI18N
     private static final boolean TRACING_IN_CONSOLE = CndUtils.getBoolean("cnd.gdb.trace.console", false); // NOI18N
-    
+
     // interface MICommandInjector
     @Override
     public void inject(String cmd) {
@@ -183,7 +173,7 @@ import org.openide.util.RequestProcessor;
                     toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
                     toDTE.flush();
                 }
-                
+
                 // send to gdb
                 sendQueue.post(new Runnable() {
                     @Override
@@ -195,7 +185,7 @@ import org.openide.util.RequestProcessor;
         });
     }
 
-    /*package*/void printError(String errMsg) {
+    /*package*/ void printError(String errMsg) {
         final char[] cmda = errMsg.toCharArray();
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -211,7 +201,7 @@ import org.openide.util.RequestProcessor;
             }
         });
     }
-    
+
     // interface MICommandInjector
     @Override
     public void log(String cmd) {
@@ -264,7 +254,7 @@ import org.openide.util.RequestProcessor;
                     toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
                 } else {
                     toTermBuf.delete(0, toTermBuf.length());
-                }      
+                }
             } else {
                 int caretx = line.indexOf('^');
                 if (caretx != -1) {
@@ -279,7 +269,7 @@ import org.openide.util.RequestProcessor;
                     }
                 }
             }
-            
+
             if (toTermBuf.length() > 0) {
                 boolean sendFlag = true;
                 if (toTermBuf.toString().trim().equals(PROMPT)) {
@@ -324,6 +314,7 @@ import org.openide.util.RequestProcessor;
     }
 
     private String lastCmd = ""; //NOI18N
+
     private String getLastCmd() {
         return lastCmd + "\r\n"; //NOI18N
     }

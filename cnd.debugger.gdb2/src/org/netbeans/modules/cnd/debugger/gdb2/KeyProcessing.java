@@ -177,6 +177,12 @@ final class KeyProcessing {
                 return !iter.hasNext();
             }
 
+            public String getLast() {
+                return (!list.isEmpty())
+                        ? list.getLast()
+                        : "";
+            }
+
             public void setTmp(final String elem) {
                 add(elem);
                 lastIsTmp = true;
@@ -240,9 +246,9 @@ final class KeyProcessing {
         private boolean processCharSequences(char[] chars, int offset, int count) {
             String seq = String.valueOf(chars, offset, count);
 
-            if (false && ESCAPES.UP_SEQUENCE.equals(seq)) {
+            if (ESCAPES.UP_SEQUENCE.equals(seq)) {
                 historyUp();
-            } else if (false && ESCAPES.DOWN_SEQUENCE.equals(seq)) {
+            } else if (ESCAPES.DOWN_SEQUENCE.equals(seq)) {
                 historyDown();
             } else if (ESCAPES.LEFT_SEQUENCE.equals(seq)) {
                 moveCaretLeft(charIdxInLine - 1);
@@ -263,18 +269,29 @@ final class KeyProcessing {
 
         private void sendCharImpl(char c) {
             if (c == ESCAPES.CHAR_CR || c == ESCAPES.CHAR_LF) {
-                toDTE.putChar(ESCAPES.CHAR_CR);
-                toDTE.putChar(ESCAPES.CHAR_LF);
-                toDTE.flush();
-                history.add(line.toString());
-                line.append('\n');
-                int nchars = line.length();
-                char[] tmp = send_buf(nchars);
-                line.getChars(0, nchars, tmp, 0);
-                line.delete(0, nchars);
-                charIdxInLine = 0;
-                toDCE.sendChars(tmp, 0, nchars);
-                toDCE.flush();
+                if (line.length() == 0) {
+                    // if line is empty, repeat the last command
+                    String last = history.getLast();
+                    int nchars = last.length() + 1;
+                    char[] tmp = send_buf(nchars);
+                    last.getChars(0, nchars - 1, tmp, 0);
+                    tmp[nchars - 1] = c;
+
+                    sendChars(tmp, 0, nchars);
+                } else {
+                    toDTE.putChar(ESCAPES.CHAR_CR);
+                    toDTE.putChar(ESCAPES.CHAR_LF);
+                    toDTE.flush();
+                    history.add(line.toString());
+                    line.append('\n');
+                    int nchars = line.length();
+                    char[] tmp = send_buf(nchars);
+                    line.getChars(0, nchars, tmp, 0);
+                    line.delete(0, nchars);
+                    charIdxInLine = 0;
+                    toDCE.sendChars(tmp, 0, nchars);
+                    toDCE.flush();
+                }
             } else if (c == ESCAPES.CHAR_SOH) {
                 moveCaretLeft(0);
             } else if (c == ESCAPES.CHAR_ENQ) {
@@ -301,7 +318,6 @@ final class KeyProcessing {
             } else if (c < FIRST_PRINTABLE) {
             } else {
                 // update line content
-
 
                 if (charIdxInLine == line.length()) {
                     // end of line
@@ -432,7 +448,7 @@ final class KeyProcessing {
                 history.setTmp(line.toString());
                 history.previous();
             }
-            
+
             cleanLine();
 
             String prev = history.previous();
