@@ -109,14 +109,19 @@ public final class StateCANodeProp extends PropertySupport<StateCA> {
             checkBox.setText(state.toString());
             checkBox.setEnabled(false);
             switch (state) {
-                case CompilationUnit:
-                case ExtraSource:
-                case Header:
+                case ParsedSource:
+                case ExtraParsedSource:
+                case IncludedHeader:
+                case ParsedOrphanHeader:
                     checkBox.setSelected(true);
                     break;
-                case Excluded:
+                case ExcludedHeader:
+                case ExcludedSource:
+                case NotYetParsed:
                     checkBox.setSelected(false);
                     break;
+                default:
+                    assert false : "unexpected " + state;
             }
             checkBox.setSize(box.width, box.height);
             checkBox.paint(g);
@@ -139,7 +144,12 @@ public final class StateCANodeProp extends PropertySupport<StateCA> {
 
         @Override
         public String[] getTags() {
-            return new String[]{StateCA.CompilationUnit.toString(), StateCA.ExtraSource.toString(), StateCA.Header.toString(), StateCA.Excluded.toString()};
+            StateCA[] values = StateCA.values();
+            String[] out = new String[values.length];
+            for (int i = 0; i < values.length; i++) {
+                out[i] = values[i].toString();
+            }
+            return out;
         }
 
         @Override

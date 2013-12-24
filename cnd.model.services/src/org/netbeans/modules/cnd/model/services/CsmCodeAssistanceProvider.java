@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -76,6 +78,22 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
         return csmFile != null;
     }
 
+    @Override
+    public CodeAssistance.State getCodeAssistanceState(NativeFileItem item) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(item.getFileObject(), false, false);
+        if (csmFile != null) {
+            if (csmFile.isHeaderFile()) {
+                if (CsmIncludeHierarchyResolver.getDefault().getFiles(csmFile).isEmpty()) {
+                    return State.ParsedOrphanHeader;
+                }
+                return State.ParsedIncludedHeader;
+            } else {
+                return State.ParsedSource;
+            }
+        }
+        return State.NotParsed;
+    }
+    
     @Override
     public void addChangeListener(ChangeListener listener){
         synchronized(lock) {
