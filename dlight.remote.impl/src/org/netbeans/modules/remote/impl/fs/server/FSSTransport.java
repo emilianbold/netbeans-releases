@@ -313,7 +313,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     @Override
     protected void onConnect() {
-        requestRefreshCycle("/"); //NOI18N
+        // nothing: see ConnectTask
     }
 
     @Override

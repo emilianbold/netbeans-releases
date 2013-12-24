@@ -152,7 +152,11 @@ import org.openide.util.RequestProcessor;
         RP.post(new ConnectTask());
     }
 
-    void requestRefreshCycle(String path) {
+    /*package*/ void requestRefreshCycle(String path) {
+        RP.post(new RefreshTask());
+    }
+
+    private void sendRefreshRequest(String path) {
         FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
         try {
             dispatch(req);
@@ -167,25 +171,20 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private class RefreshTask implements Runnable {
+        @Override
+        public void run() {
+            sendRefreshRequest("/"); //NOI18N
+        }        
+    }
+
     private class ConnectTask implements Runnable {
         @Override
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
             Thread.currentThread().setName("fs_server on-connect initialization for " + env); // NOI18N
-            try {
-                getOrCreateServer();
-            } catch (ConnectException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ConnectionManager.CancellationException ex) {
-                ex.printStackTrace(System.err);
-            } catch (IOException ioe) {
-                ioe.printStackTrace(System.err);
-                setInvalid(false);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ExecutionException ex) {
-                ex.printStackTrace(System.err);
-                setInvalid(false);
+            try {                
+                sendRefreshRequest("/"); // in turn calls getOrCreateServer() //NOI18N
             } finally {
                 Thread.currentThread().setName(oldThreadName);
             }
