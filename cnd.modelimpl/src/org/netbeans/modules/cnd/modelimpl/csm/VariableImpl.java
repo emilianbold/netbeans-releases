@@ -139,7 +139,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public static int getStartOffset(AST node) {
         if (node != null) {
-            OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
             if (csmAst != null) {
                 return csmAst.getOffset();
             }
@@ -261,7 +261,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 tok = tok.getNextSibling();
             }
             if (tok != null) {
-                OffsetableAST startAST = AstUtil.getFirstCsmAST(tok);
+                OffsetableAST startAST = AstUtil.getFirstOffsetableAST(tok);
                 if (startAST != null) {
                     start = startAST.getOffset();
                 }

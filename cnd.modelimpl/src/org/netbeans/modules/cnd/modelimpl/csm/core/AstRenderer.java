@@ -493,7 +493,7 @@ public class AstRenderer {
     }
 
     private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction) {
-        OffsetableAST csmAST = AstUtil.getFirstCsmAST(name);
+        OffsetableAST csmAST = AstUtil.getFirstOffsetableAST(name);
 
         StringBuilder varName = new StringBuilder(AstUtil.getText(name));
         AST next = name.getNextSibling();
@@ -815,7 +815,7 @@ public class AstRenderer {
         int typeStartOffset = 0;
         if (token != null) {
             typedef = token.getType() == CPPTokenTypes.LITERAL_typedef;         
-            typeStartOffset = AstUtil.getFirstCsmAST(token).getOffset();
+            typeStartOffset = AstUtil.getFirstOffsetableAST(token).getOffset();
             if (token.getType() == CPPTokenTypes.LITERAL_static) {
                 token = token.getNextSibling();
                 if (token != null) {
@@ -836,7 +836,7 @@ public class AstRenderer {
             }
         }
         if (token != null) {
-            int rcurlyOffset = AstUtil.getFirstCsmAST(token).getEndOffset();
+            int rcurlyOffset = AstUtil.getFirstOffsetableAST(token).getEndOffset();
             int startOffset = typeStartOffset;
             int endOffset = rcurlyOffset;
             token = token.getNextSibling();
@@ -1116,7 +1116,7 @@ public class AstRenderer {
                                     planB = true;
                                 }                    
                                 if(planB) {
-;                                    if (cfdi != null) {
+                                    if (cfdi != null) {
                                         typeImpl = TypeFactory.createType(new AST[]{classifier, typeBeginning}, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
                                     } else if (classifier != null) {
                                         typeImpl = TypeFactory.createType(new AST[]{classifier, typeBeginning}, file, ptrOperator, arrayDepth, null, scope, false, true);

@@ -86,7 +86,7 @@ public class AstRendererException extends Exception {
     }
     
     private static int getStartOffset(AST node) {
-        OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
+        OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
         if( csmAst != null ) {
             return csmAst.getOffset();
         }

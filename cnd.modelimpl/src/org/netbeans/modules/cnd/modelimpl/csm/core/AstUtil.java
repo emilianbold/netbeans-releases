@@ -337,29 +337,17 @@ public class AstUtil {
         }
     }    
 
-    public static OffsetableAST getFirstCsmAST(AST node) {
+    public static OffsetableAST getFirstOffsetableAST(AST node) {
         if( node != null ) {
             if( node instanceof OffsetableAST ) {
                 return (OffsetableAST) node;
-            }
-            else {
-                return getFirstCsmAST(node.getFirstChild());
-            }
-        }
-        return null;
-    }
-    
-    public static OffsetableFakeAST getFirstOffsetableAST(AST node) {
-        if( node != null ) {
-            if( node instanceof OffsetableFakeAST ) {
-                return (OffsetableFakeAST) node;
             }
             else {
                 return getFirstOffsetableAST(node.getFirstChild());
             }
         }
         return null;
-    }    
+    }
 
     public static String toString(AST ast) {
         final StringBuilder out = new StringBuilder();
@@ -447,7 +435,7 @@ public class AstUtil {
         if (ast == null) {
             return "<null>"; // NOI18N
         }
-        OffsetableAST startAst = getFirstCsmAST(ast);
+        OffsetableAST startAst = getFirstOffsetableAST(ast);
         AST endAst = getLastChildRecursively(ast);
         if (startAst != null && endAst != null) {
             StringBuilder sb = new StringBuilder();// NOI18N
@@ -472,7 +460,7 @@ public class AstUtil {
             return null;
         }
         
-        AST firstClonedNode = createClone(source);
+        AST firstClonedNode = createFakeClone(source);
         AST currentClonedAST = firstClonedNode;
         AST prevClonedAST = null;
         
@@ -487,13 +475,13 @@ public class AstUtil {
             }
             source = source.getNextSibling();
             prevClonedAST = currentClonedAST;
-            currentClonedAST = createClone(source);
+            currentClonedAST = createFakeClone(source);
         }
         
         return firstClonedNode;
     }
     
-    private static AST createClone(AST ast) {
+    private static AST createFakeClone(AST ast) {
         return ast instanceof OffsetableAST ? new OffsetableFakeAST() : new FakeAST();
     }
 }
