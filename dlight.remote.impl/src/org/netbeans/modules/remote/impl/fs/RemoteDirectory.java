@@ -1360,6 +1360,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             MagicCache magic = magicCache.get();
             if (magic != null) {
                 magic.clean(null);
+                magicCache = new SoftReference<MagicCache>(null);
             } else {
                 new MagicCache(this).clean(null);
             }
