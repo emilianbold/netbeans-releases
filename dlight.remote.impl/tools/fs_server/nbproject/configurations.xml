@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="90">
+<configurationDescriptor version="91">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <df name="src">
@@ -528,9 +528,9 @@
       <item path="test/test_main.c" ex="false" tool="0" flavor2="2">
       </item>
     </conf>
-    <conf name="Linux64_Previse" type="0">
+    <conf name="Linux64_Parfait" type="0">
       <toolsSet>
-        <compilerSet>OracleSolarisStudio_13|OSS_5.13</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -539,19 +539,37 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile 64BITS=1 </buildCommand>
-          <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
+          <buildCommand>${MAKE} -f Makefile 64BITS=1 PARFAIT=1</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean 64BITS=1 PARFAIT=1</cleanCommand>
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
             <standard>3</standard>
             <incDir>
+              <pElem>/opt/parfait-tools-1.3.1/lib/clang/3.1/include</pElem>
+              <pElem>/usr/lib/gcc/x86_64-linux-gnu/4.6/include</pElem>
+              <pElem>/usr/local/include</pElem>
+              <pElem>/usr/lib/gcc/x86_64-linux-gnu/4.6/include-fixed</pElem>
+              <pElem>/usr/include/x86_64-linux-gnu</pElem>
+              <pElem>/usr/include</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>_GNU_SOURCE</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__GNUC_MINOR__=6</Elem>
+              <Elem>__GNUC_PATCHLEVEL__=3</Elem>
+              <Elem>__GNUC__=4</Elem>
+              <Elem>__SIZEOF_INT128__=16</Elem>
             </preprocessorList>
+            <undefinedList>
+              <Elem>__clang__</Elem>
+              <Elem>__clang_major__</Elem>
+              <Elem>__clang_minor__</Elem>
+              <Elem>__clang_patchlevel__</Elem>
+              <Elem>__clang_version__</Elem>
+              <Elem>__llvm__</Elem>
+            </undefinedList>
           </cTool>
         </makeTool>
       </makefileType>
