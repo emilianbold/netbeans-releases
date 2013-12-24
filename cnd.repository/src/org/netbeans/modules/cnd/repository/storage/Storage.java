@@ -493,7 +493,7 @@ import org.openide.util.lookup.Lookups;
         if (requiredFileSystem == null) {
             throw new InternalError();
         }
-        if (requiredFileSystem.intValue() < 0) {
+        if (requiredFileSystem.intValue() < 0 && layer.getWriteCapability() != null) {
             //register file system
             requiredFileSystem = layer.getWriteCapability().registerClientFileSystem(clientUnitDescriptor.getFileSystem());
             map.put(clientFileSystemID, requiredFileSystem);
