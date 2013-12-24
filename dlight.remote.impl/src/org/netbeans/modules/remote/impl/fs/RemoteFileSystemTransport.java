@@ -56,8 +56,9 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 public abstract class RemoteFileSystemTransport {
 
     public abstract interface Warmup {
-        DirEntryList get(String path) throws InterruptedException;
-        DirEntryList tryGet(String path);
+        DirEntryList getAndRemove(String path) throws InterruptedException;
+        void remove(String path);
+        DirEntryList tryGetAndRemove(String path);
     }
     
     public static Warmup createWarmup(ExecutionEnvironment execEnv, String path) {

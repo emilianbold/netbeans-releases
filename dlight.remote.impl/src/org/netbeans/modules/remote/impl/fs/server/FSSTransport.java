@@ -378,9 +378,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
 
         @Override
-        public DirEntryList get(String path) throws InterruptedException {
+        public DirEntryList getAndRemove(String path) throws InterruptedException {
             while (true) {
-                DirEntryList l = tryGet(path);
+                DirEntryList l = tryGetAndRemove(path);
                 if (l != null) {
                     return l;
                 }
@@ -389,19 +389,28 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 }
             }
         }
+        
 
         @Override
-        public DirEntryList tryGet(String path) {
+        public DirEntryList tryGetAndRemove(String path) {
             synchronized (lock) {
-                DirEntryList entries = cache.get(path);
+                DirEntryList entries = cache.remove(path);
                 if (entries != null) {
-                    RemoteLogger.fine("Got entries from fs_server cache for {0}", path);
+                    RemoteLogger.fine("Warming up: got entries for {0}; {1} cached entry lists remain", path, cache.size());
                     return entries;
                 }
             }
             return null;
         }
 
+        @Override
+        public void remove(String path){
+            synchronized (lock) {
+                cache.remove(path);
+            }
+        }
+
+        
         @Override
         public void run() {
             long time = System.currentTimeMillis();

@@ -553,21 +553,27 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         readEntryReqs.incrementAndGet();
         try {
-            if (isFlaggedForWarmup() && !forceRefresh) {
-                warmupReqs.incrementAndGet();
-                DirEntryList entryList = null;
+            if (isFlaggedForWarmup()) {
                 RemoteFileSystemTransport.Warmup w = getWarmup();
-                if (w == null) {
-                    warmup = RemoteFileSystemTransport.createWarmup(getExecutionEnvironment(), getPath());
-                    if (warmup != null) {
-                        entryList = warmup.get(getPath());
+                if (forceRefresh) {
+                    if (w != null) {
+                        w.remove(getPath());
                     }
                 } else {
-                    entryList = w.tryGet(getPath());
-                }
-                if (entryList != null) {
-                    warmupHints.incrementAndGet();
-                    return toMap(entryList);
+                    warmupReqs.incrementAndGet();
+                    DirEntryList entryList = null;
+                    if (w == null) {
+                        warmup = RemoteFileSystemTransport.createWarmup(getExecutionEnvironment(), getPath());
+                        if (warmup != null) {
+                            entryList = warmup.getAndRemove(getPath());
+                        }
+                    } else {
+                        entryList = w.tryGetAndRemove(getPath());
+                    }
+                    if (entryList != null) {
+                        warmupHints.incrementAndGet();
+                        return toMap(entryList);
+                    }
                 }
             }
         } finally {
