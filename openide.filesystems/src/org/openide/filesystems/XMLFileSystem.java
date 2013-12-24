@@ -615,7 +615,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         private boolean isFolder;
         private String uri;
 
-        public ResourceElem(boolean isFolder, URL[] urlContext) {
+        public ResourceElem(boolean isFolder, URL... urlContext) {
             this.isFolder = isFolder;
             this.urlContext.addAll(Arrays.asList(urlContext));
 
@@ -625,19 +625,12 @@ public final class XMLFileSystem extends AbstractFileSystem {
             }
         }
 
-        public ResourceElem(boolean isFolder, URL urlContext) {
-            this.isFolder = isFolder;
-            this.urlContext.add(urlContext);
-
-            if (isFolder) {
-                children = new ArrayList<ResourceElem>();
-                names = new ArrayList<String>();
-            }
-        }
-
         ResourceElem addChild(String name, ResourceElem child) {
             if (!isFolder) {
-                throw new IllegalArgumentException("not a folder"); // NOI18N
+                children = new ArrayList<ResourceElem>();
+                names = new ArrayList<String>();
+                content = null;
+                isFolder = true;
             }
             assert name != null && name.indexOf("/") == -1:(child.isFolder ? "<folder name=":"<file name=")+name+" ...";//NOI18N
 
