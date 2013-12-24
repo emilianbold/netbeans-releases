@@ -1075,7 +1075,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
                     if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
                         //skip
-                    } else {
+                    } else if(dbMappings.getTableName() != null) {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
                     }
                     if (fullyQualifiedTableNames) {
