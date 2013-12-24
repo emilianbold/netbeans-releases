@@ -163,6 +163,9 @@ import org.openide.util.lookup.Lookups;
             }
             if (!map.containsKey(clientFileSystemID)) {
                 int matchedFileSystemIndexInLayer = layer.findMatchedFileSystemIndexInLayer(clientFileSystem);
+                if (matchedFileSystemIndexInLayer < 0 && layer.getWriteCapability() != null) {
+                    matchedFileSystemIndexInLayer = layer.getWriteCapability().registerClientFileSystem(clientFileSystem);
+                }
      //           assert matchedFileSystemIndexInLayer != -1 : "Matched file system not found";
                 map.put(clientFileSystemID, matchedFileSystemIndexInLayer);
             }
@@ -190,17 +193,13 @@ import org.openide.util.lookup.Lookups;
 
             if (!map.containsKey(clientShortUnitID)) {
                 int matchedUnitIDInLayer = findMatchedUnitIDInLayer(layer, clientUnitDescriptor);
-//                if (matchedUnitIDInLayer == -1 && layer.getWriteCapability() != null) {
-//                    UnitDescriptor layerUnitDescriptor = createLayerUnitDescriptor(layer, clientUnitDescriptor);
-//
-//
-//
-//                    matchedUnitIDInLayer = layer.getUnitsTable().indexOf(layerUnitDescriptor);
-//                    layer.getWriteCapability().registerNewUnit(matchedUnitIDInLayer, layerUnitDescriptor);
-//                    matchedUnitIDInLayer = 
-//                }
+                if (matchedUnitIDInLayer == -1 && layer.getWriteCapability() != null) {
+                    UnitDescriptor layerUnitDescriptor = createLayerUnitDescriptor(layer, clientUnitDescriptor);
+                    matchedUnitIDInLayer = layer.getWriteCapability().registerNewUnit(layerUnitDescriptor);
+
+                }
                 map.put(clientShortUnitID, matchedUnitIDInLayer);
-            }
+            }            
         }
     }
 
@@ -483,10 +482,7 @@ import org.openide.util.lookup.Lookups;
         return clientUnitDescriptorsDictionary.getUnitDescriptor(unmaskedID).getName();
     }
 
-    // TODO: to be removed when implementing TextIndex Layering
-//    URI getStorageLocation() {
-//        return layerDescriptors.get(0).getURI();
-//    }
+
 
     private int findMatchedUnitIDInLayer(Layer layer, UnitDescriptor clientUnitDescriptor) {
         List<UnitDescriptor> layerUnitsTable = layer.getUnitsTable();
@@ -498,7 +494,9 @@ import org.openide.util.lookup.Lookups;
             throw new InternalError();
         }
         if (requiredFileSystem.intValue() < 0) {
-            return -1;
+            //register file system
+            requiredFileSystem = layer.getWriteCapability().registerClientFileSystem(clientUnitDescriptor.getFileSystem());
+            map.put(clientFileSystemID, requiredFileSystem);
         }
 
         for (int unitIDInLayer = 0; unitIDInLayer < layerUnitsTable.size(); unitIDInLayer++) {
