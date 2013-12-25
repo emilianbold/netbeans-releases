@@ -55,7 +55,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
  *
  * @author vkvashin
  */
-public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
+    public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
 
     public RemoteTestSuiteBase() {
     }
@@ -94,6 +94,10 @@ public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
     
     public static void registerTestSetup(NativeExecutionBaseTestCase test) {
         String fullName = testFullName(test);
+        registerTestSetup(fullName);
+    }
+    
+    public static void registerTestSetup(String fullName) {
         synchronized (statsLock) {
             Long value = stats.get(fullName);
             if (value != null) {
@@ -101,11 +105,19 @@ public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
             }
             stats.put(fullName, Long.valueOf(System.currentTimeMillis()));
         }
-        System.err.printf("\n###> setUp    %s\n", testFullName(test));
+        System.err.printf("\n###> setUp    %s\n", fullName);
     }
     
     public static void registerTestTearDown(NativeExecutionBaseTestCase test) {
         String fullName = testFullName(test);
+        registerTestTearDown(fullName, false);
+    }
+    
+    public static void registerTestTearDown(String fullName) {
+        registerTestTearDown(fullName, true);
+    }
+    
+    private static void registerTestTearDown(String fullName, boolean clearThisTestTimer) {
         long time;
         synchronized (statsLock) {
             Long value = stats.get(fullName);
@@ -117,8 +129,11 @@ public class RemoteTestSuiteBase extends NativeExecutionBaseTestSuite {
                 time = System.currentTimeMillis() - value.longValue();
                 stats.put(fullName, Long.valueOf(time));
             }
+            if (clearThisTestTimer) {
+                stats.remove(fullName);
+            }
         }
-        System.err.printf("\n###< tearDown %s; duration: %d seconds\n", test.getClass().getName() + '.' + test.getName(), time/1000);
+        System.err.printf("\n###< tearDown %s; duration: %d seconds\n", fullName, time/1000);
     }
     
     private static String testFullName(NativeExecutionBaseTestCase test) {
