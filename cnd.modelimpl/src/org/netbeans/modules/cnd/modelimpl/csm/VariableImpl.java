@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -307,8 +308,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
                     int end = ((CsmAST) lastChild).getEndOffset();
-                    initExpr = ExpressionBase.create(start, end, getContainingFile(),/* null,*/ _getScope());
-                    if(!lambdas.isEmpty()) {
+                    initExpr = ExpressionsFactory.create(start, end, getContainingFile(),/* null,*/ _getScope());
+                    if (!lambdas.isEmpty()) {
                         initExpr.setLambdas(lambdas);
                     }
                 }

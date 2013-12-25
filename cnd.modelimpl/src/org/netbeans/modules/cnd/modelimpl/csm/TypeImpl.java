@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
@@ -488,7 +489,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
      * @param ptrOperator
      * @return true if visiting was finished successfully, false otherwise
      */
-    public static boolean visitPointerOperator(ASTTokenVisitor visitor, AST ptrOperator) {
+    public static boolean visitPointerOperator(DeepUtil.ASTTokenVisitor visitor, AST ptrOperator) {
         if (ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
             for (AST insideToken = ptrOperator.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
                 if (insideToken.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
@@ -1211,7 +1212,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     
-    private static class ASTPointerOperatorQualifiersCollector implements ASTTokenVisitor {
+    private static class ASTPointerOperatorQualifiersCollector implements DeepUtil.ASTTokenVisitor {
         
         private int constQualifiers;
         
@@ -1244,16 +1245,4 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return constQualifiers;
         }                                              
     }
-    
-
-    public static interface ASTTokenVisitor {
-        
-        /**
-         * @param token 
-         * @return true to continue visiting, false to abort
-         */
-        boolean visit(AST token);
-        
-    }
-    
 }

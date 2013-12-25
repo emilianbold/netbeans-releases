@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -82,7 +83,7 @@ public class DeclTypeImpl extends TypeImpl {
     DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, constQualifiers, startOffset, endOffset);
         AST expressionAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_EXPRESSION);
-        this.typeExpression = ExpressionBase.create(expressionAst, file, scope);
+        this.typeExpression = ExpressionsFactory.create(expressionAst, file, scope);
     }
 
     public CsmExpression getTypeExpression() {

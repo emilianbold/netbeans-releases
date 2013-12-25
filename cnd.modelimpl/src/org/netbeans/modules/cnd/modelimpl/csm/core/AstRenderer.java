@@ -2266,7 +2266,7 @@ public class AstRenderer {
     }
     
     public ExpressionBase renderExpression(AST ast, CsmScope scope) {
-        return isExpression(ast) ? ExpressionBase.create(ast, file,/* null,*/ scope) : null;
+        return isExpression(ast) ? ExpressionsFactory.create(ast, file,/* null,*/ scope) : null;
     }
 
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
@@ -2295,7 +2295,7 @@ public class AstRenderer {
             if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
                 for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
                     if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
-                        ExpressionBase initializer = ExpressionBase.create(initializerToken, file,/* null,*/ scope);
+                        CsmExpression initializer = ExpressionsFactory.create(initializerToken, file,/* null,*/ scope);
                         if (initializers == null) {
                             initializers = new ArrayList<CsmExpression>();
                         }
