@@ -162,12 +162,14 @@ public class RefreshManager {
     }        
     
     public void scheduleRefreshOnFocusGained() {        
-        if (REFRESH_ON_FOCUS && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
-            Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
-            RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
-            scheduleRefreshImpl(filterDirectories(fileObjects), false);
-        } else {
-            RemoteFileSystemTransport.onFocusGained(env);
+        if (REFRESH_ON_FOCUS) {
+            if (RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
+                Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
+                RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
+                scheduleRefreshImpl(filterDirectories(fileObjects), false);
+            } else {
+                RemoteFileSystemTransport.onFocusGained(env);
+            }
         }
     }
 
