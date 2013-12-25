@@ -2712,7 +2712,7 @@ abstract public class CsmCompletionQuery {
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);  
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations.get(0));
+                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }
