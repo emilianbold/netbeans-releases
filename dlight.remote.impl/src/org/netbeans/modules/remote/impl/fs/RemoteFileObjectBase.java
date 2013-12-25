@@ -266,8 +266,11 @@ public abstract class RemoteFileObjectBase {
     
     public final void delete(FileLock lock) throws IOException {
         fileSystem.setBeingRemoved(this);
-        deleteImpl(lock, this);
-        fileSystem.setBeingRemoved(null);
+        try {
+            deleteImpl(lock, this);
+        } finally {
+            fileSystem.setBeingRemoved(null);
+        }
     }
     
     protected final void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
