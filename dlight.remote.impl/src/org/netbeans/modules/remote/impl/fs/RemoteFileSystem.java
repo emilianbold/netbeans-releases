@@ -123,6 +123,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             new ArrayList<FileSystemProblemListener>();
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
+    private ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -698,10 +699,19 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    /*package*/ void setBeingRemoved(RemoteFileObjectBase fo) {
+        beingRemoved.set(fo);
+    }
+
     private RemoteFileObjectBase vcsSafeGetFileObject(String path) {
-        return factory.getCachedFileObject(path);
-        //RemoteFileObject fo = findResource(path);
-        //return (fo == null) ? null : fo.getImplementor();
+        RemoteFileObjectBase fo = factory.getCachedFileObject(path);
+        if (fo == null) {
+            RemoteFileObjectBase removing = beingRemoved.get();
+            if (removing != null && removing.getPath().equals(path)) {
+                fo = removing;
+            }
+        }
+        return fo;
     }
     
     public Boolean vcsSafeIsDirectory(String path) {
