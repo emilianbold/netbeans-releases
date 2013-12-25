@@ -38,6 +38,126 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *//*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.modelimpl.csm;
@@ -1214,7 +1334,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
-            CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
+            CsmType resolvedType = resolveTemplateParameterType(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
                 return resolvedType;
             }
@@ -1222,11 +1342,19 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         return type;
     }
     
-    public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return resolveTemplateParameter(templateParameter, new MapHierarchy<>(mapping));
+    public static CsmType resolveTemplateParameterType(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return resolveTemplateParameterType(templateParameter, new MapHierarchy<>(mapping));
     }
     
-    public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+    public static CsmType resolveTemplateParameterType(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        CsmSpecializationParameter resolvedParam = resolveTemplateParameter(templateParameter, mapping);
+        if (resolvedParam != null && resolvedParam instanceof CsmTypeBasedSpecializationParameter) {
+            return ((CsmTypeBasedSpecializationParameter) resolvedParam).getType();
+        }
+        return null;  
+    }
+    
+    public static CsmSpecializationParameter resolveTemplateParameter(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;
@@ -1241,7 +1369,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             iteration--;
         }
         if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
-            return ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+            return instantiatedType;
         }
         return null;  
     }    

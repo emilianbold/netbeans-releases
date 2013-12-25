@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.OffsetableIdentifiableBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -734,7 +735,7 @@ public class TypeFactory {
 
     }        
     
-    private static class ASTPointerDepthCounter implements TypeImpl.ASTTokenVisitor {
+    private static class ASTPointerDepthCounter implements DeepUtil.ASTTokenVisitor {
     
         private int pointerDepth;
         

@@ -116,7 +116,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     
     public static int getStartOffset(AST node) {
         if( node != null ) {
-            OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
             if( csmAst != null ) {
                 return csmAst.getOffset();
             }

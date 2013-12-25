@@ -273,8 +273,15 @@ abstract public class CsmCompletionQuery {
                 if (csmFile == null) {
                     csmFile = CsmUtilities.getCsmFile(baseDocument, true, false);
                 }
-                CsmCompletionTokenProcessor tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);           
-
+                
+                CsmCompletionTokenProcessor tp;
+                
+                if (CsmKindUtilities.isExpression(expression)) {
+                    tp = processTokensInExpression((CsmExpression) expression);
+                } else {
+                    tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);
+                }
+ 
                 if (!checkErrorTokenState(tp)) {
                     try {
                         pushResolveContext(CsmResolveContext.create(csmFile, startOffset));
@@ -600,6 +607,43 @@ abstract public class CsmCompletionQuery {
                 CndTokenUtilities.processTokens(etp, doc, startOffset, endOffset);
             }
         });
+        return tp;
+    }
+    
+    private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression) {
+        final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
+
+        String expressionText = expression.getExpandedText().toString();        
+        TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+        // Go from inner to outer TSes
+        TokenSequence<TokenId> cppts = null;
+        for (int i = tsList.size() - 1; i >= 0; i--) {
+            TokenSequence<?> ts = tsList.get(i);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                @SuppressWarnings("unchecked") // NOI18N
+                TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                cppts = uts;
+            }
+        }    
+        if (cppts != null) {
+            final TokenSequence<TokenId> cppTokenSequence = cppts;
+            
+            boolean enableTemplates = true;
+            CsmFile csmFile = expression.getContainingFile();
+            if (csmFile != null) {
+                switch (csmFile.getFileType()) {
+                    case SOURCE_C_FILE:
+                    case SOURCE_FORTRAN_FILE:
+                        enableTemplates = false;
+                }
+            }
+            tp.enableTemplateSupport(enableTemplates);
+            
+            CndTokenUtilities.processTokens(tp, cppTokenSequence, expression.getStartOffset(), expression.getEndOffset(), expression.getStartOffset());  
+        }
+        
         return tp;
     }
 
@@ -1251,34 +1295,19 @@ abstract public class CsmCompletionQuery {
         
         private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
-                String expressionText = expression.getText().toString();
-                TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
-                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset(), true);
-                // Go from inner to outer TSes
-                TokenSequence<TokenId> cppts = null;
-                for (int i = tsList.size() - 1; i >= 0; i--) {
-                    TokenSequence<?> ts = tsList.get(i);
-                    final Language<?> lang = ts.languagePath().innerLanguage();
-                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                        @SuppressWarnings("unchecked") // NOI18N
-                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                        cppts = uts;
-                    }
+                
+                CsmCompletionTokenProcessor tp;
+                
+                if (CsmKindUtilities.isExpression(expression)) {
+                    tp = processTokensInExpression((CsmExpression) expression);
+                } else {
+                    long docVersion = DocumentUtilities.getDocumentVersion(getBaseDocument());
+                    tp = processTokensInFile(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset(), getBaseDocument(), docVersion);
                 }
-                if(cppts != null) {
+                
+                if (!checkErrorTokenState(tp)) {
                     antiLoop.add(expression);
-
-                    final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
-                    tp.enableTemplateSupport(true);
-                    final BaseDocument bDoc = getBaseDocument();
-                    bDoc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            CndTokenUtilities.processTokens(tp, bDoc, expression.getStartOffset(), expression.getEndOffset());
-                        }
-                    });
                     CsmCompletionExpression exp = tp.getResultExp();
-
                     return resolveType(exp);
                 }            
             }
@@ -2712,7 +2741,7 @@ abstract public class CsmCompletionQuery {
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);  
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations.get(0));
+                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }

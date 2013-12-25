@@ -235,7 +235,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         AST id = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
         node = (id != null) ? id : node;
         if( node != null ) {
-            OffsetableAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
             if( csmAst != null ) {
                 return csmAst.getOffset();
             }

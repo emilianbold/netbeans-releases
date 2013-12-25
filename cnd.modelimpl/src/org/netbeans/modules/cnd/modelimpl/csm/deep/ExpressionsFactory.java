@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,36 +34,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
+package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author petrk
  */
-public class CsmHyperlinkTest extends CndBaseTestSuite {
+public final class ExpressionsFactory {
     
-    public CsmHyperlinkTest() {
-        super("C/C++ Hyperlink");
+    public static ExpressionBase create(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+        ExpressionBase expr;
         
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
-        this.addTestSuite(NamespacesHyperlinkTestCase.class);
-        this.addTestSuite(BasicHyperlinkTestCase.class);
-        this.addTestSuite(UnnamedEnumTestCase.class);
-        this.addTestSuite(LibrariesContentHyperlinkTestCase.class);
-        this.addTestSuite(TemplateSpecializationsTestCase.class);
-        this.addTestSuite(InstantiationHyperlinkTestCase.class);
-        this.addTestSuite(Cpp11TestCase.class);
-        this.addTestSuite(Cpp11TemplatesTestCase.class);
+        if (ExpandedExpressionBase.hasExpandedTokens(ast)) {
+            expr = new ExpandedExpressionBase(ast, file, scope);
+        } else {
+            expr = new ExpressionBase(ast, file, scope);
+        }
+                
+        AST token = ast.getFirstChild();
+        List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
+        while (token != null) {
+            if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
+                lambdas.add(AstRenderer.renderStatement(token, file, scope));
+            }
+            token = token.getNextSibling();
+        }
+        if(!lambdas.isEmpty()) {
+            expr.setLambdas(lambdas);
+        }        
+        return expr;
     }
+    
+    public static ExpressionBase create(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+        return new ExpressionBase(startOffset, endOffset, file, scope);
+    }    
 
-    public static Test suite() {
-        TestSuite suite = new CsmHyperlinkTest();
-        return suite;
+    private ExpressionsFactory() {
+        throw new AssertionError();
     }
 }
