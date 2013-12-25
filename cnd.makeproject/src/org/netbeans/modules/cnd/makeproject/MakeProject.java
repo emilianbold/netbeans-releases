@@ -67,6 +67,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -1421,9 +1422,15 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
     }
     
-    private void createLaunchersFileIfNeeded(FileObject projectDir) {
-        CndUtils.assertNonUiThread();
-        
+    private void createLaunchersFileIfNeeded(final FileObject projectDir) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    createLaunchersFileIfNeeded(projectDir);
+                }
+            });
+        }
         try {
             FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
             if (projectPrivateFolder == null) {
