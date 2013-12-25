@@ -54,22 +54,16 @@ import org.openide.filesystems.URLMapperTestHidden;
  *
  * @author vv159170
  */
-public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
+public class RemoteFSTCKFileUtilTest extends RemoteFSTCKTestCase {
    
-    public RemoteFSTCKTest(Test test) {
+    public RemoteFSTCKFileUtilTest(Test test) {
         super(test);
     }
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid.class);
-        // it seems AttributesTestHidden does not belong to FS TCK
-        //suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);
-        suite.addTestSuite(TempFileObjectTestHid.class);
-        return new RemoteFSTCKTest(suite);
+        return new RemoteFSTCKFileUtilTest(suite);
     }    
 
 }

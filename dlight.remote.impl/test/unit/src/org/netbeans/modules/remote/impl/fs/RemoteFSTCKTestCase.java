@@ -54,6 +54,7 @@ import org.netbeans.modules.nativeexecution.test.NbClustersInfoProvider;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystemFactoryHid;
@@ -104,7 +105,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        RemoteTestSuiteBase.registerTestSetup(this.getClass().getSimpleName());
         System.setProperty("nativeexecution.mode.unittest", "true");
         
         String userdir = System.getProperty("netbeans.user");
@@ -141,6 +142,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
                 CommonTasksSupport.rmDir(execEnv, tmpDir, true, new OutputStreamWriter(System.err));
             }
         }
+        RemoteTestSuiteBase.registerTestTearDown(this.getClass().getSimpleName());
     }
 
     @Override

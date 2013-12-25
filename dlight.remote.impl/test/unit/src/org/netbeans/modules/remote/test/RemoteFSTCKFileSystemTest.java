@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.remote.impl.fs.*;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
+import org.openide.filesystems.FileObjectTestHid;
+import org.openide.filesystems.FileSystemTestHid;
+import org.openide.filesystems.FileUtilTestHidden;
+import org.openide.filesystems.TempFileObjectTestHid;
+import org.openide.filesystems.URLMapperTestHidden;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author vv159170
  */
-public class RemoteApi2Test extends RemoteTestSuiteBase {
-
-    @SuppressWarnings("unchecked")
-    public RemoteApi2Test() {
-        this("Remote API", getTestClasses());
-    }
-
-    @SuppressWarnings("unchecked")
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-           RemoteLinksTestCase.class,
-           RemoteLinksChangeLinkTestCase.class,
-           RemoteLinksChangeLinkTestCase2.class,
-           ListenersTestCase.class,
-           ListenersParityTestCase.class,
-           PlainFileWriteEventsTestCase.class,
-           FssDispatchedHangupTestCase.class           
-        };
+public class RemoteFSTCKFileSystemTest extends RemoteFSTCKTestCase {
+   
+    public RemoteFSTCKFileSystemTest(Test test) {
+        super(test);
     }
     
-    public RemoteApi2Test(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
-    }
-
     public static Test suite() {
-        return new RemoteApi2Test();
-    }
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(FileSystemTestHid.class);
+        return new RemoteFSTCKFileSystemTest(suite);
+    }    
+
 }

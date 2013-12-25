@@ -642,8 +642,7 @@ public abstract class RemoteFileObjectBase {
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                // nothing to rename - see BaseFileObj.rename and issue #234377
-                return;
+                throw new IOException("Can not rename to " + newNameExt + ": the file already exists");//NOI18N
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
