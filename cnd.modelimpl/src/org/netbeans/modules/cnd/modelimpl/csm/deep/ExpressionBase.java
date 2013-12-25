@@ -133,6 +133,11 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
         }
         return lambdas;        
     }
+
+    @Override
+    public CharSequence getExpandedText() {
+        return getText();
+    }
     
     public void setLambdas(List<CsmStatement> lambdas) {
         this.lambdas = lambdas;
