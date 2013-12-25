@@ -1386,7 +1386,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             notifyProjectStartActivity();
             final MyInterrupter interrupter = new MyInterrupter();
             interrupters.add(interrupter);
-            FileObject dir = getProjectDirectory();
+            final FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 ConnectionHelper.INSTANCE.ensureConnection(env);
@@ -1395,7 +1395,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             projectDescriptorProvider.opening(interrupter);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
-            createLaunchersFileIfNeeded(dir);
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
             // project is in opened state
             openStateAndLock.set(true);
@@ -1409,6 +1408,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                         }
                     }
                     projectDescriptorProvider.opened();
+                    createLaunchersFileIfNeeded(dir);
                     synchronized (openStateAndLock) {
                         if (openStateAndLock.get()) {
                             if (nativeProject instanceof NativeProjectProvider) {
@@ -1423,14 +1423,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     }
     
     private void createLaunchersFileIfNeeded(final FileObject projectDir) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    createLaunchersFileIfNeeded(projectDir);
-                }
-            });
-        }
+        CndUtils.assertNonUiThread();
         try {
             FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
             if (projectPrivateFolder == null) {
@@ -1452,7 +1445,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             FileObject fo = URLMapper.findFileObject(url);
             fo.copy(projectPrivateFolder, "launcher", "properties"); // NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.FINE, "error on creating launchers file ", ex);
         }
     }
     
