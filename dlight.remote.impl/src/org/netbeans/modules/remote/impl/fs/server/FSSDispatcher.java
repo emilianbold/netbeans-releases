@@ -558,7 +558,6 @@ import org.openide.util.RequestProcessor;
         }
         
         private String getSubdir() {
-            assert HostInfoUtils.isHostInfoAvailable(env);
             String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
             return Integer.toString(tmp.hashCode()).replace('-', '0');
         }
