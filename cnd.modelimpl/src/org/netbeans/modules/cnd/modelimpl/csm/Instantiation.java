@@ -1324,6 +1324,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 type instanceof NestedType) {
             return new NestedType(type, instantiation);
         }
+        if (type instanceof DeclTypeImpl || type instanceof Decltype) {
+            return new Decltype(type, instantiation);
+        }
         if (CsmKindUtilities.isFunctionPointerType(type)) {
             return new TypeFunPtr((CsmFunctionPointerType) type, instantiation);
         }
@@ -1839,6 +1842,93 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return ((CsmFunctionPointerType) originalType).getParameters();
         }
     }
+    
+    private static class Decltype extends Type {
+
+        public Decltype(CsmType type, CsmInstantiation instantiation) {
+            super(type, instantiation);
+        }
+
+        @Override
+        public boolean isPointer() {
+            return isPointer(new ArrayList<CsmInstantiation>());
+        }
+        
+        public boolean isPointer(List<CsmInstantiation> instantiations) {
+            instantiations.add(instantiation);
+            return isPointerImpl(originalType, instantiations);
+        }
+
+        @Override
+        public boolean isReference() {
+            return isReference(new ArrayList<CsmInstantiation>());
+        }
+
+        public boolean isReference(List<CsmInstantiation> instantiations) {
+            instantiations.add(instantiation);
+            return isReferenceImpl(originalType, instantiations);
+        }
+
+        @Override
+        public boolean isConst() {
+            return isConst(new ArrayList<CsmInstantiation>());
+        }
+        
+        public boolean isConst(List<CsmInstantiation> instantiations) {
+            instantiations.add(instantiation);
+            return isConstImpl(originalType, instantiations);
+        }        
+
+        @Override
+        public boolean isRValueReference() {
+            return isRValueReference(new ArrayList<CsmInstantiation>());
+        }
+
+        public boolean isRValueReference(List<CsmInstantiation> instantiations) {
+            instantiations.add(instantiation);
+            return isRValueReferenceImpl(originalType, instantiations);
+        }        
+        
+        private static boolean isPointerImpl(CsmType type, List<CsmInstantiation> instantiations) {
+            if (type instanceof Decltype) {
+                return ((Decltype) type).isPointer(instantiations);
+            } else if (type instanceof DeclTypeImpl) {
+                return ((DeclTypeImpl) type).isPointer(instantiations);
+            } else {
+                return type.isPointer();
+            }
+        }
+        
+        private static boolean isReferenceImpl(CsmType type, List<CsmInstantiation> instantiations) {
+            if (type instanceof Decltype) {
+                return ((Decltype) type).isReference(instantiations);
+            } else if (type instanceof DeclTypeImpl) {
+                return ((DeclTypeImpl) type).isReference(instantiations);
+            } else {
+                return type.isReference();
+            }
+        }
+        
+        private static boolean isConstImpl(CsmType type, List<CsmInstantiation> instantiations) {
+            if (type instanceof Decltype) {
+                return ((Decltype) type).isConst(instantiations);
+            } else if (type instanceof DeclTypeImpl) {
+                return ((DeclTypeImpl) type).isConst(instantiations);
+            } else {
+                return type.isConst();
+            }
+        }   
+        
+        private static boolean isRValueReferenceImpl(CsmType type, List<CsmInstantiation> instantiations) {
+            if (type instanceof Decltype) {
+                return ((Decltype) type).isRValueReference(instantiations);
+            } else if (type instanceof DeclTypeImpl) {
+                return ((DeclTypeImpl) type).isRValueReference(instantiations);
+            } else {
+                return type.isRValueReference();
+            }
+        }           
+    }    
 
     private static class NestedType extends Type {
 

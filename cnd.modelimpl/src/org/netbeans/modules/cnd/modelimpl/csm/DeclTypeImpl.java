@@ -60,7 +60,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
- *
+ * TODO: cache resolved type for last instantitations.
+ * 
  * @author petrk
  */
 public class DeclTypeImpl extends TypeImpl {
@@ -129,7 +130,47 @@ public class DeclTypeImpl extends TypeImpl {
         }
         return classifier;
     }    
+
+    @Override
+    public boolean isPointer() {
+        return isPointer(null);
+    }
     
+    public boolean isPointer(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isPointer() : false;
+    }
+
+    @Override
+    public boolean isReference() {
+        return isReference(null);
+    }
+    
+    public boolean isReference(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isReference() : false;
+    }
+
+    @Override
+    public boolean isConst() {
+        return isConst(null);
+    }
+    
+    public boolean isConst(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isConst() : false;
+    }    
+
+    @Override
+    public boolean isRValueReference() {
+        return isRValueReference(null);
+    }
+    
+    public boolean isRValueReference(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isRValueReference(): false;
+    }
+
     private boolean canUseCache() {
         // We are allowed to use cache only if context is null
         return instantiations == null;
