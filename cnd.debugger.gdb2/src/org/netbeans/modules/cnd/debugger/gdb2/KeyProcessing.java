@@ -112,6 +112,7 @@ final class KeyProcessing {
         private static final Logger STREAM_LOG = Logger.getLogger(Gdb.class.getName());
         private static final char FIRST_PRINTABLE = ' '; // NOI18N
         private final History history = new History();
+        private boolean resendingLastCommand = false;
 
         private static class History {
 
@@ -155,22 +156,29 @@ final class KeyProcessing {
                 }
             }
 
+            /*package*/ String previous(final String current) {
+                if (isLast()) {
+                    add(current);
+                    lastIsTmp = true;
+                    previous();
+                }
+                return previous();
+            }
+
             public String next() {
                 if (!forward && iter.hasNext()) {
                     iter.next();
                 }
                 forward = true;
+                String val = "";
                 if (iter.hasNext()) {
-                    return iter.next();
-                } else {
-                    return (!list.isEmpty())
-                            ? list.getLast()
-                            : "";
+                    val = iter.next();
                 }
-            }
-
-            public boolean isLastTmp() {
-                return lastIsTmp;
+                if (isLast() && lastIsTmp) {
+                    removeLast();
+                    lastIsTmp = false;
+                }
+                return val;
             }
 
             public boolean isLast() {
@@ -183,9 +191,11 @@ final class KeyProcessing {
                         : "";
             }
 
-            public void setTmp(final String elem) {
-                add(elem);
-                lastIsTmp = true;
+            // iterator must be on the last index
+            private void removeLast() {
+                assert !iter.hasNext() : "The iterator must be on the last index";
+                list.removeLast();
+                iter = list.listIterator(list.size());
             }
         }
 
@@ -269,7 +279,7 @@ final class KeyProcessing {
 
         private void sendCharImpl(char c) {
             if (c == ESCAPES.CHAR_CR || c == ESCAPES.CHAR_LF) {
-                if (line.toString().trim().length() == 0) {
+                if (!resendingLastCommand && line.toString().trim().length() == 0) {
                     // if line is empty, repeat the last command
                     String last = history.getLast();
                     int nchars = last.length() + 1;
@@ -279,12 +289,16 @@ final class KeyProcessing {
 
                     cleanLine();
 
+                    resendingLastCommand = true;
                     sendChars(tmp, 0, nchars);
+                    resendingLastCommand = false;
                 } else {
                     toDTE.putChar(ESCAPES.CHAR_CR);
                     toDTE.putChar(ESCAPES.CHAR_LF);
                     toDTE.flush();
-                    history.add(line.toString());
+                    if (!resendingLastCommand) {
+                        history.add(line.toString());
+                    }
                     line.append('\n');
                     int nchars = line.length();
                     char[] tmp = send_buf(nchars);
@@ -447,14 +461,9 @@ final class KeyProcessing {
         }
 
         private void historyUp() {
-            if (history.isLast()) {
-                history.setTmp(line.toString());
-                history.previous();
-            }
-
+            String str = line.toString();
             cleanLine();
-
-            String prev = history.previous();
+            String prev = history.previous(str);
 
             line.append(prev);
             toDTE.putChars(prev.toCharArray(), 0, prev.length());
@@ -464,6 +473,7 @@ final class KeyProcessing {
         private void historyDown() {
             cleanLine();
             String next = history.next();
+
             line.append(next);
             toDTE.putChars(next.toCharArray(), 0, next.length());
             charIdxInLine = next.length();

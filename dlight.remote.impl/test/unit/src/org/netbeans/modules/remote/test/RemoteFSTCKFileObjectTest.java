@@ -45,10 +45,6 @@ import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 import org.openide.filesystems.FileObjectTestHid;
-import org.openide.filesystems.FileSystemTestHid;
-import org.openide.filesystems.FileUtilTestHidden;
-import org.openide.filesystems.TempFileObjectTestHid;
-import org.openide.filesystems.URLMapperTestHidden;
 
 /**
  *
@@ -62,8 +58,26 @@ public class RemoteFSTCKFileObjectTest extends RemoteFSTCKTestCase {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileObjectTestHid.class);
+        suite.addTestSuite(FileObjectTestHidEx.class);
         return new RemoteFSTCKFileObjectTest(suite);
     }    
 
+    public static class FileObjectTestHidEx extends FileObjectTestHid {
+
+        public FileObjectTestHidEx(String name) {
+            super(name);
+        }
+
+        @Override
+        protected void setUp() throws Exception {
+            RemoteTestSuiteBase.registerTestSetup(this);
+            super.setUp();
+        }        
+        
+        @Override
+        protected void tearDown() throws Exception {
+            super.tearDown();
+            RemoteTestSuiteBase.registerTestTearDown(this);
+        }
+    }     
 }

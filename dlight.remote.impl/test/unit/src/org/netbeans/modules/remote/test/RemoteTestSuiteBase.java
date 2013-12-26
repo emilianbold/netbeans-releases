@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import junit.framework.TestCase;
 import junit.framework.TestResult;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
@@ -78,26 +79,37 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
     @Override
     public final void run(TestResult result) {
-        long suiteStartTime = System.currentTimeMillis();
         try {
-            System.err.printf("### Starting suite %s\n", getName());
-            clearStats();
+            registerTestSuiteSetup(getName());            
             super.run(result);
         } finally {
-            long time = System.currentTimeMillis() - suiteStartTime;
-            printStats(time);
+            registerTestSuiteTearDown(getName());
         }
     }
-
+    
+        
     private static final Map<String, Long> stats = new HashMap<String, Long>();
     private static final Object statsLock = new Object();
-    
-    public static void registerTestSetup(NativeExecutionBaseTestCase test) {
+    static final ThreadLocal<Long> suiteStartTime = new ThreadLocal<Long>();
+
+    public static void registerTestSuiteSetup(String suiteName) {
+        suiteStartTime.set(System.currentTimeMillis());
+        System.err.printf("### Starting suite %s\n", suiteName);
+        clearStats(suiteName);
+    }
+
+    public static void registerTestSuiteTearDown(String suiteName) {
+        Long tm = suiteStartTime.get();
+        long time = (tm == null) ? -1 : System.currentTimeMillis() - tm.longValue();
+        printStats(suiteName, time);
+    }
+
+    public static void registerTestSetup(TestCase test) {
         String fullName = testFullName(test);
         registerTestSetup(fullName);
     }
     
-    public static void registerTestSetup(String fullName) {
+    private static void registerTestSetup(String fullName) {
         synchronized (statsLock) {
             Long value = stats.get(fullName);
             if (value != null) {
@@ -108,14 +120,14 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
         System.err.printf("\n###> setUp    %s\n", fullName);
     }
     
-    public static void registerTestTearDown(NativeExecutionBaseTestCase test) {
+    public static void registerTestTearDown(TestCase test) {
         String fullName = testFullName(test);
         registerTestTearDown(fullName, false);
     }
     
-    public static void registerTestTearDown(String fullName) {
-        registerTestTearDown(fullName, true);
-    }
+//    private static void registerTestTearDown(String fullName) {
+//        registerTestTearDown(fullName, true);
+//    }
     
     private static void registerTestTearDown(String fullName, boolean clearThisTestTimer) {
         long time;
@@ -136,32 +148,32 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
         System.err.printf("\n###< tearDown %s; duration: %d seconds\n", fullName, time/1000);
     }
     
-    private static String testFullName(NativeExecutionBaseTestCase test) {
+    private static String testFullName(TestCase test) {
         return test.getClass().getName() + '.' + test.getName();
     }
     
-    private void clearStats() {
+    private static void clearStats(String suiteName) {
         Map<String, Long> statsCopy;
         synchronized (statsLock) {
             statsCopy = new HashMap<String, Long>(stats);
             stats.clear();
         }
         if (!statsCopy.isEmpty()) {
-            String title = String.format("### Unreported times (%s):\n", getName());
+            String title = String.format("### Unreported times (%s):\n", suiteName);
             printStats(title, statsCopy);
         }
     }
     
-    private void printStats(long suiteTime) {
+    private static void printStats(String suiteName, long suiteTime) {
         Map<String, Long> statsCopy;
         synchronized (statsLock) {
             statsCopy = new HashMap<String, Long>(stats);
         }        
-        String title = String.format("\n\n### Test suite %s took %d seconds\n", getName(), suiteTime/1000);
+        String title = String.format("\n\n### Test suite %s took %d seconds\n", suiteName, suiteTime/1000);
         printStats(title, statsCopy);
     }    
     
-    private void printStats(String title, Map<String, Long> statsCopy) {
+    private static void printStats(String title, Map<String, Long> statsCopy) {
         System.err.printf("%s\n", title);
         ArrayList<Map.Entry<String, Long>> entries = new ArrayList<Map.Entry<String, Long>>(statsCopy.entrySet());
         Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
