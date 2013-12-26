@@ -579,6 +579,11 @@ static void response_delete(int request_id, const char* path) {
     char parent[parent_len + 1];
     strncpy(parent, path, parent_len);
     parent[parent_len] = 0;
+    char canonical_parent[PATH_MAX];
+    if (!realpath(parent, canonical_parent)) {
+        response_error(request_id, path, errno, "can't resolve parent canonical path");
+        return;
+    }
 
     struct stat stat_buf;
     if (lstat(path, &stat_buf) == 0) {
@@ -602,7 +607,7 @@ static void response_delete(int request_id, const char* path) {
     }
     
     // the file or directory successfully removed
-    response_ls(request_id, parent, false, false);
+    response_ls(request_id, canonical_parent, false, false);
 }
 
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
