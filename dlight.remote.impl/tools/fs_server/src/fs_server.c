@@ -560,6 +560,51 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     buffer_free(&work_buf);    
 }
 
+static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
+    my_fprintf(STDOUT, "%c %i %i %s: %s: %s\n", FS_RSP_ERROR, request_id, err_code, err_msg, (err_code) ? err_to_string(err_code) : "", path);
+}
+
+static void response_delete(int request_id, const char* path) {
+    
+    const char* last_slash = strrchr(path, '/');
+    if (!last_slash) {
+        response_error(request_id, path, 0, "wrong path");
+        return;
+    }
+    if (last_slash == path) {
+        response_error(request_id, path, 0, "won't remove '/'");
+        return;
+    }
+    int parent_len = last_slash - path;
+    char parent[parent_len + 1];
+    strncpy(parent, path, parent_len);
+    parent[parent_len] = 0;
+
+    struct stat stat_buf;
+    if (lstat(path, &stat_buf) == 0) {
+        if (S_ISDIR(stat_buf.st_mode)) {
+            if (!clean_dir(path)) {
+                response_error(request_id, path, errno, "can't remote directory content");
+                return;
+            }
+            if (rmdir(path)) {
+                response_error(request_id, path, errno, "can't remove directory");
+            }
+        } else {
+            if (unlink(path)) {
+                response_error(request_id, path, errno, "can't remove file");
+                return;
+            }
+        }
+    } else {
+        response_error(request_id, path, errno, "error getting stat");
+        return;
+    }
+    
+    // the file or directory successfully removed
+    response_ls(request_id, parent, false, false);
+}
+
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
     
     response_ls_data *data = p;
@@ -829,6 +874,9 @@ static void response_refresh(fs_request* request) {
 
 static void process_request(fs_request* request) {
     switch (request->kind) {
+        case FS_REQ_DELETE:
+            response_delete(request->id, request->path);
+            break;
         case FS_REQ_LS:
             response_ls(request->id, request->path, false, false);
             break;
