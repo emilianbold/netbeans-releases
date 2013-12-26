@@ -273,7 +273,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
     
-    protected final void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
+    private void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
