@@ -159,6 +159,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IEmbeddable getEmbeddable(String tName) {
         initializeManagedTypes();
+        if(tName == null) {
+            return null;
+        }
         int lst = tName.lastIndexOf('.');
         String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
         IEmbeddable ret = embeddables.get(supposeName);
@@ -183,6 +186,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IEntity getEntity(String tName) {
         initializeManagedTypes();
+        if(tName == null) {
+            return null;
+        }
         int lst = tName.lastIndexOf('.');
         String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
         IEntity ret = entities.get(supposeName);
@@ -213,6 +219,9 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IMappedSuperclass getMappedSuperclass(String tName) {
         initializeManagedTypes();
+        if(tName == null) {
+            return null;
+        }
         int lst = tName.lastIndexOf('.');
         String supposeName = lst>-1 ? tName.substring(lst+1) : tName;
         IMappedSuperclass ret = mSuperclasses.get(supposeName);
