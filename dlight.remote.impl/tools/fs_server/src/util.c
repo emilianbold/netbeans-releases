@@ -395,10 +395,8 @@ static bool removing_visitor(char* name, struct stat *stat_buf, char* link, cons
 }
 
 bool clean_dir(const char* path) {
-    char* child_abspath = malloc(PATH_MAX);
     bool res = true;
     visit_dir_entries(path, removing_visitor, &res);
-    free(child_abspath);
     return res;
 }
 
