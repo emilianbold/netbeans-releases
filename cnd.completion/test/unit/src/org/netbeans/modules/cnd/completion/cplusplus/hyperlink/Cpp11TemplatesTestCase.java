@@ -72,4 +72,10 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         performTest("bug238847_3.cpp", 119, 15, "bug238847_3.cpp", 113, 9);
         performTest("bug238847_3.cpp", 122, 22, "bug238847_3.cpp", 113, 9);
     }    
+    
+    public void testBug238889() throws Exception {
+        // Bug 238889 - C++11: Unresolved identifier if templates are closed by RSHIFT token
+        performTest("bug238889.cpp", 17, 65, "bug238889.cpp", 13, 9);
+        performTest("bug238889.cpp", 18, 87, "bug238889.cpp", 13, 9);
+    }        
 }
