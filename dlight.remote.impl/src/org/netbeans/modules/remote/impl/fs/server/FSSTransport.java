@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs.server;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -320,7 +321,16 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     protected void onFocusGained() {
         requestRefreshCycle("/"); //NOI18N
     }
- 
+
+    @Override
+    protected void scheduleRefresh(Collection<String> paths) {
+        if (!dispatcher.isRefreshing()) {
+            for (String path : paths) {
+                dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
+            }
+        }
+    }
+    
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
             // file system root has empty path

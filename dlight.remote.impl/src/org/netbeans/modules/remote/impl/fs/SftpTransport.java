@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -139,4 +140,9 @@ public class SftpTransport extends RemoteFileSystemTransport {
     protected void unregisterDirectoryImpl(String path) {
         
     }    
+
+    @Override
+    protected void scheduleRefresh(Collection<String> paths) {
+        RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getRefreshManager().scheduleRefreshExistent(paths, true);
+    }
 }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,6 +68,10 @@ public abstract class RemoteFileSystemTransport {
 
     public static boolean needsClientSidePollingRefresh(ExecutionEnvironment execEnv) {
         return getInstance(execEnv).needsClientSidePollingRefresh();
+    }
+    
+    public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        getInstance(env).scheduleRefresh(paths);
     }
 
     static void onFocusGained(ExecutionEnvironment execEnv) {
@@ -154,6 +159,8 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract void unregisterDirectoryImpl(String path);
 
+    protected abstract void scheduleRefresh(Collection<String> paths);
+
     protected void onConnect() {
     }
 
@@ -162,5 +169,5 @@ public abstract class RemoteFileSystemTransport {
     
     protected Warmup createWarmup(String path) {
         return null;
-    }        
+    }            
 }

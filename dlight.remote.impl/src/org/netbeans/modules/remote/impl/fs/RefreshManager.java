@@ -210,7 +210,7 @@ public class RefreshManager {
         }        
     }
     
-    public void scheduleRefreshExistent(Collection<String> paths) {
+    public void scheduleRefreshExistent(Collection<String> paths, boolean addExistingChildren) {
         Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
         for (String path : paths) {
             RemoteFileObjectBase fo = factory.getCachedFileObject(path);
@@ -218,7 +218,7 @@ public class RefreshManager {
                 fileObjects.add(fo);
             }
         }
-        scheduleRefresh(fileObjects, true);
+        scheduleRefresh(fileObjects, addExistingChildren);
     }
        
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {

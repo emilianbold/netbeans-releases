@@ -130,7 +130,7 @@ import org.openide.util.RequestProcessor;
     
     private void addToRefresh(String path) {
         RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-        refreshManager.scheduleRefreshExistent(Arrays.asList(path));
+        refreshManager.scheduleRefreshExistent(Arrays.asList(path), false);
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -153,7 +153,7 @@ import org.openide.util.RequestProcessor;
     }
 
     /*package*/ void requestRefreshCycle(String path) {
-        RP.post(new RefreshTask());
+        RP.post(new RefreshTask(path));
     }
 
     private void sendRefreshRequest(String path) {
@@ -172,9 +172,16 @@ import org.openide.util.RequestProcessor;
     }
 
     private class RefreshTask implements Runnable {
+        
+        private final String path;
+
+        public RefreshTask(String path) {
+            this.path = path;
+        }
+        
         @Override
         public void run() {
-            sendRefreshRequest("/"); //NOI18N
+            sendRefreshRequest(path);
         }        
     }
 

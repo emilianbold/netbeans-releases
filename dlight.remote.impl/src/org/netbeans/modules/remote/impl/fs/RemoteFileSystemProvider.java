@@ -372,7 +372,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObject) {
             RemoteFileObject fo = (RemoteFileObject) fileObject;
-            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getImplementor()), true);
+            RemoteFileSystemTransport.scheduleRefresh(fo.getExecutionEnvironment(), Arrays.asList(fo.getPath()));
         } else {
             RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
         }
@@ -380,8 +380,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
-        RemoteFileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
-        fs.getRefreshManager().scheduleRefreshExistent(paths);
+        RemoteFileSystemTransport.scheduleRefresh(env, paths);
     }
 
     @Override
