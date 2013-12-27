@@ -788,6 +788,9 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (!tfProxyPort.getText().equals(model.getHttpProxyPort())) {
             return true;
         }
+        if (jUsageCheck.isSelected() != model.getUsageStatistics()) {
+            return true;
+        }
         return changed;
     }
     
