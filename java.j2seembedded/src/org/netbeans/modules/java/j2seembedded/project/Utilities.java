@@ -308,7 +308,7 @@ final class Utilities {
         return rpBuildScript;
     }
     
-    public static String getTargetOSForRP(String os, String arch, String abi, String vmName) {
+    protected static String getTargetOSForRP(String os, String arch, String abi, String vmName) {
         String targetOS;
         if (os.toLowerCase().contains("win")) { //NOI18N
             targetOS="win"; //NOI18N
@@ -316,13 +316,13 @@ final class Utilities {
                 targetOS += "amd64-15"; //NOI18N
             } else if (arch.toLowerCase().contains("86")) { //NOI18N
                 targetOS +="-15"; //NOI18N
-            } else if ("CVM".equals(vmName)) {
+            } else if ("CVM".equals(vmName)) { //NOI18N
                 targetOS+="cvm"; //NOI18N
             }
         } else if (os.toLowerCase().contains("linux")) { //NOI18N
             targetOS="linux"; //NOI18N
             if (arch.toLowerCase().contains("arm")) { //NOI18N
-                targetOS+="arm";
+                targetOS+="arm"; //NOI18N
                 if (abi.toLowerCase().contains("abihf")) { //NOI18N
                     targetOS+="vfphflt"; //NOI18N
                 }
@@ -331,7 +331,7 @@ final class Utilities {
                 targetOS += "amd64-15"; //NOI18N
             } else if (arch.toLowerCase().contains("86")) { //NOI18N
                 targetOS +="-15"; //NOI18N
-            } else if ("CVM".equals(vmName)) {
+            } else if ("CVM".equals(vmName)) { //NOI18N
                 targetOS+="cvm"; //NOI18N
             }
         } else if (os.toLowerCase().contains("sol")) { //NOI18N
@@ -342,7 +342,7 @@ final class Utilities {
                  targetOS+="v9"; //NOI18N
                 }
             } else if (arch.toLowerCase().contains("64")) { //NOI18N
-                targetOS+="amd64";
+                targetOS+="amd64"; //NOI18N
             } else if (arch.toLowerCase().contains("86")) { //NOI18N
                 targetOS+="x86"; //NOI18N
             }
