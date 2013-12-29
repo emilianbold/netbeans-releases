@@ -1764,13 +1764,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         
         // fix bug #96957, should use DirectoryChooserFileView
         // only on windows
-        if (Utilities.isWindows()) {
-            if (useShellFolder) {
-                fileView = new DirectoryChooserFileView();
-            }
-        } else {
-            fileView = (BasicFileView) super.getFileView(fileChooser);
-        }
+//        if (Utilities.isWindows()) {
+//            if (useShellFolder) {
+//                fileView = new DirectoryChooserFileView();
+//            }
+//        } else {
+//            fileView = ;//(BasicFileView) super.getFileView(fileChooser);
+//        }
         return fileView;
     }
     
@@ -2235,8 +2235,45 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             getFileChooser().setCurrentDirectory(f);
         }
     }
-    
-    private class DirectoryChooserFileView extends BasicFileView {
+        
+    private class DirectoryChooserFileView extends BasicFileView implements Runnable{
+        private final ScheduledExecutorService executor;
+        private ScheduledFuture<?> iconTask;
+        private final Object iconTaskLock = new Object();
+        static final int LOADING_DELAY = 30;            
+        private File lookingForIcon;
+        
+        private DirectoryChooserFileView() {
+            executor = Executors.newScheduledThreadPool(1);
+        }
+        
+        private void loadIcon(){
+            try{
+                Thread.sleep(10);
+            }catch (InterruptedException ex){
+                //return;
+            }
+            if (Thread.interrupted()) {
+                lookingForIcon = null;
+                return;
+            }
+            Icon icon = FileChooserUIImpl.this.fileChooser.getFileSystemView().getSystemIcon(lookingForIcon);            
+            cacheIcon(lookingForIcon, icon);
+            lookingForIcon = null;            
+            
+        }
+
+        @Override
+        public void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                FileChooserUIImpl.this.fileChooser.repaint();
+            } else {
+                loadIcon();
+                SwingUtilities.invokeLater(this);                
+            }            
+        }
+        
+        
         
         @Override
         public Icon getIcon(File f) {
@@ -2245,22 +2282,34 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             if (icon != null) {
                 return icon;
             }
-            
-            if (f != null) {
-                try {
-                    icon = fileChooser.getFileSystemView().getSystemIcon(f);
-                } catch (NullPointerException exc) {
-                    // workaround for JDK bug 6357445, in IZ: 145832, please remove when fixed
-                    LOG.log(Level.FINE, "JDK bug 6357445 encountered, NPE caught", exc); // NOI18N
+            synchronized (iconTaskLock) {
+                if (iconTask != null) {
+                    iconTask.cancel(true);
                 }
-            }
-            
-            if (icon == null) {
-                icon = super.getIcon(f);
-            }
-            
-            cacheIcon(f, icon);
+                if (lookingForIcon == null) {
+                    lookingForIcon = f;
+                }
+                
+                iconTask = executor.schedule(this,
+                        LOADING_DELAY, TimeUnit.MILLISECONDS);
+            }                        
             return icon;
+//            
+//            if (f != null) {
+//                try {
+//                    icon = fileChooser.getFileSystemView().getSystemIcon(f);
+//                } catch (NullPointerException exc) {
+//                    // workaround for JDK bug 6357445, in IZ: 145832, please remove when fixed
+//                    LOG.log(Level.FINE, "JDK bug 6357445 encountered, NPE caught", exc); // NOI18N
+//                }
+//            }
+//            
+//            if (icon == null) {
+//                icon = super.getIcon(f);
+//            }
+//            
+//            cacheIcon(f, icon);
+//            return icon;
         }
     }
     
@@ -2984,11 +3033,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     file = file.getParentFile();
                 }
             }
-            final boolean directoryChanged = file != null && !file.equals(oldValue);
-            if (directoryChanged) {
-                fileChooser.setCurrentDirectory(file);
-                
-            }
+            final boolean directoryChanged = file != null && !file.equals(oldValue);            
             final FileNode node = new FileNode(file);
             node.loadChildren(fileChooser, true);
             return new ValidationResult(Boolean.TRUE, node, directoryChanged, file);
@@ -3010,6 +3055,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     
                     currentState = new ValidationWorkerCheckState(null, validationResult);
                 } 
+                if (validationResult.isDirectoryChanged) {
+                    fileChooser.setCurrentDirectory(validationResult.currentFile);                           
+                }
                 //TODO: show error
                 ui.updateTree();
             } else {
