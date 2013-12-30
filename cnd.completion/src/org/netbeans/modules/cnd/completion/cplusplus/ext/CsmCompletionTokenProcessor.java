@@ -2611,13 +2611,17 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;
                     break;
-                default:
-                    if (getValidExpID(peekExp()) == GENERIC_TYPE) {
+                default: 
+                {
+                    int validExpID = getValidExpID(peekExp());
+                    if (validExpID == GENERIC_TYPE ||
+                        validExpID == SPECIAL_PARENTHESIS_OPEN) {
                         pushExp(CsmCompletionExpression.createEmptyVariable(
                                 bufferStartPos + bufferOffsetDelta + offset));
                         errorState = false;
                     }
                     break;
+                }
             }
         }
         // Check for joins
