@@ -75,12 +75,14 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -480,44 +482,53 @@ final class OutputUtils {
 
     /**
      */
-    public static void openFile(FileObject file, int lineNum) {
-
-        /*
-         * Most of the following code was copied from the Ant module, method
-         * org.apache.tools.ant.module.run.Hyperlink.outputLineAction(...).
-         */
-
-        if (file == null) {
-            java.awt.Toolkit.getDefaultToolkit().beep();
-            return;
-        }
+    public static void openFile(final FileObject file, final int lineNum) {
 
         try {
-            DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
-            if (ed != null && /* not true e.g. for *_ja.properties */
-                              file == dob.getPrimaryFile()) {
-                if (lineNum == -1) {
-                    // OK, just open it.
-                    ed.open();
-                } else {
-                    ed.openDocument();//XXX getLineSet doesn't do it for you
+            /*
+            * Most of the following code was copied from the Ant module, method
+            * org.apache.tools.ant.module.run.Hyperlink.outputLineAction(...).
+            */
+            
+            if (file == null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
+                return;
+            }
+            final DataObject dob = DataObject.find(file);
+            Mutex.EVENT.readAccess(new Runnable() {
+
+                @Override
+                public void run() {
                     try {
-                        Line l = ed.getLineSet().getOriginal(lineNum - 1);
-                        if (!l.isDeleted()) {
-                            l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                        EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
+                        if (ed != null && /* not true e.g. for *_ja.properties */
+                                file == dob.getPrimaryFile()) {
+                            if (lineNum == -1) {
+                                // OK, just open it.
+                                ed.open();
+                            } else {
+                                ed.openDocument();//XXX getLineSet doesn't do it for you
+                                try {
+                                    Line l = ed.getLineSet().getOriginal(lineNum - 1);
+                                    if (!l.isDeleted()) {
+                                        l.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                                    }
+                                } catch (IndexOutOfBoundsException ioobe) {
+                                    // Probably harmless. Bogus line number.
+                                    ed.open();
+                                }
+                            }
+                        } else {
+                            java.awt.Toolkit.getDefaultToolkit().beep();
                         }
-                    } catch (IndexOutOfBoundsException ioobe) {
-                        // Probably harmless. Bogus line number.
-                        ed.open();
+                    } catch (Exception ex2) {
+                        // XXX see above, should not be necessary to call openDocument
+                        // at all
                     }
                 }
-            } else {
-                java.awt.Toolkit.getDefaultToolkit().beep();
-            }
-        } catch (Exception ex2) {
-            // XXX see above, should not be necessary to call openDocument
-            // at all
+            });
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
