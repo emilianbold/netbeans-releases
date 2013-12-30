@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * mkleint: copied from junit module
@@ -58,6 +59,7 @@ import org.openide.util.NbBundle.Messages;
  */
 final class JumpAction extends AbstractAction {
 
+    private static final RequestProcessor RP = new RequestProcessor(JumpAction.class);
     /** */
     private final Node node;
     /** */
@@ -75,18 +77,23 @@ final class JumpAction extends AbstractAction {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (node instanceof TestsuiteNode){
-            OutputUtils.openTestsuite((TestsuiteNode)node);
-        } else if (node instanceof JUnitCallstackFrameNode){
-            OutputUtils.openCallstackFrame(node, callstackFrameInfo);
-        } else if (node instanceof JUnitTestMethodNode){
-            if (((JUnitTestMethodNode) node).getTestcase().getTrouble() != null) {
-                // method failed, find failing line within the testMethod using the stacktrace
-                OutputUtils.openCallstackFrame(node, "");
-            } else {
-                OutputUtils.openTestMethod((JUnitTestMethodNode) node);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (node instanceof TestsuiteNode) {
+                    OutputUtils.openTestsuite((TestsuiteNode) node);
+                } else if (node instanceof JUnitCallstackFrameNode) {
+                    OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+                } else if (node instanceof JUnitTestMethodNode) {
+                    if (((JUnitTestMethodNode) node).getTestcase().getTrouble() != null) {
+                        // method failed, find failing line within the testMethod using the stacktrace
+                        OutputUtils.openCallstackFrame(node, "");
+                    } else {
+                        OutputUtils.openTestMethod((JUnitTestMethodNode) node);
+                    }
+                }
             }
-        }
+        });
     }
 
 
