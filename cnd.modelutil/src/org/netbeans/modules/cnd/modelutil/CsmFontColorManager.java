@@ -130,11 +130,12 @@ public final class CsmFontColorManager {
         private final List<WeakReference<FontColorChangeListener>> listeners = new ArrayList<WeakReference<FontColorChangeListener>>();
         private FontColorSettings fcs;
         private final Object lock = new Object();
+        private final Lookup.Result<FontColorSettings> result;
 
         public FontColorProviderImpl(String mimeType) {
             this.mimeType = mimeType;
             Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
-            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
+            result = lookup.lookupResult(FontColorSettings.class);
             fcs = result.allInstances().iterator().next();
             result.addLookupListener(this);
         }
@@ -149,15 +150,16 @@ public final class CsmFontColorManager {
         @Override
         public AttributeSet getColor(Entity color) {
             synchronized(lock) {
-                return fcs.getTokenFontColors(color.getResourceName());
+                final AttributeSet tokenFontColors = fcs.getTokenFontColors(color.getResourceName());
+                assert tokenFontColors != null : "There is no color for "+color.getResourceName();
+                return tokenFontColors;
             }
         }
 
         @Override
         public void resultChanged(LookupEvent ev) {
-            Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
             synchronized(lock) {
-                fcs = lookup.lookup(FontColorSettings.class);
+                fcs = result.allInstances().iterator().next();
             }
             synchronized (listeners) {
                 for (ListIterator<WeakReference<FontColorChangeListener>> it = listeners.listIterator(); it.hasNext();) {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -61,6 +60,7 @@ import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -95,7 +95,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private final Object refLock = new RefLock();    
 
     private static final class MagicLock {}
-    private final Object magicLock = new MagicLock();    
+    private final Object magicLock = new MagicLock();
+    
+    private volatile RemoteFileSystemTransport.Warmup warmup;
 
     /*package*/ RemoteDirectory(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteDirectory parent, String remotePath, File cache) {
@@ -499,35 +501,91 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public void setAttribute(String attrName, Object value) throws IOException {
-        if (attrName.equals("warmup")) { // NOI18N
-            if (Boolean.getBoolean("remote.fs_server.warmup")) {
-                warmup();
-            }
+    public void warmup() {
+        if (RemoteFileSystemUtils.getBoolean("remote.warmup", true)) {
+            setFlag(MASK_WARMUP, true);   
+        }
+    }
+
+    @Override
+    public RemoteDirectory getParent() {
+        return (RemoteDirectory) super.getParent(); // see constructor
+    }
+
+    private boolean isFlaggedForWarmup() {
+        if(getFlag(MASK_WARMUP)) {
+            return true;
         } else {
-            super.setAttribute(attrName, value);
+            RemoteDirectory p = getParent();
+            if (p != null) {
+                return p.isFlaggedForWarmup();
+            }
         }
+        return false;
     }
-    
-    private void warmup() {
-        FSSTransport fsReader = FSSTransport.getInstance(getExecutionEnvironment());
-        if (fsReader != null && fsReader.isValid()) {
-            fsReader.warmap(getPath());
+
+    private RemoteFileSystemTransport.Warmup getWarmup() {
+        RemoteFileSystemTransport.Warmup w = warmup;
+        if (w == null) {
+            RemoteDirectory p = getParent();
+            if (p != null) {
+                return p.getWarmup();
+            }
         }
+        return w;
     }
-    
+
+    private Map<String, DirEntry> toMap(DirEntryList entryList) {
+        Map<String, DirEntry> map = new HashMap<String, DirEntry>();
+        for (DirEntry entry : entryList.getEntries()) {
+            map.put(entry.getName(), entry);
+        }
+        return map;
+    }
+            
+    private static final AtomicInteger warmupHints = new AtomicInteger();
+    private static final AtomicInteger warmupReqs = new AtomicInteger();
+    private static final AtomicInteger readEntryReqs = new AtomicInteger();
+
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
+        }
+        readEntryReqs.incrementAndGet();
+        try {
+            if (isFlaggedForWarmup()) {
+                RemoteFileSystemTransport.Warmup w = getWarmup();
+                if (forceRefresh) {
+                    if (w != null) {
+                        w.remove(getPath());
+                    }
+                } else {
+                    warmupReqs.incrementAndGet();
+                    DirEntryList entryList = null;
+                    if (w == null) {
+                        warmup = RemoteFileSystemTransport.createWarmup(getExecutionEnvironment(), getPath());
+                        if (warmup != null) {
+                            entryList = warmup.getAndRemove(getPath());
+                        }
+                    } else {
+                        entryList = w.tryGetAndRemove(getPath());
+                    }
+                    if (entryList != null) {
+                        warmupHints.incrementAndGet();
+                        return toMap(entryList);
+                    }
+                }
+            }
+        } finally {
+            if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {
+                RemoteLogger.finest("Warmup hits: {0} of {1} (total {2} dir.read reqs)", warmupHints.get(), warmupReqs.get(), readEntryReqs.get());
+            }
         }
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
             DirEntryList entryList = RemoteFileSystemTransport.readDirectory(getExecutionEnvironment(), getPath());            
-            for (DirEntry entry : entryList.getEntries()) {
-                newEntries.put(entry.getName(), entry);
-            }
-            
+            newEntries = toMap(entryList);
         }
         if (canLs && !isAutoMount()) {
             return newEntries;
@@ -683,6 +741,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean changed = true;
             Set<DirEntry> keepCacheNames = new HashSet<DirEntry>();
             List<DirEntry> entriesToFireChanged = new ArrayList<DirEntry>();
+            List<DirEntry> entriesToFireChangedRO = new ArrayList<DirEntry>();
             List<DirEntry> entriesToFireCreated = new ArrayList<DirEntry>();
             List<RemoteFileObject> filesToFireDeleted = new ArrayList<RemoteFileObject>();
             for (DirEntry newEntry : newEntries.values()) {
@@ -723,6 +782,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } 
                             if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                entriesToFireChangedRO.add(newEntry);
                                 changed = fire = true;
                             } 
                             if (!newEntry.isSameUser(oldEntry)) {
@@ -837,6 +897,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         new FileRenameEvent(directChild2Rename.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
                 fireFileRenamedEvent(this.getListeners(), 
                         new FileRenameEvent(this.getOwnerFileObject(), directChild2Rename.getOwnerFileObject(), name2Rename, ext2Rename));
+                fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
             }
         } finally {
             writeLock.unlock();
@@ -1046,6 +1107,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                                 getFileSystem().getFactory().setLink(this, getPath() + '/' + newEntry.getName(), newEntry.getLinkTarget());
                             } 
                             if (!newEntry.getAccessAsString().equals(oldEntry.getAccessAsString())) {
+                                entriesToFireChangedRO.add(newEntry);
                                 changed = fire = true;
                             } 
                             if (!newEntry.isSameUser(oldEntry)) {
@@ -1166,22 +1228,26 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         }
                     }
                 }
-                for (DirEntry entry : entriesToFireChangedRO) {
-                    RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
-                    if (fo != null) {
-                        if (fo.isPendingRemoteDelivery()) {
-                            RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
-                        } else {
-                            fo.fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
-                        }
-                    }
-                }
+                fireReadOnlyChangedEventsIfNeed(entriesToFireChangedRO);
                 //fireFileChangedEvent(getListeners(), new FileEvent(this));
             }
         } finally {
             writeLock.unlock();
         }
         return storage;
+    }
+    
+    private void fireReadOnlyChangedEventsIfNeed(List<DirEntry> entriesToFireChangedRO) {
+        for (DirEntry entry : entriesToFireChangedRO) {
+            RemoteFileObjectBase fo = getFileSystem().getFactory().getCachedFileObject(getPath() + '/' + entry.getName());
+            if (fo != null) {
+                if (fo.isPendingRemoteDelivery()) {
+                    RemoteLogger.getInstance().log(Level.FINE, "Skipping change r/o event for pending file {0}", fo);
+                } else {
+                    fo.fireReadOnlyChangedEvent();
+                }
+            }
+        }
     }
     
     private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected) {
@@ -1294,6 +1360,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             MagicCache magic = magicCache.get();
             if (magic != null) {
                 magic.clean(null);
+                magicCache = new SoftReference<MagicCache>(null);
             } else {
                 new MagicCache(this).clean(null);
             }

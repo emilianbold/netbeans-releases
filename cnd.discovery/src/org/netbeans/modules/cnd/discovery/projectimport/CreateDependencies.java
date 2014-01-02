@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -96,7 +95,7 @@ public class CreateDependencies implements PropertyChangeListener {
     private List<String> paths;
     private final List<String> searchPaths;
     private final String binary;
-    private final Map<Project, String> createdProjects = new HashMap<Project,String>();
+    private final Map<Project, String> createdProjects = new HashMap<>();
     private MakeConfigurationDescriptor mainConfigurationDescriptor;
     private final CsmModel model = CsmModelAccessor.getModel();
     private final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -119,9 +118,9 @@ public class CreateDependencies implements PropertyChangeListener {
             if (dependencies == null || dependencies.isEmpty()) {
                 return;
             }
-            Set<String> checkedDll = new HashSet<String>();
+            Set<String> checkedDll = new HashSet<>();
             checkedDll.add(binary);
-            Map<String,String> dllPaths = new HashMap<String, String>();
+            Map<String,String> dllPaths = new HashMap<>();
             String root = ImportExecutable.findFolderPath(mainConfigurationDescriptor, ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
@@ -131,12 +130,12 @@ public class CreateDependencies implements PropertyChangeListener {
                     dllPaths.put(dll, ImportExecutable.findLocation(dll, ldLibPath));
                 }
                 while(true) {
-                    List<String> secondary = new ArrayList<String>();
+                    List<String> secondary = new ArrayList<>();
                     for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
                         if (entry.getValue() != null) {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
-                                final Map<String, Object> extMap = new HashMap<String, Object>();
+                                final Map<String, Object> extMap = new HashMap<>();
                                 extMap.put("DW:buildResult", entry.getValue()); // NOI18N
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
@@ -178,7 +177,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     }
                 }
             }
-            paths = new ArrayList<String>();
+            paths = new ArrayList<>();
             for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
                 if (entry.getValue() != null) {
                     if (ImportExecutable.isMyDll(entry.getValue(), root)) {
@@ -244,9 +243,8 @@ public class CreateDependencies implements PropertyChangeListener {
                         continue;
                     }
                     if (extension != null) {
-                        Map<String, Object> map = new HashMap<String, Object>();
+                        Map<String, Object> map = new HashMap<>();
                         map.put("DW:buildResult", executable); // NOI18N
-                        map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
                         map.put("DW:rootFolder", aProject.getProjectDirectory().getPath()); // NOI18N
                         process((DiscoveryExtension)extension, aProject, map);
                     }
@@ -298,7 +296,7 @@ public class CreateDependencies implements PropertyChangeListener {
             }
         });
     }
-    private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
+    private static final List<CsmProgressListener> listeners = new ArrayList<>(1);
 
     private void onProjectParsingFinished(final Project makeProject) {
         if (makeProject != null) {

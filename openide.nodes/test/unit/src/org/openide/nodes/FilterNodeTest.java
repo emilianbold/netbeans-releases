@@ -64,6 +64,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** A test to check behavior of filter node.
  *
@@ -1334,6 +1336,35 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("b1", listner.snapshot.get(0).getName());
         assertEquals("b2", listner.snapshot.get(1).getName());
         assertEquals("b3", listner.snapshot.get(2).getName());
+    }
+
+    public void testAdditionalLookupCloned() {
+        Integer v1 = 42;
+        Double v2 = Math.PI;
+
+        // just create a base Node
+        Node x = new AbstractNode(Children.LEAF, Lookups.singleton(v1));
+        // create a copy of base with changed Lookup
+        Node y = new FilterNode(x, null, new ProxyLookup(x.getLookup(), Lookups.singleton(v2)));
+        // create another copy of the changed-Lookup-Node.
+        Node z = y.cloneNode();
+
+        // Integer object should be in all lookups
+        Integer lookupIntX = x.getLookup().lookup(Integer.class);
+        assertNotNull(lookupIntX);
+        Integer lookupIntY = y.getLookup().lookup(Integer.class);
+        assertNotNull(lookupIntY);
+        Integer lookupIntZ = z.getLookup().lookup(Integer.class);
+        assertNotNull(lookupIntZ);
+
+        Double lookupDoubleX = x.getLookup().lookup(Double.class);
+        assertNull("lookupDoubleX should be null, because Double is not in lookup of X", lookupDoubleX);
+
+        Double lookupDoubleY = y.getLookup().lookup(Double.class);
+        assertNotNull("lookupDoubleY should be NOT null, because Double is in lookup of Y", lookupDoubleY);
+
+        Double lookupDoubleZ = z.getLookup().lookup(Double.class);
+        assertNotNull("lookupDoubleZ should be NOT null, because Z is cloned from Y and Double is in lookup of Y",lookupDoubleZ);
     }
 }
 

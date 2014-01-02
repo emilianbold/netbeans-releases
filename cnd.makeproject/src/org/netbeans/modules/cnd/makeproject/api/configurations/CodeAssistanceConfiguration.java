@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -60,6 +61,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
     private VectorConfiguration<String> transientMacros;
     private VectorConfiguration<String> environmentVariables;
     private StringConfiguration tools;
+    private BooleanConfiguration includeInCA;
     private static final String DEFAULT_TOOLS = "gcc:c++:g++:clang:clang++:icc:icpc:ifort:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95:ar:ld"; //NOI18N
     
     // Constructors
@@ -67,13 +69,14 @@ public class CodeAssistanceConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         buildAnalyzer = new BooleanConfiguration(true);
         tools = new StringConfiguration(tools, DEFAULT_TOOLS);
-        transientMacros = new VectorConfiguration<String>(null);
-        environmentVariables = new VectorConfiguration<String>(null);
+        transientMacros = new VectorConfiguration<>(null);
+        environmentVariables = new VectorConfiguration<>(null);
+        includeInCA = new BooleanConfiguration(false);
     }
 
     public boolean getModified() {
         return getBuildAnalyzer().getModified() || getTools().getModified() || 
-                getEnvironmentVariables().getModified() || getTransientMacros().getModified();
+                getEnvironmentVariables().getModified() || getTransientMacros().getModified() || getIncludeInCA().getModified();
     }
 
     // MakeConfiguration
@@ -131,13 +134,21 @@ public class CodeAssistanceConfiguration implements Cloneable {
         this.environmentVariables = environmentVariables;
     }
 
+    public BooleanConfiguration getIncludeInCA() {
+        return includeInCA;
+    }
 
+    public void setIncludeInCA(BooleanConfiguration includeInCA) {
+        this.includeInCA = includeInCA;
+    }
+    
     // Clone and assign
     public void assign(CodeAssistanceConfiguration conf) {
         getBuildAnalyzer().assign(conf.getBuildAnalyzer());
         getTools().assign(conf.getTools());
         getTransientMacros().assign(conf.getTransientMacros());
         getEnvironmentVariables().assign(conf.getEnvironmentVariables());
+        getIncludeInCA().assign(conf.getIncludeInCA());
     }
 
     @Override
@@ -147,6 +158,7 @@ public class CodeAssistanceConfiguration implements Cloneable {
         clone.setTools(getTools().clone());
         clone.setTransientMacros(getTransientMacros().clone());
         clone.setEnvironmentVariables(getEnvironmentVariables().clone());
+        clone.setIncludeInCA(getIncludeInCA().clone());
         return clone;
     }
 
@@ -195,6 +207,14 @@ public class CodeAssistanceConfiguration implements Cloneable {
             }
         });
         sheet.put(set);
+        
+        set = new Sheet.Set();
+        set.setName("IncludeInCodeAssistance"); // NOI18N
+        set.setDisplayName(getString("IncludeInCodeAssistanceTxt")); // NOI18N
+        set.setShortDescription(getString("IncludeInCodeAssistanceHint")); // NOI18N
+        set.put(new BooleanNodeProp(getIncludeInCA(), true, "IncludeFlag", getString("IncludeFlagTxt"), getString("IncludeFlagHint"))); // NOI18N
+        sheet.put(set);
+
         return sheet;
     }
 
@@ -206,5 +226,15 @@ public class CodeAssistanceConfiguration implements Cloneable {
     @Override
     public String toString() {
         return "{buildAnalyzer=" + buildAnalyzer + " tools=" + tools + '}'; // NOI18N
+    }
+
+    boolean includeInCA(Item item) {
+        boolean add = getIncludeInCA().getValue();
+        if (add) {
+            if (MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

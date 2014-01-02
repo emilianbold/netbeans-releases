@@ -54,9 +54,12 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.util.NotifyHtmlPanel;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
@@ -194,20 +197,31 @@ public class UpgradeAction extends ContextAction {
     }
 
     private boolean confirmPossibleUpgrade (String path) {
-        return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_possibleUpgrade", path), //NOI18N
-                NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+        return confirm(NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
+                NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_possibleUpgrade", path)); //NOI18N
     }
 
     private boolean confirmUpgrade (String path) {
-        return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_upgrade", path), //NOI18N
-                NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+        return confirm(NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
+                NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_upgrade", path)); //NOI18N
     }
 
     private boolean forceUpgrade (String path) {
         return JOptionPane.showConfirmDialog(null, NbBundle.getMessage(UpgradeAction.class, "MSG_Upgrade_forceUpgrade", path), //NOI18N
                 NbBundle.getMessage(UpgradeAction.class, "LBL_Upgrade_title", path), //NOI18N
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+    }
+    
+    private boolean confirm (String title, String message) {
+        NotifyHtmlPanel p = new NotifyHtmlPanel();
+        p.setText(message);
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                p, 
+                title,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object [] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION },
+                NotifyDescriptor.YES_OPTION);
+        return NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(descriptor);
     }
 }

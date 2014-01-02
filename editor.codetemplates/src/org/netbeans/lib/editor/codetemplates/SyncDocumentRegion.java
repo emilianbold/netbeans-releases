@@ -54,7 +54,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Maintain the same text in the selected regions of the text document.
@@ -63,13 +63,13 @@ import org.openide.ErrorManager;
  */
 public final class SyncDocumentRegion {
     
-    private Document doc;
+    private final Document doc;
     
-    private List<? extends MutablePositionRegion> regions;
+    private final List<? extends MutablePositionRegion> regions;
     
-    private List<? extends MutablePositionRegion> sortedRegions;
+    private final List<? extends MutablePositionRegion> sortedRegions;
     
-    private boolean regionsSortPerformed;
+    private final boolean regionsSortPerformed;
     
     /**
      * Construct synchronized document regions.
@@ -137,13 +137,13 @@ public final class SyncDocumentRegion {
                 Position newStartPos = doc.createPosition(
                         firstRegion.getStartOffset() - moveStartDownLength);
                 firstRegion.setStartPosition(newStartPos);
-                
+
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Exceptions.printStackTrace(e);
             }
-            
+
         }
-        
+
         String firstRegionText = getFirstRegionText();
         if (firstRegionText != null) {
             int regionCount = getRegionCount();
@@ -152,17 +152,30 @@ public final class SyncDocumentRegion {
                 int offset = region.getStartOffset();
                 int length = region.getEndOffset() - offset;
                 try {
-                    if (!CharSequenceUtilities.textEquals(firstRegionText, DocumentUtilities.getText(doc, offset, length))) {
-                        doc.remove(offset, length);
-                        if (firstRegionText.length() > 0) {
-                            doc.insertString(offset, firstRegionText, null);
+                    final CharSequence old = DocumentUtilities.getText(doc, offset, length);
+                    if (!CharSequenceUtilities.textEquals(firstRegionText, old)) {
+                        int res = -1;
+                        for(int k = 0; k < Math.min(old.length(), firstRegionText.length()); k++) {
+                            if (old.charAt(k) == firstRegionText.charAt(k)) {
+                                res = k;
+                            } else {
+                                break;
+                            }
+                        }
+                        String insert = firstRegionText.substring(res+1);
+                        CharSequence remove = old.subSequence(res + 1, old.length());
+                        if (insert.length() > 0) {
+                            doc.insertString(offset + res + 1, insert, null);
+                        }
+                        if (remove.length() > 0) {
+                            doc.remove(offset + res + 1 + insert.length(), remove.length());
                         }
                     }
                     // Recreate the start position as the position are put together
                     Position newStartPos = doc.createPosition(offset);
                     region.setStartPosition(newStartPos);
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
 
             }
@@ -180,7 +193,7 @@ public final class SyncDocumentRegion {
             int length = region.getEndOffset() - offset;
             return doc.getText(offset, length);
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            Exceptions.printStackTrace(e);
             return null;
         }
     }

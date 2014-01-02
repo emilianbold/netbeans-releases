@@ -205,16 +205,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         AbstractCompiler compiler = (AbstractCompiler) tool;
         
         StringBuilder options = new StringBuilder();
-        options.append(getCCFlagsBasic(compiler));
-        options.append(" "); // NOI18N
-        CCCompilerConfiguration master = this;
-        while (master != null) {
-            options.append(master.getCommandLineConfiguration().getValue());
-            options.append(" "); // NOI18N
-            master = (CCCompilerConfiguration)master.getMaster();
+        options.append(getCCFlagsBasic(compiler)).append(" "); // NOI18N
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            options.append(master.getCommandLineConfiguration().getValue()).append(" "); // NOI18N
         }
-        options.append(getAllOptions2(compiler));
-        options.append(" "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(" "); // NOI18N
         return CppUtils.reformatWhitespaces(options.toString());
     }
     
@@ -233,54 +228,42 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
 
     public int getInheritedCppStandard() {
-        CCCompilerConfiguration master = this;
-        while (master != null) {
-            if (master.getCppStandard().getValue() != STANDARD_INHERITED) {
-                return master.getCppStandard().getValue();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            if (((CCCompilerConfiguration)master).getCppStandard().getValue() != STANDARD_INHERITED) {
+                return ((CCCompilerConfiguration)master).getCppStandard().getValue();
             }
-            master = (CCCompilerConfiguration) master.getMaster();
         }
         return STANDARDS_DEFAULT;
     }
     
     public String getPreprocessorOptions(CompilerSet cs) {
-        CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
-        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
-        list.add(this);
-        while (master != null && getInheritPreprocessor().getValue()) {
-            list.add(master);
-            if (master.getInheritPreprocessor().getValue()) {
-                master = (CCCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        List<CCCCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            list.add((CCCompilerConfiguration)master);
+            if (!((CCCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
+                break;
             }
         }
+        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
         StringBuilder options = new StringBuilder();
         for(int i = list.size() - 1; i >= 0; i--) {
-            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor));
-            options.append(' '); // NOI18N
+            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor)).append(' '); // NOI18N
         }
         return options.toString();
     }
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
-        CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
-        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
-        options.append(' '); // NOI18N
-        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
-        while (master != null && getInheritIncludes().getValue()) {
-            list.add(master);
-            if (master.getInheritIncludes().getValue()) {
-                master = (CCCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        List<CCCCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            list.add((CCCCompilerConfiguration)master);
+            if (!((CCCCompilerConfiguration)master).getInheritIncludes().getValue()) {
+                break;
             }
         }
-        for(int i = list.size() - 1; i >= 0; i--) {
-            options.append(list.get(i).getIncludeDirectories().toString(visitor));
-            options.append(' '); // NOI18N
+        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
+        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor)).append(' '); // NOI18N
+        for(int i = list.size() - 1; i > 0; i--) {
+            options.append(list.get(i).getIncludeDirectories().toString(visitor)).append(' '); // NOI18N
         }
         return options.toString();
     } 
@@ -335,10 +318,10 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                     set2.setName("OtherOptions"); // NOI18N
                     set2.setDisplayName(getString("OtherOptionsTxt"));
                     set2.setShortDescription(getString("OtherOptionsHint"));
-                    set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getLibraryLevel(), getMaster() != null ? false : true, "LibraryLevel", getString("LibraryLevelTxt"), getString("LibraryLevelHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getMTLevel(), (getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLibraryLevel(), (getMaster() == null), "LibraryLevel", getString("LibraryLevelTxt"), getString("LibraryLevelHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getStandardsEvolution(), (getMaster() == null), "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLanguageExt(), (getMaster() == null), "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
                 } //else {
                     if (STANDARDS_SUPPORT) {

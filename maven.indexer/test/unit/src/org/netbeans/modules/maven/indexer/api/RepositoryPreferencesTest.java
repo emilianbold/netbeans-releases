@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.indexer.api;
 
+import java.util.Date;
 import static junit.framework.Assert.assertEquals;
 import org.apache.maven.settings.Mirror;
 import org.netbeans.junit.NbTestCase;
@@ -56,6 +57,7 @@ public class RepositoryPreferencesTest extends NbTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new RepositoryPreferencesTest("testNoConsecutiveSlashesInRepositoryID"));
         suite.addTest(new RepositoryPreferencesTest("testGetRepositoryInfos"));
         suite.addTest(new RepositoryPreferencesTest("testGetMirrorRepositoryInfos"));
         return suite;
@@ -64,6 +66,16 @@ public class RepositoryPreferencesTest extends NbTestCase {
     @Override protected void setUp() throws Exception {
         System.setProperty("no.local.settings", "true");
     }
+    
+    // issue http://netbeans.org/bugzilla/show_bug.cgi?id=239898
+    public void testNoConsecutiveSlashesInRepositoryID() throws Exception {
+        RepositoryPreferences rp = RepositoryPreferences.getInstance();
+        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(1, "foo_http://nowhere.net", "Foo", "http://nowhere.net/", RepositoryInfo.MirrorStrategy.NONE);
+        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+        RepositoryPreferences.getLastIndexUpdate("foo_http://nowhere.net");
+        RepositoryPreferences.setLastIndexUpdate("foo_http://nowhere.net", new Date());
+    }   
     
     public void testGetRepositoryInfos() throws Exception {
         RepositoryPreferences rp = RepositoryPreferences.getInstance();
@@ -167,7 +179,7 @@ public void testNonHttpRepositoryInfos() throws Exception { //#227322
         } finally {
            EmbedderFactory.getOnlineEmbedder().getSettings().removeMirror(mirror); 
         }
-    }
-    
+    } 
+
 
 }

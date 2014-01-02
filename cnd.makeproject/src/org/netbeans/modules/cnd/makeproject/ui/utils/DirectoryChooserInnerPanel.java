@@ -68,7 +68,8 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 
     @Override
     public String addAction() {
-        String seed = RemoteFileUtil.getCurrentChooserFile(executionEnvironment);
+        final String chooser_key = "makeproject.DirectoryChooser"; //NOI18N
+        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
         if (seed == null) {
             seed = baseDir;
         }
@@ -89,6 +90,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
         itemPath = CndPathUtilities.naturalizeSlashes(itemPath);
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, itemPath, executionEnvironment);
         String bd = baseDir;
         bd = CndPathUtilities.naturalizeSlashes(bd);
         itemPath = CndPathUtilities.toRelativePath(bd, itemPath);

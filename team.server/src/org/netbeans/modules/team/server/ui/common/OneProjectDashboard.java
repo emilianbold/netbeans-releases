@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicTreeUI;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.server.TeamView;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport.DashboardImpl;
@@ -338,15 +339,20 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                         switchProject(projects[0], getProjectNode(projects[0]), true);
                     } else {
                         if(selectionListRef != null) {
-                            SelectionList sl = selectionListRef.get();
+                            final SelectionList sl = selectionListRef.get();
                             if(sl != null) {
-                                ListNode selection = sl.getSelectedValue();
+                                final ListNode selection = sl.getSelectedValue();
                                 DefaultListModel m = (DefaultListModel) sl.getModel();
                                 m.clear();
                                 for (ListNode n : projectNodes.values()) {
                                     m.addElement(n);
                                 }
-                                sl.setSelectedValue(selection, true);
+                                UIUtils.runInAWT(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        sl.setSelectedValue(selection, true);
+                                    }
+                                });
                             }
                         }
                     }

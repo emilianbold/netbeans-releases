@@ -173,7 +173,10 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
                 Set<String> newSet = new HashSet<String>();
                 for (Configuration conf : confs.getConfigurations()) {
                     if (conf instanceof MakeConfiguration) {
-                        newSet.add(CndFileUtils.normalizeAbsolutePath(((MakeConfiguration) conf).getAbsoluteOutputValue()));
+                        String outputValue = ((MakeConfiguration) conf).getOutputValue();
+                        if (!outputValue.isEmpty()) {
+                            newSet.add(CndFileUtils.normalizeAbsolutePath(((MakeConfiguration) conf).getAbsoluteOutputValue()));
+                        }
                     }
                 }
                 skippedFiles = newSet;

@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
-import org.netbeans.modules.cnd.repository.spi.*;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -177,10 +176,10 @@ public class RepositoryListenerImpl implements RepositoryListener, RepositoryExc
         }
     }
 
-//    @Override
-//    public void unitRemoved(int unitId, CharSequence unitName) {
-//    }
-
+    @Override
+    public void unitRemoved(int unitId) {
+    }
+    
     /** RepositoryListener implementation */
     @Override
     public void anExceptionHappened(final int unitId, final CharSequence unitName, RepositoryException exc) {

@@ -116,6 +116,9 @@ public class ProjectsRootNodePreferredFromPopupTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsURLs(list);
         OpenProjectListSettings.getInstance().setOpenProjectsDisplayNames(names);
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
+        
+         //compute project root node children in sync mode
+        System.setProperty("test.projectnode.sync", "true");
     }
 
     public void testPreferencesInOpenCanBeChanged() throws InterruptedException, IOException, Exception {

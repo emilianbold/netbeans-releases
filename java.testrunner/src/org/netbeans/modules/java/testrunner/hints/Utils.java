@@ -43,21 +43,20 @@ package org.netbeans.modules.java.testrunner.hints;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonTestUtilProvider;
 import org.netbeans.modules.gsf.testrunner.plugin.GuiUtilsProvider;
-import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
+import static org.netbeans.modules.java.testrunner.CommonTestUtil.findSourceGroupOwner;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -87,12 +86,12 @@ public class Utils {
 	populateLocations(info.getFileObject());
 	Map<Object, List<String>> validCombinations = new HashMap<Object, List<String>>();
 	for (Object location : locations) {
-	    FileObject targetFolder = Utils.getTargetFolder(location);
+	    String targetFolderPath = Utils.getTargetFolderPath(location);
 	    List<String> framework2Add = new ArrayList<String>();
 	    for (String framework : testingFrameworks) {
 		String preffiledName = Utils.getPreffiledName(info, framework);
 		preffiledName = preffiledName.replaceAll("\\.", "/").concat(".java"); //NOI18N
-		String path = targetFolder.getPath().concat("/").concat(preffiledName);
+		String path = targetFolderPath.concat("/").concat(preffiledName);
 		File f = new File(path);
 		FileObject fo = FileUtil.toFileObject(f);
 		if(methodName == null) {
@@ -148,25 +147,12 @@ public class Utils {
 	    break;
 	}
 	if (locations != null && locations.length == 0) {
-	    Project owner = FileOwnerQuery.getOwner(activeFO);
-	    if (owner != null) {
-		String type = "";
-		String hint = "";
-		Collection<? extends RootsProvider> rootProviders = Lookup.getDefault().lookupAll(RootsProvider.class);
-		for (RootsProvider rootProvider : rootProviders) {
-		    type = rootProvider.getSourceRootType();
-		    hint = rootProvider.getProjectTestsHint();
-		    break;
-		}
-		if (SourceGroupModifier.createSourceGroup(owner, type, hint) != null) {
-		    testUtilProviders = Lookup.getDefault().lookupAll(CommonTestUtilProvider.class);
-		    for (CommonTestUtilProvider provider : testUtilProviders) {
-			locations = provider.getTestTargets(activeFO);
-			break;
-		    }
-		}
-	    }
-	}
+            SourceGroup sourceGroupOwner = findSourceGroupOwner(activeFO);
+            if (sourceGroupOwner != null) {
+                // get URLs of target SourceGroup's roots
+                locations = UnitTestForSourceQuery.findUnitTests(sourceGroupOwner.getRootFolder());
+            }
+        }
     }
 
     private static String getPreffiledName(CompilationInfo info, String selectedFramework) {
@@ -190,16 +176,19 @@ public class Utils {
 	return selectedFramework.equals(testngFramework) ? "NG" : ""; //NOI18N
     }
 
-    private static FileObject getTargetFolder(Object selectedLocation) {
+    private static String getTargetFolderPath(Object selectedLocation) {
 	if (selectedLocation == null) {
 	    return null;
 	}
 
 	if (selectedLocation instanceof SourceGroup) {
-	    return ((SourceGroup) selectedLocation).getRootFolder();
+	    return ((SourceGroup) selectedLocation).getRootFolder().getPath();
+	}
+        if (selectedLocation instanceof URL) { // test root folder is not created yet, so return path of "Test Packages" folder
+	    return ((URL) selectedLocation).getPath();
 	}
 	assert selectedLocation instanceof FileObject;      //root folder
-	return (FileObject) selectedLocation;
+	return ((FileObject) selectedLocation).getPath();
     }
 
 }

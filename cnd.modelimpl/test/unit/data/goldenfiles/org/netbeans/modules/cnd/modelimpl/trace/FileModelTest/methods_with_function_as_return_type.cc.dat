@@ -19,11 +19,11 @@ CLASS __malloc_alloc_template<int __inst> (__malloc_alloc_template ) [2:1/1-10:2
             UNIQUE NAME f:__malloc_alloc_template::__set_malloc_handler(void(*)())
             DECLARATION: __set_malloc_handler  [5:5/59-9:6/239]
             PARAMETERS:
-                __f [5:41/95-5:54/108]  TYPE: void TEXT=void(*)()  [5:41/95-5:54/108]  INIT: null  SCOPE: __set_malloc_handler 
-            RETURNS void TEXT=void(*)()  [5:12/66-5:58/112]
+                __f [5:41/95-5:54/108]  TYPE: void() TEXT=void(*)()  [5:41/95-5:54/108]  INIT: null  SCOPE: __set_malloc_handler 
+            RETURNS void() TEXT=void(*)()  [5:12/66-5:58/112]
             STATEMENT COMPOUND  [5:59/113-9:6/239] SCOPE: __set_malloc_handler 
                 STATEMENT DECLARATION  [6:9/123-6:55/169] SCOPE: Stmt  [5:59/113-9:6/239]
-                    VARIABLE __old [6:9/123-6:55/169]  TYPE: void TEXT=void(*)()  [6:9/123-6:25/139]  INIT: text='__malloc_alloc_oom_handler'  SCOPE: Stmt  [5:59/113-9:6/239]
+                    VARIABLE __old [6:9/123-6:55/169]  TYPE: void() TEXT=void(*)()  [6:9/123-6:25/139]  INIT: text='__malloc_alloc_oom_handler'  SCOPE: Stmt  [5:59/113-9:6/239]
                 STATEMENT EXPRESSION  [7:9/178-7:41/210] SCOPE: Stmt  [5:59/113-9:6/239] text: '__malloc_alloc_oom_handler = __f'
                 STATEMENT RETURN  [8:9/220-8:22/233] SCOPE: Stmt  [5:59/113-9:6/239] text: 'return __old;'
 
@@ -36,11 +36,11 @@ CLASS __malloc_alloc_template<int __inst> (__malloc_alloc_template ) [2:1/1-10:2
             UNIQUE NAME f:__malloc_alloc_template::__set_malloc_handler(void(*)())
             DECLARATION: __set_malloc_handler  [5:5/59-9:6/239]
             PARAMETERS:
-                __f [5:41/95-5:54/108]  TYPE: void TEXT=void(*)()  [5:41/95-5:54/108]  INIT: null  SCOPE: __set_malloc_handler 
-            RETURNS void TEXT=void(*)()  [5:12/66-5:58/112]
+                __f [5:41/95-5:54/108]  TYPE: void() TEXT=void(*)()  [5:41/95-5:54/108]  INIT: null  SCOPE: __set_malloc_handler 
+            RETURNS void() TEXT=void(*)()  [5:12/66-5:58/112]
             STATEMENT COMPOUND  [5:59/113-9:6/239] SCOPE: __set_malloc_handler 
                 STATEMENT DECLARATION  [6:9/123-6:55/169] SCOPE: Stmt  [5:59/113-9:6/239]
-                    VARIABLE __old [6:9/123-6:55/169]  TYPE: void TEXT=void(*)()  [6:9/123-6:25/139]  INIT: text='__malloc_alloc_oom_handler'  SCOPE: Stmt  [5:59/113-9:6/239]
+                    VARIABLE __old [6:9/123-6:55/169]  TYPE: void() TEXT=void(*)()  [6:9/123-6:25/139]  INIT: text='__malloc_alloc_oom_handler'  SCOPE: Stmt  [5:59/113-9:6/239]
                 STATEMENT EXPRESSION  [7:9/178-7:41/210] SCOPE: Stmt  [5:59/113-9:6/239] text: '__malloc_alloc_oom_handler = __f'
                 STATEMENT RETURN  [8:9/220-8:22/233] SCOPE: Stmt  [5:59/113-9:6/239] text: 'return __old;'
 

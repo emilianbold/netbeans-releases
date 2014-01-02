@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import org.netbeans.modules.jira.client.spi.Project;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 

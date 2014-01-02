@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 public class JBResourcesChildren extends Children.Keys {
     
     JBResourcesChildren(Lookup lookup) {
-        setKeys(new Object[] {createDatasourcesNode(lookup)});
+        setKeys(new Object[] {createDatasourcesNode(lookup), createDestinationsNode(lookup)});
     }
     
     @Override
@@ -83,5 +83,12 @@ public class JBResourcesChildren extends Children.Keys {
      */
     public static JBItemNode createDatasourcesNode(Lookup lookup) {
         return new JBItemNode(new JBDatasourcesChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Resources_Datasources"));
+    }
+    
+    /*
+     * Creates an EAR Applications parent node
+     */
+    public static JBItemNode createDestinationsNode(Lookup lookup) {
+        return new JBItemNode(new JBDestinationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Resources_Destinations"));
     }
 }

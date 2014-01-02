@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -152,59 +153,71 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
     }
 
     @Override
-    protected Collection<Object> getKeys() {
+    protected Collection<Object> getKeys(AtomicBoolean canceled) {
         Collection<Object> collection;
         final MakeConfigurationDescriptor configurationDescriptor = getFolder().getConfigurationDescriptor();
         if (getFolder().isDiskFolder()) {
-            final ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
-            // Search disk folder for C/C++ files and add them to the view (not the project!).
-            final CndVisibilityQuery folderVisibilityQuery = configurationDescriptor.getFolderVisibilityQuery();
-            final FileObject baseDirFileObject = configurationDescriptor.getBaseDirFileObject();
-            final FileSystem baseDirFileSystem = configurationDescriptor.getBaseDirFileSystem();
-            final FileObject fileObject = RemoteFileUtil.getFileObject(baseDirFileObject, getFolder().getRootPath());
-            if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
-                FileObject[] children = fileObject.getChildren();
-                if (children != null) {
-                    for (FileObject child : children) {
-                        if (child == null || !child.isValid() || child.isFolder()) {
-                            // it's a folder
-                            continue;
-                        }
-                        if (getFolder().findItemByName(child.getNameExt()) != null) {
-                            // Already there
-                            continue;
-                        }
-                        if (!VisibilityQuery.getDefault().isVisible(child)) {
-                            // not visible
-                            continue;
-                        }
-
-                        if (!getFolder().isTestLogicalFolder()) {
-                            if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
+            final ArrayList<Object> collection2 = new ArrayList<>(getFolder().getElements());
+            while(true) {
+                if (canceled != null && canceled.get()) {
+                    break;
+                }
+                // Search disk folder for C/C++ files and add them to the view (not the project!).
+                final CndVisibilityQuery folderVisibilityQuery = configurationDescriptor.getFolderVisibilityQuery();
+                final FileObject baseDirFileObject = configurationDescriptor.getBaseDirFileObject();
+                final FileSystem baseDirFileSystem = configurationDescriptor.getBaseDirFileSystem();
+                final FileObject fileObject = RemoteFileUtil.getFileObject(baseDirFileObject, getFolder().getRootPath());
+                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                    FileObject[] children = fileObject.getChildren();
+                    if (children != null) {
+                        for (FileObject child : children) {
+                            if (canceled != null && canceled.get()) {
+                                break;
+                            }
+                            if (child == null || !child.isValid() || child.isFolder()) {
+                                // it's a folder
                                 continue;
                             }
+                            if (getFolder().findItemByName(child.getNameExt()) != null) {
+                                // Already there
+                                continue;
+                            }
+                            if (!VisibilityQuery.getDefault().isVisible(child)) {
+                                // not visible
+                                continue;
+                            }
+
+                            if (!getFolder().isTestLogicalFolder()) {
+                                if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child.getNameExt())) {
+                                    continue;
+                                }
+                            }
+                            // Add file to the view
+                            Item item = Item.createDetachedViewItem(baseDirFileSystem, child.getPath());
+                            Folder.insertItemElementInList(collection2, item);
                         }
-                        // Add file to the view
-                        Item item = Item.createDetachedViewItem(baseDirFileSystem, child.getPath());
-                        Folder.insertItemElementInList(collection2, item);
                     }
                 }
-            }
-            if (folderVisibilityQuery != null) {
-                for (Iterator<Object> it = collection2.iterator(); it.hasNext();) {
-                    Object object = it.next();
-                    if (object instanceof Folder) {
-                        Folder fldr = (Folder) object;
-                        // check if we need to show folders marked as removed
-                        if (fldr.isRemoved()) {
-                            FileObject toCheck = RemoteFileUtil.getFileObject(baseDirFileObject, fldr.getRootPath());
-                            // hide folders from ignore pattern
-                            if (toCheck != null && folderVisibilityQuery.isIgnored(toCheck)) {
-                                it.remove();
+                if (folderVisibilityQuery != null) {
+                    for (Iterator<Object> it = collection2.iterator(); it.hasNext();) {
+                        if (canceled != null && canceled.get()) {
+                            break;
+                        }
+                        Object object = it.next();
+                        if (object instanceof Folder) {
+                            Folder fldr = (Folder) object;
+                            // check if we need to show folders marked as removed
+                            if (fldr.isRemoved()) {
+                                FileObject toCheck = RemoteFileUtil.getFileObject(baseDirFileObject, fldr.getRootPath());
+                                // hide folders from ignore pattern
+                                if (toCheck != null && folderVisibilityQuery.isIgnored(toCheck)) {
+                                    it.remove();
+                                }
                             }
                         }
                     }
                 }
+                break;
             }
             collection = collection2;
         } else {
@@ -223,8 +236,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
         if ("root".equals(getFolder().getName())) { // NOI18N
             LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
             if (providers.length > 0) {
-                for (int i = 0; i < providers.length; i++) {
-                    AbstractNode node = providers[i].getLogicalViewNode(provider.getProject());
+                for (LogicalViewNodeProvider aProvider : providers) {
+                    AbstractNode node = aProvider.getLogicalViewNode(provider.getProject());
                     if (node != null) {
                         collection.add(node);
                     }

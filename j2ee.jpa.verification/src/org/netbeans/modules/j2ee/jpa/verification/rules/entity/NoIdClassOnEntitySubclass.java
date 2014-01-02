@@ -99,7 +99,7 @@ public class NoIdClassOnEntitySubclass {
         if (ctx == null || hc.isCanceled()) {
             return null;
         }
-        final Entity entity = (Entity) ctx.getModelElement();
+        final Entity entity = ctx.getModelElement() instanceof Entity ? (Entity) ctx.getModelElement() : null;
         if (entity == null) {
             return null;
         }

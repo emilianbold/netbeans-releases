@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -52,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,7 +113,7 @@ public class MakeTemplateListener implements OperationListener {
         } else {
             project = Utilities.actionsGlobalContext().lookup(Project.class);
         }
-
+        
         DataObject originalDataObject = copy.getOriginalDataObject();
         if(originalDataObject != null) {
             FileObject originalPrimaryFile = originalDataObject.getPrimaryFile();
@@ -127,58 +126,40 @@ public class MakeTemplateListener implements OperationListener {
                 }
             }
         }
-
+        MakeConfigurationDescriptor makeConfigurationDescriptor;
         if (folder == null || project == null) {
             //maybe a file belonging into a project is selected. Try:
             DataObject od = Utilities.actionsGlobalContext().lookup(DataObject.class);
-
+            if (od == null) {
+                od = copy.getObject();
+            }
             if (od == null) {
                 //no file:
                 return;
             }
-
             FileObject file = od.getPrimaryFile();
-
+            if (file == null) {
+                return;
+            }
             project = FileOwnerQuery.getOwner(file);
-
             if (project == null) {
                 //no project:
                 return;
             }
-
-            File f = FileUtil.toFile(file);
-
-            if (f == null) {
-                //not a physical file:
-                return;
-            }
-
             //check if the project is a Makefile project:
-            MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
-
+            makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
             if (makeConfigurationDescriptor == null) {
-                //no:
+                //not make project:
                 return;
             }
-
-            Item i = makeConfigurationDescriptor.findProjectItemByPath(f.getAbsolutePath());
-
-            if (i == null) {
-                //no item, does not really belong into this project:
+            folder = makeConfigurationDescriptor.getLogicalFolders();
+        } else {
+            makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
+            if (makeConfigurationDescriptor == null) {
+                //not make project:
                 return;
             }
-
-            //found:
-            folder = i.getFolder();
         }
-
-        if (folder == null) {
-            return;
-        }
-        MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
-
-        assert makeConfigurationDescriptor != null;
-
         FileObject file = copy.getObject().getPrimaryFile();
         Project owner = FileOwnerQuery.getOwner(file);
 
@@ -189,39 +170,76 @@ public class MakeTemplateListener implements OperationListener {
             ERR.log(ErrorManager.INFORMATIONAL, "in project = " + project.getProjectDirectory()); // NOI18N
         }
 
-        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory() && // See 193227
-                CndFileUtils.isLocalFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem())) { // See 196885 
-            File ioFile = FileUtil.toFile(file);
-            if (ioFile.isDirectory()) {
+        if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) { // See 193227
+            if (file.isFolder()) {
+                 // don't add directories.
                 return;
-            } // don't add directories.
+            }
             if (!makeConfigurationDescriptor.okToChange()) {
                 return;
             }
-            String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
+            String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDirFileObject(), file, project);
             itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
-
+            if (!folder.isDiskFolder()) {
+                folder = changeFolder(folder, file);
+            }
             folder.addItemAction(item);
             makeConfigurationDescriptor.save();
 
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "folder: " + folder + ", added: " + file); // NOI18N
             }
-        } else if (file != null && makeConfigurationDescriptor != null && 
-                !CndFileUtils.isLocalFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem())) {
-            // Ugly fix for #196885 full remote: new C source file doesn't show in Project view. TODO: find better (more common) solution
-            if (file.isData() && makeConfigurationDescriptor.okToChange()) {
-                String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDirFileObject(), file, project);
-                itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-                Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
-                folder.addItemAction(item);
-                makeConfigurationDescriptor.save();
-            }            
         } else {
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "not adding: " + file + " because it is not owned by this project"); // NOI18N
             }
+        } 
+    }
+
+    private Folder changeFolder(Folder folder, FileObject file) {
+        if (folder.getKind() == Folder.Kind.ROOT) {
+            String preferedFolder = preferedFolder(file);
+            if (preferedFolder != null) {
+                for(Folder f : folder.getFolders()) {
+                    if (f.getKind() == Folder.Kind.SOURCE_LOGICAL_FOLDER) {
+                        if (preferedFolder.equals(f.getName())) {
+                            folder = f;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (folder.getKind() == Folder.Kind.SOURCE_LOGICAL_FOLDER) {
+            String preferedFolder = preferedFolder(file);
+            if (preferedFolder != null) {
+                Folder parent = folder.getParent();
+                if (parent != null) {
+                    for(Folder f : parent.getFolders()) {
+                        if (f.getKind() == Folder.Kind.SOURCE_LOGICAL_FOLDER) {
+                            if (preferedFolder.equals(f.getName())) {
+                                folder = f;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
+        return folder;
+    }
+    
+    private String preferedFolder(FileObject fo) {
+        String mimeType = fo.getMIMEType();
+        if (MIMENames.isCppOrCOrFortran(mimeType)) {
+            return MakeConfigurationDescriptor.SOURCE_FILES_FOLDER;
+        } else if (MIMENames.isHeader(mimeType)) {
+            return MakeConfigurationDescriptor.HEADER_FILES_FOLDER;
+        } else if (MIMENames.QT_UI_MIME_TYPE.equals(mimeType) ||
+                   MIMENames.QT_RESOURCE_MIME_TYPE.equals(mimeType) ||
+                   MIMENames.QT_TRANSLATION_MIME_TYPE.equals(mimeType)) {
+             return MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER;
+        }
+        return null;
     }
 }

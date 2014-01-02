@@ -574,13 +574,7 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(File file) throws SVNClientException {
-        SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(false);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
-            return null;
-        }
+        SvnClient client = Subversion.getInstance().getClient(false);
 
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;

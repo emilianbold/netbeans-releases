@@ -44,8 +44,8 @@ package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -122,7 +122,7 @@ public class CommandEvaluator {
     }
 
     private static Set<Category> loadEvalCats() {
-        final Set<Category> cats = new HashSet<Category>(
+        final Set<Category> cats = new LinkedHashSet<Category>(
                 ProviderModel.getInstance().getCategories());
         RP.post(new Runnable() {
             @Override
@@ -130,7 +130,7 @@ public class CommandEvaluator {
                 String ec = NbPreferences.forModule(CommandEvaluator.class).get(
                         PROP_ENABLED_CATEGORIES, null);
                 if (ec != null) {
-                    Set<String> categoryNames = new HashSet<String>();
+                    Set<String> categoryNames = new LinkedHashSet<String>();
                     categoryNames.addAll(Arrays.asList(ec.split(":"))); //NOI18N
                     Iterator<Category> iterator = cats.iterator();
                     while (iterator.hasNext()) {
@@ -169,7 +169,7 @@ public class CommandEvaluator {
 
     public static void setEvalCats(Set<Category> cat) {
         CommandEvaluator.evalCats = (cat == null)
-                ? new HashSet<Category>(ProviderModel.getInstance()
+                ? new LinkedHashSet<Category>(ProviderModel.getInstance()
                 .getCategories())
                 : cat;
         storeEvalCats();

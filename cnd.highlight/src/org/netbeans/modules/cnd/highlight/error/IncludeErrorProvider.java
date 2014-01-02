@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.highlight.error;
 
 import java.awt.event.InputEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -60,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;

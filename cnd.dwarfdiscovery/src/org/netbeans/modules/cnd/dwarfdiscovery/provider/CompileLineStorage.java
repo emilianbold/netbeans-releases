@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UTFDataFormatException;
 import org.openide.util.Exceptions;
 
 /**
@@ -61,6 +62,7 @@ public class CompileLineStorage {
         }
     }
 
+    private final int MAX_STRING_LENGTH = 65535/3 - 4;
     public synchronized int putCompileLine(String line) {
         if (file != null) {
             RandomAccessFile os= null;
@@ -68,7 +70,14 @@ public class CompileLineStorage {
                 os = new RandomAccessFile(file, "rw"); // NOI18N
                 int res = (int) os.length();
                 os.seek(res);
-                os.writeUTF(line);
+                try {
+                    os.writeUTF(line);
+                } catch (UTFDataFormatException ex) {
+                    if (line.length() > MAX_STRING_LENGTH) {
+                        line = line.substring(0, MAX_STRING_LENGTH)+" ..."; // NOI18N
+                        os.writeUTF(line);
+                    }
+                }
                 return res;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

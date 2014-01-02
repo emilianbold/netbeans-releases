@@ -1,4 +1,4 @@
- /*
+/*
   * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   *
   * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -153,7 +153,7 @@ public class FixImportsTest extends JavaTestCase {
         
         // test fix imports on Vector
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
-        editor.insert("Vector v = new Vector();\n", 15, 1);
+        editor.insert("Vector v = new Vector();\n", 49, 1);
         Utilities.takeANap(100);
         MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);        
@@ -177,7 +177,7 @@ public class FixImportsTest extends JavaTestCase {
     public void testFixImportsComplex() {
         // test fix imports on List
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
-        editor.insert("List l = new List();\n", 17, 1);
+        editor.insert("List l = new List();\n", 51, 1);
         
         Utilities.takeANap(100);
         
@@ -187,15 +187,7 @@ public class FixImportsTest extends JavaTestCase {
         FixAllImports fio = new FixAllImports();
         
         JComboBoxOperator cbo = fio.cbo(0);
-        ComboBoxModel cbm = cbo.getModel();
-        int in;
-        for(in=0;in<cbm.getSize();in++) {
-            if(cbm.getElementAt(in).equals("java.util.List")) {
-                cbo.setSelectedIndex(in);
-                break;
-            }
-        }
-        assertTrue("java.util.List not listed",in<cbm.getSize());
+        ComboBoxModel cbm = cbo.getModel();                
         fio.ok();
         // wait for fix imports
         for (int i=0; i<10; i++) {
@@ -219,15 +211,10 @@ public class FixImportsTest extends JavaTestCase {
         n.select();
         new OpenAction().perform();
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
-        try {
-            editor.insert("import java.util.Date;\n", 7, 1);
-            Utilities.takeANap(100);
-            MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
-                    KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);                      
-            assertFalse("Import is not removed",editor.getText().contains("import java.util.Date;"));                        
-            editor.insert("List l;\n", 12, 1);
-            editor.insert("import java.util.Date;\n", 7, 1);            
-            Utilities.takeANap(100);
+        try {                                 
+            editor.insert("List l;\n", 47, 1);
+            editor.insert("import java.util.Date;\n", 41, 1);            
+            Utilities.takeANap(250);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);          
             FixAllImports fio = new FixAllImports();
@@ -251,15 +238,16 @@ public class FixImportsTest extends JavaTestCase {
         new OpenAction().perform();
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
         try {
-            editor.insert("import java.util.Date;\n", 7, 1);
-            editor.insert("List m;\n", 16, 1);
+            editor.insert("import java.util.Date;\n", 41, 1);
+            editor.insert("List m;\n", 47, 1);
             Utilities.takeANap(100);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);
             
             FixAllImports fio = new FixAllImports();
-            fio.cbRemoveUnusedImports().setSelected(true);
+            fio.cbRemoveUnusedImports().changeSelection(true);
             fio.ok();
+            Utilities.takeANap(500);
             assertFalse("Import is not removed",editor.getText().contains("import java.util.Date;"));
             assertTrue("Import is not added",editor.getText().contains("import java.util.List;"));
         } finally {
@@ -303,7 +291,7 @@ public class FixImportsTest extends JavaTestCase {
         new OpenAction().perform();
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
         try {
-            editor.insert("List m;\n", 15, 1);
+            editor.insert("List m;\n", 46, 1);
             Utilities.takeANap(100);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
@@ -327,14 +315,14 @@ public class FixImportsTest extends JavaTestCase {
         new OpenAction().perform();
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
         try {
-            editor.insert("List m;\n", 15, 1);
+            editor.insert("List m;\n", 46, 1);
             Utilities.takeANap(100);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
             FixAllImports fio = new FixAllImports();
             fio.cbRemoveUnusedImports().setSelected(false);
             fio.ok();
-            editor.insert("Node n;\n", 17, 1);
+            editor.insert("Node n;\n", 47, 1);
             Utilities.takeANap(100);            
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
@@ -360,7 +348,7 @@ public class FixImportsTest extends JavaTestCase {
         EditorOperator editor = new EditorOperator(TEST_CLASS_NAME);
         try {
             Utilities.takeANap(100);
-            editor.insert("import java.util.Date;\n", 7, 1);
+            editor.insert("import java.util.Date;\n", 41, 1);
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
             Utilities.takeANap(200);

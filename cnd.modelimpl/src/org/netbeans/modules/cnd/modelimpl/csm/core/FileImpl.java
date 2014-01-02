@@ -667,7 +667,12 @@ public final class FileImpl implements CsmFile,
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
                             if (TraceFlags.DUMP_PARSE_RESULTS) {
-                                new CsmTracer().dumpModel(this);
+                                CsmCacheManager.enter();
+                                try {
+                                    new CsmTracer().dumpModel(this);
+                                } finally {
+                                    CsmCacheManager.leave();
+                                }
                             }
                             break;
                         case MODIFIED:
@@ -718,7 +723,11 @@ public final class FileImpl implements CsmFile,
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
                             if (TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS) {
-                                new CsmTracer().dumpModel(this);
+                                try {
+                                    new CsmTracer().dumpModel(this);
+                                } finally {
+                                    CsmCacheManager.leave();
+                                }                                
                             }
                             break;
                         default:

@@ -48,7 +48,7 @@ import java.util.List;
  * @author akrasny
  */
 public interface LayeringSupport {
-
+            
     public List<LayerDescriptor> getLayerDescriptors();
 
     // 1

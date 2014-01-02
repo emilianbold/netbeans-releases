@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="90">
+<configurationDescriptor version="91">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <df name="test">
@@ -124,12 +124,8 @@
         </cTool>
       </item>
       <item path="test/test_pkg_client.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
       <item path="test/test_rfs_filedata.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
     </conf>
     <conf name="Debug64" type="0">

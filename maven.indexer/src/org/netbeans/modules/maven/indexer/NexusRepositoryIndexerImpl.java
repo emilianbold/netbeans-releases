@@ -1556,18 +1556,24 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             Collections.sort(infos);
         } catch (IllegalStateException ex) {
-            //#226100
-            StringBuilder versions = new StringBuilder();
-            for (NBVersionInfo info : infos) {
-                versions.append(info.getVersion()).append(",");
-            }
-            String message = "Issue #226100: Versions compared are:" + versions.toString();
-            LOGGER.log(Level.WARNING, message);
-            boolean rethrow = false;
-            assert rethrow = true == false;
-            if (rethrow) {
-                throw new RuntimeException( message, ex);
-            }
+            doLogError226100(infos, ex);
+        } catch (IllegalArgumentException ex2) {
+            doLogError226100(infos, ex2);
+        }
+    }
+
+    private void doLogError226100(List<NBVersionInfo> infos, Exception ex) throws RuntimeException {
+        //#226100
+        StringBuilder versions = new StringBuilder();
+        for (NBVersionInfo info : infos) {
+            versions.append(info.getVersion()).append(",");
+        }
+        String message = "Issue #226100: Versions compared are:" + versions.toString();
+        LOGGER.log(Level.WARNING, message);
+        boolean rethrow = false;
+        assert rethrow = true == false;
+        if (rethrow) {
+            throw new RuntimeException( message, ex);
         }
     }
 
