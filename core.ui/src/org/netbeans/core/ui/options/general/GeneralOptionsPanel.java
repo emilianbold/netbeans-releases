@@ -85,7 +85,6 @@ import org.openide.util.NbPreferences;
 @OptionsPanelController.Keywords(keywords={"#KW_General"}, location=OptionsDisplayer.GENERAL)
 public class GeneralOptionsPanel extends JPanel implements ActionListener {
     
-    private boolean                 changed = false;
     private GeneralOptionsModel     model;
     private HtmlBrowser.FactoryEditor editor;
     private AdvancedProxyPanel advancedPanel;
@@ -707,8 +706,6 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         jUsageCheck.setSelected(model.getUsageStatistics());
         
         updateWebBrowsers();
-        
-        changed = false;
     }
     
     private void updateWebBrowsers() {
@@ -782,16 +779,34 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (model == null) {
             return false;
         }
+        // web browser settings
+        if (editor == null) {
+            editor = Lookup.getDefault().lookup(HtmlBrowser.FactoryEditor.class);
+        }
+        String browser = editor.getAsText();
+        if (browser != null && !browser.equals((String) cbWebBrowser.getSelectedItem())) {
+            return true;
+        }
+        // proxy settings
+        int proxyType = model.getProxyType();
+        if (rbNoProxy.isSelected() && proxyType != 0) {
+            return true;
+        } else if (rbUseSystemProxy.isSelected() && proxyType != 1) {
+            return true;
+        } else if (rbHTTPProxy.isSelected() && proxyType != 2) {
+            return true;
+        }
         if (!tfProxyHost.getText().equals(model.getHttpProxyHost())) {
             return true;
         }
         if (!tfProxyPort.getText().equals(model.getHttpProxyPort())) {
             return true;
         }
+        // usage statistics settings
         if (jUsageCheck.isSelected() != model.getUsageStatistics()) {
             return true;
         }
-        return changed;
+        return false;
     }
     
     void updateTestConnectionStatus(final GeneralOptionsModel.TestingStatus status, final String message) {
@@ -832,7 +847,6 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        changed = true;
         bReloadProxy.setEnabled(rbUseSystemProxy.isSelected());
         tfProxyHost.setEnabled (rbHTTPProxy.isSelected ());
         tfProxyPort.setEnabled (rbHTTPProxy.isSelected ());
