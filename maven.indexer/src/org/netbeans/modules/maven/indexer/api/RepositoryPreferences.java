@@ -374,6 +374,10 @@ public final class RepositoryPreferences {
     }
 
     public static Date getLastIndexUpdate(String repoId) {
+        if(repoId.contains("//")) {
+            LOG.log(Level.WARNING, "Could not get index update as the repo''s id contains consecutive slashes: {0}", repoId);
+            return new Date();
+        }
         long old = getPreferences().getLong(PROP_LAST_INDEX_UPDATE + "." + repoId, 0); // compatibility
         if (old != 0) { // upgrade it
             getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
@@ -383,6 +387,10 @@ public final class RepositoryPreferences {
     }
 
     public static void setLastIndexUpdate(String repoId,Date date) {
+        if(repoId.contains("//")) {
+            LOG.log(Level.WARNING, "Could not set index update as the repo''s id contains consecutive slashes: {0}", repoId);
+            return;
+        }
         getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
         storage().node(repoId).putLong(PROP_LAST_INDEX_UPDATE, date.getTime());
     }
@@ -402,6 +410,10 @@ public final class RepositoryPreferences {
      * @since 2.11
      */
     public void addTransientRepository(Object key, String id, String displayName, String url, RepositoryInfo.MirrorStrategy strategy) throws URISyntaxException {
+        if(id.contains("//")) {
+            LOG.log(Level.WARNING, "Ignoring repository as the id contains consecutive slashes: {0}", id);
+            return;
+        }
         if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("file:")) {
             //only register repositories we can safely handle.. #227322
             return;
