@@ -43,9 +43,11 @@ package org.netbeans.modules.uihandler;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -211,7 +213,13 @@ public class AutoSubmitTest extends NbTestCase {
         
         //System.err.println("Begin = "+begin);
         
-        GZIPInputStream gin = new GZIPInputStream(new ByteArrayInputStream(bytes, begin, l - begin));
+        GZIPInputStream gin;
+        try {
+            gin = new GZIPInputStream(new ByteArrayInputStream(bytes, begin, l - begin));
+        } catch (EOFException eofex) {
+            IOException ioex = new IOException("checkMessagesIn("+n+"), bytes.length = "+bytes.length+", begin = "+begin+", l = "+l, eofex);
+            throw ioex;
+        }
         BufferedReader br = new BufferedReader(new InputStreamReader(gin));
         //StringBuilder sb = new StringBuilder();
         String line;
