@@ -68,16 +68,15 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.commands.JBModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
-import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -180,7 +179,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
                 for(JBTargetModuleID tmid : tmids) {
                     tmid.setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
                     progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
-                }                
+                }
             } else {
                 progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
             }
@@ -465,6 +464,23 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType dcbvt) throws DConfigBeanVersionUnsupportedException {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
+    }
+
+    public ProgressObject deployMessageDestinations(final Collection<JBossMessageDestination> destinations) {
+        final WildflyProgressObject progress = new WildflyProgressObject(new TargetModuleID[0]);
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
+        try {
+            if (client.addMessageDestinations(destinations))  {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, null));
+        }
+        return progress;
     }
 
 }

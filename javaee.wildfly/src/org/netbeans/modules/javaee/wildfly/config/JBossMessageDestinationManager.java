@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.config;
 
 import org.netbeans.modules.javaee.wildfly.config.xml.jms.JB7MessageDestinationHandler;
@@ -49,10 +48,17 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -60,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,7 +74,7 @@ import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 /**
- * 
+ *
  * @author Petr Hejl
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
@@ -77,11 +84,13 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
 
     private final FileObject serverDir;
     private final FileObject configFile;
+    private WildFlyDeploymentManager dm;
 
     private final boolean isAs7;
 
-    public JBossMessageDestinationManager(String serverUrl, boolean isAs7) {
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(serverUrl);
+    public JBossMessageDestinationManager(WildFlyDeploymentManager dm, boolean isAs7) {
+        this.dm = dm;
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
         FileObject config = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
@@ -127,8 +136,65 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
         return messageDestinations;
     }
 
+    private Map<String, MessageDestination> createMap(Set<MessageDestination> destinations) {
+        if (destinations.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, MessageDestination> map = new HashMap<String, MessageDestination>();
+        for (MessageDestination destination : destinations) {
+            map.put(destination.getName(), destination);
+            JBossMessageDestination jbossMessageDestination = (JBossMessageDestination) destination;
+            for (String jndiName : jbossMessageDestination.getJndiNames()) {
+                map.put(jndiName, destination);
+            }
+        }
+        return map;
+    }
+
     @Override
     public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
+        Set<MessageDestination> deployedDestinations = getMessageDestinations();
+        // for faster searching
+        Map<String, MessageDestination> deployed = createMap(deployedDestinations);
+
+        // will contain all ds which do not conflict with existing ones
+        List<JBossMessageDestination> toDeploy = new ArrayList<JBossMessageDestination>();
+
+        // resolve all conflicts
+        LinkedList<MessageDestination> conflictJMS = new LinkedList<MessageDestination>();
+        for (MessageDestination destination : destinations) {
+            if (!(destination instanceof JBossMessageDestination)) {
+                LOGGER.log(Level.INFO, "Unable to deploy {0}", destination);
+                continue;
+            }
+
+            JBossMessageDestination jbossMessageDestination = (JBossMessageDestination) destination;
+            String name = jbossMessageDestination.getName();
+            Set<String> jndiNames = new HashSet<String>(jbossMessageDestination.getJndiNames());
+            jndiNames.retainAll(deployed.keySet());
+            if (deployed.keySet().contains(jbossMessageDestination.getName()) || !jndiNames.isEmpty()) { // conflicting destination found
+                MessageDestination deployedMessageDestination = deployed.get(name);
+                // name is same, but message dest differs
+                if (!deployedMessageDestination.equals(jbossMessageDestination)) {
+                    conflictJMS.add(deployed.get(name));
+                }
+            }else {
+                toDeploy.add(jbossMessageDestination);
+            }
+        }
+
+        if (!conflictJMS.isEmpty()) {
+            // TODO exception or nothing ?
+        }
+        ProgressObject po = dm.deployMessageDestinations(toDeploy);                
+
+        ProgressObjectSupport.waitFor(po);
+
+        if (po.getDeploymentStatus().isFailed()) {
+            String msg = NbBundle.getMessage(JBossMessageDestinationManager.class, "MSG_FailedToDeployJMS");
+            throw new ConfigurationException(msg);
+        }       
     }
 
 }

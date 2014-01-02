@@ -70,7 +70,7 @@ public class JBWebModuleNode extends AbstractStateNode {
     private final String url;
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
-        super(Children.LEAF);
+        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.url = url;
         // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action

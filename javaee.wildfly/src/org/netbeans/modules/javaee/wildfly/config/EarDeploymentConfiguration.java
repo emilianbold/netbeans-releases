@@ -93,9 +93,11 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
         }
     }
     
+    @Override
     public void dispose() {
     }
     
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
@@ -130,6 +132,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
         return jbossApp;
     }
     
+    @Override
     public void save(OutputStream os) throws ConfigurationException {
         JbossApp jbossApp = getJbossApp();
         if (jbossApp == null) {
@@ -153,12 +156,14 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
         return new JbossApp();
     }
 
+    @Override
     public boolean supportsCreateDatasource() {
-        return false;
+        return true;
     }
     
+    @Override
     public boolean supportsCreateMessageDestination() {
-        return false;
+        return true;
     }
     
 }
