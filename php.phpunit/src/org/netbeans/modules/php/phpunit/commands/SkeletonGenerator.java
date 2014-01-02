@@ -111,6 +111,7 @@ public final class SkeletonGenerator {
         "# {0} - file name",
         "SkeletonGenerator.test.generating=Creating test file for {0}"
     })
+    @CheckForNull
     public FileObject generateTest(PhpModule phpModule, FileObject sourceClassFile, String sourceClassName) throws ExecutionException {
         FileObject sourceDir = phpModule.getSourceDirectory();
         assert sourceDir != null;
@@ -160,7 +161,13 @@ public final class SkeletonGenerator {
                 // refresh fs
                 FileUtil.refreshFor(testFile.getParentFile());
                 testFo = FileUtil.toFileObject(testFile);
-                assert testFo != null : "FileObject must be found for " + testFile;
+                if (testFo == null) {
+                    // #239795
+                    boolean testFileExists = testFile.exists();
+                    LOGGER.log(testFileExists ? Level.WARNING : Level.INFO,
+                            "FileObject for generated test not found (java.io.File for test file exists: {0})", testFileExists);
+                    return null;
+                }
                 return testFo;
             }
         } catch (CancellationException ex) {
