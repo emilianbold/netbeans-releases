@@ -188,11 +188,28 @@ abstract class BaseProcessor {
         assert originalName != null : fileObject;
         assert originalExtension != null : fileObject;
         File originalFile = new File(FileUtil.toFile(fileObject).getParentFile(), originalName + "." + originalExtension); // NOI18N
-        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), originalFile));
+        File targetFile = getTargetFile(project, getWebRoot(project, fileObject), originalFile);
+        deleteFile(targetFile);
+        deleteMapFile(targetFile);
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
-        deleteFile(getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
+        File targetFile = getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject));
+        deleteFile(targetFile);
+        deleteMapFile(targetFile);
+    }
+
+    // #239916
+    private void deleteMapFile(File targetFile) {
+        if (targetFile == null) {
+            return;
+        }
+        deleteFile(getMapFile(targetFile));
+    }
+
+    protected File getMapFile(@NonNull File targetFile) {
+        assert targetFile != null;
+        return new File(targetFile.getParent(), targetFile.getName() + ".map"); // NOI18N
     }
 
     private void deleteFile(File file) {
