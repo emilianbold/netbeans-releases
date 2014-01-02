@@ -69,6 +69,14 @@ public class MakeTemplateListener implements OperationListener {
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(MakeTemplateListener.class.getName());
 
     private static final String ADD_TO_LOGICAL_FOLDER_ATTRIBUTE = "addToLogicalFolder"; // NOI18N
+    
+    public static MakeTemplateListener INSTANCE;
+    private Project contextProject;
+    private MakeConfigurationDescriptor contextCD;
+
+    public MakeTemplateListener() {
+        INSTANCE = this;
+    }
 
     @Override
     public void operationPostCreate(OperationEvent operationEvent) {
@@ -104,6 +112,16 @@ public class MakeTemplateListener implements OperationListener {
         return pdp.getConfigurationDescriptor();
     }
 
+    void setContext(Project contextProject, MakeConfigurationDescriptor contextCD){
+        this.contextProject = contextProject;
+        this.contextCD = contextCD;
+    }
+
+    void clearContext(){
+        this.contextProject = null;
+        this.contextCD = null;
+    }
+    
     @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
@@ -141,16 +159,21 @@ public class MakeTemplateListener implements OperationListener {
             if (file == null) {
                 return;
             }
-            project = FileOwnerQuery.getOwner(file);
-            if (project == null) {
-                //no project:
-                return;
-            }
-            //check if the project is a Makefile project:
-            makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
-            if (makeConfigurationDescriptor == null) {
-                //not make project:
-                return;
+            if (contextProject != null && contextCD != null) {
+                project = contextProject;
+                makeConfigurationDescriptor = contextCD;
+            } else {
+                project = FileOwnerQuery.getOwner(file);
+                if (project == null) {
+                    //no project:
+                    return;
+                }
+                //check if the project is a Makefile project:
+                makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
+                if (makeConfigurationDescriptor == null) {
+                    //not make project:
+                    return;
+                }
             }
             folder = makeConfigurationDescriptor.getLogicalFolders();
         } else {
