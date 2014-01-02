@@ -96,6 +96,13 @@ class DataConsistentFileOutputStream extends BufferedOutputStream {
             throw ioex;
         }
     }
+
+    @Override
+    public synchronized void flush() throws IOException {
+        super.flush();
+        FileChannel fch = fos.getChannel();
+        fch.force(true);
+    }
     
     static void truncateFileToConsistentSize(FileOutputStream fos, long size) {
         try {
