@@ -205,7 +205,7 @@ public final class LaunchingDICookie extends AbstractDICookie {
      * @return command line to be used
      */
     public String getCommandLine () {
-        Argument a = (Argument) args.get ("command");
+        Argument a = args.get ("command");
         if (a == null) return null;
         return a.value ();
     }

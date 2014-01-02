@@ -49,6 +49,7 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Connector.Argument;
+import com.sun.jdi.connect.Connector.IntegerArgument;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -198,7 +199,7 @@ public final class ListeningDICookie extends AbstractDICookie {
      * @return port number
      */
     public int getPortNumber () {
-        Argument a = (Argument) args.get ("port");
+        Argument a = args.get ("port");
         if (a == null) return -1;
         String pn = a.value ();
         if (pn == null || pn.length() == 0) {
@@ -217,6 +218,8 @@ public final class ListeningDICookie extends AbstractDICookie {
             } catch (IOException ex) {
             } catch (IllegalConnectorArgumentsException ex) {
             }
+        } else if (a instanceof IntegerArgument) {
+            return ((IntegerArgument) a).intValue();
         }
         try {
             return Integer.parseInt (pn);
@@ -231,7 +234,7 @@ public final class ListeningDICookie extends AbstractDICookie {
      * @return shared memory block name
      */
     public String getSharedMemoryName () {
-        Argument a = (Argument) args.get ("name");
+        Argument a = args.get ("name");
         if (a == null) return null;
         return a.value ();
     }
