@@ -86,14 +86,17 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         getCookieSet().add(this);
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx("j2eeplugins_property_sheet_server_node_jboss"); //NOI18N
     }
     
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
     
+    @Override
     public Component getCustomizer() {
         CustomizerDataSupport dataSup = new CustomizerDataSupport(getDeploymentManager().getProperties());
         return new Customizer(dataSup, new JBJ2eePlatformFactory().getJ2eePlatformImpl(getDeploymentManager()));
@@ -109,10 +112,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL;
     }
     
-    public String  getJMXConsoleURL() {
-        return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ JMX_CONSOLE_URL;
-    }
-    
+    @Override
     public Action[] getActions(boolean context) {
         Action[]  newActions = new Action[3] ;
         newActions[0]= null;
@@ -205,6 +205,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         return sheet;
     }
         
+    @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
             return ImageUtilities.loadImage("org/netbeans/modules/javaee/wildfly/resources/wildfly.png"); // NOI18N
@@ -212,6 +213,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         return super.getIcon(type);
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }

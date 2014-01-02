@@ -449,12 +449,14 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         }
     }
 
+    @Override
     public boolean supportsCreateDatasource() {
-        return !isAs7();
+        return isWildfly();
     }
 
+    @Override
     public boolean supportsCreateMessageDestination() {
-        return false;
+        return isWildfly();
     }
     
     // private helper interface -----------------------------------------------

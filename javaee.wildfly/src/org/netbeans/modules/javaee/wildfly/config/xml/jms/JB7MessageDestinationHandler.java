@@ -62,6 +62,8 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
     private boolean isDestination;
 
     private final List<String> jndiNames = new ArrayList<String>();
+    
+    private JBossMessageDestination currentDestination;
 
     public List<JBossMessageDestination> getMessageDestinations() {
         return messageDestinations;
@@ -72,6 +74,14 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
         if ("jms-destinations".equals(qName)) {
             isDestinations = true;
         } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
+            String name = attributes.getValue("name");
+            if("jms-queue".equals(qName)) {
+               currentDestination = new JBossMessageDestination(name, Type.QUEUE);
+            } else if ("jms-topic".equals(qName)) {
+                currentDestination = new JBossMessageDestination(name, Type.TOPIC);
+            } else {
+                currentDestination = null;
+            }
             isDestination = true;
         } else if (isDestination && "entry".equals(qName)) {
             jndiNames.add(attributes.getValue("name"));
@@ -81,19 +91,15 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (isDestination) {
-            if ("jms-queue".equals(qName)) {
+            if ("jms-queue".equals(qName) || "jms-topic".equals(qName)) {
                 isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.QUEUE));
+                for (String jndiName : jndiNames) {
+                    currentDestination.addEntry(jndiName);
                 }
                 jndiNames.clear();
-            } else if ("jms-topic".equals(qName)) {
-                isDestination = false;
-                for (String name : jndiNames) {
-                    messageDestinations.add(new JBossMessageDestination(name, Type.TOPIC));
-                }
-                jndiNames.clear();
-            }    
+                messageDestinations.add(currentDestination);
+                currentDestination = null;
+            }
         } else if (isDestinations) {
             if ("jms-destinations".equals(qName)) {
                 jndiNames.clear();

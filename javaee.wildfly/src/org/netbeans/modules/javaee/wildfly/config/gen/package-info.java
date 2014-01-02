@@ -100,6 +100,16 @@
         removeUnreferencedNodes=true,
         docRoot="jboss-web",
         java5=true
+    ),
+    @Schema2Beans(
+        schema="../../resources/jboss-as-messaging-deployment_1_0.xsd",
+        schemaType=SchemaType.XML_SCHEMA,
+        outputType=OutputType.TRADITIONAL_BASEBEAN,
+        validate=true,
+        attrProp=true,
+        removeUnreferencedNodes=true,
+        docRoot="messaging-deployment",
+        java5=true
     )
 })
 package org.netbeans.modules.javaee.wildfly.config.gen;
