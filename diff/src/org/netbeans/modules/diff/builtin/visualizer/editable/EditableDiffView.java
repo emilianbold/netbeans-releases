@@ -1249,6 +1249,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setTextualContent () {
+        if (jTabbedPane.getSelectedComponent() == textualPanel) {
+            countTextualDiff();
+        } else {
+            jTabbedPane.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged (ChangeEvent e) {
+                    if (jTabbedPane.getSelectedComponent() == textualPanel) {
+                        jTabbedPane.removeChangeListener(this);
+                        countTextualDiff();
+                    }
+                }
+            });
+        }
+        textualEditorPane.setEditable(false);
+    }
+
+    private void countTextualDiff () {
         final EditorKit kit = textualEditorPane.getEditorKit();
         rp.post(new Runnable() {
             @Override
@@ -1260,7 +1278,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 textualRefreshTask.refresh();
             }
         });
-        textualEditorPane.setEditable(false);
     }
 
     private TextualDiffRefreshTask textualRefreshTask;
