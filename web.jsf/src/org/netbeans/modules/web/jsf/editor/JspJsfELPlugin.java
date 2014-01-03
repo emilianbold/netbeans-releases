@@ -215,13 +215,20 @@ public class JspJsfELPlugin extends ELPlugin {
             }
             signatureEquals = true;
         }
-        
+
+        // Signatures are not equal
+        if (!signatureEquals) {
+            return false;
+        }
+
+        // Return types of the element and attribute are void
+        if (TypeKind.VOID.equals(elementReturnType.getKind()) && VOID_RETURN_TYPE.equals(attributeReturnType)) {
+            return true;
+        }
+
+        // Attribute return the same type as the element
         TypeElement elementForReturnType = ELTypeUtilities.getElementForType(compilationContext, attributeReturnType);
-        
-        // Signatures and return are equal.
-        if ( signatureEquals && 
-                ( (TypeKind.VOID.equals(elementReturnType.getKind()) && VOID_RETURN_TYPE.equals(attributeReturnType)) || 
-                (types.isSameType(elementReturnType, elementForReturnType.asType())) ) ) {
+        if (elementForReturnType != null && (types.isSameType(elementReturnType, elementForReturnType.asType()))) {
             return true;
         }
 
