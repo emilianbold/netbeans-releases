@@ -1615,42 +1615,56 @@ public final class OpenProjectList {
         public void refresh() {
             FILE_DELETED_RP.post(new Runnable() {
                 @Override
-                public void run () {
-            //TODO wrapping projectManager.mutex() in PrivateMutex.MUTEX is ok here, noone can call us from the outside??
-            //there still is a chance of deadlocking with other threads that will have opposite muext ordering..
-            // I don't see what can be done here apart from getting rid of the entire idea of updating the recent project list.        
-            OpenProjectList.MUTEX.writeAccess(new Runnable() {
-                @Override
-                public void run () {
-                        assert recentProjects.size() == recentProjectsInfos.size();
-                        boolean refresh = false;
-                        Iterator<ProjectReference> recentProjectsIter = recentProjects.iterator();
-                        Iterator<UnloadedProjectInformation> recentProjectsInfosIter = recentProjectsInfos.iterator();
-                        while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
-                            ProjectReference prjRef = recentProjectsIter.next();
-                            recentProjectsInfosIter.next();
-                            URL url = prjRef.getURL();
-                            FileObject prjDir = URLMapper.findFileObject(url);
-                            ProjectManager.Result prj = null;
-                            if (prjDir != null && prjDir.isFolder()) {
-                                prj = ProjectManager.getDefault().isProject2(prjDir); //#230545 avoid loadProject(), can take a lot of time and will halt other threads because running under writemutex
-                            }
+                public void run() {
+                    final List<ProjectReference> refs = new ArrayList<ProjectReference>();
+                    final List<UnloadedProjectInformation> unloadedRefs = new ArrayList<UnloadedProjectInformation>();
+                    final List<ProjectReference> refsToRemove = new ArrayList<ProjectReference>();
+                    final List<UnloadedProjectInformation> unloadedRefsToRemove = new ArrayList<UnloadedProjectInformation>();
+                    
+                    //this is split into readMutex-noMutex-WriteMutex section because we want to avoid the situation when OPL.Mutex is wrapping
+                    //projectManager.Mutex that could prove to be a major source of deadlocks in the codebase.
+                    
+                    OpenProjectList.MUTEX.readAccess(new Runnable() {
+                        @Override
+                        public void run() {
+                            assert recentProjects.size() == recentProjectsInfos.size();
+                            refs.addAll(recentProjects);
+                            unloadedRefs.addAll(recentProjectsInfos);
+                        }
+                    });
+                    Iterator<ProjectReference> recentProjectsIter = refs.iterator();
+                    Iterator<UnloadedProjectInformation> recentProjectsInfosIter = unloadedRefs.iterator();
+                    while (recentProjectsIter.hasNext() && recentProjectsInfosIter.hasNext()) {
+                        ProjectReference prjRef = recentProjectsIter.next();
+                        UnloadedProjectInformation unloaded = recentProjectsInfosIter.next();
+                        URL url = prjRef.getURL();
+                        FileObject prjDir = URLMapper.findFileObject(url);
+                        ProjectManager.Result prj = null;
+                        if (prjDir != null && prjDir.isFolder()) {
+                            prj = ProjectManager.getDefault().isProject2(prjDir); //#230545 avoid loadProject(), can take a lot of time and will halt other threads because running under writemutex
+                        }
 
-                            if (prj == null) { // externally deleted project probably
-                                refresh = true;
-                                if (prjDir != null && prjDir.isFolder()) {
-                                    prjDir.removeFileChangeListener(nbprojectDeleteListener);
-                                }
-                                recentProjectsIter.remove();
-                                recentProjectsInfosIter.remove();
+                        if (prj == null) { // externally deleted project probably
+                            if (prjDir != null && prjDir.isFolder()) {
+                                prjDir.removeFileChangeListener(nbprojectDeleteListener);
                             }
+                            refsToRemove.add(prjRef);
+                            unloadedRefsToRemove.add(unloaded);
                         }
-                        if (refresh) {
-                            save();
-                            pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
-                        }
-                }
-            });
+                    }
+                    if (!refsToRemove.isEmpty()) {
+                        OpenProjectList.MUTEX.writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean changed = recentProjects.removeAll(refsToRemove);
+                                changed = recentProjectsInfos.removeAll(unloadedRefsToRemove) || changed;
+                                if (changed) {
+                                    save();
+                                    pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
+                                }
+                            }
+                        });
+                    }
                 }
             });
         }
