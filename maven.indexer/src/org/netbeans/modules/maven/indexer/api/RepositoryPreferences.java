@@ -375,8 +375,8 @@ public final class RepositoryPreferences {
 
     public static Date getLastIndexUpdate(String repoId) {
         if(repoId.contains("//")) {
-            LOG.log(Level.WARNING, "Could not get index update as the repo''s id contains consecutive slashes: {0}", repoId);
-            return new Date();
+            repoId = repoId.replace("//", "_");
+            LOG.log(Level.FINE, "Getting last index update: Repo''s id contains consecutive slashes, replacing them with '_': {0}", repoId);
         }
         long old = getPreferences().getLong(PROP_LAST_INDEX_UPDATE + "." + repoId, 0); // compatibility
         if (old != 0) { // upgrade it
@@ -388,8 +388,8 @@ public final class RepositoryPreferences {
 
     public static void setLastIndexUpdate(String repoId,Date date) {
         if(repoId.contains("//")) {
-            LOG.log(Level.WARNING, "Could not set index update as the repo''s id contains consecutive slashes: {0}", repoId);
-            return;
+            repoId = repoId.replace("//", "_");
+            LOG.log(Level.FINE, "Setting last index update: Repo''s id contains consecutive slashes, replacing them with '_': {0}", repoId);
         }
         getPreferences().remove(PROP_LAST_INDEX_UPDATE + "." + repoId);
         storage().node(repoId).putLong(PROP_LAST_INDEX_UPDATE, date.getTime());
@@ -411,8 +411,8 @@ public final class RepositoryPreferences {
      */
     public void addTransientRepository(Object key, String id, String displayName, String url, RepositoryInfo.MirrorStrategy strategy) throws URISyntaxException {
         if(id.contains("//")) {
-            LOG.log(Level.WARNING, "Ignoring repository as the id contains consecutive slashes: {0}", id);
-            return;
+            id = id.replace("//", "_");
+            LOG.log(Level.FINE, "Adding transient repository: Repo''s id contains consecutive slashes, replacing them with '_': {0}", id);
         }
         if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("file:")) {
             //only register repositories we can safely handle.. #227322
