@@ -56,6 +56,7 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -1196,29 +1197,16 @@ public final class JFXProjectUtils {
                                 platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
                             }
                         }
-                        final InputStream is = projPropsFO.getInputStream();
-                        try {
+                        try (InputStream is = projPropsFO.getInputStream()) {
                             ep.load(is);
-                        } finally {
-                            if (is != null) {
-                                is.close();
-                            }
                         }
                         boolean cpExtUpdated = updateClassPathExtensionProperties(ep);
                         if (cpExtUpdated) {
-                            OutputStream os = null;
-                            FileLock lock = null;
-                            try {
-                                lock = projPropsFO.lock();
-                                os = projPropsFO.getOutputStream(lock);
+                            final FileLock lock = projPropsFO.lock();
+                            try (OutputStream os =projPropsFO.getOutputStream(lock)) {
                                 ep.store(os);
-                            } finally {
-                                if (os != null) {
-                                    os.close();
-                                }
-                                if (lock != null) {
-                                    lock.releaseLock();
-                                }
+                            } finally {                                                                
+                                lock.releaseLock();
                             }
                         }
                         return null;
@@ -1341,19 +1329,17 @@ public final class JFXProjectUtils {
      * @param artifacts
      * @return 
      */
-    public static Set<String> getPaths(@NonNull final String[] artifacts) {
-        if(artifacts != null) {
-            Set<String> l = new TreeSet<String>();
-            for(int i = 0 ; i < artifacts.length; i++) {
-                if(artifacts[i].endsWith(":")) { //NOI18N
-                    l.add(artifacts[i].substring(0, artifacts[i].length()-1));
-                } else {
-                    l.add(artifacts[i]);
-                }
+    @NonNull
+    public static Set<String> getPaths(@NonNull final String[] artifacts) {        
+        final Set<String> l = new LinkedHashSet<>();
+        for(String artifact : artifacts) {
+            if(artifact.endsWith(":")) { //NOI18N
+                l.add(artifact.substring(0, artifact.length()-1));
+            } else {
+                l.add(artifact);
             }
-            return l;
         }
-        return null;
+        return l;
     }
     
     /**
@@ -1376,13 +1362,12 @@ public final class JFXProjectUtils {
      * @param ep EditableProperties
      * @return collection of artifacts or null
      */
+    @CheckForNull
     public static Set<String> getExistingProperty(@NonNull final EditableProperties ep, @NonNull String propName) {
         // existing 
         String currentPropVal = ep.getProperty(propName);
         if(currentPropVal != null) {
-            String[] existingArray = PropertyUtils.tokenizePath(currentPropVal);
-            Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
-            return Collections.unmodifiableSet(existing);
+            return Collections.unmodifiableSet(getPaths(PropertyUtils.tokenizePath(currentPropVal)));
         }
         return null;
     }
