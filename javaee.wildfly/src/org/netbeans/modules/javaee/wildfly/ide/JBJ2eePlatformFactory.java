@@ -255,15 +255,12 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             if("jpa2.0".equals(toolName)) { // NOI18N
                 return true;
             }
-            if("jpa2.1".equals(toolName)) { // NOI18N
-                return false;
-            }
 
             if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                 return true;
             }
             if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
-                return false;
+                return true;
             }
 
             return false;

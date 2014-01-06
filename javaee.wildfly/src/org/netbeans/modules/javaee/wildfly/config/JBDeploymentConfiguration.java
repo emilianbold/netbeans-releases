@@ -106,6 +106,16 @@ public abstract class JBDeploymentConfiguration
         return version != null && JBPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
     }
 
+    @Override
+    public boolean supportsCreateDatasource() {
+        return !isWildfly();
+    }
+
+    @Override
+    public boolean supportsCreateMessageDestination() {
+        return isWildfly();
+    }
+
 // -------------------------------------- DatasourceConfiguration  -----------------------------------------
     private DatasourceSupport getDatasourceSupport() {
         if (dsSupport == null) {
@@ -144,7 +154,7 @@ public abstract class JBDeploymentConfiguration
     private MessageDestinationSupport getMessageDestinationsSupport() throws IOException {
         if (destSupport == null) {
             String configFile = "module-destinations";
-            if(this.j2eeModule != null && this.j2eeModule.getArchive() != null) {
+            if (this.j2eeModule != null && this.j2eeModule.getArchive() != null) {
                 configFile = this.j2eeModule.getArchive().getName();
             }
             destSupport = new MessageDestinationSupport(resourceDir, configFile);

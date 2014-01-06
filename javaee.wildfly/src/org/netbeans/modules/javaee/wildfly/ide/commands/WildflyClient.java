@@ -930,7 +930,7 @@ public class WildflyClient {
             InvocationTargetException {
         List<WildflyEJBComponentNode> modules = new ArrayList<WildflyEJBComponentNode>();
         if (modelNodeHasDefinedChild(cl, deployment, type.getPropertyName())) {
-            List ejbs = modelNodeAsList(cl, getModelNodeChild(cl, deployment, type));
+            List ejbs = modelNodeAsList(cl, getModelNodeChild(cl, deployment, type.getPropertyName()));
             for (Object ejb : ejbs) {
                 modules.add(new WildflyEJBComponentNode(modelNodeAsPropertyForName(cl, ejb), type));
             }
