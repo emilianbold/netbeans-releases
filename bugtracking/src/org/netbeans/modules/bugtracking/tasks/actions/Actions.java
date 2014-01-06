@@ -175,6 +175,15 @@ public class Actions {
             });
         }
 
+        /**
+         * Create MarkSeenAction for supplied nodes.
+         *
+         * <p>
+         * If one of the nodes does not support Status Handling, the action is disabled!</p>
+         *
+         * @param nodes
+         * @return
+         */
         static MarkSeenAction createAction(TreeListNode... nodes) {
             List<IssueImpl> tasks = new ArrayList<IssueImpl>();
             for (TreeListNode n : nodes) {
@@ -184,13 +193,19 @@ public class Actions {
                     return null;
                 }
             }
+            boolean statusSupported = true;
             boolean setAsSeen = false;
             for (IssueImpl issue : tasks) {
+                if (!issue.hasStatus()) {
+                    statusSupported = false;
+                }
                 if (!issue.getStatus().equals(IssueStatusProvider.Status.SEEN)) {
                     setAsSeen = true;
                 }
             }
-            return new MarkSeenAction(setAsSeen, tasks);
+            MarkSeenAction markSeenAction = new MarkSeenAction(setAsSeen, tasks);
+            markSeenAction.setEnabled(statusSupported);
+            return markSeenAction;
         }
 
         private ProgressHandle getProgress() {
@@ -376,11 +391,11 @@ public class Actions {
     public static List<Action> getTaskPopupActions(TaskNode... taskNodes) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new OpenTaskAction(taskNodes));
-        if (taskNodes.length == 1) {
-            AbstractAction action = DashboardViewer.getInstance().isTaskNodeActive(taskNodes[0]) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNodes[0]);
-            action.setEnabled(false);
-            actions.add(action);
-        }
+        // uncomment ASA activation is ready
+//        if (taskNodes.length == 1) {
+//            AbstractAction action = DashboardViewer.getInstance().isTaskNodeActive(taskNodes[0]) ? new DeactivateTaskAction() : new ActivateTaskAction(taskNodes[0]);
+//            actions.add(action);
+//        }
         boolean enableSetCategory = true;
         boolean showRemoveTask = true;
         boolean showDeleteLocal = true;
@@ -471,7 +486,26 @@ public class Actions {
         }
     }
 
+    /**
+     * Create action for changing scheduling info for supplied nodes.
+     *
+     * <p>
+     * If one of the nodes does not support schedule handling, the action is disabled!</p>
+     *
+     * @param nodes
+     * @return
+     */
     private static Action getScheduleAction(final TaskNode... taskNodes) {
+        // Check the selected nodes - if one of the selected nodes does not
+        // support scheduling - don't offer it in the menu
+        boolean hasSchedule = true;
+        for (TaskNode tn : taskNodes) {
+            if (!tn.getTask().hasSchedule()) {
+                hasSchedule = false;
+                break;
+            }
+        }
+
         IssueScheduleInfo schedule = null;
         if (taskNodes.length == 1) {
             schedule = taskNodes[0].getTask().getSchedule();
@@ -491,7 +525,9 @@ public class Actions {
             }
         };
         scheduleMenu.addChangeListener(listener);
-        return scheduleMenu.getMenuAction();
+        Action menuAction = scheduleMenu.getMenuAction();
+        menuAction.setEnabled(hasSchedule);
+        return menuAction;
     }
 
     private static class SetCategoryAction extends TaskAction {
@@ -755,7 +791,7 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
                 DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, false);
-                
+
                 RepositoryImpl repo = repositoryNode.getRepository();
                 IssueTopComponent.closeFor(repo);
                 QueryTopComponent.closeFor(repo);
@@ -838,6 +874,7 @@ public class Actions {
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
         boolean editPossible = true;
         boolean openPossible = true;
+        boolean deletePossible = true;
 
         for (QueryNode queryNode : queryNodes) {
             QueryImpl q = queryNode.getQuery();
@@ -847,14 +884,25 @@ public class Actions {
             if (!q.providesMode(QueryController.QueryMode.VIEW)) {
                 openPossible = false;
             }
-            if (!editPossible && !openPossible) {
+            if (!q.canRemove()) {
+                deletePossible = false;
+            }
+            if (!editPossible && !openPossible && !deletePossible) {
                 break;
             }
         }
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new EditQueryAction(queryNodes));
-        actions.add(new OpenQueryAction(queryNodes));
-        actions.add(new DeleteQueryAction(queryNodes));
+        EditQueryAction editQueryAction = new EditQueryAction(queryNodes);
+        editQueryAction.setEnabled(editPossible);
+        actions.add(editQueryAction);
+
+        OpenQueryAction openQueryAction = new OpenQueryAction(queryNodes);
+        openQueryAction.setEnabled(openPossible);
+        actions.add(openQueryAction);
+
+        DeleteQueryAction deleteQueryAction = new DeleteQueryAction(queryNodes);
+        deleteQueryAction.setEnabled(deletePossible);
+        actions.add(deleteQueryAction);
         //actions.add(new NotificationQueryAction(queryNodes));
         return actions;
     }
@@ -896,7 +944,7 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            return false && !containsQueryFromLocalRepository(getQueryNodes());
+            return false;
         }
     }
 
@@ -912,11 +960,6 @@ public class Actions {
                 queryNode.getQuery().open(QueryController.QueryMode.VIEW);
             }
         }
-
-        @Override
-        public boolean isEnabled() {
-            return !containsQueryFromLocalRepository(getQueryNodes());
-        }
     }
 
     public static class EditQueryAction extends QueryAction {
@@ -930,11 +973,6 @@ public class Actions {
             for (QueryNode queryNode : getQueryNodes()) {
                 queryNode.getQuery().open(QueryController.QueryMode.EDIT);
             }
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
     //</editor-fold>
