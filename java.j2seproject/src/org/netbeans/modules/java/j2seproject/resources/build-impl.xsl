@@ -236,9 +236,15 @@ is divided into following sections:
                     </and>
                 </condition>
                 <condition property="do.archive">
-                    <not>
-                        <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
-                    </not>
+                    <or>
+                        <not>
+                            <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
+                        </not>
+                        <and>
+                            <istrue value="${{jar.archive.disabled}}"/>
+                            <istrue value="${{not.archive.disabled}}" />
+                        </and>
+                    </or>
                 </condition>
                 <condition property="do.mkdist">
                     <and>
