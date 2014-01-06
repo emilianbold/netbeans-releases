@@ -4,6 +4,7 @@ Code completion result for source line:
 ------------------------------------
 METHOD     any()                           [PUBLIC]   List<String>
 METHOD     getMyStringWithParam(String st  [PUBLIC]   String
+METHOD     updateGameList(ActionEvent eve  [PUBLIC]   void
 PROPERTY   myArray                         [PUBLIC]   String[]
 PROPERTY   myCypris                        [PUBLIC]   Cypris
 PROPERTY   myIterable                      [PUBLIC]   Iterable<String>
