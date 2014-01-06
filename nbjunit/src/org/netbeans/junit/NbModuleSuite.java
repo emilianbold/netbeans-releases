@@ -42,9 +42,10 @@
 
 package org.netbeans.junit;
 
+import java.awt.HeadlessException;
+import java.awt.Rectangle;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import org.netbeans.junit.internal.NbModuleLogHandler;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -73,6 +74,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -81,6 +83,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
+import org.netbeans.junit.internal.NbModuleLogHandler;
 
 /**
  * Wraps a test class with proper NetBeans Runtime Container environment.
@@ -1362,6 +1365,15 @@ public class NbModuleSuite {
 
             @Override
             protected void runTest() throws Throwable {
+                JFrame shutDown;
+                try {
+                    shutDown = new JFrame("Shutting down NetBeans...");
+                    shutDown.setBounds(new Rectangle(-100, -100, 50, 50));
+                    shutDown.setVisible(true);
+                } catch (HeadlessException ex) {
+                    shutDown = null;
+                }
+                
                 Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
                 Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
                 Method exit = lifeClazz.getMethod("exit");
@@ -1374,6 +1386,10 @@ public class NbModuleSuite {
                     waitForAWT();
                     System.getProperties().remove("netbeans.close"); // NOI18N
                     System.getProperties().remove("netbeans.close.no.exit"); // NOI18N
+                }
+                
+                if (shutDown != null) {
+                    shutDown.setVisible(false);
                 }
             }
         }
