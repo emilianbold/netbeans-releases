@@ -229,6 +229,11 @@ implements ActionListener, Runnable, Callable<JButton> {
             Installer.LOG.log(Level.FINE, null, ex);
         }
     }
+    
+    // Accessed in test
+    boolean isExceptionOnly() {
+        return exceptionOnly;
+    }
 
     @Override
     public void close() throws SecurityException {
