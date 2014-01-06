@@ -255,7 +255,6 @@ public enum HTMLTokenId implements TokenId {
                 case SCRIPT:
                     String scriptType = (String)token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
                     mimeType = scriptType != null ? scriptType : JAVASCRIPT_MIMETYPE;
-                    System.err.println("!!!!! scriptType=" + scriptType + ", mimeType=" + mimeType);
                     break;
                     
                 case STYLE:
