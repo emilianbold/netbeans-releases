@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
@@ -69,7 +70,9 @@ import org.netbeans.modules.j2ee.deployment.impl.TargetServer;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -80,7 +83,9 @@ import org.openide.util.Parameters;
 public final class Deployment {
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
-    
+
+    private static final Pattern FILTER_PATTERN = Pattern.compile("^.*(\\$\\{.*\\}.*)+$");
+
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
@@ -214,7 +219,23 @@ public final class Deployment {
 
             // now the server is running
             DeployOnSaveManager.getDefault().resumeListening(jmp);
-            DeploymentHelper.deployServerLibraries(jmp);
+            try {
+                DeploymentHelper.deployServerLibraries(jmp);
+            } catch (ServerLibraryManager.MissingLibrariesException ex) {
+                // #236835
+                boolean tryAnyway = true;
+                for (ServerLibraryDependency dep : ex.getMissingLibraries()) {
+                    if(!FILTER_PATTERN.matcher(dep.getName()).matches()
+                            && !FILTER_PATTERN.matcher(dep.getSpecificationVersion().toString()).matches()
+                            && !FILTER_PATTERN.matcher(dep.getImplementationVersion().toString()).matches()) {
+                        tryAnyway = false;
+                        break;
+                    }
+                }
+                if (!tryAnyway) {
+                    throw ex;
+                }
+            }
             DeploymentHelper.deployDatasources(jmp);
             DeploymentHelper.deployMessageDestinations(jmp);
 

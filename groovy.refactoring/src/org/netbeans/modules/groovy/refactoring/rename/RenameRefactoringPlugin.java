@@ -122,6 +122,10 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
 
         final FileObject file = whereUsedElement.getParentFile();
         final PositionBounds position = whereUsedElement.getPosition();
+        if (position == null) {
+            return false;
+        }
+
         final int start = position.getBegin().getOffset();
         final int end = position.getEnd().getOffset();
         

@@ -43,6 +43,8 @@
 package org.netbeans.modules.cordova.project;
 
 import java.io.IOException;
+import java.util.EnumSet;
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -57,13 +59,14 @@ import org.openide.util.Exceptions;
  * Cordova pseudo browser
  * @author Jan Becicka
  */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class CordovaBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     private Project project;
     private WebBrowser browser;
     private MobileConfigurationImpl config;
+    private ProjectConfigurationCustomizer customizer;
 
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
+    CordovaBrowserImpl(Project project, WebBrowser browser) {
         try {
             this.project = project;
             this.browser = browser;
@@ -91,7 +94,25 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
+        if (customizer == null) {
+
+            customizer = new ProjectConfigurationCustomizer() {
+                @Override
+                public JPanel createPanel() {
+                    JPanel panel = new JPanel();
+                    panel.setVisible(false);
+                    return panel;
+                }
+
+                @Override
+                public EnumSet<ProjectConfigurationCustomizer.HiddenProperties> getHiddenProperties() {
+                    return EnumSet.of(ProjectConfigurationCustomizer.HiddenProperties.WEB_SERVER);
+                }
+            
+            };
+        }
+
+        return customizer;
     }
 
     @Override
