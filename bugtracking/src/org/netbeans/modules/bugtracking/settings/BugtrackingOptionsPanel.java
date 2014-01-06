@@ -70,6 +70,16 @@ class BugtrackingOptionsPanel extends javax.swing.JPanel {
         containerPanel.add(name, component);
     }
     
+    void setPluginListVisible(boolean visible) {
+        jScrollPane1.setVisible(visible);
+        containerPanel.setVisible(visible);
+        jLabel5.setVisible(visible);
+        jSeparator3.setVisible(visible);
+                
+        jLabel4.setVisible(visible);
+        jSeparator2.setVisible(visible);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

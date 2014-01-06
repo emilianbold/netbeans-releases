@@ -344,7 +344,7 @@ public class RebaseTest extends AbstractGitTestCase {
         write(f, "local change");
         
         GitRebaseResult result = client.rebase(RebaseOperationType.BEGIN, Constants.MASTER, NULL_PROGRESS_MONITOR);
-        assertEquals(RebaseStatus.CONFLICTS, result.getRebaseStatus());
+        assertEquals(RebaseStatus.FAILED, result.getRebaseStatus());
         assertEquals(Arrays.asList(f), result.getFailures());
         assertEquals(branchInfo.getRevision(), getRepository(client).resolve(BRANCH_NAME).name());
         assertEquals(masterInfo.getRevision(), getRepository(client).resolve(Constants.MASTER).name());
