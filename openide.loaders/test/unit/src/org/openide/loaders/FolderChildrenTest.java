@@ -52,15 +52,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -1191,62 +1188,6 @@ public class FolderChildrenTest extends NbTestCase {
         } else {
             fail("FolderChildren instance expected.");
         }
-    }
-
-    /**
-     * Test for bug 238744 - org.openide.nodes.Children$Keys$KE.nodes:
-     * LowPerformance took 57725 ms.
-     *
-     * @throws java.io.IOException
-     * @throws java.lang.InterruptedException
-     * @throws java.lang.reflect.InvocationTargetException
-     */
-    public void testCreateNodeNotCalledInEDT() throws IOException,
-            InterruptedException, InvocationTargetException {
-
-        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        assertNotNull(workDir);
-        workDir.createFolder("subfolder");
-        Logger log = Logger.getLogger("org.openide.loaders.FolderChildren."
-                + workDir.getPath().replace('/', '.'));
-        Log.enable(log.getName(), Level.FINE);
-        final boolean[] createInEDT = new boolean[1];
-        final Semaphore s = new Semaphore(0);
-        Handler h = new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                if ("createNodes: {0} took: {1} ms".equals(record.getMessage())) {
-                    if (EventQueue.isDispatchThread()) {
-                        createInEDT[0] = true;
-                    }
-                    s.release();
-                }
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() throws SecurityException {
-            }
-        };
-        log.addHandler(h);
-        try {
-            final DataObject dob = DataObject.find(workDir);
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ((FolderChildren) dob.getNodeDelegate().getChildren())
-                            .createNodes(new FolderChildrenPair(workDir));
-                    s.release();
-                }
-            });
-            s.acquire(2);
-        } finally {
-            log.removeHandler(h);
-        }
-        assertFalse("Node should not be created in EDT.", createInEDT[0]);
     }
 
     public static final class FileBasedFilterOffMutex implements
