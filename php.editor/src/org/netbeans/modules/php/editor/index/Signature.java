@@ -66,8 +66,8 @@ public final class Signature {
         SHARED = new int[50]; //hopefully noone will use more items in the signature
         SHARED[0] = 0;
     }
-    private String signature;
-    private int[] positions;
+    private final String signature;
+    private final int[] positions;
 
     public static Signature get(String signature) {
         return new Signature(signature);
