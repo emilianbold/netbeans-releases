@@ -126,10 +126,6 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         private static final Set<Profile> PROFILES = new HashSet<Profile>();
         static {
-            PROFILES.add(Profile.J2EE_14);
-            PROFILES.add(Profile.JAVA_EE_5);
-            PROFILES.add(Profile.JAVA_EE_6_WEB);
-            PROFILES.add(Profile.JAVA_EE_6_FULL);
             PROFILES.add(Profile.JAVA_EE_7_WEB);
             PROFILES.add(Profile.JAVA_EE_7_FULL);
         }
@@ -157,15 +153,15 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             return MODULE_TYPES;
         }
         
+        @Override
         public Set/*<String>*/ getSupportedJavaPlatformVersions() {
             Set versions = new HashSet();
-            versions.add("1.4"); // NOI18N
-            versions.add("1.5"); // NOI18N
-            versions.add("1.6"); // NOI18N
             versions.add("1.7"); // NOI18N
+            versions.add("1.8"); // NOI18N
             return versions;
         }
         
+        @Override
         public JavaPlatform getJavaPlatform() {
             return properties.getJavaPlatform();
         }
@@ -259,12 +255,15 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             if("jpa2.0".equals(toolName)) { // NOI18N
                 return true;
             }
+            if("jpa2.1".equals(toolName)) { // NOI18N
+                return false;
+            }
 
             if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                 return true;
             }
             if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
-                return true;
+                return false;
             }
 
             return false;

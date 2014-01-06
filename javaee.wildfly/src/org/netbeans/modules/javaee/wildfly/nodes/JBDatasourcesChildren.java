@@ -71,11 +71,11 @@ public class JBDatasourcesChildren extends JBAsyncChildren implements Refreshabl
     @Override
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7DatasourcesNodeUpdater(), 0);
+        getExecutorService().submit(new WildflyDatasourcesNodeUpdater(), 0);
 
     }
 
-    class JBoss7DatasourcesNodeUpdater implements Runnable {
+    class WildflyDatasourcesNodeUpdater implements Runnable {
 
         List<JBDatasourceNode> keys = new ArrayList<JBDatasourceNode>();
 

@@ -56,7 +56,6 @@ import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
@@ -85,9 +84,13 @@ public class JBWebModuleNode extends AbstractStateNode {
     @Override
     public Action[] getActions(boolean context) {
         if (getParentNode() instanceof JBEarApplicationNode) {
-            return new SystemAction[]{
-                SystemAction.get(OpenURLAction.class)
-            };
+            if (url != null) {
+                return new SystemAction[]{
+                    SystemAction.get(OpenURLAction.class)
+                };
+            } else {
+                return new SystemAction[0];
+            }
         } else {
             if (url != null) {
                 return new SystemAction[]{

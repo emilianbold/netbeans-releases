@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
@@ -49,9 +48,13 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
@@ -60,25 +63,63 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Michal Mocnak
  */
-public class JBEarApplicationNode extends AbstractNode {
-    
+public class JBEarApplicationNode extends AbstractStateNode {
+
     public JBEarApplicationNode(String fileName, Lookup lookup) {
         super(new JBEarModulesChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EAR, lookup));
+        getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
+        getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
     }
-    
-    public Action[] getActions(boolean context){
-        return new SystemAction[] {
+
+    @Override
+    public Action[] getActions(boolean context) {
+        if (isRunning()) {
+            return new SystemAction[]{
+                SystemAction.get(StopModuleAction.class),
+                SystemAction.get(UndeployModuleAction.class)
+            };
+        }
+        return new SystemAction[]{
+            SystemAction.get(StartModuleAction.class),
             SystemAction.get(UndeployModuleAction.class)
         };
     }
-    
+
+    @Override
     public Image getIcon(int type) {
         return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
     }
 
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
+    }
+
+    @Override
+    protected boolean isRunning() {
+        boolean running = getChildren().getNodes().length > 0;
+        for (Node node : getChildren().getNodes()) {
+            if (node instanceof JBWebModuleNode) {
+                running = running && ((JBWebModuleNode) node).isRunning();
+            }
+        }
+        return running;
+    }
+
+    @Override
+    protected boolean isWaiting() {
+        return isRunning();
+    }
+
+    @Override
+    protected Image getOriginalIcon(int type) {
+        return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
+    }
+
+    @Override
+    protected Image getOriginalOpenedIcon(int type) {
+        return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER);
     }
 }
