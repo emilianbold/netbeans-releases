@@ -1569,7 +1569,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (((TryTree)last).getFinallyBlock() == null) {
                     addKeyword(env, CATCH_KEYWORD, null, false);
                     addKeyword(env, FINALLY_KEYWORD, null, false);
-                    if (((TryTree)last).getCatches().size() == 0)
+                    if (((TryTree)last).getCatches().isEmpty() && ((TryTree)last).getResources().isEmpty())
                         return;
                 }
             } else if (last.getKind() == Tree.Kind.IF) {

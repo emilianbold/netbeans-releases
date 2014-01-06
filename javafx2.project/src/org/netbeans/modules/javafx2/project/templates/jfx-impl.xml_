@@ -3412,10 +3412,12 @@
 
     <target name="build-native">
         <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>
+        <property name="transfer.not.archive.disabled" value="true"/>
         <antcall target="jfx-build-native"/>
     </target>
     <target name="build-native-noscript">
         <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>
+        <property name="transfer.not.archive.disabled" value="true"/>
         <antcall target="jfx-build-native-noscript"/>
     </target>
     
