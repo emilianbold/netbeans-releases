@@ -198,7 +198,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
+            <public-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.bugtracking.commons</friend>
@@ -209,10 +209,9 @@
                 <friend>org.netbeans.modules.odcs.tasks</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
-                <friend>eu.doppel_helix.netbeans.MantisIntegration</friend>
                 <package>org.netbeans.modules.bugtracking.api</package>
                 <package>org.netbeans.modules.bugtracking.spi</package>
-            </friend-packages>
+            </public-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>bugtracking</word>
