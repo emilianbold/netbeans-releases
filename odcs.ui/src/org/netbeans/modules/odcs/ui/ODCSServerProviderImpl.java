@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
@@ -158,7 +159,12 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
             return;
         }
         initialized = true;
-        PresenceIndicator.getDefault().init();
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                PresenceIndicator.getDefault().init();
+            }
+        });
         Preferences prefs = NbPreferences.forModule(ODCSServerProviderImpl.class);
         try {
             if (prefs.keys().length > 0) {

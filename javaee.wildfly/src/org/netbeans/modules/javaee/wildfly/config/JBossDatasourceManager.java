@@ -64,6 +64,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
 import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
 import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
+import org.netbeans.modules.javaee.wildfly.config.xml.ConfigurationParser;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileLock;
@@ -76,6 +77,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Libor Kotouc
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
 public final class JBossDatasourceManager implements DatasourceManager {
 
@@ -85,9 +87,8 @@ public final class JBossDatasourceManager implements DatasourceManager {
 
     private static final String JBossDSdotXML = "jboss-ds.xml"; // NOI18N
 
-    private final FileObject serverDir;
-
     private final FileObject deployDir;
+    private final FileObject configFile;
 
     private final WildFlyDeploymentManager dm;
 
@@ -96,107 +97,102 @@ public final class JBossDatasourceManager implements DatasourceManager {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String deployDirPath = ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         deployDir = FileUtil.toFileObject(new File(deployDirPath));
-        String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-        serverDir = FileUtil.toFileObject(new File(serverDirPath));
+        configFile = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
     }
 
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        try {
-            return this.dm.getClient().listDatasources();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            throw new ConfigurationException("", ex);
-        }
+        return ConfigurationParser.INSTANCE.listDatasources(configFile);
     }
 
+    @Override
     public void deployDatasources(Set<Datasource> datasources)
             throws ConfigurationException, DatasourceAlreadyExistsException {
-
-        Set<Datasource> deployedDS = getDatasources();
-        Map<String, Datasource> ddsMap = transform(deployedDS); // for faster searching
-
-        HashMap<String, Datasource> newDS = new HashMap<String, Datasource>(); // will contain all ds which do not conflict with existing ones
-
-        //resolve all conflicts
-        LinkedList<Datasource> conflictDS = new LinkedList<Datasource>();
-        for (Iterator<Datasource> it = datasources.iterator(); it.hasNext();) {
-            Object o = it.next();
-            if (!(o instanceof JBossDatasource)) {
-                continue;
-            }
-            JBossDatasource ds = (JBossDatasource) o;
-            String jndiName = JBossDatasource.getRawName(ds.getJndiName());
-            if (ddsMap.keySet().contains(jndiName)) { // conflicting ds found
-                if (!ddsMap.get(jndiName).equals(ds)) { // found ds is not equal
-                    conflictDS.add(ddsMap.get(jndiName)); // NOI18N
-                }
-            } else if (jndiName != null) {
-                newDS.put(jndiName, ds);
-            }
-        }
-
-        if (conflictDS.size() > 0) { // conflict found -> exception
-            throw new DatasourceAlreadyExistsException(conflictDS);
-        }
-
-        //write jboss-ds.xml
-        FileObject dsXmlFo = deployDir.getFileObject(JBossDSdotXML);
-        File dsXMLFile = (dsXmlFo != null ? FileUtil.toFile(dsXmlFo) : null);
-
-        Datasources deployedDSGraph = null;
-        try {
-            deployedDSGraph = (dsXMLFile != null ? Datasources.createGraph(dsXMLFile) : new Datasources());
-        } catch (IOException ioe) {
-            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotReadDSdotXml"));
-            Logger.getLogger("global").log(Level.INFO, null, ioe);
-            return;
-        }
-
-        //merge ds graph with newDS - remove conflicting ds from graph
-        DatasourceType ltxds[] = deployedDSGraph.getDatasource();
-        for (int i = 0; i < ltxds.length; i++) {
-            String jndiName = ltxds[i].getJndiName();
-            if (newDS.keySet().contains(jndiName)) //conflict, we must remove it from graph
-            {
-                deployedDSGraph.removeDatasource(ltxds[i]);
-            }
-        }
-
-        //add all ds from newDS
-        for (Iterator it = newDS.values().iterator(); it.hasNext();) {
-            JBossDatasource ds = (JBossDatasource) it.next();
-
-            DatasourceType lds = new DatasourceType();
-            lds.setJndiName(JBossDatasource.getRawName(ds.getJndiName()));
-            lds.setConnectionUrl(ds.getUrl());
-            lds.setDriverClass(ds.getDriverClassName());
-            DsSecurityType security = new DsSecurityType();
-            security.setUserName(ds.getUsername());
-            security.setPassword(ds.getPassword());
-            lds.setSecurity(security);
-            PoolType pool = new PoolType();
-            pool.setMinPoolSize(Long.parseLong(ds.getMinPoolSize()));
-            pool.setMaxPoolSize(Long.parseLong(ds.getMaxPoolSize()));
-            deployedDSGraph.addDatasource(lds);
-        }
-
-        //write modified graph into jboss-ds.xml
-        if (newDS.size() > 0) {
-            if (dsXMLFile == null) {
-                try {
-                    dsXmlFo = deployDir.createData(JBossDSdotXML);
-                } catch (IOException ioe) {
-                    Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotCreateDSdotXml"));
-                    Logger.getLogger("global").log(Level.INFO, null, ioe);
-                    return;
-                }
-
-                dsXMLFile = FileUtil.toFile(dsXmlFo);
-            }
-
-            writeFile(dsXMLFile, deployedDSGraph);
-        }
+        return;
+//        Set<Datasource> deployedDS = getDatasources();
+//        Map<String, Datasource> ddsMap = transform(deployedDS); // for faster searching
+//
+//        HashMap<String, Datasource> newDS = new HashMap<String, Datasource>(); // will contain all ds which do not conflict with existing ones
+//
+//        //resolve all conflicts
+//        LinkedList<Datasource> conflictDS = new LinkedList<Datasource>();
+//        for (Iterator<Datasource> it = datasources.iterator(); it.hasNext();) {
+//            Object o = it.next();
+//            if (!(o instanceof JBossDatasource)) {
+//                continue;
+//            }
+//            JBossDatasource ds = (JBossDatasource) o;
+//            String jndiName = JBossDatasource.getRawName(ds.getJndiName());
+//            if (ddsMap.keySet().contains(jndiName)) { // conflicting ds found
+//                if (!ddsMap.get(jndiName).equals(ds)) { // found ds is not equal
+//                    conflictDS.add(ddsMap.get(jndiName)); // NOI18N
+//                }
+//            } else if (jndiName != null) {
+//                newDS.put(jndiName, ds);
+//            }
+//        }
+//
+//        if (conflictDS.size() > 0) { // conflict found -> exception
+//            throw new DatasourceAlreadyExistsException(conflictDS);
+//        }
+//
+//        //write jboss-ds.xml
+//        FileObject dsXmlFo = deployDir.getFileObject(JBossDSdotXML);
+//        File dsXMLFile = (dsXmlFo != null ? FileUtil.toFile(dsXmlFo) : null);
+//
+//        Datasources deployedDSGraph = null;
+//        try {
+//            deployedDSGraph = (dsXMLFile != null ? Datasources.createGraph(dsXMLFile) : new Datasources());
+//        } catch (IOException ioe) {
+//            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotReadDSdotXml"));
+//            Logger.getLogger("global").log(Level.INFO, null, ioe);
+//            return;
+//        }
+//
+//        //merge ds graph with newDS - remove conflicting ds from graph
+//        DatasourceType ltxds[] = deployedDSGraph.getDatasource();
+//        for (int i = 0; i < ltxds.length; i++) {
+//            String jndiName = ltxds[i].getJndiName();
+//            if (newDS.keySet().contains(jndiName)) //conflict, we must remove it from graph
+//            {
+//                deployedDSGraph.removeDatasource(ltxds[i]);
+//            }
+//        }
+//
+//        //add all ds from newDS
+//        for (Iterator it = newDS.values().iterator(); it.hasNext();) {
+//            JBossDatasource ds = (JBossDatasource) it.next();
+//
+//            DatasourceType lds = new DatasourceType();
+//            lds.setJndiName(JBossDatasource.getRawName(ds.getJndiName()));
+//            lds.setConnectionUrl(ds.getUrl());
+//            lds.setDriverClass(ds.getDriverClassName());
+//            DsSecurityType security = new DsSecurityType();
+//            security.setUserName(ds.getUsername());
+//            security.setPassword(ds.getPassword());
+//            lds.setSecurity(security);
+//            PoolType pool = new PoolType();
+//            pool.setMinPoolSize(Long.parseLong(ds.getMinPoolSize()));
+//            pool.setMaxPoolSize(Long.parseLong(ds.getMaxPoolSize()));
+//            deployedDSGraph.addDatasource(lds);
+//        }
+//
+//        //write modified graph into jboss-ds.xml
+//        if (newDS.size() > 0) {
+//            if (dsXMLFile == null) {
+//                try {
+//                    dsXmlFo = deployDir.createData(JBossDSdotXML);
+//                } catch (IOException ioe) {
+//                    Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(getClass(), "ERR_CannotCreateDSdotXml"));
+//                    Logger.getLogger("global").log(Level.INFO, null, ioe);
+//                    return;
+//                }
+//
+//                dsXMLFile = FileUtil.toFile(dsXmlFo);
+//            }
+//
+//            writeFile(dsXMLFile, deployedDSGraph);
+//        }
 
     }
 

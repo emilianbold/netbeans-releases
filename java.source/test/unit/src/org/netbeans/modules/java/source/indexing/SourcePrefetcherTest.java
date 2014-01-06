@@ -122,10 +122,10 @@ public class SourcePrefetcherTest extends NbTestCase {
     }
     
     public void testSeqPref() throws Exception {
-        SourcePrefetcher.TEST_DO_PREFETCH = false;
+        JavaIndexerWorker.TEST_DO_PREFETCH = false;
         final LogHandler handler = new LogHandler();
         handler.expect("Using sequential iterator");    //NOI18N
-        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        final Logger log = Logger.getLogger(JavaIndexerWorker.class.getName());
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {
@@ -145,10 +145,10 @@ public class SourcePrefetcherTest extends NbTestCase {
     }
     
     public void testConPref() throws Exception {
-        SourcePrefetcher.TEST_DO_PREFETCH = true;
+        JavaIndexerWorker.TEST_DO_PREFETCH = true;
         final LogHandler handler = new LogHandler();
         handler.expect("Using concurrent iterator, {0} workers");    //NOI18N
-        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        final Logger log = Logger.getLogger(JavaIndexerWorker.class.getName());
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {
@@ -185,11 +185,11 @@ public class SourcePrefetcherTest extends NbTestCase {
             lck.releaseLock();
         }
         
-        SourcePrefetcher.TEST_DO_PREFETCH = true;
-        SourcePrefetcher.BUFFER_SIZE = 100;
+        JavaIndexerWorker.TEST_DO_PREFETCH = true;
+        JavaIndexerWorker.BUFFER_SIZE = 100;
         final LogHandler handler = new LogHandler();
         handler.expect("Using concurrent iterator, {0} workers");    //NOI18N
-        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        final Logger log = Logger.getLogger(JavaIndexerWorker.class.getName());
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {
@@ -214,10 +214,10 @@ public class SourcePrefetcherTest extends NbTestCase {
         final FileObject fo = URLMapper.findFileObject(ct.indexable.getURL());        
         fo.delete();
         
-        SourcePrefetcher.TEST_DO_PREFETCH = true;
+        JavaIndexerWorker.TEST_DO_PREFETCH = true;
         final LogHandler handler = new LogHandler();
         handler.expect("Using concurrent iterator, {0} workers");    //NOI18N
-        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        final Logger log = Logger.getLogger(JavaIndexerWorker.class.getName());
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {

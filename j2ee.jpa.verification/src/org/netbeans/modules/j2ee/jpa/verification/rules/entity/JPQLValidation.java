@@ -135,7 +135,7 @@ public class JPQLValidation {
                 for(ExpressionTree et:((MethodInvocationTree )tr).getArguments()) {
 
                         if (et instanceof LiteralTree) {
-                            query = ((LiteralTree) et).getValue().toString();
+                            query = ((LiteralTree) et).getValue() != null ? ((LiteralTree) et).getValue().toString() : null;
                             break;
                         } else if (et instanceof BinaryTree) {
                             query = queryFromBinaryTree((BinaryTree) et);

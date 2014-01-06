@@ -570,7 +570,7 @@ public final class FavoritesNode extends FilterNode implements Index {
             }
             
             if (isRoot) {
-                return createActionsForRoot(arr);
+                return createActionsForRoot(arr, FavoritesNode.getNode().equals(this.getParentNode()));
             } else {
                 if (FavoritesNode.getNode().equals(this.getParentNode())) {
                     DataShadow ds = getShadow();
@@ -596,9 +596,19 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
         
         /** Do not change original actions. */
-        private Action [] createActionsForRoot (Action [] arr) {
-            //Actions are not modified.
-            return arr;
+        private Action [] createActionsForRoot (Action [] arr, boolean removeAvailable) {
+            // Only Remove from favorites is added
+            if (removeAvailable) {
+                List<Action> newArr = new ArrayList<Action>(arr.length + 2);
+                newArr.addAll(Arrays.asList(arr));
+                if (!newArr.isEmpty()) {
+                    newArr.add(null);
+                }
+                newArr.add(Actions.remove());
+                return newArr.toArray(new Action[newArr.size()]);
+            } else {
+                return arr;
+            }
         }
         
         /** Add action 'Remove from Favorites'. */

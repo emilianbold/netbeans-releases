@@ -42,13 +42,14 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import org.netbeans.modules.team.commons.LogUtils;
+
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.team.commons.LogUtils;
 
 /**
  *
@@ -64,10 +65,6 @@ public class KenaiQuery extends JiraQuery {
         this.project = project;
         this.lastRefresh = JiraConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         controller = createControler(repository, this, jf);
-        boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
-        if(autoRefresh) {
-            getRepository().scheduleForRefresh(this);
-        }
     }
 
     @Override

@@ -100,7 +100,7 @@ public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentM
         }
 
         WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
-        return new JBossMessageDestinationManager(jbdm.getUrl(), true);
+        return new JBossMessageDestinationManager(jbdm, true);
     }
 
     @Override

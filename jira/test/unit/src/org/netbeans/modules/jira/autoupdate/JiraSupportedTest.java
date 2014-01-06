@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
 import java.io.File;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.JiraTestUtil;
+import org.netbeans.modules.jira.client.spi.JiraVersion;
 
 /**
  *
@@ -57,6 +58,10 @@ public class JiraSupportedTest extends NbTestCase {
         super(testName);
     }
 
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(JiraSupportedTest.class, null, null);
+    }
+    
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());

@@ -90,6 +90,9 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V91 - NB 8.0
+ *    introduce "Include Additional Files in the Code Assistance"
+ *    don't write project folder name, just "."
  * V90 - NB 7.4
  *    removed "remote-sources-mode" element
  *    don't write project folder name, just "."
@@ -270,7 +273,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 90;
+    public final static int CURRENT_VERSION = 91;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -339,6 +342,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String BUILD_ANALAZYER_TOOLS_ELEMENT = "buildAnalyzerTools"; // NOI18N
     protected final static String CODE_ASSISTANCE_ENVIRONMENT_ELEMENT = "envVariables"; // NOI18N
     protected final static String CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT = "transientMacros"; // NOI18N
+    protected final static String CODE_ASSISTANCE_INCLUDE_ADDITIONAL = "includeAdditional"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -522,8 +526,7 @@ public abstract class CommonConfigurationXMLCodec
                 }
                 writePackaging(xes, makeConfiguration.getPackagingConfiguration());
                 ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                for (int j = 0; j < profileAuxObjects.length; j++) {
-                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                for (ConfigurationAuxObject auxObject : profileAuxObjects) {
                     if (publicallyVisible(auxObject)) {
                         XMLEncoder encoder = auxObject.getXMLEncoder();
                         encoder.encode(xes);
@@ -531,8 +534,7 @@ public abstract class CommonConfigurationXMLCodec
                 }
             } else {
                 ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                for (int j = 0; j < profileAuxObjects.length; j++) {
-                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                for (ConfigurationAuxObject auxObject : profileAuxObjects) {
                     if (!auxObject.shared()) {
                         XMLEncoder encoder = auxObject.getXMLEncoder();
                         encoder.encode(xes);
@@ -643,7 +645,7 @@ public abstract class CommonConfigurationXMLCodec
         if (!unmanaged) {
             return;
         }
-        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        List<AttrValuePair> attrList = new ArrayList<>();
         attrList.add(new AttrValuePair(NAME_ATTR, "" + root.getName())); // NOI18N
         attrList.add(new AttrValuePair(DISPLAY_NAME_ATTR, "" + root.getDisplayName())); // NOI18N
         attrList.add(new AttrValuePair(PROJECT_FILES_ATTR, "" + root.isProjectFiles())); // NOI18N
@@ -656,16 +658,15 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = root.getFoldersAsArray();
-        for (int i = 0; i < subfolders.length; i++) {
-            if (subfolders[i].isDiskFolder()) {
-                writeDiskFolder(xes, subfolders[i], true);
+        for (Folder subfolder : subfolders) {
+            if (subfolder.isDiskFolder()) {
+                writeDiskFolder(xes, subfolder, true);
             }
         }
         // write out items
         // we always write all items for private
         Item[] items = root.getItemsAsArray();
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
+        for (Item item : items) {
             xes.element(ITEM_PATH_ELEMENT, item.getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
@@ -687,7 +688,7 @@ public abstract class CommonConfigurationXMLCodec
                     storedKind = kind;
             }
         }
-        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        List<AttrValuePair> attrList = new ArrayList<>();
         attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         attrList.add(new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName())); // NOI18N
         attrList.add(new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles())); // NOI18N
@@ -700,18 +701,17 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
-        for (int i = 0; i < subfolders.length; i++) {
-            if (subfolders[i].isDiskFolder()) {
-                writeDiskFolder(xes, subfolders[i], false);
+        for (Folder subfolder : subfolders) {
+            if (subfolder.isDiskFolder()) {
+                writeDiskFolder(xes, subfolder, false);
             } else {
-                writeLogicalFolder(xes, subfolders[i], level + 1);
+                writeLogicalFolder(xes, subfolder, level + 1);
             }
         }
         // write out items
         // we always write all items of logical folder
         Item[] items = folder.getItemsAsArray();
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
+        for (Item item : items) {
             xes.element(ITEM_PATH_ELEMENT, item.getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
@@ -721,7 +721,7 @@ public abstract class CommonConfigurationXMLCodec
         if (!privateLocation && !folder.hasAttributedItems()) {
             return;
         }
-        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        List<AttrValuePair> attrList = new ArrayList<>();
         if (folder.getRoot() != null) {
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
@@ -729,13 +729,12 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
-        for (int i = 0; i < subfolders.length; i++) {
-            writeDiskFolder(xes, subfolders[i], privateLocation);
+        for (Folder subfolder : subfolders) {
+            writeDiskFolder(xes, subfolder, privateLocation);
         }
         // write out items
         Item[] items = folder.getItemsAsArray();
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
+        for (Item item : items) {
             if (privateLocation || item.hasImportantAttributes()) {
                 xes.element(ITEM_NAME_ELEMENT, item.getName());
             }
@@ -778,137 +777,307 @@ public abstract class CommonConfigurationXMLCodec
         if (!cCompilerConfiguration.getModified()) {
             return;
         }
-        xes.elementOpen(CCOMPILERTOOL_ELEMENT2);
+        if (writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, false)) {
+            writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, true);
+        }
+    }
+
+    private static boolean writeCCompilerConfigurationImpl(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind, boolean write) {
+        if (write) {
+            xes.elementOpen(CCOMPILERTOOL_ELEMENT2);
+        }
         if (cCompilerConfiguration.getDevelopmentMode().getModified()) {
-            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+            if (write) {
+                xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getStrip().getModified()) {
-            xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
+            if (write) {
+                xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getSixtyfourBits().getModified()) {
-            xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+            if (write) {
+                xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (kind != ITEM_LEVEL) {
             if (cCompilerConfiguration.getCStandard().getModified()) {
-                xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandardExternal()); // NOI18N
+                if (write) {
+                    xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandardExternal()); // NOI18N
+                } else {
+                    return true;
+                }
             }
         }
         if (cCompilerConfiguration.getTool().getModified()) {
-            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
+            if (write) {
+                xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, cCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, cCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
-            xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+            if (write) {
+                xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getLanguageExt().getModified()) {
-            xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+            if (write) {
+                xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getInheritIncludes().getModified()) {
-            xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getCommandLineConfiguration().getModified()) {
-            xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            if (write) {
+                xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            List<String> sortedList = new ArrayList<String>(cCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(cCompilerConfiguration.getOwner()));
+            if (write) {
+                List<String> sortedList = new ArrayList<>(cCompilerConfiguration.getPreprocessorConfiguration().getValue());
+                writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(cCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
-            xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getUndefinedPreprocessorConfiguration().getModified()) {
-            List<String> sortedList = new ArrayList<String>(cCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+            if (write) {
+                List<String> sortedList = new ArrayList<>(cCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getInheritUndefinedPreprocessor().getModified()) {
-            xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getUseLinkerLibraries().getModified()) {
-            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + cCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+            if (write) {
+                xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + cCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getWarningLevel().getModified()) {
-            xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+            if (write) {
+                xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getMTLevel().getModified()) {
-            xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+            if (write) {
+                xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getAdditionalDependencies().getModified()) {
-            xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+            if (write) {
+                xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
-        xes.elementClose(CCOMPILERTOOL_ELEMENT2);
+        if (write) {
+            xes.elementClose(CCOMPILERTOOL_ELEMENT2);
+        }
+        return false;
     }
 
     public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind) {
         if (!ccCompilerConfiguration.getModified()) {
             return;
         }
-        xes.elementOpen(CCCOMPILERTOOL_ELEMENT2);
+        if (writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, false)) {
+            writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, true);
+        }
+    }
+
+    private static boolean writeCCCompilerConfigurationImpl(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind, boolean write) {
+        if (write) {
+            xes.elementOpen(CCCOMPILERTOOL_ELEMENT2);
+        }
         if (ccCompilerConfiguration.getDevelopmentMode().getModified()) {
-            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+            if (write) {
+                xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getStrip().getModified()) {
-            xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
+            if (write) {
+                xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getSixtyfourBits().getModified()) {
-            xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+            if (write) {
+                xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (kind != ITEM_LEVEL) {
             if (ccCompilerConfiguration.getCppStandard().getModified()) {
-                xes.element(STANDARD_ELEMENT, "" + ccCompilerConfiguration.getCppStandardExternal()); // NOI18N
+                if (write) {
+                    xes.element(STANDARD_ELEMENT, "" + ccCompilerConfiguration.getCppStandardExternal()); // NOI18N
+                } else {
+                    return true;
+                }
             }
         }
         if (ccCompilerConfiguration.getTool().getModified()) {
-            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
+            if (write) {
+                xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, ccCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, ccCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
-            xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+            if (write) {
+                xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getLanguageExt().getModified()) {
-            xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+            if (write) {
+                xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getInheritIncludes().getModified()) {
-            xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getCommandLineConfiguration().getModified()) {
-            xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            if (write) {
+                xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
-            List<String> sortedList = new ArrayList<String>(ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(ccCompilerConfiguration.getOwner()));
+            if (write) {
+                List<String> sortedList = new ArrayList<>(ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+                writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(ccCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
-            xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getModified()) {
-            List<String> sortedList = new ArrayList<String>(ccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+            if (write) {
+                List<String> sortedList = new ArrayList<>(ccCompilerConfiguration.getUndefinedPreprocessorConfiguration().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, UNDEFS_LIST_ELEMENT, sortedList);
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getInheritUndefinedPreprocessor().getModified()) {
-            xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
+            if (write) {
+                xes.element(INHERIT_UNDEF_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritUndefinedPreprocessor().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getUseLinkerLibraries().getModified()) {
-            xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + ccCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+            if (write) {
+                xes.element(USE_LINKER_PKG_CONFIG_LIBRARIES, "" + ccCompilerConfiguration.getUseLinkerLibraries().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getWarningLevel().getModified()) {
-            xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+            if (write) {
+                xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getMTLevel().getModified()) {
-            xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+            if (write) {
+                xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getLibraryLevel().getModified()) {
-            xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue()); // NOI18N
+            if (write) {
+                xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getAdditionalDependencies().getModified()) {
-            xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+            if (write) {
+                xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+            } else {
+                return true;
+            }
         }
-        xes.elementClose(CCCOMPILERTOOL_ELEMENT2);
+        if (write) {
+            xes.elementClose(CCCOMPILERTOOL_ELEMENT2);
+        }
+        return false;
     }
 
     public static void writeFortranCompilerConfiguration(XMLEncoderStream xes, FortranCompilerConfiguration fortranCompilerConfiguration) {
@@ -1172,17 +1341,20 @@ public abstract class CommonConfigurationXMLCodec
         if (codeAssistanceConfiguration.getBuildAnalyzer().getModified()) {
             xes.element(BUILD_ANALAZYER_ELEMENT, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
         }
+        if (codeAssistanceConfiguration.getIncludeInCA().getModified()) {
+            xes.element(CODE_ASSISTANCE_INCLUDE_ADDITIONAL, "" + codeAssistanceConfiguration.getIncludeInCA().getValue()); // NOI18N
+        }
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
         }
         // evn variables and transient macros
         if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
-            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
+            List<String> sortedList = new ArrayList<>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
             Collections.sort(sortedList);
             writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
         }
         if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
-            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
+            List<String> sortedList = new ArrayList<>(codeAssistanceConfiguration.getTransientMacros().getValue());
             Collections.sort(sortedList);
             writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
         }
@@ -1266,7 +1438,7 @@ public abstract class CommonConfigurationXMLCodec
 
     private static final class IncludeConverterImpl implements StringConverter {
 
-        private final Map<String, String> replacements = new HashMap<String, String>();
+        private final Map<String, String> replacements = new HashMap<>();
 
         public IncludeConverterImpl(MakeConfiguration conf, CodeAssistanceConfiguration caConf) {
             Map<String, String> environment = Collections.emptyMap();
@@ -1275,7 +1447,7 @@ public abstract class CommonConfigurationXMLCodec
                 environment = hostInfo.getEnvironment();
                 Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
                 if (temporaryEnv != null) {
-                    Map<String, String> res = new HashMap<String, String>(temporaryEnv);
+                    Map<String, String> res = new HashMap<>(temporaryEnv);
                     res.putAll(environment);
                     environment = res;
                 }
@@ -1317,7 +1489,7 @@ public abstract class CommonConfigurationXMLCodec
 
     private static final class MacroConverterImpl implements StringConverter {
 
-        private final Map<String, String> replacements = new HashMap<String, String>();
+        private final Map<String, String> replacements = new HashMap<>();
 
         public MacroConverterImpl(CodeAssistanceConfiguration caConf) {
             for (String macroWithDefaultValue : caConf.getTransientMacros().getValue()) {

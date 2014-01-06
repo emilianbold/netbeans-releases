@@ -337,6 +337,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
     public Set<FileObject> createdObjects() {
         return result;
     }
+    
+
 
     /**
      * Encapsulates the whole entity class generation process.
@@ -358,6 +360,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final Set<FileObject> generatedFOs;
         private final PersistenceGenerator persistenceGen;
         private final boolean useDefaults;
+        private final HashMap<String, String> replacedNames;//see #228059
+        private final HashMap<String, String> replacedTypeNames;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 boolean generateJAXBAnnotations,
@@ -383,6 +387,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             generatedFOs = new HashSet<FileObject>();
             generatedEntityFOs = new HashSet<FileObject>();
             this.persistenceGen = persistenceGen;
+            replacedNames = new HashMap<String, String>();
+            replacedTypeNames = new HashMap<String, String>();
         }
 
         public Set<FileObject> run() throws IOException {
@@ -459,7 +465,18 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                         // XXX Javadoc
                         try {
-                            entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                            String newName = entityClassName;
+                            int count = 1;
+                            while (packageFileObject.getFileObject(newName, "java") != null && count<1000) {
+                                newName = entityClassName + "_" + count;
+                            }
+                            entity = GenerationUtils.createClass(packageFileObject, newName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                            if (!newName.equals(entityClassName)) {
+                                replacedNames.put(entityClassName, newName);
+                                replacedTypeNames.put(entityClass.getPackage()+"."+entityClassName , entityClass.getPackage()+"."+newName);
+                                generatedEntityClasses.remove(entityClassName);
+                                generatedEntityClasses.add(newName);
+                            }
                         } catch (RuntimeException ex) {
                             Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Can't create class {0} from template in package {1} with package fileobject validity {2}.", new Object[]{entityClassName, packageFileObject.getPath(), packageFileObject.isValid()});//NOI18N
                             throw ex;
@@ -493,7 +510,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             //1st just go through to refresh, in some rare cases entities can't be found/parsed, see #213736
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
-                String entityClassName = entityClass.getClassName();
+                String entityClassName = getClassName(entityClass);
 
                 if (!generatedEntityClasses.contains(entityClassName) && !UpdateType.UPDATE.equals(entityClass.getUpdateType())) {
                     // this entity class already existed, we didn't create it, so we don't want to touch it except Update type
@@ -539,7 +556,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             //actual generation loop
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
-                String entityClassName = entityClass.getClassName();
+                String entityClassName = getClassName(entityClass);
 
                 if (!generatedEntityClasses.contains(entityClassName) && !UpdateType.UPDATE.equals(entityClass.getUpdateType())) {
                     // this entity class already existed, we didn't create it, so we don't want to touch it except Update type
@@ -552,7 +569,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     progressPanel.setText(progressMsg);
                 }
                 FileObject entityClassPackageFO = entityClass.getPackageFileObject();
-                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject( entityClassName, "java"); // NOI18N
                 final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
@@ -597,7 +614,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
             return classPaths;
         }
-
+        
+        String getClassName(EntityClass entityClass) {
+            return replacedNames.containsKey(entityClass.getClassName()) ? replacedNames.get(entityClass.getClassName()) : entityClass.getClassName();
+        }
         /**
          * Encapsulates common logic for generating classes (be it
          * entity or primary key classes). Each instance generates a single
@@ -1045,7 +1065,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             
             public EntityClassGenerator(WorkingCopy copy, EntityClass entityClass) throws IOException {
                 super(copy, entityClass);
-                entityClassName = entityClass.getClassName();
+                entityClassName = getClassName(entityClass);
                 assert typeElement.getSimpleName().contentEquals(entityClassName);
                 entityFQClassName = entityClass.getPackage() + "." + entityClassName;
                 this.useDefaults = entityClass.getUseDefaults();
@@ -1075,7 +1095,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     List<ExpressionTree> tableAnnArgs = new ArrayList<ExpressionTree>();
                     if(useDefaults && entityClassName.equalsIgnoreCase(dbMappings.getTableName())){
                         //skip
-                    } else {
+                    } else if(dbMappings.getTableName() != null) {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("name", dbMappings.getTableName())); // NOI18N
                     }
                     if (fullyQualifiedTableNames) {
@@ -1409,6 +1429,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // XXX getRelationshipFieldType() does not work well when entity classes
                 // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
+                if(replacedTypeNames.containsKey(typeName)) {
+                    typeName = replacedTypeNames.get(typeName);
+                }
                 TypeElement typeEl = copy.getElements().getTypeElement(typeName);
                 //need some extended logging if null, see issue # 217461
                 if(typeEl == null) {

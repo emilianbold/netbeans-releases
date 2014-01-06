@@ -199,5 +199,10 @@ public interface CsmExpression extends CsmOffsetable, CsmScopeElement {
 
 
     List<CsmStatement> getLambdas();
-
+        
+    /** 
+     * Gets this object's expanded text. 
+     * (if there are macroses inside expression or the whole expression is from macros) 
+     */
+    CharSequence getExpandedText();
 }

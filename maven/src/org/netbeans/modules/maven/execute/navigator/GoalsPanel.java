@@ -114,6 +114,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -369,7 +370,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
 
         PluginChildren(Project prj) {
             this.prj = prj;
-            preferences.addPreferenceChangeListener(this);
+            preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, preferences));
         }
 
         protected @Override

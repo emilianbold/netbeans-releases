@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.queries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -70,6 +72,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 @ProjectServiceProvider(service=ProjectInformation.class, projectType="org-netbeans-modules-maven")
 public final class Info implements ProjectInformation, PropertyChangeListener {
@@ -80,7 +83,17 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Project project;
-    private PreferenceChangeListener preferenceChangeListener;
+    private final PreferenceChangeListener preferenceChangeListener = new PreferenceChangeListener() {
+                    @Override
+                    public void preferenceChange(PreferenceChangeEvent evt) {
+                        if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
+                            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
+                            pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                        }
+                    }
+                };;
+    private final AtomicBoolean prefChangeListenerSet = new AtomicBoolean(false);
+    
 
     public Info(final Project project) {
         this.project = project;
@@ -175,20 +188,11 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     
     @Override 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (prefChangeListenerSet.compareAndSet(false, true)) {
+            NbPreferences.forModule(Info.class).addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, preferenceChangeListener, NbPreferences.forModule(Info.class)));
+        }
         if (!pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(this);
-            if (preferenceChangeListener == null) {
-                preferenceChangeListener = new PreferenceChangeListener() {
-                    @Override
-                    public void preferenceChange(PreferenceChangeEvent evt) {
-                        if (MavenSettings.PROP_PROJECTNODE_NAME_PATTERN.equals(evt.getKey())) {
-                            pcs.firePropertyChange(ProjectInformation.PROP_NAME, null, null);
-                            pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
-                        }
-                    }
-                };
-            };
-            NbPreferences.forModule(Info.class).addPreferenceChangeListener(preferenceChangeListener);
         }
         pcs.addPropertyChangeListener(listener);
     }
@@ -199,7 +203,6 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         pcs.removePropertyChangeListener(listener);
         if (had && !pcs.hasListeners(null)) {
             project.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(this);
-            NbPreferences.forModule(Info.class).removePreferenceChangeListener(preferenceChangeListener);
         }
     }
 

@@ -48,20 +48,11 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
  * @author Alexander Simon
  */
 public final class ConsolidationStrategy {
-    public static final String PROJECT_LEVEL = "project"; // NOI18N
-    public static final String FOLDER_LEVEL = "folder"; // NOI18N
-    public static final String FILE_LEVEL = "file"; // NOI18N
     
     private ConsolidationStrategy() {
     }
 
-    public static void consolidateModel(ProjectConfiguration project, String level){
-        if (ConsolidationStrategy.PROJECT_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateProject((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategy.FOLDER_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateFolder((ProjectConfigurationImpl)project);
-        } else if (ConsolidationStrategy.FILE_LEVEL.equals(level)){
-            ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
-        }
+    public static void consolidateModel(ProjectConfiguration project){
+        ConfigurationFactory.consolidateFile((ProjectConfigurationImpl)project);
     }
 }

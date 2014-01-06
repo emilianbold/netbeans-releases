@@ -220,7 +220,7 @@ public final class DiscoveryWizardAction extends NodeAction {
      * collection of native projects; otherwise null
      */
     private Collection<Project> getMakeProjects(Node[] nodes) {
-        Collection<Project> projects = new ArrayList<Project>();
+        Collection<Project> projects = new ArrayList<>();
         for (int i = 0; i < nodes.length; i++) {
             Project project = nodes[i].getLookup().lookup(Project.class);
             if(project == null) {
@@ -257,7 +257,6 @@ public final class DiscoveryWizardAction extends NodeAction {
             new SelectModeWizard()
             ,new SelectProviderWizard()
             ,new SelectObjectFilesWizard()
-            ,new ConsolidationStrategyWizard()
             ,new SelectConfigurationWizard()
         };
         @SuppressWarnings("unchecked")
@@ -327,7 +326,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     }
     
     private String getString(String key) {
-        return NbBundle.getBundle(DiscoveryWizardAction.class).getString(key);
+        return NbBundle.getMessage(DiscoveryWizardAction.class, key);
     }
     
 }

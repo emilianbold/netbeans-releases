@@ -81,7 +81,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 
         this.extraButtons = extraButtons;
 
-        scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
+        scrollPane.getViewport().setBackground(getBackground());
 
         listLabel.setText(getListLabelText());
         listLabel.setDisplayedMnemonic(getListLabelMnemonic());

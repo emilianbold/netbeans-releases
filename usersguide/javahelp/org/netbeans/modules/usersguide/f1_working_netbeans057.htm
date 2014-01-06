@@ -2,18 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Ant Library Manager</title>
+<title>HTML and JSP Source Editor</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2013-12-05</p>
-<p><a id="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" name="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer"></a></p>
+<p>Beta Draft: 2014-01-03</p>
+<p><a id="org.netbeans.modules.html.editor.api.HtmlKit" name="org.netbeans.modules.html.editor.api.HtmlKit"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref59" name="sthref59"></a>
-<h1>Ant Library Manager</h1>
+<h1>HTML and JSP Source Editor</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Ant Library Manager provides a place for you to store libraries so that you can easily add them to your applications. You can use the Ant Library Manager to add a tag library JAR file to an existing application.</p>
-<p>This dialog box has the following fields and tabs:</p>
+<p>The HTML/JSP Source Editor is a full-featured text editor that is integrated with other parts of the IDE. You open the Source Editor by creating a new HTML or JSP file or double-clicking an HTML or JSP file node in the Projects window, Files window, or Navigator window.</p>
+<p>The HTML/JSP editor has the following features:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,42 +27,175 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t63" headers="r1c1-t63">
-<p>Libraries</p>
+<p>Source Editor Tabs</p>
 </td>
 <td align="left" headers="r2c1-t63 r1c2-t63">
-<p>List of all libraries available to the IDE. You can add a new library to this list by clicking the New Library button at the bottom of the dialog box and specifying the library name and library type. You can view and edit library information by selecting the library name in the Libraries list. You can remove a library from the IDE by selecting the library in the Libraries list and clicking the Remove button at the bottom of the dialog box.</p>
+<p>The top of the Source Editor has a tab for each open document. Each tab shows the name of the document. If the document has been modified and has not been saved the name of the document is displayed in bold in the tab.</p>
+<p>You can right-click a tab to access the following commands:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t63" headers="r1c1-t63">
-<p>Library Name</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Close</p>
 </td>
 <td align="left" headers="r3c1-t63 r1c2-t63">
-<p>The name of the library being viewed.</p>
+<p>Closes the selected file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t63" headers="r1c1-t63">
-<p>Classpath tab</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Close All</p>
 </td>
 <td align="left" headers="r4c1-t63 r1c2-t63">
-<p>Lists the JAR resources referenced by this library. When you add a library to a project, the IDE adds all referenced JAR files to the project's classpath. You can use the buttons on the right to add or remove JAR files.</p>
+<p>Closes all files that are open in the Source Editor area.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t63" headers="r1c1-t63">
-<p>Sources tab</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Close Other</p>
 </td>
 <td align="left" headers="r5c1-t63 r1c2-t63">
-<p>Lists the Java source code files. When you add a Java source library, it is parsed by the code completion manager and is available to the Java editor's Go To Source feature. This feature enables you to select a Java element, such as a class name or method name, and select Go To Source to see the source classes. You can use the buttons on the right to add or remove JAR files or folders from the library sources.</p>
+<p>Closes all files except for the selected file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t63" headers="r1c1-t63">
-<p>Javadoc tab</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Clone</p>
 </td>
 <td align="left" headers="r6c1-t63 r1c2-t63">
-<p>Lists the compiled Javadoc code. When you add a Javadoc library, it is parsed by the code completion manager, and the Javadoc library is available to the Java Editor. You can use the buttons on the right to add or remove zip files or folders from the Javadoc library.</p>
+<p>Opens a new tab for the same document. This command is particularly useful in combination with splitting the window so that you can view different parts of the same file simultaneously. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG130">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Maximize Window/Restore Window</p>
+</td>
+<td align="left" headers="r7c1-t63 r1c2-t63">
+<p>Maximize Window hides other windows and expands the Source Editor to use all of the window space in the IDE. Restore Window returns the windows to the state that they were before you chose Maximize Window. You can also maximize and restore the Source Editor by double-clicking a tab.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Float/Dock Window</p>
+</td>
+<td align="left" headers="r8c1-t63 r1c2-t63">
+<p>Opens document in an editor in a new window. If window is already floating, the Dock Window option appears instead.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;New Document Tab Group/Collapse Document Tab Group</p>
+</td>
+<td align="left" headers="r9c1-t63 r1c2-t63">
+<p>Splits the editor window into two groups of tabs and separates the selected tab into the new group. If a separate group of tabs exists, Collapse Document Tab Group combines these groups into one group. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG128">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Select in Projects</p>
+</td>
+<td align="left" headers="r10c1-t63 r1c2-t63">
+<p>Highlights the file's node in the Projects window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Local History</p>
+</td>
+<td align="left" headers="r11c1-t63 r1c2-t63">
+<p>Opens a menu from which you can view the changes you made to the file or revert those changes. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG339">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;[version control]</p>
+</td>
+<td align="left" headers="r12c1-t63 r1c2-t63">
+<p>If the file is under version control, a menu item with the name of the version control system appears. The option opens a menu of relevant version control commands.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Diff To...</p>
+</td>
+<td align="left" headers="r13c1-t63 r1c2-t63">
+<p>Diff the file to another file in its folder or another file open in the editor.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Copy File Path</p>
+</td>
+<td align="left" headers="r14c1-t63 r1c2-t63">
+<p>Copies path to file to clipboard.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t63" headers="r1c1-t63">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Editors</p>
+</td>
+<td align="left" headers="r15c1-t63 r1c2-t63">
+<p>Opens a menu from which you can view the file in the source editor view or the local history view.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t63" headers="r1c1-t63">
+<p>Toolbar</p>
+</td>
+<td align="left" headers="r16c1-t63 r1c2-t63">
+<p>The editor toolbar is at the top of the Source Editor window. The toolbar has buttons for various navigating and editing shortcuts, which vary according to the type of file you are editing. Hold the cursor over a button to display a description of the command. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG155">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t63" headers="r1c1-t63">
+<p>Left Margin</p>
+</td>
+<td align="left" headers="r17c1-t63 r1c2-t63">
+<p>The left margin displays annotation glyphs that indicate line status, such as warnings.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r18c1-t63" headers="r1c1-t63">
+<p>Error Stripe</p>
+</td>
+<td align="left" headers="r18c1-t63 r1c2-t63">
+<p>The error stripe is the strip to the right of the right scroll bar and contains marks for various things in your file, such as errors, bookmarks, and comments for the To Do list. The error stripe represents the whole file, not just the lines currently displayed. You can immediately identify whether your file has any errors without having to scroll through the entire file. You can double-click a mark in the error stripe to jump to the line that the mark refers to.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r19c1-t63" headers="r1c1-t63">
+<p>Status Line</p>
+</td>
+<td align="left" headers="r19c1-t63 r1c2-t63">
+<p>The Source Editor status line is in the bottom right corner of the IDE. The first area of the status line shows the current line number and row number in the form line:row. The second area of the status line indicates the insertion mode (INS or OVR). The text area on the right is used for status messages.</p>
 </td>
 </tr>
 </tbody>
@@ -86,7 +219,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

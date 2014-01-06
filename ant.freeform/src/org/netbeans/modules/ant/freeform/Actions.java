@@ -87,6 +87,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -398,6 +399,13 @@ public final class Actions implements ActionProvider {
                             return null;
                         }
                         separator = XMLUtil.findText(sepFilesEl);
+                        if(separator == null) {
+                            // is set-up to handle multiple files but no separator is found -> skip it.
+                            String message = "No separator found for " + command + " command. <separated-files>,</separated-files> could be used.";
+                            LOG.log(Level.WARNING, message);
+                            StatusDisplayer.getDefault().setStatusText(message);
+                            return null;
+                        }
                     }
                     Element formatEl = XMLUtil.findElement(contextEl, "format", FreeformProjectType.NS_GENERAL); // NOI18N
                     assert formatEl != null : "No <format> in <context> for " + actionEl.getAttribute("name");

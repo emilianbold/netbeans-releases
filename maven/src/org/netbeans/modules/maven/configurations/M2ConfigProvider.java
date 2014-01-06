@@ -104,6 +104,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
+                        shared = null;
+                        nonshared = null;
                     }
                     RP.post(new Runnable() {
                         public @Override void run() {
@@ -252,8 +254,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                             }
                         }
                     });
-                    initialActive = null; //here we reset the initial active field value to prevent this block from happening exactly once.
                 }
+                initialActive = null; //here we reset the initial active field value to prevent this block from happening exactly once.
             }
             _active = active;
         }

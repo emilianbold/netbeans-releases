@@ -209,13 +209,13 @@ public class EmbeddingOperation {
 
             if (LOG.isLoggable(Level.FINE)) {
                 StringBuilder sb = new StringBuilder(200);
-                sb.append("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED EC-"); // NOI18N
+                sb.append("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED ETL-"); // NOI18N
                 LexerUtilsConstants.appendIdentityHashCode(sb, etl);
                 sb.append(" ROOT-"); // NOI18N
                 LexerUtilsConstants.appendIdentityHashCode(sb, rootTokenList);
                 sb.append(" for ").append(embeddedLanguagePath.mimePath()). // NOI18N
                         append(", ").append(embedding).append(": "); // NOI18N
-                existingEtl.dumpInfo(sb);
+                etl.dumpInfo(sb);
                 LOG.fine(sb.toString());
                 if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
                     LOG.log(Level.INFO, "Natural embedding created by:", new Exception()); // NOI18N

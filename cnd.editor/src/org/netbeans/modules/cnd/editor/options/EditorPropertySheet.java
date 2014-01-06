@@ -205,11 +205,11 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
             if (overrideGlobalOptions.isSelected()) {
                 set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize));
-                    set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
+                set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
                 set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize));
             } else {
                 set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize, EditorOptions.getGlobalIndentSize()));
-                    set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs()));
+                set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs()));
                 set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize, EditorOptions.getGlobalTabSize()));
             }
             set.put(new IntNodeProp(language, preferences, EditorOptions.statementContinuationIndent));
@@ -518,13 +518,13 @@ public class EditorPropertySheet extends javax.swing.JPanel
             p.makeAllKeys(category.preferences);
             p.putBoolean(EditorOptions.overrideTabIndents, overrideGlobalOptions.isSelected());
             if (!overrideGlobalOptions.isSelected()){
-                p.putInt(EditorOptions.indentSize, EditorOptions.getGlobalIndentSize());
                 p.putBoolean(EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs());
                 p.putInt(EditorOptions.tabSize, EditorOptions.getGlobalTabSize());
+                p.putInt(EditorOptions.indentSize, EditorOptions.getGlobalIndentSize());
            }
             p.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
             p.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
+            p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             previewPane.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
@@ -707,7 +707,7 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     private static class EntryWrapper implements Comparable<EntryWrapper> {
         private final String name;
-        private String displayName;
+        private final String displayName;
         private final PreviewPreferences preferences;
         private EntryWrapper(Map.Entry<String, PreviewPreferences> enrty){
             this.name = enrty.getKey();

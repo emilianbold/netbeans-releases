@@ -653,7 +653,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     @Override
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = QualifiedNameCache.getManager().getString(createSignature());
+            signature = QualifiedNameCache.getManager().getString(createSignature(getName(), getParameters(), getOwnTemplateParameters(), isConst()));
         }
         return signature;
     }
@@ -709,21 +709,21 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return l;
     }
 
-    private CharSequence createSignature() {
+    static CharSequence createSignature(CharSequence name, Collection<CsmParameter> params, List<CsmTemplateParameter> templateParams, boolean isConstQualifier) {
         // TODO: this fake implementation for Deimos only!
         // we should resolve parameter types and provide
         // kind of canonical representation here
-        StringBuilder sb = new StringBuilder(getName());
-        appendTemplateSignature(sb);
-        InstantiationProviderImpl.appendParametersSignature(getParameters(), sb);
-        if( isConst() ) {
+        StringBuilder sb = new StringBuilder(name);
+        appendTemplateSignature(sb, templateParams);
+        InstantiationProviderImpl.appendParametersSignature(params, sb);
+        if (isConstQualifier) {
             sb.append(" const"); // NOI18N
         }
         return sb;
     }
 
-    private void appendTemplateSignature(StringBuilder sb) {
-        InstantiationProviderImpl.appendTemplateParamsSignature(getOwnTemplateParameters(), sb);
+    private static void appendTemplateSignature(StringBuilder sb, List<CsmTemplateParameter> templateParams) {
+        InstantiationProviderImpl.appendTemplateParamsSignature(templateParams, sb);
     }
 
     @Override

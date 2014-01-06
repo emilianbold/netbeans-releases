@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -538,8 +539,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
         ExecutionEnvironment executionEnvironment = FileSystemProvider.getExecutionEnvironment(fileSystem);
         String seed = getExecutablePath();
-        if (seed.length() == 0 && RemoteFileUtil.getCurrentChooserFile(executionEnvironment) != null) {
-            String s = RemoteFileUtil.getCurrentChooserFile(executionEnvironment);
+        final String chooser_key = "makeproject.run.executable"; //NOI18N
+        if (seed.length() == 0 && RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment) != null) {
+            String s = RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
             if (s != null) {
                 seed = s;
             }
@@ -594,7 +596,9 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
-        executableTextField.setText(fileChooser.getSelectedFile().getPath());
+        final File selectedFile = fileChooser.getSelectedFile();
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), executionEnvironment);
+        executableTextField.setText(selectedFile.getPath());
     }//GEN-LAST:event_executableBrowseButtonActionPerformed
 
     private void projectLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectLocationButtonActionPerformed

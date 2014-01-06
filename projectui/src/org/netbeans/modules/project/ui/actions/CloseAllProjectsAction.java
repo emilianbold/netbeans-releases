@@ -52,6 +52,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 @ActionID(
         category = "File",
@@ -63,14 +64,21 @@ import org.openide.util.NbBundle.Messages;
 @ActionReference(path = "Menu/File", position = 775)
 @Messages("CTL_CloseAllProjectsAction=Close All Projects")
 public final class CloseAllProjectsAction implements ActionListener {
+    
+    private static final RequestProcessor RP = new RequestProcessor(CloseAllProjectsAction.class);
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        OpenProjects manager = OpenProjects.getDefault();
-        List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
-        if (!openProjects.isEmpty()) {
-            Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
-            manager.close(projectsToBeClosed);
-        }
+        RP.post(new Runnable() { //#239718
+            @Override
+            public void run() {
+                OpenProjects manager = OpenProjects.getDefault();
+                List<Project> openProjects = new ArrayList<Project>(Arrays.asList(manager.getOpenProjects()));
+                if (!openProjects.isEmpty()) {
+                    Project[] projectsToBeClosed = openProjects.toArray(new Project[openProjects.size()]);
+                    manager.close(projectsToBeClosed);
+                }
+            }
+        });
     }
 }

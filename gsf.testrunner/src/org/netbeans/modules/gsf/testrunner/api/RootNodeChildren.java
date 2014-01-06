@@ -145,12 +145,7 @@ final class RootNodeChildren extends ChildFactory<TestsuiteNode> {
         
         runningSuiteName = suiteName;
         
-        if (!isNewRunningSuite()) {
-            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(runningSuiteName, filterMask != 0);
-            runningSuiteNode.setFilterMask(filterMask);
-            notifyTestSuiteFinished();
-            suiteNodes.add(runningSuiteNode);
-        }
+        maybeInitializeNewSuiteNode(null);
         refresh(false);
     }
 
@@ -171,13 +166,7 @@ final class RootNodeChildren extends ChildFactory<TestsuiteNode> {
 
         runningSuiteName = suite.getName();
 
-        if (!isNewRunningSuite()) {
-            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(runningSuiteName, filterMask != 0);
-            runningSuiteNode.setFilterMask(filterMask);
-            runningSuiteNode.setSuite(suite);
-            notifyTestSuiteFinished();
-            suiteNodes.add(runningSuiteNode);
-        }
+        maybeInitializeNewSuiteNode(suite);
         refresh(false);
     }
 
@@ -303,6 +292,16 @@ final class RootNodeChildren extends ChildFactory<TestsuiteNode> {
         notifyTestSuiteFinished();
         suiteNodes.add(node);
         return node;
+    }
+    
+    private void maybeInitializeNewSuiteNode(TestSuite suite) {
+        if (isNewRunningSuite()) {
+            runningSuiteNode = session.getNodeFactory().createTestSuiteNode(runningSuiteName, filterMask != 0);
+            runningSuiteNode.setFilterMask(filterMask);
+            runningSuiteNode.setSuite(suite);
+            notifyTestSuiteFinished();
+            suiteNodes.add(runningSuiteNode);
+        }
     }
     
     /**

@@ -56,52 +56,60 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /*
  * This action opens external image editor (system default) for given image
  */
 @ActionID(category = "Images",
-id = "org.netbeans.modules.image.action.ExternalEditAction")
+        id = "org.netbeans.modules.image.action.ExternalEditAction")
 @ActionRegistration(displayName = "#LBL_ExternalEdit")
-@ActionReference(path="Loaders/image/png-gif-jpeg-bmp/Actions", position=200)
+@ActionReference(path = "Loaders/image/png-gif-jpeg-bmp/Actions", position = 200)
 public final class ExternalEditAction implements ActionListener {
+
     private final List<FileObject> list;
+    private final RequestProcessor RP = new RequestProcessor(ExternalEditAction.class.getName());
 
     public ExternalEditAction(List<FileObject> list) {
         this.list = list;
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        boolean showInBrowser = true;
-        for (FileObject imageFO : list) {
-            File imageFile;
-            imageFile = FileUtil.toFile(imageFO);
-            if (imageFile == null) {
-                continue;
-            }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                boolean showInBrowser = true;
+                for (FileObject imageFO : list) {
+                    File imageFile;
+                    imageFile = FileUtil.toFile(imageFO);
+                    if (imageFile == null) {
+                        continue;
+                    }
 
-            // open with Desktop API if its supported
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
-                if (desktop.isSupported(Desktop.Action.EDIT)) {
-                    showInBrowser = false;
-                    try {
-                        desktop.edit(imageFile);
-                    } catch (IOException ex) {
-                        Logger.getLogger(ExternalEditAction.class.getName()).info(NbBundle.getMessage(ExternalEditAction.class, "ERR_ExternalEditFile"));
-                        showInBrowser = true;
+                    // open with Desktop API if its supported
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop desktop = Desktop.getDesktop();
+                        if (desktop.isSupported(Desktop.Action.EDIT)) {
+                            showInBrowser = false;
+                            try {
+                                desktop.edit(imageFile);
+                            } catch (IOException ex) {
+                                Logger.getLogger(ExternalEditAction.class.getName()).info(NbBundle.getMessage(ExternalEditAction.class, "ERR_ExternalEditFile"));
+                                showInBrowser = true;
+                            }
+                        }
+                    }
+                    // if Desktop API is not supported open in browser
+                    if (showInBrowser) {
+                        try {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(imageFile.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+                            Logger.getLogger(ExternalEditAction.class.getName()).info(NbBundle.getMessage(ExternalEditAction.class, "ERR_ExternalEditFile"));
+                        }
                     }
                 }
             }
-            // if Desktop API is not supported open in browser
-            if (showInBrowser) {
-                try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(imageFile.toURI().toURL());
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(ExternalEditAction.class.getName()).info(NbBundle.getMessage(ExternalEditAction.class, "ERR_ExternalEditFile"));
-                }
-            }
-        }
+        });
     }
 }

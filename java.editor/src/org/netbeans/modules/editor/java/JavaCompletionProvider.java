@@ -3261,7 +3261,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
                 Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 for (Symbols symbols : declaredSymbols) {
-                    if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
+                    if (Utilities.isExcludeMethods() && Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName())
+                            || excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType())
+                            || isAnnonInner(symbols.getEnclosingType()))
                         continue;
                     for (String name : symbols.getSymbols()) {
                         results.add(javaCompletionItemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));

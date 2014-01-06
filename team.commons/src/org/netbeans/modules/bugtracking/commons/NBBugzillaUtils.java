@@ -59,11 +59,11 @@ public final class NBBugzillaUtils {
     
     private static final Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
     /**
-     * Determines wheter the given {@link RepositoryProvider} is the
+     * Determines whether the given {@link RepositoryProvider} is the
      * repository hosting netbeans or not
      *
      * @param url
-     * @return true if the given repository is the netbenas bugzilla, otherwise false
+     * @return true if the given repository is the netbeans bugzilla, otherwise false
      */
     public static boolean isNbRepository(String url) {
         boolean ret = netbeansUrlPattern.matcher(url).matches();

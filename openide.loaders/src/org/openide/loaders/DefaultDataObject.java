@@ -70,6 +70,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     static final long serialVersionUID =-4936309935667095746L;
     /** editor for default editor support */
     private DefaultES support;
+    private boolean cookieSetFixed = false;
     
     /** generated Serialized Version UID */
     //  static final long serialVersionUID = 6305590675982925167L;
@@ -216,7 +217,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
 
     @Override
     final void checkCookieSet(Class<?> c) {
-        if (Node.Cookie.class.isAssignableFrom(c) && support == null) {
+        if (Node.Cookie.class.isAssignableFrom(c) && !cookieSetFixed) {
             Class<? extends Node.Cookie> cookie = c.asSubclass(Node.Cookie.class);
             fixCookieSet(cookie, false);
         }
@@ -239,7 +240,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
     }
     
     private void fixCookieSet(Class<?> c, boolean force) {
-        if (support != null) {
+        if ((cookieSetFixed && !force) || support != null) {
             return;
         }
         
@@ -264,6 +265,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                         int len = is.read (arr);
                         for (int i = 0; i < len; i++) {
                             if (arr[i] >= 0 && arr[i] <= 31 && arr[i] != '\n' && arr[i] != '\r' && arr[i] != '\t' && arr[i] != '\f') {
+                                cookieSetFixed = true;
                                 return;
                             }
                         }
@@ -275,6 +277,7 @@ final class DefaultDataObject extends MultiDataObject implements OpenCookie {
                     this, getPrimaryEntry(), getCookieSet ()
                 );
                 getCookieSet().assign(DefaultES.class, support);
+                cookieSetFixed = true;
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Cannot read " + getPrimaryEntry(), ex); // NOI18N
             }

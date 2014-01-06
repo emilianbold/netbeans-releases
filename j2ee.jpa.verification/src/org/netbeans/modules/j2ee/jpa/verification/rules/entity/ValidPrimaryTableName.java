@@ -92,7 +92,7 @@ public class ValidPrimaryTableName {
         
         Object me= ctx.getModelElement();
         
-        if(me == null) {
+        if(me == null || !(me instanceof Entity)) {
             return null;
         }
 

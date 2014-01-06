@@ -130,7 +130,7 @@ import org.openide.util.RequestProcessor;
     
     private void addToRefresh(String path) {
         RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-        refreshManager.scheduleRefreshExistent(Arrays.asList(path));
+        refreshManager.scheduleRefreshExistent(Arrays.asList(path), false);
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -152,7 +152,11 @@ import org.openide.util.RequestProcessor;
         RP.post(new ConnectTask());
     }
 
-    void requestRefreshCycle(String path) {
+    /*package*/ void requestRefreshCycle(String path) {
+        RP.post(new RefreshTask(path));
+    }
+
+    private void sendRefreshRequest(String path) {
         FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
         try {
             dispatch(req);
@@ -167,25 +171,27 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private class RefreshTask implements Runnable {
+        
+        private final String path;
+
+        public RefreshTask(String path) {
+            this.path = path;
+        }
+        
+        @Override
+        public void run() {
+            sendRefreshRequest(path);
+        }        
+    }
+
     private class ConnectTask implements Runnable {
         @Override
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
             Thread.currentThread().setName("fs_server on-connect initialization for " + env); // NOI18N
-            try {
-                getOrCreateServer();
-            } catch (ConnectException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ConnectionManager.CancellationException ex) {
-                ex.printStackTrace(System.err);
-            } catch (IOException ioe) {
-                ioe.printStackTrace(System.err);
-                setInvalid(false);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ExecutionException ex) {
-                ex.printStackTrace(System.err);
-                setInvalid(false);
+            try {                
+                sendRefreshRequest("/"); // in turn calls getOrCreateServer() //NOI18N
             } finally {
                 Thread.currentThread().setName(oldThreadName);
             }
@@ -311,9 +317,14 @@ import org.openide.util.RequestProcessor;
 
     public FSSResponse dispatch(FSSRequest request) throws IOException, ConnectException, 
             CancellationException, InterruptedException, ExecutionException {
+        return dispatch(request, null);
+    }
+    
+    public FSSResponse dispatch(FSSRequest request, FSSResponse.Listener listener) throws IOException, ConnectException, 
+            CancellationException, InterruptedException, ExecutionException {
         FSSResponse response = null;
         if (request.needsResponse()) {
-            response = new FSSResponse(request, this);
+            response = new FSSResponse(request, this, listener);
             synchronized (responseLock) {
                 RemoteLogger.assertNull(responses.get(request.getId()),
                         "response should be null for id {0}", request.getId()); // NOI18N
@@ -554,7 +565,6 @@ import org.openide.util.RequestProcessor;
         }
         
         private String getSubdir() {
-            assert HostInfoUtils.isHostInfoAvailable(env);
             String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
             return Integer.toString(tmp.hashCode()).replace('-', '0');
         }

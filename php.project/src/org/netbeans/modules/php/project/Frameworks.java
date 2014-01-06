@@ -77,13 +77,15 @@ public final class Frameworks {
     public void projectOpened() {
         PhpFrameworks.addFrameworksListener(frameworksListener);
         resetFrameworks();
-        for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+        // detect frameworks in a background thread
+        getFrameworks();
+        for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             frameworkProvider.phpModuleOpened(phpModule);
         }
     }
 
     public void projectClosed() {
-        for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+        for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             frameworkProvider.phpModuleClosed(phpModule);
         }
         PhpFrameworks.removeFrameworksListener(frameworksListener);

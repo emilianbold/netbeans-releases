@@ -57,7 +57,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,17 +68,13 @@ import org.openide.util.NbPreferences;
  * @author Alexander Simon
  */
 public class SimpleConfigurationPanel extends javax.swing.JPanel {
-    private SimpleConfigurationWizard wizard;
+    private final SimpleConfigurationWizard wizard;
     
     
     /** Creates new form SimpleConfigurationPanel */
     public SimpleConfigurationPanel(SimpleConfigurationWizard wizard) {
         this.wizard = wizard;
         initComponents();
-        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.PROJECT_LEVEL ,getString("CONFIGURATION_LEVEL_project"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FOLDER_LEVEL, getString("CONFIGURATION_LEVEL_folder"))); // NOI18N
-        configurationComboBox.addItem(new ConfigutationItem(ConsolidationStrategy.FILE_LEVEL, getString("CONFIGURATION_LEVEL_file"))); // NOI18N
-        configurationComboBox.setSelectedIndex(2);
         addListeners();
     }
     
@@ -124,8 +119,6 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         discoveryPanel = new javax.swing.JPanel();
-        configurationComboBox = new javax.swing.JComboBox();
-        configurationLabel = new javax.swing.JLabel();
         librariesLabel = new javax.swing.JLabel();
         additionalLibrariesButton = new javax.swing.JButton();
         librariesTextField = new javax.swing.JComboBox();
@@ -137,30 +130,8 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
 
         discoveryPanel.setLayout(new java.awt.GridBagLayout());
 
-        configurationComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                configurationComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        discoveryPanel.add(configurationComboBox, gridBagConstraints);
-
-        configurationLabel.setLabelFor(configurationComboBox);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(configurationLabel, bundle.getString("ConfigurationLevelLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        discoveryPanel.add(configurationLabel, gridBagConstraints);
-
         librariesLabel.setLabelFor(librariesTextField);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, bundle.getString("AdditionalLibrariesLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -218,18 +189,10 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void configurationComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_configurationComboBoxItemStateChanged
-        Object item = evt.getItem();
-        if (item instanceof ConfigutationItem) {
-            ConfigutationItem conf = (ConfigutationItem)item;
-            instructionsTextArea.setText(getString("SimpleInstructionText_"+conf.getID())); // NOI18N
-        }
-    }//GEN-LAST:event_configurationComboBoxItemStateChanged
-    
+        
     private void additionalLibrariesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalLibrariesButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(getLibraryText(), ";"); // NOI18N
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }
@@ -251,7 +214,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_additionalLibrariesButtonActionPerformed
     
     private String getString(String key) {
-        return NbBundle.getBundle(SimpleConfigurationPanel.class).getString(key);
+        return NbBundle.getMessage(SimpleConfigurationPanel.class, key);
     }
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
@@ -274,7 +237,7 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             librariesTextField.setVisible(false);
         }
         if (librariesTextField.isVisible()) {
-            List<String> vector = new ArrayList<String>();
+            List<String> vector = new ArrayList<>();
             vector.add(""); // NOI18N
             Preferences prefs = NbPreferences.forModule(SimpleConfigurationPanel.class);
             String old = prefs.get("libraries", ""); // NOI18N
@@ -315,11 +278,9 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     }
 
     void store(DiscoveryDescriptor wizardDescriptor) {
-        ConfigutationItem level = (ConfigutationItem)configurationComboBox.getSelectedItem();
-        wizardDescriptor.setLevel(level.getID());
         wizardDescriptor.setAditionalLibraries(getLibraryText());
         {
-            List<String> vector = new ArrayList<String>();
+            List<String> vector = new ArrayList<>();
             vector.add(getLibraryText());
             for(int i = 0; i < librariesTextField.getModel().getSize(); i++){
                 String s = librariesTextField.getModel().getElementAt(i).toString();
@@ -353,8 +314,6 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalLibrariesButton;
-    private javax.swing.JComboBox configurationComboBox;
-    private javax.swing.JLabel configurationLabel;
     private javax.swing.JPanel discoveryPanel;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
@@ -363,8 +322,8 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private static class ConfigutationItem {
-        private String ID;
-        private String name;
+        private final String ID;
+        private final String name;
         private ConfigutationItem(String ID, String name){
             this.ID = ID;
             this.name = name;

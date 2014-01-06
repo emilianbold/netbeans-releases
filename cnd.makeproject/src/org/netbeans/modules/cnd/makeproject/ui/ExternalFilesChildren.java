@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.openide.loaders.DataObject;
@@ -78,7 +79,7 @@ final class ExternalFilesChildren extends BaseMakeViewChildren {
     }
 
     @Override
-    protected Collection<Object> getKeys() {
+    protected Collection<Object> getKeys(AtomicBoolean canceled) {
         return getFolder().getElements();
     }
 }

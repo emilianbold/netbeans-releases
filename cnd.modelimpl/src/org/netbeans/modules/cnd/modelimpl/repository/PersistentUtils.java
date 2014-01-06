@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.VariadicSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpandedExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
@@ -354,9 +355,12 @@ public class PersistentUtils {
         if (expr == null) {
             output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
-            if (expr instanceof ExpressionBase) {
+            if (expr instanceof ExpandedExpressionBase) {
+                output.writeByte(EXPANDED_EXPRESSION_BASE);
+                ((ExpandedExpressionBase) expr).write(output);
+            } else if (expr instanceof ExpressionBase) {
                 output.writeByte(EXPRESSION_BASE);
-                ((ExpressionBase) expr).write(output);
+                ((ExpressionBase) expr).write(output);                
             } else {
                 throw new IllegalArgumentException("instance of unknown CsmExpression " + expr);  //NOI18N
             }
@@ -369,8 +373,12 @@ public class PersistentUtils {
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             expr = null;
         } else {
-            assert handler == EXPRESSION_BASE;
-            expr = new ExpressionBase(input);
+            assert handler == EXPRESSION_BASE || handler == EXPANDED_EXPRESSION_BASE;
+            if (handler == EXPANDED_EXPRESSION_BASE) {
+                expr = new ExpandedExpressionBase(input);
+            } else {
+                expr = new ExpressionBase(input);
+            }
         }
         return expr;
     }
@@ -781,7 +789,8 @@ public class PersistentUtils {
     private static final byte VISIBILITY_PRIVATE = VISIBILITY_PROTECTED + 1;
     private static final byte VISIBILITY_NONE = VISIBILITY_PRIVATE + 1;
     private static final byte EXPRESSION_BASE = VISIBILITY_NONE + 1;
-    private static final byte FILE_BUFFER_FILE = EXPRESSION_BASE + 1;
+    private static final byte EXPANDED_EXPRESSION_BASE = EXPRESSION_BASE + 1;
+    private static final byte FILE_BUFFER_FILE = EXPANDED_EXPRESSION_BASE + 1;
     // types
     private static final byte NO_TYPE = FILE_BUFFER_FILE + 1;
     private static final byte TYPE_IMPL = NO_TYPE + 1;

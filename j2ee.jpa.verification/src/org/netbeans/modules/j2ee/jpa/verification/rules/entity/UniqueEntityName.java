@@ -88,7 +88,7 @@ public class UniqueEntityName {
         }
 
         final JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
-        if (ctx == null || hc.isCanceled() || ctx.getModelElement() == null) {
+        if (ctx == null || hc.isCanceled() || ctx.getModelElement() == null || !(ctx.getModelElement() instanceof Entity)) {
             return null;
         }
 

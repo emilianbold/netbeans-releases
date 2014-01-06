@@ -100,6 +100,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Document scheduledDocument;
     private Document cachedDoc;
     private static final Document DELETED_FILE_DOCUMENT = XMLUtil.createDocument(AUX_CONFIG, null, null, null);
+    private static final Document BROKEN_DOCUMENT = XMLUtil.createDocument(AUX_CONFIG, null, null, null);
     private final Object configIOLock = new Object();
     private final FileObject projectDirectory;
     private ProblemProvider pp;
@@ -259,18 +260,23 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                             findDuplicateElements(doc.getDocumentElement(), pp, config);
                         }
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
-                    } catch (SAXException ex) {
+                    } catch (final SAXException ex) {
                         if (pp != null) {
-                            pp.setProblem(ProjectProblem.createWarning(
-                                    TXT_Problem_Broken_Config(),
-                                    DESC_Problem_Broken_Config(ex.getMessage()),
-                                    new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pp.setProblem(ProjectProblem.createWarning(
+                                        TXT_Problem_Broken_Config(),
+                                        DESC_Problem_Broken_Config(ex.getMessage()),
+                                        new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
+                                }
+                            });
                         }
                         LOG.log(Level.INFO, ex.getMessage(), ex);
-                        cachedDoc = null;
+                        cachedDoc = BROKEN_DOCUMENT;
                     } catch (IOException ex) {
                         LOG.log(Level.INFO, "IO Error while loading " + config.getPath(), ex);
-                        cachedDoc = null;
+                        cachedDoc = BROKEN_DOCUMENT;
                     } catch (IllegalArgumentException iae) {
                         //thrown from XmlUtil.findElement when more than 1 equal elements are present.
                         LOG.log(Level.INFO, iae.getMessage(), iae);
@@ -282,7 +288,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     return null;
                 }
             } else {
-                if (cachedDoc == DELETED_FILE_DOCUMENT) {
+                if (cachedDoc == DELETED_FILE_DOCUMENT || cachedDoc == BROKEN_DOCUMENT) {
                     return null;
                 }
                 //reuse cached value if available;

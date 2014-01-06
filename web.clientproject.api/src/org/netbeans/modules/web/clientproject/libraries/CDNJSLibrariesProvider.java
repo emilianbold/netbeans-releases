@@ -193,7 +193,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
         }
         if (libraryRootUrl == null) {
             assert getCachedZip(false) != null;
-            assert !getCachedZip(false).isFile();
+            assert !getCachedZip(false).isFile() : "Cached zip file size (in bytes): " + getCachedZip(false).length();
             libraryRootUrl = "http://cdnjs.cloudflare.com" + ajaxLibs; // NOI18N
         }
 
@@ -387,6 +387,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
     private InputStream getLibraryZip() {
         File cachedZip = getCachedZip(false);
         if (cachedZip.isFile()) {
+            LOGGER.info("Reading CDNJS libraries from cached file");
             try {
                 return new FileInputStream(cachedZip);
             } catch (FileNotFoundException ex) {
@@ -394,6 +395,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
             }
         }
         // fallback
+        LOGGER.info("Reading CDNJS libraries from default bundled file");
         return getDefaultSnapshostFile();
     }
 

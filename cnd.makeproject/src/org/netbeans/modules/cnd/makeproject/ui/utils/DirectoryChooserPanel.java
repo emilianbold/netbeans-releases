@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -233,8 +234,9 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 
         @Override
         public String addAction() {
+            final String chooser_key = "makeproject.DirectoryChooser"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -257,7 +259,9 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            String itemPath = CndPathUtilities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
+            final File selectedFile = fileChooser.getSelectedFile();
+            String itemPath = CndPathUtilities.naturalizeSlashes(selectedFile.getPath());
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
             itemPath = ProjectSupport.toProperPath(
                     CndPathUtilities.naturalizeSlashes(baseDir.getPath()),
                     itemPath,

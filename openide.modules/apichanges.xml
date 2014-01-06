@@ -50,6 +50,44 @@ made subject to such option by the copyright holder.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="javafx.lib">
+        <api name="modules"/>
+        <summary>JavaFX Library Wrapper</summary>
+        <version major="7" minor="41"/>
+        <date day="23" month="12" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+        </compatibility>
+        <description>
+            <p>
+                Most of JDK installations come with additional <em>JavaFX</em>
+                JAR. Alas the location of the JAR is different on JDK7 and JDK8,
+                moreover on some operating systems (think of Solaris) the
+                JAR is not present at all. To hide the differences and allow
+                smooth consumption of <em>JavaFX</em> APIs NetBeans provide
+                following conventions.
+            </p>
+            <p>
+                If you want to code against <em>JavaFX</em> APIs, add dependency
+                on <code>org.netbeans.libs.javafx</code> library. Then you'll
+                be able to compile and run while using the API.
+            </p>
+            <p>
+                If you want to depend on presence of <em>JavaFX</em> JAR 
+                inside of JDK installation structure, use:
+            </p>
+            <pre>OpenIDE-Module-Needs: org.openide.modules.jre.JavaFX</pre>
+            <p>
+                This token is made available by the module system, if the 
+                <em>JavaFX</em> module is present in the JDK. Btw. the
+                <code>org.netbeans.libs.javafx</code> library has such
+                dependency and as a result, all modules that depend on it
+                will be disabled on Solaris or on OpenJDK (if installed without
+                <em>JavaFX</em>).
+            </p>  
+        </description>
+        <issue number="237973"/>
+    </change>
     <change id="find.by.cnb">
         <api name="modules"/>
         <summary>Find ModuleInfo by code name base easily</summary>

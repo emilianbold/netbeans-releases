@@ -138,7 +138,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         Progress progress = new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "AnalyzingProjectProgress"));
         progress.start(0);
         try {
-            List<String> errors = new  ArrayList<String>();
+            List<String> errors = new  ArrayList<>();
             DiscoveryExtensionInterface.Applicable applicable;
             applicable = isApplicableExecLog(descriptor);
             if (applicable.isApplicable()){
@@ -302,10 +302,6 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (!isApplicable(descriptor, interrupter, false).isApplicable()){
             return false;
         }
-        String level = descriptor.getLevel();
-        if (level == null || level.length() == 0){
-            return false;
-        }
         DiscoveryProvider provider = descriptor.getProvider();
         if (provider == null){
             return false;
@@ -319,7 +315,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 property.setValue(Boolean.TRUE);
             }
             if (additional != null && additional.length()>0){
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 StringTokenizer st = new StringTokenizer(additional,";");  // NOI18N
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
@@ -352,8 +348,6 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public static void buildModel(final DiscoveryDescriptor wizardDescriptor, Interrupter interrupter){
         String rootFolder = wizardDescriptor.getRootFolder();
         DiscoveryProvider provider = wizardDescriptor.getProvider();
-        String consolidation = wizardDescriptor.getLevel();
-        assert consolidation != null;
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
             @Override
             public boolean createSubProjects() {
@@ -395,19 +389,19 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         MyProgress myProgress = new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "BuildCodeAssistanceProgress"));
         try {
             myProgress.start();
-            List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
-            List<String> includedFiles = new ArrayList<String>();
+            List<ProjectConfiguration> projectConfigurations = new ArrayList<>();
+            List<String> includedFiles = new ArrayList<>();
             wizardDescriptor.setIncludedFiles(includedFiles);
-            Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
-            Set<String> dep = new HashSet<String>();
-            Set<String> buildArtifacts = new HashSet<String>();
+            Map<String, AtomicInteger> compilers = new HashMap<>();
+            Set<String> dep = new HashSet<>();
+            Set<String> buildArtifacts = new HashSet<>();
             for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
                 Configuration conf = it.next();
                 includedFiles.addAll(conf.getIncludedFiles());
                 List<ProjectProperties> langList = conf.getProjectConfiguration();
                 for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
                     ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
-                    ConsolidationStrategy.consolidateModel(project, consolidation);
+                    ConsolidationStrategy.consolidateModel(project);
                     projectConfigurations.add(project);
                 }
                 for (SourceFileProperties source : conf.getSourcesConfiguration()) {
@@ -429,8 +423,8 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 }
             }
             wizardDescriptor.setInvokeProvider(false);
-            wizardDescriptor.setDependencies(new ArrayList<String>(dep));
-            wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
+            wizardDescriptor.setDependencies(new ArrayList<>(dep));
+            wizardDescriptor.setBuildArtifacts(new ArrayList<>(buildArtifacts));
             wizardDescriptor.setConfigurations(projectConfigurations);
             int max = 0;
             String top = "";
@@ -482,7 +476,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
 
     private static class ProjectProxyImpl implements ProjectProxy {
 
-        private DiscoveryDescriptor descriptor;
+        private final DiscoveryDescriptor descriptor;
 
         private ProjectProxyImpl(DiscoveryDescriptor descriptor) {
             this.descriptor = descriptor;

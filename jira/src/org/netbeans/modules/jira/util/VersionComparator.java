@@ -43,7 +43,7 @@
 package org.netbeans.modules.jira.util;
 
 import java.util.Comparator;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
+import org.netbeans.modules.jira.client.spi.Version;
 
 
 /**
