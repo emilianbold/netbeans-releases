@@ -44,10 +44,8 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
@@ -74,7 +72,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 
 /**
@@ -89,7 +86,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
-    private InterrupterImpl interrupter;
+    private final InterrupterImpl interrupter;
 
     public SemanticHighlighter(Document doc, InterrupterImpl interrupter) {
         super(doc);
@@ -151,8 +148,7 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     private void update(Document doc, final InterrupterImpl interrupter) {
         if (doc != null) {
-            DocumentListener listener =  null;
-                listener = new DocumentListener(){
+            DocumentListener listener = new DocumentListener(){
                     @Override
                     public void insertUpdate(DocumentEvent e) {
                         interrupter.cancel();
@@ -216,31 +212,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            PositionsBag oldFast = getHighlightsBag(doc, true);
-            if (oldFast != null) {
-                // this is done to prevent loss of other highlightings during adding ones managed by this highlighter
-                // otherwise document will "blink" on editing
-                PositionsBag tempBag = new PositionsBag(doc);
-                tempBag.addAllHighlights(newBagFast);
-                HighlightsSequence seq = newBagFast.getHighlights(0, Integer.MAX_VALUE);
-                Set<AttributeSet> set = new HashSet<AttributeSet>();
-                while (seq.moveNext()) {
-                    set.add(seq.getAttributes());
-                }
-                seq = oldFast.getHighlights(0, Integer.MAX_VALUE);
-                while (seq.moveNext()) {
-                    if (!set.contains(seq.getAttributes())) {
-                        int startOffset = getDocumentOffset(doc, seq.getStartOffset());
-                        int endOffset = getDocumentOffset(doc, seq.getEndOffset());
-                        if (startOffset < doc.getLength() && endOffset > 0) {
-                            addHighlightsToBag(tempBag, startOffset, endOffset, seq.getAttributes(), "cached"); //NOI18N
-                        }
-                    }
-                }
-                getHighlightsBag(doc, true).setHighlights(tempBag);
-            } else {
-                getHighlightsBag(doc, true).setHighlights(newBagFast);
-            }
+            getHighlightsBag(doc, true).setHighlights(newBagFast);
             // here we invoke the collectors
             // but not for huge documents
             if (!entities.isEmpty() && !isVeryBigDocument(doc)) {

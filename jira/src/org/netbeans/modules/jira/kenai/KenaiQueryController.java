@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
+import org.netbeans.modules.jira.client.spi.Project;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -62,8 +62,8 @@ import org.openide.util.NbBundle;
  */
 public class KenaiQueryController extends QueryController
 {
-    private String projectName; // XXX don't need this - already set in filterDef
-    private FilterDefinition filter;
+    private final String projectName; // XXX don't need this - already set in filterDef
+    private final FilterDefinition filter;
 
     public KenaiQueryController(JiraRepository repository, JiraQuery query, JiraFilter jf, String projectName, boolean predefinedQuery) {
         super(repository, query, jf, !predefinedQuery);
@@ -75,13 +75,6 @@ public class KenaiQueryController extends QueryController
     protected void enableFields(boolean bl) {
         super.enableFields(bl);
         super.disableProject();
-    }
-
-    @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
     }
 
     @Override

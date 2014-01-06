@@ -136,9 +136,6 @@ org.netbeans.modules.parsing.spi.indexing.Indexable$MyAccessor
 org.netbeans.modules.parsing.spi.indexing.PathRecognizer
 org.netbeans.modules.parsing.spi.indexing.SuspendStatus
 
-#213223
-org.netbeans.modules.testng.TestNGEntityResolver
-
 #213036
 org.netbeans.modules.cnd.api.remote.PathMap
 org.netbeans.modules.cnd.api.remote.ServerList

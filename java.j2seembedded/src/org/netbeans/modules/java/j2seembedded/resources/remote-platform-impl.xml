@@ -150,11 +150,26 @@
     <target name="profile-toggle">
         <property name="profiling.started" value="true"/>
     </target>
-
+    
+    <target name="profile-rp-calibrate" if="profiling.started">
+        <antcall target="profile-rp-calibrate-passwd"/>
+        <antcall target="profile-rp-calibrate-key"/>
+    </target>
+    
+    <target name="profile-rp-calibrate-passwd" if="remote.platform.auth.passwd">
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" usepty="true" command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+    </target>
+        
+    <target name="profile-rp-calibrate-key" if="remote.platform.auth.key">
+        <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" usepty="true" command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+    </target>
+    
     <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -run-remote-passwd, -run-remote-key"/>
     <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
-    <target name="profile-remote" depends="init, jar, profile-toggle, -init-remote-platform-properties, profile-rp-unzip, -copy-to-remote-platform, -profile-check" if="profiler.configured">
+    <target name="profile-remote" depends="init, jar, profile-toggle, -init-remote-platform-properties, profile-rp-unzip, -copy-to-remote-platform, profile-rp-calibrate, -profile-check" if="profiler.configured">
         <startprofiler/>
-        <antcall target="run-remote"/>
+        <antcall target="-run-remote-passwd"/>
+        <antcall target="-run-remote-key"/>        
     </target>
 </project>

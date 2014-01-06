@@ -114,10 +114,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         libraryLevel = new IntConfiguration(master != null ? master.getLibraryLevel() : null, LIBRARY_LEVEL_BINARY, LIBRARY_LEVEL_NAMES, getLibraryLevelOptions());
         standardsEvolution = new IntConfiguration(master != null ? master.getStandardsEvolution() : null, STANDARDS_DEFAULT, STANDARDS_NAMES, getStandardsEvolutionOptions());
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
-        includeDirectories = new VectorConfiguration<String>(master != null ? master.getIncludeDirectories() : null);
+        includeDirectories = new VectorConfiguration<>(master != null ? master.getIncludeDirectories() : null);
         inheritIncludes = new BooleanConfiguration(true);
-        preprocessorConfiguration = new VectorConfiguration<String>(master != null ? master.getPreprocessorConfiguration() : null);
-        preprocessorUndefinedConfiguration = new VectorConfiguration<String>(master != null ? master.getUndefinedPreprocessorConfiguration() : null);
+        preprocessorConfiguration = new VectorConfiguration<>(master != null ? master.getPreprocessorConfiguration() : null);
+        preprocessorUndefinedConfiguration = new VectorConfiguration<>(master != null ? master.getUndefinedPreprocessorConfiguration() : null);
         inheritPreprocessor = new BooleanConfiguration(true);
         inheritUndefinedPreprocessor = new BooleanConfiguration(true);
         useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
@@ -280,7 +280,6 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     // Sheet
     protected Sheet.Set getSet(final Project project, final Folder folder, final Item item) {
-        CCCCompilerConfiguration master;
         OptionToString visitor = new OptionToString(null, null);
 
         Sheet.Set set1 = new Sheet.Set();
@@ -289,14 +288,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         set1.setShortDescription(getString("GeneralHint"));
         // Include Dirctories
         StringBuilder inheritedValues = new StringBuilder();
-        master = (CCCCompilerConfiguration) getMaster();
-        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
-        while (master != null) {
-            list.add(master);
-            if (master.getInheritIncludes().getValue()) {
-                master = (CCCCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        List<CCCCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(false)) {
+            list.add((CCCCompilerConfiguration)master);
+            if (!((CCCCompilerConfiguration)master).getInheritIncludes().getValue()) {
+                break;
             }
         }
         for(int i = list.size() - 1; i >= 0; i--) {
@@ -317,13 +313,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         }); 
         // Preprocessor Macros
         inheritedValues = new StringBuilder();
-        master = (CCCCompilerConfiguration) getMaster();
-        while (master != null) {
-            inheritedValues.append(master.getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
-            if (master.getInheritPreprocessor().getValue()) {
-                master = (CCCCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        for(BasicCompilerConfiguration master : getMasters(false)) {
+            inheritedValues.append(((CCCCompilerConfiguration)master).getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
+            if (!((CCCCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
+                break;
             }
         }
         set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions")){  // NOI18N
@@ -341,13 +334,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         if (owner.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             // Undefined Macros
             inheritedValues = new StringBuilder();
-            master = (CCCCompilerConfiguration) getMaster();
-            while (master != null) {
-                inheritedValues.append(master.getUndefinedPreprocessorConfiguration().toString(visitor));
-                if (master.getInheritUndefinedPreprocessor().getValue()) {
-                    master = (CCCCompilerConfiguration) master.getMaster();
-                } else {
-                    master = null;
+            for(BasicCompilerConfiguration master : getMasters(false)) {
+                inheritedValues.append(((CCCCompilerConfiguration)master).getUndefinedPreprocessorConfiguration().toString(visitor));
+                if (!((CCCCompilerConfiguration)master).getInheritUndefinedPreprocessor().getValue()) {
+                    break;
                 }
             }
             set1.put(new StringListNodeProp(getUndefinedPreprocessorConfiguration(),
@@ -376,21 +366,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         return set1;
     }
 
-
     private CCCCompilerConfiguration getTopMaster() {
-        CCCCompilerConfiguration aMaster = (CCCCompilerConfiguration) getMaster();
-        if (aMaster == null) {
-            return this;
-        }
-        while (true) {
-            CCCCompilerConfiguration m = (CCCCompilerConfiguration) aMaster.getMaster();
-            if (m == null) {
-                return aMaster;
-            }
-            aMaster = m;
-        }
+        List<BasicCompilerConfiguration> masters = getMasters(true);
+        return (CCCCompilerConfiguration)masters.get(masters.size()-1);
     }
-
 
     // Sheet
     protected Sheet getSheet(Project project) {
@@ -466,7 +445,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     
     protected static class StringRONodeProp extends PropertySupport<String> {
 
-        private String value;
+        private final String value;
 
         public StringRONodeProp(String name, String description, String value) {
             super(name, String.class, name, name, true, false);

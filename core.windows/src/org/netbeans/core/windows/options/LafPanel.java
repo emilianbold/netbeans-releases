@@ -94,7 +94,7 @@ public class LafPanel extends javax.swing.JPanel {
 
             @Override
             public void itemStateChanged(ItemEvent e) {
-                controller.changed();
+                fireChanged();
             }
         });
         initLookAndFeel();
@@ -107,9 +107,18 @@ public class LafPanel extends javax.swing.JPanel {
 
             @Override
             public void itemStateChanged( ItemEvent e ) {
-                controller.changed();
+                fireChanged();
             }
         });
+    }
+    
+    private void fireChanged() {
+        boolean isChanged = false;
+        if (checkMaximizeNativeLaF.isSelected() != prefs.getBoolean(WinSysPrefs.MAXIMIZE_NATIVE_LAF, false)
+                || comboLaf.getSelectedIndex() != lafs.indexOf(isForcedLaF() ? getCurrentLaF() : getPreferredLaF())) {
+            isChanged = true;
+        }
+        controller.changed(isChanged);
     }
 
     /** This method is called from within the constructor to

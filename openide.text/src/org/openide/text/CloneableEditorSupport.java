@@ -1537,6 +1537,15 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         try {
             env.markModified();
+            // #239622 - since notifyModified() could be called directly (in case of extending CES)
+            // check that alreadyModified flag is also set. Otherwise callNotifyUnmodified()
+            // would not proceed to notifyUnmodified() call (it would end up on checking alreadyModified flag).
+            synchronized (checkModificationLock) {
+                if (!isAlreadyModified()) {
+                    setAlreadyModified(true);
+                }
+            }
+
         } catch (final UserQuestionException ex) {
             synchronized (this) {
                 if (!this.inUserQuestionExceptionHandler) {

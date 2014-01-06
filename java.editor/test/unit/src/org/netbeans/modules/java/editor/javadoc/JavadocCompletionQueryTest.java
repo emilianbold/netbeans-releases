@@ -44,6 +44,7 @@ package org.netbeans.modules.java.editor.javadoc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -301,7 +302,7 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
                 "    }\n" +
                 "}\n";
         
-        performCompletionTest(code, "public static final double PI", /*XXX: should be here?*/"public static double pow(double d, double d1)");
+        performCompletionTest(code, "public static final double PI");
     }
     
     public void testThrows1() throws Exception {
@@ -370,6 +371,8 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
             goldenList.remove(null);
             assertTrue(resultStrings.toString(), resultStrings.containsAll(goldenList));
         } else {
+            Collections.sort(goldenList);
+            Collections.sort(resultStrings);
             assertEquals(goldenList, resultStrings);
         }
     }

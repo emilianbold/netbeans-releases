@@ -61,6 +61,7 @@ import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
@@ -78,6 +79,10 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
             return true;
         }
         if (!RunUtils.isCompileOnSaveEnabled(config)) { //#236324
+            return true;
+        }
+        if (ActionProvider.COMMAND_BUILD.equals(config.getActionName()) || ActionProvider.COMMAND_CLEAN.equals(config.getActionName()) || 
+                ActionProvider.COMMAND_REBUILD.equals(config.getActionName())) {
             return true;
         }
         DependencyProjectsProvider dpp = config.getProject().getLookup().lookup(DependencyProjectsProvider.class);

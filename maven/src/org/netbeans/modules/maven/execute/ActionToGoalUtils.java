@@ -252,11 +252,11 @@ public final class ActionToGoalUtils {
         while (it.hasNext()) {
             NetbeansActionMapping map = it.next();
             boolean hasFiles = false;
-            for (Map.Entry<String, String> ent : map.getProperties().entrySet()) {
+            LBL : for (Map.Entry<String, String> ent : map.getProperties().entrySet()) {
                 for (String s : DefaultReplaceTokenProvider.fileBasedProperties) {
                     hasFiles = ent.getValue().contains(s);
                     if (hasFiles) {
-                        break;
+                        break LBL;
                     }
                 }
             }

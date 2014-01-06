@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.toolchain.ui.compiler;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -289,17 +290,20 @@ public class PredefinedPanel extends javax.swing.JPanel {
 
         @Override
         public String addAction() {
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            final String chooser_key = "IncludesPanel"; // NOI18N
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"),
+            JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env, getString("SelectDirectoryTxt"), getString("SelectTxt"), // NOI18N
                                                       JFileChooser.DIRECTORIES_ONLY, null, seed, true); // NOI18N
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            String itemPath = fileChooser.getSelectedFile().getPath();
+            final File selectedFile = fileChooser.getSelectedFile();
+            String itemPath = selectedFile.getPath();
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
             if (defs != null) {
                 defs.setUserAdded(true, getListDataSize());
             }

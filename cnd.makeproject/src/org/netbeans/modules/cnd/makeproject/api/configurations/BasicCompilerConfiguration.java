@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -169,6 +170,23 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         return master;
     }
 
+    public List<BasicCompilerConfiguration> getMasters(boolean addThis) {
+        List<BasicCompilerConfiguration> res = new ArrayList<>();
+        if (addThis) {
+            res.add(this);
+        }
+        BasicCompilerConfiguration current = master;
+        while (current != null) {
+            if (res.contains(current)) {
+                assert false:"Infinite loop in configurations"; //NOI18N
+                break;
+            }
+            res.add(current);
+            current = current.getMaster();
+        }
+        return res;
+    }
+    
     // Development Mode
     public void setDevelopmentMode(IntConfiguration developmentMode) {
         this.developmentMode = developmentMode;
@@ -247,7 +265,6 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             return getCommandLineConfiguration().getValue();
         }
 
-        BasicCompilerConfiguration parent = this;
         List<String> options = new LinkedList<>();
         //to fix bz#231603 - C/C++ Additional options passed to commandline twice
         //we have $(COMPILE.cc) in makefile which is extended to COMPILE.c=$(CC) $(CFLAGS) $(CPPFLAGS) -c        
@@ -255,9 +272,9 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
         //they are recorded as CFLAGS in Makefile
         //and there is no any need to return them when compile target is written
         //that's why we check if parent.getMaster() != null
-        while (parent != null && parent.getMaster() != null) {
-            options.add(0, parent.getCommandLineConfiguration().getValue());
-            parent = parent.getMaster();
+        List<BasicCompilerConfiguration> masters = getMasters(true);
+        for(int i = 0; i < masters.size() -1; i++) {
+            options.add(0, masters.get(i).getCommandLineConfiguration().getValue());
         }
         StringBuilder sb = new StringBuilder();
         for (String opt : options) {

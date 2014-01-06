@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -425,11 +426,12 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        final String chooser_key = "SelectExecutablePanel"; //NOI18N
         String seed;
         if (executableTextField.getText().length() > 0) {
             seed = executableTextField.getText();
-        } else if (RemoteFileUtil.getCurrentChooserFile(conf.getDevelopmentHost().getExecutionEnvironment()) != null) {
-            seed = RemoteFileUtil.getCurrentChooserFile(conf.getDevelopmentHost().getExecutionEnvironment());
+        } else if (RemoteFileUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment()) != null) {
+            seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, conf.getDevelopmentHost().getExecutionEnvironment());
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
@@ -454,8 +456,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
+        final File selectedFile = fileChooser.getSelectedFile();
 
-        String path = CndPathUtilities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilities.normalizeSlashes(selectedFile.getPath());
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.getParentFile().getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

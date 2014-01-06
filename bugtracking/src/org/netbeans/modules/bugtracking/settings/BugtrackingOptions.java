@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -103,8 +104,14 @@ public class BugtrackingOptions extends OptionsPanelController {
         
         @Override
         public JComponent getComponent(Lookup masterLookup) {
-            for(Entry<String, OptionsPanelController> entry : categoryToController.entrySet()) {                                
-                panel.addPanel(entry.getKey(), entry.getValue().getComponent(masterLookup));
+            final Set<Entry<String, OptionsPanelController>> controllerEntries = categoryToController.entrySet();
+            if(controllerEntries.isEmpty()) {
+                panel.setPluginListVisible(false);                
+            } else {
+                panel.setPluginListVisible(true);   
+                for(Entry<String, OptionsPanelController> controllerEntry : controllerEntries) {                                
+                    panel.addPanel(controllerEntry.getKey(), controllerEntry.getValue().getComponent(masterLookup));
+                }
             }
             return panel;
         }

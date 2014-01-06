@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,8 +62,6 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 final class CreateFilesWorker {
-    private FileModel lwm;
-    private boolean lwmInited;
     private final ProjectBase project;
     private final RequestProcessor PROJECT_FILES_WORKER;
     private final Set<FileImpl> reparseOnEdit = Collections.synchronizedSet(new HashSet<FileImpl>());
@@ -77,17 +74,6 @@ final class CreateFilesWorker {
         this.removedFiles = removedFiles;
         this.validator = validator;
         this.PROJECT_FILES_WORKER = new RequestProcessor("CreateFilesWorker " + project.getDisplayName(), CndUtils.getNumberCndWorkerThreads()); // NOI18N
-    }
-
-    private synchronized FileModel getLWM() {
-        if (!lwmInited) {
-            FileModelProvider provider = Lookup.getDefault().lookup(FileModelProvider.class);
-            if (provider != null) {
-                lwm = provider.getFileModel(project);
-            }
-            lwmInited = true;
-        }
-        return lwm;
     }
 
     void createProjectFilesIfNeed(List<NativeFileItem> items, boolean sources) {
@@ -241,7 +227,7 @@ final class CreateFilesWorker {
                 ModelSupport.trace(nativeFileItem);
             }
             try {
-                FileImpl fileImpl = project.createIfNeed(nativeFileItem, CreateFilesWorker.this.getLWM(), validator, reparseOnEdit, reparseOnPropertyChanged);
+                FileImpl fileImpl = project.createIfNeed(nativeFileItem, validator, reparseOnEdit, reparseOnPropertyChanged);
                 this.handledFiles.add(UIDCsmConverter.fileToUID(fileImpl));
                 if (project.isValidating() && RepositoryUtils.getRepositoryErrorCount(project) > 0) {
                     failureDetected.set(true);

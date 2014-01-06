@@ -55,7 +55,8 @@ import org.openide.modules.ModuleInstall;
  *
  * @author Tomas Stupka, Ondra Vrabec
  */
-public final class ModuleLifecycleManager extends ModuleInstall{
+public final class ModuleLifecycleManager extends ModuleInstall  {
+    
     static boolean instantiated = false;
     @Override
     public void close() {
@@ -64,4 +65,15 @@ public final class ModuleLifecycleManager extends ModuleInstall{
         }
         Jira.getInstance().shutdown();
     }
+
+    @Override
+    public void validate() throws IllegalStateException {
+
+    }
+
+    @Override
+    public void restored() {
+        
+    }
+    
 }

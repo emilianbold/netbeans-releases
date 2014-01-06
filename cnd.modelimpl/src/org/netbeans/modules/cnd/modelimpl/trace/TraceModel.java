@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.antlr.collections.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.*;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -540,9 +541,14 @@ public class TraceModel extends TraceModelBase {
          */
 
         if (dumpLib) {
-            for (Iterator it = getProject().getLibraries().iterator(); it.hasNext();) {
-                CsmProject lib = (CsmProject) it.next();
-                tracer.dumpModel(lib);
+            CsmCacheManager.enter();
+            try {
+                for (Iterator it = getProject().getLibraries().iterator(); it.hasNext();) {
+                    CsmProject lib = (CsmProject) it.next();
+                    tracer.dumpModel(lib);
+                }
+            } finally {
+                CsmCacheManager.leave();
             }
         }
 
@@ -668,7 +674,12 @@ public class TraceModel extends TraceModelBase {
             System.gc();
             anyKey("Press any key to dump model:"); // NOI18N
             if (!dumpFileOnly) {
-                tracer.dumpModel(getProject());
+                CsmCacheManager.enter();
+                try {
+                    tracer.dumpModel(getProject());
+                } finally {
+                    CsmCacheManager.leave();
+                }
             }
         }
         if (stopAfterAll) {
@@ -1231,13 +1242,18 @@ public class TraceModel extends TraceModelBase {
 
         if (dumpModel) {
             if (fileImpl != null) {
-                tracer.setDeep(deep);
-                tracer.setDumpTemplateParameters(dumpTemplateParameters);
-                tracer.setTestUniqueName(testUniqueName);
-                tracer.dumpModel(fileImpl);
-                if (!dumpFileOnly) {
-                    tracer.dumpModel(getProject());
-                }
+                CsmCacheManager.enter();
+                try {
+                    tracer.setDeep(deep);
+                    tracer.setDumpTemplateParameters(dumpTemplateParameters);
+                    tracer.setTestUniqueName(testUniqueName);
+                    tracer.dumpModel(fileImpl);
+                    if (!dumpFileOnly) {
+                        tracer.dumpModel(getProject());
+                    }
+                } finally {
+                    CsmCacheManager.leave();
+                }                
             } else {
                 print("FileImpl is null - not possible to dump File Model"); // NOI18N
             }
@@ -1328,7 +1344,12 @@ public class TraceModel extends TraceModelBase {
     private void testLibProject() {
         LibProjectImpl libProject = LibProjectImpl.createInstance(getModel(), CndFileUtils.getLocalFileSystem(), "/usr/include", -1); // NOI18N
         getModel().testAddProject(libProject);
-        tracer.dumpModel(libProject);
+        CsmCacheManager.enter();
+        try {
+            tracer.dumpModel(libProject);
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     private static void print(String s) {

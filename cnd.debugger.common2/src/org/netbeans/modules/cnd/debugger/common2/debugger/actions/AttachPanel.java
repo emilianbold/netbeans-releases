@@ -626,6 +626,7 @@ public final class AttachPanel extends TopComponent {
     private void tableInfo(final String infoKey, final boolean enabled) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                procTable.clearSelection();
                 setUIEnabled(enabled);
                 processModel.setDataVector(new Object[][]{{Catalog.get(infoKey)}}, new Object[]{" "}); //NOI18N
             }

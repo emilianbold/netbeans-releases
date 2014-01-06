@@ -68,7 +68,7 @@ public class JBEjbModuleNode extends AbstractNode {
     }
 
     public JBEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        super(Children.LEAF);
+        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         if (isEJB3) {
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));

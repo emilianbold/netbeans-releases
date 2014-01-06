@@ -369,8 +369,8 @@ install_new_updater() {
         if [ -f "${newUpdaterDir}/updater.jar" ]; then
             mv -f "${newUpdaterDir}/updater.jar" "${base}/modules/ext/"
         fi
-        ls -l "${newUpdaterDir}/"updater_*.jar
-        for i in "${newUpdaterDir}/"updater_*.jar; do
+        ls -l "${newUpdaterDir}/locale/"updater_*.jar
+        for i in "${newUpdaterDir}/locale/"updater_*.jar; do
             mkdir -p "${base}/modules/ext/locale/"
             mv -f "$i" "${base}/modules/ext/locale/"
         done

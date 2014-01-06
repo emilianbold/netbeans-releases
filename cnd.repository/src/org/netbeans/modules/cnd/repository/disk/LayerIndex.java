@@ -81,10 +81,20 @@ public final class LayerIndex {
         this.cacheDirectoryFile = new File(cacheDirectory.getRawPath());
     }
 
-    boolean load(int persistMechanismVersion, boolean recreateOnFail) {
+    boolean load(int persistMechanismVersion, boolean recreate, boolean recreateOnFail) {
         this.version = persistMechanismVersion;
 
         File indexFile = new File(cacheDirectoryFile, INDEX_FILE_NAME); 
+        if (recreate) {
+            if (cacheDirectoryFile.canWrite()) {
+                RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
+                fileSystems.clear();
+                units.clear();
+                dependencies.clear();
+                return true;        
+            } 
+            return false;
+        }
 
         // If no index file - it's OK.
         if (!indexFile.exists()) {

@@ -338,6 +338,10 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
                     Project libProject = ((LibraryItem.ProjectItem) libraryItem).getProject(baseDir);
                     ConfigurationDescriptorProvider configurationDescriptorProvider = libProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (!configurationDescriptorProvider.gotDescriptor()) {
+                        //return false if there is no description yet, means we are not ready
+                        return false;
+                    }
                     MakeConfigurationDescriptor makeConfigurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
                     if (makeConfigurationDescriptor.getState() == ConfigurationDescriptor.State.BROKEN) { // See IZ 193075
                         return false;

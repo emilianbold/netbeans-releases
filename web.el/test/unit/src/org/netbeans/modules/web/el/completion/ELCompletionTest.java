@@ -216,4 +216,9 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{bean.myL^ist}", false);
     }
 
+    public void testIssue236576() throws Exception {
+        List<String> toCheck = Arrays.asList("AssertionError", "Boolean", "Double", "Enum", "StringBuilder", "instanceof", "true", "bundle");
+        checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{(()->2 * ^)}", false, toCheck);
+    }
+
 }

@@ -318,7 +318,8 @@ public final class ELTypeUtilities {
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
-            return method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method);
+            return (method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method))
+                    || methodNodeParams == 0 && hasActionEventArgument(method);
         }
 
         if (methodNode instanceof AstDotSuffix) {
@@ -517,6 +518,17 @@ public final class ELTypeUtilities {
             }
         }
         return true;
+    }
+
+    private static boolean hasActionEventArgument(ExecutableElement method) {
+        List<? extends VariableElement> parameters = method.getParameters();
+
+        // check one parameter ActionEvent method
+        if (parameters.size() != 1) {
+            return false;
+        }
+
+        return "javax.faces.event.ActionEvent".equals(parameters.get(0).asType().toString()); //NOI18N
     }
 
     private static boolean isSameType(CompilationContext info, final Node paramNode, final VariableElement param) {

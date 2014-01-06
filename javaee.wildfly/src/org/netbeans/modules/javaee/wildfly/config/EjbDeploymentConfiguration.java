@@ -143,45 +143,27 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 Exceptions.printStackTrace(donfe);
             }
         }
-        // TODO: rewrite
-//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
-//        if (ejbJar != null) {
-//            ejbJar.addPropertyChangeListener(this);
-//        }
     }
     
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
     
+    @Override
     public void dispose() {
-//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
-//        if (ejbJar != null) {
-//            ejbJar.removePropertyChangeListener(this);
-//        }
     }
 
+    @Override
     public boolean supportsCreateDatasource() {
-        return !isAs7();
+        return isWildfly();
     }
     
+    @Override
     public boolean supportsCreateMessageDestination() {
-        return !isAs7();
+        return isWildfly();
     }
     
-//        //listen on the resource-ref element
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST, this);
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_MSG_DEST_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_MSG_DEST_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST_REF, this);
-       
     /**
      * Return jboss graph. If it was not created yet, load it from the file
      * and cache it. If the file does not exist, generate it.
@@ -1223,6 +1205,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         }
     }
     
+    @Override
     public void save(OutputStream os) throws ConfigurationException {
         Jboss jboss = getJboss();
         if (jboss == null) {

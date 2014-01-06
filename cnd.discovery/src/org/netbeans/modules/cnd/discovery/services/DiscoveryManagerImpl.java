@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.util.Lookup;
@@ -72,8 +71,8 @@ public final class DiscoveryManagerImpl {
     public static final String BUILD_LOG_KEY = "build-log"; //NOI18N 
     public static final String BUILD_EXEC_KEY = "exec-log"; //NOI18N 
     private static final RequestProcessor RP = new RequestProcessor("Discovery Manager Worker", 1); //NOI18N
-    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<CsmProject, CsmProgressListener>();
-    private static final Map<NativeProject, CsmProgressListener> listeners2 = new WeakHashMap<NativeProject, CsmProgressListener>();
+    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<>();
+    private static final Map<NativeProject, CsmProgressListener> listeners2 = new WeakHashMap<>();
 
     private DiscoveryManagerImpl() {
     }
@@ -128,10 +127,9 @@ public final class DiscoveryManagerImpl {
             }
             String artifact = (String) artifacts.get(BUILD_EXEC_KEY);
             if (artifact != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
+                final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }
@@ -147,10 +145,9 @@ public final class DiscoveryManagerImpl {
             }
             artifact = (String) artifacts.get(BUILD_LOG_KEY);
             if (artifact != null) {
-                final Map<String, Object> map = new HashMap<String, Object>();
+                final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
                 map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
-                map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
                 }

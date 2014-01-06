@@ -57,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
@@ -356,13 +357,18 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     }
 
     protected void dumpModel() {
-        for (CsmProject prj : getModel().projects()) {
-            new CsmTracer(System.err).dumpModel(prj);
-            for (CsmProject lib : prj.getLibraries()) {
-                new CsmTracer(System.err).dumpModel(lib);
+        CsmCacheManager.enter();
+        try {        
+            for (CsmProject prj : getModel().projects()) {
+                new CsmTracer(System.err).dumpModel(prj);
+                for (CsmProject lib : prj.getLibraries()) {
+                    new CsmTracer(System.err).dumpModel(lib);
+                }
             }
+            LibraryManager.dumpInfo(new PrintWriter(System.err), true);
+        } finally {
+            CsmCacheManager.leave();
         }
-        LibraryManager.dumpInfo(new PrintWriter(System.err), true);
     }
 
     protected void waitAllProjectsParsed() {

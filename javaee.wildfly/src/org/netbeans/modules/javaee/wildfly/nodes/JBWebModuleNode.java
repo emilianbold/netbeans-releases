@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
@@ -51,9 +50,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLActionCookie;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
@@ -63,60 +65,73 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Michal Mocnak
  */
-public class JBWebModuleNode extends AbstractNode {
+public class JBWebModuleNode extends AbstractStateNode {
 
     private final String url;
 
     public JBWebModuleNode(String fileName, Lookup lookup, String url) {
-        super(Children.LEAF);
+        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.url = url;
         // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
         getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
-        
+        getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
+        getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
         if (url != null) {
             getCookieSet().add(new OpenURLActionCookieImpl(url));
         }
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         if (getParentNode() instanceof JBEarApplicationNode) {
-            return new SystemAction[] {
+            return new SystemAction[]{
                 SystemAction.get(OpenURLAction.class)
             };
         } else {
             if (url != null) {
-                return new SystemAction[] {
+                return new SystemAction[]{
                     SystemAction.get(OpenURLAction.class),
+                    SystemAction.get(StopModuleAction.class),
                     SystemAction.get(UndeployModuleAction.class)
                 };
             } else {
-                return new SystemAction[] {
+                return new SystemAction[]{
+                    SystemAction.get(StartModuleAction.class),
                     SystemAction.get(UndeployModuleAction.class)
                 };
             }
         }
     }
-    
+
     @Override
-    public Image getIcon(int type) {
+    public Image getOriginalIcon(int type) {
         return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
     }
 
     @Override
-    public Image getOpenedIcon(int type) {
+    public Image getOriginalOpenedIcon(int type) {
         return getIcon(type);
     }
-    
+
+    @Override
+    protected boolean isRunning() {
+        return this.url != null;
+    }
+
+    @Override
+    protected boolean isWaiting() {
+        return this.url == null;
+    }
+
     private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
-        
+
         private final String url;
-        
+
         public OpenURLActionCookieImpl(String url) {
             this.url = url;
         }
-        
+
         @Override
         public String getWebURL() {
             return url;
