@@ -41,75 +41,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
+package org.netbeans.modules.javaee.wildfly;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-
+import java.util.Vector;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 /**
- * It describes children nodes of the EJB Modules node. Implements Refreshable
- * interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Michal Mocnak
+ * @author whd
  */
-public class JBEjbModulesChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyTargetModuleID implements TargetModuleID {
 
-    private static final Logger LOGGER = Logger.getLogger(JBEjbModulesChildren.class.getName());
+    private Target target;
+    private String jar_name;
+    private String context_url;
 
-    private final Lookup lookup;
+    private Vector childs = new Vector();
+    private TargetModuleID  parent = null;
 
-    public JBEjbModulesChildren(Lookup lookup) {
-        this.lookup = lookup;
+    WildflyTargetModuleID(Target target) {
+        this(target, "");
     }
 
-    @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7EjbApplicationNodeUpdater(), 0);
+    public WildflyTargetModuleID(Target target, String jar_name) {
+        this.target = target;
+        this.jar_name = jar_name;
+
+    }
+    public void setContextURL(String context_url) {
+        this.context_url = context_url;
+    }
+    public void setJARName(String jar_name) {
+        this.jar_name = jar_name;
+    }
+
+    public void setParent(WildflyTargetModuleID parent) {
+        this.parent = parent;
 
     }
 
-    class JBoss7EjbApplicationNodeUpdater implements Runnable {
-        List keys = new ArrayList();
-        @Override
-        public void run() {
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listEJBModules(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-            setKeys(keys);
-        }
+    public void addChild(WildflyTargetModuleID child) {
+        childs.add(child);
+        child.setParent(this);
     }
 
-    @Override
-    protected void addNotify() {
-        updateKeys();
+    public TargetModuleID[] getChildTargetModuleID() {
+        return (TargetModuleID[]) childs.toArray(new TargetModuleID[childs.size()]);
     }
-
-    @Override
-    protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
+    //Retrieve a list of identifiers of the children of this deployed module.
+    public String getModuleID() {
+        return jar_name ;
     }
+    //         Retrieve the id assigned to represent the deployed module.
+    public TargetModuleID getParentTargetModuleID() {
 
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof WildflyEjbModuleNode) {
-            return new Node[]{(WildflyEjbModuleNode) key};
-        }
-
-        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
-            return new Node[]{Util.createWaitNode()};
-        }
-
-        return null;
+        return parent;
     }
-
+    //Retrieve the identifier of the parent object of this deployed module.
+    public Target getTarget() {
+        return target;
+    }
+    //Retrieve the name of the target server.
+    public String getWebURL() {
+        return context_url;//"http://" + module_id; //NOI18N
+    }
+    //If this TargetModulID represents a web module retrieve the URL for it.
+    public String toString() {
+        return getModuleID() +  hashCode();
+    }
 }

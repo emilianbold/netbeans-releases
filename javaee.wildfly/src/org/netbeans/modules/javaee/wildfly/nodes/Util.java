@@ -86,6 +86,13 @@ public class Util {
             "org/netbeans/modules/javaee/resources/javamail.gif";// NOI18N
     public static final String JMS_ICON =
             "org/netbeans/modules/javaee/wildfly/resources/jms.gif";// NOI18N
+    
+    public static final String EJB_MESSAGE_ICON =
+            "org/netbeans/modules/javaee/wildfly/resources/MessageBean.png";// NOI18N
+        public static final String EJB_ENTITY_ICON =
+            "org/netbeans/modules/javaee/wildfly/resources/EntityBean.png";// NOI18N
+            public static final String EJB_SESSION_ICON =
+            "org/netbeans/modules/javaee/wildfly/resources/SessionBean.png";// NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 

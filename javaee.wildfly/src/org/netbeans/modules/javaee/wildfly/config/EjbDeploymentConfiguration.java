@@ -154,15 +154,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     public void dispose() {
     }
 
-    @Override
-    public boolean supportsCreateDatasource() {
-        return isWildfly();
-    }
-    
-    @Override
-    public boolean supportsCreateMessageDestination() {
-        return isWildfly();
-    }
     
     /**
      * Return jboss graph. If it was not created yet, load it from the file

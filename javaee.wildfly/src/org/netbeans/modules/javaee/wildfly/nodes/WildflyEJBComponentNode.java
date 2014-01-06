@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,57 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_ENTITY_ICON;
+import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_MESSAGE_ICON;
+import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_SESSION_ICON;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.Lookup;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Node which describes Web Module.
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBEjbModuleNode extends AbstractNode {
+public class WildflyEJBComponentNode extends AbstractNode {
     
-    public JBEjbModuleNode(String fileName, Lookup lookup) {
-        this(fileName, lookup, false);
+   public enum Type { 
+        MDB("message-driven-bean", EJB_MESSAGE_ICON), 
+        SINGLETON("singleton-bean", EJB_SESSION_ICON), 
+        STATELESS( "stateless-session-bean", EJB_SESSION_ICON), 
+        ENTITY("entity-bean", EJB_ENTITY_ICON), 
+        STATEFULL("stateful-session-bean", EJB_SESSION_ICON);
+        
+        private final String propertyName;
+        private final String icon;
+        Type(final String propertyName, final String icon) {
+            this.propertyName = propertyName;
+            this.icon = icon;
+        }
+        
+        public String getPropertyName() {
+            return this.propertyName;
+        }
+        
+        public String getIcon() {
+            return this.icon;
+        }
+    };
+   
+   private final Type ejbType;
+    public WildflyEJBComponentNode(String ejbName, Type ejbType) {
+        super(Children.LEAF);
+        this.ejbType = ejbType;
+        setDisplayName(ejbName);
     }
 
-    public JBEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
-        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        if (isEJB3) {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
-        }
-        else {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
-        }
-    }
-    
     @Override
-    public Action[] getActions(boolean context){
-        if(getParentNode() instanceof JBEarApplicationNode)
-            return new SystemAction[] {};
-        else
-            return new SystemAction[] {
-                SystemAction.get(UndeployModuleAction.class)
-            };
+    public Action[] getActions(boolean context) {
+        return new SystemAction[]{};
+
     }
-    
+
     @Override
     public Image getIcon(int type) {
-        return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+        return ImageUtilities.loadImage(ejbType.getIcon());
     }
 
     @Override

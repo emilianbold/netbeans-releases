@@ -154,16 +154,5 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
      */
     private JbossApp genereatejbossApp() {
         return new JbossApp();
-    }
-
-    @Override
-    public boolean supportsCreateDatasource() {
-        return true;
-    }
-    
-    @Override
-    public boolean supportsCreateMessageDestination() {
-        return true;
-    }
-    
+    }    
 }
