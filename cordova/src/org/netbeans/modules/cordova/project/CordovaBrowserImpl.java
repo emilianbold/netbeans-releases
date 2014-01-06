@@ -59,14 +59,14 @@ import org.openide.util.Exceptions;
  * Cordova pseudo browser
  * @author Jan Becicka
  */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class CordovaBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     private Project project;
     private WebBrowser browser;
     private MobileConfigurationImpl config;
     private ProjectConfigurationCustomizer customizer;
 
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
+    CordovaBrowserImpl(Project project, WebBrowser browser) {
         try {
             this.project = project;
             this.browser = browser;
