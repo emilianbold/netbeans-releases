@@ -59,6 +59,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -67,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.SourceGroup;
@@ -75,6 +77,11 @@ import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ui.PathFinder;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.PasteAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -83,6 +90,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Factory for package views.
@@ -146,6 +154,25 @@ public class PackageView {
         SortedSet<PackageItem> data = new TreeSet<PackageItem>();
         findNonExcludedPackages(null, data, group.getRootFolder(), group, false);
         return new DefaultComboBoxModel(data.toArray(new PackageItem[data.size()]));
+    }
+
+    /**
+     * Creates actions for package root.
+     * @return the array of {@link Action}s
+     */
+    @NonNull
+    static Action[] createRootNodeActions() {
+        return new Action[] {
+            CommonProjectActions.newFileAction(),
+            null,
+            SystemAction.get( FindAction.class ),
+            null,
+            SystemAction.get( PasteAction.class ),
+            null,
+            SystemAction.get( FileSystemAction.class ),
+            null,
+            SystemAction.get( ToolsAction.class ),
+        };
     }
     
     /** Fills given collection with flattened packages under given folder
