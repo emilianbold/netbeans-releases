@@ -400,6 +400,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Assert.error(arg0, "invokeInstanceMethodAsStatic", methodName);
                     objectReference = null;
                     type = null;
+                } else if (object instanceof InterfaceType) {
+                    Assert.error(arg0, "invokeInstanceMethodAsStatic", methodName);
+                    objectReference = null;
+                    type = null;
                 } else {
                     objectReference = (ObjectReference) object;
                     type = (ReferenceType) preferredType;
