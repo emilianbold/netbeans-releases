@@ -41,72 +41,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.wildfly;
 
-import java.util.Vector;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+package org.netbeans.modules.javaee.wildfly.nodes;
+
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import org.openide.nodes.AbstractNode;
+import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
+
 /**
+ * 
+ * Node which describes an EJB Module.
  *
- * @author whd
+ * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBTargetModuleID implements TargetModuleID {
-
-    private Target target;
-    private String jar_name;
-    private String context_url;
-
-    private Vector childs = new Vector();
-    private TargetModuleID  parent = null;
-
-    JBTargetModuleID(Target target) {
-        this(target, "");
+public class WildflyEjbModuleNode extends AbstractNode {
+    
+    public WildflyEjbModuleNode(String fileName, Lookup lookup) {
+        this(fileName, lookup, new ArrayList<WildflyEJBComponentNode>(), false);
+    }
+    
+    public WildflyEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
+        this(fileName, lookup, new ArrayList<WildflyEJBComponentNode>(), isEJB3);
     }
 
-    public JBTargetModuleID(Target target, String jar_name) {
-        this.target = target;
-        this.jar_name = jar_name;
+    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEJBComponentNode> ejbs, boolean isEJB3) {
+        super(new WildflyEJBComponentsChildren(lookup, fileName, ejbs));
+        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
+        if (isEJB3) {
+            getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
+        }
+        else {
+            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
+        }
+    }
+    
+    @Override
+    public Action[] getActions(boolean context){
+        if(getParentNode() instanceof JBEarApplicationNode)
+            return new SystemAction[] {};
+        else
+            return new SystemAction[] {
+                SystemAction.get(UndeployModuleAction.class)
+            };
+    }
+    
+    @Override
+    public Image getIcon(int type) {
+        return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+    }
 
-    }
-    public void setContextURL(String context_url) {
-        this.context_url = context_url;
-    }
-    public void setJARName(String jar_name) {
-        this.jar_name = jar_name;
-    }
-
-    public void setParent(JBTargetModuleID parent) {
-        this.parent = parent;
-
-    }
-
-    public void addChild(JBTargetModuleID child) {
-        childs.add(child);
-        child.setParent(this);
-    }
-
-    public TargetModuleID[] getChildTargetModuleID() {
-        return (TargetModuleID[]) childs.toArray(new TargetModuleID[childs.size()]);
-    }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public String getModuleID() {
-        return jar_name ;
-    }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID getParentTargetModuleID() {
-
-        return parent;
-    }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target getTarget() {
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public String getWebURL() {
-        return context_url;//"http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    public String toString() {
-        return getModuleID() +  hashCode();
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
     }
 }

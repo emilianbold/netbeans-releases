@@ -149,7 +149,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         try {
             if (this.getClient().deploy(deployment)) {
                 for(TargetModuleID tmid : tmids) {
-                    ((JBTargetModuleID) tmid).setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
+                    ((WildflyTargetModuleID) tmid).setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
                     progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
                 }
             } else {
@@ -167,16 +167,16 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        List<JBTargetModuleID> moduleIds = new ArrayList<JBTargetModuleID>(targets.length);
+        List<WildflyTargetModuleID> moduleIds = new ArrayList<WildflyTargetModuleID>(targets.length);
         for (Target target : targets) {
-            moduleIds.add(new JBTargetModuleID(target, deployment.getModuleFile().getName()));
+            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName()));
         }
-        JBTargetModuleID[] tmids = moduleIds.toArray(new JBTargetModuleID[targets.length]);
+        WildflyTargetModuleID[] tmids = moduleIds.toArray(new WildflyTargetModuleID[targets.length]);
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                for(JBTargetModuleID tmid : tmids) {
+                for(WildflyTargetModuleID tmid : tmids) {
                     tmid.setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
                     progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
                 }
@@ -220,13 +220,13 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (JBModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new JBTargetModuleID(targets[0], module.getArchiveName()));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (JBModule module : modules) {
                     if (module.getArchiveName().endsWith("war") && module.isRunning()) {
-                        JBTargetModuleID moduleId = new JBTargetModuleID(targets[0], module.getArchiveName());
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
@@ -260,13 +260,13 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
             if (ModuleType.EJB.equals(mt)) {
                 for (JBModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
-                        result.add(new JBTargetModuleID(targets[0], module.getArchiveName()));
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
                 for (JBModule module : modules) {
                     if (module.getArchiveName().endsWith("war")) {
-                        JBTargetModuleID moduleId = new JBTargetModuleID(targets[0], module.getArchiveName());
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
                         moduleId.setContextURL(module.getUrl());
                         result.add(moduleId);
                     }
