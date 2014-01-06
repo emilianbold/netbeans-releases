@@ -49,10 +49,12 @@ import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
 import java.util.AbstractList;
@@ -211,8 +213,14 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             return false;
         }
         for (ReferenceType rt : classTypes) {
-            if (EvaluatorVisitor.instanceOf(classType, rt)) {
-                return true;
+            try {
+                if (EvaluatorVisitor.instanceOf(classType, rt)) {
+                    return true;
+                }
+            } catch (VMDisconnectedException vmdex) {
+                return false;
+            } catch (InternalException iex) {
+                // procceed
             }
         }
         return false;
