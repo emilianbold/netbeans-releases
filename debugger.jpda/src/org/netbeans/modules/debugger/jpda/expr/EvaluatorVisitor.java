@@ -381,7 +381,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         } else if (isStatic) {
             objectReference = null;
-            if (object instanceof ClassType || object instanceof ArrayType) {
+            if (object instanceof ClassType || object instanceof InterfaceType || object instanceof ArrayType) {
                 type = (ReferenceType) object;
             } else if (object instanceof ObjectReference) {
                 type = (ReferenceType) ((ObjectReference) object).type();
@@ -446,8 +446,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (type instanceof ArrayType) {
             Assert.error(arg0, "methOnArray");
             return null;
-        } else {
+        } else if (type instanceof ClassType) {
             cType = (ClassType) type;
+        } else {
+            Assert.error(arg0, "methOnInterface");
+            return null;
         }
         if (method == null) {
             method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
