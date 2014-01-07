@@ -109,6 +109,37 @@ public class EncapsulateFieldsTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}\n"));
     }
+    
+    public void testEncapsulateFieldsGroup() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("encap/A.java", "package encap; public class A {\n"
+                        + "    private String j = \"three\";\n"
+                        + "\n"
+                        + "    public String getSequence() {\n"
+                        + "        String[] s = new String[]{\n"
+                        + "            \"one\",   // comment one\n"
+                        + "            \"three\", // comment two\n"
+                        + "            j          // comment three\n"
+                        + "        };\n"
+                        + "        return Arrays.toString(s);\n"
+                        + "    }\n"
+                        + "}"));
+        performEncapsulate(src.getFileObject("encap/A.java"), new int[]{0}, EnumSet.of(Modifier.PUBLIC), false);
+        verifyContent(src,
+                new File("encap/A.java", "package encap; public class A {\n"
+                + "    private String j = \"three\";\n"
+                + "\n"
+                + "    public String getSequence() {\n"
+                + "        String[] s = new String[]{\n"
+                + "            \"one\",   // comment one\n"
+                + "            \"three\", // comment two\n"
+                + "            getJ()     // comment three\n"
+                + "        };\n"
+                + "        return Arrays.toString(s);\n"
+                + "    }\n"
+                + "    public String getJ() { return j; }\n"
+                + "    public void setJ(String j) { this.j = j; } }"));
+    }
 
     public void testEncapsulateFields() throws Exception {
         writeFilesAndWaitForScan(src,
