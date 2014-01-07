@@ -512,13 +512,12 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         synchronized(resultsSync) {
             if (hasResults()) {
                 int size = results.size();
-
-                return (results.size() == 1)
-                       ? Bundle.TakeSnapshotProfilingPoint_OneHitString(
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
-                       : Bundle.TakeSnapshotProfilingPoint_NHitsString(
-                            results.size(),
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
+                long timeStamp = results.get(size - 1).getTimestamp();
+                String time = Utils.formatProfilingPointTime(timeStamp);
+                
+                return (size == 1)
+                       ? Bundle.TakeSnapshotProfilingPoint_OneHitString(time)
+                       : Bundle.TakeSnapshotProfilingPoint_NHitsString(size, time);
             } else {
                 return Bundle.TakeSnapshotProfilingPoint_NoResultsString();
             }
