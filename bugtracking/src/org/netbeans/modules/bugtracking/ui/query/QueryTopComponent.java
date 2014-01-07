@@ -210,7 +210,7 @@ public final class QueryTopComponent extends TopComponent
 
         if(suggestedSelectionOnly) {
             repositoryComboBox.setEnabled(false);
-            newButton.setEnabled(false);
+            newButton.setVisible(false);
         }
         
         if (query != null) {

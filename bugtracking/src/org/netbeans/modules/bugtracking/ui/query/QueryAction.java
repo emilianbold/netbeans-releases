@@ -93,7 +93,7 @@ public class QueryAction extends SystemAction {
     }
 
     public  static void createNewQuery(RepositoryImpl repositoryToSelect) {
-        openQuery(null, repositoryToSelect, false, QueryMode.EDIT, true);
+        openQuery(null, repositoryToSelect, repositoryToSelect != null, QueryMode.EDIT, true);
     }
     
     public static void createNewQuery(RepositoryImpl repositoryToSelect, boolean suggestedSelectionOnly) {
