@@ -75,7 +75,7 @@ public class ToDoOptionsController extends OptionsPanelController {
     }
 
     public void cancel() {
-        //do nothing
+        getCustomizer().cancel();
     }
 
     public boolean isValid() {
