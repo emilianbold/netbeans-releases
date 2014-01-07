@@ -105,6 +105,7 @@ made subject to such option by the copyright holder.
                 <dependency>
                     <code-name-base>org.netbeans.libs.springframework</code-name-base>
                     <run-dependency>
+                        <release-version>1</release-version>
                         <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
@@ -462,6 +463,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.springframework</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
