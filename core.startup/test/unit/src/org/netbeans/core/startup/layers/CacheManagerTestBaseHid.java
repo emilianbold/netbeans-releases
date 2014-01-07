@@ -145,12 +145,12 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase implements Imag
         List<URL> urls = Arrays.asList(
             loadResource("data/folder2.xml"),
             loadResource("data/folder1.xml"));
-        try {
-            FileSystem f = BinaryCacheManagerTest.store(m, urls);
-            fail("Should throw an exception");
-        } catch (IOException ex) {
-            // OK, collision
-        }
+        
+        FileSystem f = BinaryCacheManagerTest.store(m, urls);
+        final FileObject fld = f.findResource("folder");
+        
+        assertTrue("Is folder", fld.isFolder());
+        assertEquals("No content", 0, fld.getSize());
     }
     
     private void checkLastModified (FileSystem f, String file, String resource) throws Exception {
