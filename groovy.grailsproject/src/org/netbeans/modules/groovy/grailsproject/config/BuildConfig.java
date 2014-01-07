@@ -153,6 +153,40 @@ public final class BuildConfig {
         return FileUtil.normalizeFile(pluginsDirFile);
     }
 
+    /**
+     * Returns {@link File} representing Ivy cache used for plugin jars.
+     *
+     * In case if "grails.dependency.cache.dir" property is set either in BuildConfig.groovy
+     * or in settings.groovy we will use that one. If not, the default location is used.
+     *
+     * @return {@link File} representing Ivy cache used for plugin jars
+     */
+    public File getIvyCacheDir() {
+        File ivyCacheDir;
+        String ivyCache = System.getProperty("grails.dependency.cache.dir"); // NOI18N
+        if (ivyCache == null) {
+            File workDirFile;
+            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            if (workDir == null) {
+                workDir = System.getProperty("user.home"); // NOI18N
+                workDir = workDir + File.separator + ".grails"; // NOI18N
+                workDirFile = new File(workDir);
+            } else {
+                workDirFile = new File(workDir);
+                if (!workDirFile.isAbsolute()) {
+                    workDirFile = new File(projectRoot, workDir);
+                }
+            }
+            ivyCacheDir = new File(workDirFile, "ivy-cache"); // NOI18N
+        } else {
+            ivyCacheDir = new File(ivyCache);
+            if (!ivyCacheDir.isAbsolute()) {
+                ivyCacheDir = new File(projectRoot, ivyCache);
+            }
+        }
+        return ivyCacheDir;
+    }
+
     private synchronized void loadGlobalPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);

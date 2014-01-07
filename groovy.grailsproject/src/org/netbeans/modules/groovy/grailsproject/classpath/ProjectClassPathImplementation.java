@@ -197,6 +197,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             addPlugins(globalPluginsDir, result, null);
         }
 
+        // Adding jars from Ivy cache - hopefully it won't hurt start-up performance
+        addJars(buildConfig.getIvyCacheDir(), result, true);
+
         if (listenerPluginsLib == null) {
             File libDir = FileUtil.normalizeFile(new File(projectRoot, "lib")); // NOI18N
 
