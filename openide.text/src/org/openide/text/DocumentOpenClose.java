@@ -871,6 +871,7 @@ final class DocumentOpenClose {
             {
                     @Override
                     protected StyledDocument openDocument() throws IOException {
+                        loadIOException = null;
                         // Reuse current reload task
                         activeReloadTask.schedule(0);
                         return loadDoc;
@@ -878,6 +879,7 @@ final class DocumentOpenClose {
 
                     @Override
                     protected void openRefused() {
+                        loadIOException = null;
                         // This is a problematic situation since the user refused document loading
                         // during reload.
                         skipInputStreamReading = true;
