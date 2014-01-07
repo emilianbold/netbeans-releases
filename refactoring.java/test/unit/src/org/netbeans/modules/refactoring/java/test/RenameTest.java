@@ -70,6 +70,72 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test235564a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "    \n"
+                        + "    public class Inner {\n"
+                        + "        public int y;\n"
+                        + "        \n"
+                        + "        public void foo() { \n"
+                        + "            y = x + 1;\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "    public void foo() { \n"
+                        + "        x = x + 1;\n"
+                        + "    }\n"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), 2, 1, "x", null, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "    \n"
+                        + "    public class Inner {\n"
+                        + "        public int x;\n"
+                        + "        \n"
+                        + "        public void foo() {\n"
+                        + "            x = A.this.x + 1;\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "    public void foo() { \n"
+                        + "        x = x + 1;\n"
+                        + "    }\n"
+                        + "}"));
+    }
+    
+    public void test235564b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x() {\n"
+                        + "        return 1;\n"
+                        + "    }\n"
+                        + "    public class Inner {\n"
+                        + "        public void foo() { \n"
+                        + "            foo();\n"
+                        + "            x();\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), 2, 1, "x", null, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x() {\n"
+                        + "        return 1;\n"
+                        + "    }\n"
+                        + "    public class Inner {\n"
+                        + "        public void x() { \n"
+                        + "            x();\n"
+                        + "            A.this.x();\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}"));
+    }
+    
     public void testJavadocEnum2() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -81,7 +147,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "     */\n"
                 + "    ONE\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "TWO", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "TWO", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public enum A {\n"
@@ -104,7 +170,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "     */\n"
                 + "    private String s, t;\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "v", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "v", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -127,7 +193,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "     */\n"
                 + "    ONE\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "TWO", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "TWO", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public enum A {\n"
@@ -195,7 +261,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
-        performRename(src.getFileObject("t/A.java"), 1, "renamed", props, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "renamed", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -237,7 +303,7 @@ public class RenameTest extends RefactoringTestBase {
                         + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
-        performRename(src.getFileObject("t/A.java"), 1, "message", props, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "message", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                         + "public class A {\n"
@@ -283,7 +349,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
-        performRename(src.getFileObject("t/A.java"), 1, "renamed", props, false);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "renamed", props, false);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -329,7 +395,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
-        performRename(src.getFileObject("t/A.java"), 1, "renamed", props, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "renamed", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -371,7 +437,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameGettersSetters(true);
-        performRename(src.getFileObject("t/A.java"), 1, "renamed", props, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "renamed", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -440,7 +506,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameTestClass(true);
-        performRename(src.getFileObject("t/A.java"), -1, "B", props, true);
+        performRename(src.getFileObject("t/A.java"), -1, -1, "B", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
                 + "public class B {\n"
@@ -470,7 +536,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         JavaRenameProperties props = new JavaRenameProperties();
         props.setIsRenameTestClassMethod(true);
-        performRename(src.getFileObject("t/A.java"), 1, "fooBar", props, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "fooBar", props, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
                 + "public class A {\n"
@@ -494,7 +560,7 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/J.java", "interface J { void m();}"),
                 new File("t/C.java", "class C extends D implements I, J{ public void m(){};}"),
                 new File("t/D.java", "class D { public void m(){};}"));
-        performRename(src.getFileObject("t/B.java"), 1, "k", null, true, new Problem(false, "ERR_IsOverridden"), new Problem(false, "ERR_IsOverriddenOverrides"));
+        performRename(src.getFileObject("t/B.java"), 1, -1, "k", null, true, new Problem(false, "ERR_IsOverridden"), new Problem(false, "ERR_IsOverriddenOverrides"));
         verifyContent(src, new File("t/B.java", "class B { public void k(){};}"),
                 new File("t/A.java", "class A extends B implements I{ public void k(){};}"),
                 new File("t/I.java", "interface I { void m();}"),
@@ -506,13 +572,13 @@ public class RenameTest extends RefactoringTestBase {
     public void test195070() throws Exception { // #195070 - refactor/rename works wrong with override
         writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
                 new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
-        performRename(src.getFileObject("t/A.java"), 1, "bind", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "bind", null, true);
         verifyContent(src, new File("t/A.java", "class A { public void bind(){}}"),
                 new File("t/B.java", "class B extends A { public void bind(){ super.bind();}}"));
         
         writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
                 new File("t/B.java", "class B extends A { public void bind(){ bindSuper();}}"));
-        performRename(src.getFileObject("t/A.java"), 1, "binding", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "binding", null, true);
         verifyContent(src, new File("t/A.java", "class A { public void binding(){}}"),
                 new File("t/B.java", "class B extends A { public void bind(){ binding();}}"));
     }
@@ -520,7 +586,7 @@ public class RenameTest extends RefactoringTestBase {
     public void test215139() throws Exception { // #215139 - [Rename] Method and Field rename incorrectly adds Type.super 
         writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
                 new File("t/B.java", "class B { private A a = new A(); public void bind(){ a.bindSuper();}}"));
-        performRename(src.getFileObject("t/A.java"), 1, "bind", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "bind", null, true);
         verifyContent(src, new File("t/A.java", "class A { public void bind(){}}"),
                 new File("t/B.java", "class B { private A a = new A(); public void bind(){ a.bind();}}"));
     }
@@ -548,7 +614,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return true;\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("test/Tool.java"), 2, "compareNumberStrings", null, true);
+        performRename(src.getFileObject("test/Tool.java"), 2, -1, "compareNumberStrings", null, true);
         verifyContent(src, new File("test/Tool.java", "package test;\n"
                 + "\n"
                 + "import java.util.StringTokenizer;\n"
@@ -591,7 +657,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return C.c;\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 2, "B", null, true);
+        performRename(src.getFileObject("t/A.java"), 2, -1, "B", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -619,7 +685,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        System.out.println(a);\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "b", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "b", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -641,7 +707,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        System.out.println(a);\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "b", null, true);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "b", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -700,7 +766,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return A.C.c;\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 2, "B", null, true);
+        performRename(src.getFileObject("t/A.java"), 2, -1, "B", null, true);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -740,7 +806,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "    return 1;\n"
                 + "  }\n"
                 + "}"));
-        performRename(src.getFileObject("p1/B.java"), -1, "C", null, true);
+        performRename(src.getFileObject("p1/B.java"), -1, -1, "C", null, true);
         verifyContent(src, new File("p1/B.java", "package p1;\n"
                 + "import p2.*;\n"
                 + "public class C extends A {\n"
@@ -785,7 +851,7 @@ public class RenameTest extends RefactoringTestBase {
                 new File("p2/A.java", "package p2;\n"
                 + "public class A {\n"
                 + "}"));
-        performRename(src.getFileObject("p1/B.java"), -1, "C", null, true);
+        performRename(src.getFileObject("p1/B.java"), -1, -1, "C", null, true);
         verifyContent(src,
                 new File("p2/C.java", "package p2;\n"
                 + "import p1.*;\n"
@@ -821,7 +887,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "public class A {\n"
                 + "    private C b;\n"
                 + "}"));
-        performRename(src.getFileObject("p2/C.java"), -1, "B", null, false);
+        performRename(src.getFileObject("p2/C.java"), -1, -1, "B", null, false);
         verifyContent(src,
                 new File("p2/C.java", "package p2;\n"
                 + "public class B {\n"
@@ -849,7 +915,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        new A().foo();\n"
                 + "    }\n"
                 + "}"));
-        performRename(src.getFileObject("t/A.java"), 1, "fooBar", null, false);
+        performRename(src.getFileObject("t/A.java"), 1, -1, "fooBar", null, false);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -887,7 +953,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
-        performRename(src.getFileObject("t/A.java"), 2, "B", null, false);
+        performRename(src.getFileObject("t/A.java"), 2, -1, "B", null, false);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -909,7 +975,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    private void performRename(FileObject source, final int position, final String newname, final JavaRenameProperties props, final boolean searchInComments, Problem... expectedProblems) throws Exception {
+    private void performRename(FileObject source, final int position, final int position2, final String newname, final JavaRenameProperties props, final boolean searchInComments, Problem... expectedProblems) throws Exception {
         final RenameRefactoring[] r = new RenameRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -921,6 +987,9 @@ public class RenameTest extends RefactoringTestBase {
                 Tree method = cut.getTypeDecls().get(0);
                 if (position >= 0) {
                     method = ((ClassTree) method).getMembers().get(position);
+                    if(position2 > 0) {
+                        method = ((ClassTree) method).getMembers().get(position2);
+                    }
                 }
 
                 TreePath tp = TreePath.getPath(cut, method);
