@@ -118,13 +118,13 @@ public final class BuildConfig {
         GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
 
         File pluginsDirFile;
-        String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+        String strPluginsDir = System.getProperty(GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY);
         if (strPluginsDir == null) {
             File projectWorkDirFile;
-            String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+            String projectWorkDir = System.getProperty(GrailsProjectConfig.GRAILS_PROJECT_WORK_DIR_PROPERTY);
             if (projectWorkDir == null) {
                 File workDirFile;
-                String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
                 if (workDir == null) {
                     workDir = System.getProperty("user.home"); // NOI18N
                     workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
@@ -163,10 +163,10 @@ public final class BuildConfig {
      */
     public File getIvyCacheDir() {
         File ivyCacheDir;
-        String ivyCache = System.getProperty("grails.dependency.cache.dir"); // NOI18N
+        String ivyCache = System.getProperty(GrailsProjectConfig.GRAILS_IVY_CACHE_DIR_PROPERTY);
         if (ivyCache == null) {
             File workDirFile;
-            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
             if (workDir == null) {
                 workDir = System.getProperty("user.home"); // NOI18N
                 workDir = workDir + File.separator + ".grails"; // NOI18N
@@ -205,10 +205,10 @@ public final class BuildConfig {
         GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
 
         File pluginsDirFile;
-        String strPluginsDir = System.getProperty("grails.global.plugins.dir"); // NOI18N
+        String strPluginsDir = System.getProperty(GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY);
         if (strPluginsDir == null) {
             File workDirFile;
-            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
             if (workDir == null) {
                 workDir = System.getProperty("user.home"); // NOI18N
                 workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
