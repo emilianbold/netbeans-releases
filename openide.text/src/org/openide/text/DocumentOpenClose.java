@@ -181,7 +181,10 @@ final class DocumentOpenClose {
     void setDocumentStronglyReferenced(boolean stronglyReferenced) {
         if (stronglyReferenced) {
             StyledDocument doc = getRefDocument();
-            assert (doc != null) : "Null doc cannot be strongly referenced."; // NOI18N
+            // doc should be non-null although the following assert statement
+            // was triggered from CES.setAlreadyModified() in #240075
+            // (probably there was an explicit close operation while an action was running).
+//            assert (doc != null) : "Null doc cannot be strongly referenced."; // NOI18N
             strongDocRef = doc;
         } else {
             strongDocRef = null;
