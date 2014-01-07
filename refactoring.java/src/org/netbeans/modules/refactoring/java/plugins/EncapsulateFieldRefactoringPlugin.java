@@ -933,6 +933,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     Collections.<ExpressionTree>emptyList(),
                     getter,
                     Collections.<ExpressionTree>emptyList());
+            GeneratorUtilities.get(workingCopy).copyComments(current, invkgetter, false);
+            GeneratorUtilities.get(workingCopy).copyComments(current, invkgetter, true);
             return invkgetter;
         }
 
