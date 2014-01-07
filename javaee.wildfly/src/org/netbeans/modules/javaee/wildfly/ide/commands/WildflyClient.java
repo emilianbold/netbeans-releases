@@ -42,44 +42,37 @@
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
-import org.netbeans.modules.javaee.wildfly.JBTargetModuleID;
+import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
 import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
 import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDestinationNode;
-import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBWebModuleNode;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
-import static org.netbeans.modules.javaee.wildfly.ide.commands.WidlfyManagementAPI.*;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.*;
+import org.netbeans.modules.javaee.wildfly.nodes.JBEarApplicationNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEJBComponentNode;
 
 /**
  *
@@ -348,10 +341,10 @@ public class WildflyClient {
         }
     }
 
-    public Collection<JBEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
+    public Collection<WildflyEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<JBEjbModuleNode> modules = new ArrayList<JBEjbModuleNode>();
+            List<WildflyEjbModuleNode> modules = new ArrayList<WildflyEjbModuleNode>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             // ModelNode
@@ -367,7 +360,13 @@ public class WildflyClient {
                     // ModelNode
                     Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "SUBSYSTEM")), EJB3_SUBSYSTEM);
                     if (modelNodeIsDefined(cl, deployment)) {
-                        modules.add(new JBEjbModuleNode(modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "NAME"))), lookup, true));
+                        List<WildflyEJBComponentNode> ejbInstances = new ArrayList<WildflyEJBComponentNode>();
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.ENTITY));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.MDB));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.SINGLETON));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATEFULL));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATELESS));
+                        modules.add(new WildflyEjbModuleNode(modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "NAME"))), lookup, ejbInstances, true));
                     }
                 }
             }
@@ -383,7 +382,7 @@ public class WildflyClient {
         }
     }
 
-    public boolean startModule(JBTargetModuleID tmid) throws IOException {
+    public boolean startModule(WildflyTargetModuleID tmid) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
@@ -846,5 +845,96 @@ public class WildflyClient {
         } catch (InstantiationException ex) {
             return false;
         }
+    }
+
+    public Collection listEarApplications(Lookup lookup) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBEarApplicationNode> modules = new ArrayList<JBEarApplicationNode>();
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                Object result = readResult(cl, response);
+                List applications = modelNodeAsList(cl, result);
+                for (Object application : applications) {
+                    String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "NAME")));
+                    if (applicationName.endsWith(".ear")) {
+                        modules.add(new JBEarApplicationNode(applicationName, lookup));
+                    }
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public Collection listEarSubModules(Lookup lookup, String jeeApplicationName) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List modules = new ArrayList();
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, jeeApplicationName);
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                String httpPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+                Object result = readResult(cl, response);
+                List subDeployments = modelNodeAsList(cl, getModelNodeChild(cl, result, "subdeployment"));
+                for (Object subDeployment : subDeployments) {
+                    String applicationName = modelNodeAsPropertyForName(cl, subDeployment);
+                    if (applicationName.endsWith(".war")) {
+                        // ModelNode
+                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, subDeployment), getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                        if (modelNodeIsDefined(cl, deployment)) {
+                            String url = "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                            modules.add(new JBWebModuleNode(applicationName, lookup, url));
+                        } else {
+                            modules.add(new JBWebModuleNode(applicationName, lookup, null));
+                        }
+                    } else if (applicationName.endsWith(".jar")) {
+                        // ModelNode
+                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, subDeployment), getClientConstant(cl, "SUBSYSTEM")), EJB3_SUBSYSTEM);
+                        if (modelNodeIsDefined(cl, deployment)) {
+                            List<WildflyEJBComponentNode> ejbs = new ArrayList<WildflyEJBComponentNode>();
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.ENTITY));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.MDB));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.SINGLETON));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATEFULL));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATELESS));
+                            modules.add(new WildflyEjbModuleNode(applicationName, lookup, ejbs, true));
+                        }
+                    }
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    private List<WildflyEJBComponentNode> listEJBs(WildFlyDeploymentFactory.WildFlyClassLoader cl,
+            Object deployment, WildflyEJBComponentNode.Type type) throws IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
+        List<WildflyEJBComponentNode> modules = new ArrayList<WildflyEJBComponentNode>();
+        if (modelNodeHasDefinedChild(cl, deployment, type.getPropertyName())) {
+            List ejbs = modelNodeAsList(cl, getModelNodeChild(cl, deployment, type.getPropertyName()));
+            for (Object ejb : ejbs) {
+                modules.add(new WildflyEJBComponentNode(modelNodeAsPropertyForName(cl, ejb), type));
+            }
+        }
+        return modules;
     }
 }

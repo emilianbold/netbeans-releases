@@ -448,16 +448,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             throw new ConfigurationException(msg, ioe);
         }
     }
-
-    @Override
-    public boolean supportsCreateDatasource() {
-        return isWildfly();
-    }
-
-    @Override
-    public boolean supportsCreateMessageDestination() {
-        return isWildfly();
-    }
     
     // private helper interface -----------------------------------------------
      

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -71,18 +72,18 @@ public class JBEarApplicationsChildren extends JBAsyncChildren implements Refres
     @Override
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7EarApplicationNodeUpdater(), 0);
+        getExecutorService().submit(new WildflyEarApplicationNodeUpdater(), 0);
     }
 
-    class JBoss7EarApplicationNodeUpdater implements Runnable {
+    class WildflyEarApplicationNodeUpdater implements Runnable {
 
         List keys = new ArrayList();
 
         @Override
         public void run() {
             try {
-                // XXX add JBEarApplicationNode(s) to keys
-                // XXX WILDFLY IMPLEMENT
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listEarApplications(lookup));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }

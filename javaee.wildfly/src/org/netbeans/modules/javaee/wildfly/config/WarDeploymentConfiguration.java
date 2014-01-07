@@ -122,16 +122,6 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     public void dispose() {
     }
 
-    @Override
-    public boolean supportsCreateDatasource() {
-        return isWildfly();
-    }
-    
-    @Override
-    public boolean supportsCreateMessageDestination() {
-        return isWildfly();
-    }
-
     /**
      * Return context path.
      * 
