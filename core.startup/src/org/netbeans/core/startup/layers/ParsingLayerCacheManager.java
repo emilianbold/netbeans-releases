@@ -222,20 +222,21 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             fileOrFolder(qname, attrs);
         } else if (qname.equals("file")) {
             MemFileOrFolder mfof = fileOrFolder(qname, attrs);
-            if (!(mfof instanceof MemFile)) { // a collision between modules
-                throw new ClassCastException("mfof: " + mfof + " stack: " + curr); // NOI18N
-            }
-            buf.setLength(0);
-            ref = null;
-            String u = attrs.getValue("url");
-            if (u != null) {
-                try {
-                    ref = new URL(base, u);
-                } catch (MalformedURLException mfue) {
-                    throw (SAXException) new SAXException(mfue.toString()).initCause(mfue);
+            if (!(mfof instanceof MemFile)) { 
+                // a collision between modules
+            } else {
+                buf.setLength(0);
+                ref = null;
+                String u = attrs.getValue("url");
+                if (u != null) {
+                    try {
+                        ref = new URL(base, u);
+                    } catch (MalformedURLException mfue) {
+                        throw (SAXException) new SAXException(mfue.toString()).initCause(mfue);
+                    }
                 }
+                weight = 0;
             }
-            weight = 0;
         } else if (qname.equals("attr")) {
             attrCount++;
             MemAttr attr = new MemAttr();
@@ -341,8 +342,9 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
     }
     
     public void endElement(String ns, String lname, String qname) throws SAXException {
-        if (qname.equals("file")) {
-            MemFile file = (MemFile) curr.peek();
+        Object poke;
+        if (qname.equals("file") && (poke = curr.peek()) instanceof MemFile) {
+            MemFile file = (MemFile) poke;
             if (weight /* #23609: reversed, so not > */>= file.weight) {
                 file.weight = weight;
                 file.contents = null;
