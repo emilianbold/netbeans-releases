@@ -157,12 +157,23 @@
     </target>
     
     <target name="profile-rp-calibrate-passwd" if="remote.platform.auth.passwd">
-        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" usepty="true" command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" 
+                 username="${remote.platform.user}" password="${remote.platform.password}" 
+                 trust="true" usepty="true" 
+                 command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+        <scp file="${remote.platform.user}:${remote.platform.password}@${remote.platform.host}:~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}"
+            localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}" trust="true"/>
     </target>
         
     <target name="profile-rp-calibrate-key" if="remote.platform.auth.key">
         <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
-        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" usepty="true" command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" 
+                 username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" 
+                 passphrase="${remote.platform.passphrase}" trust="true" usepty="true" 
+                 command="export JAVA_HOME=${remote.platform.home.dir}; [ -f ~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver} ] &amp;&amp; echo &quot;Calibration data exists: skipping calibration&quot; || ${remote.dist.dir}/remotepack/bin/calibrate.sh"/>
+        <scp file="${remote.platform.user}:${remote.platform.password}@${remote.platform.host}:~/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}"
+             localTofile="${user.home}/.nbprofiler/machinedata.jdk${remote.platform.java.spec.ver}.${remote.platform.host}" trust="true"
+             keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}"/>
     </target>
     
     <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -copy-to-remote-platform, -run-remote-passwd, -run-remote-key"/>
