@@ -479,12 +479,12 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         synchronized(resultsSync) {
             if (hasResults()) {
                 int size = results.size();
+                long timeStamp = results.get(size - 1).getTimestamp();
+                String time = Utils.formatProfilingPointTime(timeStamp);
 
                 return (size == 1)
-                       ? Bundle.TriggeredTakeSnapshotProfilingPoint_OneHitString(
-                            Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp()))
-                       : Bundle.TriggeredTakeSnapshotProfilingPoint_NHitsString(
-                            size, Utils.formatLocalProfilingPointTime(results.get(size - 1).getTimestamp()));
+                       ? Bundle.TriggeredTakeSnapshotProfilingPoint_OneHitString(time)
+                       : Bundle.TriggeredTakeSnapshotProfilingPoint_NHitsString(size, time);
             } else {
                 return Bundle.TriggeredTakeSnapshotProfilingPoint_NoResultsString();
             }
