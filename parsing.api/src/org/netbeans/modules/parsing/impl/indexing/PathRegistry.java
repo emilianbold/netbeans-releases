@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
@@ -98,6 +99,7 @@ public final class PathRegistry implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
     private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<String>(Arrays.asList("file", "nbfs", "rfs"));   //NOI18N
     private static final String DIGEST_ALGORITHM = "SHA1";  //NOI18N
+    private static final boolean[] BOOLOUT = new boolean[1];
 
     private final RequestProcessor.Task firerTask;
     private final RequestProcessor.Task openProjectChangeTask;
@@ -183,7 +185,16 @@ public final class PathRegistry implements Runnable {
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
     public URL[] sourceForBinaryQuery (final URL binaryRoot, final ClassPath definingClassPath, final boolean fire) {
+        return sourceForBinaryQuery(binaryRoot, definingClassPath, fire, BOOLOUT);
+    }
+
+    URL[] sourceForBinaryQuery (
+        @NonNull final URL binaryRoot,
+        @NullAllowed final ClassPath definingClassPath,
+        final boolean fire,
+        /*@Out*/ @NonNull final boolean[] newRoot) {
         assert noHostPart(binaryRoot) : binaryRoot;
+        newRoot[0] = false;
         URL[] result = this.translatedRoots.get(binaryRoot);
         if (result != null) {
             if (result.length > 0) {
@@ -202,19 +213,21 @@ public final class PathRegistry implements Runnable {
             }
             if (unknownRes.isEmpty()) {
                 return null;
-            }
-            else {
+            } else {
                 result = new URL[unknownRes.size()];
                 synchronized (this) {
                     int i = 0;
                     for (URL u : unknownRes) {
                         result[i++] = u;
-                        unknownRoots.put(u,new WeakValue(definingClassPath,u));
+                        if (!unknownRoots.containsKey(u)) {
+                            unknownRoots.put(u,new WeakValue(definingClassPath,u));
+                            newRoot[0] = true;
+                        }
                     }
                 }
                 if (FIRE_UNKNOWN_ALWAYS && fire) {
                     this.resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.UNKNOWN_SOURCE, null, Collections.singleton(definingClassPath));
-                }
+                }                
                 return result;
             }
         } else {
