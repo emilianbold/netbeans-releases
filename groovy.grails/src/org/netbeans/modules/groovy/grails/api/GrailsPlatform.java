@@ -667,7 +667,14 @@ public final class GrailsPlatform {
                     builder.append(update == null ? 0 : update);
                 }
                 if (qualifier != null) {
-                    builder.append('-'); // NOI18N
+                    // If we have first three numbers and no "update" version, we are
+                    // probably in situation of Grails version 1.4 and higher because since
+                    // then format is always either of type 2.2.0 or 2.2.0.RC1
+                    if (minor != null && micro != null && update == null) {
+                        builder.append('.'); // NOI18N
+                    } else {
+                        builder.append('-'); // NOI18N
+                    }
                     builder.append(qualifier);
                 }
 
