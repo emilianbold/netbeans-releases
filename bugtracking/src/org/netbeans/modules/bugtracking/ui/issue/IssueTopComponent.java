@@ -181,7 +181,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             repositoryComboBox.setRenderer(new RepositoryComboRenderer());
             repositoryComboBox.setSelectedItem(defaultRepository.getRepository());
             repositoryComboBox.setEnabled(false);
-            newButton.setEnabled(false);
+            newButton.setVisible(false);
             onRepoSelected();
         } else {
             if(defaultRepository == null) {
