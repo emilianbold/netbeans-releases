@@ -235,7 +235,7 @@ public final class BuildConfig {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             Map<String, File> cached = config.getLocalPlugins();
             if (cached != null && isBuildConfigPresent()) {
-                localPlugins = new ArrayList<GrailsPlugin>();
+                localPlugins = new ArrayList<>();
                 for (Map.Entry<String, File> entry : cached.entrySet()) {
                     localPlugins.add(new GrailsPlugin(entry.getKey(), null, null, entry.getValue()));
                 }
@@ -289,7 +289,7 @@ public final class BuildConfig {
                     config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
                     config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
 
-                    Map<String, File> prepared = new HashMap<String, File>();
+                    Map<String, File> prepared = new HashMap<>();
                     for (GrailsPlugin plugin : currentLocalPlugins) {
                         prepared.put(plugin.getName(), plugin.getPath());
                     }
@@ -323,11 +323,7 @@ public final class BuildConfig {
                 Method getCompileDependenciesMethod = buildSettingsInstance.getClass().getMethod("getCompileDependencies", new Class[] {}); // NOI18N
                 return (List<File>) getCompileDependenciesMethod.invoke(buildSettingsInstance, new Object[] {});
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
         return Collections.emptyList();
@@ -354,11 +350,7 @@ public final class BuildConfig {
                     return FileUtil.normalizeFile(file);
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -406,11 +398,7 @@ public final class BuildConfig {
                     return FileUtil.normalizeFile(file);
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -454,7 +442,7 @@ public final class BuildConfig {
 
                 if (converted instanceof Properties) {
                     Properties properties = (Properties) converted;
-                    List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>();
+                    List<GrailsPlugin> plugins = new ArrayList<>();
                     for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
                         String key = (String) e.nextElement();
                         if (key.startsWith("grails.plugin.location.")) { // NOI18N
@@ -470,11 +458,7 @@ public final class BuildConfig {
                     return plugins;
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -508,15 +492,7 @@ public final class BuildConfig {
             loadConfigMethod.invoke(instance, new Object[] {});
 
             return instance;
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InstantiationException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;

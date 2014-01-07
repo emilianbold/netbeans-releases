@@ -122,7 +122,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
         BuildConfig buildConfig = ((GrailsProject) projectConfig.getProject()).getBuildConfig();
 
-        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        List<PathResourceImplementation> result = new ArrayList<>();
         // lib directory from project root
         addLibs(projectRoot, result);
 

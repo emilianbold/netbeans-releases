@@ -415,6 +415,7 @@ public final class GrailsProjectConfig {
             this.propertyChangeSupport = propertyChangeSupport;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             propertyChangeSupport.firePropertyChange(GRAILS_PLATFORM_PROPERTY, null, null);
         }
