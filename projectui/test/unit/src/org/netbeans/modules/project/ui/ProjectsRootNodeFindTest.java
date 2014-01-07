@@ -70,6 +70,10 @@ public class ProjectsRootNodeFindTest extends NbTestCase {
     }            
 
     public void testFindNode() throws Exception{
+        
+         //compute project root node children in sync mode
+        System.setProperty("test.projectnode.sync", "true");
+        
         //prepearing project
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         CountDownLatch down = new CountDownLatch(1);

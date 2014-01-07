@@ -87,7 +87,9 @@ import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -112,6 +114,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Checks:
@@ -140,6 +143,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     private final SourceVersion sourceVersion;
     private final Access access;
     
+    private Deque<StartElementTree> tagStack = new LinkedList<>();
     private Set<Element> foundParams = new HashSet<>();
     private Set<TypeMirror> foundThrows = new HashSet<>();
     private TypeMirror returnType = null;
@@ -275,7 +279,21 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitDocComment(DocCommentTree node, List<ErrorDescription> errors) {
-        return super.visitDocComment(node, errors);
+        DocTreePath currentDocPath = getCurrentPath();
+        Void value = super.visitDocComment(node, errors);
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        
+        while (!tagStack.isEmpty()) {
+            StartElementTree startTree = tagStack.pop();
+            Name tagName = startTree.getName();
+            HtmlTag tag = HtmlTag.get(tagName);
+            if (tag.endKind == HtmlTag.EndKind.REQUIRED) {
+                int s = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), startTree);
+                int e = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), startTree);
+                errors.add(ErrorDescriptionFactory.forSpan(ctx, s, e, TAG_START_UNMATCHED(tagName)));
+            }
+        }
+        return value;
     }
 
     @Override
@@ -284,7 +302,63 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     }
 
     @Override
+    @Messages({"# {0} - Tag Name", "TAG_END_NOT_PERMITTED=Invalid End Tag: </{0}>",
+               "# {0} - Tag Name", "TAG_END_UNEXPECTED=Unexpected End Tag: </{0}>",
+               "# {0} - Tag Name", "TAG_START_UNMATCHED=End Tag Missing: </{0}>"})
     public Void visitEndElement(EndElementTree node, List<ErrorDescription> errors) {
+        DocTreePath currentDocPath = getCurrentPath();
+        DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        if(dtph == null) {
+            return null;
+        }
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        
+        final Name treeName = node.getName();
+        final HtmlTag t = HtmlTag.get(treeName);
+        if (t == null) {
+             errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_END_UNKNOWN(treeName)));
+        } else if (t.endKind == HtmlTag.EndKind.NONE) {
+//            env.messages.error(HTML, node, "dc.tag.end.not.permitted", treeName);
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_END_NOT_PERMITTED(treeName)));
+        } else {
+            boolean done = false;
+            while (!tagStack.isEmpty()) {
+                StartElementTree startTree = tagStack.peek();
+                Name tagName = startTree.getName();
+                HtmlTag tag = HtmlTag.get(tagName);
+                if (t == tag) {
+                    tagStack.pop();
+                    done = true;
+                    break;
+                } else if (tag.endKind != HtmlTag.EndKind.REQUIRED) {
+                    tagStack.pop();
+                } else {
+                    boolean found = false;
+                    for (StartElementTree set : tagStack) {
+                        HtmlTag si = HtmlTag.get(set.getName());
+                        if (si == t) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        int s = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), startTree);
+                        int e = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), startTree);
+                        errors.add(ErrorDescriptionFactory.forSpan(ctx, s, e, TAG_START_UNMATCHED(tagName)));
+                        tagStack.pop();
+                    } else {
+                        errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_END_UNEXPECTED(treeName)));
+                        done = true;
+                        break;
+                    }
+                }
+            }
+            if (!done && tagStack.isEmpty()) {
+                errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_END_UNEXPECTED(treeName)));
+            }
+        }
         return super.visitEndElement(node, errors);
     }
 
@@ -535,7 +609,30 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     }
 
     @Override
+    @Messages({"# {0} - Tag name",
+               "TAG_UNKNOWN=Unknown HTML Tag: <{0}>",
+                "# {0} - Tag name",
+               "TAG_END_UNKNOWN=Unknown HTML End Tag: </{0}>"})
     public Void visitStartElement(StartElementTree node, List<ErrorDescription> errors) {
+        DocTreePath currentDocPath = getCurrentPath();
+        DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        if(dtph == null) {
+            return null;
+        }
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        
+        
+        final Name treeName = node.getName();
+        final HtmlTag t = HtmlTag.get(treeName);
+        if (t == null) {
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_UNKNOWN(treeName)));
+        } else {
+            if(t.endKind != HtmlTag.EndKind.NONE) {
+                tagStack.push(node);
+            }
+        }
         return super.visitStartElement(node, errors);
     }
 

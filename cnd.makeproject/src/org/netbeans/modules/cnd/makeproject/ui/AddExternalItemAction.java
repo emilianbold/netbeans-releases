@@ -81,8 +81,9 @@ public class AddExternalItemAction extends AbstractAction {
         if (!makeProjectDescriptor.okToChange()) {
             return;
         }
+        final String chooser_key = "AddExternalItem"; //NOI18N
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(makeProjectDescriptor.getBaseDirFileSystem());
-        String seed = RemoteFileUtil.getCurrentChooserFile(env);
+        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
 	if (seed == null) {
 	    seed = makeProjectDescriptor.getBaseDir();
 	}
@@ -100,25 +101,29 @@ public class AddExternalItemAction extends AbstractAction {
         }
 
 	File[] files = fileChooser.getSelectedFiles();
-	ArrayList<Item> items = new ArrayList<Item>();
-	for (int i = 0; i < files.length; i++) {
-            if (!files[i].exists()) {
-                String errormsg = NbBundle.getMessage(AddExternalItemAction.class, "FILE_DOESNT_EXISTS", files[i].getPath()); // NOI18N
+	ArrayList<Item> items = new ArrayList<>();        
+        if (files.length > 0) {
+            File selectedFolder = files[0].isFile() ? files[0].getParentFile() : files[0];
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
+        }
+        for (File file : files) {
+            if (!file.exists()) {
+                String errormsg = NbBundle.getMessage(AddExternalItemAction.class, "FILE_DOESNT_EXISTS", file.getPath()); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                 continue;
             }
-	    String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), files[i].getPath(), project);
-	    itemPath = CndPathUtilities.normalizeSlashes(itemPath);
+            String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), file.getPath(), project);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
-	    if (item != null) {
+            if (item != null) {
                 items.add(item);
-	    }
+            }
             else {
                 item = Item.createInFileSystem(makeProjectDescriptor.getBaseDirFileSystem(), itemPath);
                 makeProjectDescriptor.getExternalItemFolder().addItem(item);
                 items.add(item);
             }
-	}
+        }
         if (items.size() > 0) {
             makeProjectDescriptor.save();
             MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));

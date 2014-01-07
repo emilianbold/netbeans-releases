@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
@@ -129,6 +130,11 @@ public class InitializeFieldSuggestion extends SuggestionRule {
         }
 
         @Override
+        public void visit(InterfaceDeclaration node) {
+            // do not process ifaces
+        }
+
+        @Override
         public void visit(SingleFieldDeclaration node) {
             String fieldName = CodeUtils.extractVariableName(node.getName());
             if (fieldName != null) {
@@ -138,8 +144,8 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(MethodDeclaration node) {
-            if (CodeUtils.isConstructor(node)) {
-                FunctionDeclaration function = node.getFunction();
+            FunctionDeclaration function = node.getFunction();
+            if (CodeUtils.isConstructor(node) && function.getBody() != null) {
                 formalParameters = new ArrayList<>(function.getFormalParameters());
                 isInConstructor = true;
                 constructorBodyEndOffset = function.getBody().getEndOffset() - 1;

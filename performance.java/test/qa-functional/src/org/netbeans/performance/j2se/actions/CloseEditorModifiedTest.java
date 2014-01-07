@@ -41,12 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.CloseViewAction;
@@ -54,80 +51,88 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Closing Editor tabs.
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class CloseEditorModifiedTest extends PerformanceTestCase {
-    
-    /** Editor with opened file */
+
+    /**
+     * Editor with opened file
+     */
     public static EditorOperator editorOperator;
-    /** Dialog with asking for Save */
+    /**
+     * Dialog with asking for Save
+     */
     private static NbDialogOperator dialog;
-    
-    
+
     /**
      * Creates a new instance of CloseEditor
+     *
      * @param testName the name of the test
      */
     public CloseEditorModifiedTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 100;
     }
-    
+
     /**
      * Creates a new instance of CloseEditor
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public CloseEditorModifiedTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 100;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(CloseEditorModifiedTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar", "testOpenDataProject")
+                .addTest(CloseEditorModifiedTest.class)
+                .suite();
     }
-    
-    public void testCloseEditorModified(){
+
+    public void testCloseEditorModified() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
-    public void initialize(){
+    public void initialize() {
         EditorOperator.closeDiscardAll();
         new OpenAction().performPopup(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorOperator("Main.java");
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
     }
 
     @Override
-    public void shutdown(){
+    public void shutdown() {
         EditorOperator.closeDiscardAll();
+        repaintManager().resetRegionFilters();
     }
-    
-    public void prepare(){
+
+    @Override
+    public void prepare() {
         editorOperator.txtEditorPane().typeText("XXX");
     }
-    
-    public ComponentOperator open(){
-        new CloseViewAction().performMenu(editorOperator); 
+
+    @Override
+    public ComponentOperator open() {
+        new CloseViewAction().performMenu(editorOperator);
         dialog = new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.text.Bundle", "LBL_SaveFile_Title"));
         return dialog;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         dialog.cancel();
     }
-    
 }

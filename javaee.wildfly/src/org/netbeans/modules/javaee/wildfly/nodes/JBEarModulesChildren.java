@@ -44,11 +44,16 @@
 
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.util.Vector;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -56,8 +61,9 @@ import org.openide.util.RequestProcessor;
  * It describes children nodes of the enterprise application node.
  *
  * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBEarModulesChildren extends Children.Keys {
+public class JBEarModulesChildren extends JBAsyncChildren implements Refreshable  {
 
     private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
 
@@ -69,35 +75,42 @@ public class JBEarModulesChildren extends Children.Keys {
         this.j2eeAppName = j2eeAppName;
     }
 
+    @Override
     public void updateKeys(){
-        setKeys(new Object[] {Util.WAIT_NODE});
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new WildflyEarModulesNodeUpdater(), 0);
+    }
+    
+    class WildflyEarModulesNodeUpdater implements Runnable {
 
-        RequestProcessor.getDefault().post(new Runnable() {
-            Vector keys = new Vector();
-            WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
+        List keys = new ArrayList();
 
-            @Override
-            public void run() {
-                // XXX add JBWebModuleNode(s), JBEjbModuleNode(s) to keys
-                // XXX WILDFLY IMPLEMENT
-
-                setKeys(keys);
+        @Override
+        public void run() {
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listEarSubModules(lookup, j2eeAppName));
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
-        }, 0);
-
+            setKeys(keys);
+        }
     }
 
+    @Override
     protected void addNotify() {
         updateKeys();
     }
 
+    @Override
     protected void removeNotify() {
         setKeys(java.util.Collections.EMPTY_SET);
     }
 
+    @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBEjbModuleNode){
-            return new Node[]{(JBEjbModuleNode)key};
+        if (key instanceof WildflyEjbModuleNode){
+            return new Node[]{(WildflyEjbModuleNode)key};
         }
 
         if (key instanceof JBWebModuleNode){

@@ -154,7 +154,7 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project, fileObject);
+        FileObject webRoot = getWebRoot(project, fileObject);
         File target = getTargetFile(project, webRoot, file);
         if (target == null) {
             // not found
@@ -188,11 +188,28 @@ abstract class BaseProcessor {
         assert originalName != null : fileObject;
         assert originalExtension != null : fileObject;
         File originalFile = new File(FileUtil.toFile(fileObject).getParentFile(), originalName + "." + originalExtension); // NOI18N
-        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), originalFile));
+        File targetFile = getTargetFile(project, getWebRoot(project, fileObject), originalFile);
+        deleteFile(targetFile);
+        deleteMapFile(targetFile);
     }
 
     private void fileDeleted(Project project, FileObject fileObject) {
-        deleteFile(getTargetFile(project, CssPreprocessorUtils.getWebRoot(project, fileObject), FileUtil.toFile(fileObject)));
+        File targetFile = getTargetFile(project, getWebRoot(project, fileObject), FileUtil.toFile(fileObject));
+        deleteFile(targetFile);
+        deleteMapFile(targetFile);
+    }
+
+    // #239916
+    private void deleteMapFile(File targetFile) {
+        if (targetFile == null) {
+            return;
+        }
+        deleteFile(getMapFile(targetFile));
+    }
+
+    protected File getMapFile(@NonNull File targetFile) {
+        assert targetFile != null;
+        return new File(targetFile.getParent(), targetFile.getName() + ".map"); // NOI18N
     }
 
     private void deleteFile(File file) {
@@ -233,6 +250,18 @@ abstract class BaseProcessor {
             return null;
         }
         return target;
+    }
+
+    // #237600
+    @CheckForNull
+    private FileObject getWebRoot(Project project, FileObject fileObject) {
+        // try to resolve webroot even if input file is not underneath webroot
+        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project, fileObject);
+        if (webRoot != null) {
+            return webRoot;
+        }
+        // simply get some webroot
+        return CssPreprocessorUtils.getWebRoot(project);
     }
 
 }

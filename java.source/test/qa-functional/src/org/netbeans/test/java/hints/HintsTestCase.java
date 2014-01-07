@@ -32,6 +32,7 @@ package org.netbeans.test.java.hints;
 
 import java.awt.Container;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import javax.swing.ListModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -66,10 +67,10 @@ public class HintsTestCase extends JavaTestCase {
 
     private void compareArrays(String[] ethalon, String[] current) {
         for (int i = 0; i < current.length; i++) {
-            String curItem = current[i];
+            String curItem = current[i].toUpperCase();
             int j = 0;
             for (j = 0; j < ethalon.length; j++) {
-                String ethalItem = ethalon[j];
+                String ethalItem = ethalon[j].toUpperCase();
                 if (curItem.startsWith(ethalItem)) {
                     break;
                 }
@@ -78,10 +79,10 @@ public class HintsTestCase extends JavaTestCase {
         }
 
         for (int i = 0; i < ethalon.length; i++) {
-            String ethalItem = ethalon[i];
+            String ethalItem = ethalon[i].toUpperCase();
             int j = 0;
             for (j = 0; j < current.length; j++) {
-                String curItem = current[j];
+                String curItem = current[j].toUpperCase();
                 if (curItem.startsWith(ethalItem)) {
                     break;
                 }
@@ -114,7 +115,7 @@ public class HintsTestCase extends JavaTestCase {
         int cycles = 0;
         while (cycles < MAX_CYCLES) {
             cycles++;
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout",cycles*500);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout",500);
             editor.pushKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);            
             try {
                 jlo = new JListOperator(MainWindowOperator.getDefault());
@@ -136,6 +137,7 @@ public class HintsTestCase extends JavaTestCase {
             }
         }
         if (hints != null) {
+            System.out.println("Found: "+Arrays.toString(list));
             compareArrays(hints, list);
         }
         assertFalse("Required hint " + hint + " not found", index == -1);
@@ -165,7 +167,7 @@ public class HintsTestCase extends JavaTestCase {
         int i = 0;
         for (i = 0; i < jto.getRowCount(); i++) {
             jto.selectRow(i);
-            jto.collapseRow(i);
+            jto.collapseRow(i);            
             Object lastSelectedPathComponent = jto.getLastSelectedPathComponent();
             Object userObject = ((DefaultMutableTreeNode) lastSelectedPathComponent).getUserObject();
             String fileName = ((FileObject) userObject).getName();            

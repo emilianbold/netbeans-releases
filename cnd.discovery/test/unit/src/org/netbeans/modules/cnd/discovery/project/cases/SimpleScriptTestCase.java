@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
@@ -164,8 +163,6 @@ public class SimpleScriptTestCase extends MakeProjectTestBase {
                         return "./clean.bash";
                     } else if (WizardConstants.PROPERTY_RUN_CONFIGURE.equals(name)) {
                         return "true";
-                    } else if (WizardConstants.PROPERTY_CONSOLIDATION_LEVEL.equals(name)) {
-                        return ConsolidationStrategy.FILE_LEVEL;
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.equals(name)) {
                         return MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
                     } else if (WizardConstants.PROPERTY_SOURCE_FOLDERS.equals(name)) {

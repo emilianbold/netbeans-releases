@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -1243,7 +1243,8 @@ public class ModuleDependencies extends Task {
          */
         public boolean isSpecial () {
             return token.startsWith ("org.openide.modules.os") ||
-                   token.startsWith ("org.openide.modules.ModuleFormat");
+                   token.startsWith ("org.openide.modules.ModuleFormat") ||
+                   token.equals("org.openide.modules.jre.JavaFX");
         }
         
         public boolean isDependingOn (ModuleInfo info) {

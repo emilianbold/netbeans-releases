@@ -82,6 +82,9 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        if (snapshot == null) {
+            return Collections.emptyList();
+        }
         TokenHierarchy th = snapshot.getTokenHierarchy();
         if(th == null) {
             //no lexer language for the snapshot's mimetype???
@@ -245,12 +248,12 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 //                                        if(c == '/' || c == '$') {
 //                                            //create document embedding for the prefix part
 //                                            embeddings.add(snapshot.create(sourceStart + i, i - sourceStart, CSS_MIME_TYPE));
-//                                            
+//
 //                                            embeddings.add(snapshot.create("/", CSS_MIME_TYPE));
-//                                            
+//
 //                                        }
 //                                    }
-//                                    
+//
                                     //compute the token's document offset
                                     int start_in_document = sourceStart + start;
                                     int length = end - start;

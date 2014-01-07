@@ -112,7 +112,7 @@ public class WLServerLibraryManager implements ServerLibraryManager {
         }
 
         if (!notHandled.isEmpty()) {
-            throw new ConfigurationException(NbBundle.getMessage(WLServerLibraryManager.class, "MSG_DidNotFindServerLibraries"));
+            throw new MissingLibrariesException(NbBundle.getMessage(WLServerLibraryManager.class, "MSG_DidNotFindServerLibraries"), notHandled);
         }
 
         try {

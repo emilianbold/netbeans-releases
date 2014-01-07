@@ -101,8 +101,8 @@ public class JBEjbModulesChildren extends JBAsyncChildren implements Refreshable
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBEjbModuleNode) {
-            return new Node[]{(JBEjbModuleNode) key};
+        if (key instanceof WildflyEjbModuleNode) {
+            return new Node[]{(WildflyEjbModuleNode) key};
         }
 
         if (key instanceof String && key.equals(Util.WAIT_NODE)) {

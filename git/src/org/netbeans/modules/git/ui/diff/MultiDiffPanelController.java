@@ -636,8 +636,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             EditorCookie cookie = DiffUtils.getEditorCookie(s);
             s.setNode(new DiffLocalNode(fNode, s, cookie, mode));
             Map<File, Setup> localSetups = Collections.singletonMap(file, s);
-            setSetups(localSetups, Collections.<File, EditorCookie>singletonMap(file,
-                    DiffUtils.getEditorCookie(localSetups.values().iterator().next())));
+            setSetups(localSetups, cookie == null ? Collections.<File, EditorCookie>emptyMap()
+                    : Collections.<File, EditorCookie>singletonMap(file, cookie));
             setDiffIndex(s, 0, false);
             dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
             prepareTask = RP.create(dpt);

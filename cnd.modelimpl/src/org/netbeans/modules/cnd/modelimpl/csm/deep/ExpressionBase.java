@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * Common base for all expression implementations
  * @author Vladimir Kvashin
  */
-public final class ExpressionBase extends OffsetableBase implements CsmExpression {
+public class ExpressionBase extends OffsetableBase implements CsmExpression {
     
     //private final CsmExpression.Kind kind;
     //private final CsmExpression parent;
@@ -80,40 +80,20 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     
     private List<CsmStatement> lambdas;
     
-    private ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+    ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         //this.parent = parent;
         if( scope != null ) {
-	    setScope(scope);
-	}
-    }
-
-    public static ExpressionBase create(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
-        ExpressionBase expr = new ExpressionBase(ast, file, scope);
-        AST token = ast.getFirstChild();
-        List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
-        while (token != null) {
-            if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
-                lambdas.add(AstRenderer.renderStatement(token, file, scope));
-            }
-            token = token.getNextSibling();
+            setScope(scope);
         }
-        if(!lambdas.isEmpty()) {
-            expr.setLambdas(lambdas);
-        }        
-        return expr;
     }
 
-    private ExpressionBase(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+    ExpressionBase(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, startOffset, endOffset);
         //this.parent = parent;
         if( scope != null ) {
-	    setScope(scope);
-	}
-    }
-
-    public static ExpressionBase create(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
-        return new ExpressionBase(startOffset, endOffset, file, scope);
+            setScope(scope);
+        }
     }
 
     @Override
@@ -132,6 +112,11 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
             return Collections.<CsmStatement>emptyList();
         }
         return lambdas;        
+    }
+
+    @Override
+    public CharSequence getExpandedText() {
+        return getText();
     }
     
     public void setLambdas(List<CsmStatement> lambdas) {

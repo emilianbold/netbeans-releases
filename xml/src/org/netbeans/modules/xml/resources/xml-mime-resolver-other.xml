@@ -56,4 +56,8 @@ made subject to such option by the copyright holder.
         <ext name="xsd"/>
         <resolver mime="text/xsd+xml"/>
     </file>
+    <file>
+        <ext name="svg"/>
+        <resolver mime="image/svg+xml"/>
+    </file>
 </MIME-resolver>

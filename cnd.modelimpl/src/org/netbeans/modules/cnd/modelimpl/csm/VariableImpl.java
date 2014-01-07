@@ -68,7 +68,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -138,7 +140,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public static int getStartOffset(AST node) {
         if (node != null) {
-            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
             if (csmAst != null) {
                 return csmAst.getOffset();
             }
@@ -260,7 +262,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 tok = tok.getNextSibling();
             }
             if (tok != null) {
-                CsmAST startAST = AstUtil.getFirstCsmAST(tok);
+                OffsetableAST startAST = AstUtil.getFirstOffsetableAST(tok);
                 if (startAST != null) {
                     start = startAST.getOffset();
                 }
@@ -306,8 +308,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
                     int end = ((CsmAST) lastChild).getEndOffset();
-                    initExpr = ExpressionBase.create(start, end, getContainingFile(),/* null,*/ _getScope());
-                    if(!lambdas.isEmpty()) {
+                    initExpr = ExpressionsFactory.create(start, end, getContainingFile(),/* null,*/ _getScope());
+                    if (!lambdas.isEmpty()) {
                         initExpr.setLambdas(lambdas);
                     }
                 }

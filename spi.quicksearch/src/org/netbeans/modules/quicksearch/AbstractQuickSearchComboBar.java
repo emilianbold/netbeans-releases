@@ -54,9 +54,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.JCheckBoxMenuItem;
@@ -272,7 +271,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
 
         JPopupMenu pm = new JPopupMenu();
         final Set<ProviderModel.Category> evalCats =
-                new HashSet<ProviderModel.Category>();
+                new LinkedHashSet<ProviderModel.Category>();
         evalCats.addAll(CommandEvaluator.getEvalCats());
         JMenuItem allCats = new AllMenuItem(evalCats);
         pm.add(allCats);

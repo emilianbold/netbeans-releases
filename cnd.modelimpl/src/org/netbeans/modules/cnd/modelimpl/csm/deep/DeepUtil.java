@@ -43,17 +43,31 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
+import java.util.*;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import java.util.*;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
+import static org.netbeans.modules.cnd.modelimpl.csm.TypeImpl.visitPointerOperator;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Misc static methods used by deep impls
  * @author Vladimir Kvashin
  */
 public class DeepUtil {
+    
+    public static interface ASTTokenVisitor {
+        
+        /**
+         * @param token 
+         * @return true to continue visiting, false to abort
+         */
+        boolean visit(AST token);
+        
+    }    
 
     public static List<CsmScopeElement> merge(CsmVariable var, List<CsmStatement> statements) {
         if (var == null) {
@@ -90,6 +104,20 @@ public class DeepUtil {
             l.add(statement);
         }
         return l;
+    }
+    
+    public static boolean visitAST(ASTTokenVisitor visitor, AST ast) {
+        if (ast != null) {
+            if (!visitor.visit(ast)) {
+                return false;
+            }
+            for (AST insideToken = ast.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
+                if (!visitAST(visitor, insideToken)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
 

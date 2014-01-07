@@ -41,10 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -58,13 +58,14 @@ import org.netbeans.modules.javaee.wildfly.config.ds.DatasourceSupport;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
-/** 
+/**
  * Base for JBoss DeploymentConfiguration implementations.
  *
- * @author  Pavel Buzek, Libor Kotouc
+ * @author Pavel Buzek, Libor Kotouc
  */
-public abstract class JBDeploymentConfiguration 
+public abstract class JBDeploymentConfiguration
         implements DatasourceConfiguration, MessageDestinationConfiguration, EjbResourceConfiguration {
 
     // TODO move to a more appropriate class as soon as E-mail resource API is introduced
@@ -72,7 +73,7 @@ public abstract class JBDeploymentConfiguration
 
     //JSR-88 deployable object - initialized when instance is constructed
     protected final J2eeModule j2eeModule;
-    
+
     //cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
 
@@ -81,103 +82,130 @@ public abstract class JBDeploymentConfiguration
     //the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
 
-     //support for data sources
+    //support for data sources
     private DatasourceSupport dsSupport;
 
     //support for message destination resources
     private MessageDestinationSupport destSupport;
-    
-    /** Creates a new instance of JBDeploymentConfiguration */
-    public JBDeploymentConfiguration (J2eeModule j2eeModule, JBPluginUtils.Version version) {
+
+    /**
+     * Creates a new instance of JBDeploymentConfiguration
+     */
+    public JBDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
         this.j2eeModule = j2eeModule;
         this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();
     }
-            
+
 // -------------------------------------- ModuleConfiguration  -----------------------------------------
-    
     public J2eeModule getJ2eeModule() {
         return j2eeModule;
     }
 
-    public boolean isAs7() {
-        return version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0;
+    public boolean isWildfly() {
+        return version != null && JBPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
     }
-    
-// -------------------------------------- DatasourceConfiguration  -----------------------------------------
 
+    @Override
+    public boolean supportsCreateDatasource() {
+        return !isWildfly();
+    }
+
+    @Override
+    public boolean supportsCreateMessageDestination() {
+        return isWildfly();
+    }
+
+// -------------------------------------- DatasourceConfiguration  -----------------------------------------
     private DatasourceSupport getDatasourceSupport() {
         if (dsSupport == null) {
             dsSupport = new DatasourceSupport(resourceDir);
         }
         return dsSupport;
     }
-   
+
     public Set<Datasource> getDatasources() throws ConfigurationException {
         return getDatasourceSupport().getDatasources();
     }
 
     public Datasource createDatasource(String jndiName, String url,
-            String username, String password, String driver) 
+            String username, String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
-        
+
         return getDatasourceSupport().createDatasource(jndiName, url, username, password, driver);
     }
 
-    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {}
-    
-    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType, 
-            String referenceName, String jndiName) throws ConfigurationException {}
+    public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
+    }
+
+    public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
+            String referenceName, String jndiName) throws ConfigurationException {
+    }
 
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         return null;
     }
-    
+
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
         return null;
     }
-    
-// -------------------------------------- MessageDestinationConfiguration  -----------------------------------------
 
-    private MessageDestinationSupport getMessageDestinationsSupport() {
+// -------------------------------------- MessageDestinationConfiguration  -----------------------------------------
+    private MessageDestinationSupport getMessageDestinationsSupport() throws IOException {
         if (destSupport == null) {
-            destSupport = new MessageDestinationSupport(resourceDir);
+            String configFile = "module-destinations";
+            if (this.j2eeModule != null && this.j2eeModule.getArchive() != null) {
+                configFile = this.j2eeModule.getArchive().getName();
+            }
+            destSupport = new MessageDestinationSupport(resourceDir, configFile);
         }
         return destSupport;
     }
-   
+
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
-        return getMessageDestinationsSupport().getMessageDestinations();
+        try {
+            return getMessageDestinationsSupport().getMessageDestinations();
+        } catch (IOException ex) {
+            throw new ConfigurationException(ex.getMessage(), ex);
+        }
     }
 
-    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
-    throws UnsupportedOperationException, ConfigurationException {
-        return getMessageDestinationsSupport().createMessageDestination(name, type);
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type)
+            throws UnsupportedOperationException, ConfigurationException {
+        try {
+            return getMessageDestinationsSupport().createMessageDestination(name, type);
+        } catch (IOException ex) {
+            throw new ConfigurationException(ex.getMessage(), ex);
+        }
     }
-    
-    public void bindMdbToMessageDestination(String mdbName, String name, 
-            MessageDestination.Type type) throws ConfigurationException {}
+
+    public void bindMdbToMessageDestination(String mdbName, String name,
+            MessageDestination.Type type) throws ConfigurationException {
+    }
 
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         return null;
     }
 
-    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
-            String destName, MessageDestination.Type type) throws ConfigurationException {}
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+    }
 
     public void bindMessageDestinationReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String connectionFactoryName,
-            String destName, MessageDestination.Type type) throws ConfigurationException {}
-    
+            String destName, MessageDestination.Type type) throws ConfigurationException {
+    }
+
 // -------------------------------------- EjbResourceConfiguration  -----------------------------------------
-    
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         return null;
     }
-    
-    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {}
+
+    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
+    }
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-            String referenceName, String jndiName) throws ConfigurationException {}
-    
+            String referenceName, String jndiName) throws ConfigurationException {
+    }
+
 }

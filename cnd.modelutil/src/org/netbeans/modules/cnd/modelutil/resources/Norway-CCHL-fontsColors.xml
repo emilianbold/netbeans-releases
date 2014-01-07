@@ -47,4 +47,5 @@ made subject to such option by the copyright holder.
 
 <fontscolors>
     <fontcolor name="cc-highlighting-mark-occurrences" bgColor="38566F" default="default"/>
+    <fontcolor name="cc-highlighting-class-fields" foreColor="098A18" default="field"/>
 </fontscolors>

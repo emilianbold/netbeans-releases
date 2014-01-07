@@ -95,4 +95,22 @@ public interface ServerLibraryManager {
     void deployLibraries(@NonNull Set<ServerLibraryDependency> libraries)
             throws ConfigurationException;
 
+    /**
+     * Exception there are missing libraries which cannot be deployed.
+     *
+     * @since 1.105
+     */
+    public static class MissingLibrariesException extends ConfigurationException {
+
+        private final Set<ServerLibraryDependency> missingLibraries;
+
+        public MissingLibrariesException(String message, Set<ServerLibraryDependency> missingLibraries) {
+            super(message);
+            this.missingLibraries = missingLibraries;
+        }
+
+        public Set<ServerLibraryDependency> getMissingLibraries() {
+            return missingLibraries;
+        }
+    }
 }

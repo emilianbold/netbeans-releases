@@ -52,7 +52,6 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,14 +59,11 @@ import java.util.Properties;
 import java.util.Queue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
-import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -109,11 +105,8 @@ public final class CheckSums {
     public void store () throws IOException {
         final File indexDir = FileUtil.toFile(context.getIndexFolder());
         final File f = new File (indexDir, CHECK_SUMS_FILE);
-        final OutputStream out = new FileOutputStream(f);
-        try {
+        try(final OutputStream out = new FileOutputStream(f)) {
             props.store(out, ""); //NOI18N
-        } finally {
-            out.close();
         }
     }
 
@@ -121,11 +114,10 @@ public final class CheckSums {
         final File indexDir = FileUtil.toFile(context.getIndexFolder());
         final File f = new File (indexDir, CHECK_SUMS_FILE);
         if (f.canRead()) {
-            final InputStream in = new FileInputStream(f);
-            try {
+            try (final InputStream in = new FileInputStream(f)) {
                 props.load(in);
-            } finally {
-                in.close();
+            } catch (IllegalArgumentException iae) {
+                props.clear();
             }
         }
     }

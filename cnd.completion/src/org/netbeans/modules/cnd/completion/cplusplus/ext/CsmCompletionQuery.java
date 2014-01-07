@@ -84,6 +84,9 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -134,6 +137,7 @@ import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
@@ -269,8 +273,15 @@ abstract public class CsmCompletionQuery {
                 if (csmFile == null) {
                     csmFile = CsmUtilities.getCsmFile(baseDocument, true, false);
                 }
-                CsmCompletionTokenProcessor tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);           
-
+                
+                CsmCompletionTokenProcessor tp;
+                
+                if (CsmKindUtilities.isExpression(expression)) {
+                    tp = processTokensInExpression((CsmExpression) expression);
+                } else {
+                    tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);
+                }
+ 
                 if (!checkErrorTokenState(tp)) {
                     try {
                         pushResolveContext(CsmResolveContext.create(csmFile, startOffset));
@@ -596,6 +607,43 @@ abstract public class CsmCompletionQuery {
                 CndTokenUtilities.processTokens(etp, doc, startOffset, endOffset);
             }
         });
+        return tp;
+    }
+    
+    private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression) {
+        final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
+
+        String expressionText = expression.getExpandedText().toString();        
+        TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
+        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+        // Go from inner to outer TSes
+        TokenSequence<TokenId> cppts = null;
+        for (int i = tsList.size() - 1; i >= 0; i--) {
+            TokenSequence<?> ts = tsList.get(i);
+            final Language<?> lang = ts.languagePath().innerLanguage();
+            if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                @SuppressWarnings("unchecked") // NOI18N
+                TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                cppts = uts;
+            }
+        }    
+        if (cppts != null) {
+            final TokenSequence<TokenId> cppTokenSequence = cppts;
+            
+            boolean enableTemplates = true;
+            CsmFile csmFile = expression.getContainingFile();
+            if (csmFile != null) {
+                switch (csmFile.getFileType()) {
+                    case SOURCE_C_FILE:
+                    case SOURCE_FORTRAN_FILE:
+                        enableTemplates = false;
+                }
+            }
+            tp.enableTemplateSupport(enableTemplates);
+            
+            CndTokenUtilities.processTokens(tp, cppTokenSequence, expression.getStartOffset(), expression.getEndOffset(), expression.getStartOffset());  
+        }
+        
         return tp;
     }
 
@@ -1247,34 +1295,19 @@ abstract public class CsmCompletionQuery {
         
         private CsmType findExpressionType(final CsmOffsetable expression) {
             if (expression != null && !antiLoop.contains(expression)) {
-                String expressionText = expression.getText().toString();
-                TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
-                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset(), true);
-                // Go from inner to outer TSes
-                TokenSequence<TokenId> cppts = null;
-                for (int i = tsList.size() - 1; i >= 0; i--) {
-                    TokenSequence<?> ts = tsList.get(i);
-                    final Language<?> lang = ts.languagePath().innerLanguage();
-                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                        @SuppressWarnings("unchecked") // NOI18N
-                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                        cppts = uts;
-                    }
+                
+                CsmCompletionTokenProcessor tp;
+                
+                if (CsmKindUtilities.isExpression(expression)) {
+                    tp = processTokensInExpression((CsmExpression) expression);
+                } else {
+                    long docVersion = DocumentUtilities.getDocumentVersion(getBaseDocument());
+                    tp = processTokensInFile(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset(), getBaseDocument(), docVersion);
                 }
-                if(cppts != null) {
+                
+                if (!checkErrorTokenState(tp)) {
                     antiLoop.add(expression);
-
-                    final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
-                    tp.enableTemplateSupport(true);
-                    final BaseDocument bDoc = getBaseDocument();
-                    bDoc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            CndTokenUtilities.processTokens(tp, bDoc, expression.getStartOffset(), expression.getEndOffset());
-                        }
-                    });
                     CsmCompletionExpression exp = tp.getResultExp();
-
                     return resolveType(exp);
                 }            
             }
@@ -1365,12 +1398,12 @@ abstract public class CsmCompletionQuery {
             return out;
         }
 
-        private CsmType extractFunctionType(Collection<CsmFunction> mtdList, CsmCompletionExpression genericNameExp, List<CsmType> typeList) {
+        private CsmType extractFunctionType(Collection<? extends CsmFunctional> mtdList, CsmCompletionExpression genericNameExp, List<CsmType> typeList) {
             CsmType out = null;
             if (mtdList.isEmpty()) {
                 return null;
             }
-            for (CsmFunction fun : mtdList) {
+            for (CsmFunctional fun : mtdList) {
                 CsmObject entity = fun;
 
                 if (CsmKindUtilities.isConstructor(entity)) {
@@ -1384,10 +1417,10 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 
-                if (CsmKindUtilities.isClassifier(entity)) {
+                if (CsmKindUtilities.isFunctional(entity)) {
+                    out = ((CsmFunctional) entity).getReturnType();
+                } else if (CsmKindUtilities.isClassifier(entity)) {
                     out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false);
-                } else if (CsmKindUtilities.isFunction(entity)) {
-                    out = ((CsmFunction) entity).getReturnType();
                 }
                 if (out != null) {
                     break;
@@ -2460,7 +2493,8 @@ abstract public class CsmCompletionQuery {
                         // want to resolve "method"
                         // otherwise we need all in current context
                         if (!methodOpen || openingSource) {
-                            Collection<CsmFunction> mtdList = new LinkedHashSet<CsmFunction>();
+                            // Methods, operators and function pointers classifiers
+                            Collection<CsmFunctional> mtdList = new LinkedHashSet<CsmFunctional>();
                             if (first && !(isConstructor && lastType != null)) { // already resolved for constructor
                                 // resolve all functions in context
                                 int varPos = mtdNameExp.getTokenOffset(0);
@@ -2516,9 +2550,13 @@ abstract public class CsmCompletionQuery {
                                             CsmType varType = ((CsmVariable) object).getType();
                                             if (varType != null) {
                                                 CsmClassifier cls = getClassifier(varType, contextFile, endOffset);
-                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                                if (funCall != null) {
-                                                    mtdList.add(funCall);
+                                                if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                                    mtdList.add((CsmFunctional) cls);
+                                                } else {
+                                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                                    if (funCall != null) {
+                                                        mtdList.add(funCall);
+                                                    }
                                                 }
                                             }
                                         }
@@ -2526,9 +2564,13 @@ abstract public class CsmCompletionQuery {
                                 }
                                 if (lastType != null && (!last || findType)) {
                                     CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
-                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                    if (funCall != null) {
-                                        mtdList.add(funCall);
+                                    if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                        mtdList.add((CsmFunctional) cls);
+                                    } else {
+                                        CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                        if (funCall != null) {
+                                            mtdList.add(funCall);
+                                        }
                                     }
                                 }
                             } else {
@@ -2553,23 +2595,27 @@ abstract public class CsmCompletionQuery {
                                                     if (fldType != null) {
                                                         if (CsmKindUtilities.isFunctionPointerType(fldType)) {
                                                             // that was a function-type field
-                                                            lastType = fldType;
+                                                            lastType = ((CsmFunctionPointerType) fldType).getReturnType();
                                                         } else {
                                                             // variable like function definition (IZ#159422)
                                                             CsmClassifier cls = fldType.getClassifier();
                                                             if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                                                                 CsmType type = ((CsmTypedef) cls).getType();
                                                                 if (CsmKindUtilities.isFunctionPointerType(type)) {
-                                                                    lastType = type;
+                                                                    lastType = ((CsmFunctionPointerType) type).getReturnType();
                                                                 }
                                                             }
                                                         }
                                                         if (lastType == null) {
                                                             // field can have type with defined "operator()"
                                                             CsmClassifier cls = getClassifier(fldType, contextFile, endOffset);
-                                                            CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                                            if (funCall != null) {
-                                                                lastType = funCall.getReturnType();
+                                                            if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                                                                lastType = ((CsmFunction) cls).getReturnType();
+                                                            } else {
+                                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                                                                if (funCall != null) {
+                                                                    lastType = funCall.getReturnType();
+                                                                }
                                                             }
                                                         }
                                                         if (lastType != null) {
@@ -2653,7 +2699,7 @@ abstract public class CsmCompletionQuery {
                             }
                             String parmStr = "*"; // NOI18N
                             List<CsmType> typeList = getTypeList(item, 1);
-                            Collection<CsmFunction> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen, true);
+                            Collection<CsmFunctional> filtered = CompletionSupport.filterMethods(mtdList, typeList, methodOpen, true);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
                                 parmStr = formatTypeList(typeList, methodOpen);
@@ -2695,7 +2741,7 @@ abstract public class CsmCompletionQuery {
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);  
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
                     CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations.get(0));
+                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }
@@ -2743,7 +2789,7 @@ abstract public class CsmCompletionQuery {
             }
             return cont;
         }
-
+        
         private boolean checkQualifier(CsmCompletionExpression exp, CppTokenId qualifier) {
             // start and end are set to default values for CsmCompletionExpression.TYPE
             int start = 0;

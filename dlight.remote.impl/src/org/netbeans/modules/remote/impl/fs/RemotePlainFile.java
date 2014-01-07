@@ -326,6 +326,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 //            }
 
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST) &&
+                    ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment()) &&
                     !getCache().exists() &&  getOwnerFileObject().isMimeResolving()) {
                 DLightLibsCommonLogger.assertFalse(true, "Shouldn't come here in MIME resolved mode"); //NOI18N
             }

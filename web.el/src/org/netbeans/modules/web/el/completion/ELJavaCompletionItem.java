@@ -222,8 +222,9 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
     public boolean beforeDefaultAction() {
         Node node = elElement.findNodeAt(anchorOffset);
         if (node != null) {
-            int startOfsset = elElement.getSnapshot().getOriginalOffset(node.startOffset());
-            int endOfsset = elElement.getSnapshot().getOriginalOffset(node.endOffset());
+            OffsetRange originalOffset = elElement.getOriginalOffset(node);
+            int startOfsset = originalOffset.getStart();
+            int endOfsset = originalOffset.getEnd();
             if (startOfsset != -1 && endOfsset != -1 && endOfsset != anchorOffset + 1) {
                 Document document = elElement.getSnapshot().getSource().getDocument(false);
                 if (document == null) {

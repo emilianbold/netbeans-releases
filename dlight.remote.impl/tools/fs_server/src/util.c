@@ -395,10 +395,8 @@ static bool removing_visitor(char* name, struct stat *stat_buf, char* link, cons
 }
 
 bool clean_dir(const char* path) {
-    char* child_abspath = malloc(PATH_MAX);
     bool res = true;
     visit_dir_entries(path, removing_visitor, &res);
-    free(child_abspath);
     return res;
 }
 
@@ -511,18 +509,52 @@ int utf8_strlen(const char *buffer) {
     return len;
 }
 
+static bool slashes_tail(const char* p) {
+    while (*p) {
+        if (*p != '/') {
+            return false;
+        }
+        p++;
+    }
+    return true;
+}
+
 /** returns true if dir is subdirectory of parent OR if they are EQUAL */
 bool is_subdir(const char* child, const char* parent) {
-    const char *p = child;
-    const char *d = parent;
-    while (*d && *d == *p) {
+    const char *c = child;
+    const char *p = parent;
+    while (*p && *p == *c) {
+        c++;
         p++;
-        d++;
     }
     // we are either at dir terminating '\0' or first differnce
-    if (*d) {
-        return false;
+    if (*p && *c) {
+        return false; // current char differ
+    } else if (!*p && !*c) {
+        return true; // both ended => just equals
+    } else if (*p) {
+        // child ended first
+        return slashes_tail(p);
     } else {
-        return *p == '/' || *p == 0;
-    }   
+        // parent ended first
+        if (*c == '/') {
+            return true;
+        } else if (c > child && *(c-1) == '/') {
+            return true;
+        }
+        return false;
+        
+        //return *c == '/';
+        
+//        if (*c == 0) {
+//            // child ended, parent did not
+//            return true;
+//        } else if (*c == '/') {
+//            return true;
+//        } else if (p > parent && *(p - 1) == '/') {
+//            return true;
+//        } else {
+//            return false;
+//        }
+    } 
 }

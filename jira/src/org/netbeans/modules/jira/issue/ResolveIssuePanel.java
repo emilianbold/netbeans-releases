@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.jira.issue;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.jira.client.spi.Resolution;
 import org.netbeans.modules.jira.util.ResolutionRenderer;
 
 /**

@@ -168,6 +168,7 @@ public class ActionsTest extends TestBase {
             "build",
             "clean",
             "compile.single",
+            "compile.single.noseparator",
             "copy",
             "delete",
             /* Fix for IZ#107597*/
@@ -291,6 +292,9 @@ public class ActionsTest extends TestBase {
         ap.invokeAction("compile.single", Lookups.fixed(someFileJavaDO, myAppJavaDO));
         inv = new AntTargetInvocation(buildXml, new String[] {"compile-some-files"}, Collections.singletonMap("files", "org/foo/myapp/SomeFile.java,org/foo/myapp/MyApp.java"));
         assertEquals("compiled two files in src", Collections.singletonList(inv), targetsRun);
+        targetsRun.clear();
+        ap.invokeAction("compile.single.noseparator", Lookups.fixed(someFileJavaDO, myAppJavaDO));
+        assertEquals("No separator found, so could not compile two files in src", Collections.emptyList(), targetsRun);
         targetsRun.clear();
         ap.invokeAction("run.single", Lookups.singleton(someFileJavaDO));
         inv = new AntTargetInvocation(buildXml, new String[] {"start-with-specified-class"}, Collections.singletonMap("class", "org.foo.myapp.SomeFile"));

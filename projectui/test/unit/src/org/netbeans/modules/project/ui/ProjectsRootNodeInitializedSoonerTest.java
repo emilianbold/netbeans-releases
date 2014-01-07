@@ -83,6 +83,10 @@ public class ProjectsRootNodeInitializedSoonerTest extends NbTestCase {
     }
 
     public void testWrongOrderOfInitialization() throws Exception {
+        
+        //compute project root node children in sync mode
+        System.setProperty("test.projectnode.sync", "true");
+        
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         List<URL> list = new ArrayList<URL>();
         List<ExtIcon> icons = new ArrayList<ExtIcon>();

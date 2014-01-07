@@ -242,7 +242,13 @@ public class MakeProjectGeneratorImpl {
 
         projectDescriptor.save();
         // finish postponed activity when project metadata is ready
+        if (MakeTemplateListener.INSTANCE != null) {
+            MakeTemplateListener.INSTANCE.setContext(project, projectDescriptor);
+        }
         mainFileParams.doPostProjectCreationWork();
+        if (MakeTemplateListener.INSTANCE != null) {
+            MakeTemplateListener.INSTANCE.clearContext();
+        }
         projectDescriptor.closed();
         projectDescriptor.clean();
         

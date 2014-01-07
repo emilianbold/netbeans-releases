@@ -61,4 +61,8 @@ public interface TextIndexLayer {
     public LayerDescriptor getDescriptor();
 
     public void shutdown();
+    
+    public void unitRemoved (int unitID);
+    
+    public boolean isValid();
 }

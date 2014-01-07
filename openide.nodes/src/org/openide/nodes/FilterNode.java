@@ -162,6 +162,9 @@ public class FilterNode extends Node {
 
     /** children provided or created the default ones? */
     private boolean childrenProvided;
+
+    /** lookup provided or created the default ones? */
+    private boolean lookupProvided;
     
     static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
@@ -205,6 +208,7 @@ public class FilterNode extends Node {
         Parameters.notNull("original", original);
 
         this.childrenProvided = children != null;
+        this.lookupProvided = lookup != null && !(lookup instanceof FilterLookup);
         this.original = original;
         init();
 
@@ -1017,8 +1021,8 @@ public class FilterNode extends Node {
         getNodeListener();
     }
 
-    /** Check method whether the node has default behaviour or
-    * if it is either subclass of uses different children.
+    /** Check method whether the node has default behavior or
+    * if it is either subclass or uses different children or lookup.
     * @return true if it is default
     */
     private boolean isDefault() {
@@ -1028,7 +1032,7 @@ public class FilterNode extends Node {
             return false;
         }
 
-        return !childrenProvided;
+        return !childrenProvided && !lookupProvided;
     }
 
     /**

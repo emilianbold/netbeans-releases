@@ -42,13 +42,6 @@
 
 package org.netbeans.modules.jira.kenai;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.CurrentUserFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.StatusFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,6 +54,15 @@ import org.netbeans.modules.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.client.spi.CurrentUserFilter;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.ProjectFilter;
+import org.netbeans.modules.jira.client.spi.StatusFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -104,13 +106,14 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public JiraQuery createQuery() {
-        FilterDefinition fd = new FilterDefinition();
+        JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = connectorProvider.createFilterDefinition();
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
             return null;
         }
         Project project = configuration.getProjectByKey(projectName);
-        fd.setProjectFilter(new ProjectFilter(project));
+        fd.setProjectFilter(connectorProvider.createProjectFilter(project));
         KenaiQuery q = new KenaiQuery(null, this, fd, projectName, false, false);
         return q;
     }
@@ -174,10 +177,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         if(myIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if(p != null) {
-                FilterDefinition fd = new FilterDefinition();
-                fd.setAssignedToFilter(new CurrentUserFilter());
-                fd.setProjectFilter(new ProjectFilter(p));
-                fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
+                JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+                FilterDefinition fd = connectorProvider.createFilterDefinition();
+                fd.setAssignedToFilter(connectorProvider.createCurrentUserFilter());
+                fd.setProjectFilter(connectorProvider.createProjectFilter(p));
+                fd.setStatusFilter(connectorProvider.createStatusFilter(getOpenStatuses()));
                 myIssues =
                     new KenaiQuery(
                         TeamAccessorUtils.MY_ISSUES_QUERY_DISPLAY_NAME, 
@@ -205,9 +209,10 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         if (allIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if (p != null) {
-                FilterDefinition fd = new FilterDefinition();
-                fd.setProjectFilter(new ProjectFilter(p));
-                fd.setStatusFilter(new StatusFilter(getOpenStatuses()));
+                JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+                FilterDefinition fd = connectorProvider.createFilterDefinition();
+                fd.setProjectFilter(connectorProvider.createProjectFilter(p));
+                fd.setStatusFilter(connectorProvider.createStatusFilter(getOpenStatuses()));
                 allIssues = 
                     new KenaiQuery(
                         TeamAccessorUtils.ALL_ISSUES_QUERY_DISPLAY_NAME, 
@@ -318,7 +323,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         if (config != null) {
             Project p = config.getProjectByKey(projectName);
             assert p != null;
-            pf = new ProjectFilter(p);
+            pf = JiraConnectorSupport.getInstance().getConnector().createProjectFilter(p);
         }
         return pf;
     }

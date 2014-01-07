@@ -199,6 +199,11 @@ public enum HTMLTokenId implements TokenId {
         protected EmbeddingPresence embeddingPresence(HTMLTokenId id) {
             switch(id) {
                 case VALUE:
+                case VALUE_JAVASCRIPT:
+                case VALUE_CSS:
+                case SCRIPT:
+                case STYLE:
+                case EL_CONTENT:
                     return EmbeddingPresence.ALWAYS_QUERY;
                 default:
                     return super.embeddingPresence(id);

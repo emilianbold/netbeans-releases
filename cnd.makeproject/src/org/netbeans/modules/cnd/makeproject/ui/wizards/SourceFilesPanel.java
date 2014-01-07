@@ -99,7 +99,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private void init() {
 
-        scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
+        scrollPane.getViewport().setBackground(getBackground());
 
         getAccessibleContext().setAccessibleDescription(getString("SourceFilesPanelAD"));
         addButton.getAccessibleContext().setAccessibleDescription(getString("AddButtonAD"));

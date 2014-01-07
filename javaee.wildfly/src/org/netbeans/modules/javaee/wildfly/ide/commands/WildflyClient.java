@@ -42,33 +42,37 @@
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
+import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
 import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
+import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.JBDatasourceNode;
-import org.netbeans.modules.javaee.wildfly.nodes.JBEjbModuleNode;
+import org.netbeans.modules.javaee.wildfly.nodes.JBDestinationNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEjbModuleNode;
 import org.netbeans.modules.javaee.wildfly.nodes.JBWebModuleNode;
 import org.openide.util.Lookup;
+
+import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.*;
+import org.netbeans.modules.javaee.wildfly.nodes.JBEarApplicationNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyEJBComponentNode;
 
 /**
  *
@@ -84,15 +88,16 @@ public class WildflyClient {
     private static final String DATASOURCES_SUBSYSTEM = "datasources"; // NOI18N
     private static final String DATASOURCE_TYPE = "data-source"; // NOI18N
 
+    private static final String MESSAGING_SUBSYSTEM = "messaging"; // NOI18N
+    private static final String HORNETQ_SERVER_TYPE = "hornetq-server"; // NOI18N
+    private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
+    private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
+
     private final String serverAddress;
     private final int serverPort;
     private final CallbackHandler handler;
     private final InstanceProperties ip;
     private Object client;
-
-    private Map<String, Object> clientConstants;
-
-    private Map<String, Object> modelDescriptionConstants;
 
     /**
      * Get the value of serverPort
@@ -131,7 +136,7 @@ public class WildflyClient {
     private synchronized Object getClient(WildFlyDeploymentFactory.WildFlyClassLoader cl) {
         if (client == null) {
             try {
-                this.client = createClient(cl);
+                this.client = createClient(cl, serverAddress, serverPort, handler);
             } catch (Exception ex) {
                 LOGGER.log(Level.WARNING, null, ex);
                 return null;
@@ -219,6 +224,46 @@ public class WildflyClient {
         return (Future) method.invoke(clientLocal, modelNode, operationMessageHandler);
     }
 
+    public Collection<JBModule> listAvailableModules() throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBModule> modules = new ArrayList<JBModule>();
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
+            // ModelNode
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDeployments);
+            String httpPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object result = readResult(cl, response);
+                // List<ModelNode>
+                List webapps = modelNodeAsList(cl, result);
+                for (Object application : webapps) {
+                    String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "NAME")));
+                    // ModelNode
+                    Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                    JBModule module = new JBModule(applicationName, true);
+                    if (modelNodeIsDefined(cl, deployment)) {
+                        String url = "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                        module.setUrl(url);
+                    }
+                    modules.add(module);
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     public Collection<JBWebModuleNode> listWebModules(Lookup lookup) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
@@ -261,10 +306,45 @@ public class WildflyClient {
         }
     }
 
-    public Collection<JBEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
+    public String getWebModuleURL(String webModuleName) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<JBEjbModuleNode> modules = new ArrayList<JBEjbModuleNode>();
+            List<JBWebModuleNode> modules = new ArrayList<JBWebModuleNode>();
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, webModuleName);
+            // ModelNode
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            // ModelNode
+            Object response = executeOnModelNode(cl, readDeployments);
+            String httpPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+            if (isSuccessfulOutcome(cl, response)) {
+                // ModelNode
+                Object result = readResult(cl, response);
+                String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, result, getClientConstant(cl, "NAME")));
+                if (applicationName.endsWith(".war")) {
+                    // ModelNode
+                    Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, result, getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                    if (modelNodeIsDefined(cl, deployment)) {
+                        return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                    }
+                }
+            }
+            return "";
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public Collection<WildflyEjbModuleNode> listEJBModules(Lookup lookup) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<WildflyEjbModuleNode> modules = new ArrayList<WildflyEjbModuleNode>();
             // ModelNode
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
             // ModelNode
@@ -280,11 +360,41 @@ public class WildflyClient {
                     // ModelNode
                     Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "SUBSYSTEM")), EJB3_SUBSYSTEM);
                     if (modelNodeIsDefined(cl, deployment)) {
-                        modules.add(new JBEjbModuleNode(modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "NAME"))), lookup, true));
+                        List<WildflyEJBComponentNode> ejbInstances = new ArrayList<WildflyEJBComponentNode>();
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.ENTITY));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.MDB));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.SINGLETON));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATEFULL));
+                        ejbInstances.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATELESS));
+                        modules.add(new WildflyEjbModuleNode(modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, ejb), getClientConstant(cl, "NAME"))), lookup, ejbInstances, true));
                     }
                 }
             }
             return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public boolean startModule(WildflyTargetModuleID tmid) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, tmid.getModuleID());
+            // ModelNode
+            Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_REDEPLOY_OPERATION"), deploymentAddressModelNode);
+            Object result = executeOnModelNode(cl, enableDeployment);
+            if (isSuccessfulOutcome(cl, result)) {
+                tmid.setContextURL(getWebModuleURL(tmid.getModuleID()));
+                return true;
+            }
+            return false;
         } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
         } catch (NoSuchMethodException ex) {
@@ -303,6 +413,26 @@ public class WildflyClient {
             Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, moduleName);
             // ModelNode
             Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_REDEPLOY_OPERATION"), deploymentAddressModelNode);
+            Object result = executeOnModelNode(cl, enableDeployment);
+            return isSuccessfulOutcome(cl, result);
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public boolean stopModule(String moduleName) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            // ModelNode
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, moduleName);
+            // ModelNode
+            Object enableDeployment = createOperation(cl, getClientConstant(cl, "DEPLOYMENT_UNDEPLOY_OPERATION"), deploymentAddressModelNode);
             return isSuccessfulOutcome(cl, executeOnModelNode(cl, enableDeployment));
         } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
@@ -362,7 +492,7 @@ public class WildflyClient {
             Object addModule = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "OP")), getClientConstant(cl, "ADD"));
             setModelNodeChildString(cl, getModelNodeChildAtPath(cl, addModule,
-                    new Object[] {getModelDescriptionConstant(cl, "ADDRESS"), getClientConstant(cl, "DEPLOYMENT")}), fileName);
+                    new Object[]{getModelDescriptionConstant(cl, "ADDRESS"), getClientConstant(cl, "DEPLOYMENT")}), fileName);
             setModelNodeChildString(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "RUNTIME_NAME")), fileName);
             setModelNodeChildBytes(cl, getModelNodeChild(cl, getModelNodeChildAtIndex(cl, getModelNodeChild(cl, addModule, getClientConstant(cl, "CONTENT")), 0),
                     getModelDescriptionConstant(cl, "BYTES")), deployment.getModule().getArchive().asBytes());
@@ -389,7 +519,7 @@ public class WildflyClient {
         Set<Datasource> datasources = listDatasources();
         List<JBDatasourceNode> modules = new ArrayList<JBDatasourceNode>(datasources.size());
         for (Datasource ds : datasources) {
-            modules.add(new JBDatasourceNode(((JBossDatasource)ds).getName(), ds, lookup));
+            modules.add(new JBDatasourceNode(((JBossDatasource) ds).getName(), ds, lookup));
         }
         return modules;
     }
@@ -470,229 +600,341 @@ public class WildflyClient {
         }
     }
 
-    private Object createClient(WildFlyDeploymentFactory.WildFlyClassLoader cl) throws ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class);
-        return method.invoke(null, serverAddress, serverPort, handler);
-    }
-
-    private static void closeClient(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
-        Method method = client.getClass().getMethod("close", new Class[] {});
-        method.invoke(client, (Object[]) null);
-    }
-
-    // ModelNode
-    private Object createDeploymentPathAddressAsModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name)
-            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class paClazz = cl.loadClass("org.jboss.as.controller.PathAddress"); // NOI18N
-        Class peClazz = cl.loadClass("org.jboss.as.controller.PathElement"); // NOI18N
-
-        Method peFactory = peClazz.getDeclaredMethod("pathElement",// NOI18N
-                name != null ? new Class[] {String.class, String.class} : new Class[] {String.class});
-        Object pe = peFactory.invoke(null,
-                name != null ? new Object[] {getClientConstant(cl, "DEPLOYMENT"), name} : new Object[] {getClientConstant(cl, "DEPLOYMENT")});// NOI18N
-
-        Object array = Array.newInstance(peClazz, 1);
-        Array.set(array, 0, pe);
-        Method paFactory = paClazz.getDeclaredMethod("pathAddress", array.getClass()); // NOI18N
-        Object pa = paFactory.invoke(null, array);
-
-        Method toModelNode = pa.getClass().getMethod("toModelNode", (Class<?>[]) null); // NOI18N
-        return toModelNode.invoke(pa, (Object[]) null);
-    }
-
-    // ModelNode
-    private Object createPathAddressAsModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl, LinkedHashMap<Object, Object> elements)
-            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class paClazz = cl.loadClass("org.jboss.as.controller.PathAddress"); // NOI18N
-        Class peClazz = cl.loadClass("org.jboss.as.controller.PathElement"); // NOI18N
-
-        Method peFactory = peClazz.getDeclaredMethod("pathElement", new Class[] {String.class, String.class});
-        Object array = Array.newInstance(peClazz, elements.size());
-        int i = 0;
-        for (Map.Entry<Object, Object> entry : elements.entrySet()) {
-            Array.set(array, i, peFactory.invoke(null, new Object[] {entry.getKey(), entry.getValue()}));
-            i++;
+    public Collection<JBDestinationNode> listDestinations(Lookup lookup) throws IOException {
+        List<MessageDestination> destinations = listDestinations();
+        List<JBDestinationNode> modules = new ArrayList<JBDestinationNode>(destinations.size());
+        for (MessageDestination destination : destinations) {
+            modules.add(new JBDestinationNode(destination.getName(), destination, lookup));
         }
-
-        Method paFactory = paClazz.getDeclaredMethod("pathAddress", array.getClass()); // NOI18N
-        Object pa = paFactory.invoke(null, array);
-
-        Method toModelNode = pa.getClass().getMethod("toModelNode", (Class<?>[]) null); // NOI18N
-        return toModelNode.invoke(pa, (Object[]) null);
+        return modules;
     }
 
-    // ModelNode
-    private static Object createOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object name, Object modelNode)
-            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = clazz.getDeclaredMethod("createOperation", new Class[]{String.class, modelClazz});
-        return method.invoke(null, name, modelNode);
-    }
-
-    // ModelNode
-    private static Object createReadResourceOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, boolean recursive)
-            throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = clazz.getDeclaredMethod("createReadResourceOperation", new Class[]{modelClazz, boolean.class});
-        return method.invoke(null, modelNode, recursive);
-    }
-
-    // ModelNode
-    private static Object createRemoveOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
-            NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = clazz.getDeclaredMethod("createRemoveOperation", new Class[]{modelClazz});
-        return method.invoke(null, modelNode);
-    }
-
-    // ModelNode
-    private static Object readResult(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
-            NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = clazz.getDeclaredMethod("readResult", new Class[]{modelClazz});
-        return method.invoke(null, modelNode);
-    }
-
-    // ModelNode
-    private static Object getModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object name) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("get", String.class);
-        return method.invoke(modelNode, name);
-    }
-
-    // ModelNode
-    private static Object getModelNodeChildAtIndex(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int index) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("get", int.class);
-        return method.invoke(modelNode, index);
-    }
-
-    // ModelNode
-    private static Object getModelNodeChildAtPath(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object[] path) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("get", String[].class);
-        Object array = Array.newInstance(String.class, path.length);
-        for (int i = 0; i < path.length; i++) {
-            Array.set(array, i, path[i]);
+    public List<JBDestinationNode> listDestinationForDeployment(Lookup lookup, String jeeDeploymentName) throws IOException {
+        List<MessageDestination> destinations = listDestinationForDeployment(jeeDeploymentName);
+        List<JBDestinationNode> modules = new ArrayList<JBDestinationNode>(destinations.size());
+        for (MessageDestination destination : destinations) {
+            modules.add(new JBDestinationNode(destination.getName(), destination, lookup));
         }
-        return method.invoke(modelNode, array);
+        return modules;
     }
 
-    // ModelNode
-    private static Object createModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        return modelClazz.newInstance();
-    }
+    public List<MessageDestination> listDestinationForDeployment(String deployment) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<MessageDestination> destinations = new ArrayList<MessageDestination>();
+            // ModelNode
+            final Object readHornetQServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
 
-    // ModelNode
-    private static Object setModelNodeChildString(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
-            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        assert value != null;
-        Method method = modelNode.getClass().getMethod("set", String.class);
-        return method.invoke(modelNode, value);
-    }
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "DEPLOYMENT"), deployment);
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "CHILD_TYPE")), HORNETQ_SERVER_TYPE);
 
-    // ModelNode
-    private static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
-            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        assert value != null;
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = modelNode.getClass().getMethod("set", modelClazz);
-        return method.invoke(modelNode, value);
-    }
-
-    // ModelNode
-    private static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int value) throws IllegalAccessException,
-            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("set", int.class);
-        return method.invoke(modelNode, value);
-    }
-
-    // ModelNode
-    private static Object setModelNodeChildEmptyList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
-            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-
-        Method method = modelNode.getClass().getMethod("setEmptyList", (Class<?>[]) null);
-        return method.invoke(modelNode, (Object[]) null);
-    }
-
-    // ModelNode
-    private static Object setModelNodeChildBytes(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, byte[] value) throws IllegalAccessException,
-            ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
-
-        Method method = modelNode.getClass().getMethod("set", byte[].class);
-        return method.invoke(modelNode, value);
-    }
-
-    // ModelNode
-    private static Object addModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object toAddModelNode) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = modelNode.getClass().getMethod("add", modelClazz);
-        return method.invoke(modelNode, toAddModelNode);
-    }
-
-    private static boolean modelNodeIsDefined(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("isDefined", (Class<?>[]) null);
-        return (Boolean) method.invoke(modelNode, (Object[]) null);
-    }
-
-    private static String modelNodeAsString(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("asString", (Class<?>[]) null);
-        return (String) method.invoke(modelNode, (Object[]) null);
-    }
-
-    // List<ModelNode>
-    private static List modelNodeAsList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
-            NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("asList", (Class<?>[]) null);
-        return (List) method.invoke(modelNode, (Object[]) null);
-    }
-
-    private boolean isSuccessfulOutcome(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
-            NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
-        Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
-        Method method = clazz.getDeclaredMethod("isSuccessfulOutcome", modelClazz);
-        return (Boolean) method.invoke(null, modelNode);
-    }
-
-    private Object getClientConstant(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
-        if (clientConstants == null) {
-            clientConstants = new HashMap<String, Object>();
-            Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.ClientConstants"); // NOI18N
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields) {
-                int modifiers = f.getModifiers();
-                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                    clientConstants.put(f.getName(), f.get(null));
+            // ModelNode
+            Object response = executeOnModelNode(cl, readHornetQServers);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object hornetqServer : names) {
+                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
+                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, hornetqServerName, Type.QUEUE));
+                    destinations.addAll(getJMSDestinationForServerDeployment(deployment, hornetqServerName, Type.TOPIC));
                 }
             }
+            return destinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
         }
-        return clientConstants.get(name);
     }
 
-    private Object getModelDescriptionConstant(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
-        if (modelDescriptionConstants == null) {
-            modelDescriptionConstants = new HashMap<String, Object>();
-            Class clazz = cl.loadClass("org.jboss.as.controller.descriptions.ModelDescriptionConstants"); // NOI18N
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field f : fields) {
-                int modifiers = f.getModifiers();
-                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)) {
-                    modelDescriptionConstants.put(f.getName(), f.get(null));
+    public List<MessageDestination> listDestinations() throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<MessageDestination> destinations = new ArrayList<MessageDestination>();
+            // ModelNode
+            final Object readHornetQServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "CHILD_TYPE")), HORNETQ_SERVER_TYPE);
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readHornetQServers);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object hornetqServer : names) {
+                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
+                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.QUEUE));
+                    destinations.addAll(getJMSDestinationForServer(hornetqServerName, Type.TOPIC));
                 }
             }
+            return destinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
         }
-        return modelDescriptionConstants.get(name);
+    }
+
+    private List<JBossMessageDestination> getJMSDestinationForServerDeployment(String deployment, String serverName, Type messageType) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBossMessageDestination> listedDestinations = new ArrayList<JBossMessageDestination>();
+            // ModelNode
+            final Object readQueues = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "OP")),
+                    getModelDescriptionConstant(cl, "READ_CHILDREN_RESOURCES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "DEPLOYMENT"), deployment);
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            values.put(HORNETQ_SERVER_TYPE, serverName);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            if (messageType == Type.QUEUE) {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSQUEUE_TYPE);
+            } else {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSTOPIC_TYPE);
+            }
+            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "INCLUDE_RUNTIME")), "true");
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readQueues);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List destinations = modelNodeAsList(cl, readResult(cl, response));
+                for (Object destination : destinations) {
+                    Object value = modelNodeAsPropertyForValue(cl, destination);
+                    if (modelNodeHasChild(cl, value, "entries")) {
+                        List entries = modelNodeAsList(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, destination), "entries"));
+                        for (Object entry : entries) {
+                            listedDestinations.add(new JBossMessageDestination(modelNodeAsString(cl, entry), messageType));
+                        }
+                    } else {
+                        listedDestinations.add(new JBossMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
+                    }
+                }
+            }
+            return listedDestinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    private List<JBossMessageDestination> getJMSDestinationForServer(String serverName, Type messageType) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBossMessageDestination> listedDestinations = new ArrayList<JBossMessageDestination>();
+            // ModelNode
+            final Object readQueues = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "OP")),
+                    getModelDescriptionConstant(cl, "READ_CHILDREN_RESOURCES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            values.put(HORNETQ_SERVER_TYPE, serverName);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readQueues, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            if (messageType == Type.QUEUE) {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSQUEUE_TYPE);
+            } else {
+                setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "CHILD_TYPE")), JMSTOPIC_TYPE);
+            }
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readQueues);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List destinations = modelNodeAsList(cl, readResult(cl, response));
+                for (Object destination : destinations) {
+                    Object value = modelNodeAsPropertyForValue(cl, destination);
+                    if (modelNodeHasChild(cl, value, "entries")) {
+                        List entries = modelNodeAsList(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, destination), "entries"));
+                        for (Object entry : entries) {
+                            listedDestinations.add(new JBossMessageDestination(modelNodeAsString(cl, entry), messageType));
+                        }
+                    } else {
+                        listedDestinations.add(new JBossMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
+                    }
+                }
+            }
+            return listedDestinations;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public boolean addMessageDestinations(final Collection<JBossMessageDestination> destinations) throws IOException {
+        boolean result = isServerRunning();
+        if (result) {
+            for (JBossMessageDestination destination : destinations) {
+                result = result && addMessageDestination(destination);
+            }
+        }
+        return result;
+    }
+
+    public boolean addMessageDestination(JBossMessageDestination destination) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            values.put("hornetq-server", "default");
+            if (destination.getType() == Type.QUEUE) {
+                values.put("jms-queue", destination.getName());
+            } else {
+                values.put("jms-topic", destination.getName());
+            }
+            Object address = createPathAddressAsModelNode(cl, values);
+            Object operation = setModelNodeChild(cl, getModelNodeChild(cl, createAddOperation(cl, address), "entries"), destination.getJndiNames());
+            Object response = executeOnOperation(cl, operation);
+            return (isSuccessfulOutcome(cl, response));
+        } catch (ClassNotFoundException ex) {
+            return false;
+        } catch (IllegalAccessException ex) {
+            return false;
+        } catch (NoSuchMethodException ex) {
+            return false;
+        } catch (InvocationTargetException ex) {
+            return false;
+        } catch (InstantiationException ex) {
+            return false;
+        }
+    }
+
+    public Collection listEarApplications(Lookup lookup) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<JBEarApplicationNode> modules = new ArrayList<JBEarApplicationNode>();
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, null);
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                Object result = readResult(cl, response);
+                List applications = modelNodeAsList(cl, result);
+                for (Object application : applications) {
+                    String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, application), getClientConstant(cl, "NAME")));
+                    if (applicationName.endsWith(".ear")) {
+                        modules.add(new JBEarApplicationNode(applicationName, lookup));
+                    }
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public Collection listEarSubModules(Lookup lookup, String jeeApplicationName) throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List modules = new ArrayList();
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, jeeApplicationName);
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                String httpPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+                Object result = readResult(cl, response);
+                List subDeployments = modelNodeAsList(cl, getModelNodeChild(cl, result, "subdeployment"));
+                for (Object subDeployment : subDeployments) {
+                    String applicationName = modelNodeAsPropertyForName(cl, subDeployment);
+                    if (applicationName.endsWith(".war")) {
+                        // ModelNode
+                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, subDeployment), getClientConstant(cl, "SUBSYSTEM")), WEB_SUBSYSTEM);
+                        if (modelNodeIsDefined(cl, deployment)) {
+                            String url = "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                            modules.add(new JBWebModuleNode(applicationName, lookup, url));
+                        } else {
+                            modules.add(new JBWebModuleNode(applicationName, lookup, null));
+                        }
+                    } else if (applicationName.endsWith(".jar")) {
+                        // ModelNode
+                        Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, subDeployment), getClientConstant(cl, "SUBSYSTEM")), EJB3_SUBSYSTEM);
+                        if (modelNodeIsDefined(cl, deployment)) {
+                            List<WildflyEJBComponentNode> ejbs = new ArrayList<WildflyEJBComponentNode>();
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.ENTITY));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.MDB));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.SINGLETON));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATEFULL));
+                            ejbs.addAll(listEJBs(cl, deployment, WildflyEJBComponentNode.Type.STATELESS));
+                            modules.add(new WildflyEjbModuleNode(applicationName, lookup, ejbs, true));
+                        }
+                    }
+                }
+            }
+            return modules;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    private List<WildflyEJBComponentNode> listEJBs(WildFlyDeploymentFactory.WildFlyClassLoader cl,
+            Object deployment, WildflyEJBComponentNode.Type type) throws IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
+        List<WildflyEJBComponentNode> modules = new ArrayList<WildflyEJBComponentNode>();
+        if (modelNodeHasDefinedChild(cl, deployment, type.getPropertyName())) {
+            List ejbs = modelNodeAsList(cl, getModelNodeChild(cl, deployment, type.getPropertyName()));
+            for (Object ejb : ejbs) {
+                modules.add(new WildflyEJBComponentNode(modelNodeAsPropertyForName(cl, ejb), type));
+            }
+        }
+        return modules;
     }
 }

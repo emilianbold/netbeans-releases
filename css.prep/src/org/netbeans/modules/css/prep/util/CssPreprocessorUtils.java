@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -104,8 +105,12 @@ public final class CssPreprocessorUtils {
         projectPreferences.setEnabled(project, true);
         projectPreferences.setMappings(project, getDefaultMappings(type));
         CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
-        assert customizerProvider != null : "CustomizerProvider2 not found in lookup of project " + project.getClass().getName();
-        customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+        // #204164
+        if (customizerProvider == null) {
+            LOGGER.log(Level.WARNING, "CustomizerProvider2 not found in lookup of project {0}", project.getClass().getName());
+        } else {
+            customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+        }
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
@@ -204,7 +209,14 @@ public final class CssPreprocessorUtils {
     static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
         for (Pair<String, String> mapping : mappings) {
             File from = resolveFile(root, mapping.first());
-            String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
+            String relpath;
+            try {
+                relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
+            } catch (IllegalArgumentException ex) {
+                // #237525
+                LOGGER.log(Level.INFO, "Incorrect mapping [existing file set]", ex);
+                return null;
+            }
             if (relpath != null
                     && !relpath.startsWith("..")) { // NOI18N
                 // path match

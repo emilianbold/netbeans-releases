@@ -492,6 +492,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         this.substitutionOffset = substitutionOffset;
     }
     
+    @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             // Items with no insert prefix and no custom code template
@@ -501,7 +502,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
             }
             Completion.get().hideAll();
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            if (caretOffset >= substitutionOffset) {
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
+            }
         }
     }
 
