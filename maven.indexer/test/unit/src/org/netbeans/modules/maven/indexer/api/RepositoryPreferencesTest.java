@@ -72,9 +72,10 @@ public class RepositoryPreferencesTest extends NbTestCase {
         RepositoryPreferences rp = RepositoryPreferences.getInstance();
         assertEquals("[local, central]", rp.getRepositoryInfos().toString());
         rp.addTransientRepository(1, "foo_http://nowhere.net", "Foo", "http://nowhere.net/", RepositoryInfo.MirrorStrategy.NONE);
-        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+        assertEquals("[local, foo_http:_nowhere.net]", rp.getRepositoryInfos().toString());
         RepositoryPreferences.getLastIndexUpdate("foo_http://nowhere.net");
         RepositoryPreferences.setLastIndexUpdate("foo_http://nowhere.net", new Date());
+        rp.removeTransientRepositories(1);
     }   
     
     public void testGetRepositoryInfos() throws Exception {

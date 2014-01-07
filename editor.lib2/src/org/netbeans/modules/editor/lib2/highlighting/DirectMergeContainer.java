@@ -472,6 +472,10 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                         }
                     }
                     hlAttrs = hlSequence.getAttributes();
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.fine("Fetched highlight: <" + hlStartOffset + // NOI18N
+                                "," + hlEndOffset + "> for layer=" + layer + '\n'); // NOI18N
+                    }
                 } else {
                     hlStartOffset = hlEndOffset = Integer.MAX_VALUE; // Signal that sequence is finished
                     return false;

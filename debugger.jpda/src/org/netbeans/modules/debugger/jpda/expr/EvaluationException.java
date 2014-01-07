@@ -204,6 +204,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] {  };
         else if (reason.equals("methOnArray"))
             msgParams = new String [] {  };
+        else if (reason.equals("methOnInterface"))
+            msgParams = new String [] {  };
         else if (reason.equals("forEachNotApplicable"))
             msgParams = new String [] {  };
         else if (reason.equals("localVariableAlreadyDefined"))

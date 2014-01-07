@@ -834,7 +834,11 @@ public final class SingleModuleProperties extends ModuleProperties {
         for (String s : cpExt) {
             sb.append(s);
         }
-        return getClassPathSupport().itemsIterator(sb.toString(), CPEXT);
+        List<Item> items = getClassPathSupport().itemsList(sb.toString(), CPEXT);
+        for (Item item : items) {
+            item.setReference("${file.reference." + item.getReference() + "}");
+        }
+        return items.iterator();
     }
 
     DefaultListModel getWrappedJarsListModel() {

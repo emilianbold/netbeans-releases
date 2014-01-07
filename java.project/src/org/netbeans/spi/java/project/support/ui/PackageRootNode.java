@@ -54,17 +54,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.SourceGroup;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
-import org.openide.actions.FileSystemAction;
-import org.openide.actions.FindAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -86,7 +83,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
@@ -100,7 +96,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     static final @StaticResource String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif";
     static final RequestProcessor PKG_VIEW_RP = new RequestProcessor(PackageRootNode.class.getName(),1);
-    private static Action actions[]; 
+    private static final AtomicReference<Action[]> actions = new AtomicReference<Action[]>();
         
     private SourceGroup group;
 
@@ -199,22 +195,19 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
         task.schedule(50);  // batch by 50 ms
     }    
-    
-    public @Override Action[] getActions(boolean context) {
-        if ( actions == null ) {
-            actions = new Action[] {
-                CommonProjectActions.newFileAction(),
-                null,
-                SystemAction.get( FindAction.class ),
-                null,
-                SystemAction.get( PasteAction.class ),
-                null,
-                SystemAction.get( FileSystemAction.class ),
-                null,
-                SystemAction.get( ToolsAction.class ),
-            };
+
+    @Override
+    @NonNull
+    public Action[] getActions(boolean context) {
+        Action[] res = actions.get();
+        if (res == null) {
+            res = PackageView.createRootNodeActions();
+            if(!actions.compareAndSet(null, res)) {
+                res = actions.get();
+            }
         }
-        return actions;            
+        assert res != null;
+        return res;
     }
 
     // Show reasonable properties of the DataFolder,
