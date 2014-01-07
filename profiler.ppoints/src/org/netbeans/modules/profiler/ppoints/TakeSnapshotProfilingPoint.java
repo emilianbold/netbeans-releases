@@ -43,22 +43,6 @@
 
 package org.netbeans.modules.profiler.ppoints;
 
-import org.netbeans.lib.profiler.TargetAppRunner;
-import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
-import org.netbeans.lib.profiler.common.Profiler;
-import org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
-import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
-import org.netbeans.modules.profiler.LoadedSnapshot;
-import org.netbeans.modules.profiler.ProfilerControlPanel2;
-import org.netbeans.modules.profiler.ResultsManager;
-import org.netbeans.modules.profiler.actions.HeapDumpAction;
-import org.netbeans.modules.profiler.ppoints.ui.TakeSnapshotCustomizer;
-import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.beans.PropertyChangeEvent;
@@ -76,12 +60,27 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
+import org.netbeans.lib.profiler.TargetAppRunner;
+import org.netbeans.lib.profiler.client.RuntimeProfilingPoint;
+import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.results.cpu.CPUResultsSnapshot;
 import org.netbeans.lib.profiler.ui.UIUtils;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
+import org.netbeans.modules.profiler.LoadedSnapshot;
+import org.netbeans.modules.profiler.ProfilerControlPanel2;
+import org.netbeans.modules.profiler.ResultsManager;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
+import org.netbeans.modules.profiler.ppoints.ui.TakeSnapshotCustomizer;
+import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -513,13 +512,12 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         synchronized(resultsSync) {
             if (hasResults()) {
                 int size = results.size();
-
-                return (results.size() == 1)
-                       ? Bundle.TakeSnapshotProfilingPoint_OneHitString(
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
-                       : Bundle.TakeSnapshotProfilingPoint_NHitsString(
-                            results.size(),
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
+                long timeStamp = results.get(size - 1).getTimestamp();
+                String time = Utils.formatProfilingPointTime(timeStamp);
+                
+                return (size == 1)
+                       ? Bundle.TakeSnapshotProfilingPoint_OneHitString(time)
+                       : Bundle.TakeSnapshotProfilingPoint_NHitsString(size, time);
             } else {
                 return Bundle.TakeSnapshotProfilingPoint_NoResultsString();
             }
@@ -628,11 +626,10 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
     }
 
     private File constructHeapDumpFile(long time) throws IOException {
-        String dir = FileUtil.toFile(getSnapshotDirectory()).getAbsolutePath();
-        String heapDumpFileName = dir + File.separatorChar + HeapDumpAction.TAKEN_HEAPDUMP_PREFIX + time + "."  // NOI18N
-                                  + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
-
-        return new File(heapDumpFileName);
+        String name = ResultsManager.getDefault().getDefaultHeapDumpFileName(time) + "." + ResultsManager.HEAPDUMP_EXTENSION;   // NOI18N
+        File dir = FileUtil.toFile(getSnapshotDirectory());
+        
+        return new File(dir.getAbsoluteFile(), name);
     }
 
     private String takeHeapdumpHit(long time) {
