@@ -93,7 +93,7 @@ public final class SBOptionsPanelController extends OptionsPanelController {
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().isChanged();
     }
 
     Home getDefaultSBHome() {

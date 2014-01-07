@@ -83,7 +83,7 @@ public final class JavacardOptionsPanelController extends OptionsPanelController
     }
 
     public boolean isChanged() {
-        return changed;
+        return getPanel().isChanged();
     }
 
     public HelpCtx getHelpCtx() {
