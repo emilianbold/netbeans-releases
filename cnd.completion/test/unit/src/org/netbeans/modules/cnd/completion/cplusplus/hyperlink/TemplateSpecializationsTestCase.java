@@ -213,6 +213,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug235829.cpp", 11, 7, "bug235829.cpp", 7, 5);
     }
     
+    public void testBug240123() throws Exception {
+        // Bug 240123 - Outer definitions of explicit template specializations of functions ruin whole model in a file 
+        performTest("bug240123.cpp", 12, 49, "bug240123.cpp", 6, 13);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
