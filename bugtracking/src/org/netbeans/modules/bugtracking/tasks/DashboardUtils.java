@@ -707,6 +707,12 @@ public class DashboardUtils {
         }
 
         @Override
+        public void setEnabled(boolean newValue) {
+            super.setEnabled(newValue);
+            menu.setEnabled(newValue);
+        }
+
+        @Override
         public JMenuItem getPopupPresenter() {
             return menu;
         }
