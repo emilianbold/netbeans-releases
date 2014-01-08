@@ -1341,6 +1341,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                         for (StepRequest sr : stepsToDelete) {
                             //debugger.getOperator().unregister(sr);
                             //EventRequestManagerWrapper.deleteEventRequest(erm, sr);
+                            boolean wasEnabled = EventRequestWrapper.isEnabled0(sr);
+                            EventRequestWrapper.putProperty(sr, "methodInvoking.wasEnabled", wasEnabled);
                             EventRequestWrapper.disable(sr);
                             if (logger.isLoggable(Level.FINE)) logger.fine("DISABLED Step Request: "+sr);
                         }
@@ -1402,7 +1404,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 try {
                     for (StepRequest sr : stepsDeletedDuringMethodInvoke) {
                         try {
-                            EventRequestWrapper.enable(sr);
+                            Object wasEnabled = EventRequestWrapper.getProperty(sr, "methodInvoking.wasEnabled");
+                            if (Boolean.TRUE.equals(wasEnabled)) {
+                                EventRequestWrapper.enable(sr);
+                            }
                         } catch (ObjectCollectedExceptionWrapper ex) {
                             continue;
                         } catch (InvalidRequestStateExceptionWrapper irse) {

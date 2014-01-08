@@ -42,25 +42,33 @@
 
 package org.netbeans.modules.debugger.jpda.js;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.Location;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.InternalException;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
-import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.ClassVariable;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -74,26 +82,41 @@ import org.openide.util.Exceptions;
 @LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
 public class StepIntoJSHandler extends LazyActionsManagerListener implements PropertyChangeListener {
     
+    private static final String SCRIPT_ACCESS_CLASS = "jdk.nashorn.internal.runtime.ScriptFunctionData";    // NOI18N
+    private static final String[] SCRIPT_ACCESS_METHODS = { "invoke", "construct" };        // NOI18N
+    
+    private static final Logger logger = Logger.getLogger(StepIntoJSHandler.class.getCanonicalName());
+    
     private final JPDADebugger debugger;
-    private final ClassLoadUnloadBreakpoint scriptBP;
+    private final MethodBreakpoint[] scriptAccessBPs;
     
     public StepIntoJSHandler(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-        debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_THREAD, new CurrentThreadTracker());
-        scriptBP = ClassLoadUnloadBreakpoint.create(JSUtils.NASHORN_SCRIPT+"*",
-                                                    false,
-                                                    ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-        scriptBP.setHidden(true);
-        scriptBP.setSuspend(EventRequest.SUSPEND_ALL);
-        scriptBP.disable();
-        scriptBP.addJPDABreakpointListener(new ScriptBPListener());
-        DebuggerManager.getDebuggerManager().addBreakpoint(scriptBP);
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, new CurrentSFTracker());
+        ScriptBPListener sbl = new ScriptBPListener();
+        int mbn = SCRIPT_ACCESS_METHODS.length;
+        scriptAccessBPs = new MethodBreakpoint[mbn];
+        for (int i = 0; i < mbn; i++) {
+            String method = SCRIPT_ACCESS_METHODS[i];
+            MethodBreakpoint mb = MethodBreakpoint.create(SCRIPT_ACCESS_CLASS, method);
+            mb.setHidden(true);
+            mb.setSuspend(debugger.getSuspend());
+            mb.setSession(debugger);
+            mb.disable();
+            mb.addJPDABreakpointListener(sbl);
+            DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+            scriptAccessBPs[i] = mb;
+        }
     }
 
     @Override
     protected void destroy() {
-        scriptBP.disable();
-        DebuggerManager.getDebuggerManager().removeBreakpoint(scriptBP);
+        logger.fine("\nStepIntoJSHandler.destroy()");
+        for (MethodBreakpoint mb : scriptAccessBPs) {
+            logger.log(Level.FINE, "{0} disable", mb);
+            mb.disable();
+            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+        }
     }
 
     @Override
@@ -114,87 +137,155 @@ public class StepIntoJSHandler extends LazyActionsManagerListener implements Pro
         if ("actionToBeRun".equals(evt.getPropertyName())) {
             Object action = evt.getNewValue();
             if (ActionsManager.ACTION_STEP_INTO.equals(action)) {
-                scriptBP.enable();
+                for (MethodBreakpoint mb : scriptAccessBPs) {
+                    logger.log(Level.FINE, "{0} enable", mb);
+                    mb.enable();
+                }
+                //scriptBP.enable();
             }
         }
     }
     
-    private class CurrentThreadTracker implements PropertyChangeListener {
-        
-        private JPDAThread currentThread;
-        private final Object currentThreadLock = new Object();
-        
-        public CurrentThreadTracker() {
-            currentThread = debugger.getCurrentThread();
-        }
-
+    private class CurrentSFTracker implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-                synchronized (currentThreadLock) {
-                    if (currentThread != null) {
-                        ((Customizer) currentThread).removePropertyChangeListener(this);
-                    }
-                    currentThread = debugger.getCurrentThread();
-                    if (currentThread != null) {
-                        ((Customizer) currentThread).addPropertyChangeListener(this);
-                    }
-                    scriptBP.disable();
-                }
-            /*} else if (JPDAThread.PROP_SUSPENDED.equals(propertyName)) {
-                if (Boolean.FALSE.equals(evt.getNewValue())) {
-                    // The current thread is just going to be resumed
-                    JPDAThread t = (JPDAThread) evt.getSource();
-                }
-            }*
-            } else if ("inStep".equals(propertyName)) {
-                StepRequest sr = (StepRequest) evt.getNewValue();
-                if (sr != null) {
-                    if (StepRequest.STEP_INTO == sr.depth()) {
-                        scriptBP.enable();
-                    }
-                } else {
-                    //scriptBP.disable();
-                }
-            */
+            if (evt.getNewValue() == null) {
+                // Ignore resume.
+                return ;
+            }
+            logger.fine("Current frame changed>");
+            for (MethodBreakpoint mb : scriptAccessBPs) {
+                logger.log(Level.FINE, " {0} disable", mb);
+                mb.disable();
             }
         }
-        
     }
     
     private class ScriptBPListener implements JPDABreakpointListener {
+        
+        @Override
+        public void breakpointReached(JPDABreakpointEvent event) {
+            // Call MethodHandle mh = getGenericInvoker();
+            // mh.member.clazz is the class that is going to be called
+            // mh.member.name is the method name.
+            logger.fine("ScriptBPListener.breakpointReached()");
+            try {
+                setAltCSF(event.getThread());
+                Variable mh;
+                if (event.getSource() == scriptAccessBPs[0]) {
+                    mh = debugger.evaluate("getGenericInvoker()");
+                } else {
+                    mh = debugger.evaluate("getGenericConstructor()");
+                }
+                if (!(mh instanceof ObjectVariable)) {
+                    logger.info("getGenericInvoker/Constructor returned "+mh+", which is not an object.");
+                    return ;
+                }
+                ObjectVariable omh = (ObjectVariable) mh;
+                ObjectVariable member = (ObjectVariable) omh.getField("member");
+                if (!(member instanceof ObjectVariable)) {
+                    logger.info("Variable "+mh+" does not have member field: "+member);
+                    return ;
+                }
+                ObjectVariable clazz = (ObjectVariable) member.getField("clazz");
+                if (!(clazz instanceof ClassVariable)) {
+                    logger.info("Variable "+mh+" does not have clazz field: "+clazz);
+                    return ;
+                }
+                //JPDAClassType classType = ((ClassVariable) clazz).getReflectedType();
+                JPDAClassType classType;
+                try {
+                    classType = (JPDAClassType) clazz.getClass().getMethod("getReflectedType").invoke(clazz);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                }
+                String className = classType.getName();
+
+                MethodBreakpoint mb = MethodBreakpoint.create(className, "");
+                mb.setHidden(true);
+                mb.setSuspend(debugger.getSuspend());
+                mb.setSession(debugger);
+                mb.addJPDABreakpointListener(new InScriptBPListener(mb));
+                DebuggerManager.getDebuggerManager().addBreakpoint(mb);
+                logger.log(Level.FINE, "Created {0} for any method in {1}", new Object[]{mb, className});
+                
+            } catch (InvalidExpressionException iex) {
+                
+            } finally {
+                setAltCSF(null);
+                event.resume();
+            }
+        }
+        
+        private void setAltCSF(JPDAThread thread) {
+            try {
+                StackFrame sf;
+                if (thread != null) {
+                    ThreadReference tr = (ThreadReference) thread.getClass().getMethod("getThreadReference").invoke(thread);
+                    sf = tr.frame(0);
+                } else {
+                    sf = null;
+                }
+                debugger.getClass().getMethod("setAltCSF", StackFrame.class).invoke(debugger, sf);
+            } catch (com.sun.jdi.IncompatibleThreadStateException e) {
+            } catch (ObjectCollectedException e) {
+            } catch (IllegalThreadStateException e) {
+                // Let it go, the thread is dead.
+            } catch (java.lang.IndexOutOfBoundsException e) {
+                // No frame in case of Thread and "Main" class breakpoints, PATCH 56540
+            } catch (VMDisconnectedException vmdex) {
+            } catch (InternalException iex) {
+            } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | SecurityException ex) {
+                
+            }
+        }
+        
+    }
+    
+    private class InScriptBPListener implements JPDABreakpointListener {
+        
+        private MethodBreakpoint mb;
+        
+        InScriptBPListener(MethodBreakpoint mb) {
+            this.mb = mb;
+        }
 
         @Override
         public void breakpointReached(JPDABreakpointEvent event) {
-            if (!scriptBP.isEnabled()) {
+            logger.log(Level.FINE, "InScriptBPListener.breakpointReached(), removing {0}", mb);
+            mb.disable();
+            mb.removeJPDABreakpointListener(this);
+            DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+            // We're in the script.
+            // Disable any pending step requests:
+            disableStepRequests(event.getThread());
+        }
+
+        private void disableStepRequests(JPDAThread thread) {
+            ThreadReference tr;
+            try {
+                tr = (ThreadReference) thread.getClass().getMethod("getThreadReference").invoke(thread);
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException |
+                     NoSuchMethodException | SecurityException ex) {
+                Exceptions.printStackTrace(ex);
                 return ;
             }
-            //scriptBP.disable();
-            ReferenceType referenceType = event.getReferenceType();
-            /*
-            final MethodBreakpoint anyMethodBP = MethodBreakpoint.create(referenceType.name(), "");
-            anyMethodBP.setHidden(true);
-            DebuggerManager.getDebuggerManager().addBreakpoint(anyMethodBP);
-            anyMethodBP.addJPDABreakpointListener(new JPDABreakpointListener() {
-            @Override
-            public void breakpointReached(JPDABreakpointEvent event) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(anyMethodBP);
-            }
-            });
-             */
             try {
-                List<Location> lineLocations = referenceType.allLineLocations(JSUtils.JS_STRATUM, null);
-                if (!lineLocations.isEmpty()) {
-                    Location l = lineLocations.get(0);
-                    //final LineBreakpoint lineBP = LineBreakpoint.create(, l.lineNumber(JSUtils.JS_STRATUM));
-                    BreakpointRequest br = l.virtualMachine().eventRequestManager().createBreakpointRequest(l);
-                    br.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
-                    br.addCountFilter(1);
-                    br.enable();
+                VirtualMachine vm = tr.virtualMachine();
+                if (vm == null) return;
+                EventRequestManager erm = vm.eventRequestManager();
+                List<StepRequest> l = erm.stepRequests();
+                for (StepRequest stepRequest : l) {
+                    if (stepRequest.thread().equals(tr)) {
+                        try {
+                            stepRequest.disable();
+                        } catch (InvalidRequestStateException ex) {}
+                    }
                 }
-            } catch (AbsentInformationException aiex) {}
-            event.resume();
+            } catch (VMDisconnectedException | InternalException |
+                     IllegalThreadStateException | InvalidRequestStateException e) {
+            }
         }
         
     }
