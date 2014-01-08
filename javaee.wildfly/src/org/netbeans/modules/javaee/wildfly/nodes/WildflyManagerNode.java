@@ -71,7 +71,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ivan Sidorkin
  */
-public class JBManagerNode extends AbstractNode implements Node.Cookie {
+public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     
     private final Lookup lookup;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
@@ -80,7 +80,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     private static final String JMX_CONSOLE_URL = "/jmx-console/"; //NOI18N
     private static final String HTTP_HEADER = "http://";
     
-    public JBManagerNode(Children children, Lookup lookup) {
+    public WildflyManagerNode(Children children, Lookup lookup) {
         super(children);
         this.lookup = lookup;
         getCookieSet().add(this);
@@ -134,11 +134,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         // DISPLAY NAME
         property = new PropertySupport.ReadWrite(
-                NbBundle.getMessage(JBManagerNode.class, "LBL_DISPLAY_NAME"), //NOI18N
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_DISPLAY_NAME"), //NOI18N
                 String.class,
-                NbBundle.getMessage(JBManagerNode.class, "LBL_DISPLAY_NAME"),   // NOI18N
-                NbBundle.getMessage(JBManagerNode.class, "HINT_DISPLAY_NAME")   // NOI18N
-                ) {
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_DISPLAY_NAME"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_DISPLAY_NAME")                   ) {
             public Object getValue() {
                 return ip.getProperty(JBPluginProperties.PROPERTY_DISPLAY_NAME);
             }
@@ -152,11 +150,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         // servewr name
         property = new PropertySupport.ReadOnly(
-                NbBundle.getMessage(JBManagerNode.class, "LBL_SERVER_NAME"),    //NOI18N
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_NAME"),    //NOI18N
                 String.class,
-                NbBundle.getMessage(JBManagerNode.class, "LBL_SERVER_NAME"),   // NOI18N
-                NbBundle.getMessage(JBManagerNode.class, "HINT_SERVER_NAME")   // NOI18N
-                ) {
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_NAME"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_SERVER_NAME")                   ) {
             public Object getValue() {
                 return ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
             }
@@ -165,11 +161,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         //server location
         property = new PropertySupport.ReadOnly(
-                NbBundle.getMessage(JBManagerNode.class, "LBL_SERVER_PATH"),   //NOI18N
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_PATH"),   //NOI18N
                 String.class,
-                NbBundle.getMessage(JBManagerNode.class, "LBL_SERVER_PATH"),   // NOI18N
-                NbBundle.getMessage(JBManagerNode.class, "HINT_SERVER_PATH")   // NOI18N
-                ) {
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_PATH"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_SERVER_PATH")                   ) {
             public Object getValue() {
                 return ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
             }
@@ -178,11 +172,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         //host
         property = new PropertySupport.ReadOnly(
-                NbBundle.getMessage(JBManagerNode.class, "LBL_HOST"),    //NOI18N
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_HOST"),    //NOI18N
                 String.class,
-                NbBundle.getMessage(JBManagerNode.class, "LBL_HOST"),   // NOI18N
-                NbBundle.getMessage(JBManagerNode.class, "HINT_HOST")   // NOI18N
-                ) {
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_HOST"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_HOST")                   ) {
             public Object getValue() {
                 return ip.getProperty(JBPluginProperties.PROPERTY_HOST);
             }
@@ -191,11 +183,9 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         
         //port
         property = new PropertySupport.ReadOnly(
-                NbBundle.getMessage(JBManagerNode.class, "LBL_PORT"),    //NOI18N
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_PORT"),    //NOI18N
                 Integer.TYPE,
-                NbBundle.getMessage(JBManagerNode.class, "LBL_PORT"),   // NOI18N
-                NbBundle.getMessage(JBManagerNode.class, "HINT_PORT")   // NOI18N
-                ) {
+                NbBundle.getMessage(WildflyManagerNode.class, "LBL_PORT"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_PORT")                   ) {
             public Object getValue() {
                 return new Integer(ip.getProperty(JBPluginProperties.PROPERTY_PORT));
             }

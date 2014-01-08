@@ -41,61 +41,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
- * It describes children nodes of the Applications node
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
  */
-public class JBApplicationsChildren extends Children.Keys {
-    
-    JBApplicationsChildren(Lookup lookup) {
-        setKeys(new Object[] {createEarApplicationsNode(lookup),
-                                createEjbModulesNode(lookup),
-                                createWebApplicationsNode(lookup)});
+public class WildflyDatasourcesChildren extends WildflyAsyncChildren implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(WildflyDatasourcesChildren.class.getName());
+
+    private final Lookup lookup;
+
+    public WildflyDatasourcesChildren(Lookup lookup) {
+        this.lookup = lookup;
     }
-    
-    protected void addNotify() {
+
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new WildflyDatasourcesNodeUpdater(), 0);
+
     }
-    
-    protected void removeNotify() {
-    }
-    
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof AbstractNode){
-            return new Node[]{(AbstractNode)key};
+
+    class WildflyDatasourcesNodeUpdater implements Runnable {
+
+        List<WildflyDatasourceNode> keys = new ArrayList<WildflyDatasourceNode>();
+
+        @Override
+        public void run() {
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listDatasources(lookup));
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
         }
-        
+    }
+
+    @Override
+    protected void addNotify() {
+        updateKeys();
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(java.util.Collections.EMPTY_SET);
+    }
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof WildflyDatasourceNode) {
+            return new Node[]{(WildflyDatasourceNode) key};
+        }
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
+            return new Node[]{Util.createWaitNode()};
+        }
         return null;
     }
-    
-    /*
-     * Creates an EAR Applications parent node
-     */
-    public static JBItemNode createEarApplicationsNode(Lookup lookup) {
-        return new  JBItemNode(new JBEarApplicationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_EarApps"), ModuleType.EAR);
-    }
-    
-    /*
-     * Creates an Web Applications parent node
-     */
-    public static JBItemNode createWebApplicationsNode(Lookup lookup) {
-        return new JBItemNode(new JBWebApplicationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_WebApps"), ModuleType.WAR);
-    }
-    
-    /*
-     * Creates an EJB Modules parent node
-     */
-    public static JBItemNode createEjbModulesNode(Lookup lookup) {
-        return new JBItemNode(new JBEjbModulesChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_EjbModules"), ModuleType.EJB);
-    }
+
 }

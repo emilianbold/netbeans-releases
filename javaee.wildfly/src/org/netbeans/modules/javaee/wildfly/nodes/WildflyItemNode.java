@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
@@ -59,26 +58,30 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Default Node which can have refresh action enabled and which has deafault icon.
+ * Default Node which can have refresh action enabled and which has default
+ * icon.
  *
  * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBItemNode extends AbstractNode {
-    
+public class WildflyItemNode extends AbstractNode {
+
     private ModuleType moduleType;
-    
-    public JBItemNode(Children children, String name){
+
+    public WildflyItemNode(Children children, String name) {
         super(children);
         setDisplayName(name);
-        if(getChildren() instanceof Refreshable)
-            getCookieSet().add(new RefreshModulesCookieImpl((Refreshable)getChildren()));
+        if (getChildren() instanceof Refreshable) {
+            getCookieSet().add(new RefreshModulesCookieImpl((Refreshable) getChildren()));
+        }
     }
-    
-    public JBItemNode(Children children, String name, ModuleType moduleType) {
+
+    public WildflyItemNode(Children children, String name, ModuleType moduleType) {
         this(children, name);
         this.moduleType = moduleType;
     }
-    
+
+    @Override
     public Image getIcon(int type) {
         if (ModuleType.WAR.equals(moduleType)) {
             return UISupport.getIcon(ServerIcon.WAR_FOLDER);
@@ -90,7 +93,8 @@ public class JBItemNode extends AbstractNode {
             return getIconDelegate().getIcon(type);
         }
     }
-    
+
+    @Override
     public Image getOpenedIcon(int type) {
         if (ModuleType.WAR.equals(moduleType)) {
             return UISupport.getIcon(ServerIcon.WAR_OPENED_FOLDER);
@@ -102,31 +106,33 @@ public class JBItemNode extends AbstractNode {
             return getIconDelegate().getOpenedIcon(type);
         }
     }
-    
+
     private Node getIconDelegate() {
         return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
     }
-    
+
     @Override
     public javax.swing.Action[] getActions(boolean context) {
-        if(getChildren() instanceof Refreshable)
-            return new SystemAction[] {
+        if (getChildren() instanceof Refreshable) {
+            return new SystemAction[]{
                 SystemAction.get(RefreshModulesAction.class)
             };
-        
-        return new SystemAction[] {};
+        }
+
+        return new SystemAction[]{};
     }
-    
+
     /**
      * Implementation of the RefreshModulesCookie
      */
     private static class RefreshModulesCookieImpl implements RefreshModulesCookie {
+
         Refreshable children;
-        
-        public RefreshModulesCookieImpl(Refreshable children){
+
+        public RefreshModulesCookieImpl(Refreshable children) {
             this.children = children;
         }
-        
+
         @Override
         public void refresh() {
             children.updateKeys();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,10 +40,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
@@ -51,22 +53,19 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Michal Mocnak
  */
-public class WildflyEJBComponentsChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyDestinationsChildren extends WildflyAsyncChildren implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(JBEjbModulesChildren.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyDestinationsChildren.class.getName());
 
     private final Lookup lookup;
-    private final String deployment;
-    private final List<WildflyEJBComponentNode> ejbsComponents;
 
-    public WildflyEJBComponentsChildren(Lookup lookup, String deployment, List<WildflyEJBComponentNode> ejbs) {
+    public WildflyDestinationsChildren(Lookup lookup) {
         this.lookup = lookup;
-        this.deployment = deployment;
-        this.ejbsComponents = new ArrayList<WildflyEJBComponentNode>(ejbs.size());
-        this.ejbsComponents.addAll(ejbs);
     }
 
     @Override
@@ -78,14 +77,13 @@ public class WildflyEJBComponentsChildren extends JBAsyncChildren implements Ref
 
     class WildflyDestinationsNodeUpdater implements Runnable {
 
-        List keys = new ArrayList();
+        List<WildflyDestinationNode> keys = new ArrayList<WildflyDestinationNode>();
 
         @Override
         public void run() {
             try {
                 WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listDestinationForDeployment(lookup, deployment));
-                keys.addAll(ejbsComponents);
+                keys.addAll(dm.getClient().listDestinations(lookup));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -106,11 +104,8 @@ public class WildflyEJBComponentsChildren extends JBAsyncChildren implements Ref
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBDestinationNode) {
-            return new Node[]{(JBDestinationNode) key};
-        }
-        if (key instanceof WildflyEJBComponentNode) {
-            return new Node[]{(WildflyEJBComponentNode) key};
+        if (key instanceof WildflyDestinationNode) {
+            return new Node[]{(WildflyDestinationNode) key};
         }
 
         if (key instanceof String && key.equals(Util.WAIT_NODE)) {

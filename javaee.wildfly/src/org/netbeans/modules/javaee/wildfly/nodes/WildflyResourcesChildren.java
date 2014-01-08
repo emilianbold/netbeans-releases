@@ -43,75 +43,57 @@
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * It describes children nodes of the EJB Modules node. Implements Refreshable
- * interface and due to it can be refreshed via ResreshModulesAction.
+ * It describes children nodes of the Applications node
  *
  * @author Michal Mocnak
  */
-public class JBDatasourcesChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyResourcesChildren extends Children.Keys {
 
-    private static final Logger LOGGER = Logger.getLogger(JBDatasourcesChildren.class.getName());
-
-    private final Lookup lookup;
-
-    public JBDatasourcesChildren(Lookup lookup) {
-        this.lookup = lookup;
-    }
-
-    @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new WildflyDatasourcesNodeUpdater(), 0);
-
-    }
-
-    class WildflyDatasourcesNodeUpdater implements Runnable {
-
-        List<JBDatasourceNode> keys = new ArrayList<JBDatasourceNode>();
-
-        @Override
-        public void run() {
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listDatasources(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-
-            setKeys(keys);
-        }
+    WildflyResourcesChildren(Lookup lookup) {
+        setKeys(new Object[]{createDatasourcesNode(lookup), createDestinationsNode(lookup), createMailSessionsNode(lookup)});
     }
 
     @Override
     protected void addNotify() {
-        updateKeys();
     }
 
     @Override
     protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
     }
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBDatasourceNode) {
-            return new Node[]{(JBDatasourceNode) key};
-        }
-
-        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
-            return new Node[]{Util.createWaitNode()};
+        if (key instanceof AbstractNode) {
+            return new Node[]{(AbstractNode) key};
         }
         return null;
     }
 
+    /*
+     * Creates an EAR Applications parent node
+     */
+    final WildflyResourcesItemNode createDatasourcesNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyDatasourcesChildren(lookup),
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
+    }
+
+    /*
+     * Creates an EAR Applications parent node
+     */
+    final WildflyResourcesItemNode createDestinationsNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyDestinationsChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Destinations"), Util.CONNECTOR_ICON);
+    }
+    
+    final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
+    }
 }

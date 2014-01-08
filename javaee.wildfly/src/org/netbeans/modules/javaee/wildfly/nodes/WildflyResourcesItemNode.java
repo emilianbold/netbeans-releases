@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,76 +34,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import java.awt.Image;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- * It describes children nodes of the EJB Modules node. Implements Refreshable
- * interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBEjbModulesChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyResourcesItemNode extends AbstractNode {
+    
+    private final String icon;
 
-    private static final Logger LOGGER = Logger.getLogger(JBEjbModulesChildren.class.getName());
-
-    private final Lookup lookup;
-
-    public JBEjbModulesChildren(Lookup lookup) {
-        this.lookup = lookup;
+    public WildflyResourcesItemNode(Children children, String name, String icon) {
+        super(children);
+        setDisplayName(name);
+        this.icon = icon;
+        if (getChildren() instanceof Refreshable) {
+            getCookieSet().add(new RefreshModulesCookieImpl((Refreshable) getChildren()));
+        }
     }
 
     @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7EjbApplicationNodeUpdater(), 0);
-
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(icon);
     }
 
-    class JBoss7EjbApplicationNodeUpdater implements Runnable {
-        List keys = new ArrayList();
+    @Override
+    public Image getOpenedIcon(int type) {        
+        return ImageUtilities.loadImage(icon);
+    }
+
+    @Override
+    public javax.swing.Action[] getActions(boolean context) {
+        if (getChildren() instanceof Refreshable) {
+            return new SystemAction[]{
+                SystemAction.get(RefreshModulesAction.class)
+            };
+        }
+
+        return new SystemAction[]{};
+    }
+
+    /**
+     * Implementation of the RefreshModulesCookie
+     */
+    private static class RefreshModulesCookieImpl implements RefreshModulesCookie {
+        Refreshable children;
+        public RefreshModulesCookieImpl(Refreshable children) {
+            this.children = children;
+        }
         @Override
-        public void run() {
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listEJBModules(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-            setKeys(keys);
+        public void refresh() {
+            children.updateKeys();
         }
-    }
-
-    @Override
-    protected void addNotify() {
-        updateKeys();
-    }
-
-    @Override
-    protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
-    }
-
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof WildflyEjbModuleNode) {
-            return new Node[]{(WildflyEjbModuleNode) key};
-        }
-
-        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
-            return new Node[]{Util.createWaitNode()};
-        }
-
-        return null;
     }
 
 }
+

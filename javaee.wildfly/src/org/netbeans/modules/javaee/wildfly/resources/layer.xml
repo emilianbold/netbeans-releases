@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
                 </file>
                 
                 <file name="RegistryNodeFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.nodes.JBRegistryNodeFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.nodes.JBRegistryNodeFactory"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
 

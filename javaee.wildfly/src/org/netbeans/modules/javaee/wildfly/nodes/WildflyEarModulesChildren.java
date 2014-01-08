@@ -44,62 +44,55 @@
 
 package org.netbeans.modules.javaee.wildfly.nodes;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
- * It describes children nodes of the Web Applications node. Implements
- * Refreshable interface and due to it can be refreshed via
- * ResreshModulesAction.
+ * It describes children nodes of the enterprise application node.
  *
  * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBWebApplicationsChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyEarModulesChildren extends WildflyAsyncChildren implements Refreshable  {
 
-    private static final Logger LOGGER = Logger.getLogger(JBWebApplicationsChildren.class.getName());
-
-    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
-    static {
-        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
-                "jbossws-context", "jmx-console", "jbossws", "jbossws",
-                "web-console", "invoker", "jbossmq-httpil");
-    }
+    private static final Logger LOGGER = Logger.getLogger(WildflyEarApplicationsChildren.class.getName());
 
     private final Lookup lookup;
+    private final String j2eeAppName;
 
-    public JBWebApplicationsChildren(Lookup lookup) {
+    public WildflyEarModulesChildren(Lookup lookup, String j2eeAppName) {
         this.lookup = lookup;
+        this.j2eeAppName = j2eeAppName;
     }
 
     @Override
-    public void updateKeys() {
+    public void updateKeys(){
         setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new JBoss7WebNodeUpdater(), 0);
+        getExecutorService().submit(new WildflyEarModulesNodeUpdater(), 0);
     }
-
-    class JBoss7WebNodeUpdater implements Runnable {
+    
+    class WildflyEarModulesNodeUpdater implements Runnable {
 
         List keys = new ArrayList();
 
         @Override
         public void run() {
-
             try {
                 WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listWebModules(lookup));
+                keys.addAll(dm.getClient().listEarSubModules(lookup, j2eeAppName));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
-
             setKeys(keys);
         }
     }
@@ -116,8 +109,12 @@ public class JBWebApplicationsChildren extends JBAsyncChildren implements Refres
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBWebModuleNode){
-            return new Node[]{(JBWebModuleNode)key};
+        if (key instanceof WildflyEjbModuleNode){
+            return new Node[]{(WildflyEjbModuleNode)key};
+        }
+
+        if (key instanceof WildflyWebModuleNode){
+            return new Node[]{(WildflyWebModuleNode)key};
         }
 
         if (key instanceof String && key.equals(Util.WAIT_NODE)){
@@ -126,5 +123,4 @@ public class JBWebApplicationsChildren extends JBAsyncChildren implements Refres
 
         return null;
     }
-
 }

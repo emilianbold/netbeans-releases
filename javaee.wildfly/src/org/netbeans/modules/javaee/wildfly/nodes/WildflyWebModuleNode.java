@@ -64,11 +64,11 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Michal Mocnak
  */
-public class JBWebModuleNode extends AbstractStateNode {
+public class WildflyWebModuleNode extends AbstractStateNode {
 
     private final String url;
 
-    public JBWebModuleNode(String fileName, Lookup lookup, String url) {
+    public WildflyWebModuleNode(String fileName, Lookup lookup, String url) {
         super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         this.url = url;
@@ -83,7 +83,7 @@ public class JBWebModuleNode extends AbstractStateNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if (getParentNode() instanceof JBEarApplicationNode) {
+        if (getParentNode() instanceof WildflyEarApplicationNode) {
             if (url != null) {
                 return new SystemAction[]{
                     SystemAction.get(OpenURLAction.class)

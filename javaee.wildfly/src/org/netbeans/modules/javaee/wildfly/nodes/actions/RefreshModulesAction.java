@@ -41,10 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import org.netbeans.modules.javaee.wildfly.nodes.JBItemNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyItemNode;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -54,39 +54,47 @@ import org.openide.util.actions.NodeAction;
  * @author Michal Mocnak
  */
 public class RefreshModulesAction extends NodeAction {
-    
-    /** Creates a new instance of Undeploy */
+
+    /**
+     * Creates a new instance of Undeploy
+     */
     public RefreshModulesAction() {
     }
-    
+
+    @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         RefreshModulesCookie cookie;
-        for (int i=0; i<nodes.length; i++) {
-            cookie = (RefreshModulesCookie)nodes[i].getCookie(RefreshModulesCookie.class);
-            if (cookie == null)
+        for (Node node : nodes) {
+            cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
+            if (cookie == null) {
                 return false;
-            
+            }
         }
-        
+
         return true;
-    }    
-    
-    public String getName() {
-        return NbBundle.getMessage(JBItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
     }
-    
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(WildflyItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
+    }
+
+    @Override
     protected void performAction(org.openide.nodes.Node[] nodes) {
-        for (int i=0; i<nodes.length; i++) {
-            RefreshModulesCookie cookie = (RefreshModulesCookie)nodes[i].getCookie(RefreshModulesCookie.class);
-            if (cookie != null)
+        for (Node node : nodes) {
+            RefreshModulesCookie cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
+            if (cookie != null) {
                 cookie.refresh();
+            }
         }
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

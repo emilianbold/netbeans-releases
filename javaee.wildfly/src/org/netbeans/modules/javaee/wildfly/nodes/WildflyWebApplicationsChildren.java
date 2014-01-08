@@ -42,67 +42,89 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.Lookup;
 
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ * It describes children nodes of the Web Applications node. Implements
+ * Refreshable interface and due to it can be refreshed via
+ * ResreshModulesAction.
+ *
+ * @author Michal Mocnak
  */
-public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+public class WildflyWebApplicationsChildren extends WildflyAsyncChildren implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(WildflyWebApplicationsChildren.class.getName());
+
+    private static final Set<String> SYSTEM_WEB_APPLICATIONS = new HashSet<String>();
+    static {
+        Collections.addAll(SYSTEM_WEB_APPLICATIONS,
+                "jbossws-context", "jmx-console", "jbossws", "jbossws",
+                "web-console", "invoker", "jbossmq-httpil");
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
+
+    private final Lookup lookup;
+
+    public WildflyWebApplicationsChildren(Lookup lookup) {
+        this.lookup = lookup;
     }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
+
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new JBoss7WebNodeUpdater(), 0);
+    }
+
+    class JBoss7WebNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listWebModules(lookup));
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
+
+            setKeys(keys);
         }
     }
-    
-    public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
+
+    @Override
+    protected void addNotify() {
+        updateKeys();
     }
-    
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
+
+    @Override
+    protected void removeNotify() {
+        setKeys(java.util.Collections.EMPTY_SET);
     }
-    
-    protected boolean enable(Node[] nodes) {
-        return true;
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof WildflyWebModuleNode){
+            return new Node[]{(WildflyWebModuleNode)key};
+        }
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)){
+            return new Node[]{Util.createWaitNode()};
+        }
+
+        return null;
     }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
+
 }
