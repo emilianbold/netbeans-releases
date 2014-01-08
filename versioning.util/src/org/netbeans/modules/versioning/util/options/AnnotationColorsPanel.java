@@ -58,6 +58,7 @@ import javax.swing.event.ListSelectionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.util.*;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -92,7 +93,9 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         vcsColors = new HashMap<OptionsPanelColorProvider, VersioningSystemColors> ();
         versioningSystemsList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                updateColorList();
+                if (!e.getValueIsAdjusting()) {
+                    updateColorList();
+                }
             }
         });
         result.addLookupListener(WeakListeners.create(
@@ -217,13 +220,27 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
     
     private List<AttributeSet> getCategories() {
         OptionsPanelColorProvider provider = (OptionsPanelColorProvider)versioningSystemsList.getSelectedValue();
+        VersioningSystemColors colors = getProviderColors(provider);
+        return colors.getColorAttributes();
+    }
+
+    private VersioningSystemColors getProviderColors (OptionsPanelColorProvider provider) {
         VersioningSystemColors colors = vcsColors.get(provider);
         if (colors == null) {
             colors = new VersioningSystemColors(provider);
             vcsColors.put(provider, colors);
-            updateColorList();
         }
-        return colors.getColorAttributes();
+        return colors;
+    }
+    
+    private List<AttributeSet> getAllCategories() {
+        List<AttributeSet> allColors = new ArrayList<AttributeSet>();
+        ListModel model = versioningSystemsList.getModel();
+        for (int i = 0; i < model.getSize(); ++i) {
+            OptionsPanelColorProvider provider = (OptionsPanelColorProvider) model.getElementAt(i);
+            allColors.addAll(getProviderColors(provider).getColorAttributes());
+        }
+        return allColors;
     }
 
     /** This method is called from within the constructor to
@@ -255,6 +272,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         jLabel1.setLabelFor(lCategories);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AnnotationColorsPanel.class, "AnnotationColorsPanel.jLabel1.text")); // NOI18N
 
+        lCategories.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         lCategories.setMinimumSize(new java.awt.Dimension(100, 0));
         jScrollPane1.setViewportView(lCategories);
 
@@ -290,14 +308,14 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(containerPanelLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, containerPanelLayout.createSequentialGroup()
                         .addGroup(containerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
                             .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnResetToDefaults)
-                        .addContainerGap(328, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)))
+                        .addContainerGap())
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -308,10 +326,9 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, 0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(containerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(containerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -321,7 +338,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(containerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -341,7 +358,8 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
 
     private void initSystems () {
         final Collection<? extends OptionsPanelColorProvider> providers = result.allInstances();
-        Runnable inAWT = new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 ((DefaultListModel) versioningSystemsList.getModel()).removeAllElements();
                 for (OptionsPanelColorProvider provider : providers) {
@@ -351,23 +369,23 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                     versioningSystemsList.setSelectedIndex(0);
                 }
             }
-        };
-        if (EventQueue.isDispatchThread()) {
-            inAWT.run();
-        } else {
-            EventQueue.invokeLater(inAWT);
-        }
+        });
     }
 
     private void updateColorList() {
+        List<AttributeSet> allCats = getAllCategories();
+        lCategories.setListData(allCats.toArray(new AttributeSet[allCats.size()]));
+        lCategories.setPreferredSize(null);
+        int width = lCategories.getPreferredSize().width;
         if (versioningSystemsList.getSelectedValue() == null) {
             lCategories.setEnabled(false);
             lCategories.setListData(new Object[0]);
-            return;
+        } else {
+            lCategories.setEnabled(true);
+            lCategories.setListData(new Vector<AttributeSet>(getCategories()));
+            lCategories.setSelectedIndex(0);
         }
-        lCategories.setEnabled(true);
-        lCategories.setListData(new Vector<AttributeSet>(getCategories()));
-        lCategories.setSelectedIndex(0);
+        lCategories.setPreferredSize(new Dimension(width, lCategories.getPreferredSize().height));
     }
 
     private void resetToDefaults() {

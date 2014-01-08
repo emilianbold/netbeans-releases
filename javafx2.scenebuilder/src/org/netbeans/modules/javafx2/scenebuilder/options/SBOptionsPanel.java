@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages("KW_JavaFXOptions=JavaFX,Scene Builder")
 final class SBOptionsPanel extends javax.swing.JPanel {    
     private final SBOptionsPanelController controller;
-    
+
     private class HomeDef {
         private Home home;
         private String displayname;
@@ -124,6 +124,19 @@ final class SBOptionsPanel extends javax.swing.JPanel {
             }
         });
         sbHomeInfo.setVisible(false);
+    }
+    
+    boolean isChanged() {
+        if(controller.isSaveBeforeLaunch() != saveAllModified.isSelected()) {
+            return true;
+        }
+        Object selectedHome = sbHome.getSelectedItem();
+        Home home = controller.getSbHome();
+        if(home!= null && selectedHome != null && !controller.getSbHome().equals(((HomeDef)sbHome.getSelectedItem()).home)) {
+            return true;
+        }
+        List<Home> userDefinedHomes = controller.getUserDefinedHomes();
+        return userDefinedSBHomes.size() != userDefinedHomes.size() || !userDefinedSBHomes.containsAll(userDefinedHomes);
     }
 
     /**
@@ -211,7 +224,7 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void saveAllModifiedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAllModifiedActionPerformed
-        controller.setSaveBeforeLaunch(saveAllModified.isSelected());
+
     }//GEN-LAST:event_saveAllModifiedActionPerformed
 
     private void sbHomeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_sbHomeItemStateChanged
@@ -251,6 +264,7 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     }
 
     void store() {
+        controller.setSaveBeforeLaunch(saveAllModified.isSelected());
         List<Home> userDefs = new ArrayList<Home>();
         GrowingComboBox.GrowingListModel<HomeDef> model = sbHome.getModel();
         for(HomeDef hd : model.getUserDefined()) {

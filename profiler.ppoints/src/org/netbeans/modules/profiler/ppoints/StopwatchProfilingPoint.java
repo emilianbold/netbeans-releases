@@ -459,12 +459,13 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
     protected String getResultsText() {
         synchronized(resultsSync) {
             if (hasResults()) {
-                return (results.size() == 1)
-                       ? Bundle.StopwatchProfilingPoint_OneHitString(
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
-                       : Bundle.StopwatchProfilingPoint_NHitsString(
-                            results.size(),
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
+                int size = results.size();
+                long timeStamp = results.get(size - 1).getTimestamp();
+                String time = Utils.formatProfilingPointTime(timeStamp);
+
+                return (size == 1)
+                       ? Bundle.StopwatchProfilingPoint_OneHitString(time)
+                       : Bundle.StopwatchProfilingPoint_NHitsString(size, time);
             } else {
                 return Bundle.StopwatchProfilingPoint_NoResultsString();
             }

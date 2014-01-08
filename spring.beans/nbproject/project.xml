@@ -106,7 +106,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.libs.springframework</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.23</specification-version>
+                        <specification-version>1.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
