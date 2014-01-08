@@ -46,6 +46,7 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Iterator;
@@ -65,6 +66,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -85,6 +87,7 @@ public class OutputFileManager extends CachingFileManager {
     private ClassPath scp;
     private ClassPath apt;
     private String outputRoot;
+    private  Pair<URI,File> cachedClassFolder;
     private final SiblingProvider siblings;
     private final FileManagerTransaction tx;
 
@@ -336,11 +339,29 @@ public class OutputFileManager extends CachingFileManager {
     }
     
     private File getClassFolder(final URL url) throws IOException {
-        final File result = JavaIndex.getClassFolder(url, false);
+        final Pair<URI,File> cacheItem = cachedClassFolder;
+        URI uri = null;
+        try {
+            uri = url.toURI();
+            if (cacheItem != null && uri.equals(cacheItem.first())) {
+                return cacheItem.second();
+            }
+        } catch (URISyntaxException e) {
+            LOG.log(
+                Level.FINE,
+                "Not caching class folder for URL: {0}",    //NOI18N
+                url);
+        }
+        final File result = JavaIndex.getClassFolder(url, false, false);
         assert result != null : "No class folder for source root: " + url;
+        if (uri != null) {
+            cachedClassFolder = Pair.<URI,File>of(
+                uri,
+                result);
+        }
         return result;
     }
-
+    
     @Override
     public boolean handleOption(String head, Iterator<String> tail) {
         if (OUTPUT_ROOT.equals(head)) { //NOI18N
