@@ -41,30 +41,20 @@
  */
 package org.netbeans.core.windows;
 
-import java.awt.AWTEvent;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLayer;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.plaf.LayerUI;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
@@ -110,7 +100,7 @@ public class EditorOnlyDisplayer {
         if( activate == isActive() )
             return;
         if( isActive() ) {
-            cancel();
+            cancel(true);
         } else {
             activate();
         }
@@ -129,7 +119,7 @@ public class EditorOnlyDisplayer {
             if( switchCurrentEditor() ) {
                 return;
             }
-            cancel();
+            cancel( true );
         }
     }
 
@@ -157,12 +147,17 @@ public class EditorOnlyDisplayer {
         return true;
     }
 
-    private void cancel() {
+    public void cancel( boolean restoreFocus ) {
         TopComponent.getRegistry().removePropertyChangeListener( registryListener );
         JFrame frame = ( JFrame ) WindowManagerImpl.getInstance().getMainWindow();
         frame.setContentPane( originalContentPane );
         originalContentPane = null;
         setShowEditorToolbar( originalShowEditorToolbar );
+        if( restoreFocus )
+            restoreFocus();
+    }
+    
+    private void restoreFocus() {
         final TopComponent tc = TopComponent.getRegistry().getActivated();
         if( null != tc ) {
             SwingUtilities.invokeLater( new Runnable() {
@@ -188,7 +183,6 @@ public class EditorOnlyDisplayer {
 
         JPanel panel = new JPanel( new BorderLayout() );
         panel.add( tc, BorderLayout.CENTER  );
-//        mainWnd.setContentPane( new JLayer( panel, new EditorLayerUI() ) );
         mainWnd.setContentPane( panel );
         mainWnd.invalidate();
         mainWnd.revalidate();
@@ -205,53 +199,6 @@ public class EditorOnlyDisplayer {
                 tc.requestFocusInWindow();
             }
         });
-    }
-
-    private static class EditorLayerUI extends LayerUI<JPanel> {
-
-        @Override
-        public void paint( Graphics g, JComponent c ) {
-            super.paint( g, c ); //To change body of generated methods, choose Tools | Templates.
-
-            g.setColor( Color.red );
-            int width = c.getWidth();
-            int height = c.getHeight();
-            g.drawRect( width-30, 10, 20, 20 );
-        }
-
-        @Override
-        protected void processMouseMotionEvent( MouseEvent e, JLayer<? extends JPanel> l ) {
-            super.processMouseMotionEvent( e, l ); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        protected void processMouseEvent( MouseEvent e, JLayer<? extends JPanel> l ) {
-            if( e.getID() == MouseEvent.MOUSE_CLICKED && e.getButton() == MouseEvent.BUTTON1 ) {
-                Point p = e.getPoint();
-                Component c = e.getComponent();
-
-                int width = c.getWidth();
-                int height = c.getHeight();
-                Rectangle rect = new Rectangle( width-30, 10, 20, 20 );
-                if( rect.contains( p ) ) {
-                    e.consume();
-                    EditorOnlyDisplayer.getInstance().cancel();
-                }
-            }
-        }
-
-        @Override
-        public void installUI( JComponent c ) {
-            super.installUI( c );
-            ((JLayer) c).setLayerEventMask(AWTEvent.MOUSE_MOTION_EVENT_MASK + AWTEvent.MOUSE_EVENT_MASK);
-        }
-
-        @Override
-        public void uninstallUI(JComponent c) {
-           super.uninstallUI(c);
-            // reset the layer event mask
-            ((JLayer) c).setLayerEventMask(0);
-        }
     }
 
     private static boolean setShowEditorToolbar( boolean show ) {
