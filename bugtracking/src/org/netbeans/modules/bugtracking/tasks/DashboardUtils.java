@@ -237,7 +237,7 @@ public class DashboardUtils {
     }
 
     private static String getFilterBoldText(String fitText) {
-        String filterText = DashboardTopComponent.findInstance().getFilterText();
+        String filterText = FilterPanel.getInstance().getFilterText();
         if (!filterText.equals("")) { //NOI18N
             int searchIndex = 0;
             StringBuilder sb = new StringBuilder(fitText);
