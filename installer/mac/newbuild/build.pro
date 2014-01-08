@@ -9,9 +9,9 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="8.0 Beta"/>
+    <property name="appname" value="NetBeans 8.0 Beta"/> 
+    <property name="mpkg.name_nb" value="NetBeans 8.0 Beta"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
@@ -21,9 +21,9 @@
     <!-- Unique ID in db/receipts for release build -->
     <!-- <property name="nb.id" value="${baseide.version}"/>-->
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="8.0 Beta"/>
+    <property name="nb.display.version.long"  value="8.0 Beta"/>
+    <property name="nb.display.version.short" value="8.0 Beta"/>
 
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="7.0.41"/>
@@ -53,7 +53,7 @@
     <property name="glassfish_location_ml"  value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.0-${glassfish.version}-ml.zip"/>
     <property name="glassfish.subdir"       value="glassfish4"/>
     
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <!-- JDK Properties-->    
     <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk7_builds_path}/latest/bundles/macosx-x64"/>
