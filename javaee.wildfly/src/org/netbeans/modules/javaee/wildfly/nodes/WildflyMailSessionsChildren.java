@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javaee.wildfly.nodes;
@@ -49,41 +47,44 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- * It describes children nodes of the EJB Modules node. Implements
- * Refreshable interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBEarApplicationsChildren extends JBAsyncChildren implements Refreshable {
+class WildflyMailSessionsChildren extends WildflyAsyncChildren implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyMailSessionsChildren.class.getName());
 
     private final Lookup lookup;
 
-    JBEarApplicationsChildren(Lookup lookup) {
+    public WildflyMailSessionsChildren(Lookup lookup) {
         this.lookup = lookup;
     }
 
     @Override
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new WildflyEarApplicationNodeUpdater(), 0);
+        getExecutorService().submit(new WildflyMailSessionsNodeUpdater(), 0);
+
     }
 
-    class WildflyEarApplicationNodeUpdater implements Runnable {
+    class WildflyMailSessionsNodeUpdater implements Runnable {
 
-        List keys = new ArrayList();
+        List<WildflyMailSessionNode> keys = new ArrayList<WildflyMailSessionNode>();
 
         @Override
         public void run() {
             try {
                 WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listEarApplications(lookup));
+                for(WildflyMailSessionResource mailSession : dm.getClient().listMailSessions()) {
+                    keys.add(new WildflyMailSessionNode(mailSession.getName(), mailSession, lookup));
+                }
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -104,14 +105,13 @@ public class JBEarApplicationsChildren extends JBAsyncChildren implements Refres
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBEarApplicationNode){
-            return new Node[]{(JBEarApplicationNode)key};
+        if (key instanceof WildflyMailSessionNode) {
+            return new Node[]{(WildflyMailSessionNode) key};
         }
 
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
             return new Node[]{Util.createWaitNode()};
         }
-
         return null;
     }
 

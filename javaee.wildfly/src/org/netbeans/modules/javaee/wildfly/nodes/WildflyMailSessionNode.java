@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,68 +34,82 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
-import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
- * 
- * Node which describes an EJB Module.
  *
- * @author Michal Mocnak
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyEjbModuleNode extends AbstractNode {
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), false);
-    }
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), isEJB3);
+class WildflyMailSessionNode extends AbstractNode {
+
+    public WildflyMailSessionNode(String name, WildflyMailSessionResource mailSession, Lookup lookup) {
+        super(Children.LEAF);
+        setDisplayName(mailSession.getName());
+        setName(name);
+        setShortDescription(mailSession.getJndiName());
+        initProperties(mailSession);
     }
 
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEjbComponentNode> ejbs, boolean isEJB3) {
-        super(new WildflyEjbComponentsChildren(lookup, fileName, ejbs));
-        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        if (isEJB3) {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
+    protected final void initProperties(WildflyMailSessionResource mailSession) {
+        if (mailSession.getJndiName() != null) {
+            addProperty("JndiName", mailSession.getJndiName());
         }
-        else {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
+        if (mailSession.getHostName() != null) {
+            addProperty("Server", mailSession.getHostName());
+        }
+        if (mailSession.getIsDebug() != null) {
+            addProperty("Debug", mailSession.getIsDebug());
         }
     }
-    
+
+    private void addProperty(String name, String value) {
+        String displayName = NbBundle.getMessage(WildflyDatasourceNode.class, "LBL_Resources_MailSessions_Session_" + name);
+        String description = NbBundle.getMessage(WildflyDatasourceNode.class, "DESC_Resources_MailSessions_Session_" + name);
+        PropertySupport ps = new SimplePropertySupport(name, value, displayName, description);
+        getSheet().get(Sheet.PROPERTIES).put(ps);
+    }
+
     @Override
-    public Action[] getActions(boolean context){
-        if(getParentNode() instanceof WildflyEarApplicationNode)
-            return new SystemAction[] {};
-        else
-            return new SystemAction[] {
-                SystemAction.get(UndeployModuleAction.class)
-            };
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        setSheet(sheet);
+        return sheet;
     }
-    
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new SystemAction[]{SystemAction.get(PropertiesAction.class)};
+    }
+
     @Override
     public Image getIcon(int type) {
-        return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+        return ImageUtilities.loadImage(Util.JAVAMAIL_ICON);
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return getIcon(type);
+        return ImageUtilities.loadImage(Util.JAVAMAIL_ICON);
     }
+
 }

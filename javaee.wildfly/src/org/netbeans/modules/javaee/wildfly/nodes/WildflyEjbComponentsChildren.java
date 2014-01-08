@@ -41,65 +41,82 @@
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.awt.Image;
-import javax.swing.Action;
-import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_ENTITY_ICON;
-import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_MESSAGE_ICON;
-import static org.netbeans.modules.javaee.wildfly.nodes.Util.EJB_SESSION_ICON;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.ImageUtilities;
-import org.openide.util.actions.SystemAction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyEJBComponentNode extends AbstractNode {
-    
-   public enum Type { 
-        MDB("message-driven-bean", EJB_MESSAGE_ICON), 
-        SINGLETON("singleton-bean", EJB_SESSION_ICON), 
-        STATELESS( "stateless-session-bean", EJB_SESSION_ICON), 
-        ENTITY("entity-bean", EJB_ENTITY_ICON), 
-        STATEFULL("stateful-session-bean", EJB_SESSION_ICON);
-        
-        private final String propertyName;
-        private final String icon;
-        Type(final String propertyName, final String icon) {
-            this.propertyName = propertyName;
-            this.icon = icon;
-        }
-        
-        public String getPropertyName() {
-            return this.propertyName;
-        }
-        
-        public String getIcon() {
-            return this.icon;
-        }
-    };
-   
-   private final Type ejbType;
-    public WildflyEJBComponentNode(String ejbName, Type ejbType) {
-        super(Children.LEAF);
-        this.ejbType = ejbType;
-        setDisplayName(ejbName);
+public class WildflyEjbComponentsChildren extends WildflyAsyncChildren implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(WildflyEjbModulesChildren.class.getName());
+
+    private final Lookup lookup;
+    private final String deployment;
+    private final List<WildflyEjbComponentNode> ejbsComponents;
+
+    public WildflyEjbComponentsChildren(Lookup lookup, String deployment, List<WildflyEjbComponentNode> ejbs) {
+        this.lookup = lookup;
+        this.deployment = deployment;
+        this.ejbsComponents = new ArrayList<WildflyEjbComponentNode>(ejbs.size());
+        this.ejbsComponents.addAll(ejbs);
     }
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new SystemAction[]{};
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
 
+    }
+
+    class WildflyDestinationsNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listDestinationForDeployment(lookup, deployment));
+                keys.addAll(ejbsComponents);
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+
+            setKeys(keys);
+        }
     }
 
     @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage(ejbType.getIcon());
+    protected void addNotify() {
+        updateKeys();
     }
 
     @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
+    protected void removeNotify() {
+        setKeys(java.util.Collections.EMPTY_SET);
     }
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof WildflyDestinationNode) {
+            return new Node[]{(WildflyDestinationNode) key};
+        }
+        if (key instanceof WildflyEjbComponentNode) {
+            return new Node[]{(WildflyEjbComponentNode) key};
+        }
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
+            return new Node[]{Util.createWaitNode()};
+        }
+        return null;
+    }
+
 }

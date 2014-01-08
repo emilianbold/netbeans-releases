@@ -50,7 +50,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.JBOutputSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.nodes.JBManagerNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -72,13 +72,13 @@ public class OpenServerLogAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
-            Object node = activatedNode.getLookup().lookup(JBManagerNode.class);
+            Object node = activatedNode.getLookup().lookup(WildflyManagerNode.class);
             
-            if (!(node instanceof JBManagerNode)) {
+            if (!(node instanceof WildflyManagerNode)) {
                 continue;
             }
             
-            WildFlyDeploymentManager dm = ((JBManagerNode)node).getDeploymentManager();
+            WildFlyDeploymentManager dm = ((WildflyManagerNode)node).getDeploymentManager();
             InputOutput io = UISupport.getServerIO(dm.getUrl());
             if (io != null) {
                 io.select();

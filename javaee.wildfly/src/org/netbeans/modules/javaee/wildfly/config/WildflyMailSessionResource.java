@@ -41,77 +41,115 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+package org.netbeans.modules.javaee.wildfly.config;
 
 /**
- * It describes children nodes of the EJB Modules node. Implements Refreshable
- * interface and due to it can be refreshed via ResreshModulesAction.
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBDestinationsChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyMailSessionResource {
 
-    private static final Logger LOGGER = Logger.getLogger(JBDestinationsChildren.class.getName());
+    private final String name;
+    private String jndiName;
+    private String storeProt;
+    private String storeProtClass;
+    private String transProt;
+    private String transProtClass;
+    private String hostName;
+    private String userName;
+    private String fromAddr;
+    private String isDebug;
+    private String isEnabled;
 
-    private final Lookup lookup;
-
-    public JBDestinationsChildren(Lookup lookup) {
-        this.lookup = lookup;
+    /**
+     * Creates a new instance of MailSessionResource
+     */
+    public WildflyMailSessionResource(String name) {
+        this.name = name;
     }
 
-    @Override
-    public void updateKeys() {
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
-
+    public String getName() {
+        return name;
     }
 
-    class WildflyDestinationsNodeUpdater implements Runnable {
-
-        List<JBDestinationNode> keys = new ArrayList<JBDestinationNode>();
-
-        @Override
-        public void run() {
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listDestinations(lookup));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-
-            setKeys(keys);
-        }
+    public String getJndiName() {
+        return jndiName;
     }
 
-    @Override
-    protected void addNotify() {
-        updateKeys();
+    public void setJndiName(String value) {
+        this.jndiName = value;
     }
 
-    @Override
-    protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
+    public String getStoreProt() {
+        return storeProt;
     }
 
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBDestinationNode) {
-            return new Node[]{(JBDestinationNode) key};
-        }
+    public void setStoreProt(String value) {
+        this.storeProt = value;
+    }
 
-        if (key instanceof String && key.equals(Util.WAIT_NODE)) {
-            return new Node[]{Util.createWaitNode()};
-        }
-        return null;
+    public String getStoreProtClass() {
+        return storeProtClass;
+    }
+
+    public void setStoreProtClass(String value) {
+        this.storeProtClass = value;
+    }
+
+    public String getTransProt() {
+        return transProt;
+    }
+
+    public void setTransProt(String value) {
+        this.transProt = value;
+    }
+
+    public String getTransProtClass() {
+        return transProtClass;
+    }
+
+    public void setTransProtClass(String value) {
+        this.transProtClass = value;
+    }
+
+    public String getHostName() {
+        return hostName;
+    }
+
+    public void setHostName(String value) {
+        this.hostName = value;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String value) {
+        this.userName = value;
+    }
+
+    public String getFromAddr() {
+        return fromAddr;
+    }
+
+    public void setFromAddr(String value) {
+        this.fromAddr = value;
+    }
+
+    public String getIsDebug() {
+        return isDebug;
+    }
+
+    public void setIsDebug(String value) {
+        this.isDebug = value;
+    }
+
+    public String getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(String value) {
+        this.isEnabled = value;
     }
 
 }

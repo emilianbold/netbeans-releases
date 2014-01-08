@@ -106,11 +106,13 @@ public class DatasourceSupport {
      */
     private class DatasourceFileListener extends FileChangeAdapter {
 
+        @Override
         public void fileChanged(FileEvent fe) {
             assert (fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assert ((FileObject) fe.getSource()).getPath().equals(datasourcesFO.getPath()) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;

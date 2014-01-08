@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,91 +40,86 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
-import org.netbeans.api.db.explorer.node.BaseNode;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.actions.PropertiesAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-import org.openide.util.ImageUtilities;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
+ * Node which describes enterprise application.
  *
- * @author ehugonnet
+ * @author Michal Mocnak
  */
-public class JBDatasourceNode extends AbstractNode {
+public class WildflyEarApplicationNode extends AbstractStateNode {
 
-    public JBDatasourceNode(String name, Datasource ds, Lookup lookup) {
-        super(Children.LEAF);
-        getCookieSet().add(new UndeployModuleCookieImpl(ds.getDisplayName(), lookup));
-        setDisplayName(ds.getJndiName());
-        setName(name);
-        setShortDescription(ds.getDisplayName());
-        initProperties(ds);
-    }
-
-    protected void initProperties(Datasource ds) {
-        addProperty("Driver", ds.getDriverClassName());
-        addProperty("JndiName", ds.getJndiName());
-        addProperty("Url", ds.getUrl());
-        addProperty("Username", ds.getUsername());
-        addProperty("Password", ds.getPassword());
-    }
-
-    private void addProperty(String name, String value) {
-        String displayName = NbBundle.getMessage(JBDatasourceNode.class, "LBL_Resources_Datasources_Datasource_" + name);
-        String description = NbBundle.getMessage(JBDatasourceNode.class, "DESC_Resources_Datasources_Datasource_" + name);
-        PropertySupport ps = new SimplePropertySupport(name, value, displayName, description);
-        getSheet().get(Sheet.PROPERTIES).put(ps);
-    }
-    
-    @Override
-    protected Sheet createSheet() {
-        Sheet sheet = Sheet.createDefault();
-        setSheet(sheet);
-        return sheet;
+    public WildflyEarApplicationNode(String fileName, Lookup lookup) {
+        super(new WildflyEarModulesChildren(lookup, fileName));
+        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
+        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EAR, lookup));
+        getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
+        getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
     }
 
     @Override
     public Action[] getActions(boolean context) {
+        if (isRunning()) {
+            return new SystemAction[]{
+                SystemAction.get(StopModuleAction.class),
+                SystemAction.get(UndeployModuleAction.class)
+            };
+        }
         return new SystemAction[]{
-            SystemAction.get(PropertiesAction.class),
+            SystemAction.get(StartModuleAction.class),
             SystemAction.get(UndeployModuleAction.class)
         };
     }
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.loadImage(Util.JDBC_RESOURCE_ICON);
+        return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return ImageUtilities.loadImage(Util.JDBC_RESOURCE_ICON);
+        return getIcon(type);
     }
 
-    /*  @Override
-     public Image getIcon(int type) {
-     return UISupport.getIcon(UISupport.ServerIcon.EJB_ARCHIVE);
-     }
+    @Override
+    protected boolean isRunning() {
+        boolean running = getChildren().getNodes().length > 0;
+        for (Node node : getChildren().getNodes()) {
+            if (node instanceof WildflyWebModuleNode) {
+                running = running && ((WildflyWebModuleNode) node).isRunning();
+            }
+        }
+        return running;
+    }
 
-     @Override
-     public Image getOpenedIcon(int type) {
-     return getIcon(type);
-     }*/
+    @Override
+    protected boolean isWaiting() {
+        return isRunning();
+    }
+
+    @Override
+    protected Image getOriginalIcon(int type) {
+        return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
+    }
+
+    @Override
+    protected Image getOriginalOpenedIcon(int type) {
+        return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER);
+    }
 }

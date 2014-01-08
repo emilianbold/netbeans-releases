@@ -58,7 +58,6 @@ import org.netbeans.modules.javaee.wildfly.config.ds.DatasourceSupport;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  * Base for JBoss DeploymentConfiguration implementations.

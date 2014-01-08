@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,33 +34,87 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
-
-import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 /**
  *
- * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class JBRegistryNodeFactory implements RegistryNodeFactory {
+public class WildflyModule {
 
-//    public JBRegistryNodeFactory() {
-//    }
+    private final String archiveName;
+    private String url;
+    private boolean running;
 
-    public Node getTargetNode(Lookup lookup) {
-        return new JBTargetNode(lookup);
+    public WildflyModule(String archiveName) {
+        this.archiveName = archiveName;
     }
 
-    public Node getManagerNode(Lookup lookup) {
-        return new JBManagerNode(new Children.Map(), lookup);
+    public WildflyModule(String archiveName, boolean running) {
+        this.archiveName = archiveName;
+        this.running = running;
     }
-    
-//    public String getDisplayName() {
-//        return "Registry Node Factory"; 
-//    }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WildflyModule other = (WildflyModule) obj;
+        if ((this.archiveName == null) ? (other.archiveName != null) : !this.archiveName.equals(other.archiveName)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Get the value of url
+     *
+     * @return the value of url
+     */
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Set the value of url
+     *
+     * @param url new value of url
+     */
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /**
+     * Get the value of running
+     *
+     * @return the value of running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * Get the value of archiveName
+     *
+     * @return the value of archiveName
+     */
+    public String getArchiveName() {
+        return archiveName;
+    }
+
 }

@@ -41,86 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
- * It describes children nodes of the enterprise application node.
  *
- * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
  */
-public class JBEarModulesChildren extends JBAsyncChildren implements Refreshable  {
+public class WildflyRegistryNodeFactory implements RegistryNodeFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
+//    public JBRegistryNodeFactory() {
+//    }
 
-    private final Lookup lookup;
-    private final String j2eeAppName;
-
-    public JBEarModulesChildren(Lookup lookup, String j2eeAppName) {
-        this.lookup = lookup;
-        this.j2eeAppName = j2eeAppName;
+    public Node getTargetNode(Lookup lookup) {
+        return new WildflyTargetNode(lookup);
     }
 
-    @Override
-    public void updateKeys(){
-        setKeys(new Object[]{Util.WAIT_NODE});
-        getExecutorService().submit(new WildflyEarModulesNodeUpdater(), 0);
+    public Node getManagerNode(Lookup lookup) {
+        return new WildflyManagerNode(new Children.Map(), lookup);
     }
     
-    class WildflyEarModulesNodeUpdater implements Runnable {
-
-        List keys = new ArrayList();
-
-        @Override
-        public void run() {
-            try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
-                keys.addAll(dm.getClient().listEarSubModules(lookup, j2eeAppName));
-            } catch (Exception ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-            setKeys(keys);
-        }
-    }
-
-    @Override
-    protected void addNotify() {
-        updateKeys();
-    }
-
-    @Override
-    protected void removeNotify() {
-        setKeys(java.util.Collections.EMPTY_SET);
-    }
-
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof WildflyEjbModuleNode){
-            return new Node[]{(WildflyEjbModuleNode)key};
-        }
-
-        if (key instanceof JBWebModuleNode){
-            return new Node[]{(JBWebModuleNode)key};
-        }
-
-        if (key instanceof String && key.equals(Util.WAIT_NODE)){
-            return new Node[]{Util.createWaitNode()};
-        }
-
-        return null;
-    }
+//    public String getDisplayName() {
+//        return "Registry Node Factory"; 
+//    }
+    
 }
