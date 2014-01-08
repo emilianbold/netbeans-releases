@@ -95,9 +95,9 @@ public class JspCommentHandler extends CommentHandler.DefaultCommentHandler {
 
                     // in case of caret within the comment, find the ending bound
                     if (t.id() == JspTokenId.COMMENT) {
-                        while (ts.moveNext() && t.id() == JspTokenId.COMMENT) {
-                            bounds[1] += ts.token().offset(th) - 2;
-                        }
+                        do {
+                            bounds[1] += ts.token().length();
+                        } while (ts.moveNext() && ts.token().id() == JspTokenId.COMMENT);
                     }
 
                     if(isScriptletOrDelimiter(t)) {
