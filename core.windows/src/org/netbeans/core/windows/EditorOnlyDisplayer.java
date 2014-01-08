@@ -148,6 +148,8 @@ public class EditorOnlyDisplayer {
     }
 
     public void cancel( boolean restoreFocus ) {
+        if( !isActive() )
+            return;
         TopComponent.getRegistry().removePropertyChangeListener( registryListener );
         JFrame frame = ( JFrame ) WindowManagerImpl.getInstance().getMainWindow();
         frame.setContentPane( originalContentPane );
