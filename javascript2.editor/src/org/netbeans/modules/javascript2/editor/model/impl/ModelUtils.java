@@ -661,7 +661,7 @@ public class ModelUtils {
      * @return 
      */
     private static Collection<TypeUsage> resolveSemiTypeChain(JsObject object, String chain) {
-        Set<TypeUsage> result = new HashSet<TypeUsage>();
+        Collection<TypeUsage> result = new HashSet<TypeUsage>();
         if (chain.isEmpty()) {
             return result;
         }
@@ -700,16 +700,16 @@ public class ModelUtils {
         if (resultObject != null) {
             if (resultObject instanceof JsFunction) {
                 if ("call".endsWith(kind)) {
-                    result.addAll(((JsFunction)resultObject).getReturnTypes());
+                    ModelUtils.addUniqueType(result, (Collection<TypeUsage>)((JsFunction)resultObject).getReturnTypes());
                 } else {
-                    result.add(new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
+                    ModelUtils.addUniqueType(result, new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
                 }
             }else {
                 Collection<? extends TypeUsage> assignments = resultObject.getAssignments();
                 if (assignments.isEmpty()) {
-                    result.add(new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
+                    ModelUtils.addUniqueType(result, new TypeUsageImpl(resultObject.getFullyQualifiedName(), -1, true));
                 } else {
-                    result.addAll(resultObject.getAssignments());
+                    ModelUtils.addUniqueType(result, (Collection<TypeUsage>)resultObject.getAssignments());
                 }
             }
         }
@@ -950,7 +950,7 @@ public class ModelUtils {
                                 indexResults = jsIndex.findByFqn(propertyToCheck,
                                         JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES, JsIndex.FIELD_ASSIGNMENTS); //NOI18N
                                 
-                                if (indexResults.isEmpty()) {
+                                if (indexResults.isEmpty() && !fqn.endsWith(".prototype")) {
                                     // if the property was not found, try to look at the prototype of the object
                                     propertyToCheck = fqn + ".prototype." + name;
                                     indexResults = jsIndex.findByFqn(propertyToCheck,
@@ -1063,6 +1063,9 @@ public class ModelUtils {
     public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex) {
         //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
+        if (types.size() == 1 && types.iterator().next().isResolved()) {
+            return types;
+        }
         Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
@@ -1157,9 +1160,16 @@ public class ModelUtils {
                     boolean isType = false;
                     for (IndexResult indexResult: indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                        if (assignments.size() > 10) {
+                            System.out.println("@@@@Assignments for " + fqn + " " + assignments.size());
+                        }
                         if (!assignments.isEmpty()) {
                             hasAssignments = true;
                             for (TypeUsage type : assignments) {
+                                if (resolved.size() > 10) {
+                                    resolved.clear();
+                                    break;
+                                }
                                 if (!alreadyProcessed.contains(type.getType())) {
                                     resolveAssignments(model, jsIndex, type.getType(), resolved, alreadyProcessed);
                                 }

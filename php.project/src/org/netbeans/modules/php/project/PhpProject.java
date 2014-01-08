@@ -396,6 +396,7 @@ public final class PhpProject implements Project {
         return seleniumRoots;
     }
 
+    @CheckForNull
     FileObject getSourcesDirectory() {
         for (FileObject root : sourceRoots.getRoots()) {
             // return the first one
