@@ -47,9 +47,12 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -196,6 +199,20 @@ final class LibraryStartVisualPanel extends NewTemplateVisualPanel {
             String shortestPath = null;
             try {
                 jf = new JarFile(fil);
+                if(assignValues) {
+                    Manifest manifest = jf.getManifest();
+                    Attributes attributes = manifest.getMainAttributes();
+                    if(attributes.getValue("Specification-Title") != null) {
+                        data.setProjectName(attributes.getValue("Specification-Title").replaceAll("[0-9._-]+$", "").replaceAll(" ", "-"));
+                    } else {
+                        if (manifest.getEntries().size() == 1) {
+                            attributes = manifest.getEntries().values().iterator().next();
+                            if(attributes.getValue("Specification-Title") != null) {
+                                data.setProjectName(attributes.getValue("Specification-Title").replaceAll("[0-9._-]+$", "").replaceAll(" ", "-"));
+                            }
+                        }
+                    }
+                }
                 Enumeration en = jf.entries();
                 while (en.hasMoreElements()) {
                     JarEntry entry = (JarEntry)en.nextElement();
