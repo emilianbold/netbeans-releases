@@ -696,6 +696,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                             Character.isDigit(actChar) ||
                             (actChar == '_') ||
                             (actChar == ':') ||
+                            (actChar == '.') ||
                             (actChar == '-'))
                             ) { // not alpha or '-' (http-equiv)
                         lexerState = ((lexerState == ISI_TAG_ATTR) ? ISP_TAG : ISP_DIR);
