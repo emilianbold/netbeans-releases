@@ -254,6 +254,21 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         return true;
     }
 
+    boolean changed() {
+        String text = GroovySettings.getInstance().getGroovyDoc();
+        if (text == null) {
+            text = "";
+        }
+        if (!text.equals(groovyDocTextField.getText().trim())) {
+            return true;
+        }
+        boolean isChanged = false;
+        for (GroovyOptionsSubpanel subpanel: this.subpanels) {
+            isChanged |= subpanel.changed();
+        }
+        return isChanged;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDocButton;
     private javax.swing.JLabel docLabel;
