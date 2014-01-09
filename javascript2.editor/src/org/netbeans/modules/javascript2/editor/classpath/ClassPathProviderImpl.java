@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -156,7 +157,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     private static void registerJsClassPathIfNeededImpl() {
         if (JS_CLASSPATH_REGISTERED.compareAndSet(false, true)) {
-            RP.post(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     ClassPath cp = ClassPathProviderImpl.getBootClassPath();
