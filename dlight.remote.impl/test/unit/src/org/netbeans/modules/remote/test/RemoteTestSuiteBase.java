@@ -42,15 +42,20 @@
 
 package org.netbeans.modules.remote.test;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Timer;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 
 /**
  *
@@ -91,25 +96,53 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
     private static final Map<String, Long> stats = new HashMap<String, Long>();
     private static final Object statsLock = new Object();
     static final ThreadLocal<Long> suiteStartTime = new ThreadLocal<Long>();
+    
+    private static TimeoutThreadDumper suiteTimeoutThreadDumper;
+    private static TimeoutThreadDumper testTimeoutThreadDumper;
+    private static final Object dumperLock = new Object();
+    protected static final int TEST_THREAD_DUMP_TIMEOUT = Integer.getInteger("remote.test.thread.dump.timeout", 1*60*1000);
+    protected static final int SUITE_THREAD_DUMP_TIMEOUT = Integer.getInteger("remote.test.suite.thread.dump.timeout", 8*60*1000);
 
     public static void registerTestSuiteSetup(String suiteName) {
+        synchronized (dumperLock) {
+            if (suiteTimeoutThreadDumper != null) {
+                suiteTimeoutThreadDumper.stop();
+            }
+            suiteTimeoutThreadDumper = new TimeoutThreadDumper(SUITE_THREAD_DUMP_TIMEOUT, "Suite " + suiteName);
+        }
         suiteStartTime.set(System.currentTimeMillis());
         System.err.printf("### Starting suite %s\n", suiteName);
         clearStats(suiteName);
     }
 
     public static void registerTestSuiteTearDown(String suiteName) {
+        synchronized (dumperLock) {
+            if (suiteTimeoutThreadDumper != null) {
+                suiteTimeoutThreadDumper.stop();
+            }
+        }        
         Long tm = suiteStartTime.get();
         long time = (tm == null) ? -1 : System.currentTimeMillis() - tm.longValue();
         printStats(suiteName, time);
     }
 
     public static void registerTestSetup(TestCase test) {
+        synchronized (dumperLock) {
+            if (testTimeoutThreadDumper != null) {
+                testTimeoutThreadDumper.stop();
+            }
+            testTimeoutThreadDumper = new TimeoutThreadDumper(TEST_THREAD_DUMP_TIMEOUT, "Test " + testFullName(test));
+        }        
         String fullName = testFullName(test);
         registerTestSetup(fullName);
     }
     
     private static void registerTestSetup(String fullName) {
+        synchronized (dumperLock) {
+            if (testTimeoutThreadDumper != null) {
+                testTimeoutThreadDumper.stop();
+            }
+        }        
         synchronized (statsLock) {
             Long value = stats.get(fullName);
             if (value != null) {
@@ -117,7 +150,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
             }
             stats.put(fullName, Long.valueOf(System.currentTimeMillis()));
         }
-        System.err.printf("\n###> setUp    %s\n", fullName);
+        System.err.printf("\n###> setUp    [%s] %s\n", new Date(), fullName);
     }
     
     public static void registerTestTearDown(TestCase test) {
@@ -145,7 +178,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
                 stats.remove(fullName);
             }
         }
-        System.err.printf("\n###< tearDown %s; duration: %d seconds\n", fullName, time/1000);
+        System.err.printf("\n###< tearDown [%s] %s; duration: %d seconds\n", new Date(), fullName, time/1000);
     }
     
     private static String testFullName(TestCase test) {
@@ -185,6 +218,30 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
         });
         for (Map.Entry<String, Long> entry : entries) {
             System.err.printf("### %s took %d seconds\n", entry.getKey(), entry.getValue().longValue()/1000);
+        }
+    }    
+    
+    private static class TimeoutThreadDumper implements ActionListener {
+
+        private final Timer timer;
+        private final String testName;
+
+        public TimeoutThreadDumper(int timeout, String testName) {
+            this.timer = new Timer(timeout, this);
+            this.testName = testName;
+            this.timer.start();
+        }
+
+        public void stop() {
+            this.timer.stop();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            stop();
+            String header = "### " + testName + " probably hanged - getting thread dump " + new Date();
+            String footer = "### end of " + testName + " thread dump " + new Date();
+            NativeExecutionTestSupport.threadsDump(header, footer);
         }
     }    
 }
