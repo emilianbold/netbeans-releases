@@ -710,7 +710,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
                             @Override
                             public void remove() {
-                                throw new UnsupportedOperationException("Not supported.");
+                                throw new UnsupportedOperationException("Not supported.");  // NOI18N
                             }
                         };
                         
