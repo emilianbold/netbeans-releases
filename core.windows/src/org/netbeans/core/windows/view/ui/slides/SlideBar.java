@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.EditorOnlyDisplayer;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -250,6 +251,9 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
     public void stateChanged(ChangeEvent e) {
         int selIndex = selModel.getSelectedIndex();
         
+        if( selIndex >= 0 ) {
+            EditorOnlyDisplayer.getInstance().cancel(false);
+        }
         // notify winsys about selection change
         tabbed.postSelectionEvent();
         // a check to prevent NPE as described in #43605, dafe - is this correct or rather a hack? mkleint
