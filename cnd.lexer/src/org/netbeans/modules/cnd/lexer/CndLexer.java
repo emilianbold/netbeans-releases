@@ -417,8 +417,6 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         return finishNumberLiteral(read(true), false);
                     case '\\':
                         return token(CppTokenId.BACK_SLASH);
-                    case '$':
-                        return token(CppTokenId.DOLLAR);
                     case '\r':
                         consumeNewline();
                         return token(CppTokenId.NEW_LINE);
@@ -451,6 +449,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         }
                         return null;
 
+                    case '$':
+                        // dollar is extension in gcc and msvc $ is a valid start of identifiers
+//                        return token(CppTokenId.DOLLAR);
                     default:
                         c = translateSurrogates(c);
                         if (CndLexerUtilities.isCppIdentifierStart(c)) {
