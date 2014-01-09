@@ -406,11 +406,12 @@ public class TemplateUtils {
         if (type.isInstantiation()) {
             TypeImpl typeImpl = (TypeImpl) type;
             List<CsmSpecializationParameter> params = typeImpl.getInstantiationParams();
-            for (CsmSpecializationParameter instParam : params) {
+            for (int i = 0; i < params.size(); i++) {
+                CsmSpecializationParameter instParam = params.get(i);
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
                     CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope, additionalParams);
                     if (newType != instParam) {
-                        params.set(params.indexOf(instParam), new TypeBasedSpecializationParameterImpl(newType));
+                        params.set(i, new TypeBasedSpecializationParameterImpl(newType));
                     }
                 }
             }
