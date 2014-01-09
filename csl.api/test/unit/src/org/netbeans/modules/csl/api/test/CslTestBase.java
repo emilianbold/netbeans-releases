@@ -4632,7 +4632,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         public void waitForScanToFinish() {
             try {
-                latch.await(60000, TimeUnit.MILLISECONDS);
+                latch.await(60000, TimeUnit.HOURS);
                 if (latch.getCount() > 0) {
                     fail("Waiting for classpath scanning to finish timed out");
                 }

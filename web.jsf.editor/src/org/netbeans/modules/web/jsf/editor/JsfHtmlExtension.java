@@ -320,7 +320,19 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = ot.unqualifiedName().toString();
 
         String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
-        Library flib = NamespaceUtils.getForNs(libs, namespace);
+        Library flib = null;
+        if (namespace == null) {
+            // the namespace is not imported, try find library according the default prefix
+            for (Library lib : libs.values()) {
+                if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(nsPrefix.toString())) {
+                    flib = lib;
+                    break;
+                }
+            }
+        } else {
+            flib = NamespaceUtils.getForNs(libs, namespace);
+        }
+
         if (flib == null) {
             //The facelets library not found. This happens if one declares
             //a namespace which is not matched to any existing library
