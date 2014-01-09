@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.jquery;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
-import org.openide.modules.ModuleInstall;
+import java.io.File;
+import org.openide.modules.InstalledFileLocator;
 
 /**
- * Unregisters JavaScript boot classpath from GlobalPathRegistry.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Pisl
  */
-public class ModuleInstaller extends ModuleInstall {
+public class JQueryInstalledFileLocator extends InstalledFileLocator {
 
-    @Override
-    public void restored() {
-        // enable cache
-        ClassPathProviderImpl.getBootClassPath();
-    }
-     
-    @Override
-    public void uninstalled() {
-        GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.BOOT_CP,
-                new ClassPath[]{ClassPathProviderImpl.getBootClassPath()});
-    }
-
+        @Override
+        public File locate(String relativePath, String codeNameBase, boolean localized) {
+            if (relativePath.equals("docs/jquery-api.xml")) {
+                String path = System.getProperty("test.jquery.api.file");
+                System.err.println(path);
+                //assertNotNull("must set test.jquery.api.file", path);
+                if (path == null) {
+                    return null;
+                }
+                return new File(path);
+            } else if (relativePath.equals("docs/jquery-propertyNames.xml")) {
+                String path = System.getProperty("test.jquery.propertyNames.file");
+                System.err.println(path);
+                //assertNotNull("must set test.jquery.api.file", path);
+                if (path == null) {
+                    return null;
+                }
+                return new File(path);
+            }
+            return null;
+        }
 }
