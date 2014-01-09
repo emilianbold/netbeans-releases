@@ -60,7 +60,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
  * 
  * @author Martin Entlicher
  */
-class ClassFieldVariable extends ObjectFieldVariable implements ClassVariable {
+public class ClassFieldVariable extends ObjectFieldVariable implements ClassVariable {
     
     public ClassFieldVariable (
         JPDADebuggerImpl debugger,
