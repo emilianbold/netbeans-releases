@@ -308,8 +308,8 @@ public abstract class JiraConnectorProvider {
                     throw new NoSuchMethodException(wrapper.getDelegate().getClass().getName() + "." + method.getName() + " " + Arrays.toString(method.getParameterTypes()));
                 }
                 Object ret = wrapperMethod.invoke(wrapper.getDelegate(), args);
-                Class<?> ct = method.getReturnType().getComponentType();
                 if(ret instanceof Object[]) {
+                    Class<?> ct = method.getReturnType().getComponentType();
                     Object[] objs = (Object[])ret;
                     Object ao = Array.newInstance(ct, objs.length);
                     for (int i = 0; i < objs.length; i++) {
@@ -317,6 +317,7 @@ public abstract class JiraConnectorProvider {
                     }
                     return ao;
                 } else {
+                    Class<?> ct = method.getReturnType();
                     return convert(ct, ret);
                 }
             } catch (InvocationTargetException e) {
