@@ -49,7 +49,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -78,7 +77,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
         System.setProperty("remote.user.password.keep_in_memory", "true");        
-        System.setProperty("remote.fs_server.verbose", "1");
+        System.setProperty("remote.fs_server.verbose", "0");
         System.setProperty("remote.fs_server.log", "true");        
         TestLogHandler.attach(RemoteLogger.getInstance());
     }
@@ -95,13 +94,18 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         super(testName);
         fs = null;
         rootFO = null;
-        execEnv = null;
+        execEnv = null;        
     }
 
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         this.execEnv = execEnv;
     }
+    
+    @Override
+    protected int timeOut() {
+        return super.timeOut();
+    }    
 
     @Override
     protected void setUp() throws Exception {

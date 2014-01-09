@@ -65,10 +65,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class MoveTestCase extends RemoteFileTestBase {
 
-    static {
-        System.setProperty("remote.fs_server.verbose", "0");
-        System.setProperty("remote.fs_server.suppress.stderr", "false");
-    }
+//    static {
+//        System.setProperty("remote.fs_server.verbose", "0");
+//        System.setProperty("remote.fs_server.suppress.stderr", "false");
+//    }
 
     public MoveTestCase(String testName) {
         super(testName);
