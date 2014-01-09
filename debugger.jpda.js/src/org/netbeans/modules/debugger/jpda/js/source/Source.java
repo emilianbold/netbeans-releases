@@ -74,7 +74,7 @@ public final class Source {
     private static final String SOURCE_VAR_HASH = "hash";   // NOI18N
     private static final String SOURCE_VAR_URL = "url";     // NOI18N
     
-    private static final Map<JPDADebugger, Map<String, Source>> knownSources = new WeakHashMap<>();
+    private static final Map<JPDADebugger, Map<Long, Source>> knownSources = new WeakHashMap<>();
 
     private final String name;
     private final String className;
@@ -131,6 +131,8 @@ public final class Source {
     
     public static Source getSource(JPDAClassType classType) {
         String className = classType.getName();
+        long uniqueClassID = classType.classObject().getUniqueID();
+        //System.err.println("getSource("+classType+" = "+className+"): classType object's ID = "+uniqueClassID);
         JPDADebugger debugger;
         try {
             java.lang.reflect.Field debuggerField = classType.getClass().getDeclaredField("debugger");
@@ -141,9 +143,9 @@ public final class Source {
             return null;
         }
         synchronized (knownSources) {
-            Map<String, Source> dbgSources = knownSources.get(debugger);
+            Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources != null) {
-                Source src = dbgSources.get(className);
+                Source src = dbgSources.get(uniqueClassID);
                 if (src != null) {
                     return src;
                 }
@@ -191,12 +193,12 @@ public final class Source {
         }
         Source src = new Source(name, className, url, compareContent, hash, content);
         synchronized (knownSources) {
-            Map<String, Source> dbgSources = knownSources.get(debugger);
+            Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
                 dbgSources = new HashMap<>();
                 knownSources.put(debugger, dbgSources);
             }
-            dbgSources.put(className, src);
+            dbgSources.put(uniqueClassID, src);
         }
         return src;
     }
