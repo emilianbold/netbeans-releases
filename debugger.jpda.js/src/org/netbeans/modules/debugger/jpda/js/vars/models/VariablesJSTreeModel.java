@@ -134,7 +134,7 @@ public class VariablesJSTreeModel implements TreeModelFilter {
         }
         if (scopeVars != null) {
             Collections.reverse(scopeVars);
-            int index = localVarsByName.size();
+            int index = Math.min(localVarsByName.size(), newChildren.size());
             for (JSVariable sv : scopeVars) {
                 String name = sv.getKey();
                 if (localVarsByName.containsKey(name)) {
