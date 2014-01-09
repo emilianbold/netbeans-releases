@@ -159,6 +159,12 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(provisioningProfile, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.provisioningProfile.text")); // NOI18N
 
+        provisioningCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                provisioningComboItemStateChanged(evt);
+            }
+        });
+
         javax.swing.GroupLayout iOSPanelLayout = new javax.swing.GroupLayout(iOSPanel);
         iOSPanel.setLayout(iOSPanelLayout);
         iOSPanelLayout.setHorizontalGroup(
@@ -222,6 +228,10 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_androidSdkDownloadMouseClicked
 
+    private void provisioningComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_provisioningComboItemStateChanged
+        fireChanged();
+    }//GEN-LAST:event_provisioningComboItemStateChanged
+
     void load() {
         final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         codeSignIdentity = iosPlatform.getCodeSignIdentity();
@@ -244,17 +254,17 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             documentL = new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
-                    MobilePlatformsPanel.this.controller.changed();
+                    fireChanged();
                 }
 
                 @Override
                 public void removeUpdate(DocumentEvent e) {
-                    MobilePlatformsPanel.this.controller.changed();
+                    fireChanged();
                 }
 
                 @Override
                 public void changedUpdate(DocumentEvent e) {
-                    MobilePlatformsPanel.this.controller.changed();
+                    fireChanged();
                 }
             };
 
@@ -279,8 +289,28 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         }
 
         androidSdkField.getDocument().addDocumentListener(documentL);
+        identityTextField.getDocument().addDocumentListener(documentL);
         validate();
    }
+    
+    private void fireChanged() {
+        MobilePlatform androidPlatform = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        String sdkLocation = androidPlatform == null ? "" : androidPlatform.getSdkLocation();
+        if (sdkLocation == null) {
+            sdkLocation = "";
+        }
+        boolean isChanged = !sdkLocation.equals(androidSdkField.getText().trim());
+        if (identityTextField.isEnabled()) {
+            MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
+            String signIdentity = iosPlatform == null ? "" : iosPlatform.getCodeSignIdentity();
+            isChanged |= !signIdentity.equals(identityTextField.getText().trim());
+            ProvisioningProfile prov = (ProvisioningProfile) provisioningCombo.getSelectedItem();
+            if (prov != null && iosPlatform != null) {
+                isChanged |= !iosPlatform.getProvisioningProfilePath().equals(prov.getPath());
+            }
+        }
+        controller.changed(isChanged);
+    }
 
     void store() {
         PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
