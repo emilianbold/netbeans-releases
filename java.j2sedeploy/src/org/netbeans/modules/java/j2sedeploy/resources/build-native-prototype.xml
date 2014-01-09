@@ -308,7 +308,6 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 
     <target name="-set-do-build-native-package">
         <property name="do.build.native.package" value="true"/>
-        <property name="transfer.not.archive.disabled" value="true"/>
         <echo message="do.build.native.package = ${do.build.native.package}" level="verbose"/>
     </target>
     <target name="-check-ant-jre-supports-native-packaging" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version">
