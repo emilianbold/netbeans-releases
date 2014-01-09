@@ -288,6 +288,14 @@ public interface CssPreprocessorImplementation {
         boolean isValid();
 
         /**
+         * Checks if this options are modified (e.g., if the configuration set
+         * using the UI component returned by {@link #getComponent} is modified).
+         * @return {@code true} if the configuration is modified, {@code false} otherwise
+         * @since 1.68
+         */
+        boolean changed();
+
+        /**
          * Get error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}.
          * @return error message or {@code null} if the {@link #getComponent component} is {@link #isValid() valid}
          * @see #isValid()
