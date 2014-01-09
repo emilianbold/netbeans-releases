@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyItemNode;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.util.concurrent.ExecutorService;
+import org.openide.nodes.Children;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Michal Mocnak
+ * @author Petr Hejl
  */
-public class RefreshModulesAction extends NodeAction {
+public abstract class WildflyAsyncChildren extends Children.Keys {
 
-    /**
-     * Creates a new instance of Undeploy
-     */
-    public RefreshModulesAction() {
-    }
+    private static final ExecutorService EXECUTOR = new RequestProcessor(WildflyAsyncChildren.class);
 
-    @Override
-    protected boolean enable(org.openide.nodes.Node[] nodes) {
-        RefreshModulesCookie cookie;
-        for (Node node : nodes) {
-            cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(WildflyItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-
-    @Override
-    protected void performAction(org.openide.nodes.Node[] nodes) {
-        for (Node node : nodes) {
-            RefreshModulesCookie cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
-        }
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public final ExecutorService getExecutorService() {
+        return EXECUTOR;
     }
 }

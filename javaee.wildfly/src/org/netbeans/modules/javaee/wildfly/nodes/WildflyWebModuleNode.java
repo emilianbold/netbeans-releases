@@ -41,67 +41,103 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenURLActionCookie;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StartModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.StopModuleCookieImpl;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
-import org.openide.nodes.AbstractNode;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
- * 
- * Node which describes an EJB Module.
+ * Node which describes Web Module.
  *
  * @author Michal Mocnak
- * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyEjbModuleNode extends AbstractNode {
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), false);
-    }
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), isEJB3);
-    }
+public class WildflyWebModuleNode extends AbstractStateNode {
 
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEjbComponentNode> ejbs, boolean isEJB3) {
-        super(new WildflyEjbComponentsChildren(lookup, fileName, ejbs));
+    private final String url;
+
+    public WildflyWebModuleNode(String fileName, Lookup lookup, String url) {
+        super(new WildflyDeploymentDestinationsChildren(lookup, fileName));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        if (isEJB3) {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
+        this.url = url;
+        // we cannot find out the .war name w/o the management support, thus we cannot enable the Undeploy action
+        getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.WAR, lookup));
+        getCookieSet().add(new StartModuleCookieImpl(fileName, lookup));
+        getCookieSet().add(new StopModuleCookieImpl(fileName, lookup));
+        if (url != null) {
+            getCookieSet().add(new OpenURLActionCookieImpl(url));
         }
-        else {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
-        }
-    }
-    
-    @Override
-    public Action[] getActions(boolean context){
-        if(getParentNode() instanceof WildflyEarApplicationNode)
-            return new SystemAction[] {};
-        else
-            return new SystemAction[] {
-                SystemAction.get(UndeployModuleAction.class)
-            };
-    }
-    
-    @Override
-    public Image getIcon(int type) {
-        return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
     }
 
     @Override
-    public Image getOpenedIcon(int type) {
+    public Action[] getActions(boolean context) {
+        if (getParentNode() instanceof WildflyEarApplicationNode) {
+            if (url != null) {
+                return new SystemAction[]{
+                    SystemAction.get(OpenURLAction.class)
+                };
+            } else {
+                return new SystemAction[0];
+            }
+        } else {
+            if (url != null) {
+                return new SystemAction[]{
+                    SystemAction.get(OpenURLAction.class),
+                    SystemAction.get(StopModuleAction.class),
+                    SystemAction.get(UndeployModuleAction.class)
+                };
+            } else {
+                return new SystemAction[]{
+                    SystemAction.get(StartModuleAction.class),
+                    SystemAction.get(UndeployModuleAction.class)
+                };
+            }
+        }
+    }
+
+    @Override
+    public Image getOriginalIcon(int type) {
+        return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
+    }
+
+    @Override
+    public Image getOriginalOpenedIcon(int type) {
         return getIcon(type);
+    }
+
+    @Override
+    protected boolean isRunning() {
+        return this.url != null;
+    }
+
+    @Override
+    protected boolean isWaiting() {
+        return this.url == null;
+    }
+
+    private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
+
+        private final String url;
+
+        public OpenURLActionCookieImpl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public String getWebURL() {
+            return url;
+        }
     }
 }

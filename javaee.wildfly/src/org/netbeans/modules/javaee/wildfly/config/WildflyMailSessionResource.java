@@ -41,68 +41,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.config;
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
-
-
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ *
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+public class WildflyMailSessionResource {
+
+    private final String name;
+    private String jndiName;
+    private String userName;
+    private String fromAddr;
+    private String isDebug;
+    private WildflySocket socket;
+
+    /**
+     * Creates a new instance of MailSessionResource
+     */
+    public WildflyMailSessionResource(String name) {
+        this.name = name;
+        this.socket = new WildflySocket();
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
-    }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
-            }
-        }
-    }
-    
+
     public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
+        return name;
+    }
+
+    public String getJndiName() {
+        return jndiName;
+    }
+
+    public void setJndiName(String value) {
+        this.jndiName = value;
+    }
+
+    public String getHostName() {
+        return socket.getHost();
     }
     
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
+    public String getUserName() {
+        return userName;
     }
-    
-    protected boolean enable(Node[] nodes) {
-        return true;
+
+    public void setUserName(String value) {
+        this.userName = value;
     }
-    
-    protected boolean asynchronous() {
-        return false;
+
+    public String getFromAddr() {
+        return fromAddr;
     }
+
+    public void setFromAddr(String value) {
+        this.fromAddr = value;
+    }
+
+    public String getIsDebug() {
+        return isDebug;
+    }
+
+    public void setIsDebug(String value) {
+        this.isDebug = value;
+    }
+
+    public void setSocket(WildflySocket socket) {
+        this.socket = socket;
+    }
+
+    public String getPort() {
+        return String.valueOf(this.socket.getPort());
+    }
+
 }

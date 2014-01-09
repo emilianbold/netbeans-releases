@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,67 +42,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
+package org.netbeans.modules.javaee.wildfly.config;
 
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
+ * @author Libor Kotouc
  */
-public class ShowAdminToolAction extends CookieAction {
+public class WildflyMessageDestination implements MessageDestination {
+
+    public static final String QUEUE_PREFIX = "queue/";
+    public static final String TOPIC_PREFIX = "topic/";
+    private final String name;
+    private final Set<String> jndiNames = new HashSet<String>(1);
+    private final Type type;
     
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+    public WildflyMessageDestination(String name, Type type) {
+        this.name = name;
+        this.type = type;
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
-    }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
-            }
-        }
-    }
-    
+
+    @Override
     public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
     }
     
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
+    public void addEntry(String jndiName) {
+        jndiNames.add(jndiName);
     }
     
-    protected boolean enable(Node[] nodes) {
-        return true;
+    public Set<String> getJndiNames() {
+        return jndiNames;
     }
     
-    protected boolean asynchronous() {
-        return false;
-    }
 }

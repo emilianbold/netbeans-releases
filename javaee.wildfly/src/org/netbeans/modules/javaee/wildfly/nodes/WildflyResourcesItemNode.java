@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,62 +34,79 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyItemNode;
+package org.netbeans.modules.javaee.wildfly.nodes;
+
+import java.awt.Image;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesCookie;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class RefreshModulesAction extends NodeAction {
+public class WildflyResourcesItemNode extends AbstractNode {
+    
+    private final String icon;
+
+    public WildflyResourcesItemNode(Children children, String name, String icon) {
+        super(children);
+        setDisplayName(name);
+        this.icon = icon;
+        if (getChildren() instanceof Refreshable) {
+            getCookieSet().add(new RefreshModulesCookieImpl((Refreshable) getChildren()));
+        }
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(icon);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {        
+        return ImageUtilities.loadImage(icon);
+    }
+
+    @Override
+    public javax.swing.Action[] getActions(boolean context) {
+        if (getChildren() instanceof Refreshable) {
+            return new SystemAction[]{
+                SystemAction.get(RefreshModulesAction.class)
+            };
+        }
+
+        return new SystemAction[]{};
+    }
 
     /**
-     * Creates a new instance of Undeploy
+     * Implementation of the RefreshModulesCookie
      */
-    public RefreshModulesAction() {
-    }
-
-    @Override
-    protected boolean enable(org.openide.nodes.Node[] nodes) {
-        RefreshModulesCookie cookie;
-        for (Node node : nodes) {
-            cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
+    private static class RefreshModulesCookieImpl implements RefreshModulesCookie {
+        Refreshable children;
+        public RefreshModulesCookieImpl(Refreshable children) {
+            this.children = children;
         }
-
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(WildflyItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-
-    @Override
-    protected void performAction(org.openide.nodes.Node[] nodes) {
-        for (Node node : nodes) {
-            RefreshModulesCookie cookie = (RefreshModulesCookie) node.getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
+        @Override
+        public void refresh() {
+            children.updateKeys();
         }
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
 }
+

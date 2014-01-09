@@ -39,74 +39,82 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config.xml.ds;
-
-import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
+public class WildflyModule {
 
-    private StringBuilder buffer;
-    private WildflyDataSource currentDatasource;
-    private WildflySecurityHandler childHandler;
+    private final String archiveName;
+    private String url;
+    private boolean running;
 
-    public WildflyDatasourceHandler(DefaultHandler parent, XMLReader parser) {
-        super(parent, parser);
+    public WildflyModule(String archiveName) {
+        this.archiveName = archiveName;
+    }
+
+    public WildflyModule(String archiveName, boolean running) {
+        this.archiveName = archiveName;
+        this.running = running;
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("datasource".equals(qName)) {
-            currentDatasource = new WildflyDataSource();
-            currentDatasource.setJndiName(attributes.getValue(uri, "jndi-name"));
-            currentDatasource.setName(attributes.getValue(uri, "pool-name"));
-        }
-        else if ("driver".equals(qName)) {
-            buffer = new StringBuilder();
-        }
-        else if ("connection-url".equals(qName)) {
-            buffer = new StringBuilder();
-        }
-        else if ("security".equals(qName)) {
-            childHandler = new WildflySecurityHandler(parent, parser);
-            childHandler.start(uri, localName, qName, attributes);
-        }
-
+    public int hashCode() {
+        int hash = 7;
+        return hash;
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        if (buffer != null) {
-            buffer.append(ch, start, length);
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WildflyModule other = (WildflyModule) obj;
+        if ((this.archiveName == null) ? (other.archiveName != null) : !this.archiveName.equals(other.archiveName)) {
+            return false;
+        }
+        return true;
     }
 
-    @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("driver".equals(qName)) {
-            currentDatasource.setDriver(buffer.toString());
-        }
-        else if ("connection-url".equals(qName)) {
-            currentDatasource.setUrl(buffer.toString());
-        }
-        else if ("security".equals(qName)) {
-            currentDatasource.setUsername(childHandler.getUsername());
-            currentDatasource.setPassword(childHandler.getPassword());
-        }
-        else if ("datasource".equals(qName)) {
-            end(uri, localName, qName);
-        }
-
+    /**
+     * Get the value of url
+     *
+     * @return the value of url
+     */
+    public String getUrl() {
+        return url;
     }
 
-    public WildflyDataSource getDatasource() {
-        return currentDatasource;
+    /**
+     * Set the value of url
+     *
+     * @param url new value of url
+     */
+    public void setUrl(String url) {
+        this.url = url;
     }
+
+    /**
+     * Get the value of running
+     *
+     * @return the value of running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * Get the value of archiveName
+     *
+     * @return the value of archiveName
+     */
+    public String getArchiveName() {
+        return archiveName;
+    }
+
 }

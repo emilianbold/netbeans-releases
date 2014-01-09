@@ -41,68 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
-
-
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.Lookup;
 
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ *
+ * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
  */
-public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+public class WildflyRegistryNodeFactory implements RegistryNodeFactory {
+
+//    public JBRegistryNodeFactory() {
+//    }
+
+    public Node getTargetNode(Lookup lookup) {
+        return new WildflyTargetNode(lookup);
+    }
+
+    public Node getManagerNode(Lookup lookup) {
+        return new WildflyManagerNode(new Children.Map(), lookup);
     }
     
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
-    }
+//    public String getDisplayName() {
+//        return "Registry Node Factory"; 
+//    }
     
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
-            }
-        }
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
-    }
-    
-    protected boolean enable(Node[] nodes) {
-        return true;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
 }

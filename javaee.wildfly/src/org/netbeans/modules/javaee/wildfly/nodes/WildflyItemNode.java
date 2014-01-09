@@ -41,67 +41,101 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
-import java.util.ArrayList;
-import java.util.List;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesAction;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.RefreshModulesCookie;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.Lookup;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
- * 
- * Node which describes an EJB Module.
+ * Default Node which can have refresh action enabled and which has default
+ * icon.
  *
  * @author Michal Mocnak
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyEjbModuleNode extends AbstractNode {
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), false);
-    }
-    
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), isEJB3);
+public class WildflyItemNode extends AbstractNode {
+
+    private ModuleType moduleType;
+
+    public WildflyItemNode(Children children, String name) {
+        super(children);
+        setDisplayName(name);
+        if (getChildren() instanceof Refreshable) {
+            getCookieSet().add(new RefreshModulesCookieImpl((Refreshable) getChildren()));
+        }
     }
 
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEjbComponentNode> ejbs, boolean isEJB3) {
-        super(new WildflyEjbComponentsChildren(lookup, fileName, ejbs));
-        setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
-        if (isEJB3) {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
-        }
-        else {
-            getCookieSet().add(new UndeployModuleCookieImpl(fileName, ModuleType.EJB, lookup));
-        }
+    public WildflyItemNode(Children children, String name, ModuleType moduleType) {
+        this(children, name);
+        this.moduleType = moduleType;
     }
-    
-    @Override
-    public Action[] getActions(boolean context){
-        if(getParentNode() instanceof WildflyEarApplicationNode)
-            return new SystemAction[] {};
-        else
-            return new SystemAction[] {
-                SystemAction.get(UndeployModuleAction.class)
-            };
-    }
-    
+
     @Override
     public Image getIcon(int type) {
-        return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+        if (ModuleType.WAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.WAR_FOLDER);
+        } else if (ModuleType.EAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EAR_FOLDER);
+        } else if (ModuleType.EJB.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EJB_FOLDER);
+        } else {
+            return getIconDelegate().getIcon(type);
+        }
     }
 
     @Override
     public Image getOpenedIcon(int type) {
-        return getIcon(type);
+        if (ModuleType.WAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.WAR_OPENED_FOLDER);
+        } else if (ModuleType.EAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EAR_OPENED_FOLDER);
+        } else if (ModuleType.EJB.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EJB_OPENED_FOLDER);
+        } else {
+            return getIconDelegate().getOpenedIcon(type);
+        }
+    }
+
+    private Node getIconDelegate() {
+        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+    }
+
+    @Override
+    public javax.swing.Action[] getActions(boolean context) {
+        if (getChildren() instanceof Refreshable) {
+            return new SystemAction[]{
+                SystemAction.get(RefreshModulesAction.class)
+            };
+        }
+
+        return new SystemAction[]{};
+    }
+
+    /**
+     * Implementation of the RefreshModulesCookie
+     */
+    private static class RefreshModulesCookieImpl implements RefreshModulesCookie {
+
+        Refreshable children;
+
+        public RefreshModulesCookieImpl(Refreshable children) {
+            this.children = children;
+        }
+
+        @Override
+        public void refresh() {
+            children.updateKeys();
+        }
     }
 }
