@@ -165,6 +165,9 @@ public class FilterNode extends Node {
 
     /** lookup provided or created the default ones? */
     private boolean lookupProvided;
+
+    /** lock used to sync property listener */
+    private final Object LISTENER_LOCK = new Object();
     
     static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
@@ -994,23 +997,27 @@ public class FilterNode extends Node {
 
     /** Getter for property change listener.
     */
-    synchronized PropertyChangeListener getPropertyChangeListener() {
-        if (propL == null) {
-            propL = createPropertyChangeListener();
-        }
+    PropertyChangeListener getPropertyChangeListener() {
+        synchronized (LISTENER_LOCK) {
+            if (propL == null) {
+                propL = createPropertyChangeListener();
+            }
 
-        return propL;
+            return propL;
+        }
     }
 
     /** Getter for node listener.
     */
-    synchronized NodeListener getNodeListener() {
-        if (nodeL == null) {
-            nodeL = createNodeListener();
-            getOriginal().addNodeListener(nodeL);
-        }
+    NodeListener getNodeListener() {
+        synchronized (LISTENER_LOCK) {
+            if (nodeL == null) {
+                nodeL = createNodeListener();
+                getOriginal().addNodeListener(nodeL);
+            }
 
-        return nodeL;
+            return nodeL;
+        }
     }
 
     /** Notified from Node that a listener has been added.

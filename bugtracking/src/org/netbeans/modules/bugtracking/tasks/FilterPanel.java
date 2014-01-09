@@ -80,8 +80,16 @@ public class FilterPanel extends javax.swing.JPanel {
     private final String THIS_WEEK_SETTING_ID = "scheduleThisWeek";
     private final String ALL_SETTING_ID = "scheduleAll";
     private ShowScheduleAction showTodayAction;
+    private static FilterPanel INSTANCE = null;
 
-    public FilterPanel() {
+    public static FilterPanel getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new FilterPanel();
+        }
+        return INSTANCE;
+    }
+
+    private FilterPanel() {
         REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();

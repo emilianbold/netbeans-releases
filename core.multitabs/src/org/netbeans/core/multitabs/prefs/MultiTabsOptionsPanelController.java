@@ -55,8 +55,8 @@ public final class MultiTabsOptionsPanelController extends TabsOptionsPanelContr
     private MultiTabsPanel panel;
 
     @Override
-    protected void changed() {
-        super.changed();
+    protected void changed(Object isChanged, Object isChangedInnerTabsPanel) {
+        super.changed(isChanged, isChangedInnerTabsPanel);
     }
 
     @Override
