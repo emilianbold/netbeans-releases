@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  * A trivial CsmErrorInfo implementation

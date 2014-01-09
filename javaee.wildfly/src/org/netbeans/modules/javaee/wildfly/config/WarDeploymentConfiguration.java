@@ -112,20 +112,14 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
     }
     
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
     
 
+    @Override
     public void dispose() {
-    }
-
-    public boolean supportsCreateDatasource() {
-        return !isAs7();
-    }
-    
-    public boolean supportsCreateMessageDestination() {
-        return !isAs7();
     }
 
     /**
@@ -133,6 +127,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
      * 
      * @return context path or null, if the file is not parseable.
      */
+    @Override
     public String getContextRoot() throws ConfigurationException {
         JbossWeb jbossWeb = getJbossWeb();
         if (jbossWeb == null) { // graph not parseable
@@ -145,13 +140,14 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     /**
      * Set context path.
      */
+    @Override
     public void setContextRoot(String contextPath) throws ConfigurationException {
         // TODO: this contextPath fix code will be removed, as soon as it will 
         // be moved to the web project
         if (!isCorrectCP(contextPath)) {
             String ctxRoot = contextPath;
             java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
-            StringBuffer buf = new StringBuffer(); //NOI18N
+            StringBuilder buf = new StringBuilder(); 
             while (tok.hasMoreTokens()) {
                 buf.append("/"+tok.nextToken()); //NOI18N
             }
@@ -164,6 +160,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
         final String newContextPath = contextPath;
         modifyJbossWeb(new JbossWebModifier() {
+            @Override
             public void modify(JbossWeb jbossWeb) {
                 jbossWeb.setContextRoot(newContextPath);
             }
@@ -173,6 +170,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     /**
      * Listen to jboss-web.xml document changes.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object newValue = evt.getNewValue();
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED && newValue == Boolean.FALSE) {
@@ -223,10 +221,12 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
     }
     
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         addResReference(referenceName, jndiName);
     }
     
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         
         ResourceRef resourceRefs[] = getJbossWeb().getResourceRef();

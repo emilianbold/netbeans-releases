@@ -45,23 +45,28 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -98,9 +103,11 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
                 result.addAll(ecpImpl.getResources(includeJDK));
                 lastHintValue = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
                 if (includeJDK[0]) {
-                    for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
+                    JavaPlatform pat = findActivePlatform();
+                    for (ClassPath.Entry entry : pat.getBootstrapLibraries().entries()) {
                         result.add(ClassPathSupport.createResource(entry.getURL()));
                     }
+                    result.addAll(nbPlatformJavaFxCp(project, pat));
                 }
                 resourcesCache = Collections.unmodifiableList (result);
             }
@@ -218,6 +225,30 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
 
     @Override public int hashCode() {
         return project.hashCode() ^ 191;
+    }
+
+    private Collection<? extends PathResourceImplementation> nbPlatformJavaFxCp(NbMavenProjectImpl project, JavaPlatform pat) {
+        List<PathResourceImplementation> toRet = new ArrayList<PathResourceImplementation>();
+        //TODO better to iterate dependencies first or check what jdk we are using?
+        //this should actually be part of maven.apisupport but there's no viable api right now..
+        //TODO do we even need this, once people setup compiler plugin correctly to use jfxrt.jar, it should appear on boot cp anyway
+        for (Artifact a : project.getOriginalMavenProject().getArtifacts()) {
+            if ("org.netbeans.api".equals(a.getGroupId()) && "org-netbeans-libs-javafx".equals(a.getArtifactId())) {
+                for (FileObject fo : pat.getInstallFolders()) {
+                    FileObject jdk8 = fo.getFileObject("jre/lib/ext/jfxrt.jar"); // NOI18N
+                    if (jdk8 == null) {
+                        FileObject jdk7 = fo.getFileObject("jre/lib/jfxrt.jar"); // NOI18N
+                        if (jdk7 != null) {
+                            // jdk7 add the classes on bootclasspath
+                            if (FileUtil.isArchiveFile(jdk7)) {
+                                toRet.add(ClassPathSupport.createResource(FileUtil.getArchiveRoot(jdk7.toURL())));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return toRet;
     }
     
 }

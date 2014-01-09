@@ -63,7 +63,7 @@ public final class ExpressionStatementImpl extends StatementBase implements CsmE
     
     private ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
-        expr = ExpressionBase.create(ast.getFirstChild(), file, scope);
+        expr = ExpressionsFactory.create(ast.getFirstChild(), file, scope);
     }
 
     private ExpressionStatementImpl(CsmExpression expression, CsmScope scope, CsmFile file, int start, int end) {

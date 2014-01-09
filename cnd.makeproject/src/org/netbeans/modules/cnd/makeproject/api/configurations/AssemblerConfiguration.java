@@ -114,10 +114,8 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
 
         StringBuilder options = new StringBuilder();
         options.append(getAsFlagsBasic(compiler)).append(' ');
-        AssemblerConfiguration master = this;
-        while (master != null) {
+        for(BasicCompilerConfiguration master : getMasters(true)) {
             options.append(master.getCommandLineConfiguration().getValue()).append(' ');
-            master = (AssemblerConfiguration)master.getMaster();
         }
         options.append(getAllOptions2(compiler)).append(' ');
         return CppUtils.reformatWhitespaces(options.toString());

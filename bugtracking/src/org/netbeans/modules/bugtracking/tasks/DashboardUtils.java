@@ -237,7 +237,7 @@ public class DashboardUtils {
     }
 
     private static String getFilterBoldText(String fitText) {
-        String filterText = DashboardTopComponent.findInstance().getFilterText();
+        String filterText = FilterPanel.getInstance().getFilterText();
         if (!filterText.equals("")) { //NOI18N
             int searchIndex = 0;
             StringBuilder sb = new StringBuilder(fitText);
@@ -704,6 +704,12 @@ public class DashboardUtils {
         @Override
         public void actionPerformed(ActionEvent e) {
             menu.getAction().actionPerformed(e);
+        }
+
+        @Override
+        public void setEnabled(boolean newValue) {
+            super.setEnabled(newValue);
+            menu.setEnabled(newValue);
         }
 
         @Override

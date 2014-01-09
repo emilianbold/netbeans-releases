@@ -204,6 +204,12 @@ public final class GrailsRuntimePanel extends javax.swing.JPanel implements Groo
         return true;
     }
 
+    @Override
+    public boolean changed() {
+        String grailsBase = settings.getGrailsBase();
+        return !grailsHomeLocation.getText().equals(grailsBase == null ? "" : grailsBase);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDir;
     private javax.swing.JTextField grailsHomeLocation;

@@ -448,14 +448,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             throw new ConfigurationException(msg, ioe);
         }
     }
-
-    public boolean supportsCreateDatasource() {
-        return !isAs7();
-    }
-
-    public boolean supportsCreateMessageDestination() {
-        return false;
-    }
     
     // private helper interface -----------------------------------------------
      

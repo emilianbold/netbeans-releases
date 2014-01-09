@@ -457,7 +457,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
+        if (e.getClickCount() == 2 && commitPanel != null) {
             openDiff();
         }
     }

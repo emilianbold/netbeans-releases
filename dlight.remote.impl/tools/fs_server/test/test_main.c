@@ -224,7 +224,28 @@ static void test_escapes() {
     test_escape_unescape("123\\", "123\\\\");    
 }
 
+static void test_subdir() {
+    assert_true(is_subdir("/home", ""));
+    assert_true(is_subdir("/home", "/"));
+    assert_true(is_subdir("", "/"));
+    assert_true(is_subdir("/", ""));
+    assert_true(is_subdir("/home/vk/123", "/home/vk"));
+    assert_true(is_subdir("/home/vk/123/", "/home/vk/"));
+    assert_true(is_subdir("/home/vk/123", "/home/vk/"));
+    assert_true(is_subdir("/home/vk/123/", "/home/vk"));
+    assert_true(is_subdir("/home//", "/home/"));
+    assert_true(is_subdir("/home///", "/home/"));
+    assert_true(is_subdir("/home/", "/home//"));
+    assert_true(is_subdir("/home/", "/home///"));
+    assert_true(is_subdir("/home/", "/home"));
+    assert_true(!is_subdir("/home/", "/hom"));
+    assert_true(!is_subdir("/hom", "/home"));
+    assert_true(!is_subdir("/homemaid", "/home"));
+    //assert_true(false);
+}
+
 int main(int argc, char** argv) {
+    test_subdir();
     test_escapes();
     test_array();
     test_list();

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.search.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -56,6 +58,7 @@ import org.netbeans.api.search.ui.FileNameController;
 import org.netbeans.api.search.ui.ScopeController;
 import org.netbeans.api.search.ui.SearchPatternController;
 import org.netbeans.modules.cnd.search.impl.SearchBrowseHostScope;
+import org.netbeans.modules.cnd.search.util.SearchScopeValidator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.search.SearchScopeDefinition;
@@ -74,6 +77,7 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
     private volatile ValidationStatus validationStatus;
     private final ChangesListener listener;
     private final ChangeSupport cs = new ChangeSupport(this);
+    private final SearchScopeValidator validator = new SearchScopeValidator();
 
     /**
      * Creates new form CndSearchPanel
@@ -83,6 +87,7 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         listener = new ChangesListener();
 
         scopeController = ComponentUtils.adjustComboForScope(cbScope, null, getAdditionalSearchScopes());
+        cbScope.addActionListener(listener);
         fileNameController = ComponentUtils.adjustComboForFileName(cbFilename);
         fileNameController.addChangeListener(listener);
         searchPatternController = ComponentUtils.adjustComboForSearchPattern(cbSearchPattern);
@@ -109,6 +114,8 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         cbScope = new javax.swing.JComboBox();
         lblFilename = new javax.swing.JLabel();
         cbFilename = new javax.swing.JComboBox();
+
+        setPreferredSize(new java.awt.Dimension(470, 270));
 
         lblText.setLabelFor(cbSearchPattern);
         org.openide.awt.Mnemonics.setLocalizedText(lblText, org.openide.util.NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.lblText.text")); // NOI18N
@@ -205,7 +212,10 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
     private void updateValidationStatus() {
         SearchPattern searchPattern = searchPatternController.getSearchPattern();
         String pattern = searchPattern.getSearchExpression();
-        if (pattern.isEmpty() && getFileName().isEmpty()) {
+
+        if (!validator.isSearchAllowed(scopeController.getSearchInfo())) {
+            this.validationStatus = ValidationStatus.NOT_SUPPORTED;
+        } else if (pattern.isEmpty() && getFileName().isEmpty()) {
             this.validationStatus = ValidationStatus.NO_PARAMS;
         } else {
             this.validationStatus = ValidationStatus.OK;
@@ -241,7 +251,7 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         SearchHistory.getDefault().add(getSearchPattern());
     }
 
-    private class ChangesListener implements ChangeListener, DocumentListener {
+    private class ChangesListener implements ChangeListener, DocumentListener, ActionListener  {
 
         @Override
         public void stateChanged(ChangeEvent e) {
@@ -262,6 +272,11 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
         public void changedUpdate(DocumentEvent e) {
             updateValidationStatus();
         }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            updateValidationStatus();
+        }
     }
 
     public static class ValidationStatus {
@@ -271,6 +286,8 @@ public final class CNDSearchPanel extends javax.swing.JPanel {
                 NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.ValidationStatus.no_params")); // NOI18N
         private static final ValidationStatus WRONG_REGEXPR = new ValidationStatus(
                 NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.ValidationStatus.wrong_regexpr")); // NOI18N
+        private static ValidationStatus NOT_SUPPORTED = new ValidationStatus(
+                NbBundle.getMessage(CNDSearchPanel.class, "CNDSearchPanel.ValidationStatus.not_suppotred")); // NOI18N;
         public final String error;
 
         public ValidationStatus(String error) {

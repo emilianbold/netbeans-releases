@@ -48,92 +48,85 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.text.Line;
-
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
-import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
-import org.netbeans.modules.cnd.debugger.gdb2.actions.GdbStartActionProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
-
-
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointMsg;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointOp;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointPlan;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointProvider;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
-import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
-
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIUserInteraction;
-import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
-
-import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Controller;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisFragModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWindow;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointMsg;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointOp;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager.BreakpointPlan;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointProvider;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCommand;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
+import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.debugger.common2.utils.InfoPanel;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
+import org.netbeans.modules.cnd.debugger.common2.utils.StopWatch;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
+import org.netbeans.modules.cnd.debugger.gdb2.actions.GdbStartActionProvider;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommand;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIRecord;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIUserInteraction;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -263,6 +256,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         disStateModel().addListener(disassembly);
     }
 
+    @Override
     public String debuggerType() {
         return "gdb"; // NOI18N
     }
@@ -273,8 +267,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     /**
      * 
-     * Return true if it's OK to send messages to gdb
+     * @return true if it's OK to send messages to gdb
      */
+    @Override
     public boolean isConnected() {
         // See "README.startup"
         if (gdb == null || !gdb.connected() || postedKillEngine) {
@@ -387,6 +382,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             // May not be neccessary in the future.
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
                 }
@@ -394,6 +390,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         } else {
             CndRemote.validate(gdi.getHostName(), new Runnable() {
+                @Override
                 public void run() {
                     start2(executor, additionalArgv, GdbDebuggerImpl.this, connectExisting);
                 }
@@ -541,6 +538,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     */
 
     // interface Gdb.Factory.Listener
+    @Override
     public void assignGdb(Gdb tentativeGdb) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.assignGdb()\n"); // NOI18N
@@ -553,6 +551,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface Gdb.Factory.Listener
+    @Override
     public void assignIOPack(IOPack ioPack) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.assignIOPack()\n"); // NOI18N
@@ -561,6 +560,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface gdb.Factory.Listener
+    @Override
     public void connectFailed(String toWhom, String why, IOPack ioPack) {
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.connectFailed()\n"); // NOI18N
@@ -730,10 +730,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
+    @Override
     public void shutDown() {
 	postKill();
     }
 
+    @Override
     public final void stepInto() {
         sendResumptive("-exec-step"); // NOI18N
     }
@@ -746,10 +748,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         sendResumptive("-exec-run"); // NOI18N
     }
 
+    @Override
     public final void stepOver() {
         sendResumptive("-exec-next"); // NOI18N
     }
 
+    @Override
     public final void stepOut() {
         send("-stack-select-frame 0"); // NOI18N
         execFinish();
@@ -768,6 +772,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 method);
     }
 
+    @Override
     public final void stepTo(String function) {     //FIXUP null function case!
         if (function != null) {
             send("-break-insert -t " + function);    //NOI18N
@@ -775,6 +780,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public final void go() {
         if (state().isProcess) {
             sendResumptive("-exec-continue"); // NOI18N
@@ -978,10 +984,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    }
 	}
 
+        @Override
 	protected void onRunning(MIRecord record) {
 	    unexpected("running", command()); // NOI18N
 	}
 
+        @Override
 	protected void onError(MIRecord record) {
             if (failureChain == null && reportError) {
 		genericFailure(record);
@@ -992,25 +1000,47 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 	}
 
+        @Override
 	protected void onExit(MIRecord record) {
 	    unexpected("exit", command()); // NOI18N
 	    kill();
 	    finish();
 	}
 
+        @Override
 	protected void onStopped(MIRecord record) {
 	    unexpected("stopped", command()); // NOI18N
 	}
 
+        @Override
 	protected void onOther(MIRecord record) {
 	    unexpected("other", command()); // NOI18N
 	}
 
+        @Override
 	protected void onUserInteraction(MIUserInteraction ui) {
 	    unexpected("userinteraction", command()); // NOI18N
 	}
     }
 
+    // command typed directly in terminal
+    private final class TermCommandImpl extends MiCommandImpl {
+
+        public TermCommandImpl(String cmd) {
+            super(cmd);
+        }  
+
+        @Override
+        protected void onError(MIRecord record) {
+            String errMsg = getErrMsg(record);
+            if (!errMsg.isEmpty()) {
+                gdb.tap().printError(errMsg);
+            } else {
+                super.onError(record);
+            } 
+        }
+    }
+       
     /**
      * Handle the output of "info proc".
      */
@@ -1175,6 +1205,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void rerun() {
         if (true /* LATER !state.isRunning */) {
 	    //
@@ -1297,6 +1328,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private static final int PRINT_ELEMENTS = Integer.getInteger("gdb.print.elements", 0); // NOI18N
     private static final boolean ENABLE_PRETTY_PRINTING = !Boolean.getBoolean("gdb.pretty.disable"); //NOI18N
 
+    @Override
     public FileMapper fmap() {
         return fmap;
     }
@@ -1427,6 +1459,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             public void run() {
                 if (Log.Bpt.fix6810534) {
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             initialAction();
                         }
@@ -1438,15 +1471,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         });
     }
 
+    @Override
     public OptionClient getOptionClient() {
         return null;
     }
 
+    @Override
     public String getDebuggingOption(String name) {
         notImplemented("getDebuggingOption");	// NOI18N
         return null;
     }
 
+    @Override
     public void setOption(String name, String value) {
         notImplemented("setOption() " + name + " " + value );	// NOI18N
     }
@@ -1615,10 +1651,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private boolean get_threads = false; // indicate Thread View open/close
 
     // interface NativeDebugger
+    @Override
     public boolean isMultiThreading() {
         return false;
     }
 
+    @Override
     public void registerThreadModel(ThreadModel model) {
         if (Log.Variable.mi_threads) {
             System.out.println("registerThreadModel " + model); // NOI18N
@@ -1634,10 +1672,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Thread[] getThreads() {
         return threads;
     }
 
+    @Override
     public void makeThreadCurrent(Thread thread) {
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
@@ -1944,6 +1984,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // SHOULD factor with DbxDebuggerImpl's stackMasked
     private boolean get_frames = false; // indicate Stack View open/close
 
+    @Override
     public void registerStackModel(StackModel model) {
         if (Log.Variable.mi_frame) {
             System.out.println("registerStackModel " + model); // NOI18N
@@ -1973,6 +2014,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
      */
 
+    @Override
     public void postVerboseStack(boolean v) {
     }
 
@@ -1989,6 +2031,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         return null;
     }
 
+    @Override
     public void moreFrame() {
 	return;
     }
@@ -2416,6 +2459,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void postCreateWatch(int routingToken, NativeWatch newWatch) {
     }
 
+    @Override
     public boolean watchError(int rt, Error error) {
         return false;
     }
@@ -2431,6 +2475,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebuggerImpl
+    @Override
     protected void restoreWatch(NativeWatch template) {
 	// We don't create watches on the gdb side so there's
 	// nothing to post. Instead we use MI-based "var"s and scan
@@ -2504,6 +2549,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         variableBag.remove_count = 0;
     }
 
+    @Override
     public void registerWatchModel(WatchModel model) {
         if (Log.Variable.mi_vars) {
             System.out.println("registerWatchModel " + model); // NOI18N
@@ -2741,6 +2787,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
      * Can be used for future when MI support dynamic type.
      */
     // interface NativeDebugger
+    @Override
     public void setDynamicType(boolean b) {
         String cmdString;
 	if (b) {
@@ -2753,33 +2800,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isDynamicType() {
 	return dynamicType;
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isStaticMembers() {
 	return true; // always show static members
     }
 
     // interface NativeDebugger
+    @Override
     public void setStaticMembers(boolean b) {
 	// no-op
 	// GDB TODO
     }
 
     // interface NativeDebugger
+    @Override
     public boolean isInheritedMembers() {
 	return true; // always show inherited members
     }
 
     // interface NativeDebugger
+    @Override
     public void setInheritedMembers(boolean b) {
 	// no-op
 	// GDB TODO
     }
 
     // interface NativeDebugger
+    @Override
     public String[] formatChoices() {
 	return new String[] {
 	    "binary", "octal", "decimal", "hexadecimal", "natural" // NOI18N
@@ -2994,6 +3047,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private boolean get_locals = false; // indicate Locals View open/close
     private GdbVariable[] local_vars = new GdbVariable[0];
 
+    @Override
     public void registerLocalModel(LocalModel model) {
         if (Log.Variable.mi_vars) {
             System.out.println("registerLocalModel " + model); // NOI18N
@@ -3010,10 +3064,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public Variable[] getLocals() {
         return local_vars;
     }
 
+    @Override
     public int getLocalsCount() {
         return local_vars.length;
     }
@@ -3670,8 +3726,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     /**
-     * Resue this session with a new debug target
+     * Reuse this session with a new debug target
+     * @param di
      */
+    @Override
     public void reuse(NativeDebuggerInfo di) {
         // Tell gdb what to debug
         debug((GdbDebuggerInfo) di);
@@ -3895,6 +3953,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private class DisController extends ControllerSupport {
 
+        @Override
 	protected void setBreakpointHelp(String address) {
 	    // Similar to ToggleBreakpointActionProvider.doAction
 	    NativeBreakpoint b = NativeBreakpoint.newInstructionBreakpoint(address);
@@ -3941,6 +4000,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	 */
 
         // interface Controller
+        @Override
         public void requestDis(boolean withSource) {
             GdbFrame currentFrame = getCurrentFrame();
             if (currentFrame == null) {
@@ -3965,6 +4025,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         // interface Controller
+        @Override
         public void requestDis(String start, int count, boolean withSource) {
 	    /* 
 	    System.out.printf("DisController.requestDis(%s, %d)\n",
@@ -3984,6 +4045,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void registerDisassembly(Disassembly dis) {
 	//assert w == null || w == disassemblerWindow();
 
@@ -4013,15 +4075,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // implement NativeDebuggerImpl
+    @Override
     protected DisFragModel disModel() {
 	return disModel;
     }
 
     // implement NativeDebuggerImpl
+    @Override
     public Controller disController() {
 	return disController;
     }
 
+    @Override
     public GdbDisassembly getDisassembly() {
         return disassembly;
     }
@@ -4042,6 +4107,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //	    disStateModel().updateStateModel(visitedLocation, false);
     }
 
+    @Override
     public FormatOption[] getMemoryFormats() {
         return GdbMemoryFormat.values();
     }
@@ -4086,6 +4152,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private static final int MEMORY_READ_WIDTH = 16;
     
+    @Override
     public void requestMems(String start, String length, FormatOption format) {
         int lines;
         try {
@@ -4166,13 +4233,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    @Override
     public void registerEvaluationWindow(EvaluationWindow w) {
     }
 
 //    public void registerArrayBrowserWindow(ArrayBrowserWindow w) {
 //        notImplemented("registerArrayBrowserWindow()");	// NOI18N
 //    }
-    void newAsyncBreakpoint(MIRecord record) {
+    /*package*/ void newAsyncBreakpoint(MIRecord record) {
         Integer rt = cliBreakpointsRTs.poll();
         if (rt == null) {
             rt = 0;
@@ -4184,6 +4252,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIResult result = (MIResult) record.results().get(0);
             replaceHandler(rt, result, bp);
         }
+    }
+    
+    /*package*/ void deleteAsyncBreakpoint(MIRecord record) {
+        String id = record.results().getConstValue("id");   // NOI18N
+        int hid = Integer.parseInt(id);
+        bm().deleteHandlerById(0, hid);
     }
 
     private void newHandlers(int rt, MIRecord record, BreakpointPlan bp) {
@@ -4222,8 +4296,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    switch (bp.op()) {
 		case NEW:
                     if (template == null) {
-                        // we are unable to create handlers for breakpoints created in console
-                        return;
+                        // prepare to create handlers for breakpoints created in console
+                        template = prepareTemplate(result);
                     }
 		    handler = handlerExpert.newHandler(template, result, null);
 		    break;
@@ -4285,6 +4359,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    private NativeBreakpoint prepareTemplate(MIResult result) {
+        NativeBreakpointType type;
+        MIValue bkptValue = result.value();
+        MITList props = bkptValue.asTuple();
+        String typeVal = props.getConstValue("type"); //NOI18N
+        if ("catchpoint".equals(typeVal)) { //NOI18N
+            type = new SysCallBreakpointType();
+        } else if ("breakpoint".equals(typeVal)) { //NOI18N
+            type = new LineBreakpointType();
+            String origLoc = props.getConstValue("original-location"); //NOI18N
+            if (origLoc != null) {
+                if (origLoc.startsWith("*")) { //NOI18N
+                    type = new InstructionBreakpointType();
+                } else if (!origLoc.contains(":")) { //NOI18N
+                    type = new FunctionBreakpointType();
+                }
+            }
+        } else {
+            type = new ExceptionBreakpointType();
+        }
+        return type.newInstance(NativeBreakpoint.SUBBREAKPOINT);
+    }
+    
     private void deleteForReplace(int rt, Handler targetHandler){
         // Don't use
         //	postDeleteHandler(hid);
@@ -4294,6 +4391,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final int hid = targetHandler.getId();
         MICommand deleteCmd = new MIBreakCommand(rt, "-break-delete " + hid) { // NOI18N
 
+            @Override
             protected void onDone(MIRecord record) {
 		// Don't use deleteHandlerById ... it ties back to
 		// owning NB's ...
@@ -4409,6 +4507,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     };
 
+    @Override
     public void runFailed() {
         setStatusText(Catalog.get("RunFailed")); // NOI18N
         stateSetRunning(false);
@@ -4796,6 +4895,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         notImplemented("postVarContinuation");	// NOI18N
     }
 
+    @Override
     protected void postVarContinuation(int rt, VarContinuation vc) {
         notImplemented("postVarContinuation");	// NOI18N
     }
@@ -4887,6 +4987,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Called when this session has been switched to
      * 'redundant' is true when we double-click on the same session.
+     * @param redundant
      */
     @Override
     public void activate(boolean redundant) {
@@ -4908,6 +5009,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /**
      * Called when this session has been switched away from
      * 'redundant' is true when we double-click on the same session.
+     * @param redundant
      */
     @Override
     public void deactivate(boolean redundant) {
@@ -4918,52 +5020,63 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void setCurrentDisLine(Line l) {
         notImplemented("setCurrentDisLine");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public Line getCurrentDisLine() {
         return null;
     }
 
+    @Override
     public void notifyUnsavedFiles(String file[]) {
     }
 
     // interface NativeDebugger
+    @Override
     public void stepOutInst() {
         execFinish();
     }
 
     // interface NativeDebugger
+    @Override
     public void stepOverInst() {
         sendResumptive("-exec-next-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void stepInst() {
         sendResumptive("-exec-step-instruction"); // NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void postRestoring(boolean restoring) {
     }
 
     // interface NativeDebugger
+    @Override
     public void forkThisWay(NativeDebuggerManager.FollowForkInfo ffi) {
         notImplemented("forkThisWay");	// NOI18N
     }
 
     // interface NativeDebugger
+    @Override
     public void fix() {
         notImplemented("fix");	// NOI18N
     }
 
+    @Override
     public FormatOption[] getEvalFormats() {
         return null; // gdb does not support eval formats
     }
 
     // interface NativeDebugger
+    @Override
     public void exprEval(FormatOption format, final String expr) {
         String cmdString = "-data-evaluate-expression " + "\"" + quoteValue(expr) + "\""; // NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
@@ -4976,6 +5089,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     res = record.error();
                 }
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         EvaluationWindow evalWindow = EvaluationWindow.getDefault();
                         evalWindow.open();
@@ -4991,21 +5105,29 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     // interface NativeDebugger
+    @Override
     public void execute(String cmd) {
         notImplemented("execute");	// NOI18N
     }
 
 
     // implement NativeDebuggerImpl
+    @Override
     protected void stopUpdates() {
 	// no-op for now
     }
 
     // implement NativeDebuggerImpl
+    @Override
     protected void startUpdates() {
 	// no-op for now
     }
     
+    /*package*/void sendTerminalTypedCommand(String termLine) {
+        TermCommandImpl cmd = new TermCommandImpl(termLine);
+        gdb.sendCommand(cmd);
+    }
+     
     private void send(String commandStr, boolean reportError) {
         MiCommandImpl cmd = new MiCommandImpl(commandStr);
         if (!reportError) {

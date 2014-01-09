@@ -139,6 +139,7 @@ made subject to such option by the copyright holder.
                 <folder name="StandardJSF">
                     <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="templateCategory" stringvalue="always-hidden"/>
                     <file name="PaginationHelper.ftl" url="templates/PaginationHelper.ftl">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>
@@ -185,6 +186,7 @@ made subject to such option by the copyright holder.
                 <folder name="JSF">
                     <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                    <attr name="templateCategory" stringvalue="always-hidden"/>
                     <file name="table.ftl" url="../palette/items/resources/table.ftl">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>

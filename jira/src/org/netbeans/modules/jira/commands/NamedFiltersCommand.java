@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.jira.commands;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.NamedFilter;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
@@ -66,12 +64,8 @@ public class NamedFiltersCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
-        try {
-            namedFilters = Jira.getInstance().getClient(repository.getTaskRepository()).getNamedFilters(new NullProgressMonitor());
-        } catch (JiraException ex) {
-            throw new IOException(ex);
+        namedFilters = JiraConnectorSupport.getInstance().getConnector().getClient(repository.getTaskRepository()).getNamedFilters();
         }
-    }
 
     public NamedFilter[] getNamedFilters() {
         return namedFilters;

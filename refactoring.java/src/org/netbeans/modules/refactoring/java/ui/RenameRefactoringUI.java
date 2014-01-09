@@ -139,7 +139,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.oldName = element.getSimpleName().toString();
         } else {
             this.refactoring = new RenameRefactoring(Lookups.fixed(file));
-            this.oldName = file.getName();
+            this.oldName = file.isFolder()? file.getNameExt() : file.getName();
         }
         this.newName = this.oldName;
         ClasspathInfo cpInfo = handle==null?JavaRefactoringUtils.getClasspathInfoFor(file):RefactoringUtils.getClasspathInfoFor(handle);
@@ -166,7 +166,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
             this.refactoring = new RenameRefactoring(Lookups.fixed(fileObject));
         }
         this.newName = newName;
-        this.oldName = fileObject.getName();
+        this.oldName = fileObject.isFolder()? fileObject.getNameExt() : fileObject.getName();
         ClasspathInfo cpInfo = handle==null?JavaRefactoringUtils.getClasspathInfoFor(fileObject):RefactoringUtils.getClasspathInfoFor(handle);
         this.refactoring.getContext().add(cpInfo);
         this.fromListener = true;

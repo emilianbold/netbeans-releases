@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+   <type>org.netbeans.modules.apisupport.project</type>
+   <configuration>
+       <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+           <code-name-base>com.atlassian.connector.eclipse.jira.core.rest</code-name-base>
+           <module-dependencies/>
+           <public-packages/>
+           <class-path-extension>
+               <runtime-relative-path>com-atlassian-connector-eclipse-jira-core.jar</runtime-relative-path>
+               <binary-origin>external/com.atlassian.connector.eclipse.jira.core_3.2.2.v20130909.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

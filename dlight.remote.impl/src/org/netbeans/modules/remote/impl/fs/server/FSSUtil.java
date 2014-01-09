@@ -111,7 +111,7 @@ public class FSSUtil  {
             case Errno.ENOENT:
                 return new FSSFileNotFoundException(errno, emsg);
             case 0:
-                RemoteLogger.info("Got zero error code; treating as 'file not found': {0}", emsg);
+                RemoteLogger.info("fs_server reports zero errno; treating as 'file not found': {0}", emsg);
                 return new FSSFileNotFoundException(errno, emsg);
             default:
                 return new FSSIOException(errno, emsg);

@@ -218,7 +218,7 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, true);
+        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, false);
     }    
     
     private Repository getRepository(R r) {

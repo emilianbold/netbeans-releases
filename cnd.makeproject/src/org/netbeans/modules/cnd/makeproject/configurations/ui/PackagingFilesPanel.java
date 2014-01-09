@@ -198,8 +198,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            final String chooser_key = "packaging.AddFileOrDirectory"; //NOI18N
             ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileObject());
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -211,8 +212,13 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             int ret = fileChooser.showOpenDialog(null);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return;
-            }
+            }            
             File[] files = fileChooser.getSelectedFiles();
+            if (files == null || files.length == 0) {
+                return;
+            }
+            File selectedFolder = files[0].isFile() ? files[0].getParentFile() : files[0];
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);            
             for (int i = 0; i < files.length; i++) {
                 String itemPath = ProjectSupport.toProperPath(baseDir.getFileObject(), files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                 itemPath = CndPathUtilities.normalizeSlashes(itemPath);
@@ -283,8 +289,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
+            final String chooser_key = "packaging.AddFileOrDirectory"; //NOI18N
             ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileObject());
-            String seed = RemoteFileUtil.getCurrentChooserFile(env);
+            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
@@ -298,7 +305,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 return;
             }
             final File dir = fileChooser.getSelectedFile();
-
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, dir.getPath(), env);
             cancelled = false;
             JButton stopButton = new JButton(getString("PackagingAddingFilesProgressPanel.Stop.Button.text"));
             stopButton.setMnemonic(getString("PackagingAddingFilesProgressPanel.Stop.Button.text").charAt(0));

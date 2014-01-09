@@ -106,6 +106,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         }
 
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(getProject());
+        assert sources != null;
         if (!sourcesFilesOnly(sources, selectedFiles)) {
             return;
         }

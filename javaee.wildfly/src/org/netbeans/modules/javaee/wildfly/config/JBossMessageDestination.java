@@ -44,31 +44,43 @@
 
 package org.netbeans.modules.javaee.wildfly.config;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
 /**
- *
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  * @author Libor Kotouc
  */
 public class JBossMessageDestination implements MessageDestination {
 
     public static final String QUEUE_PREFIX = "queue/";
     public static final String TOPIC_PREFIX = "topic/";
-    
-    private String name;
-    private Type type;
+    private final String name;
+    private final Set<String> jndiNames = new HashSet<String>(1);
+    private final Type type;
     
     public JBossMessageDestination(String name, Type type) {
         this.name = name;
         this.type = type;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public Type getType() {
         return type;
+    }
+    
+    public void addEntry(String jndiName) {
+        jndiNames.add(jndiName);
+    }
+    
+    public Set<String> getJndiNames() {
+        return jndiNames;
     }
     
 }

@@ -53,6 +53,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.*;
 import java.io.File;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.spi.options.OptionsPanelController;
 
 /**
@@ -117,6 +118,35 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
     public boolean isChanged() {
         return isChanged;
     }    
+    
+    private void fireChanged() {
+        boolean useInteralDiff = DiffModuleConfig.getDefault().isUseInteralDiff();
+        if (internalDiff.isSelected() != useInteralDiff) {
+            isChanged = true;
+            return;
+        }
+        if (externalDiff.isSelected() == useInteralDiff) {
+            isChanged = true;
+            return;
+        }
+        if(ignoreWhitespace.isSelected() != DiffModuleConfig.getDefault().getOptions().ignoreLeadingAndtrailingWhitespace) {
+            isChanged = true;
+            return;
+        }
+        if(ignoreAllWhitespace.isSelected() != DiffModuleConfig.getDefault().getOptions().ignoreInnerWhitespace) {
+            isChanged = true;
+            return;
+        }
+        if(ignoreCase.isSelected() != DiffModuleConfig.getDefault().getOptions().ignoreCase) {
+            isChanged = true;
+            return;
+        }
+        if(!externalCommand.getText().equals(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}"))) { // NOI18N
+            isChanged = true;
+            return;
+        }
+        isChanged = false;
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -234,22 +264,22 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
 
     @Override
     public void actionPerformed (ActionEvent e) {
-        isChanged = true;
+        fireChanged();
         refreshComponents();
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        isChanged = true;
+        fireChanged();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        isChanged = true;
+        fireChanged();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        isChanged = true;
+        fireChanged();
     }
 }

@@ -778,12 +778,20 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                                           loc.getString("CTL_Issue_Summary_Desc"))); // NOI18N           
         ret.add(new ARVColumnDescriptor(IssueField.SEVERITY));
         ret.add(new ARVColumnDescriptor(IssueField.PRIORITY));
+        ret.add(new ARVColumnDescriptor(IssueField.TASK_TYPE));
         ret.add(new ARVColumnDescriptor(IssueField.STATUS));
         ret.add(new ARVColumnDescriptor(IssueField.RESOLUTION));
         ret.add(new IssueFieldColumnDescriptor(IssueField.PRODUCT, false));
         ret.add(new IssueFieldColumnDescriptor(IssueField.COMPONENT, false));
         ret.add(new ARVColumnDescriptor(IssueField.ITERATION, false));
         ret.add(new ARVColumnDescriptor(IssueField.MILESTONE, false));
+        ret.add(new ARVColumnDescriptor(IssueField.DUEDATE));
+        ret.add(new ARVColumnDescriptor(IssueField.ESTIMATE));
+        ret.add(new ARVColumnDescriptor(IssueField.OWNER));
+        ret.add(new ARVColumnDescriptor(IssueField.REPORTER));
+        ret.add(new ARVColumnDescriptor(IssueField.PARENT));
+        ret.add(new ARVColumnDescriptor(IssueField.SUBTASK));
+        ret.add(new ARVColumnDescriptor(IssueField.DUPLICATE));
         ret.add(new IssueFieldColumnDescriptor(IssueField.MODIFIED, false));
         return ret.toArray(new ColumnDescriptor[ret.size()]);
     }

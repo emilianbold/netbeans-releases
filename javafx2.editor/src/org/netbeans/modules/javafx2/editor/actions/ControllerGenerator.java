@@ -114,6 +114,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -569,7 +570,7 @@ public class ControllerGenerator implements Task<WorkingCopy> {
 
         @Override
         public void visitBaseInstance(FxInstance decl) {
-            if (decl.getId() != null) {
+            if (decl.getId() != null && Utilities.isJavaIdentifier(decl.getId())) {
                 // check that the component is not defined 
                 if (decl.getRoot().getInstance(decl.getId()) == decl) {
                     syncComponentBinding(decl);

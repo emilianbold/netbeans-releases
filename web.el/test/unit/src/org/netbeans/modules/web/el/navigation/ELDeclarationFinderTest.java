@@ -54,11 +54,11 @@ public class ELDeclarationFinderTest extends ELTestBaseForTestProject {
     }
 
     public void testSimpleBean() throws Exception {
-        checkDeclaration("projects/testWebProject/web/navigation/navigation01.xhtml", "#{bea^n}", "Bean.java", 276);
+        checkDeclaration("projects/testWebProject/web/navigation/navigation01.xhtml", "#{bea^n}", "Bean.java", 314);
     }
 
     public void testBeanProperty() throws Exception {
-        checkDeclaration("projects/testWebProject/web/navigation/navigation02.xhtml", "#{bean.myArr^ay}", "Bean.java", 487);
+        checkDeclaration("projects/testWebProject/web/navigation/navigation02.xhtml", "#{bean.myArr^ay}", "Bean.java", 525);
     }
 
     public void testBeanPropertyField() throws Exception {

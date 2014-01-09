@@ -599,7 +599,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	ExpressionTree restype = (ExpressionTree)translateClassRef(tree.getReturnType());
 	List<? extends TypeParameterTree> typarams = translateStable(tree.getTypeParameters());
 	List<? extends VariableTree> params = translateStable(tree.getParameters());
-	List<? extends ExpressionTree> thrown = translateStable(tree.getThrows());
+	List<? extends ExpressionTree> thrown = translate(tree.getThrows());
         ExpressionTree defaultValue = (ExpressionTree)translate(tree.getDefaultValue());
 	BlockTree body = (BlockTree)translate(tree.getBody());
         

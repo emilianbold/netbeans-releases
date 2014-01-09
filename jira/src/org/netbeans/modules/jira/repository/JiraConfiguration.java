@@ -42,19 +42,7 @@
 
 package org.netbeans.modules.jira.repository;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import com.atlassian.connector.eclipse.internal.jira.core.model.ServerInfo;
-import com.atlassian.connector.eclipse.internal.jira.core.model.User;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,8 +50,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.JiraVersion;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.User;
+import org.netbeans.modules.jira.client.spi.Version;
 import org.netbeans.modules.jira.util.PriorityComparator;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.openide.util.Exceptions;
@@ -83,11 +81,11 @@ public class JiraConfiguration {
         this.repository = repository;
         String value = System.getProperty("org.netbeans.modules.jira.datePattern"); // NOI18N
         if (value != null) {
-            client.getLocalConfiguration().setDatePattern(value);
+            client.setDatePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.dateTimePattern"); // NOI18N
         if (value != null) {
-            client.getLocalConfiguration().setDateTimePattern(value);
+            client.setDateTimePattern(value);
         }
         value = System.getProperty("org.netbeans.modules.jira.locale"); // NOI18N
         if (value != null) {
@@ -96,27 +94,27 @@ public class JiraConfiguration {
             String country = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             String variant = st.hasMoreTokens() ? st.nextToken() : ""; // NOI18N
             Locale locale = new Locale(language, country, variant);
-            client.getLocalConfiguration().setLocale(locale);
+            client.setLocale(locale);
         }
     }
 
     public IssueType getIssueTypeById(String id) {
-        return client.getCache().getIssueTypeById(id);
+        return client.getIssueTypeById(id);
     }
 
     public IssueType[] getIssueTypes() {
-        return client.getCache().getIssueTypes();
+        return client.getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(String projectId) {
-        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+        if(!supportsProjectIssueTypes(getServerVersion())) {
             return getIssueTypes();
         }
         return getProjectById(projectId).getIssueTypes();
     }
 
     public IssueType[] getIssueTypes(final Project project) {
-        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+        if(!supportsProjectIssueTypes(getServerVersion())) {
             return getIssueTypes();
         }
         ensureProjectLoaded(project);
@@ -130,7 +128,7 @@ public class JiraConfiguration {
     
     public synchronized List<Priority> getPrioritiesIntern() {
         if(priorities == null) {
-            Priority[] ps = client.getCache().getPriorities();
+            Priority[] ps = client.getPriorities();
             if(ps != null) {
                 Arrays.sort(ps, new PriorityComparator());
                 priorities = Arrays.asList(ps);
@@ -140,7 +138,7 @@ public class JiraConfiguration {
     }
 
     public Priority getPriorityById(String id) {
-        return client.getCache().getPriorityById(id);
+        return client.getPriorityById(id);
     }
     
     public int getPrioritySortOrder(Priority priority) {
@@ -148,31 +146,27 @@ public class JiraConfiguration {
     }
 
     public Resolution getResolutionById(String id) {
-        return client.getCache().getResolutionById(id);
+        return client.getResolutionById(id);
     }
 
     public Resolution[] getResolutions() {
-        return client.getCache().getResolutions();
+        return client.getResolutions();
     }
 
-    public ServerInfo getServerInfo() {
-        return client.getCache().getServerInfo();
+    public String getServerVersion() {
+        return client.getServerVersion();
     }
-
-    public ServerInfo getServerInfo(IProgressMonitor monitor) throws JiraException {
-        return client.getCache().getServerInfo(monitor);
-    }
-
+    
     public JiraStatus getStatusById(String id) {
-        return client.getCache().getStatusById(id);
+        return client.getStatusById(id);
     }
 
     public JiraStatus[] getStatuses() {
-        return client.getCache().getStatuses();
+        return client.getStatuses();
     }
 
     public User getUser(String name) {
-        return client.getCache().getUser(name);
+        return client.getUser(name);
     }
 
     public Collection<User> getUsers() {
@@ -180,15 +174,15 @@ public class JiraConfiguration {
     }
 
     public Project getProjectById(String id) {
-        return client.getCache().getProjectById(id);
+        return client.getProjectById(id);
     }
 
     public Project getProjectByKey(String key) {
-        return client.getCache().getProjectByKey(key);
+        return client.getProjectByKey(key);
     }
 
     public Project[] getProjects() {
-        return client.getCache().getProjects();
+        return client.getProjects();
     }
 
     public Component[] getComponents(String projectId) {
@@ -236,15 +230,18 @@ public class JiraConfiguration {
     }
 
     public int getWorkDaysPerWeek() {
-        return client.getLocalConfiguration().getWorkDaysPerWeek();
+        return client.getWorkDaysPerWeek();
     }
 
     public int getWorkHoursPerDay() {
-        return client.getLocalConfiguration().getWorkHoursPerDay();
+        return client.getWorkHoursPerDay();
     }
 
     public boolean supportsProjectIssueTypes(String version) {
-        return new JiraVersion(version).compareTo(new JiraVersion("3.12")) > -1; 
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        JiraVersion jv = cp.createJiraVersion(version);
+        JiraVersion jv3_12 = cp.createJiraVersion("3.12");
+        return jv.compareTo(jv3_12) > -1; 
     }
 
     public void ensureProjectLoaded(final Project project) {
@@ -260,8 +257,8 @@ public class JiraConfiguration {
             @Override
             public void execute() {
                 try {
-                    client.getCache().refreshProjectDetails(project.getId(), new NullProgressMonitor());
-                } catch (JiraException ex) {
+                    client.refreshProjectDetails(project.getId());
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -270,7 +267,7 @@ public class JiraConfiguration {
     }
 
     public void ensureIssueTypes(Project project) {
-        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+        if(!supportsProjectIssueTypes(getServerVersion())) {
             return;
         }
         if (project.getIssueTypes() == null) {

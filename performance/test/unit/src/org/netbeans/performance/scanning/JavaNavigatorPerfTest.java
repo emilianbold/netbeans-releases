@@ -54,7 +54,6 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.project.ui.ProjectTab;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,7 +89,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
         final File projectDir = new File(projectsDir, projectName);
 
         Logger navigatorUpdater = Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
-        navigatorUpdater.setLevel(Level.INFO);
+        navigatorUpdater.setLevel(Level.FINE);
         NavigatorHandler handler = new NavigatorHandler();
         navigatorUpdater.addHandler(handler);
 

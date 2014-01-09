@@ -234,8 +234,13 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         private String readLine() throws IOException {
             char[] char1 = new char[1];
             boolean isReady = true;
+            int count = 0;
             StringBuilder buf = new StringBuilder();
             while (isReady) {
+                count = count + 1;
+                if (count > 20000) { //#239847 limit the number of bytes/characters read together in one lump, make sure the stringBuilder doesn't grow out of proportions.
+                    break; //make it an incomplete line.
+                }
                 int ret = str.read(char1);
                 if (ret != 1) {
                      if (ret == -1 && buf.length() == 0) {

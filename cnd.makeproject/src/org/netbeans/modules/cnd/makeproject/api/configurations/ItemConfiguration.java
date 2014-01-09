@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StateCA;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;
@@ -54,7 +55,9 @@ import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanReverseNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StateCANodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -571,10 +574,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setDisplayName(getString("ItemConfigurationTxt"));
         set.setShortDescription(getString("ItemConfigurationHint"));
         
+        set.put(new StateCANodeProp(StateCA.getState(getConfiguration(), item, this),
+                getString("CodeAssistanceTxt"), getString("CodeAssistanceHint"))); //NOI18N
         if (SHOW_HEADER_EXCLUDE || !MIMENames.isHeader(item.getMIMEType())) {
             if ((getConfiguration() instanceof MakeConfiguration) &&
                     ((MakeConfiguration) getConfiguration()).isMakefileConfiguration()) {
-                set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromCodeAssistanceTxt"), getString("ExcludedFromCodeAssistanceHint"))); // NOI18N
+                set.put(new BooleanReverseNodeProp(getExcluded(), true, "IncludedInCodeAssistance", getString("IncludedInCodeAssistanceTxt"), getString("IncludedInCodeAssistanceHint"))); // NOI18N
             } else {
                 set.put(new BooleanNodeProp(getExcluded(), true, "ExcludedFromBuild", getString("ExcludedFromBuildTxt"), getString("ExcludedFromBuildHint"))); // NOI18N
             }
@@ -693,7 +698,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         public void setValue(String v) {
         }
     }
-
+    
     @Override
     public String toString() {
         String pref = "";

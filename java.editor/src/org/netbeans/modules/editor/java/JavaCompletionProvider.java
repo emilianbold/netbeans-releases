@@ -1569,7 +1569,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (((TryTree)last).getFinallyBlock() == null) {
                     addKeyword(env, CATCH_KEYWORD, null, false);
                     addKeyword(env, FINALLY_KEYWORD, null, false);
-                    if (((TryTree)last).getCatches().size() == 0)
+                    if (((TryTree)last).getCatches().isEmpty() && ((TryTree)last).getResources().isEmpty())
                         return;
                 }
             } else if (last.getKind() == Tree.Kind.IF) {
@@ -3261,7 +3261,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
                 Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 for (Symbols symbols : declaredSymbols) {
-                    if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
+                    if (Utilities.isExcludeMethods() && Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName())
+                            || excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType())
+                            || isAnnonInner(symbols.getEnclosingType()))
                         continue;
                     for (String name : symbols.getSymbols()) {
                         results.add(javaCompletionItemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));

@@ -122,7 +122,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
         BuildConfig buildConfig = ((GrailsProject) projectConfig.getProject()).getBuildConfig();
 
-        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        List<PathResourceImplementation> result = new ArrayList<>();
         // lib directory from project root
         addLibs(projectRoot, result);
 
@@ -196,6 +196,9 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         if (globalPluginsDir != null && globalPluginsDir.isDirectory()) {
             addPlugins(globalPluginsDir, result, null);
         }
+
+        // Adding jars from Ivy cache - hopefully it won't hurt start-up performance
+        addJars(buildConfig.getIvyCacheDir(), result, true);
 
         if (listenerPluginsLib == null) {
             File libDir = FileUtil.normalizeFile(new File(projectRoot, "lib")); // NOI18N

@@ -93,6 +93,10 @@ final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, 
         controller.changed();
         inChange = false;
     }
+    
+    boolean isChanged() {
+        return !Utils.getDefaultRIDasString().equals(jTextField1.getText());
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.

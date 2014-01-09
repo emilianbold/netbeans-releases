@@ -121,6 +121,8 @@ public class QueryPanel extends javax.swing.JPanel {
         filterLabel.setVisible(false);
         noContentPanel.setVisible(false);
         
+        saveChangesButton.setEnabled(false);
+
         bugAssigneeCheckBox.setOpaque(false);
         reporterCheckBox.setOpaque(false);
         ccCheckBox.setOpaque(false);
@@ -797,7 +799,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 829, Short.MAX_VALUE)
+                .addComponent(urlTextField)
                 .addContainerGap())
         );
         urlPanelLayout.setVerticalGroup(
@@ -853,6 +855,8 @@ public class QueryPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(saveChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.text")); // NOI18N
+
         gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel1.setLabelFor(idTextField);
@@ -907,9 +911,11 @@ public class QueryPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(searchButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(saveChangesButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cancelChangesButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 496, Short.MAX_VALUE)
                 .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel2)
@@ -932,7 +938,8 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(searchButton)
-                        .addComponent(cancelChangesButton))
+                        .addComponent(cancelChangesButton)
+                        .addComponent(saveChangesButton))
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(urlToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -948,6 +955,7 @@ public class QueryPanel extends javax.swing.JPanel {
         urlToggleButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.AccessibleContext.accessibleDescription")); // NOI18N
         searchButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
         cancelChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
+        saveChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshConfigurationButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshConfigurationButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -1220,6 +1228,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
     final javax.swing.JList resolutionList = new javax.swing.JList();
     final javax.swing.JScrollPane resolutionScrollPane = new HackedScrollPane();
+    final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
@@ -1370,6 +1379,7 @@ public class QueryPanel extends javax.swing.JPanel {
             public void run() {
                 searchPanel.setVisible(b);
                 cancelChangesButton.setVisible(b);
+                saveChangesButton.setVisible(b);
                 
                 webButton.setVisible(b);
                 separatorLabel2.setVisible(b);

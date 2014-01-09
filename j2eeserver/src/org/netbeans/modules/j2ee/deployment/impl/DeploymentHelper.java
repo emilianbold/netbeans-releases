@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -51,6 +52,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
@@ -121,6 +123,13 @@ public final class DeploymentHelper {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
         if (si != null) {
             Set<ServerLibraryDependency> libraries = jmp.getConfigSupport().getLibraries();
+            if (jmp instanceof J2eeApplicationProvider) {
+                libraries = new HashSet<ServerLibraryDependency>(libraries);
+                J2eeApplicationProvider app = (J2eeApplicationProvider) jmp;
+                for (J2eeModuleProvider p : app.getChildModuleProviders()) {
+                    libraries.addAll(p.getConfigSupport().getLibraries());
+                }
+            }
             si.deployLibraries(libraries);
         } else {
             LOGGER.log(Level.WARNING,

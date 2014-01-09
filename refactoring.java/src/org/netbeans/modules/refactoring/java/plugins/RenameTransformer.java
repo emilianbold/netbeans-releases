@@ -86,6 +86,7 @@ public class RenameTransformer extends RefactoringVisitor {
     private final String newName;
     private final boolean renameInComments;
     private final RenameRefactoring refactoring;
+    private Iterable<? extends Element> shadowed;
 
     public RenameTransformer(TreePathHandle handle, DocTreePathHandle docHandle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
         super(true);
@@ -136,6 +137,7 @@ public class RenameTransformer extends RefactoringVisitor {
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
         renameUsageIfMatch(getCurrentPath(), node,p);
+        renameShadowIfMatch(getCurrentPath(), node, p);
         return super.visitIdentifier(node, p);
     }
 
@@ -350,6 +352,25 @@ public class RenameTransformer extends RefactoringVisitor {
             }
         }
     }
+    
+    private void renameShadowIfMatch(final TreePath path, Tree tree, Element elementToFind) {
+        if (shadowed == null || workingCopy.getTreeUtilities().isSynthetic(path) || (handle != null && handle.getKind() == Tree.Kind.LABELED_STATEMENT)) {
+            return;
+        }
+        TreePath elementPath = path;
+        Element el = workingCopy.getTrees().getElement(elementPath);
+        
+        for (Element shadow : shadowed) {
+            if (shadow.equals(el)) {
+                if (elementToFind.getModifiers().contains(Modifier.STATIC)) {
+                    rewrite(tree, make.MemberSelect(make.QualIdent(el.getEnclosingElement()), shadow));
+                } else {
+                    rewrite(tree, make.MemberSelect(make.MemberSelect(make.QualIdent(el.getEnclosingElement()), "this"), shadow));
+                }
+                break;
+            }
+        }
+    }
 
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {
@@ -358,9 +379,24 @@ public class RenameTransformer extends RefactoringVisitor {
     }
 
     @Override
-    public Tree visitClass(ClassTree tree, Element p) {
+    public Tree visitClass(ClassTree tree, final Element p) {
+        final TreePath currentPath = getCurrentPath();
         renameDeclIfMatch(getCurrentPath(), tree, p);
-        return super.visitClass(tree, p);
+        Element el = workingCopy.getTrees().getElement(currentPath);
+        if (el != null && el.getEnclosedElements().contains(p)) {
+            Trees trees = workingCopy.getTrees();
+            Scope scope = trees.getScope(trees.getPath(p));
+            shadowed = workingCopy.getElementUtilities().getLocalMembersAndVars(scope, new ElementUtilities.ElementAcceptor() {
+
+                @Override
+                public boolean accept(Element element, TypeMirror type) {
+                    return !element.equals(p) && element.getKind().equals(p.getKind()) && element.getSimpleName().contentEquals(newName);
+                }
+            });
+        }
+        Tree value = super.visitClass(tree, p);
+        shadowed = null;
+        return value;
     }
 
     @Override

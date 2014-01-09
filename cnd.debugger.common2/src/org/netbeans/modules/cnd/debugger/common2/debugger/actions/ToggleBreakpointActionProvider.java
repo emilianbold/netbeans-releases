@@ -262,6 +262,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 	    System.out.printf("\tignoreJava = %s\n", ignoreJava); // NOI18N
     }
 
+    private static final Lookup.Result<ModuleInfo> result;
     static {
 	// Initial check
 
@@ -269,8 +270,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 
 	// Arrange to get notified when modules get loaded or unloaded
 
-	final Lookup.Result<ModuleInfo> result =
-	    Lookup.getDefault().lookupResult(ModuleInfo.class);
+	result = Lookup.getDefault().lookupResult(ModuleInfo.class);
 	result.addLookupListener(new LookupListener() {
 	    public void resultChanged(LookupEvent event) {
 		checkForJpdaDebugger();

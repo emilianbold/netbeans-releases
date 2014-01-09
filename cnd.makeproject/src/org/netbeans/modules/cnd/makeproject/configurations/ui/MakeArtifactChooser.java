@@ -212,7 +212,8 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
      */
     public static MakeArtifact[] showDialog(ArtifactType artifactType, Project master, FSPath baseDir, Component parent ) {
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-        String seed = RemoteFileUtil.getCurrentChooserFile(env);
+        final String chooser_key = "MakeArtifactChooser";//NOI18N
+        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
         JFileChooser chooser = RemoteFileUtil.createProjectChooser(env,
                 getString("ADD_PROJECT_DIALOG_TITLE"), getString("ADD_PROJECT_DIALOG_AD"), getString("ADD_BUTTON_TXT"), seed); // NOI18N
         MakeArtifactChooser accessory = new MakeArtifactChooser( artifactType, chooser, baseDir );
@@ -220,54 +221,51 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         chooser.setPreferredSize( new Dimension( 650, 380 ) );
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser
-        if ( option == JFileChooser.APPROVE_OPTION ) {
-            RemoteFileUtil.setCurrentChooserFile(chooser.getCurrentDirectory().getAbsolutePath(), env);
-            MyDefaultListModel model = (MyDefaultListModel) accessory.listArtifacts.getModel();
-            Project selectedProject = model.getProject();
+        if (option != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, chooser.getCurrentDirectory().getAbsolutePath(), env);
+        MyDefaultListModel model = (MyDefaultListModel) accessory.listArtifacts.getModel();
+        Project selectedProject = model.getProject();
 
-            if ( selectedProject == null ) {
-                return null;
-            }
-            
-            if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
-                DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                    getString("ADD_ITSELF_ERROR"), // NOI18N
-                    NotifyDescriptor.INFORMATION_MESSAGE ) );
-                return null;
-            }
-            
-	    // FIXUP: need to check for this for managed projects only
-            if (master instanceof MakeProject) {
-                MakeProject mprj = (MakeProject) master;
-                if (mprj.getActiveConfiguration() != null && mprj.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
-                    if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
-                        DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
-                            getString("ADD_CYCLIC_ERROR"),  // NOI18N
-                            NotifyDescriptor.INFORMATION_MESSAGE ) );
-                        return null;
-                    }
+        if ( selectedProject == null ) {
+            return null;
+        }
+
+        if ( selectedProject.getProjectDirectory().equals( master.getProjectDirectory() ) ) {
+            DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                getString("ADD_ITSELF_ERROR"), // NOI18N
+                NotifyDescriptor.INFORMATION_MESSAGE ) );
+            return null;
+        }
+
+        // FIXUP: need to check for this for managed projects only
+        if (master instanceof MakeProject) {
+            MakeProject mprj = (MakeProject) master;
+            if (mprj.getActiveConfiguration() != null && mprj.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+                if ( ProjectUtils.hasSubprojectCycles( master, selectedProject ) ) {
+                    DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message( 
+                        getString("ADD_CYCLIC_ERROR"),  // NOI18N
+                        NotifyDescriptor.INFORMATION_MESSAGE ) );
+                    return null;
                 }
             }
-            
-            Object[] tmp = new Object[model.getSize()];
-            int count = 0;
-            for(int i = 0; i < tmp.length; i++) {
-                if (accessory.listArtifacts.isSelectedIndex(i)) {
-                    Object elementAt = model.getElementAt(i);
-                    if (elementAt instanceof MakeArtifact) {
-                        tmp[count] = elementAt;
-                        count++;
-                    }
+        }
+
+        Object[] tmp = new Object[model.getSize()];
+        int count = 0;
+        for(int i = 0; i < tmp.length; i++) {
+            if (accessory.listArtifacts.isSelectedIndex(i)) {
+                Object elementAt = model.getElementAt(i);
+                if (elementAt instanceof MakeArtifact) {
+                    tmp[count] = elementAt;
+                    count++;
                 }
             }
-            MakeArtifact artifactItems[] = new MakeArtifact[count];
-            System.arraycopy(tmp, 0, artifactItems, 0, count);
-            return artifactItems;
         }
-        else {
-            return null; 
-        }
-                
+        MakeArtifact artifactItems[] = new MakeArtifact[count];
+        System.arraycopy(tmp, 0, artifactItems, 0, count);
+        return artifactItems;            
     }
     
     private static String getString(String s) {

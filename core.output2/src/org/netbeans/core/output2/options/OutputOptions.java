@@ -133,6 +133,53 @@ public class OutputOptions {
         setLinkStyle(LinkStyle.UNDERLINE);
     }
 
+    /**
+     * Determine if options were modified by the user in order to trigger activation/deactivation of the Apply button.
+     */
+    boolean isChanged() {
+        Preferences preferences = NbPreferences.forModule(Controller.class);
+        if (!getFont().getFamily().equals(preferences.get(PREFIX + PROP_FONT_FAMILY, getDefaultFont().getFamily()))) {
+            return true;
+        }
+        if (getFont().getSize() != preferences.getInt(PREFIX + PROP_FONT_SIZE, getDefaultFont().getSize())) {
+            return true;
+        }
+        if (getFont().getStyle() != preferences.getInt(PREFIX + PROP_FONT_STYLE, getDefaultFont().getStyle())) {
+            return true;
+        }
+        if (!getLinkStyle().name().equals(preferences.get(PREFIX + PROP_STYLE_LINK, "UNDERLINE"))) { //NOI18N
+            return true;
+        }
+        if (getColorStandard().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_STANDARD, getDefaultColorStandard().getRGB())) {
+            return true;
+        }
+        if (getColorError().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_ERROR, getDefaultColorError().getRGB())) {
+            return true;
+        }
+        if (getColorInput().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_INPUT, getDefaultColorInput().getRGB())) {
+            return true;
+        }
+        if (getColorBackground().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_BACKGROUND, getDefaultColorBackground().getRGB())) {
+            return true;
+        }
+        if (getColorLink().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_LINK, getDefaultColorLink().getRGB())) {
+            return true;
+        }
+        if (getColorLinkImportant().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_LINK_IMPORTANT, getDefaultColorLinkImportant().getRGB())) {
+            return true;
+        }
+        if (getColorDebug().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_DEBUG, getDefaultColorDebug().getRGB())) {
+            return true;
+        }
+        if (getColorWarning().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_WARNING, getDefaultColorWarning().getRGB())) {
+            return true;
+        }
+        if (getColorFailure().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_FAILURE, getDefaultColorFailure().getRGB())) {
+            return true;
+        }
+        return getColorSuccess().getRGB() != preferences.getInt(PREFIX + PROP_COLOR_SUCCESS, getDefaultColorSuccess().getRGB());
+    }
+
     public void loadFrom(Preferences preferences) {
         assert !EventQueue.isDispatchThread();
         final OutputOptions diskData = new OutputOptions(false);

@@ -162,6 +162,12 @@ public class FilterNode extends Node {
 
     /** children provided or created the default ones? */
     private boolean childrenProvided;
+
+    /** lookup provided or created the default ones? */
+    private boolean lookupProvided;
+
+    /** lock used to sync property listener */
+    private final Object LISTENER_LOCK = new Object();
     
     static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
@@ -205,6 +211,7 @@ public class FilterNode extends Node {
         Parameters.notNull("original", original);
 
         this.childrenProvided = children != null;
+        this.lookupProvided = lookup != null && !(lookup instanceof FilterLookup);
         this.original = original;
         init();
 
@@ -990,23 +997,27 @@ public class FilterNode extends Node {
 
     /** Getter for property change listener.
     */
-    synchronized PropertyChangeListener getPropertyChangeListener() {
-        if (propL == null) {
-            propL = createPropertyChangeListener();
-        }
+    PropertyChangeListener getPropertyChangeListener() {
+        synchronized (LISTENER_LOCK) {
+            if (propL == null) {
+                propL = createPropertyChangeListener();
+            }
 
-        return propL;
+            return propL;
+        }
     }
 
     /** Getter for node listener.
     */
-    synchronized NodeListener getNodeListener() {
-        if (nodeL == null) {
-            nodeL = createNodeListener();
-            getOriginal().addNodeListener(nodeL);
-        }
+    NodeListener getNodeListener() {
+        synchronized (LISTENER_LOCK) {
+            if (nodeL == null) {
+                nodeL = createNodeListener();
+                getOriginal().addNodeListener(nodeL);
+            }
 
-        return nodeL;
+            return nodeL;
+        }
     }
 
     /** Notified from Node that a listener has been added.
@@ -1017,8 +1028,8 @@ public class FilterNode extends Node {
         getNodeListener();
     }
 
-    /** Check method whether the node has default behaviour or
-    * if it is either subclass of uses different children.
+    /** Check method whether the node has default behavior or
+    * if it is either subclass or uses different children or lookup.
     * @return true if it is default
     */
     private boolean isDefault() {
@@ -1028,7 +1039,7 @@ public class FilterNode extends Node {
             return false;
         }
 
-        return !childrenProvided;
+        return !childrenProvided && !lookupProvided;
     }
 
     /**

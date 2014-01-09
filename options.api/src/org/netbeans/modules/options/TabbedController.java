@@ -330,15 +330,18 @@ public class TabbedController extends OptionsPanelController {
         tabTitle2controller = new HashMap<String, OptionsPanelController>();
         tabTitle2Option = new LinkedHashMap<String, AdvancedOption>();
         id2tabTitle = new HashMap<String, String>();
-        for (Lookup.Item<AdvancedOption> item : options.allItems()) {
-            AdvancedOption option = item.getInstance();
-            String displayName = option.getDisplayName();
-            if (displayName != null) {
-                tabTitle2Option.put(displayName, option);
-                String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);  //NOI18N
-                id2tabTitle.put(id, displayName);
-            } else {
-                assert false : "Display name not defined: " + item.toString();  //NOI18N
+        Map<String, AdvancedOption> synchronizedMap = Collections.synchronizedMap(tabTitle2Option);
+        synchronized (synchronizedMap) {
+            for (Lookup.Item<AdvancedOption> item : options.allItems()) {
+                AdvancedOption option = item.getInstance();
+                String displayName = option.getDisplayName();
+                if (displayName != null) {
+                    tabTitle2Option.put(displayName, option);
+                    String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);  //NOI18N
+                    id2tabTitle.put(id, displayName);
+                } else {
+                    assert false : "Display name not defined: " + item.toString();  //NOI18N
+                }
             }
         }
     }

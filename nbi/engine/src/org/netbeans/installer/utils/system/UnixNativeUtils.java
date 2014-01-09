@@ -253,7 +253,24 @@ public class UnixNativeUtils extends NativeUtils {
             
             try {
                 Process p = Runtime.getRuntime().exec("uname -m");
-                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                
+                // Try if command exited. Wait max 1s.
+                for (int i = 0; i < 5; i++) {
+                    try {
+                        p.exitValue();
+                        break;
+                    } catch (IllegalThreadStateException ex) {
+                        // Exception should be ignored - do nothing.
+                    }
+                    
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException ex) {
+                        // Exception should be ignored - do nothing.
+                    }
+                }
+             
+                BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));                                
                 if (br.ready()) {
                     String line = br.readLine();
                     isSystem64Bit = line.endsWith("64");

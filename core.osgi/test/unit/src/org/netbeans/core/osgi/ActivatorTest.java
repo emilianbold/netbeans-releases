@@ -42,6 +42,7 @@
 
 package org.netbeans.core.osgi;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -192,15 +193,28 @@ public class ActivatorTest extends NbTestCase {
         System.setProperty("os.name", "Windows 2000");
         try {
             headers.put("Bundle-SymbolicName", "org.openide.modules");
-            assertEquals(new TreeSet<String>(Arrays.asList(
-                    "cnb.org.openide.modules",
-                    "org.openide.modules.os.Windows"
-                    )), Activator.provides(headers));
+            final TreeSet<String> export = new TreeSet<String>(Arrays.asList(
+                "cnb.org.openide.modules",
+                "org.openide.modules.os.Windows"
+            ));
+            if (isJavaFX()) {
+                export.add("org.openide.modules.jre.JavaFX");
+            }
+            assertEquals(export, Activator.provides(headers));
             assertEquals(Collections.emptySet(), Activator.requires(headers));
             assertEquals(Collections.emptySet(), Activator.needs(headers));
         } finally {
             System.setProperty("os.name", os);
         }
+    }
+    
+    private static boolean isJavaFX() {
+        File jdk = new File(System.getProperty("java.home"));
+        File lib = new File(jdk, "lib");
+        File ext = new File(lib, "ext");
+        File jdk7 = new File(lib, "jfxrt.jar");
+        File jdk8 = new File(ext, "jfxrt.jar");
+        return jdk7.exists() || jdk8.exists();
     }
 
     public void testRequireToken() throws Exception {

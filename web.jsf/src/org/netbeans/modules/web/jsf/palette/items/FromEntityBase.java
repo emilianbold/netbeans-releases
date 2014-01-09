@@ -544,7 +544,6 @@ public abstract class FromEntityBase {
             this.method = method;
             this.bean = bean;
             this.methodName = method.getSimpleName().toString();
-            this.label = this.methodName.substring(3);
             this.propertyName = JpaControllerUtil.getPropNameFromMethod(getMethodName());
         }
 
@@ -555,8 +554,6 @@ public abstract class FromEntityBase {
         public void setPrimaryKey() {
             this.primaryKey = true;
         }
-
-
 
         public String getMethodName() {
             return methodName;
@@ -571,6 +568,10 @@ public abstract class FromEntityBase {
         }
 
         public String getLabel() {
+            if (label == null) {
+                // there is check for getters, it should be long enough
+                label = this.methodName.substring(3);
+            }
             return label;
         }
 

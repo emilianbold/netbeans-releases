@@ -236,9 +236,12 @@ is divided into following sections:
                     </and>
                 </condition>
                 <condition property="do.archive">
-                    <not>
-                        <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
-                    </not>
+                    <or>
+                        <not>
+                            <istrue value="${{jar.archive.disabled}}"/>  <!-- Disables archive creation when archiving is overriden by an extension -->
+                        </not>
+                        <istrue value="${{not.archive.disabled}}" />
+                    </or>
                 </condition>
                 <condition property="do.mkdist">
                     <and>
@@ -2664,6 +2667,7 @@ is divided into following sections:
                             <param name="call.script" location="{$script}"/>
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
+                            <param name="transfer.not.archive.disabled" value="true"/>
                             <xsl:for-each select="projdeps2:properties/projdeps2:property">
                                 <param name="transfer.{@name}" value="{.}"/>
                             </xsl:for-each>
@@ -2676,6 +2680,7 @@ is divided into following sections:
                             <param name="call.script" location="{$script}"/>
                             <param name="call.target" value="{$subtarget}"/>
                             <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
+                            <param name="transfer.not.archive.disabled" value="true"/>
                         </antcall>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -2701,6 +2706,7 @@ is divided into following sections:
                     <param name="call.script" location="${{project.{$subproj}}}/{$script}"/>
                     <param name="call.target" value="{$subtarget}"/>
                     <param name="transfer.built-{$kind}.properties" value="${{built-{$kind}.properties}}"/>
+                    <param name="transfer.not.archive.disabled" value="true"/>
                 </antcall>
             </xsl:for-each>
             

@@ -52,7 +52,7 @@ import java.util.Map;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
+public interface CsmFunction extends CsmFunctional, CsmOffsetableDeclaration, CsmScope {
     
     public enum OperatorKind {
         COMMA(",", true), //NOI18N
@@ -169,18 +169,6 @@ public interface CsmFunction extends CsmOffsetableDeclaration, CsmScope {
 
     boolean isStatic();
 
-    CsmType getReturnType();
-    
     CsmFunctionParameterList  getParameterList();
-
-    /** shortcut for getParameterList().getParameters()
-     * @return
-     */
-    Collection<CsmParameter>  getParameters();
-
-    /** 
-     * Gets this function signature string representation.
-     * Used to identify overrides, etc.
-     */
-    CharSequence getSignature();
+   
 }
