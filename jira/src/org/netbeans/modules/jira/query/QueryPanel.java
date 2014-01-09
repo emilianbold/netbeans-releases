@@ -834,6 +834,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(saveChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.text")); // NOI18N
+
         gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel1.text_1")); // NOI18N
@@ -893,11 +895,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, searchPanelLayout.createSequentialGroup()
                         .addComponent(searchButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(saveChangesButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cancelChangesButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(warningLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 523, Short.MAX_VALUE)
                         .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(separatorLabel2)
@@ -917,6 +921,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(searchButton)
                         .addComponent(cancelChangesButton)
+                        .addComponent(saveChangesButton)
                         .addComponent(warningLabel))
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(reloadAttributesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1220,6 +1225,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JComboBox reporterComboBox = new javax.swing.JComboBox();
     final javax.swing.JTextField reporterTextField = new javax.swing.JTextField();
     final javax.swing.JList resolutionList = new javax.swing.JList();
+    final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JPanel searchPanel = new javax.swing.JPanel();
     final org.netbeans.modules.bugtracking.commons.LinkButton seenButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
@@ -1341,6 +1347,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     void setModifyVisible(boolean b) {
         searchPanel.setVisible(b);
         cancelChangesButton.setVisible(b);
+        saveChangesButton.setVisible(b);
         
         webButton.setVisible(b);
         separatorLabel2.setVisible(b);

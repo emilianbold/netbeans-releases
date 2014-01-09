@@ -64,6 +64,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -136,6 +138,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchByDescriptionCheckBox.setOpaque(false);
         searchBySummaryCheckBox.setOpaque(false);
 
+        cancelChangesButton.setEnabled(false);
+        
         filterComboBox.setRenderer(new FilterCellRenderer());
 
         UIUtils.keepFocusedComponentVisible(this);
@@ -157,6 +161,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 filterLabel.setEnabled(!running);
                 filterComboBox.setEnabled(!running);
                 
+                saveChangesButton.setEnabled(!running);
                 cancelChangesButton.setEnabled(!running);                
             }
         };
@@ -782,6 +787,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(saveChangesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveQueryButton.text")); // NOI18N
+
         gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
 
         jLabel1.setLabelFor(idTextField);
@@ -833,6 +840,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addGroup(searchPanelLayout.createSequentialGroup()
                         .addComponent(searchButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(saveChangesButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelChangesButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -849,12 +858,14 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelChangesButton)
+                    .addComponent(saveChangesButton)
                     .addComponent(searchButton))
                 .addContainerGap())
         );
 
         searchButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
         cancelChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
+        saveChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshConfigurationButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshConfigurationButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         queryHeaderPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -971,7 +982,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addComponent(separatorLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 130, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         queryHeaderPanelLayout.setVerticalGroup(
@@ -1154,6 +1165,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     public final org.netbeans.modules.bugtracking.commons.LinkButton removeButton = new org.netbeans.modules.bugtracking.commons.LinkButton();
     final javax.swing.JLabel resolutionLabel = new javax.swing.JLabel();
     final javax.swing.JList resolutionList = new javax.swing.JList();
+    final javax.swing.JButton saveChangesButton = new javax.swing.JButton();
     final javax.swing.JButton searchButton = new javax.swing.JButton();
     final javax.swing.JCheckBox searchByDescriptionCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JCheckBox searchBySummaryCheckBox = new javax.swing.JCheckBox();
@@ -1281,8 +1293,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             public void run() {
                 searchPanel.setVisible(b);
                 cancelChangesButton.setVisible(b);
+                saveChangesButton.setVisible(b);
+                
                 tableFieldsPanel.setVisible(!b);
                 searchButton.setVisible(!b);
+                
+                modifyButton.setEnabled(!b);
             }
         };
         UIUtils.runInAWT(r);
@@ -1300,6 +1316,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 tablePanel.setVisible(true);
                 nameLabel.setText(name);
                 setLastRefresh(lastRefresh);
+                Mnemonics.setLocalizedText(startLabel, NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveQueryButton.text")); // NOI18N
             }
         };
         UIUtils.runInAWT(r);

@@ -175,6 +175,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         panel.searchButton.addActionListener(this);
         panel.keywordsButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
+        panel.saveChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.urlToggleButton.addActionListener(this);
@@ -382,7 +383,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 panel.showRetrievingProgress(true, msgPopulating, !query.isSaved());
                 handle.start();
             }
-        });
+        });   
 
         t[0] = rp.post(new Runnable() {
             @Override
@@ -397,6 +398,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                         @Override
                         public void run() {
                             enableFields(true);
+                            setChanged();
                             handle.finish();
                             panel.showRetrievingProgress(false, null, !query.isSaved());
                         }
@@ -525,6 +527,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
+        } else if (e.getSource() == panel.saveChangesButton) {
+            onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
@@ -1025,12 +1029,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        setChanged();
+    }
+
+    public void setChanged() {
         UIUtils.runInAWT(new Runnable() {
             @Override
             public void run() {
-                if (!ignoreChanges && isChanged()) {
-                    fireChanged();
-                }                
+                panel.saveChangesButton.setEnabled((!ignoreChanges && isChanged()) || !query.isSaved());
+                fireChanged();
             }
         });
     }

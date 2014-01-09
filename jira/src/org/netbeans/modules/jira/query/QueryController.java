@@ -172,6 +172,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         panel.projectList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
+        panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
@@ -709,6 +710,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     public void changed(boolean b) {
         isChanged = b;
+        panel.saveChangesButton.setEnabled(b || !query.isSaved());
         fireChanged();
     }
 
@@ -761,6 +763,8 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             onGotoIssue();
         } else if (e.getSource() == panel.searchButton) {
             onRefresh();
+        } else if (e.getSource() == panel.saveChangesButton) {
+            onSave(null, true);   // invoke refresh after save
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {

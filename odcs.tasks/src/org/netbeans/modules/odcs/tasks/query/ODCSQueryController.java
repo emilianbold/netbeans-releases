@@ -161,6 +161,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         panel.refreshConfigurationButton.addActionListener(this);
         panel.findIssuesButton.addActionListener(this);
         panel.cloneQueryButton.addActionListener(this);
+        panel.saveChangesButton.addActionListener(this);
 
         panel.idTextField.addActionListener(this);
         panel.productList.addKeyListener(this);
@@ -203,7 +204,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         
         if(query.isSaved()) {
             setAsSaved();
+        } else {
+            panel.saveChangesButton.setEnabled(true);
         }
+        
         if (modifiable) {
             querySemaphore.acquireUninterruptibly();
             postPopulate(false);
@@ -416,7 +420,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        fireChanged();
+        if(!populated) {
+            return;
+    }
+        setChanged();
     }
     
     @Override
@@ -479,6 +486,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             onRefresh();
         } else if (e.getSource() == panel.gotoIssueButton) {
             onGotoIssue();
+        } else if (e.getSource() == panel.saveChangesButton) {
+            onSave(null, true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
         } else if (e.getSource() == panel.webButton) {
@@ -548,7 +557,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onSave(final String newName, final boolean refresh) {
-       ODCS.getInstance().getRequestProcessor().post(new Runnable() {
+       ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 ODCS.LOG.fine("on save start");
@@ -583,7 +592,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             if(query.save(name)) {
                 setAsSaved();
                 parameters.resetChanged();
-                fireChanged();                
+                setChanged();                
                 if (!query.wasRun()) {
                     ODCS.LOG.log(Level.FINE, "refreshing query '{0}' after save", new Object[]{name});
                     onRefresh();
@@ -594,6 +603,12 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             enableFields(true);
             ODCS.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});
         }
+    }
+
+    public void setChanged() {
+        boolean changed = isChanged();
+        panel.saveChangesButton.setEnabled(changed || !query.isSaved());
+        fireChanged();
     }
 
     private String getSaveName() {
@@ -652,6 +667,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
+        panel.saveChangesButton.setEnabled(false);
     }
 
     private String getLastRefresh() throws MissingResourceException {
@@ -811,7 +827,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             if(criteria != null) {
                 parameters.setCriteriaValues(criteria);
             }
-
+            
     //      XXX anything interesting here?         
     //      changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
     //      peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
@@ -820,7 +836,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             originalCriteria = criteria;
             criteria = null;
         }
-        
+        parameters.resetChanged();
+        setChanged();
         panel.setModifyVisible(true);
     }
 
