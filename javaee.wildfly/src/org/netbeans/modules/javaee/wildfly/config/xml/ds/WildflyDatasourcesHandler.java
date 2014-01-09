@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -59,7 +59,7 @@ public class WildflyDatasourcesHandler extends DefaultHandler {
 
     private final XMLReader parser;
     private final Set<Datasource> datasources = new HashSet<Datasource>();
-    private final Set<WildflyDatasource> parsedDatasources = new HashSet<WildflyDatasource>();
+    private final Set<WildflyDataSource> parsedDatasources = new HashSet<WildflyDataSource>();
 
     boolean isDatasource = false;
 
@@ -98,7 +98,7 @@ public class WildflyDatasourcesHandler extends DefaultHandler {
             }
             else if ("drivers".equals(qName)) {
                 Map<String, WildflyDriver> drivers = driversHandler.getDrivers();
-                for (WildflyDatasource ds : parsedDatasources) {
+                for (WildflyDataSource ds : parsedDatasources) {
                     if (drivers.containsKey(ds.getDriver())) {
                         ds.setDriver(drivers.get(ds.getDriver()).getDriverClass());
                     }
@@ -106,8 +106,8 @@ public class WildflyDatasourcesHandler extends DefaultHandler {
                 driversHandler = null;
             }
             else if ("datasources".equals(qName)) {
-                for (WildflyDatasource ds : parsedDatasources) {
-                    datasources.add(new JBossDatasource(ds.getName(),
+                for (WildflyDataSource ds : parsedDatasources) {
+                    datasources.add(new WildflyDatasource(ds.getName(),
                             ds.getJndiName(), ds.getUrl(), ds.getUsername(),
                             ds.getPassword(), ds.getDriver()));
                 }

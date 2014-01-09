@@ -61,9 +61,10 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
-import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
+import org.netbeans.modules.javaee.wildfly.config.WildflySocket;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDestinationNode;
@@ -165,7 +166,7 @@ public class WildflyClient {
             // ModelNode
             Object shutdownOperation = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, shutdownOperation, getModelDescriptionConstant(cl, "OP")), getModelDescriptionConstant(cl, "SHUTDOWN"));
-            executeAsync(cl, shutdownOperation, null);
+            executeOnOperation(cl, shutdownOperation);
             close();
         } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
@@ -189,7 +190,7 @@ public class WildflyClient {
             setModelNodeChildEmptyList(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "OP_ADDR")));
             setModelNodeChildString(cl, getModelNodeChild(cl, statusOperation, getClientConstant(cl, "NAME")), SERVER_STATE);
             // ModelNode
-            Object response = executeOnModelNode(cl, statusOperation);
+            Object response = executeAsync(cl, statusOperation, null).get();
             return getClientConstant(cl, "SUCCESS").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getClientConstant(cl, "OUTCOME"))))
                     && !getClientConstant(cl, "CONTROLLER_PROCESS_STATE_STARTING").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getModelDescriptionConstant(cl, "RESULT"))))
                     && !getClientConstant(cl, "CONTROLLER_PROCESS_STATE_STOPPING").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getModelDescriptionConstant(cl, "RESULT"))));
@@ -522,7 +523,7 @@ public class WildflyClient {
         Set<Datasource> datasources = listDatasources();
         List<WildflyDatasourceNode> modules = new ArrayList<WildflyDatasourceNode>(datasources.size());
         for (Datasource ds : datasources) {
-            modules.add(new WildflyDatasourceNode(((JBossDatasource) ds).getName(), ds, lookup));
+            modules.add(new WildflyDatasourceNode(((WildflyDatasource) ds).getName(), ds, lookup));
         }
         return modules;
     }
@@ -566,7 +567,7 @@ public class WildflyClient {
         }
     }
 
-    private JBossDatasource getDatasource(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws IOException {
+    private WildflyDatasource getDatasource(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws IOException {
         try {
             // ModelNode
             final Object readDatasource = createModelNode(cl);
@@ -583,7 +584,7 @@ public class WildflyClient {
             if (isSuccessfulOutcome(cl, response)) {
                 // ModelNode
                 Object datasource = readResult(cl, response);
-                return new JBossDatasource(name, modelNodeAsString(cl, getModelNodeChild(cl, datasource, "jndi-name")),
+                return new WildflyDatasource(name, modelNodeAsString(cl, getModelNodeChild(cl, datasource, "jndi-name")),
                         modelNodeAsString(cl, getModelNodeChild(cl, datasource, "connection-url")),
                         modelNodeAsString(cl, getModelNodeChild(cl, datasource, "user-name")),
                         modelNodeAsString(cl, getModelNodeChild(cl, datasource, "password")),
@@ -704,10 +705,10 @@ public class WildflyClient {
         }
     }
 
-    private List<JBossMessageDestination> getJMSDestinationForServerDeployment(String deployment, String serverName, Type messageType) throws IOException {
+    private List<WildflyMessageDestination> getJMSDestinationForServerDeployment(String deployment, String serverName, Type messageType) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<JBossMessageDestination> listedDestinations = new ArrayList<JBossMessageDestination>();
+            List<WildflyMessageDestination> listedDestinations = new ArrayList<WildflyMessageDestination>();
             // ModelNode
             final Object readQueues = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "OP")),
@@ -738,10 +739,10 @@ public class WildflyClient {
                     if (modelNodeHasChild(cl, value, "entries")) {
                         List entries = modelNodeAsList(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, destination), "entries"));
                         for (Object entry : entries) {
-                            listedDestinations.add(new JBossMessageDestination(modelNodeAsString(cl, entry), messageType));
+                            listedDestinations.add(new WildflyMessageDestination(modelNodeAsString(cl, entry), messageType));
                         }
                     } else {
-                        listedDestinations.add(new JBossMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
+                        listedDestinations.add(new WildflyMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
                     }
                 }
             }
@@ -759,10 +760,10 @@ public class WildflyClient {
         }
     }
 
-    private List<JBossMessageDestination> getJMSDestinationForServer(String serverName, Type messageType) throws IOException {
+    private List<WildflyMessageDestination> getJMSDestinationForServer(String serverName, Type messageType) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-            List<JBossMessageDestination> listedDestinations = new ArrayList<JBossMessageDestination>();
+            List<WildflyMessageDestination> listedDestinations = new ArrayList<WildflyMessageDestination>();
             // ModelNode
             final Object readQueues = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, readQueues, getClientConstant(cl, "OP")),
@@ -791,10 +792,10 @@ public class WildflyClient {
                     if (modelNodeHasChild(cl, value, "entries")) {
                         List entries = modelNodeAsList(cl, getModelNodeChild(cl, modelNodeAsPropertyForValue(cl, destination), "entries"));
                         for (Object entry : entries) {
-                            listedDestinations.add(new JBossMessageDestination(modelNodeAsString(cl, entry), messageType));
+                            listedDestinations.add(new WildflyMessageDestination(modelNodeAsString(cl, entry), messageType));
                         }
                     } else {
-                        listedDestinations.add(new JBossMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
+                        listedDestinations.add(new WildflyMessageDestination(modelNodeAsPropertyForName(cl, destination), messageType));
                     }
                 }
             }
@@ -812,17 +813,17 @@ public class WildflyClient {
         }
     }
 
-    public boolean addMessageDestinations(final Collection<JBossMessageDestination> destinations) throws IOException {
+    public boolean addMessageDestinations(final Collection<WildflyMessageDestination> destinations) throws IOException {
         boolean result = isServerRunning();
         if (result) {
-            for (JBossMessageDestination destination : destinations) {
+            for (WildflyMessageDestination destination : destinations) {
                 result = result && addMessageDestination(destination);
             }
         }
         return result;
     }
 
-    public boolean addMessageDestination(JBossMessageDestination destination) throws IOException {
+    public boolean addMessageDestination(WildflyMessageDestination destination) throws IOException {
         try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
@@ -864,6 +865,7 @@ public class WildflyClient {
             setModelNodeChildString(cl, getModelNodeChild(cl, readMailSessions, getClientConstant(cl, "CHILD_TYPE")), MAIL_SESSION_TYPE);
             setModelNodeChild(cl, getModelNodeChild(cl, readMailSessions, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
             setModelNodeChildString(cl, getModelNodeChild(cl, readMailSessions, getClientConstant(cl, "INCLUDE_RUNTIME")), "true");
+            setModelNodeChildString(cl, getModelNodeChild(cl, readMailSessions, getClientConstant(cl, "RECURSIVE")), "true");
             Object response = executeOnModelNode(cl, readMailSessions);
             if (isSuccessfulOutcome(cl, response)) {
                 Object result = readResult(cl, response);
@@ -874,7 +876,19 @@ public class WildflyClient {
                     Object configuration = modelNodeAsPropertyForValue(cl, mailSession);
                     session.setIsDebug(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "debug")));
                     session.setJndiName(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "jndi-name")));
-                    //session.setHostName(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "server")));
+                    List properties = modelNodeAsList(cl, getModelNodeChild(cl, configuration, "server"));
+                    for (Object property : properties) {
+                        if (modelNodeIsDefined(cl, property)) {
+                            Object settings = modelNodeAsPropertyForValue(cl, property);
+                            if (modelNodeHasDefinedChild(cl, settings, "username")) {
+                                session.setUserName(modelNodeAsString(cl, getModelNodeChild(cl, settings, "username")));
+                            }
+                            if (modelNodeHasDefinedChild(cl, settings, "outbound-socket-binding-ref")) {
+                                session.setSocket(fillSocket(modelNodeAsString(cl, getModelNodeChild(cl, settings, "outbound-socket-binding-ref")), true));
+                            }
+
+                        }
+                    }
                     modules.add(session);
                 }
             }
@@ -887,9 +901,9 @@ public class WildflyClient {
             throw new IOException(ex);
         } catch (IllegalAccessException ex) {
             throw new IOException(ex);
-        }catch (InstantiationException ex) {
+        } catch (InstantiationException ex) {
             throw new IOException(ex);
-        } 
+        }
     }
 
     public Collection listEarApplications(Lookup lookup) throws IOException {
@@ -981,5 +995,41 @@ public class WildflyClient {
             }
         }
         return modules;
+    }
+
+    private WildflySocket fillSocket(String name, boolean outBound) throws 
+            ClassNotFoundException, NoSuchMethodException, 
+            InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
+        WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+        WildflySocket socket = new WildflySocket();
+        LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+        values.put("socket-binding-group", "standard-sockets");
+        if (outBound) {
+            values.put("remote-destination-outbound-socket-binding", name);
+        } else {
+            values.put("socket-binding", name);
+        }
+        Object address = createPathAddressAsModelNode(cl, values);
+        final Object readSocket = createModelNode(cl);
+        setModelNodeChildString(cl, getModelNodeChild(cl, readSocket, getClientConstant(cl, "OP")),
+                getModelDescriptionConstant(cl, "READ_RESOURCE_OPERATION"));
+        setModelNodeChild(cl, getModelNodeChild(cl, readSocket, getModelDescriptionConstant(cl, "ADDRESS")), address);
+        setModelNodeChild(cl, getModelNodeChild(cl, readSocket, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+        setModelNodeChildString(cl, getModelNodeChild(cl, readSocket, getClientConstant(cl, "INCLUDE_RUNTIME")), "true");
+        setModelNodeChildString(cl, getModelNodeChild(cl, readSocket, getClientConstant(cl, "RECURSIVE")), "true");
+        Object response = executeOnModelNode(cl, readSocket);
+        if (isSuccessfulOutcome(cl, response)) {
+            Object binding = readResult(cl, response);
+            if (modelNodeHasDefinedChild(cl, binding, "fixed-source-port")) {
+                socket.setFixedSourcePort(modelNodeAsBoolean(cl, getModelNodeChild(cl, binding, "fixed-source-port")));
+            }
+            if (modelNodeHasDefinedChild(cl, binding, "host")) {
+                socket.setHost(modelNodeAsString(cl, getModelNodeChild(cl, binding, "host")));
+            }
+            if (modelNodeHasDefinedChild(cl, binding, "port")) {
+                socket.setPort(modelNodeAsInt(cl, getModelNodeChild(cl, binding, "port")));
+            }
+        }
+        return socket;
     }
 }

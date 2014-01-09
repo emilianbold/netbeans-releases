@@ -64,7 +64,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Pavel Buzek, Libor Kotouc
  */
-public abstract class JBDeploymentConfiguration
+public abstract class WildflyDeploymentConfiguration
         implements DatasourceConfiguration, MessageDestinationConfiguration, EjbResourceConfiguration {
 
     // TODO move to a more appropriate class as soon as E-mail resource API is introduced
@@ -90,7 +90,7 @@ public abstract class JBDeploymentConfiguration
     /**
      * Creates a new instance of JBDeploymentConfiguration
      */
-    public JBDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public WildflyDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
         this.j2eeModule = j2eeModule;
         this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();

@@ -50,10 +50,10 @@ import org.openide.util.Parameters;
 
 
 /**
- *
- * @author Libor Kotouc
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public final class JBossDatasource implements Datasource {
+public final class WildflyDatasource implements Datasource {
     
     public static final String PREFIX = "java:/";
     public static final String SHORT_PREFIX = "java:";
@@ -71,7 +71,7 @@ public final class JBossDatasource implements Datasource {
     
     private volatile int hash = -1;
     
-    public JBossDatasource(String name, String jndiName, String url, String username, String password,
+    public WildflyDatasource(String name, String jndiName, String url, String username, String password,
             String driverClassName) {
         this.name = name;
         this.rawName = jndiName;
@@ -81,7 +81,7 @@ public final class JBossDatasource implements Datasource {
         this.driverClassName = driverClassName;
     }
     
-    public JBossDatasource(String jndiName, String url, String username, String password,
+    public WildflyDatasource(String jndiName, String url, String username, String password,
             String driverClassName) {
         this.name = jndiName;
         this.rawName = jndiName;
@@ -192,10 +192,10 @@ public final class JBossDatasource implements Datasource {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof JBossDatasource))
+        if (!(obj instanceof WildflyDatasource))
             return false;
         
-        JBossDatasource ds = (JBossDatasource)obj;
+        WildflyDatasource ds = (WildflyDatasource)obj;
         if (getJndiName() == null && ds.getJndiName() != null || getJndiName() != null && !getJndiName().equals(ds.getJndiName()))
             return false;
         if (url == null && ds.getUrl() != null || url != null && !url.equals(ds.getUrl()))
@@ -236,13 +236,13 @@ public final class JBossDatasource implements Datasource {
     
     public String toString() {
         return "[ " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_JNDI") + ": '" + getJndiName() + "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_URL") + ": '" + url +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_USER") + ": '" +  username +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_PASS") + ": '" + password +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_DRV") + ": '" + driverClassName +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_MINPS") + ": '" + minPoolSize +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_MAXPS") + ": '" + maxPoolSize +  "', " + // NOI18N
-                NbBundle.getMessage(JBossDatasource.class, "LBL_DS_IDLE") + ": '" + idleTimeoutMinutes +  "' ]"; // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_JNDI") + ": '" + getJndiName() + "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_URL") + ": '" + url +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_USER") + ": '" +  username +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_PASS") + ": '" + password +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_DRV") + ": '" + driverClassName +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MINPS") + ": '" + minPoolSize +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_MAXPS") + ": '" + maxPoolSize +  "', " + // NOI18N
+                NbBundle.getMessage(WildflyDatasource.class, "LBL_DS_IDLE") + ": '" + idleTimeoutMinutes +  "' ]"; // NOI18N
     }
 }

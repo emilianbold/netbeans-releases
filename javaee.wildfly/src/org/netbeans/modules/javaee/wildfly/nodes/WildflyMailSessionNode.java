@@ -43,10 +43,7 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleAction;
-import org.netbeans.modules.javaee.wildfly.nodes.actions.UndeployModuleCookieImpl;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -65,7 +62,7 @@ class WildflyMailSessionNode extends AbstractNode {
 
     public WildflyMailSessionNode(String name, WildflyMailSessionResource mailSession, Lookup lookup) {
         super(Children.LEAF);
-        setDisplayName(mailSession.getName());
+        setDisplayName(mailSession.getJndiName());
         setName(name);
         setShortDescription(mailSession.getJndiName());
         initProperties(mailSession);
@@ -78,6 +75,7 @@ class WildflyMailSessionNode extends AbstractNode {
         if (mailSession.getHostName() != null) {
             addProperty("Server", mailSession.getHostName());
         }
+        addProperty("Port", mailSession.getPort());
         if (mailSession.getIsDebug() != null) {
             addProperty("Debug", mailSession.getIsDebug());
         }

@@ -58,10 +58,10 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
  * 
  * @author sherold
  */
-public class JBModuleConfigurationFactory implements ModuleConfigurationFactory2 {
+public class WildlfyModuleConfigurationFactory implements ModuleConfigurationFactory2 {
     
     /** Creates a new instance of JBModuleConfigurationFactory */
-    public JBModuleConfigurationFactory() {
+    public WildlfyModuleConfigurationFactory() {
     }
     
     @Override

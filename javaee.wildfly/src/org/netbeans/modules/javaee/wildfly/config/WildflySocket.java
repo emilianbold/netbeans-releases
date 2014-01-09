@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javaee.wildfly.config.xml.ds;
+package org.netbeans.modules.javaee.wildfly.config;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyDatasource {
-     private String url;
-    private String username;
-    private String password;
-    private String driver;    
-    private String name;
-    private String jndiName;
+public class WildflySocket {
+    private boolean fixedSourcePort = false;
+    private String host;
+    private int port;
+    private int sourcePort;
+    private String sourceInterface;
 
-    public WildflyDatasource() {
+    public WildflySocket() {
     }
 
-    public String getUrl() {
-        return url;
+    public boolean isFixedSourcePort() {
+        return fixedSourcePort;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setFixedSourcePort(boolean fixedSourcePort) {
+        this.fixedSourcePort = fixedSourcePort;
     }
 
-    public String getUsername() {
-        return username;
+    public String getHost() {
+        return host;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setHost(String host) {
+        this.host = host;
     }
 
-    public String getPassword() {
-        return password;
+    public int getPort() {
+        return port;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPort(int port) {
+        this.port = port;
     }
 
-    public String getDriver() {
-        return driver;
+    public int getSourcePort() {
+        return sourcePort;
     }
 
-    public void setDriver(String driver) {
-        this.driver = driver;
+    public void setSourcePort(int sourcePort) {
+        this.sourcePort = sourcePort;
     }
 
-    public String getName() {
-        return name;
+    public String getSourceInterface() {
+        return sourceInterface;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSourceInterface(String sourceInterface) {
+        this.sourceInterface = sourceInterface;
     }
-
-    public String getJndiName() {
-        return jndiName;
-    }
-
-    public void setJndiName(String jndiName) {
-        this.jndiName = jndiName;
-    }
+    
     
 }

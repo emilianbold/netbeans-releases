@@ -295,8 +295,20 @@ public class WildflyManagementAPI {
     
     static List modelNodeAsPropertyList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
-        Method method = modelNode.getClass().getMethod("asPropertyList()", (Class<?>[]) null);
+        Method method = modelNode.getClass().getMethod("asPropertyList", (Class<?>[]) null);
         return (List) method.invoke(modelNode, (Object[]) null);
+    }
+    
+    static boolean modelNodeAsBoolean(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("asBoolean", (Class<?>[]) null);
+        return (boolean) method.invoke(modelNode, (Object[]) null);
+    }
+    
+    static int modelNodeAsInt(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = modelNode.getClass().getMethod("asInt", (Class<?>[]) null);
+        return (int) method.invoke(modelNode, (Object[]) null);
     }
 
     static boolean isSuccessfulOutcome(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,

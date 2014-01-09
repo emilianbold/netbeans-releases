@@ -73,15 +73,15 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public final class JBOutputSupport {
+public final class WildlfyOutputSupport {
 
-    private static final Logger LOGGER = Logger.getLogger(JBOutputSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildlfyOutputSupport.class.getName());
 
     private static final ExecutionDescriptor DESCRIPTOR = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
 
     // TODO what will happen on server remove actually
-    private static final Map<InstanceProperties, JBOutputSupport> INSTANCE_CACHE
-            = new HashMap<InstanceProperties, JBOutputSupport>();
+    private static final Map<InstanceProperties, WildlfyOutputSupport> INSTANCE_CACHE
+            = new HashMap<InstanceProperties, WildlfyOutputSupport>();
 
     private static final ExecutorService PROFILER_SERVICE = Executors.newCachedThreadPool();
 
@@ -108,14 +108,14 @@ public final class JBOutputSupport {
     /** GuardedBy("this") */
     private InputReaderTask fileTask;
 
-    private JBOutputSupport(InstanceProperties props) {
+    private WildlfyOutputSupport(InstanceProperties props) {
         this.props = props;
     }
 
-    public synchronized static JBOutputSupport getInstance(InstanceProperties props, boolean create) {
-        JBOutputSupport instance = INSTANCE_CACHE.get(props);
+    public synchronized static WildlfyOutputSupport getInstance(InstanceProperties props, boolean create) {
+        WildlfyOutputSupport instance = INSTANCE_CACHE.get(props);
         if (instance == null && create) {
-            instance = new JBOutputSupport(props);
+            instance = new WildlfyOutputSupport(props);
             INSTANCE_CACHE.put(props, instance);
         }
         return instance;
@@ -144,8 +144,8 @@ public final class JBOutputSupport {
 
             @Override
             public void run() {
-                synchronized (JBOutputSupport.class) {
-                    INSTANCE_CACHE.remove(JBOutputSupport.this.props);
+                synchronized (WildlfyOutputSupport.class) {
+                    INSTANCE_CACHE.remove(WildlfyOutputSupport.this.props);
                 }
 
             }
@@ -200,8 +200,8 @@ public final class JBOutputSupport {
                 fileTask = null;
             }
         } finally {
-            synchronized (JBOutputSupport.class) {
-                INSTANCE_CACHE.remove(JBOutputSupport.this.props);
+            synchronized (WildlfyOutputSupport.class) {
+                INSTANCE_CACHE.remove(WildlfyOutputSupport.this.props);
             }
         }
     }
@@ -287,7 +287,7 @@ public final class JBOutputSupport {
             if (!check) {
                 return;
             }
-            synchronized (JBOutputSupport.this) {
+            synchronized (WildlfyOutputSupport.this) {
                 if (started) {
                    check = false;
                    return;
@@ -296,15 +296,15 @@ public final class JBOutputSupport {
 
             if (profiler) {
                 if (isProfilerReady()) {
-                    synchronized (JBOutputSupport.this) {
+                    synchronized (WildlfyOutputSupport.this) {
                         started = true;
-                        JBOutputSupport.this.notifyAll();
+                        WildlfyOutputSupport.this.notifyAll();
                     }
                     check = false;
                 } else if (isProfilerInactive()) {
-                    synchronized (JBOutputSupport.this) {
+                    synchronized (WildlfyOutputSupport.this) {
                         failed = true;
-                        JBOutputSupport.this.notifyAll();
+                        WildlfyOutputSupport.this.notifyAll();
                     }
                     check = false;
                 }
@@ -327,15 +327,15 @@ public final class JBOutputSupport {
                         || WILDFLY_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
-                synchronized (JBOutputSupport.this) {
+                synchronized (WildlfyOutputSupport.this) {
                     started = true;
-                    JBOutputSupport.this.notifyAll();
+                    WildlfyOutputSupport.this.notifyAll();
                 }
                 check = false;
             } else if (line.indexOf("Shutdown complete") > -1) { // NOI18N
-                synchronized (JBOutputSupport.this) {
+                synchronized (WildlfyOutputSupport.this) {
                     failed = true;
-                    JBOutputSupport.this.notifyAll();
+                    WildlfyOutputSupport.this.notifyAll();
                 }
                 check = false;
             }
@@ -358,15 +358,15 @@ public final class JBOutputSupport {
         public void run() {
             for (;;) {
                 if (isProfilerReady()) {
-                    synchronized (JBOutputSupport.this) {
+                    synchronized (WildlfyOutputSupport.this) {
                         started = true;
-                        JBOutputSupport.this.notifyAll();
+                        WildlfyOutputSupport.this.notifyAll();
                     }
                     break;
                 } else if (isProfilerInactive()) {
-                    synchronized (JBOutputSupport.this) {
+                    synchronized (WildlfyOutputSupport.this) {
                         failed = true;
-                        JBOutputSupport.this.notifyAll();
+                        WildlfyOutputSupport.this.notifyAll();
                     }
                     break;
                 }

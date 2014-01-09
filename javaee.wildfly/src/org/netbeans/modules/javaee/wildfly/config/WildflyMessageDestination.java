@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  * @author Libor Kotouc
  */
-public class JBossMessageDestination implements MessageDestination {
+public class WildflyMessageDestination implements MessageDestination {
 
     public static final String QUEUE_PREFIX = "queue/";
     public static final String TOPIC_PREFIX = "topic/";
@@ -60,7 +60,7 @@ public class JBossMessageDestination implements MessageDestination {
     private final Set<String> jndiNames = new HashSet<String>(1);
     private final Type type;
     
-    public JBossMessageDestination(String name, Type type) {
+    public WildflyMessageDestination(String name, Type type) {
         this.name = name;
         this.type = type;
     }

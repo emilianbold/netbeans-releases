@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     <attr name="displayName" bundlevalue="org.netbeans.modules.javaee.wildfly.Bundle#SERVER_NAME"/>
                 </file>
                 <file name="JBModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.JBModuleConfigurationFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.WildlfyModuleConfigurationFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 <folder name="DeploymentFileNames">

@@ -68,7 +68,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
@@ -466,7 +466,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    public ProgressObject deployMessageDestinations(final Collection<JBossMessageDestination> destinations) {
+    public ProgressObject deployMessageDestinations(final Collection<WildflyMessageDestination> destinations) {
         final WildflyProgressObject progress = new WildflyProgressObject(new TargetModuleID[0]);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));

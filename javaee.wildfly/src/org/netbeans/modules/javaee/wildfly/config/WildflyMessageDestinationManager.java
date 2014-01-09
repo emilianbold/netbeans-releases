@@ -78,9 +78,9 @@ import org.xml.sax.SAXException;
  * @author Petr Hejl
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public final class JBossMessageDestinationManager implements MessageDestinationDeployment {
+public final class WildflyMessageDestinationManager implements MessageDestinationDeployment {
 
-    private static final Logger LOGGER = Logger.getLogger(JBossMessageDestinationManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyMessageDestinationManager.class.getName());
 
     private final FileObject serverDir;
     private final FileObject configFile;
@@ -88,7 +88,7 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
 
     private final boolean isAs7;
 
-    public JBossMessageDestinationManager(WildFlyDeploymentManager dm, boolean isAs7) {
+    public WildflyMessageDestinationManager(WildFlyDeploymentManager dm, boolean isAs7) {
         this.dm = dm;
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
@@ -108,7 +108,7 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         Set<MessageDestination> messageDestinations = new HashSet<MessageDestination>();
         if (configFile == null || !configFile.isData()) {
-            LOGGER.log(Level.WARNING, NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"));
+            LOGGER.log(Level.WARNING, NbBundle.getMessage(WildflyDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"));
             return messageDestinations;
         }
         try {
@@ -124,13 +124,13 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
             messageDestinations.addAll(handler.getMessageDestinations());
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING,
-                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
+                    NbBundle.getMessage(WildflyDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
         } catch (SAXException ex) {
             LOGGER.log(Level.WARNING,
-                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
+                    NbBundle.getMessage(WildflyDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
         } catch (ParserConfigurationException ex) {
             LOGGER.log(Level.WARNING,
-                    NbBundle.getMessage(JBossDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
+                    NbBundle.getMessage(WildflyDatasourceManager.class, "ERR_WRONG_JMS_CONFIG_FILE"), ex);
         }
 
         return messageDestinations;
@@ -144,7 +144,7 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
         Map<String, MessageDestination> map = new HashMap<String, MessageDestination>();
         for (MessageDestination destination : destinations) {
             map.put(destination.getName(), destination);
-            JBossMessageDestination jbossMessageDestination = (JBossMessageDestination) destination;
+            WildflyMessageDestination jbossMessageDestination = (WildflyMessageDestination) destination;
             for (String jndiName : jbossMessageDestination.getJndiNames()) {
                 map.put(jndiName, destination);
             }
@@ -159,17 +159,17 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
         Map<String, MessageDestination> deployed = createMap(deployedDestinations);
 
         // will contain all ds which do not conflict with existing ones
-        List<JBossMessageDestination> toDeploy = new ArrayList<JBossMessageDestination>();
+        List<WildflyMessageDestination> toDeploy = new ArrayList<WildflyMessageDestination>();
 
         // resolve all conflicts
         LinkedList<MessageDestination> conflictJMS = new LinkedList<MessageDestination>();
         for (MessageDestination destination : destinations) {
-            if (!(destination instanceof JBossMessageDestination)) {
+            if (!(destination instanceof WildflyMessageDestination)) {
                 LOGGER.log(Level.INFO, "Unable to deploy {0}", destination);
                 continue;
             }
 
-            JBossMessageDestination jbossMessageDestination = (JBossMessageDestination) destination;
+            WildflyMessageDestination jbossMessageDestination = (WildflyMessageDestination) destination;
             String name = jbossMessageDestination.getName();
             Set<String> jndiNames = new HashSet<String>(jbossMessageDestination.getJndiNames());
             jndiNames.retainAll(deployed.keySet());
@@ -192,7 +192,7 @@ public final class JBossMessageDestinationManager implements MessageDestinationD
         ProgressObjectSupport.waitFor(po);
 
         if (po.getDeploymentStatus().isFailed()) {
-            String msg = NbBundle.getMessage(JBossMessageDestinationManager.class, "MSG_FailedToDeployJMS");
+            String msg = NbBundle.getMessage(WildflyMessageDestinationManager.class, "MSG_FailedToDeployJMS");
             throw new ConfigurationException(msg);
         }       
     }

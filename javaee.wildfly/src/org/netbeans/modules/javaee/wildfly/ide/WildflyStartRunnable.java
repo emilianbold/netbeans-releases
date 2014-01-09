@@ -85,7 +85,7 @@ import org.openide.windows.InputOutput;
  * @author Kirill Sorokin
  * @author Libor Kotouc
  */
-class JBStartRunnable implements Runnable {
+class WildflyStartRunnable implements Runnable {
     
     private static final int START_TIMEOUT = 300000;
     
@@ -123,13 +123,13 @@ class JBStartRunnable implements Runnable {
     private static final SpecificationVersion 
         JDK_14 = new SpecificationVersion("1.4");       // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(JBStartRunnable.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
 
     private WildFlyDeploymentManager dm;
     private String instanceName;
-    private JBStartServer startServer;
+    private WildflyStartServer startServer;
 
-    JBStartRunnable(WildFlyDeploymentManager dm, JBStartServer startServer) {
+    WildflyStartRunnable(WildFlyDeploymentManager dm, WildflyStartServer startServer) {
         this.dm = dm;
         this.instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         this.startServer = startServer;
@@ -149,8 +149,8 @@ class JBStartRunnable implements Runnable {
             return;
         }
 
-        JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, true);
-        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == JBStartServer.MODE.PROFILE);
+        WildlfyOutputSupport outputSupport = WildlfyOutputSupport.getInstance(ip, true);
+        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == WildflyStartServer.MODE.PROFILE);
         
         waitForServerToStart(outputSupport);
     }
@@ -196,7 +196,7 @@ class JBStartRunnable implements Runnable {
                                     value = "\"" + value + "\""; // NOI18N
                             }
                             catch (IOException ioe) {
-                                Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(JBStartRunnable.class, "ERR_NonProxyHostParsingError"));
+                                Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(WildflyStartRunnable.class, "ERR_NonProxyHostParsingError"));
                                 Logger.getLogger("global").log(Level.WARNING, null, ioe);
                                     value = null;
                                 }
@@ -213,7 +213,7 @@ class JBStartRunnable implements Runnable {
         // get Java platform that will run the server
         JavaPlatform platform = properties.getJavaPlatform();
 
-        if (startServer.getMode() == JBStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
+        if (startServer.getMode() == WildflyStartServer.MODE.DEBUG && javaOptsBuilder.toString().indexOf("-Xdebug") == -1) { // NOI18N
             // if in debug mode and the debug options not specified manually
             if (platform.getSpecification().getVersion().compareTo(JDK_14) <= 0) {
                 javaOptsBuilder.append(" -classic");
@@ -222,7 +222,7 @@ class JBStartRunnable implements Runnable {
                             append(dm.getDebuggingPort()).
                             append(",server=y,suspend=n"); // NOI18N
 
-        } else if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
+        } else if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
             if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
                 javaOptsBuilder.append(" ").append("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
             } else if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
@@ -251,10 +251,10 @@ class JBStartRunnable implements Runnable {
         return envp;
     }
 
-    private static StartupExtender.StartMode getMode(JBStartServer.MODE jbMode) {
-        if (JBStartServer.MODE.PROFILE.equals(jbMode)) {
+    private static StartupExtender.StartMode getMode(WildflyStartServer.MODE jbMode) {
+        if (WildflyStartServer.MODE.PROFILE.equals(jbMode)) {
             return StartupExtender.StartMode.PROFILE;
-        } else if (JBStartServer.MODE.DEBUG.equals(jbMode)) {
+        } else if (WildflyStartServer.MODE.DEBUG.equals(jbMode)) {
             return StartupExtender.StartMode.DEBUG;
         } else {
             return StartupExtender.StartMode.NORMAL;
@@ -312,7 +312,7 @@ class JBStartRunnable implements Runnable {
     }
     
     private String createProgressMessage(final String resName, final String param) {
-        return NbBundle.getMessage(JBStartRunnable.class, resName, instanceName, param);
+        return NbBundle.getMessage(WildflyStartRunnable.class, resName, instanceName, param);
     }
 
     private Process createProcess(InstanceProperties ip) {
@@ -365,7 +365,7 @@ class JBStartRunnable implements Runnable {
         startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, stateType, msg));
     }
     
-    private void waitForServerToStart(JBOutputSupport outputSupport) {
+    private void waitForServerToStart(WildlfyOutputSupport outputSupport) {
         fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS"));
 
         try {
@@ -435,7 +435,7 @@ class JBStartRunnable implements Runnable {
                     }
                 } catch (IOException e) {
                     Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
-                            JBStartRunnable.class, "ERR_WriteError"));          // NOI18N
+                            WildflyStartRunnable.class, "ERR_WriteError"));          // NOI18N
                     Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
                 }
             }
@@ -467,7 +467,7 @@ class JBStartRunnable implements Runnable {
             }
             catch (IOException e ){
                 Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
-                    JBStartRunnable.class, "ERR_WriteError"));              // NOI18N
+                    WildflyStartRunnable.class, "ERR_WriteError"));              // NOI18N
                 Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
             }
             finally {
@@ -501,7 +501,7 @@ class JBStartRunnable implements Runnable {
             }
             catch (IOException e ){
                 Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
-                        JBStartRunnable.class, "ERR_ReadError"));       // NOI18N
+                        WildflyStartRunnable.class, "ERR_ReadError"));       // NOI18N
                 Logger.getLogger("global").log(Level.WARNING, null, e); // NOI18N
                 return null;
             }

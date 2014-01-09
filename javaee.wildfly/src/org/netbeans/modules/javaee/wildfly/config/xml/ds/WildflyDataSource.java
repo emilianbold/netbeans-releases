@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,76 +34,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config;
+
+package org.netbeans.modules.javaee.wildfly.config.xml.ds;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyMailSessionResource {
-
-    private final String name;
+public class WildflyDataSource {
+     private String url;
+    private String username;
+    private String password;
+    private String driver;    
+    private String name;
     private String jndiName;
-    private String userName;
-    private String fromAddr;
-    private String isDebug;
-    private WildflySocket socket;
 
-    /**
-     * Creates a new instance of MailSessionResource
-     */
-    public WildflyMailSessionResource(String name) {
-        this.name = name;
-        this.socket = new WildflySocket();
+    public WildflyDataSource() {
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDriver() {
+        return driver;
+    }
+
+    public void setDriver(String driver) {
+        this.driver = driver;
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getJndiName() {
         return jndiName;
     }
 
-    public void setJndiName(String value) {
-        this.jndiName = value;
-    }
-
-    public String getHostName() {
-        return socket.getHost();
+    public void setJndiName(String jndiName) {
+        this.jndiName = jndiName;
     }
     
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String value) {
-        this.userName = value;
-    }
-
-    public String getFromAddr() {
-        return fromAddr;
-    }
-
-    public void setFromAddr(String value) {
-        this.fromAddr = value;
-    }
-
-    public String getIsDebug() {
-        return isDebug;
-    }
-
-    public void setIsDebug(String value) {
-        this.isDebug = value;
-    }
-
-    public void setSocket(WildflySocket socket) {
-        this.socket = socket;
-    }
-
-    public String getPort() {
-        return String.valueOf(this.socket.getPort());
-    }
-
 }

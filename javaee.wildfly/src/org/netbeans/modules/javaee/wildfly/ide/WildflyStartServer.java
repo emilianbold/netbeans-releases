@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author Kirill Sorokin
  */
-public class JBStartServer extends StartServer implements ProgressObject {
+public class WildflyStartServer extends StartServer implements ProgressObject {
 
     static enum MODE {
 
@@ -84,7 +84,7 @@ public class JBStartServer extends StartServer implements ProgressObject {
         SUCCESS, FAILURE, UNKNOWN
     };
 
-    private static final Logger LOGGER = Logger.getLogger(JBStartServer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyStartServer.class.getName());
 
     private static final int AVERAGE_SERVER_INSTANCES = 5;
 
@@ -98,7 +98,7 @@ public class JBStartServer extends StartServer implements ProgressObject {
     private static final Set<String> IS_DEBUG_MODE_URI = Collections.synchronizedSet(
             new HashSet<String>(AVERAGE_SERVER_INSTANCES));
 
-    public JBStartServer(DeploymentManager dm) {
+    public WildflyStartServer(DeploymentManager dm) {
         this.dm = (WildFlyDeploymentManager) dm;
     }
 
@@ -116,9 +116,9 @@ public class JBStartServer extends StartServer implements ProgressObject {
 
     public ProgressObject startDebugging(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.DEBUG;
-        SERVER_CONTROL_RP.post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         addDebugModeUri();
         return this;
     }
@@ -154,9 +154,9 @@ public class JBStartServer extends StartServer implements ProgressObject {
      */
     public ProgressObject startProfiling(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_PROFILED_SERVER_IN_PROGRESS", serverName))); //NOI18N
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_PROFILED_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.PROFILE;
-        SERVER_CONTROL_RP.post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
     }
@@ -177,8 +177,8 @@ public class JBStartServer extends StartServer implements ProgressObject {
     @Override
     public ProgressObject stopDeploymentManager() {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
-        SERVER_CONTROL_RP.post(new JBStopRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
+        SERVER_CONTROL_RP.post(new WildflyStopRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
     }
@@ -188,9 +188,9 @@ public class JBStartServer extends StartServer implements ProgressObject {
      */
     public ProgressObject startDeploymentManager() {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
         mode = MODE.RUN;
-        SERVER_CONTROL_RP.post(new JBStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
     }
