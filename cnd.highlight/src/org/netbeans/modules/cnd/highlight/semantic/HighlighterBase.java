@@ -43,9 +43,6 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.lang.ref.WeakReference;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
