@@ -357,8 +357,8 @@ public final class Stamps {
             sb.append("crc=").append(crc.intValue()).append('\n');
             sb.append("locale=").append(Locale.getDefault()).append('\n');
             sb.append("branding=").append(NbBundle.getBranding()).append('\n');
-            sb.append("java.version=").append(System.getProperty("java.version"));
-            sb.append("java.vm.version=").append(System.getProperty("java.vm.version"));
+            sb.append("java.version=").append(System.getProperty("java.version")).append('\n');
+            sb.append("java.vm.version=").append(System.getProperty("java.vm.version")).append('\n');
                     
             File checkSum = new File(Places.getCacheDirectory(), "lastModified/all-checksum.txt");
             if (!compareAndUpdateFile(checkSum, sb.toString(), result)) {
