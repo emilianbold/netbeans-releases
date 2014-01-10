@@ -387,7 +387,7 @@ import org.openide.util.RequestProcessor;
     
     void testDump(PrintStream ps) {
         ps.printf("Dumping %s [%s]\n", this.traceName, this.valid ? "valid" : "invalid"); //NOI18N
-        ps.printf("\tlastErrorMessage=%s \n", this.lastErrorMessage); 
+        ps.printf("\tlastErrorMessage=%s \n", this.lastErrorMessage); // NOI18N
         FsServer srv;
         synchronized (serverLock) {
             srv = this.server; 
