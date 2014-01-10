@@ -76,6 +76,8 @@ public final class FormatContext {
 
     private final Language<JsTokenId> languange;
 
+    private final DefaultsProvider provider;
+
     private final int initialStart;
 
     private final int initialEnd;
@@ -96,10 +98,12 @@ public final class FormatContext {
 
     private boolean pendingContinuation;
 
-    public FormatContext(Context context, Snapshot snapshot, Language<JsTokenId> language) {
+    public FormatContext(Context context, DefaultsProvider provider,
+            Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
         this.languange = language;
+        this.provider = provider;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
 
@@ -158,6 +162,9 @@ public final class FormatContext {
         }
     }
 
+    public DefaultsProvider getDefaultsProvider() {
+        return provider;
+    }
 
     public void setLastLineWrap(LineWrap lineWrap) {
         this.lastLineWrap = lineWrap;

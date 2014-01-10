@@ -5,10 +5,10 @@
        xmlns:${namespace.prefix}="${namespace.namespace}"
 </#list>
 
-<#if springVersion3??>
+<#if version??>
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-${version}.xsd
 <#else>
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.3.xsd
 </#if>
 <#list namespaces as namespace>
     <#if namespace.hasSchemeLocation()>

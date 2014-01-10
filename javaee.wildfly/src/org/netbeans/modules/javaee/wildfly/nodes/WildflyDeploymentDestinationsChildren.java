@@ -57,8 +57,9 @@ import org.openide.util.Lookup;
  * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyDeploymentDestinationsChildren extends JBAsyncChildren implements Refreshable {
+public class WildflyDeploymentDestinationsChildren extends WildflyAsyncChildren implements Refreshable {
 
     private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentDestinationsChildren.class.getName());
 
@@ -79,7 +80,7 @@ public class WildflyDeploymentDestinationsChildren extends JBAsyncChildren imple
 
     class WildflyDestinationsNodeUpdater implements Runnable {
 
-        List<JBDestinationNode> keys = new ArrayList<JBDestinationNode>();
+        List<WildflyDestinationNode> keys = new ArrayList<WildflyDestinationNode>();
 
         @Override
         public void run() {
@@ -106,8 +107,8 @@ public class WildflyDeploymentDestinationsChildren extends JBAsyncChildren imple
 
     @Override
     protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof JBDestinationNode) {
-            return new Node[]{(JBDestinationNode) key};
+        if (key instanceof WildflyDestinationNode) {
+            return new Node[]{(WildflyDestinationNode) key};
         }
 
         if (key instanceof String && key.equals(Util.WAIT_NODE)) {
