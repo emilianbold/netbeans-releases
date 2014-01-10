@@ -1120,30 +1120,35 @@ public final class DocumentViewOp
     
     // from org.netbeans.api.java.source.CodeStyle
     private int getIndentSize() {
-        int indentLevel;
         Integer indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.INDENT_SHIFT_WIDTH);
-        if (indentLevelInteger == null || indentLevelInteger <= 0) {
-            Boolean expandTabs = (Boolean) docView.getDocument().getProperty(SimpleValueNames.EXPAND_TABS);
-            if (Boolean.TRUE.equals(expandTabs)) {
+        if (indentLevelInteger != null && indentLevelInteger > 0) {
+            return indentLevelInteger;
+        }
+        int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 0);
+        if (indentLevel > 0) {
+            return indentLevel;
+        }
+        Boolean expandTabsBoolean = (Boolean) docView.getDocument().getProperty(SimpleValueNames.EXPAND_TABS);
+        if (expandTabsBoolean != null) {
+            if (Boolean.TRUE.equals(expandTabsBoolean)) {
                 indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.SPACES_PER_TAB);
+                if (indentLevelInteger == null) {
+                    return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+                }
             } else {
                 indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
-            }
-        }
-        if (indentLevelInteger != null) {
-           indentLevel = indentLevelInteger;
-        } else {
-            indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 0);
-            if (indentLevel <= 0) {
-                boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
-                if (expandTabs) {
-                    indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
-                } else {
-                    indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
+                if (indentLevelInteger == null) {
+                    return prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
                 }
             }
+            return indentLevelInteger;
         }
-
+        boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
+        if (expandTabs) {
+            indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+        } else {
+            indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
+        }
         return indentLevel;
     }
     

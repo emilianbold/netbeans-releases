@@ -28,6 +28,7 @@ public class Class_A_D implements Runnable{
     class Sub extends Super {
         public void m1() {
             int x = 3;
+            System.out.println(3 + 3);
         }
     }
     
@@ -46,7 +47,7 @@ public class Class_A_D implements Runnable{
     }
     
     public void usage() {
-        new Class_A_A();        
+        new Class_A_D();        
         m(1,2);
         new Super().m1();
         new Sub().m1();

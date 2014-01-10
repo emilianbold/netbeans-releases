@@ -20,13 +20,15 @@ public class Class_A_J implements Runnable{
     
     
     class Super {
-        public void m1(final int myParameter) {
+        public void m1() {
             int y = 3;
         }
     }
     
     class Sub extends Super {
-        public void m1(final int myParameter) {
+        public void m1() {
+            int x = 3;
+            System.out.println(3 + 3);
         }
     }
     
@@ -47,11 +49,10 @@ public class Class_A_J implements Runnable{
     public void usage() {
         new Class_A_J();        
         m(1,2);
-        new Super().m1(3);
-        new Sub().m1(3);
+        new Super().m1();
+        new Sub().m1();
         y();
     
     }                                             
 }
-
 

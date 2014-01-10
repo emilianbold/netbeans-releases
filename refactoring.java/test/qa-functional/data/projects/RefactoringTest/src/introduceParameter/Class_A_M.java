@@ -18,7 +18,6 @@ public class Class_A_M implements Runnable{
         int x = 3;
     }
     
-    
     class Super {
         public void m1() {
             int y = 3;
@@ -28,6 +27,7 @@ public class Class_A_M implements Runnable{
     class Sub extends Super {
         public void m1() {
             int x = 3;
+            System.out.println(3 + 3);
         }
     }
     
