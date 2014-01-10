@@ -133,6 +133,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
 
     @Override
     public void projectParsingFinished(CsmProject project) {
+        fireProjectReadyImpl(project);
     }
 
     @Override
@@ -141,6 +142,10 @@ public final class CndParser extends Parser implements CsmProgressListener {
 
     @Override
     public void projectLoaded(CsmProject project) {
+        fireProjectReadyImpl(project);
+    }
+
+    private void fireProjectReadyImpl(CsmProject project) {
         synchronized(lock) {
             if (cndParserResult != null) {
                 Snapshot snapshot = cndParserResult.getSnapshot();
