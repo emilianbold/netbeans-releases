@@ -69,7 +69,7 @@ public abstract class ProjectComponent implements Persistent, SelfPersistent {
     private final Key key;
 
     public ProjectComponent(Key key) {
-        CndUtils.assertTrueInConsole(key == null || key.getBehavior() == Key.Behavior.LargeAndMutable, "should be LargeAndMutable " + key);
+        CndUtils.assertTrueInConsole(key == null || key.getBehavior() == Key.Behavior.LargeAndMutable, "should be LargeAndMutable ", key);
         this.key = key;
     }
 
