@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -89,7 +90,12 @@ public class ComputeAnnotations {
         if (canceled.get()) {
             return;
         }
-        computeAnnotations(csmFile.getDeclarations(), toAdd);
+        CsmCacheManager.enter();
+        try {
+            computeAnnotations(csmFile.getDeclarations(), toAdd);
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     private void computeAnnotations(Collection<? extends CsmOffsetableDeclaration> toProcess, Collection<BaseAnnotation> toAdd) {
