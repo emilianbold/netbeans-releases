@@ -274,18 +274,29 @@ public class WildflyManagementAPI {
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
         Object property = method.invoke(modelNode, (Object[]) null);
-        method = property.getClass().getMethod("getName", (Class<?>[]) null);
-        return (String) method.invoke(property, (Object[]) null);
+        return getPropertyName(cl, property);
     }
 
     static Object modelNodeAsPropertyForValue(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
         Object property = method.invoke(modelNode, (Object[]) null);
-        method = property.getClass().getMethod("getValue", (Class<?>[]) null);
+        return getPropertyValue(cl, property);
+    }
+
+    static String getPropertyName(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = property.getClass().getMethod("getName", (Class<?>[]) null);
+        return (String) method.invoke(property, (Object[]) null);
+    }
+    
+    static Object getPropertyValue(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        Method method = property.getClass().getMethod("getValue", (Class<?>[]) null);
         return method.invoke(property, (Object[]) null);
     }
 
+    
     // List<ModelNode>
     static List modelNodeAsList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {

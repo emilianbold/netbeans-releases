@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.nodes;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.javaee.wildfly.config;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
- * It describes children nodes of the Applications node
  *
- * @author Michal Mocnak
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyResourcesChildren extends Children.Keys {
+public class WildflyConnectionFactory {
+    private final Map<String, String> configuration;
+    private final String name;
 
-    WildflyResourcesChildren(Lookup lookup) {
-        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup)});
+    public WildflyConnectionFactory(Map<String, String> configuration, String name) {
+        this.configuration = configuration;
+        this.name = name;
     }
 
-    @Override
-    protected void addNotify() {
+    public Map<String, String> getConfiguration() {
+        return Collections.unmodifiableMap(configuration);
     }
 
-    @Override
-    protected void removeNotify() {
-    }
-
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof AbstractNode) {
-            return new Node[]{(AbstractNode) key};
-        }
-        return null;
-    }
-
-    final WildflyResourcesItemNode createDatasourcesNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyDatasourcesChildren(lookup),
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
-    }
-
-    
-    final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
-    }
-
-    private Object createJMSNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_JMS"), Util.JMS_ICON);
+    public String getName() {
+        return name;
     }
     
-    
-    
+
 }

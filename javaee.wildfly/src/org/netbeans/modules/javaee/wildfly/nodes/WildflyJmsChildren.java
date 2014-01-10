@@ -50,14 +50,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * It describes children nodes of the Applications node
+ * It describes children nodes of the EJB Modules node. Implements Refreshable
+ * interface and due to it can be refreshed via ResreshModulesAction.
  *
  * @author Michal Mocnak
  */
-public class WildflyResourcesChildren extends Children.Keys {
+public class WildflyJmsChildren  extends Children.Keys {
 
-    WildflyResourcesChildren(Lookup lookup) {
-        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup)});
+    WildflyJmsChildren(Lookup lookup) {
+        setKeys(new Object[]{createDestinationsNode(lookup), createConnectionFactoriesNode(lookup)});
     }
 
     @Override
@@ -76,22 +77,14 @@ public class WildflyResourcesChildren extends Children.Keys {
         return null;
     }
 
-    final WildflyResourcesItemNode createDatasourcesNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyDatasourcesChildren(lookup),
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
-    }
 
-    
-    final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
-    }
-
-    private Object createJMSNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_JMS"), Util.JMS_ICON);
+    final WildflyResourcesItemNode createConnectionFactoriesNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyConnectionFactoriesChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_ConnectionFactories"), Util.CONNECTOR_ICON);
     }
     
-    
-    
+    final WildflyResourcesItemNode createDestinationsNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyDestinationsChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Destinations"), Util.JMS_ICON);
+    }
 }

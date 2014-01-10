@@ -46,9 +46,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -61,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.javaee.wildfly.WildflyTargetModuleID;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.config.WildflyConnectionFactory;
 import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
@@ -96,6 +99,7 @@ public class WildflyClient {
     private static final String MAIL_SESSION_TYPE = "mail-session"; // NOI18N
     private static final String JMSQUEUE_TYPE = "jms-queue"; // NOI18N
     private static final String JMSTOPIC_TYPE = "jms-topic"; // NOI18N
+    private static final String CONNECTION_FACTORY_TYPE = "connection-factory"; // NOI18N
 
     private final String serverAddress;
     private final int serverPort;
@@ -1031,5 +1035,104 @@ public class WildflyClient {
             }
         }
         return socket;
+    }
+
+    public Collection<WildflyConnectionFactory> listConnectionFactories() throws IOException {
+        try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<WildflyConnectionFactory> connectionFactories = new ArrayList<WildflyConnectionFactory>();
+            // ModelNode
+            final Object readHornetQServers = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "OP")), getClientConstant(cl, "READ_CHILDREN_NAMES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readHornetQServers, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readHornetQServers, getClientConstant(cl, "CHILD_TYPE")), HORNETQ_SERVER_TYPE);
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readHornetQServers);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List names = modelNodeAsList(cl, readResult(cl, response));
+                for (Object hornetqServer : names) {
+                    String hornetqServerName = modelNodeAsString(cl, hornetqServer);
+                    connectionFactories.addAll(getConnectionFactoriesForServer(hornetqServerName));
+                }
+            }
+            return connectionFactories;
+        }catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+    
+    
+
+    private Collection<? extends WildflyConnectionFactory> getConnectionFactoriesForServer(String hornetqServerName) throws IOException {
+         try {
+            WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List<WildflyConnectionFactory> listedConnectionFactories = new ArrayList<WildflyConnectionFactory>();
+            // ModelNode
+            final Object readConnectionFactories = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readConnectionFactories, getClientConstant(cl, "OP")),
+                    getModelDescriptionConstant(cl, "READ_CHILDREN_RESOURCES_OPERATION"));
+
+            LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
+            values.put(getClientConstant(cl, "SUBSYSTEM"), MESSAGING_SUBSYSTEM);
+            values.put(HORNETQ_SERVER_TYPE, hornetqServerName);
+            // ModelNode
+            Object path = createPathAddressAsModelNode(cl, values);
+            setModelNodeChild(cl, getModelNodeChild(cl, readConnectionFactories, getModelDescriptionConstant(cl, "ADDRESS")), path);
+            setModelNodeChild(cl, getModelNodeChild(cl, readConnectionFactories, getModelDescriptionConstant(cl, "RECURSIVE_DEPTH")), 0);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readConnectionFactories, getClientConstant(cl, "CHILD_TYPE")), CONNECTION_FACTORY_TYPE);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readConnectionFactories, getClientConstant(cl, "INCLUDE_RUNTIME")), "true");
+
+            // ModelNode
+            Object response = executeOnModelNode(cl, readConnectionFactories);
+            if (isSuccessfulOutcome(cl, response)) {
+                // List<ModelNode>
+                List connectionFactories = modelNodeAsPropertyList(cl, readResult(cl, response));
+                for (Object connectionFactory : connectionFactories) {
+                    listedConnectionFactories.add(fillConnectionFactory(
+                            getPropertyName(cl, connectionFactory), 
+                            getPropertyValue(cl, connectionFactory)));
+                       
+                }
+            }
+            return listedConnectionFactories;
+        } catch (ClassNotFoundException ex) {
+            throw new IOException(ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IOException(ex);
+        } catch (InvocationTargetException ex) {
+            throw new IOException(ex);
+        } catch (IllegalAccessException ex) {
+            throw new IOException(ex);
+        } catch (InstantiationException ex) {
+            throw new IOException(ex);
+        }
+    }
+    
+    private WildflyConnectionFactory fillConnectionFactory(String name, Object configuration) throws 
+            ClassNotFoundException, NoSuchMethodException, 
+            InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
+        WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+        List properties = modelNodeAsPropertyList(cl, configuration);
+        Map<String, String> attributes = new HashMap<String, String>(properties.size());
+        for(Object property : properties) {
+            attributes.put(getPropertyName(cl, property), modelNodeAsString(cl, getPropertyValue(cl, property)));
+        }
+        return new WildflyConnectionFactory(attributes, name);
     }
 }

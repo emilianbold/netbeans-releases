@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,58 +34,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.nodes;
 
+import java.awt.Image;
+import java.util.Map;
+import javax.swing.Action;
+import org.netbeans.modules.javaee.wildfly.config.WildflyConnectionFactory;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- * It describes children nodes of the Applications node
- *
- * @author Michal Mocnak
+ * 
+ * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyResourcesChildren extends Children.Keys {
+public class WildflyConnectionFactoryNode extends AbstractNode {
 
-    WildflyResourcesChildren(Lookup lookup) {
-        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup)});
+
+    WildflyConnectionFactoryNode(WildflyConnectionFactory connectionFactory, Lookup lookup) {
+        super(Children.LEAF);
+        setDisplayName(connectionFactory.getName());
+        setName(connectionFactory.getName());
+        setShortDescription(connectionFactory.getName());
+        initProperties(connectionFactory.getConfiguration());
     }
 
-    @Override
-    protected void addNotify() {
-    }
-
-    @Override
-    protected void removeNotify() {
-    }
-
-    @Override
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof AbstractNode) {
-            return new Node[]{(AbstractNode) key};
+    protected final void initProperties(Map<String, String> configuration) {       
+        for(Map.Entry<String, String> property : configuration.entrySet()) {            
+            addProperty(property.getKey(), property.getValue());
         }
-        return null;
     }
 
-    final WildflyResourcesItemNode createDatasourcesNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyDatasourcesChildren(lookup),
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
+    private void addProperty(String name, String value) {
+        PropertySupport ps = new SimplePropertySupport(name, value, name, name);
+        getSheet().get(Sheet.PROPERTIES).put(ps);
     }
 
-    
-    final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        setSheet(sheet);
+        return sheet;
     }
 
-    private Object createJMSNode(Lookup lookup) {
-        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup), 
-                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_JMS"), Util.JMS_ICON);
+    @Override
+    public Action[] getActions(boolean context) {
+        return new SystemAction[]{SystemAction.get(PropertiesAction.class)};
     }
-    
-    
-    
+
+    @Override
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
+    }
+
 }
