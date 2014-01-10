@@ -244,8 +244,15 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                         // Must be a primitive type or the void type
                         staticFields.add(new FieldVariable(debugger, origField, parentID, null));
                     } else {
-                        staticFields.add(new ObjectFieldVariable(debugger, origField, parentID,
-                                JPDADebuggerImpl.getGenericSignature(origField), null));
+                        ObjectFieldVariable ofv;
+                        if (TypeComponentWrapper.declaringType(origField) instanceof ClassType) {
+                            ofv = new ClassFieldVariable(debugger, origField, parentID,
+                                    JPDADebuggerImpl.getGenericSignature(origField), null);
+                        } else {
+                            ofv = new ObjectFieldVariable(debugger, origField, parentID,
+                                    JPDADebuggerImpl.getGenericSignature(origField), null);
+                        }
+                        staticFields.add(ofv);
                     }
                 }
             } catch (InternalExceptionWrapper ex) {
