@@ -804,6 +804,7 @@ is divided into following sections:
             <target name="-add-apipermissions">
                 <xsl:attribute name="if">manifest.apipermissions</xsl:attribute>
                 <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.apipermissions}}"/>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.apipermissions.classes}}"/>
             </target>
 
             <target name="-add-pushregistry">
@@ -868,6 +869,8 @@ is divided into following sections:
                 updateManifest(others);
                 var apipermissions = new String(project.getProperty("manifest.apipermissions"));
                 updateManifest(apipermissions);
+                var apipermissionsClasses = new String(project.getProperty("manifest.apipermissions.classes"));
+                updateManifest(apipermissionsClasses);
                 var pushregistry = new String(project.getProperty("manifest.pushregistry"));
                 updateManifest(pushregistry);
                 var manifestExtra = new String(project.getProperty("manifest.manifest"));

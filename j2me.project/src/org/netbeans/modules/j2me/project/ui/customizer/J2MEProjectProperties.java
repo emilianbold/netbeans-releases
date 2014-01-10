@@ -160,6 +160,7 @@ public final class J2MEProjectProperties {
     public static final String DIST_JAR_FILE = "dist.jar.file"; //NOI18N
     //J2MEAPIPermissionsPanel
     public static final String MANIFEST_APIPERMISSIONS = "manifest.apipermissions"; //NOI18N
+    public static final String MANIFEST_APIPERMISSIONS_CLASSES = "manifest.apipermissions.classes"; //NOI18N
     //J2MEPushRegistryPanel
     public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
     //PlatformDevicesPanel
@@ -245,8 +246,9 @@ public final class J2MEProjectProperties {
     public String[] MIDLETS_PROPERTY_NAMES = {MANIFEST_MIDLETS};
 
     //J2MEAPIPermissionsPanel
+    boolean LIBLET_PACKAGING;
     J2MEAPIPermissionsPanel.StorableTableModel API_PERMISSIONS_TABLE_MODEL;
-    String[] API_PERMISSIONS_PROPERTY_NAMES = {MANIFEST_APIPERMISSIONS};
+    String[] API_PERMISSIONS_PROPERTY_NAMES = {MANIFEST_APIPERMISSIONS, MANIFEST_APIPERMISSIONS_CLASSES};
 
     //J2MEPushRegistryPanel
     J2MEPushRegistryPanel.StorableTableModel PUSH_REGISTRY_TABLE_MODEL;
@@ -397,6 +399,8 @@ public final class J2MEProjectProperties {
             }
         }
         ATTRIBUTES_TABLE_MODEL = new J2MEAttributesPanel.StorableTableModel(this);
+        String libletPropValue = evaluator.getProperty(MANIFEST_IS_LIBLET);
+        LIBLET_PACKAGING = libletPropValue != null ? Boolean.valueOf(libletPropValue) : false;
 
         //J2MEMIDletsPanel
         MIDLETS_TABLE_MODEL = new J2MEMIDletsPanel.MIDletsTableModel(this);
