@@ -38,14 +38,15 @@
  * Contributor(s):
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ *
  */
 
-package org.netbeans.modules.test.refactoring;
+package org.netbeans.modules.test.refactoring;  
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
-import junit.framework.Test;
+import junit.framework.Test;   
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jemmy.EventTool;
@@ -75,9 +76,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                                    testSimple_A_L,
                                    
                                    testSimple_A_M,
-                                   testSimple_A_N,
-                                   testSimple_A_O,
-                                   testSimple_A_P,
                                    
                                    nothing
         };
@@ -89,85 +87,57 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 	public static Test suite(){
 
 		return JellyTestCase.emptyConfiguration().
-//				addTest(RenameTest.class, "testSimple_A_A").
-//				addTest(RenameTest.class, "testSimple_A_B").
-//				addTest(RenameTest.class, "testSimple_A_C").
-//				addTest(RenameTest.class, "testSimple_A_D").
-//                        
-//                addTest(RenameTest.class, "testSimple_A_E").
-//				addTest(RenameTest.class, "testSimple_A_F").
-//				addTest(RenameTest.class, "testSimple_A_G").
-//				addTest(RenameTest.class, "testSimple_A_H").
+				addTest(RenameTest.class, "testSimple_A_A").
+				addTest(RenameTest.class, "testSimple_A_B").
+				addTest(RenameTest.class, "testSimple_A_C").
+				addTest(RenameTest.class, "testSimple_A_D").
                         
-//                addTest(RenameTest.class, "testSimple_A_I").
-//				addTest(RenameTest.class, "testSimple_A_J").
+                addTest(RenameTest.class, "testSimple_A_E").
+				addTest(RenameTest.class, "testSimple_A_F").
+				addTest(RenameTest.class, "testSimple_A_G").
+				addTest(RenameTest.class, "testSimple_A_H").
+                        
+                addTest(RenameTest.class, "testSimple_A_I").
+				addTest(RenameTest.class, "testSimple_A_J").
 //				addTest(RenameTest.class, "testSimple_A_K").
-//				addTest(RenameTest.class, "testSimple_A_L").
-                        
+				addTest(RenameTest.class, "testSimple_A_L").
+
                 addTest(RenameTest.class, "testSimple_A_M").
-				addTest(RenameTest.class, "testSimple_A_N").
-				addTest(RenameTest.class, "testSimple_A_O").
-				addTest(RenameTest.class, "testSimple_A_P").
-//                        
-//                                addTest(RenameTest.class, "testSimple_A_Q").
-//				addTest(RenameTest.class, "testSimple_A_R").
-//				addTest(RenameTest.class, "testSimple_A_S").
-//				addTest(RenameTest.class, "testSimple_A_T").
-//                        
-//                                addTest(RenameTest.class, "testSimple_A_U").
-//				addTest(RenameTest.class, "testSimple_A_V").
-//				addTest(RenameTest.class, "testSimple_A_W").
-//				addTest(RenameTest.class, "testSimple_A_X").
-//                        
-//                                addTest(RenameTest.class, "testSimple_A_Y").
-//				addTest(RenameTest.class, "testSimple_A_Z").
-//				addTest(RenameTest.class, "testSimple_B_A").
-//				addTest(RenameTest.class, "testSimple_B_B").
-//                        
-//                                addTest(RenameTest.class, "testSimple_B_C").
-//				addTest(RenameTest.class, "testSimple_B_D").
-//				addTest(RenameTest.class, "testSimple_B_E").
-//				addTest(RenameTest.class, "testSimple_B_F").
-//                        
-//                                addTest(RenameTest.class, "testSimple_B_G").
-//				addTest(RenameTest.class, "testSimple_B_H").
-//				addTest(RenameTest.class, "testSimple_B_I").
-//				addTest(RenameTest.class, "testSimple_B_J").
                         
 				suite();
 	}
          
-//	public void testSimple_A_A(){
-//		performIntroduvceMethod(currentTest.testSimple_A_A);
-//	}
-//        
-//	public void testSimple_A_B(){
-//		performIntroduvceMethod(currentTest.testSimple_A_B);
-//	}
-//                
-//	public void testSimple_A_C(){
-//		performIntroduvceMethod(currentTest.testSimple_A_C);
-//	}
-//                        
-//	public void testSimple_A_D(){
-//		performIntroduvceMethod(currentTest.testSimple_A_D);
-//	}
-//        
-//	public void testSimple_A_E(){
-//		performIntroduvceMethod(currentTest.testSimple_A_E);
-//	}
-//        
-//	public void testSimple_A_F(){
-//		performIntroduvceMethod(currentTest.testSimple_A_F);
-//	}
-//                
-//	public void testSimple_A_G(){
-//		performIntroduvceMethod(currentTest.testSimple_A_G);
-//	}
-//                        
-//	public void testSimple_A_H(){
-//		performIntroduvceMethod(currentTest.testSimple_A_H);
-//	}
+	public void testSimple_A_A(){
+		performIntroduvceMethod(currentTest.testSimple_A_A);
+	}
+        
+	public void testSimple_A_B(){
+		performIntroduvceMethod(currentTest.testSimple_A_B);
+	}
+                
+	public void testSimple_A_C(){
+		performIntroduvceMethod(currentTest.testSimple_A_C);
+	}
+                        
+	public void testSimple_A_D(){
+		performIntroduvceMethod(currentTest.testSimple_A_D);
+	}
+        
+	public void testSimple_A_E(){
+		performIntroduvceMethod(currentTest.testSimple_A_E);
+	}
+        
+	public void testSimple_A_F(){
+		performIntroduvceMethod(currentTest.testSimple_A_F);
+	}
+                
+	public void testSimple_A_G(){
+		performIntroduvceMethod(currentTest.testSimple_A_G);
+	}
+                        
+	public void testSimple_A_H(){
+		performIntroduvceMethod(currentTest.testSimple_A_H);
+	}
         
 	public void testSimple_A_I(){
 		performIntroduvceMethod(currentTest.testSimple_A_I);
@@ -177,9 +147,9 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 		performIntroduvceMethod(currentTest.testSimple_A_J);
 	}
                 
-	public void testSimple_A_K(){
-		performIntroduvceMethod(currentTest.testSimple_A_K);
-	}
+//	public void testSimple_A_K(){
+//		performIntroduvceMethod(currentTest.testSimple_A_K);
+//	}
                         
 	public void testSimple_A_L(){
 		performIntroduvceMethod(currentTest.testSimple_A_L);
@@ -188,115 +158,37 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
 	public void testSimple_A_M(){
 		performIntroduvceMethod(currentTest.testSimple_A_M);
 	}
-        
-	public void testSimple_A_N(){
-		performIntroduvceMethod(currentTest.testSimple_A_N);
-	}
-                
-	public void testSimple_A_O(){
-		performIntroduvceMethod(currentTest.testSimple_A_O);
-	}
-                        
-	public void testSimple_A_P(){
-		performIntroduvceMethod(currentTest.testSimple_A_P);
-	}
-//        
-//        public void testSimple_A_Q(){
-//		performIntroduvceMethod(currentTest.testSimple_A_Q);
-//	}
-//        
-//        public void testSimple_A_R(){
-//		performIntroduvceMethod(currentTest.testSimple_A_R);
-//	}
-//                
-//        public void testSimple_A_S(){
-//		performIntroduvceMethod(currentTest.testSimple_A_S);
-//	}
-//                        
-//        public void testSimple_A_T(){
-//		performIntroduvceMethod(currentTest.testSimple_A_T);
-//        }
-//        
-//        public void testSimple_A_U(){
-//		performIntroduvceMethod(currentTest.testSimple_A_U);
-//	}
-//        
-//        public void testSimple_A_V(){
-//		performIntroduvceMethod(currentTest.testSimple_A_V);
-//	}
-//                
-//        public void testSimple_A_W(){
-//		performIntroduvceMethod(currentTest.testSimple_A_W);
-//	}
-//                        
-//        public void testSimple_A_X(){
-//		performIntroduvceMethod(currentTest.testSimple_A_X);
-//        }
-//        
-//        public void testSimple_A_Y(){
-//		performIntroduvceMethod(currentTest.testSimple_A_Y);
-//	}
-//        
-//        public void testSimple_A_Z(){
-//		performIntroduvceMethod(currentTest.testSimple_A_Z);
-//	}
-//                
-//        public void testSimple_B_A(){
-//		performIntroduvceMethod(currentTest.testSimple_B_A);
-//	}
-//                        
-//        public void testSimple_B_B(){
-//		performIntroduvceMethod(currentTest.testSimple_B_B);
-//        }
-//        
-//        public void testSimple_B_C(){
-//		performIntroduvceMethod(currentTest.testSimple_B_C);
-//	}
-//                        
-//        public void testSimple_B_D(){
-//		performIntroduvceMethod(currentTest.testSimple_B_D);
-//        }
-//        
-//        public void testSimple_B_E(){
-//		performIntroduvceMethod(currentTest.testSimple_B_E);
-//	}
-//                        
-//        public void testSimple_B_F(){
-//		performIntroduvceMethod(currentTest.testSimple_B_F);
-//        }
-//        
-//        public void testSimple_B_G(){
-//		performIntroduvceMethod(currentTest.testSimple_B_G);
-//	}
-//                        
-//        public void testSimple_B_H(){
-//		performIntroduvceMethod(currentTest.testSimple_B_H);
-//        }
-//        
-//        public void testSimple_B_I(){
-//		performIntroduvceMethod(currentTest.testSimple_B_I);
-//	}
-//                        
-//        public void testSimple_B_J(){
-//		performIntroduvceMethod(currentTest.testSimple_B_J);
-//        }
+
         
         private void performIntroduvceMethod(currentTest c){      
 //  "ClassA":           
 //            
-//                testSimple_A_A  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UseExistingMethod; 
-//                testSimple_A_B  - select(12,24,29);  "myParameter"; Declarefinal=true;  ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UseExistingMethod; 
-//                testSimple_A_C  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=true;  GenerateJavadocForthisMethod=false; UseExistingMethod; 
-//                testSimple_A_D  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UseExistingMethod; 
+//  testSimple_A_A  - (12,20,24);  default;       Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_B  - (12,20,24);  "myParameter"; Declarefinal=true;  ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_C  - (12,20,24);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=true;  GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_D  - (12,20,24);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UpdateExistingMethode; 
 //
-//                testSimple_A_E  - select(12,24,29);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UseExistingMethod; 
+//  testSimple_A_E  - (13,20,24);  default;       Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; CreateNewMethodAndDelegateFromExistingMethod; 
+//  testSimple_A_F  - (13,20,24);  "myParameter"; Declarefinal=true;  ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; CreateNewMethodAndDelegateFromExistingMethod; 
+//  testSimple_A_G  - (13,20,24);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=true;  GenerateJavadocForthisMethod=false; CreateNewMethodAndDelegateFromExistingMethod; 
+//  testSimple_A_H  - (13,20,24);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  CreateNewMethodAndDelegateFromExistingMethod; 
 //
+//  testSimple_A_I  - (30,13,22);  default;       Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_J  - (30,13,22);  "myParameter"; Declarefinal=true;  ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_K  - (30,13,22);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=true;  GenerateJavadocForthisMethod=false; UpdateExistingMethode; 
+//  testSimple_A_L  - (30,13,22);  "myParameter"; Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=true;  UpdateExistingMethode; 
+//
+//  testSimple_A_M  - (30,13,22);  default;       Declarefinal=false; ReplaceAllOccurences=false; GenerateJavadocForthisMethod=false; CreateNewMethodAndDelegateFromExistingMethod; 
+//
+//  ----------------------------------------
+//            
+//  testSimple_A_K failures because of https://netbeans.org/bugzilla/show_bug.cgi?id=239079     
 			
             	IntroduceParameterOperator ipo = null;
                 ErrorOperator eo = null;
                 String report = "";
                 
-                boolean debugMode = true;
+                boolean debugMode = false;
             
                 EditorOperator editor;
                 
@@ -319,9 +211,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_L: curClass = "Class_A_L"; break;
 						
                     case testSimple_A_M: curClass = "Class_A_M"; break;
-                    case testSimple_A_N: curClass = "Class_A_N"; break;
-                    case testSimple_A_O: curClass = "Class_A_O"; break;
-                    case testSimple_A_P: curClass = "Class_A_P"; break;
                 }
                 
                  // open source file
@@ -365,12 +254,10 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_J:
                     case testSimple_A_K:
                     case testSimple_A_L:
- 
-                    case testSimple_A_M:
-                    case testSimple_A_N:
-                    case testSimple_A_O:
-                    case testSimple_A_P:
                         editor.setCaretPosition(30, 1);
+                        break;
+                    case testSimple_A_M:
+                        editor.setCaretPosition(8, 1);
                         break;
                 }
                 
@@ -392,12 +279,10 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_J:
                     case testSimple_A_K:
                     case testSimple_A_L:
-						
-					case testSimple_A_M:
-                    case testSimple_A_N:
-                    case testSimple_A_O:
-                    case testSimple_A_P:
                         editor.select(30, 13, 22);
+                        break;
+					case testSimple_A_M:
+                        editor.select(8, 9, 22);
                         break;
                 }
                 
@@ -445,9 +330,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_B:
                     case testSimple_A_F:
                     case testSimple_A_J:
-                    case testSimple_A_M:
-                    case testSimple_A_N:
-                    case testSimple_A_P:
                          // Declare Final = TRUE
                         if(!ipo.getDeclareFinal().isSelected()) ipo.getDeclareFinal().changeSelection(true);
                         break;
@@ -464,9 +346,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_C:
                     case testSimple_A_G:
                     case testSimple_A_K:
-                    case testSimple_A_M:
-                    case testSimple_A_O:
-                    case testSimple_A_P:
                          // Replace All Occurences = TRUE
                         if(!ipo.getReplaceAllOccurences().isSelected()) ipo.getReplaceAllOccurences().doClick();
                         break;
@@ -481,9 +360,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_D:
                     case testSimple_A_H:
                     case testSimple_A_L:
-                    case testSimple_A_N:
-                    case testSimple_A_O:
-                    case testSimple_A_P:
                          // Replace All Occurences = TRUE
                         if(!ipo.getGenerateJvadoc().isSelected()) ipo.getGenerateJvadoc().doClick();
                         break;
@@ -504,11 +380,6 @@ public class IntroduceParameterTest extends ModifyingRefactoring {
                     case testSimple_A_J:
                     case testSimple_A_K:
                     case testSimple_A_L:
-						
-                    case testSimple_A_M:
-                    case testSimple_A_N:
-                    case testSimple_A_O:
-                    case testSimple_A_P:
                         // Update Existing Methode
                         ipo.getUpdateMethods().doClick();
                         break;
