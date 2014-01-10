@@ -44,12 +44,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>spring-webmvc</name>
+    <name>spring-webmvc4.0</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.spring.webmvc.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.spring.webmvc/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-webmvc-4.0.0.RELEASE.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
     <properties>
         <property>
             <name>maven-dependencies</name>
-            <value>org.springframework:spring-webmvc:2.5.6.SEC03:jar</value>
+            <value>org.springframework:spring-webmvc:4.0.0.RELEASE:jar</value>
         </property>
     </properties>
 </library>
