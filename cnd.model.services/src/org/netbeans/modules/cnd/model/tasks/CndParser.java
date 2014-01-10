@@ -223,7 +223,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                         if (fo != null) {
                             CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
                             if (file != null) {
-                                LOG.log(Level.FINE, "update parse result for {0} because properyy changed", snapshot); //NOI18N
+                                LOG.log(Level.FINE, "update parse result for {0} because property changed", snapshot); //NOI18N
                                 long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
                                 parser.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
                                 parser.listeners.fireChange();
