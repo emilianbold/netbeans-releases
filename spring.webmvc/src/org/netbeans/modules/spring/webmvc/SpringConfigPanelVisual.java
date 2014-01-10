@@ -304,7 +304,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             @Override
             public void run() {
                 long startTime = System.currentTimeMillis();
-                final Set<String> items = new HashSet<>();
+                final List<String> items = new ArrayList<>();
                 for (Library library : LibraryManager.getDefault().getLibraries()) {
                     if (SpringUtilities.isSpringLibrary(library)) {
                         items.add(library.getDisplayName());
