@@ -3089,6 +3089,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Elements elements = controller.getElements();
             final Trees trees = controller.getTrees();
             final TreeUtilities tu = controller.getTreeUtilities();
+            final ElementUtilities eu = controller.getElementUtilities();
             final Scope scope = env.getScope();
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
@@ -3106,7 +3107,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString()) &&
-                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
+                                    (method == e.getEnclosingElement() || eu.isEffectivelyFinal((VariableElement)e) ||
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT ||
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&

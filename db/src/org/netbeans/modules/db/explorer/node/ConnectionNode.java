@@ -92,6 +92,8 @@ public class ConnectionNode extends BaseNode {
     private static final String USESCROLLABLECURSORS = "UseScrollableCursors"; //NOI18N
     private static final String USESCROLLABLECURSORSDESC = "UseScrollableCursorsDescription"; //NOI18N
     private static final String FOLDER = "Connection"; // NOI18N
+    private static final String NBDRIVER = "NBDriver"; // NOI18N
+    private static final String NBDRIVERDESC = "NBDriverDescription"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ConnectionNode.class.getName());
     
     /** 
@@ -153,6 +155,8 @@ public class ConnectionNode extends BaseNode {
             refreshNode = false;
         } else if (nps.getName().equals(DATABASEURL)) {
             connection.setDatabase(val.toString());
+        } else if (nps.getName().equals(NBDRIVER)) {
+            connection.setDriverName(val.toString());
         } else if (nps.getName().equals(DRIVER)) {
             connection.setDriver(val.toString());
         } else if (nps.getName().equals(SCHEMA)) {
@@ -197,6 +201,7 @@ public class ConnectionNode extends BaseNode {
 
             addProperty(DISPLAYNAME, DISPLAYNAMEDESC, String.class, true, connection.getDisplayName());
             addProperty(DATABASEURL, DATABASEURLDESC, String.class, !connected, connection.getDatabase());
+            addProperty(NBDRIVER, NBDRIVERDESC, String.class, !connected, connection.getDriverName());
             addProperty(DRIVER, DRIVERDESC, String.class, !connected, connection.getDriver());
             addProperty(SCHEMA, SCHEMADESC, String.class, !connected, connection.getSchema());
             addProperty(USER, USERDESC, String.class, !connected, connection.getUser());
@@ -404,13 +409,13 @@ public class ConnectionNode extends BaseNode {
     
     @Override
     public String getName() {
-        return connection.getDisplayName();
+        return connection.getName();
     }
 
     @Override
     public void setName(String name) {
         String old = getName();
-        connection.setDisplayName(name);
+        connection.setName(name);
         fireNameChange(old, name);
     }
 
