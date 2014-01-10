@@ -1,31 +1,31 @@
 10c10
-<  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+<  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 ---
 >  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
-14a15
+25a26
 > import com.sun.jdi.IncompatibleThreadStateException;
-27a29
+38a40
 > import org.netbeans.api.debugger.DebuggerManager;
-54c56
-<     private static final boolean ssverbose =
+65c67
+<     private static final boolean ssverbose = 
 ---
->     private static boolean ssverbose =
-59c61,62
+>     private static boolean ssverbose = 
+70c72,73
 <     private String position;
 ---
 >     private ThreadReference tr;
 >     //private String position;
-96,100d98
+107,111d109
 <             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
 <             if (t == null || !t.isSuspended()) {
 <                 // Can not step when it's not suspended.
 <                 return ;
 <             }
-102,104d99
+113,115d110
 <             position = t.getClassName () + '.' +
 <                        t.getMethodName () + ':' +
 <                        t.getLineNumber (null);
-153,158c148,150
+164,169c159,161
 <             JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl ().
 <                 getCurrentThread ();
 <             if (jtr != null) {
@@ -36,16 +36,16 @@
 >             ThreadReference tr = (JPDAThreadImpl) getDebuggerImpl ().
 >                 getCurrentThread ().getThreadReference ();
 >             removeStepRequests (tr);
-173,175c165
+184,186c176
 <         if (stepRequest != null) {
 <             stepRequest.disable ();
 <         }
 ---
 >         stepRequest.disable ();
-176a167,168
+187a178,179
 >         //String np = le.location ().declaringType ().name () + ":" + 
 >         //            le.location ().lineNumber (null);
-180,189c172,173
+191,200c183,184
 <         
 <         try {
 <             if (tr.frame(0).location().method().isSynthetic()) {
@@ -59,7 +59,7 @@
 ---
 >         boolean stop = //(!np.equals (position)) &&    ? position is never set ?
 >                        getCompoundSmartSteppingListener ().stopHere 
-192,202d175
+203,213d186
 <             String stopPosition = t.getClassName () + '.' +
 <                                   t.getMethodName () + ':' +
 <                                   t.getLineNumber (null);
@@ -71,7 +71,7 @@
 <             }
 <         }
 <         if (stop) {
-209c182,186
+220c193,197
 <                 setStepRequest (StepRequest.STEP_OUT);
 ---
 >                 //TODO following line of code is wrong !
@@ -79,7 +79,7 @@
 >                 // such code should not be called from operator!
 >                 //getStepActionProvider().doAction(ActionsManager.ACTION_STEP_OUT);
 >                 setStepRequest ();
-249,267c226,248
+260,278c237,259
 <     private void setStepRequest (int step) {
 <         ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
 <             getCurrentThread ()).getThreadReference ();
