@@ -578,6 +578,19 @@ import org.openide.util.RequestProcessor;
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            if (RemoteFileSystemUtils.isUnitTestMode()) {
+                StringBuilder sb = new StringBuilder("launching ").append(path);
+                for (String p : args) {
+                    sb.append(p).append(' ');
+                }
+                try {
+                    int pid = process.getPID();
+                    sb.append(" [pid=").append(pid).append("] ");
+                } catch (IllegalStateException ex) {
+                    sb.append(" [no pid] ");
+                }
+                RemoteLogger.info(sb.toString());                
+            }
         }
         
         private String getSubdir() {
