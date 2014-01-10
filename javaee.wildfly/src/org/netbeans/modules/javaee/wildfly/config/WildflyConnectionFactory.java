@@ -65,6 +65,4 @@ public class WildflyConnectionFactory {
     public String getName() {
         return name;
     }
-    
-
 }

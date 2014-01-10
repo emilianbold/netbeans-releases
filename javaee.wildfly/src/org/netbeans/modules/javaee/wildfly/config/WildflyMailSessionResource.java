@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.javaee.wildfly.config;
 
+import java.util.Collections;
+import java.util.Map;
+
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
@@ -55,12 +58,17 @@ public class WildflyMailSessionResource {
     private String fromAddr;
     private String isDebug;
     private WildflySocket socket;
+    private final Map<String, String> configuration;
+
+
+
 
     /**
      * Creates a new instance of MailSessionResource
      */
-    public WildflyMailSessionResource(String name) {
+    public WildflyMailSessionResource(Map<String, String> configuration, String name) {
         this.name = name;
+        this.configuration = configuration;
         this.socket = new WildflySocket();
     }
 
@@ -112,4 +120,7 @@ public class WildflyMailSessionResource {
         return String.valueOf(this.socket.getPort());
     }
 
+    public Map<String, String> getConfiguration() {
+        return Collections.unmodifiableMap(configuration);
+    }
 }

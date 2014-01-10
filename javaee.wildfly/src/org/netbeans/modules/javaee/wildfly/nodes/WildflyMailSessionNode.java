@@ -42,6 +42,7 @@
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.awt.Image;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
 import org.openide.actions.PropertiesAction;
@@ -78,6 +79,10 @@ class WildflyMailSessionNode extends AbstractNode {
         addProperty("Port", mailSession.getPort());
         if (mailSession.getIsDebug() != null) {
             addProperty("Debug", mailSession.getIsDebug());
+        }
+        for (Map.Entry<String, String> property : mailSession.getConfiguration().entrySet()) {
+            PropertySupport ps = new SimplePropertySupport(property.getKey(), property.getValue(), property.getKey(), property.getKey());
+            getSheet().get(Sheet.PROPERTIES).put(ps);
         }
     }
 

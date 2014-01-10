@@ -876,24 +876,7 @@ public class WildflyClient {
                 List mailSessions = modelNodeAsList(cl, result);
                 for (Object mailSession : mailSessions) {
                     String sessionName = modelNodeAsPropertyForName(cl, mailSession);
-                    WildflyMailSessionResource session = new WildflyMailSessionResource(sessionName);
-                    Object configuration = modelNodeAsPropertyForValue(cl, mailSession);
-                    session.setIsDebug(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "debug")));
-                    session.setJndiName(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "jndi-name")));
-                    List properties = modelNodeAsList(cl, getModelNodeChild(cl, configuration, "server"));
-                    for (Object property : properties) {
-                        if (modelNodeIsDefined(cl, property)) {
-                            Object settings = modelNodeAsPropertyForValue(cl, property);
-                            if (modelNodeHasDefinedChild(cl, settings, "username")) {
-                                session.setUserName(modelNodeAsString(cl, getModelNodeChild(cl, settings, "username")));
-                            }
-                            if (modelNodeHasDefinedChild(cl, settings, "outbound-socket-binding-ref")) {
-                                session.setSocket(fillSocket(modelNodeAsString(cl, getModelNodeChild(cl, settings, "outbound-socket-binding-ref")), true));
-                            }
-
-                        }
-                    }
-                    modules.add(session);
+                    modules.add(fillMailSession(sessionName, mailSession));
                 }
             }
             return modules;
@@ -1001,8 +984,8 @@ public class WildflyClient {
         return modules;
     }
 
-    private WildflySocket fillSocket(String name, boolean outBound) throws 
-            ClassNotFoundException, NoSuchMethodException, 
+    private WildflySocket fillSocket(String name, boolean outBound) throws
+            ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
         WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
         WildflySocket socket = new WildflySocket();
@@ -1064,7 +1047,7 @@ public class WildflyClient {
                 }
             }
             return connectionFactories;
-        }catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
         } catch (NoSuchMethodException ex) {
             throw new IOException(ex);
@@ -1076,11 +1059,9 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
-    
-    
 
     private Collection<? extends WildflyConnectionFactory> getConnectionFactoriesForServer(String hornetqServerName) throws IOException {
-         try {
+        try {
             WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             List<WildflyConnectionFactory> listedConnectionFactories = new ArrayList<WildflyConnectionFactory>();
             // ModelNode
@@ -1105,9 +1086,9 @@ public class WildflyClient {
                 List connectionFactories = modelNodeAsPropertyList(cl, readResult(cl, response));
                 for (Object connectionFactory : connectionFactories) {
                     listedConnectionFactories.add(fillConnectionFactory(
-                            getPropertyName(cl, connectionFactory), 
+                            getPropertyName(cl, connectionFactory),
                             getPropertyValue(cl, connectionFactory)));
-                       
+
                 }
             }
             return listedConnectionFactories;
@@ -1123,16 +1104,54 @@ public class WildflyClient {
             throw new IOException(ex);
         }
     }
-    
-    private WildflyConnectionFactory fillConnectionFactory(String name, Object configuration) throws 
-            ClassNotFoundException, NoSuchMethodException, 
+
+    private WildflyConnectionFactory fillConnectionFactory(String name, Object configuration) throws
+            ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
         WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
         List properties = modelNodeAsPropertyList(cl, configuration);
         Map<String, String> attributes = new HashMap<String, String>(properties.size());
-        for(Object property : properties) {
-            attributes.put(getPropertyName(cl, property), modelNodeAsString(cl, getPropertyValue(cl, property)));
+        for (Object property : properties) {
+            String propertyName = getPropertyName(cl, property);
+            Object propertyValue = getPropertyValue(cl, property);
+            if (modelNodeIsDefined(cl, propertyValue)) {
+                attributes.put(propertyName, modelNodeAsString(cl, propertyValue));
+            }
         }
         return new WildflyConnectionFactory(attributes, name);
+    }
+
+    private WildflyMailSessionResource fillMailSession(String name, Object mailSession) throws
+            ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException, InstantiationException, IOException {
+        WildFlyDeploymentFactory.WildFlyClassLoader cl = WildFlyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+
+        Object configuration = modelNodeAsPropertyForValue(cl, mailSession);
+        List properties = modelNodeAsPropertyList(cl, configuration);
+        Map<String, String> attributes = new HashMap<String, String>(properties.size());
+        for (Object property : properties) {
+            String propertyName = getPropertyName(cl, property);
+            Object propertyValue = getPropertyValue(cl, property);
+            if (!"debug".equals(propertyName) && !"jndi-name".equals(propertyName) && modelNodeIsDefined(cl, propertyValue)) {
+                attributes.put(propertyName, modelNodeAsString(cl, propertyValue));
+            }
+        }
+        WildflyMailSessionResource session = new WildflyMailSessionResource(attributes, name);
+        List serverProperties = modelNodeAsList(cl, getModelNodeChild(cl, configuration, "server"));
+        for (Object property : serverProperties) {
+            if (modelNodeIsDefined(cl, property)) {
+                Object settings = modelNodeAsPropertyForValue(cl, property);
+                if (modelNodeHasDefinedChild(cl, settings, "username")) {
+                    session.setUserName(modelNodeAsString(cl, getModelNodeChild(cl, settings, "username")));
+                }
+                if (modelNodeHasDefinedChild(cl, settings, "outbound-socket-binding-ref")) {
+                    session.setSocket(fillSocket(modelNodeAsString(cl, getModelNodeChild(cl, settings, "outbound-socket-binding-ref")), true));
+                }
+
+            }
+        }
+        session.setIsDebug(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "debug")));
+        session.setJndiName(modelNodeAsString(cl, getModelNodeChild(cl, configuration, "jndi-name")));
+        return session;
     }
 }
