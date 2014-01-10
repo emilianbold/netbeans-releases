@@ -346,6 +346,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         if (doc == null) {
             return;
         }
+        MacroExpansionTopComponent.setSyncCaretAndContext(autoRefresh.isSelected());
         update();
 }//GEN-LAST:event_autoRefreshActionPerformed
 

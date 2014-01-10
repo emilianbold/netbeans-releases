@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.awt.BorderLayout;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -93,6 +94,7 @@ public final class MacroExpansionTopComponent extends TopComponent {
             panel.updateCaretPosition();
         }
         validate();
+        panelInitialized.set(true);
     }
 
     /**
@@ -211,6 +213,12 @@ public final class MacroExpansionTopComponent extends TopComponent {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
+    private static final AtomicBoolean panelInitialized = new AtomicBoolean(false);
+
+    public static boolean isMacroExpansionInitialized() {
+        return panelInitialized.get();
+    }
+    
     public
     @Override
     void componentClosed() {
@@ -229,6 +237,7 @@ public final class MacroExpansionTopComponent extends TopComponent {
             lastExpandedContextDoc = null;
             panel.removeAll();
             panel = null;
+            panelInitialized.set(false);
         }
     }
 

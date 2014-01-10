@@ -101,13 +101,11 @@ public final class MacroExpansionViewUtils {
      * @return true if something was changed during update
      */
     public static void updateView(Document mainDoc, int newOffset, final CsmFile csmFile, final AtomicBoolean canceled, final Runnable syncPositions) {
-        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-        boolean localContext = MacroExpansionTopComponent.isLocalContext();
-
-        if (!view.isSyncCaretAndContext()) {
+        if (!MacroExpansionTopComponent.isSyncCaretAndContext()) {
             return;
         }
-            
+
+        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
         final Document expandedContextDoc = view.getExpandedContextDoc();
         if (expandedContextDoc == null) {
             return;
@@ -118,6 +116,7 @@ public final class MacroExpansionViewUtils {
         // Get ofsets and check if update needed
         int startOffset = 0;
         int endOffset = mainDoc.getLength();
+        boolean localContext = MacroExpansionTopComponent.isLocalContext();
         if (localContext) {
             CsmScope scope = ContextUtils.findInnerFileScope(csmFile, newOffset);
             if (CsmKindUtilities.isOffsetable(scope)) {
@@ -154,7 +153,7 @@ public final class MacroExpansionViewUtils {
                 }
                 view.setDocuments(newExpandedContextDoc);
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
-                SwingUtilities.invokeLater(syncPositions);
+                syncPositions.run();
             }
         };
         SwingUtilities.invokeLater(openView);

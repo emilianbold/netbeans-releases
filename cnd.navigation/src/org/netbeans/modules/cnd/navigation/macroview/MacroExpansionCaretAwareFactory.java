@@ -88,6 +88,9 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
             canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
+        if (!MacroExpansionTopComponent.isMacroExpansionInitialized()) {
+            return;
+        }
         Document doc = result.getSnapshot().getSource().getDocument(false);
         if (!(doc instanceof StyledDocument)) {
             return;
