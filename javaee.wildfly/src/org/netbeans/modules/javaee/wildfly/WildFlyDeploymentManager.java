@@ -68,10 +68,10 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
-import org.netbeans.modules.javaee.wildfly.ide.commands.JBModule;
+import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
@@ -213,18 +213,18 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         List<TargetModuleID> result = new ArrayList<TargetModuleID>();
-        Collection<JBModule> modules;
+        Collection<WildflyModule> modules;
         try {
             modules = getClient().listAvailableModules();
 
             if (ModuleType.EJB.equals(mt)) {
-                for (JBModule module : modules) {
+                for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
                         result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
-                for (JBModule module : modules) {
+                for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war") && module.isRunning()) {
                         WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
                         moduleId.setContextURL(module.getUrl());
@@ -253,18 +253,18 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         List<TargetModuleID> result = new ArrayList<TargetModuleID>();
-        Collection<JBModule> modules;
+        Collection<WildflyModule> modules;
         try {
             modules = getClient().listAvailableModules();
 
             if (ModuleType.EJB.equals(mt)) {
-                for (JBModule module : modules) {
+                for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
                         result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
                     }
                 }
             } else if (ModuleType.WAR.equals(mt)) {
-                for (JBModule module : modules) {
+                for (WildflyModule module : modules) {
                     if (module.getArchiveName().endsWith("war")) {
                         WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
                         moduleId.setContextURL(module.getUrl());
@@ -466,7 +466,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    public ProgressObject deployMessageDestinations(final Collection<JBossMessageDestination> destinations) {
+    public ProgressObject deployMessageDestinations(final Collection<WildflyMessageDestination> destinations) {
         final WildflyProgressObject progress = new WildflyProgressObject(new TargetModuleID[0]);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));

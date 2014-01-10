@@ -42,67 +42,77 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.util.Lookup;
 
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ * It describes children nodes of the EJB Modules node. Implements
+ * Refreshable interface and due to it can be refreshed via ResreshModulesAction.
+ *
+ * @author Michal Mocnak
  */
-public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+public class WildflyEarApplicationsChildren extends WildflyAsyncChildren implements Refreshable {
+
+    private static final Logger LOGGER = Logger.getLogger(WildflyEarApplicationsChildren.class.getName());
+
+    private final Lookup lookup;
+
+    WildflyEarApplicationsChildren(Lookup lookup) {
+        this.lookup = lookup;
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
+
+    @Override
+    public void updateKeys() {
+        setKeys(new Object[]{Util.WAIT_NODE});
+        getExecutorService().submit(new WildflyEarApplicationNodeUpdater(), 0);
     }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
+
+    class WildflyEarApplicationNodeUpdater implements Runnable {
+
+        List keys = new ArrayList();
+
+        @Override
+        public void run() {
+            try {
+                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                keys.addAll(dm.getClient().listEarApplications(lookup));
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
+
+            setKeys(keys);
         }
     }
-    
-    public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
+
+    @Override
+    protected void addNotify() {
+        updateKeys();
     }
-    
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
+
+    @Override
+    protected void removeNotify() {
+        setKeys(java.util.Collections.EMPTY_SET);
     }
-    
-    protected boolean enable(Node[] nodes) {
-        return true;
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof WildflyEarApplicationNode){
+            return new Node[]{(WildflyEarApplicationNode)key};
+        }
+
+        if (key instanceof String && key.equals(Util.WAIT_NODE)){
+            return new Node[]{Util.createWaitNode()};
+        }
+
+        return null;
     }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
+
 }

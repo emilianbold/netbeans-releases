@@ -39,74 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.config.xml.ds;
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-import org.netbeans.modules.javaee.wildfly.config.xml.AbstractHierarchicalHandler;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
+import java.awt.Image;
+import java.util.Map;
+import javax.swing.Action;
+import org.netbeans.modules.javaee.wildfly.config.WildflyConnectionFactory;
+import org.openide.actions.PropertiesAction;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- *
+ * 
  * @author Emmanuel Hugonnet (ehsavoie) <emmanuel.hugonnet@gmail.com>
  */
-public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
+public class WildflyConnectionFactoryNode extends AbstractNode {
 
-    private StringBuilder buffer;
-    private WildflyDataSource currentDatasource;
-    private WildflySecurityHandler childHandler;
 
-    public WildflyDatasourceHandler(DefaultHandler parent, XMLReader parser) {
-        super(parent, parser);
+    WildflyConnectionFactoryNode(WildflyConnectionFactory connectionFactory, Lookup lookup) {
+        super(Children.LEAF);
+        setDisplayName(connectionFactory.getName());
+        setName(connectionFactory.getName());
+        setShortDescription(connectionFactory.getName());
+        initProperties(connectionFactory.getConfiguration());
+    }
+
+    protected final void initProperties(Map<String, String> configuration) {       
+        for(Map.Entry<String, String> property : configuration.entrySet()) {            
+            addProperty(property.getKey(), property.getValue());
+        }
+    }
+
+    private void addProperty(String name, String value) {
+        PropertySupport ps = new SimplePropertySupport(name, value, name, name);
+        getSheet().get(Sheet.PROPERTIES).put(ps);
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if ("datasource".equals(qName)) {
-            currentDatasource = new WildflyDataSource();
-            currentDatasource.setJndiName(attributes.getValue(uri, "jndi-name"));
-            currentDatasource.setName(attributes.getValue(uri, "pool-name"));
-        }
-        else if ("driver".equals(qName)) {
-            buffer = new StringBuilder();
-        }
-        else if ("connection-url".equals(qName)) {
-            buffer = new StringBuilder();
-        }
-        else if ("security".equals(qName)) {
-            childHandler = new WildflySecurityHandler(parent, parser);
-            childHandler.start(uri, localName, qName, attributes);
-        }
-
+    protected Sheet createSheet() {
+        Sheet sheet = Sheet.createDefault();
+        setSheet(sheet);
+        return sheet;
     }
 
     @Override
-    public void characters(char[] ch, int start, int length) throws SAXException {
-        if (buffer != null) {
-            buffer.append(ch, start, length);
-        }
+    public Action[] getActions(boolean context) {
+        return new SystemAction[]{SystemAction.get(PropertiesAction.class)};
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
-        if ("driver".equals(qName)) {
-            currentDatasource.setDriver(buffer.toString());
-        }
-        else if ("connection-url".equals(qName)) {
-            currentDatasource.setUrl(buffer.toString());
-        }
-        else if ("security".equals(qName)) {
-            currentDatasource.setUsername(childHandler.getUsername());
-            currentDatasource.setPassword(childHandler.getPassword());
-        }
-        else if ("datasource".equals(qName)) {
-            end(uri, localName, qName);
-        }
-
+    public Image getIcon(int type) {
+        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
     }
 
-    public WildflyDataSource getDatasource() {
-        return currentDatasource;
+    @Override
+    public Image getOpenedIcon(int type) {
+        return ImageUtilities.loadImage(Util.CONNECTOR_ICON);
     }
+
 }

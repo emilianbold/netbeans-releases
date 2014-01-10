@@ -41,68 +41,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.javaee.wildfly.nodes;
 
-package org.netbeans.modules.javaee.wildfly.nodes.actions;
-
-
-import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
 
-/** Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
- * Copied from appsrv81 server plugin.
+/**
+ * It describes children nodes of the Applications node
+ *
+ * @author Michal Mocnak
  */
-public class ShowAdminToolAction extends CookieAction {
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+public class WildflyResourcesChildren extends Children.Keys {
+
+    WildflyResourcesChildren(Lookup lookup) {
+        setKeys(new Object[]{createDatasourcesNode(lookup), createJMSNode(lookup), createMailSessionsNode(lookup)});
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
+
+    @Override
+    protected void addNotify() {
     }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
-            if (node instanceof WildflyManagerNode) {
-                try {
-                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
-            }
+
+    @Override
+    protected void removeNotify() {
+    }
+
+    @Override
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof AbstractNode) {
+            return new Node[]{(AbstractNode) key};
         }
+        return null;
+    }
+
+    final WildflyResourcesItemNode createDatasourcesNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyDatasourcesChildren(lookup),
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_Datasources"), Util.JDBC_RESOURCE_ICON);
+    }
+
+    
+    final WildflyResourcesItemNode createMailSessionsNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyMailSessionsChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_MailSessions"), Util.JAVAMAIL_ICON);
+    }
+
+    private Object createJMSNode(Lookup lookup) {
+        return new WildflyResourcesItemNode(new WildflyJmsChildren(lookup), 
+                NbBundle.getMessage(WildflyTargetNode.class, "LBL_Resources_JMS"), Util.JMS_ICON);
     }
     
-    public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowAdminGUIAction");
-    }
     
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
-    }
     
-    protected boolean enable(Node[] nodes) {
-        return true;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }
 }
