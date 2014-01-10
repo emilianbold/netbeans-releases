@@ -78,4 +78,11 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
         performTest("bug238889.cpp", 17, 65, "bug238889.cpp", 13, 9);
         performTest("bug238889.cpp", 18, 87, "bug238889.cpp", 13, 9);
     }        
+    
+    public void testBug239901() throws Exception {
+        // Bug 239901 - Unresolved identifier in type alias template with default type 
+        performTest("bug239901.cpp", 19, 13, "bug239901.cpp", 3, 9);
+        performTest("bug239901.cpp", 22, 13, "bug239901.cpp", 7, 9);
+        performTest("bug239901.cpp", 25, 18, "bug239901.cpp", 3, 9);
+    }            
 }
