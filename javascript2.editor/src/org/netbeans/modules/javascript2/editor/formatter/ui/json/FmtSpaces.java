@@ -71,6 +71,8 @@ import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.formatter.Defaults;
+import org.netbeans.modules.javascript2.editor.formatter.DefaultsProvider;
 import org.netbeans.modules.javascript2.editor.formatter.Utils;
 
 /**
@@ -120,7 +122,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 } catch (IOException ex) {
                     // TODO log it
                 }
-                return new SpacesCategorySupport(preferences, new FmtSpaces(), preview);
+                return new SpacesCategorySupport(Defaults.getInstance(JsTokenId.JSON_MIME_TYPE),
+                        preferences, new FmtSpaces(), preview);
             }
         };
     }
@@ -338,14 +341,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
     private static final class SpacesCategorySupport extends FmtOptions.CategorySupport {
 
-        public SpacesCategorySupport(Preferences preferences, FmtSpaces panel, String preview) {
-
-            super(JsTokenId.JSON_MIME_TYPE, preferences, "spaces", panel, //NOI18N
-                  preview);//,
-//                  new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
-//                  new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
-//                  new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
-//                  new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()} );
+        public SpacesCategorySupport(DefaultsProvider provider, Preferences preferences, FmtSpaces panel, String preview) {
+            super(JsTokenId.JSON_MIME_TYPE, provider, preferences, "spaces", panel, preview); // NOI18N
             panel.scs = this;
         }
 
@@ -357,7 +354,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         @Override
         protected void loadFrom(Preferences preferences) {
             for (Item item : getAllItems()) {
-                boolean df = FmtOptions.getDefaultAsBoolean(item.id);
+                boolean df = provider.getDefaultAsBoolean(item.id);
                 item.value = preferences.getBoolean(item.id, df);
             }
         }
@@ -365,7 +362,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         @Override
         protected void storeTo(Preferences preferences) {
             for (Item item : getAllItems()) {
-                boolean df = FmtOptions.getDefaultAsBoolean(item.id);
+                boolean df = provider.getDefaultAsBoolean(item.id);
                 if (df == item.value)
                     preferences.remove(item.id);
                 else

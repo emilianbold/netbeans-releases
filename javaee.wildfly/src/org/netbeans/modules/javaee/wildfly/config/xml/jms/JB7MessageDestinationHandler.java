@@ -44,7 +44,7 @@ package org.netbeans.modules.javaee.wildfly.config.xml.jms;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -55,7 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class JB7MessageDestinationHandler extends DefaultHandler {
 
-    private final List<JBossMessageDestination> messageDestinations = new ArrayList<JBossMessageDestination>();
+    private final List<WildflyMessageDestination> messageDestinations = new ArrayList<WildflyMessageDestination>();
 
     private boolean isDestinations;
 
@@ -63,9 +63,9 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
 
     private final List<String> jndiNames = new ArrayList<String>();
     
-    private JBossMessageDestination currentDestination;
+    private WildflyMessageDestination currentDestination;
 
-    public List<JBossMessageDestination> getMessageDestinations() {
+    public List<WildflyMessageDestination> getMessageDestinations() {
         return messageDestinations;
     }
 
@@ -76,9 +76,9 @@ public class JB7MessageDestinationHandler extends DefaultHandler {
         } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
             String name = attributes.getValue("name");
             if("jms-queue".equals(qName)) {
-               currentDestination = new JBossMessageDestination(name, Type.QUEUE);
+               currentDestination = new WildflyMessageDestination(name, Type.QUEUE);
             } else if ("jms-topic".equals(qName)) {
-                currentDestination = new JBossMessageDestination(name, Type.TOPIC);
+                currentDestination = new WildflyMessageDestination(name, Type.TOPIC);
             } else {
                 currentDestination = null;
             }

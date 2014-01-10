@@ -67,15 +67,15 @@ import org.openide.util.actions.SystemAction;
 public class WildflyEjbModuleNode extends AbstractNode {
     
     public WildflyEjbModuleNode(String fileName, Lookup lookup) {
-        this(fileName, lookup, new ArrayList<WildflyEJBComponentNode>(), false);
+        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), false);
     }
     
     public WildflyEjbModuleNode(String fileName, Lookup lookup, boolean isEJB3) {
-        this(fileName, lookup, new ArrayList<WildflyEJBComponentNode>(), isEJB3);
+        this(fileName, lookup, new ArrayList<WildflyEjbComponentNode>(), isEJB3);
     }
 
-    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEJBComponentNode> ejbs, boolean isEJB3) {
-        super(new WildflyEJBComponentsChildren(lookup, fileName, ejbs));
+    public WildflyEjbModuleNode(String fileName, Lookup lookup, List<WildflyEjbComponentNode> ejbs, boolean isEJB3) {
+        super(new WildflyEjbComponentsChildren(lookup, fileName, ejbs));
         setDisplayName(fileName.substring(0, fileName.lastIndexOf('.')));
         if (isEJB3) {
             getCookieSet().add(new UndeployModuleCookieImpl(fileName, lookup));
@@ -87,7 +87,7 @@ public class WildflyEjbModuleNode extends AbstractNode {
     
     @Override
     public Action[] getActions(boolean context){
-        if(getParentNode() instanceof JBEarApplicationNode)
+        if(getParentNode() instanceof WildflyEarApplicationNode)
             return new SystemAction[] {};
         else
             return new SystemAction[] {

@@ -62,173 +62,172 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
  */
 public final class CodeStyle {
 
-    static {
-        FmtOptions.codeStyleProducer = new Producer();
-    }
+    private final DefaultsProvider provider;
 
-    private Preferences preferences;
+    private final Preferences preferences;
 
-    private CodeStyle(Preferences preferences) {
+    private CodeStyle(DefaultsProvider provider, Preferences preferences) {
+        this.provider = provider;
         this.preferences = preferences;
     }
 
     /** For testing purposes only */
-    public static CodeStyle get(Preferences prefs) {
-        return new CodeStyle(prefs);
+    public static CodeStyle get(Preferences prefs, DefaultsProvider provider) {
+        return new CodeStyle(provider, prefs);
     }
 
-    public static CodeStyle get(Document doc) {
-        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+    public static CodeStyle get(Document doc, DefaultsProvider provider) {
+        return new CodeStyle(provider, CodeStylePreferences.get(doc).getPreferences());
     }
     
     public static CodeStyle get(FormatContext context) {
-        return get(context.getDocument(), context.isEmbedded());
+        return get(context.getDefaultsProvider(), context.getDocument(), context.isEmbedded());
     }
 
     public static CodeStyle get(IndentContext context) {
-        return get(context.getDocument(), context.isEmbedded());
+        return get(context.getDefaultsProvider(), context.getDocument(), context.isEmbedded());
     }
 
-    private static CodeStyle get(Document doc, boolean embedded) {
+    private static CodeStyle get(DefaultsProvider provider, Document doc, boolean embedded) {
         if (embedded) {
-            return new CodeStyle(CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
+            return new CodeStyle(provider, CodeStylePreferences.get(doc, JsTokenId.JAVASCRIPT_MIME_TYPE).getPreferences());
         }
-        return new CodeStyle(CodeStylePreferences.get(doc).getPreferences());
+        return new CodeStyle(provider, CodeStylePreferences.get(doc).getPreferences());
     }
 
     // General tabs and indents ------------------------------------------------
 
     public boolean expandTabToSpaces () {
-        return preferences.getBoolean(expandTabToSpaces,  getDefaultAsBoolean(expandTabToSpaces));
+        return preferences.getBoolean(expandTabToSpaces,  provider.getDefaultAsBoolean(expandTabToSpaces));
     }
 
     public int getTabSize() {
-        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+        return preferences.getInt(tabSize, provider.getDefaultAsInt(tabSize));
     }
 
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
+        return preferences.getInt(indentSize, provider.getDefaultAsInt(indentSize));
     }
 
     public int getContinuationIndentSize() {
-        return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
+        return preferences.getInt(continuationIndentSize, provider.getDefaultAsInt(continuationIndentSize));
     }
 
     public int getItemsInArrayDeclarationIndentSize() {
-        return preferences.getInt(itemsInArrayDeclarationIndentSize, getDefaultAsInt(itemsInArrayDeclarationIndentSize));
+        return preferences.getInt(itemsInArrayDeclarationIndentSize, provider.getDefaultAsInt(itemsInArrayDeclarationIndentSize));
     }
 
     public int getInitialIndent(){
-        return preferences.getInt(initialIndent, getDefaultAsInt(initialIndent));
+        return preferences.getInt(initialIndent, provider.getDefaultAsInt(initialIndent));
     }
 
     public boolean reformatComments() {
-        return preferences.getBoolean(reformatComments, getDefaultAsBoolean(reformatComments));
+        return preferences.getBoolean(reformatComments, provider.getDefaultAsBoolean(reformatComments));
     }
 
     public boolean indentHtml() {
-        return preferences.getBoolean(indentHtml, getDefaultAsBoolean(indentHtml));
+        return preferences.getBoolean(indentHtml, provider.getDefaultAsBoolean(indentHtml));
     }
 
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+        return preferences.getInt(rightMargin, provider.getDefaultAsInt(rightMargin));
     }
 
     // Brace placement --------------------------------------------------------
 
     public BracePlacement getClassDeclBracePlacement() {
-        String placement = preferences.get(classDeclBracePlacement, getDefaultAsString(classDeclBracePlacement));
+        String placement = preferences.get(classDeclBracePlacement, provider.getDefaultAsString(classDeclBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getMethodDeclBracePlacement() {
-        String placement = preferences.get(methodDeclBracePlacement, getDefaultAsString(methodDeclBracePlacement));
+        String placement = preferences.get(methodDeclBracePlacement, provider.getDefaultAsString(methodDeclBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getIfBracePlacement() {
-        String placement = preferences.get(ifBracePlacement, getDefaultAsString(ifBracePlacement));
+        String placement = preferences.get(ifBracePlacement, provider.getDefaultAsString(ifBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getForBracePlacement() {
-        String placement = preferences.get(forBracePlacement, getDefaultAsString(forBracePlacement));
+        String placement = preferences.get(forBracePlacement, provider.getDefaultAsString(forBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getWhileBracePlacement() {
-        String placement = preferences.get(whileBracePlacement, getDefaultAsString(whileBracePlacement));
+        String placement = preferences.get(whileBracePlacement, provider.getDefaultAsString(whileBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getSwitchBracePlacement() {
-        String placement = preferences.get(switchBracePlacement, getDefaultAsString(switchBracePlacement));
+        String placement = preferences.get(switchBracePlacement, provider.getDefaultAsString(switchBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getCatchBracePlacement() {
-        String placement = preferences.get(catchBracePlacement, getDefaultAsString(catchBracePlacement));
+        String placement = preferences.get(catchBracePlacement, provider.getDefaultAsString(catchBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getUseTraitBodyBracePlacement() {
-        String placement = preferences.get(useTraitBodyBracePlacement, getDefaultAsString(useTraitBodyBracePlacement));
+        String placement = preferences.get(useTraitBodyBracePlacement, provider.getDefaultAsString(useTraitBodyBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     public BracePlacement getOtherBracePlacement() {
-        String placement = preferences.get(otherBracePlacement, getDefaultAsString(otherBracePlacement));
+        String placement = preferences.get(otherBracePlacement, provider.getDefaultAsString(otherBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
     // Blank lines -------------------------------------------------------------
 
     public int getBlankLinesBeforeNamespace() {
-        return preferences.getInt(blankLinesBeforeNamespace, getDefaultAsInt(blankLinesBeforeNamespace));
+        return preferences.getInt(blankLinesBeforeNamespace, provider.getDefaultAsInt(blankLinesBeforeNamespace));
     }
 
     public int getBlankLinesAfterNamespace() {
-        return preferences.getInt(blankLinesAfterNamespace, getDefaultAsInt(blankLinesAfterNamespace));
+        return preferences.getInt(blankLinesAfterNamespace, provider.getDefaultAsInt(blankLinesAfterNamespace));
     }
 
     public int getBlankLinesBeforeUse() {
-        return preferences.getInt(blankLinesBeforeUse, getDefaultAsInt(blankLinesBeforeUse));
+        return preferences.getInt(blankLinesBeforeUse, provider.getDefaultAsInt(blankLinesBeforeUse));
     }
 
     public int getBlankLinesBeforeUseTrait() {
-        return preferences.getInt(blankLinesBeforeUseTrait, getDefaultAsInt(blankLinesBeforeUseTrait));
+        return preferences.getInt(blankLinesBeforeUseTrait, provider.getDefaultAsInt(blankLinesBeforeUseTrait));
     }
 
     public int getBlankLinesAfterUse() {
-        return preferences.getInt(blankLinesAfterUse, getDefaultAsInt(blankLinesAfterUse));
+        return preferences.getInt(blankLinesAfterUse, provider.getDefaultAsInt(blankLinesAfterUse));
     }
 
     public int getBlankLinesBeforeClass() {
-        return preferences.getInt(blankLinesBeforeClass, getDefaultAsInt(blankLinesBeforeClass));
+        return preferences.getInt(blankLinesBeforeClass, provider.getDefaultAsInt(blankLinesBeforeClass));
     }
 
     public int getBlankLinesAfterClass() {
-        return preferences.getInt(blankLinesAfterClass, getDefaultAsInt(blankLinesAfterClass));
+        return preferences.getInt(blankLinesAfterClass, provider.getDefaultAsInt(blankLinesAfterClass));
     }
 
     public int getBlankLinesAfterClassHeader() {
-        return preferences.getInt(blankLinesAfterClassHeader, getDefaultAsInt(blankLinesAfterClassHeader));
+        return preferences.getInt(blankLinesAfterClassHeader, provider.getDefaultAsInt(blankLinesAfterClassHeader));
     }
 
     public int getBlankLinesBeforeClassEnd() {
-        return preferences.getInt(blankLinesBeforeClassEnd, getDefaultAsInt(blankLinesBeforeClassEnd));
+        return preferences.getInt(blankLinesBeforeClassEnd, provider.getDefaultAsInt(blankLinesBeforeClassEnd));
     }
 
     public int getBlankLinesBeforeFields() {
-        return preferences.getInt(blankLinesBeforeFields, getDefaultAsInt(blankLinesBeforeFields));
+        return preferences.getInt(blankLinesBeforeFields, provider.getDefaultAsInt(blankLinesBeforeFields));
     }
 
     public int getBlankLinesBetweenFields() {
-        return preferences.getInt(blankLinesBetweenFields, getDefaultAsInt(blankLinesBetweenFields));
+        return preferences.getInt(blankLinesBetweenFields, provider.getDefaultAsInt(blankLinesBetweenFields));
     }
 
     public int getBlankLinesAfterFields() {
-        return preferences.getInt(blankLinesAfterFields, getDefaultAsInt(blankLinesAfterFields));
+        return preferences.getInt(blankLinesAfterFields, provider.getDefaultAsInt(blankLinesAfterFields));
     }
 
     /**
@@ -236,448 +235,440 @@ public final class CodeStyle {
      * @return true it the fields will be group without php doc together (no empty line between them)
      */
     public boolean getBlankLinesGroupFieldsWithoutDoc() {
-	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
+	return preferences.getBoolean(blankLinesGroupFieldsWithoutDoc, provider.getDefaultAsBoolean(blankLinesGroupFieldsWithoutDoc));
     }
 
     public int getBlankLinesBeforeFunction() {
-        return preferences.getInt(blankLinesBeforeFunction, getDefaultAsInt(blankLinesBeforeFunction));
+        return preferences.getInt(blankLinesBeforeFunction, provider.getDefaultAsInt(blankLinesBeforeFunction));
     }
 
     public int getBlankLinesAfterFunction() {
-        return preferences.getInt(blankLinesAfterFunction, getDefaultAsInt(blankLinesAfterFunction));
+        return preferences.getInt(blankLinesAfterFunction, provider.getDefaultAsInt(blankLinesAfterFunction));
     }
 
     public int getBlankLinesBeforeFunctionEnd() {
-        return preferences.getInt(blankLinesBeforeFunctionEnd, getDefaultAsInt(blankLinesBeforeFunctionEnd));
+        return preferences.getInt(blankLinesBeforeFunctionEnd, provider.getDefaultAsInt(blankLinesBeforeFunctionEnd));
     }
 
     public int getBlankLinesAfterOpenPHPTag() {
-        return preferences.getInt(blankLinesAfterOpenPHPTag, getDefaultAsInt(blankLinesAfterOpenPHPTag));
+        return preferences.getInt(blankLinesAfterOpenPHPTag, provider.getDefaultAsInt(blankLinesAfterOpenPHPTag));
     }
 
     public int getBlankLinesAfterOpenPHPTagInHTML() {
-        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
+        return preferences.getInt(blankLinesAfterOpenPHPTagInHTML, provider.getDefaultAsInt(blankLinesAfterOpenPHPTagInHTML));
     }
 
     public int getBlankLinesBeforeClosePHPTag() {
-        return preferences.getInt(blankLinesBeforeClosePHPTag, getDefaultAsInt(blankLinesBeforeClosePHPTag));
+        return preferences.getInt(blankLinesBeforeClosePHPTag, provider.getDefaultAsInt(blankLinesBeforeClosePHPTag));
     }
 
     // Spaces ------------------------------------------------------------------
 
     public boolean spaceBeforeWhile() {
-        return preferences.getBoolean(spaceBeforeWhile, getDefaultAsBoolean(spaceBeforeWhile));
+        return preferences.getBoolean(spaceBeforeWhile, provider.getDefaultAsBoolean(spaceBeforeWhile));
     }
 
     public boolean spaceBeforeElse() {
-        return preferences.getBoolean(spaceBeforeElse, getDefaultAsBoolean(spaceBeforeElse));
+        return preferences.getBoolean(spaceBeforeElse, provider.getDefaultAsBoolean(spaceBeforeElse));
     }
 
     public boolean spaceBeforeCatch() {
-        return preferences.getBoolean(spaceBeforeCatch, getDefaultAsBoolean(spaceBeforeCatch));
+        return preferences.getBoolean(spaceBeforeCatch, provider.getDefaultAsBoolean(spaceBeforeCatch));
     }
 
     public boolean spaceBeforeFinally() {
-        return preferences.getBoolean(spaceBeforeFinally, getDefaultAsBoolean(spaceBeforeFinally));
+        return preferences.getBoolean(spaceBeforeFinally, provider.getDefaultAsBoolean(spaceBeforeFinally));
     }
 
     public boolean spaceBeforeMethodDeclParen() {
-        return preferences.getBoolean(spaceBeforeMethodDeclParen, getDefaultAsBoolean(spaceBeforeMethodDeclParen));
+        return preferences.getBoolean(spaceBeforeMethodDeclParen, provider.getDefaultAsBoolean(spaceBeforeMethodDeclParen));
     }
 
     public boolean spaceBeforeMethodCallParen() {
-        return preferences.getBoolean(spaceBeforeMethodCallParen, getDefaultAsBoolean(spaceBeforeMethodCallParen));
+        return preferences.getBoolean(spaceBeforeMethodCallParen, provider.getDefaultAsBoolean(spaceBeforeMethodCallParen));
     }
 
     public boolean spaceBeforeIfParen() {
-        return preferences.getBoolean(spaceBeforeIfParen, getDefaultAsBoolean(spaceBeforeIfParen));
+        return preferences.getBoolean(spaceBeforeIfParen, provider.getDefaultAsBoolean(spaceBeforeIfParen));
     }
 
     public boolean spaceBeforeForParen() {
-        return preferences.getBoolean(spaceBeforeForParen, getDefaultAsBoolean(spaceBeforeForParen));
+        return preferences.getBoolean(spaceBeforeForParen, provider.getDefaultAsBoolean(spaceBeforeForParen));
     }
 
     public boolean spaceBeforeWhileParen() {
-        return preferences.getBoolean(spaceBeforeWhileParen, getDefaultAsBoolean(spaceBeforeWhileParen));
+        return preferences.getBoolean(spaceBeforeWhileParen, provider.getDefaultAsBoolean(spaceBeforeWhileParen));
     }
 
     public boolean spaceBeforeCatchParen() {
-        return preferences.getBoolean(spaceBeforeCatchParen, getDefaultAsBoolean(spaceBeforeCatchParen));
+        return preferences.getBoolean(spaceBeforeCatchParen, provider.getDefaultAsBoolean(spaceBeforeCatchParen));
     }
 
     public boolean spaceBeforeSwitchParen() {
-        return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
+        return preferences.getBoolean(spaceBeforeSwitchParen, provider.getDefaultAsBoolean(spaceBeforeSwitchParen));
     }
 
     public boolean spaceBeforeWithParen() {
-        return preferences.getBoolean(spaceBeforeWithParen, getDefaultAsBoolean(spaceBeforeWithParen));
+        return preferences.getBoolean(spaceBeforeWithParen, provider.getDefaultAsBoolean(spaceBeforeWithParen));
     }
 
     public boolean spaceAroundUnaryOps() {
-        return preferences.getBoolean(spaceAroundUnaryOps, getDefaultAsBoolean(spaceAroundUnaryOps));
+        return preferences.getBoolean(spaceAroundUnaryOps, provider.getDefaultAsBoolean(spaceAroundUnaryOps));
     }
 
     public boolean spaceAroundBinaryOps() {
-        return preferences.getBoolean(spaceAroundBinaryOps, getDefaultAsBoolean(spaceAroundBinaryOps));
+        return preferences.getBoolean(spaceAroundBinaryOps, provider.getDefaultAsBoolean(spaceAroundBinaryOps));
     }
 
     public boolean spaceAroundStringConcatOps() {
-        return preferences.getBoolean(spaceAroundStringConcatOps, getDefaultAsBoolean(spaceAroundStringConcatOps));
+        return preferences.getBoolean(spaceAroundStringConcatOps, provider.getDefaultAsBoolean(spaceAroundStringConcatOps));
     }
 
     public boolean spaceAroundTernaryOps() {
-        return preferences.getBoolean(spaceAroundTernaryOps, getDefaultAsBoolean(spaceAroundTernaryOps));
+        return preferences.getBoolean(spaceAroundTernaryOps, provider.getDefaultAsBoolean(spaceAroundTernaryOps));
     }
 
     public boolean spaceAroundKeyValueOps() {
-        return preferences.getBoolean(spaceAroundKeyValueOps, getDefaultAsBoolean(spaceAroundKeyValueOps));
+        return preferences.getBoolean(spaceAroundKeyValueOps, provider.getDefaultAsBoolean(spaceAroundKeyValueOps));
     }
 
     public boolean spaceAroundAssignOps() {
-        return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
+        return preferences.getBoolean(spaceAroundAssignOps, provider.getDefaultAsBoolean(spaceAroundAssignOps));
     }
 
     public boolean spaceAroundObjectOps() {
-        return preferences.getBoolean(spaceAroundObjectOps, getDefaultAsBoolean(spaceAroundObjectOps));
+        return preferences.getBoolean(spaceAroundObjectOps, provider.getDefaultAsBoolean(spaceAroundObjectOps));
     }
 
     public boolean spaceBeforeClassDeclLeftBrace() {
-        return preferences.getBoolean(spaceBeforeClassDeclLeftBrace, getDefaultAsBoolean(spaceBeforeClassDeclLeftBrace));
+        return preferences.getBoolean(spaceBeforeClassDeclLeftBrace, provider.getDefaultAsBoolean(spaceBeforeClassDeclLeftBrace));
     }
 
     public boolean spaceBeforeMethodDeclLeftBrace() {
-        return preferences.getBoolean(spaceBeforeMethodDeclLeftBrace, getDefaultAsBoolean(spaceBeforeMethodDeclLeftBrace));
+        return preferences.getBoolean(spaceBeforeMethodDeclLeftBrace, provider.getDefaultAsBoolean(spaceBeforeMethodDeclLeftBrace));
     }
 
     public boolean spaceBeforeIfLeftBrace() {
-        return preferences.getBoolean(spaceBeforeIfLeftBrace, getDefaultAsBoolean(spaceBeforeIfLeftBrace));
+        return preferences.getBoolean(spaceBeforeIfLeftBrace, provider.getDefaultAsBoolean(spaceBeforeIfLeftBrace));
     }
 
     public boolean spaceBeforeElseLeftBrace() {
-        return preferences.getBoolean(spaceBeforeElseLeftBrace, getDefaultAsBoolean(spaceBeforeElseLeftBrace));
+        return preferences.getBoolean(spaceBeforeElseLeftBrace, provider.getDefaultAsBoolean(spaceBeforeElseLeftBrace));
     }
 
     public boolean spaceBeforeWhileLeftBrace() {
-        return preferences.getBoolean(spaceBeforeWhileLeftBrace, getDefaultAsBoolean(spaceBeforeWhileLeftBrace));
+        return preferences.getBoolean(spaceBeforeWhileLeftBrace, provider.getDefaultAsBoolean(spaceBeforeWhileLeftBrace));
     }
 
     public boolean spaceBeforeForLeftBrace() {
-        return preferences.getBoolean(spaceBeforeForLeftBrace, getDefaultAsBoolean(spaceBeforeForLeftBrace));
+        return preferences.getBoolean(spaceBeforeForLeftBrace, provider.getDefaultAsBoolean(spaceBeforeForLeftBrace));
     }
 
     public boolean spaceBeforeDoLeftBrace() {
-        return preferences.getBoolean(spaceBeforeDoLeftBrace, getDefaultAsBoolean(spaceBeforeDoLeftBrace));
+        return preferences.getBoolean(spaceBeforeDoLeftBrace, provider.getDefaultAsBoolean(spaceBeforeDoLeftBrace));
     }
 
     public boolean spaceBeforeSwitchLeftBrace() {
-        return preferences.getBoolean(spaceBeforeSwitchLeftBrace, getDefaultAsBoolean(spaceBeforeSwitchLeftBrace));
+        return preferences.getBoolean(spaceBeforeSwitchLeftBrace, provider.getDefaultAsBoolean(spaceBeforeSwitchLeftBrace));
     }
 
     public boolean spaceBeforeTryLeftBrace() {
-        return preferences.getBoolean(spaceBeforeTryLeftBrace, getDefaultAsBoolean(spaceBeforeTryLeftBrace));
+        return preferences.getBoolean(spaceBeforeTryLeftBrace, provider.getDefaultAsBoolean(spaceBeforeTryLeftBrace));
     }
 
     public boolean spaceBeforeCatchLeftBrace() {
-        return preferences.getBoolean(spaceBeforeCatchLeftBrace, getDefaultAsBoolean(spaceBeforeCatchLeftBrace));
+        return preferences.getBoolean(spaceBeforeCatchLeftBrace, provider.getDefaultAsBoolean(spaceBeforeCatchLeftBrace));
     }
 
     public boolean spaceBeforeFinallyLeftBrace() {
-        return preferences.getBoolean(spaceBeforeFinallyLeftBrace, getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
+        return preferences.getBoolean(spaceBeforeFinallyLeftBrace, provider.getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
     }
 
     public boolean spaceBeforeWithLeftBrace() {
-        return preferences.getBoolean(spaceBeforeWithLeftBrace, getDefaultAsBoolean(spaceBeforeWithLeftBrace));
+        return preferences.getBoolean(spaceBeforeWithLeftBrace, provider.getDefaultAsBoolean(spaceBeforeWithLeftBrace));
     }
 //
 //    public boolean spaceBeforeSynchronizedLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
+//        return preferences.getBoolean(spaceBeforeSynchronizedLeftBrace, provider.getDefaultAsBoolean(spaceBeforeSynchronizedLeftBrace));
 //    }
 //
 //    public boolean spaceBeforeStaticInitLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeStaticInitLeftBrace, getDefaultAsBoolean(spaceBeforeStaticInitLeftBrace));
+//        return preferences.getBoolean(spaceBeforeStaticInitLeftBrace, provider.getDefaultAsBoolean(spaceBeforeStaticInitLeftBrace));
 //    }
 //
 //    public boolean spaceBeforeArrayInitLeftBrace() {
-//        return preferences.getBoolean(spaceBeforeArrayInitLeftBrace, getDefaultAsBoolean(spaceBeforeArrayInitLeftBrace));
+//        return preferences.getBoolean(spaceBeforeArrayInitLeftBrace, provider.getDefaultAsBoolean(spaceBeforeArrayInitLeftBrace));
 //    }
 //
     public boolean spaceWithinParens() {
-        return preferences.getBoolean(spaceWithinParens, getDefaultAsBoolean(spaceWithinParens));
+        return preferences.getBoolean(spaceWithinParens, provider.getDefaultAsBoolean(spaceWithinParens));
     }
 
     public boolean spaceWithinMethodDeclParens() {
-        return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
+        return preferences.getBoolean(spaceWithinMethodDeclParens, provider.getDefaultAsBoolean(spaceWithinMethodDeclParens));
     }
 
     public boolean spaceWithinMethodCallParens() {
-        return preferences.getBoolean(spaceWithinMethodCallParens, getDefaultAsBoolean(spaceWithinMethodCallParens));
+        return preferences.getBoolean(spaceWithinMethodCallParens, provider.getDefaultAsBoolean(spaceWithinMethodCallParens));
     }
 
     public boolean spaceWithinIfParens() {
-        return preferences.getBoolean(spaceWithinIfParens, getDefaultAsBoolean(spaceWithinIfParens));
+        return preferences.getBoolean(spaceWithinIfParens, provider.getDefaultAsBoolean(spaceWithinIfParens));
     }
 
     public boolean spaceWithinForParens() {
-        return preferences.getBoolean(spaceWithinForParens, getDefaultAsBoolean(spaceWithinForParens));
+        return preferences.getBoolean(spaceWithinForParens, provider.getDefaultAsBoolean(spaceWithinForParens));
     }
 
     public boolean spaceWithinWhileParens() {
-        return preferences.getBoolean(spaceWithinWhileParens, getDefaultAsBoolean(spaceWithinWhileParens));
+        return preferences.getBoolean(spaceWithinWhileParens, provider.getDefaultAsBoolean(spaceWithinWhileParens));
     }
 
     public boolean spaceWithinSwitchParens() {
-        return preferences.getBoolean(spaceWithinSwitchParens, getDefaultAsBoolean(spaceWithinSwitchParens));
+        return preferences.getBoolean(spaceWithinSwitchParens, provider.getDefaultAsBoolean(spaceWithinSwitchParens));
     }
 
     public boolean spaceWithinCatchParens() {
-        return preferences.getBoolean(spaceWithinCatchParens, getDefaultAsBoolean(spaceWithinCatchParens));
+        return preferences.getBoolean(spaceWithinCatchParens, provider.getDefaultAsBoolean(spaceWithinCatchParens));
     }
 
     public boolean spaceWithinWithParens() {
-        return preferences.getBoolean(spaceWithinWithParens, getDefaultAsBoolean(spaceWithinWithParens));
+        return preferences.getBoolean(spaceWithinWithParens, provider.getDefaultAsBoolean(spaceWithinWithParens));
     }
 //
 //    public boolean spaceWithinSynchronizedParens() {
-//        return preferences.getBoolean(spaceWithinSynchronizedParens, getDefaultAsBoolean(spaceWithinSynchronizedParens));
+//        return preferences.getBoolean(spaceWithinSynchronizedParens, provider.getDefaultAsBoolean(spaceWithinSynchronizedParens));
 //    }
 
     public boolean spaceWithinTypeCastParens() {
-        return preferences.getBoolean(spaceWithinTypeCastParens, getDefaultAsBoolean(spaceWithinTypeCastParens));
+        return preferences.getBoolean(spaceWithinTypeCastParens, provider.getDefaultAsBoolean(spaceWithinTypeCastParens));
     }
 
     public boolean spaceWithinArrayDeclParens() {
-        return preferences.getBoolean(spaceWithinArrayDeclParens, getDefaultAsBoolean(spaceWithinArrayDeclParens));
+        return preferences.getBoolean(spaceWithinArrayDeclParens, provider.getDefaultAsBoolean(spaceWithinArrayDeclParens));
     }
 
 //    public boolean spaceWithinAnnotationParens() {
-//        return preferences.getBoolean(spaceWithinAnnotationParens, getDefaultAsBoolean(spaceWithinAnnotationParens));
+//        return preferences.getBoolean(spaceWithinAnnotationParens, provider.getDefaultAsBoolean(spaceWithinAnnotationParens));
 //    }
 //
     public boolean spaceWithinBraces() {
-        return preferences.getBoolean(spaceWithinBraces, getDefaultAsBoolean(spaceWithinBraces));
+        return preferences.getBoolean(spaceWithinBraces, provider.getDefaultAsBoolean(spaceWithinBraces));
     }
 
     public boolean spaceWithinArrayBrackets() {
-        return preferences.getBoolean(spaceWithinArrayBrackets, getDefaultAsBoolean(spaceWithinArrayBrackets));
+        return preferences.getBoolean(spaceWithinArrayBrackets, provider.getDefaultAsBoolean(spaceWithinArrayBrackets));
     }
 
     public boolean spaceBeforeComma() {
-        return preferences.getBoolean(spaceBeforeComma, getDefaultAsBoolean(spaceBeforeComma));
+        return preferences.getBoolean(spaceBeforeComma, provider.getDefaultAsBoolean(spaceBeforeComma));
     }
 
     public boolean spaceAfterComma() {
-        return preferences.getBoolean(spaceAfterComma, getDefaultAsBoolean(spaceAfterComma));
+        return preferences.getBoolean(spaceAfterComma, provider.getDefaultAsBoolean(spaceAfterComma));
     }
 
     public boolean spaceBeforeSemi() {
-        return preferences.getBoolean(spaceBeforeSemi, getDefaultAsBoolean(spaceBeforeSemi));
+        return preferences.getBoolean(spaceBeforeSemi, provider.getDefaultAsBoolean(spaceBeforeSemi));
     }
 
     public boolean spaceAfterSemi() {
-        return preferences.getBoolean(spaceAfterSemi, getDefaultAsBoolean(spaceAfterSemi));
+        return preferences.getBoolean(spaceAfterSemi, provider.getDefaultAsBoolean(spaceAfterSemi));
     }
 
     public boolean spaceBeforeColon() {
-        return preferences.getBoolean(spaceBeforeColon, getDefaultAsBoolean(spaceBeforeColon));
+        return preferences.getBoolean(spaceBeforeColon, provider.getDefaultAsBoolean(spaceBeforeColon));
     }
 
     public boolean spaceAfterColon() {
-        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
+        return preferences.getBoolean(spaceAfterColon, provider.getDefaultAsBoolean(spaceAfterColon));
     }
 
     // alignment
     public boolean alignMultilineMethodParams() {
-        return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
+        return preferences.getBoolean(alignMultilineMethodParams, provider.getDefaultAsBoolean(alignMultilineMethodParams));
     }
 
     public boolean alignMultilineCallArgs() {
-        return preferences.getBoolean(alignMultilineCallArgs, getDefaultAsBoolean(alignMultilineCallArgs));
+        return preferences.getBoolean(alignMultilineCallArgs, provider.getDefaultAsBoolean(alignMultilineCallArgs));
     }
 
     public boolean alignMultilineImplements() {
-        return preferences.getBoolean(alignMultilineImplements, getDefaultAsBoolean(alignMultilineImplements));
+        return preferences.getBoolean(alignMultilineImplements, provider.getDefaultAsBoolean(alignMultilineImplements));
     }
 
     public boolean alignMultilineParenthesized() {
-        return preferences.getBoolean(alignMultilineParenthesized, getDefaultAsBoolean(alignMultilineParenthesized));
+        return preferences.getBoolean(alignMultilineParenthesized, provider.getDefaultAsBoolean(alignMultilineParenthesized));
     }
 
     public boolean alignMultilineBinaryOp() {
-        return preferences.getBoolean(alignMultilineBinaryOp, getDefaultAsBoolean(alignMultilineBinaryOp));
+        return preferences.getBoolean(alignMultilineBinaryOp, provider.getDefaultAsBoolean(alignMultilineBinaryOp));
     }
 
     public boolean alignMultilineTernaryOp() {
-        return preferences.getBoolean(alignMultilineTernaryOp, getDefaultAsBoolean(alignMultilineTernaryOp));
+        return preferences.getBoolean(alignMultilineTernaryOp, provider.getDefaultAsBoolean(alignMultilineTernaryOp));
     }
 
     public boolean alignMultilineAssignment() {
-        return preferences.getBoolean(alignMultilineAssignment, getDefaultAsBoolean(alignMultilineAssignment));
+        return preferences.getBoolean(alignMultilineAssignment, provider.getDefaultAsBoolean(alignMultilineAssignment));
     }
 
     public boolean alignMultilineFor() {
-        return preferences.getBoolean(alignMultilineFor, getDefaultAsBoolean(alignMultilineFor));
+        return preferences.getBoolean(alignMultilineFor, provider.getDefaultAsBoolean(alignMultilineFor));
     }
 
     public boolean alignMultilineArrayInit() {
-        return preferences.getBoolean(alignMultilineArrayInit, getDefaultAsBoolean(alignMultilineArrayInit));
+        return preferences.getBoolean(alignMultilineArrayInit, provider.getDefaultAsBoolean(alignMultilineArrayInit));
     }
 
     public boolean placeElseOnNewLine() {
-        return preferences.getBoolean(placeElseOnNewLine, getDefaultAsBoolean(placeElseOnNewLine));
+        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
     }
 
     public boolean placeWhileOnNewLine() {
-        return preferences.getBoolean(placeWhileOnNewLine, getDefaultAsBoolean(placeWhileOnNewLine));
+        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
     }
 
     public boolean placeCatchOnNewLine() {
-        return preferences.getBoolean(placeCatchOnNewLine, getDefaultAsBoolean(placeCatchOnNewLine));
+        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
     }
 
     public boolean placeNewLineAfterModifiers() {
-        return preferences.getBoolean(placeNewLineAfterModifiers, getDefaultAsBoolean(placeNewLineAfterModifiers));
+        return preferences.getBoolean(placeNewLineAfterModifiers, provider.getDefaultAsBoolean(placeNewLineAfterModifiers));
     }
 
     public boolean groupMulitlineAssignment() {
-        return preferences.getBoolean(groupAlignmentAssignment, getDefaultAsBoolean(groupAlignmentAssignment));
+        return preferences.getBoolean(groupAlignmentAssignment, provider.getDefaultAsBoolean(groupAlignmentAssignment));
     }
 
     public boolean groupMulitlineArrayInit() {
-        return preferences.getBoolean(groupAlignmentArrayInit, getDefaultAsBoolean(groupAlignmentArrayInit));
+        return preferences.getBoolean(groupAlignmentArrayInit, provider.getDefaultAsBoolean(groupAlignmentArrayInit));
     }
 
     // Wrapping ----------------------------------------------------------------
 
     public WrapStyle wrapStatement() {
-        String wrap = preferences.get(wrapStatement, getDefaultAsString(wrapStatement));
+        String wrap = preferences.get(wrapStatement, provider.getDefaultAsString(wrapStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapVariables() {
-        String wrap = preferences.get(wrapVariables, getDefaultAsString(wrapVariables));
+        String wrap = preferences.get(wrapVariables, provider.getDefaultAsString(wrapVariables));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapMethodParams() {
-        String wrap = preferences.get(wrapMethodParams, getDefaultAsString(wrapMethodParams));
+        String wrap = preferences.get(wrapMethodParams, provider.getDefaultAsString(wrapMethodParams));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapMethodCallArgs() {
-        String wrap = preferences.get(wrapMethodCallArgs, getDefaultAsString(wrapMethodCallArgs));
+        String wrap = preferences.get(wrapMethodCallArgs, provider.getDefaultAsString(wrapMethodCallArgs));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapChainedMethodCalls() {
-        String wrap = preferences.get(wrapChainedMethodCalls, getDefaultAsString(wrapChainedMethodCalls));
+        String wrap = preferences.get(wrapChainedMethodCalls, provider.getDefaultAsString(wrapChainedMethodCalls));
         return WrapStyle.valueOf(wrap);
     }
 
     public boolean wrapAfterDotInChainedMethodCalls() {
-        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
+        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, provider.getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
     }
 
     public WrapStyle wrapArrayInit() {
-        String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
+        String wrap = preferences.get(wrapArrayInit, provider.getDefaultAsString(wrapArrayInit));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapArrayInitItems() {
-        String wrap = preferences.get(wrapArrayInitItems, getDefaultAsString(wrapArrayInitItems));
+        String wrap = preferences.get(wrapArrayInitItems, provider.getDefaultAsString(wrapArrayInitItems));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapFor() {
-        String wrap = preferences.get(wrapFor, getDefaultAsString(wrapFor));
+        String wrap = preferences.get(wrapFor, provider.getDefaultAsString(wrapFor));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapForStatement() {
-        String wrap = preferences.get(wrapForStatement, getDefaultAsString(wrapForStatement));
+        String wrap = preferences.get(wrapForStatement, provider.getDefaultAsString(wrapForStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapIfStatement() {
-        String wrap = preferences.get(wrapIfStatement, getDefaultAsString(wrapIfStatement));
+        String wrap = preferences.get(wrapIfStatement, provider.getDefaultAsString(wrapIfStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapWhileStatement() {
-        String wrap = preferences.get(wrapWhileStatement, getDefaultAsString(wrapWhileStatement));
+        String wrap = preferences.get(wrapWhileStatement, provider.getDefaultAsString(wrapWhileStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapDoWhileStatement() {
-        String wrap = preferences.get(wrapDoWhileStatement, getDefaultAsString(wrapDoWhileStatement));
+        String wrap = preferences.get(wrapDoWhileStatement, provider.getDefaultAsString(wrapDoWhileStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapWithStatement() {
-        String wrap = preferences.get(wrapWithStatement, getDefaultAsString(wrapWithStatement));
+        String wrap = preferences.get(wrapWithStatement, provider.getDefaultAsString(wrapWithStatement));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapBinaryOps() {
-        String wrap = preferences.get(wrapBinaryOps, getDefaultAsString(wrapBinaryOps));
+        String wrap = preferences.get(wrapBinaryOps, provider.getDefaultAsString(wrapBinaryOps));
         return WrapStyle.valueOf(wrap);
     }
 
     public boolean wrapAfterBinaryOps() {
-        return preferences.getBoolean(wrapAfterBinaryOps, getDefaultAsBoolean(wrapAfterBinaryOps));
+        return preferences.getBoolean(wrapAfterBinaryOps, provider.getDefaultAsBoolean(wrapAfterBinaryOps));
     }
     
     public WrapStyle wrapTernaryOps() {
-        String wrap = preferences.get(wrapTernaryOps, getDefaultAsString(wrapTernaryOps));
+        String wrap = preferences.get(wrapTernaryOps, provider.getDefaultAsString(wrapTernaryOps));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapAssignOps() {
-        String wrap = preferences.get(wrapAssignOps, getDefaultAsString(wrapAssignOps));
+        String wrap = preferences.get(wrapAssignOps, provider.getDefaultAsString(wrapAssignOps));
         return WrapStyle.valueOf(wrap);
     }
 
     public boolean wrapAfterTernaryOps() {
-        return preferences.getBoolean(wrapAfterTernaryOps, getDefaultAsBoolean(wrapAfterTernaryOps));
+        return preferences.getBoolean(wrapAfterTernaryOps, provider.getDefaultAsBoolean(wrapAfterTernaryOps));
     }
 
     public boolean wrapBlockBrace() {
-        return preferences.getBoolean(wrapBlockBraces, getDefaultAsBoolean(wrapBlockBraces));
+        return preferences.getBoolean(wrapBlockBraces, provider.getDefaultAsBoolean(wrapBlockBraces));
     }
 
     public boolean wrapStatementsOnTheSameLine() {
-        return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
+        return preferences.getBoolean(wrapStatementsOnTheLine, provider.getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
     public WrapStyle wrapObjects() {
-        String wrap = preferences.get(wrapObjects, getDefaultAsString(wrapObjects));
+        String wrap = preferences.get(wrapObjects, provider.getDefaultAsString(wrapObjects));
         return WrapStyle.valueOf(wrap);
     }
 
     public WrapStyle wrapProperties() {
-        String wrap = preferences.get(wrapProperties, getDefaultAsString(wrapProperties));
+        String wrap = preferences.get(wrapProperties, provider.getDefaultAsString(wrapProperties));
         return WrapStyle.valueOf(wrap);
     }
 
     // Uses
 
     public boolean preferFullyQualifiedNames() {
-        return preferences.getBoolean(preferFullyQualifiedNames, getDefaultAsBoolean(preferFullyQualifiedNames));
+        return preferences.getBoolean(preferFullyQualifiedNames, provider.getDefaultAsBoolean(preferFullyQualifiedNames));
     }
 
     public boolean preferMultipleUseStatementsCombined() {
-        return preferences.getBoolean(preferMultipleUseStatementsCombined, getDefaultAsBoolean(preferMultipleUseStatementsCombined));
+        return preferences.getBoolean(preferMultipleUseStatementsCombined, provider.getDefaultAsBoolean(preferMultipleUseStatementsCombined));
     }
 
     public boolean startUseWithNamespaceSeparator() {
-        return preferences.getBoolean(startUseWithNamespaceSeparator, getDefaultAsBoolean(startUseWithNamespaceSeparator));
-    }
-
-    private static class Producer implements FmtOptions.CodeStyleProducer {
-
-        @Override
-        public CodeStyle create(Preferences preferences) {
-            return new CodeStyle(preferences);
-        }
+        return preferences.getBoolean(startUseWithNamespaceSeparator, provider.getDefaultAsBoolean(startUseWithNamespaceSeparator));
     }
 
     public enum BracePlacement {

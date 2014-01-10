@@ -45,7 +45,7 @@
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
 
-import org.netbeans.modules.javaee.wildfly.nodes.JBManagerNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -76,10 +76,10 @@ public class ShowAdminToolAction extends CookieAction {
             return;
         
         for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(JBManagerNode.class);
-            if (node instanceof JBManagerNode) {
+            Object node = nodes[i].getLookup().lookup(WildflyManagerNode.class);
+            if (node instanceof WildflyManagerNode) {
                 try {
-                    URL url = new URL(((JBManagerNode) node).getAdminURL());
+                    URL url = new URL(((WildflyManagerNode) node).getAdminURL());
                     URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);
