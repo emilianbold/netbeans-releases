@@ -291,7 +291,7 @@ public abstract class JiraConnectorProvider {
                             boolean allTypes = true;
                             for (int i = 0; i < pts.length; i++) {
                                 Class<?> pt = pts[i];
-                                if(args[i] != null && !pt.getSimpleName().equals(args[i].getClass().getSimpleName())) {
+                                if(args[i] != null && !sameTypeName(pt, args[i].getClass())) {
                                     // XXX hack!!! we kind of relly on the type names being unique over all packages
                                     allTypes = false;
                                     break;
@@ -323,6 +323,17 @@ public abstract class JiraConnectorProvider {
             } catch (InvocationTargetException e) {
                 throw e.getCause();
             }
+        }
+
+        public boolean sameTypeName(Class<?> c1, Class<?> c2) {
+            if(c1.getSimpleName().equals(c2.getSimpleName())) {
+                return true;
+            }
+            c2 = c2.getSuperclass();
+            if(c2 == Object.class) {
+                return false;
+            }
+            return sameTypeName(c1, c2);
         }
 
         private Object toDelegate(Object obj) {
