@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.javaee.wildfly.config.mdb;
 
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -172,7 +172,7 @@ public class MessageDestinationSupport {
                 name = name.substring(0, name.indexOf(",")); // NOI18N
             }
 
-            destinations.add(new JBossMessageDestination(name, type));
+            destinations.add(new WildflyMessageDestination(name, type));
         }
 
         return destinations;
@@ -220,7 +220,7 @@ public class MessageDestinationSupport {
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type)
             throws UnsupportedOperationException, ConfigurationException {
 
-//        return new JBossMessageDestination(name, type);
+//        return new WildflyMessageDestination(name, type);
         if (!resourceDir.exists()) {
             resourceDir.mkdir();
         }
@@ -282,7 +282,7 @@ public class MessageDestinationSupport {
             newDestinationServiceModel = oldDestinationServiceModel;
         }
 
-        JBossMessageDestination dest = modifyMessageDestinationModel(
+        WildflyMessageDestination dest = modifyMessageDestinationModel(
                 newDestinationServiceModel, name, type);
 
         // save if needed
@@ -305,7 +305,7 @@ public class MessageDestinationSupport {
 
     }
 
-    private JBossMessageDestination modifyMessageDestinationModel(
+    private WildflyMessageDestination modifyMessageDestinationModel(
             Server model, String name, MessageDestination.Type type) throws ConfigurationException {
 
         if (model == null) {
@@ -341,7 +341,7 @@ public class MessageDestinationSupport {
 
         model.addMbean(mbean);
 
-        return new JBossMessageDestination(name, type);
+        return new WildflyMessageDestination(name, type);
     }
 
 }

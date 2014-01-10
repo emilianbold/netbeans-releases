@@ -85,22 +85,25 @@ public class JsFormatter implements Formatter {
 
     private final Language<JsTokenId> language;
 
+    private final DefaultsProvider provider;
+
     private int lastOffsetDiff = 0;
 
     private final Set<FormatToken> processed = new HashSet<FormatToken>();
 
     public JsFormatter(Language<JsTokenId> language) {
         this.language = language;
+        this.provider = Defaults.getInstance(language.mimeType());
     }
 
     @Override
     public int hangingIndentSize() {
-        return CodeStyle.get((Document) null).getContinuationIndentSize();
+        return CodeStyle.get((Document) null, provider).getContinuationIndentSize();
     }
 
     @Override
     public int indentSize() {
-        return CodeStyle.get((Document) null).getIndentSize();
+        return CodeStyle.get((Document) null, provider).getIndentSize();
     }
 
     @Override
@@ -121,7 +124,7 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
-                FormatContext formatContext = new FormatContext(context, compilationInfo.getSnapshot(), language);
+                FormatContext formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language);
 
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                         compilationInfo.getSnapshot().getTokenHierarchy(), context.startOffset(), language);
@@ -1375,7 +1378,7 @@ public class JsFormatter implements Formatter {
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
 
-        final IndentContext indentContext = new IndentContext(context);
+        final IndentContext indentContext = new IndentContext(context, provider);
         int indentationSize = IndentUtils.indentLevelSize(document);
         int continuationIndent = CodeStyle.get(indentContext).getContinuationIndentSize();
 

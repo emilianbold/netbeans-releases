@@ -1921,7 +1921,7 @@ public class JsFormatterTest extends JsTestBase {
             // XXX tests fails randomly on this with JDK7
             // XXX so we aretrying to track down whats happening
             Logger.getAnonymousLogger().log(Level.INFO,
-                    "Space before method call setting: " + CodeStyle.get(doc).spaceBeforeMethodCallParen());
+                    "Space before method call setting: " + CodeStyle.get(doc, Defaults.getInstance(JsTokenId.JAVASCRIPT_MIME_TYPE)).spaceBeforeMethodCallParen());
         } finally {
             for (String option : options.keySet()) {
                 prefs.remove(option);
