@@ -148,6 +148,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
         synchronized(this) {
+            interrupter.cancel();
             this.interrupter = new InterrupterImpl();
         }
         runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), interrupter);

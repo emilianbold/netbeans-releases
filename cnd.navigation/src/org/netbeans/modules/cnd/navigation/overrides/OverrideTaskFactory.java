@@ -76,9 +76,10 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Kvashin
  */
 public class OverrideTaskFactory extends IndexingAwareParserResultTask<CndParserResult> {
-    private AtomicBoolean canceled = new AtomicBoolean(false);
     private static final RequestProcessor RP = new RequestProcessor("OverrideTaskFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private CndParserResult lastParserResult;
 
     public OverrideTaskFactory(String mimeType) {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);
@@ -87,7 +88,11 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<CndParser
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
         synchronized (this) {
+            if (lastParserResult == result) {
+                return;
+            }
             canceled.set(true);
+            lastParserResult = result;
             canceled = new AtomicBoolean(false);
         }
         FileObject fo = result.getSnapshot().getSource().getFileObject();
@@ -130,6 +135,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<CndParser
     @Override
     public final synchronized void cancel() {
         canceled.set(true);
+        lastParserResult = null;
     }
 
     private static boolean isEnabled() {

@@ -85,6 +85,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
     private InterrupterImpl interrupter = new InterrupterImpl();
+    private CndParserResult lastParserResult;
 
     public SemanticHighlighter(String mimeType) {
         init(mimeType);
@@ -258,7 +259,12 @@ public final class SemanticHighlighter extends HighlighterBase {
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
         synchronized(this) {
-            this.interrupter = new InterrupterImpl();
+            if (lastParserResult == result) {
+                return;
+            }
+            interrupter.cancel();
+            lastParserResult = result;
+            interrupter = new InterrupterImpl();
         }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
     }
@@ -266,6 +272,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     @Override
     public synchronized void cancel() {
         interrupter.cancel();
+        lastParserResult = null;
     }
 
     @Override
