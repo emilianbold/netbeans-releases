@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.model.tasks;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -63,6 +65,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -75,10 +78,14 @@ public final class CndParser extends Parser implements CsmProgressListener {
     private final Lock lock = new Lock();
     //Listener support
     private final ChangeSupport listeners = new ChangeSupport(this);
+    private static final Set<CndParser> regestry = new WeakSet<CndParser>();
 
     private CndParser(Collection<Snapshot> snapshots) {
         synchronized(lock) {
             cndParserResult = new CndParserResult(null, snapshots.size() == 1 ? snapshots.iterator().next() : null, 0);
+        }
+        synchronized(regestry) {
+            regestry.add(this);
         }
     }
 
@@ -154,7 +161,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                     if (fo != null) {
                         CsmFile file = project.findFile(fo.getPath(), false, false);
                         if (file != null) {
-                            LOG.log(Level.FINE, "update parse result for {0}", snapshot); //NOI18N
+                            LOG.log(Level.FINE, "update parse result for {0} because project ready", snapshot); //NOI18N
                             long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
                             cndParserResult = new CndParserResult(file, snapshot, fileVersion);
                             listeners.fireChange();
@@ -185,7 +192,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                 if (snapshot != null) {
                     FileObject fo = snapshot.getSource().getFileObject();
                     if (fo != null && fo.equals(file.getFileObject())) {
-                        LOG.log(Level.FINE, "update parse result for {0}", snapshot); //NOI18N
+                        LOG.log(Level.FINE, "update parse result for {0} because file parsed", snapshot); //NOI18N
                         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
                         cndParserResult = new CndParserResult(file, snapshot, fileVersion);
                         listeners.fireChange();
@@ -197,6 +204,35 @@ public final class CndParser extends Parser implements CsmProgressListener {
 
     @Override
     public void parserIdle() {
+    }
+    
+    public static final void firePropertyChanged() {
+        HashSet<CndParser> set = new HashSet<CndParser>();
+        synchronized(regestry) {
+            set.addAll(regestry);
+        }
+        for(CndParser parser : set) {
+            if (parser == null) {
+                continue;
+            }
+            synchronized(parser.lock) {
+                if (parser.cndParserResult != null) {
+                    Snapshot snapshot = parser.cndParserResult.getSnapshot();
+                    if (snapshot != null) {
+                        FileObject fo = snapshot.getSource().getFileObject();
+                        if (fo != null) {
+                            CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
+                            if (file != null) {
+                                LOG.log(Level.FINE, "update parse result for {0} because propery chanded", snapshot); //NOI18N
+                                long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+                                parser.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
+                                parser.listeners.fireChange();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     @MimeRegistrations({
