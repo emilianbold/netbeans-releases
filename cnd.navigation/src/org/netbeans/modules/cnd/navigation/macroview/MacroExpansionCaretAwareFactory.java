@@ -43,13 +43,31 @@
  */
 package org.netbeans.modules.cnd.navigation.macroview;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,110 +75,97 @@ import org.openide.filesystems.FileObject;
  *
  * @author Nick Ktasilnikov
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position = 11)
-public final class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTaskFactory {
+public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserResultTask<CndParserResult> {
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    
+    public MacroExpansionCaretAwareFactory(String mimeType) {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
+    }
 
     @Override
-    protected PhaseRunner createTask(final FileObject fo) {
-        return new PhaseRunner() {
-
-            @Override
-            public void run(Phase phase) {
-                boolean changed = false;
-                Document doc = CsmUtilities.getDocument(fo);
-                if (doc == null) {
-                    return;
-                }
-                Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
-                if (obj != null) {
-                    if(!(Boolean) obj) {
-                        return;
-                    }
-                }
-                if (!isMacroExpansionDoc(doc)) {
-                    Document doc2 = (Document) doc.getProperty(Document.class);
-                    if (doc2 != null && isContextSuncEnabled(doc2)) {
-                        changed = MacroExpansionViewUtils.updateView(CaretAwareCsmFileTaskFactory.getLastPosition(fo));
-                    }
-                }
-                if (!changed) {
-                    syncRelatedDocumentCaretPosition(fo);
-                }
-            }
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public void cancel() {
-            }
-
-            @Override
-            public boolean isHighPriority() {
-                return false;
-            }
-
-            @Override
-            public String toString() {
-                return "MacroExpansionCaretAwareFactory runner"; //NOI18N
-            }
-        };
-    }
-
-    private static boolean isMacroExpansionDoc(Document doc) {
-        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
-            return true;
+    public void run(CndParserResult result, SchedulerEvent event) {
+        synchronized (this) {
+            canceled.set(true);
+            canceled = new AtomicBoolean(false);
         }
-        return false;
+        Document doc = result.getSnapshot().getSource().getDocument(false);
+        if (!(doc instanceof StyledDocument)) {
+            return;
+        }
+        CsmFile csmFile = result.getCsmFile();
+        if (csmFile == null) {
+            csmFile = (CsmFile) doc.getProperty(CsmFile.class);
+        }
+        if (csmFile == null) {
+            return;
+        }
+        if (canceled.get()) {
+          return;
+        }
+        if (event instanceof CursorMovedSchedulerEvent) {
+           runImpl((CursorMovedSchedulerEvent)event, csmFile, doc, canceled);
+        }
     }
 
-    private static boolean isCaretSuncEnabledOnCurrentDoc(Document doc) {
-        boolean enable = true;
-        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
-            Object o = doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET);
-            if (o instanceof Boolean) {
-                enable &= (Boolean) o;
-            }
+    @Override
+    public final synchronized void cancel() {
+        canceled.set(true);
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    private void runImpl(final CursorMovedSchedulerEvent event, final CsmFile csmFile, final Document doc, final AtomicBoolean canceled) {
+       if (doc == null) {
+            return;
         }
         Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
         if (obj != null) {
-            enable &= (Boolean) obj;
-        }
-        return enable;
-    }
-
-    private static boolean isCaretSuncEnabledOnRelatedDoc(Document doc) {
-        boolean enable = true;
-        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
-            Object o = doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET);
-            if (o instanceof Boolean) {
-                enable &= (Boolean) o;
+            if(!(Boolean) obj) {
+                return;
             }
         }
-        return enable;
-    }
-
-    private static boolean isContextSuncEnabled(Document doc) {
-        if (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
-            Object o = doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT);
-            if (o instanceof Boolean) {
-                return (Boolean) o;
+        Runnable syncPositions = new Runnable() {
+            @Override
+            public void run() {
+                if (!canceled.get()) {
+                    syncRelatedDocumentCaretPosition(event, doc);
+                }
             }
+        };
+        if (isMacroExpansionDoc(doc)) {
+            SwingUtilities.invokeLater(syncPositions);
+        } else {
+            MacroExpansionViewUtils.updateView(doc, event.getCaretOffset(), csmFile, canceled, syncPositions);
         }
-        return false;
     }
 
-    private static void syncRelatedDocumentCaretPosition(FileObject fo) {
-        Document doc = CsmUtilities.getDocument(fo);
-        if (doc != null && isCaretSuncEnabledOnCurrentDoc(doc)) {
+    private static boolean isMacroExpansionDoc(Document doc) {
+        return doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null;
+    }
+
+    private void syncRelatedDocumentCaretPosition(final CursorMovedSchedulerEvent event, final Document doc) {
+        if (doc != null) {
             Document doc2 = (Document) doc.getProperty(Document.class);
-            if (doc2 != null && isCaretSuncEnabledOnRelatedDoc(doc2)) {
+            if (doc2 != null) {
+                JTextComponent comp2 = null;
+                for(JTextComponent comp : OpenedEditors.getDefault().getVisibleEditors()) {
+                    if (doc2.equals(comp.getDocument())) {
+                        comp2 = comp;
+                        break;
+                    }
+                }
                 FileObject file2 = CsmUtilities.getFileObject(doc2);
-                if (file2 != null) {
-                    int doc2CarretPosition = CaretAwareCsmFileTaskFactory.getLastPosition(file2);
-                    int docCarretPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
+                if (file2 != null && comp2 != null) {
+                    int doc2CarretPosition = comp2.getCaretPosition();
+                    int docCarretPosition = event.getCaretOffset();
                     int doc2CarretPositionFromDoc = MacroExpansionViewUtils.getDocumentOffset(doc2,
                             MacroExpansionViewUtils.getFileOffset(doc, docCarretPosition));
                     int docCarretPositionFromDoc2 = MacroExpansionViewUtils.getDocumentOffset(doc,
@@ -169,8 +174,8 @@ public final class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTask
                         JEditorPane ep = MacroExpansionViewUtils.getEditor(doc);
                         JEditorPane ep2 = MacroExpansionViewUtils.getEditor(doc2);
                         if (ep != null && ep2 != null && doc2CarretPosition != doc2CarretPositionFromDoc &&
-                                docCarretPosition != docCarretPositionFromDoc2 && ep.hasFocus() && !ep2.hasFocus()) {
-                            setCaretPosition(ep2, doc2CarretPositionFromDoc);
+                                docCarretPosition != docCarretPositionFromDoc2) {
+                            ep2.setCaretPosition(doc2CarretPositionFromDoc);
                         }
                     }
                 }
@@ -178,29 +183,15 @@ public final class MacroExpansionCaretAwareFactory extends CaretAwareCsmFileTask
         }
     }
 
-    private static void setCaretPosition(final JEditorPane pane, final int position) {
-        Runnable setCaret = new Runnable() {
-            @Override
-            public void run() {
-                if (pane.getDocument() != null && position <= pane.getDocument().getLength()) {
-                    pane.setCaretPosition(position);
-                }
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            setCaret.run();
-        } else {
-            SwingUtilities.invokeLater(setCaret);
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class),
+    })
+    public static final class MacroExpansionCaretAwareFactoryImpl extends TaskFactory {
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            return Collections.singletonList(new MacroExpansionCaretAwareFactory(snapshot.getMimeType()));
         }
-    }
-
-    @Override
-    protected int taskDelay() {
-        return 0;
-    }
-
-    @Override
-    protected int rescheduleDelay() {
-        return 0;
     }
 }

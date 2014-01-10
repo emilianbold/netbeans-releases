@@ -55,6 +55,7 @@
 package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -99,23 +100,21 @@ public final class MacroExpansionViewUtils {
      * @param newOffset - offset
      * @return true if something was changed during update
      */
-    public static boolean updateView(int newOffset) {
+    public static void updateView(Document mainDoc, int newOffset, final CsmFile csmFile, final AtomicBoolean canceled, final Runnable syncPositions) {
         final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
         boolean localContext = MacroExpansionTopComponent.isLocalContext();
 
+        if (!view.isSyncCaretAndContext()) {
+            return;
+        }
+            
         final Document expandedContextDoc = view.getExpandedContextDoc();
         if (expandedContextDoc == null) {
-            return false;
+            return;
         }
-        final Document mainDoc = (Document) expandedContextDoc.getProperty(Document.class);
-        if (mainDoc == null) {
-            return false;
-        }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
-            return false;
+            return;
         }
-
         // Get ofsets and check if update needed
         int startOffset = 0;
         int endOffset = mainDoc.getLength();
@@ -126,14 +125,20 @@ public final class MacroExpansionViewUtils {
                 endOffset = ((CsmOffsetable) scope).getEndOffset();
             }
         }
-        if (!isOffsetChanged(expandedContextDoc, startOffset, endOffset)) {
-            return false;
+        if (canceled.get()) {
+            return;
+        }
+        final Document doc = (Document) expandedContextDoc.getProperty(Document.class);
+        if (mainDoc.equals(doc)) {
+            if (!isOffsetChanged(expandedContextDoc, startOffset, endOffset)) {
+                SwingUtilities.invokeLater(syncPositions);
+            }
         }
         
         // Init expanded context field
         final Document newExpandedContextDoc = createExpandedContextDocument(mainDoc, csmFile);
         if (newExpandedContextDoc == null) {
-            return false;
+            return;
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc);
         setOffset(newExpandedContextDoc, startOffset, endOffset);
@@ -149,14 +154,10 @@ public final class MacroExpansionViewUtils {
                 }
                 view.setDocuments(newExpandedContextDoc);
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
+                SwingUtilities.invokeLater(syncPositions);
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            openView.run();
-        } else {
-            SwingUtilities.invokeLater(openView);
-        }
-        return true;
+        SwingUtilities.invokeLater(openView);
     }
 
     /**

@@ -80,6 +80,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
     /** Creates new form MacroExpansionPanel. */
     public MacroExpansionPanel(boolean isView) {
         initComponents();
+        autoRefresh.setSelected(MacroExpansionTopComponent.isSyncCaretAndContext());
+        localContext.setSelected(MacroExpansionTopComponent.isLocalContext());
+        fileContext.setSelected(!MacroExpansionTopComponent.isLocalContext());
         jCodeExpansionEditorPane.putClientProperty(OpenedEditors.CND_EDITOR_COMPONENT, Boolean.TRUE);
         setName(NbBundle.getMessage(getClass(), "CTL_MacroExpansionTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_MacroExpansionTopComponent")); // NOI18N
@@ -99,54 +102,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         jCodeExpansionEditorPane.setContentType(mimeType);
         jCodeExpansionEditorPane.setDocument(doc);
         doc.putProperty(JEditorPane.class, jCodeExpansionEditorPane);
-    }
-
-    /**
-     * Indicates scope for macro expansion (local or whole file).
-     *
-     * @return is macro expansion local
-     */
-    public boolean isLocalContext() {
-        return localContext.isSelected();
-    }
-
-    /**
-     * Sets scope for macro expansion (local or whole file).
-     *
-     * @param local - is scope local
-     */
-    public void setLocalContext(boolean local) {
-        Document doc = jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncCaretAndContext() && local);
-        localContext.setSelected(local);
-        fileContext.setSelected(!local);
-    }
-
-    /**
-     * Indicates is context and caret synchronization enabled or not.
-     *
-     * @return is caret synchronization enabled
-     */
-    public boolean isSyncCaretAndContext() {
-        return autoRefresh.isSelected();
-    }
-
-    /**
-     * Sets caret and context synchronization.
-     *
-     * @param sync - is caret synchronization enabled
-     */
-    public void setSyncCaretAndContext(boolean sync) {
-        Document doc = jCodeExpansionEditorPane.getDocument();
-        if (doc == null) {
-            return;
-        }
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, sync);
-        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, sync && isLocalContext());
-        autoRefresh.setSelected(sync);
     }
 
     /**
@@ -377,15 +332,6 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         localContext.setSelected(true);
         MacroExpansionTopComponent.setLocalContext(true);
         update();
-//
-//        Document doc = jCodeExpansionEditorPane.getDocument();
-//        if (doc == null) {
-//            return;
-//        }
-//        doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isSyncCaretAndContext() && isLocalContext());
-//        if(isSyncCaretAndContext()) {
-//            MacroExpansionViewUtils.updateView(getMainDocumentCursorPosition());
-//        }
 }//GEN-LAST:event_localContextActionPerformed
 
     private void fileContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileContextActionPerformed
@@ -400,14 +346,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         if (doc == null) {
             return;
         }
-        if(isSyncCaretAndContext()) {
-            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, true);
-            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, isLocalContext());
-            update();
-        } else {
-            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CARET, false);
-            doc.putProperty(CsmMacroExpansion.MACRO_EXPANSION_SYNC_CONTEXT, false);
-        }
+        update();
 }//GEN-LAST:event_autoRefreshActionPerformed
 
     @Override
