@@ -56,6 +56,7 @@ import junit.framework.TestResult;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
  *
@@ -241,6 +242,8 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
             stop();
             String header = "### " + testName + " probably hanged - getting thread dump " + new Date();
             String footer = "### end of " + testName + " thread dump " + new Date();
+            System.err.printf("### Dumping fs_server instances\n");
+            FSSTransport.testDumpInstances(System.err);
             NativeExecutionTestSupport.threadsDump(header, footer);
         }
     }    
