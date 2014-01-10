@@ -132,14 +132,13 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
         final CsmFile file = result.getCsmFile();
         if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
-                process(doc, fileObject, event, file, canceled);
+                process(doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
             }
         }
     }
 
-    private void process(final Document doc, final FileObject fileObject, SchedulerEvent event, final CsmFile file, final AtomicBoolean canceled) {
+    private void process(final Document doc, final FileObject fileObject, CursorMovedSchedulerEvent cursorEvent, final CsmFile file, final AtomicBoolean canceled) {
         clearHint(doc, fileObject);
-        CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
         int caretOffset = cursorEvent.getCaretOffset();
         JTextComponent comp = EditorRegistry.lastFocusedComponent();
         int selectionStart = caretOffset;
