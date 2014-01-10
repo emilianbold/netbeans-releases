@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -108,7 +109,7 @@ public class OverrideAnnotationsTest extends ProjectBasedTestCase {
         CsmFile csmFile = getCsmFile(testSourceFile);
         assertNotNull(csmFile);
         List<BaseAnnotation> annotations = new ArrayList<BaseAnnotation>();
-        ComputeAnnotations.getInstance(csmFile, doc, dao).computeAnnotations(annotations);
+        ComputeAnnotations.getInstance(csmFile, doc, new AtomicBoolean()).computeAnnotations(annotations);
         Collections.sort(annotations, new Comparator<BaseAnnotation>() {
             @Override
             public int compare(BaseAnnotation o1, BaseAnnotation o2) {
