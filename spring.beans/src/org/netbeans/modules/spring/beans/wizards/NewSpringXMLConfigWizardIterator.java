@@ -87,7 +87,7 @@ import org.openide.util.MutexException;
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
     private static final Logger LOG = Logger.getLogger(NewSpringXMLConfigWizardIterator.class.getName());
-    private static final String DEFAULT_SPRING_VERSION = "2.5";
+    private static final String DEFAULT_SPRING_VERSION = "3.2.3";
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
@@ -168,10 +168,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             version = DEFAULT_SPRING_VERSION;
         }
 
-        HashMap<String, Object> params = new HashMap<String, Object>();
-        if (version.startsWith("3.")) { //NOI18N
+        HashMap<String, Object> params = new HashMap<>();
+        if (version.startsWith("3.") || version.startsWith("4.")) { //NOI18N
             params.put("version", version); //NOI18N
-            params.put("springVersion3", Boolean.TRUE); //NOI18N
         }
 
         params.put("namespaces", getNamespacesList(version));   //NOI18N

@@ -45,6 +45,7 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.awt.CardLayout;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -76,7 +78,9 @@ import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySu
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.Error;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -87,9 +91,11 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private final PersistenceUnit persistenceUnit;
     private PUDataObject dObj;
     private Project project;
-    private boolean isContainerManaged;
+    private Boolean isContainerManaged;
     private boolean jpa2x=false;
-    private boolean ee7;
+
+    
+    private final RequestProcessor RP = new RequestProcessor(PersistenceUnitPanel.class.getSimpleName(), 5);
 
     //jpa2.0 specific
     private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
@@ -102,51 +108,60 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         this.persistenceUnit=persistenceUnit;
         this.project = FileOwnerQuery.getOwner(this.dObj.getPrimaryFile());
         
-        assert project != null : "Could not resolve project for " + dObj.getPrimaryFile(); //NOI18N
-        
-        if (PersistenceLibrarySupport.getLibrary(persistenceUnit) != null && ProviderUtil.getConnection(persistenceUnit) != null) {
-            isContainerManaged = false;
-        } else if (persistenceUnit.getJtaDataSource() != null || persistenceUnit.getNonJtaDataSource() != null) {
-            isContainerManaged = true;
-        } else {
-            isContainerManaged = Util.isSupportedJavaEEVersion(project);
-        }
+        assert project != null : "Could not resolve project for " + dObj.getPrimaryFile(); //NOI18N]
         
         initComponents();
-        
-        PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
-        if (isContainerManaged){
-            comboHelper.connect(providerCombo);
-            ArrayList<Provider> providers = new ArrayList<Provider>();
-            for(int i=0; i<providerCombo.getItemCount(); i++){
-                Object obj = providerCombo.getItemAt(i);
-                if(obj instanceof Provider){
-                    providers.add((Provider) obj);
-                }
-            }
-            Provider provider = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
-            providerCombo.setSelectedItem(provider);
-        } else {
-            comboHelper.connect(libraryComboBox);
-            setSelectedLibrary();
-        }
-        
         setVisiblePanel();
-        initIncludeAllEntities();
-        initEntityList();
-        
-        initDataSource();
-        if(jpa2x)
-        {
-            initCache();
-            initValidation();
-        }
-        
-        nameTextField.setText(persistenceUnit.getName());
-        setTableGeneration();
-        handleCmAmSelection();
-        
-        registerModifiers();
+        nameTextField.setText(NbBundle.getMessage(PersistenceUnitPanel.class,"LBL_Wait"));
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+
+                if (ProviderUtil.getConnection(persistenceUnit) != null && PersistenceLibrarySupport.getLibrary(persistenceUnit) != null) {
+                    isContainerManaged = false;
+                } else if (persistenceUnit.getJtaDataSource() != null || persistenceUnit.getNonJtaDataSource() != null) {
+                    isContainerManaged = true;
+                } else {
+                    isContainerManaged = Util.isSupportedJavaEEVersion(project);
+                }
+
+
+                PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
+                if (isContainerManaged){
+                    comboHelper.connect(providerCombo);
+                    ArrayList<Provider> providers = new ArrayList<Provider>();
+                    for(int i=0; i<providerCombo.getItemCount(); i++){
+                        Object obj = providerCombo.getItemAt(i);
+                        if(obj instanceof Provider){
+                            providers.add((Provider) obj);
+                        }
+                    }
+                    Provider provider = ProviderUtil.getProvider(persistenceUnit, providers.toArray(new Provider[]{}));
+                    providerCombo.setSelectedItem(provider);
+                } else {
+                    comboHelper.connect(libraryComboBox);
+                    setSelectedLibrary();
+                }
+
+                setVisiblePanel();
+                initIncludeAllEntities();
+                initEntityList();
+
+                initDataSource();
+                if(jpa2x)
+                {
+                    initCache();
+                    initValidation();
+                }
+
+                nameTextField.setText(persistenceUnit.getName());
+                setTableGeneration();
+                handleCmAmSelection();
+
+                registerModifiers();
+            }
+        });
         
     }
     
@@ -191,20 +206,42 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
      * Sets which panel (container/application) is visible.
      */
     private void setVisiblePanel(){
-        providerLabel.setVisible(isContainerManaged);
-        providerCombo.setVisible(isContainerManaged);
-        dsCombo.setVisible(isContainerManaged);
-        datasourceLabel.setVisible(isContainerManaged);
-        //
-        libraryLabel.setVisible(!isContainerManaged);
-        libraryComboBox.setVisible(!isContainerManaged);
-        jdbcComboBox.setVisible(!isContainerManaged);
-        jdbcLabel.setVisible(!isContainerManaged);
-        //
-        validationStrategyPanel.setVisible(jpa2x);
-        validationStrategyLabel.setVisible(jpa2x);
-        cachingStrategyPanel.setVisible(jpa2x);
-        cachingStrategyLabel.setVisible(jpa2x);
+        if(isContainerManaged == null) {//isn't initialized yet
+            dsCombo.setVisible(false);
+            jdbcComboBox.setEnabled(false);
+            datasourceLabel.setVisible(false);
+            providerCombo.setEnabled(false);
+            libraryLabel.setVisible(false);
+            libraryComboBox.setVisible(false);
+            validationStrategyPanel.setVisible(false);
+            validationStrategyLabel.setVisible(false);
+            cachingStrategyPanel.setVisible(false);
+            cachingStrategyLabel.setVisible(false);
+            entityList.setEnabled(false);
+            addClassButton.setEnabled(false);
+            removeClassButton.setEnabled(false);
+        } else {
+            providerLabel.setVisible(isContainerManaged);
+            providerCombo.setVisible(isContainerManaged);
+            providerCombo.setEnabled(true);
+            dsCombo.setVisible(isContainerManaged);
+            datasourceLabel.setVisible(isContainerManaged);
+            //
+            libraryLabel.setVisible(!isContainerManaged);
+            libraryComboBox.setVisible(!isContainerManaged);
+            jdbcComboBox.setVisible(!isContainerManaged);
+            jdbcComboBox.setEnabled(true);
+            jdbcLabel.setVisible(!isContainerManaged);
+            //
+            validationStrategyPanel.setVisible(jpa2x);
+            validationStrategyLabel.setVisible(jpa2x);
+            cachingStrategyPanel.setVisible(jpa2x);
+            cachingStrategyLabel.setVisible(jpa2x);
+            //
+            entityList.setEnabled(true);
+            addClassButton.setEnabled(true);
+            removeClassButton.setEnabled(true);
+        }
     }
     private void initCache(){
         String caching = "";
@@ -268,9 +305,24 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             String jtaDataSource = persistenceUnit.getJtaDataSource();
             String nonJtaDataSource = persistenceUnit.getNonJtaDataSource();
             
-            JPADataSourcePopulator dsPopulator = project.getLookup().lookup(JPADataSourcePopulator.class);
+            final JPADataSourcePopulator dsPopulator = project.getLookup().lookup(JPADataSourcePopulator.class);
             if (dsPopulator != null){
-                dsPopulator.connect(dsCombo);
+                if(SwingUtilities.isEventDispatchThread()) {
+                    dsPopulator.connect(dsCombo); 
+                } else {
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                dsPopulator.connect(dsCombo);
+                            }
+                        });
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 addModifier((JTextComponent)dsCombo.getEditor().getEditorComponent(), false);
             }
             
@@ -796,7 +848,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(dsCombo, gridBagConstraints);
 
-        providerCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        providerCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { " " }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

@@ -234,19 +234,17 @@ public class FmtOptions {
     public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
     public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
 
-    public static CodeStyleProducer codeStyleProducer;
-
     private FmtOptions() {}
 
-    public static int getDefaultAsInt(String key) {
+    private static int getDefaultAsInt(String key) {
         return Integer.parseInt(defaults.get(key));
     }
 
-    public static boolean getDefaultAsBoolean(String key) {
+    private static boolean getDefaultAsBoolean(String key) {
         return Boolean.parseBoolean(defaults.get(key));
     }
 
-    public static String getDefaultAsString(String key) {
+    private static String getDefaultAsString(String key) {
         return defaults.get(key);
     }
 
@@ -423,10 +421,6 @@ public class FmtOptions {
 
     }
 
-    protected static Map<String, String> getDefaults() {
-	return defaults;
-    }
-
      // Support section ---------------------------------------------------------
 
     public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
@@ -460,13 +454,16 @@ public class FmtOptions {
         private final List<JComponent> components = new LinkedList<JComponent>();
         private JEditorPane previewPane;
 
+        protected final DefaultsProvider provider;
+
         private final Preferences preferences;
         private final Preferences previewPrefs;
-
         private final String mimeType;
 
-        protected CategorySupport(String mimeType, Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+        protected CategorySupport(String mimeType, DefaultsProvider provider, Preferences preferences, String id,
+                JPanel panel, String previewText, String[]... forcedOptions) {
             this.mimeType = mimeType;
+            this.provider = provider;
             this.preferences = preferences;
             this.id = id;
             this.panel = panel;
@@ -555,7 +552,7 @@ public class FmtOptions {
         public void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             try {
-                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                int rm = previewPrefs.getInt(rightMargin, provider.getDefaultAsInt(rightMargin));
                 pane.putClientProperty("TextLimitLine", rm); //NOI18N
             }
             catch( NumberFormatException e ) {
@@ -621,13 +618,16 @@ public class FmtOptions {
         public static final class Factory implements PreferencesCustomizer.Factory {
 
             private final String mimeType;
+            private final DefaultsProvider provider;
             private final String id;
             private final Class<? extends JPanel> panelClass;
             private final String previewText;
             private final String[][] forcedOptions;
 
-            public Factory(String mimeType, String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+            public Factory(String mimeType, String id, Class<? extends JPanel> panelClass,
+                    String previewText, String[]... forcedOptions) {
                 this.mimeType = mimeType;
+                this.provider = Defaults.getInstance(mimeType);
                 this.id = id;
                 this.panelClass = panelClass;
                 this.previewText = previewText;
@@ -637,7 +637,7 @@ public class FmtOptions {
             @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
-                    return new CategorySupport(mimeType, preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                    return new CategorySupport(mimeType, provider, preferences, id, panelClass.newInstance(), previewText, forcedOptions);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;
@@ -696,16 +696,16 @@ public class FmtOptions {
 
             if ( jc instanceof JTextField ) {
                 JTextField field = (JTextField)jc;
-                field.setText( node.get(optionID, getDefaultAsString(optionID)) );
+                field.setText( node.get(optionID, provider.getDefaultAsString(optionID)) );
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                boolean df = getDefaultAsBoolean(optionID);
+                boolean df = provider.getDefaultAsBoolean(optionID);
                 checkBox.setSelected( node.getBoolean(optionID, df));
             }
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
-                String value = node.get(optionID, getDefaultAsString(optionID) );
+                String value = node.get(optionID, provider.getDefaultAsString(optionID) );
                 ComboBoxModel model = createModel(value);
                 cb.setModel(model);
                 ComboItem item = whichItem(value, model);
@@ -737,7 +737,7 @@ public class FmtOptions {
                 // The problem currently is that MimeLookup based Preferences do not support subnodes.
                 if (!optionID.equals(tabSize) &&
                     !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
-                    getDefaultAsString(optionID).equals(text)
+                    provider.getDefaultAsString(optionID).equals(text)
                 ) {
                     node.remove(optionID);
                 } else {
@@ -746,7 +746,7 @@ public class FmtOptions {
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+                if (!optionID.equals(expandTabToSpaces) && provider.getDefaultAsBoolean(optionID) == checkBox.isSelected())
                     node.remove(optionID);
                 else
                     node.putBoolean(optionID, checkBox.isSelected());
@@ -754,9 +754,9 @@ public class FmtOptions {
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
-                String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
+                String value = comboItem == null ? provider.getDefaultAsString(optionID) : comboItem.value;
 
-                if (getDefaultAsString(optionID).equals(value))
+                if (provider.getDefaultAsString(optionID).equals(value))
                     node.remove(optionID);
                 else
                     node.put(optionID,value);
@@ -949,9 +949,22 @@ public class FmtOptions {
         }
     } // End of ProxyPreferences class
 
-    public static interface CodeStyleProducer {
+    public static class BasicDefaultsProvider implements DefaultsProvider {
 
-        public CodeStyle create( Preferences preferences );
+        @Override
+        public int getDefaultAsInt(String key) {
+            return FmtOptions.getDefaultAsInt(key);
+        }
+
+        @Override
+        public boolean getDefaultAsBoolean(String key) {
+            return FmtOptions.getDefaultAsBoolean(key);
+        }
+
+        @Override
+        public String getDefaultAsString(String key) {
+            return FmtOptions.getDefaultAsString(key);
+        }
 
     }
 

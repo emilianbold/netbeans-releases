@@ -67,7 +67,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author sherold
  */
-public class EarDeploymentConfiguration extends JBDeploymentConfiguration 
+public class EarDeploymentConfiguration extends WildflyDeploymentConfiguration 
 implements ModuleConfiguration, DeploymentPlanConfiguration {
     
     private File jbossAppFile;

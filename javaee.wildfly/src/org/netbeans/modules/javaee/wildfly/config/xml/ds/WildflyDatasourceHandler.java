@@ -54,7 +54,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
 
     private StringBuilder buffer;
-    private WildflyDatasource currentDatasource;
+    private WildflyDataSource currentDatasource;
     private WildflySecurityHandler childHandler;
 
     public WildflyDatasourceHandler(DefaultHandler parent, XMLReader parser) {
@@ -64,7 +64,7 @@ public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
         if ("datasource".equals(qName)) {
-            currentDatasource = new WildflyDatasource();
+            currentDatasource = new WildflyDataSource();
             currentDatasource.setJndiName(attributes.getValue(uri, "jndi-name"));
             currentDatasource.setName(attributes.getValue(uri, "pool-name"));
         }
@@ -106,7 +106,7 @@ public class WildflyDatasourceHandler extends AbstractHierarchicalHandler {
 
     }
 
-    public WildflyDatasource getDatasource() {
+    public WildflyDataSource getDatasource() {
         return currentDatasource;
     }
 }

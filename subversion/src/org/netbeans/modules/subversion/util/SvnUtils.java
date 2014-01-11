@@ -1444,18 +1444,23 @@ public class SvnUtils {
         return true;
     }
 
-    public static List<File> listRecursively(File root) {
-        List<File> ret = new ArrayList<File>();
+    private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+
+    public static List<File> listManagedRecursively(File root) {
+        List<File> ret = new ArrayList<>();
         if(root == null) {
             return ret;
         }
         ret.add(root);
         File[] files = root.listFiles();
         if(files != null) {
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
             for (File file : files) {
-                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file))) {
+                FileInformation info = cache.getCachedStatus(file);
+                if(!(isPartOfSubversionMetadata(file) || isAdministrative(file)
+                        || info != null && (info.getStatus() & STATUS_RECURSIVELY_TRAVERSIBLE) == 0)) {
                     if(file.isDirectory()) {
-                        ret.addAll(listRecursively(file));
+                        ret.addAll(listManagedRecursively(file));
                     } else {
                         ret.add(file);
                     }

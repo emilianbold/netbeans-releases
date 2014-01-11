@@ -438,7 +438,7 @@ public class CommitAction extends ContextAction {
                         if (isCanceled()) {
                             return;
                         }
-                        cache.refreshRecursively(f, false);
+                        cache.refreshRecursively(f);
                     }
                 }
                 // get all changed files while honoring the flat folder logic

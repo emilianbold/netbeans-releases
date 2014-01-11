@@ -45,6 +45,8 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -392,22 +394,33 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     private static boolean isCyclicSymlink(File f) {
-        File p = f.getParentFile();
+        Path file;
+        try {
+            file = f.toPath();
+        } catch (InvalidPathException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return false;
+        }
+        Path ancestor = file.getParent();
+        Path realFile = null;
         for (;;) {
-            if (p == null) {
+            if (ancestor == null || ancestor.getFileName() == null) {
                 return false;
             }
-            if (p.getName().equals(f.getName())) {
+            if (ancestor.getFileName().equals(file.getFileName())) {
                 try {
-                    if (f.getCanonicalFile().equals(p.getCanonicalFile())) {
+                    if (realFile == null) { // #240120
+                        realFile = file.toRealPath();
+                    }
+                    if (realFile.equals(ancestor.toRealPath())) {
                         return true;
                     }
                 } catch (IOException ex) {
-                    LOG.log(Level.INFO, "Can't convert to cannonical files {0} and {1}", new Object[]{f, p});
+                    LOG.log(Level.INFO, "Can't convert to cannonical files {0} and {1}", new Object[]{file, ancestor});
                     LOG.log(Level.FINE, null, ex);
                 }
             }
-            p = p.getParentFile();
+            ancestor = ancestor.getParent();
         }
         
     }

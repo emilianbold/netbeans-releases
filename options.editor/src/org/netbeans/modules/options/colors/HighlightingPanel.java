@@ -69,6 +69,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -248,7 +249,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             updateData ();
 	}
         updateData ();
-        changed = true;
+        fireChanged();
     }
     
     @Override
@@ -257,7 +258,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             return;
         if (!listen) return;
         updateData ();
-        changed = true;
+        fireChanged();
     }
     
     public void update (ColorModel colorModel) {
@@ -288,6 +289,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         }
         toBeSaved = new HashSet<String>();
         profileToCategories = new HashMap<String, List<AttributeSet>>();
+        changed = false;
     }
     
     public boolean isChanged () {
@@ -310,6 +312,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         lCategories.repaint();
         lCategories.setSelectedIndex (0);         
         refreshUI ();
+        fireChanged();
     }
 
     public void deleteProfile (String profile) {
@@ -323,6 +326,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             refreshUI ();
         }
         toBeSaved.add (profile);
+        fireChanged();
     }
         
     // other methods ...........................................................
@@ -400,6 +404,49 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         
         categories.set(index, c);
         toBeSaved.add(currentProfile);
+    }
+    
+    private void fireChanged() {
+        boolean isChanged = false;
+        for (String profile : toBeSaved) {
+            if (profileToCategories.containsKey(profile)) {
+                List<AttributeSet> attributeSet = getCategories(profile);
+                Map<String, AttributeSet> savedHighlightings = EditorSettings.getDefault().getHighlightings(profile);
+                Map<String, AttributeSet> currentHighlightings = toMap(attributeSet);
+                if (savedHighlightings != null && currentHighlightings != null) {
+                    if (savedHighlightings.size() >= currentHighlightings.size()) {
+                        isChanged |= checkMaps(savedHighlightings, currentHighlightings);
+                    } else {
+                        isChanged |= checkMaps(currentHighlightings, savedHighlightings);
+                    }
+                }
+            }
+        }
+        changed = isChanged;
+    }
+    
+    private boolean checkMaps(Map<String, AttributeSet> savedMap, Map<String, AttributeSet> currentMap) {
+        boolean isChanged = false;
+        for (String name : savedMap.keySet()) {
+            if (currentMap.containsKey(name)) {
+                AttributeSet currentAS = currentMap.get(name);
+                AttributeSet savedAS = savedMap.get(name);
+                isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
+                        || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
+                        || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+
+            }
+        }
+        return isChanged;
+    }
+    
+    private Map<String, AttributeSet> toMap(Collection<AttributeSet> categories) {
+        if (categories == null) return null;
+        Map<String, AttributeSet> result = new HashMap<String, AttributeSet>();
+        for(AttributeSet as : categories) {
+            result.put((String) as.getAttribute(StyleConstants.NameAttribute), as);
+        }
+        return result;
     }
     
     private void refreshUI () {
