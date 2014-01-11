@@ -62,26 +62,27 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -210,7 +211,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         Iterable<? extends Processor> processors = jt.getProcessors();
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
-            Iterable<? extends TypeElement> types = jt.enter(trees);
+            final Iterable<? extends TypeElement> types = jt.enter(trees);
             if (context.isCancelled()) {
                 return null;
             }
@@ -219,7 +220,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
+            final Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
             Enter enter = Enter.instance(jt.getContext());
             for (TypeElement type : types) {
                 Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
@@ -272,22 +273,29 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            for (TypeElement type : types) {
-                Iterable<? extends JavaFileObject> generatedFiles = jt.generate(Collections.singletonList(type));
-                CompileTuple unit = clazz2Tuple.get(type);
-                if (unit == null || !unit.virtual) {
-                    for (JavaFileObject generated : generatedFiles) {
-                        if (generated instanceof FileObjects.FileBase) {
-                            createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                        } else {
-                            // presumably should not happen
+            final JavacTaskImpl jtFin = jt;
+            final Future<Void> done = FileManagerTransaction.runConcurrent(new FileSystem.AtomicAction() {
+                @Override
+                public void run() throws IOException {
+                    for (TypeElement type : types) {
+                        Iterable<? extends JavaFileObject> generatedFiles = jtFin.generate(Collections.singletonList(type));
+                        CompileTuple unit = clazz2Tuple.get(type);
+                        if (unit == null || !unit.virtual) {
+                            for (JavaFileObject generated : generatedFiles) {
+                                if (generated instanceof FileObjects.FileBase) {
+                                    createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                                } else {
+                                    // presumably should not happen
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
                 finished.add(unit.getValue().indexable);
             }
+            done.get();
             return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
