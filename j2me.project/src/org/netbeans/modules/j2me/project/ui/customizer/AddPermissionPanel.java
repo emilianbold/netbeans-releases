@@ -56,11 +56,11 @@ public class AddPermissionPanel extends JPanel {
                 permissionsCombo.getPreferredSize().height));
 
         nameField = new JTextField();
-        useNullName = new JCheckBox(getUIString("SECURITY_POLICY_EDITOR.ADD_PERMISSION.USE_NULL"));
+        useNullName = new JCheckBox(getUIString("LBL_AddPermission_UseNull"));
         actionsField = new JTextField();
-        useNullActions = new JCheckBox(getUIString("SECURITY_POLICY_EDITOR.ADD_PERMISSION.USE_NULL"));
+        useNullActions = new JCheckBox(getUIString("LBL_AddPermission_UseNull"));
 
-        nameDefinition = new ParameterDefinition("SECURITY_POLICY_EDITOR.ADD_PERMISSION.TARGET_LABEL",
+        nameDefinition = new ParameterDefinition("LBL_AddPermission_ResourceName",
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -68,7 +68,7 @@ public class AddPermissionPanel extends JPanel {
                     }
                 });
 
-        actionsDefinition = new ParameterDefinition("SECURITY_POLICY_EDITOR.ADD_PERMISSION.ACTION_LABEL",
+        actionsDefinition = new ParameterDefinition("LBL_AddPermission_Action",
                 new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -86,7 +86,7 @@ public class AddPermissionPanel extends JPanel {
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
-        mainPanel.add(new JLabel(getUIString("SECURITY_POLICY_EDITOR.ADD_PERMISSION.PERMISSION_LABEL")),
+        mainPanel.add(new JLabel(getUIString("LBL_AddPermission_Permission")),
                 new GridBagConstraints(0, 0, 2, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(
                                 5, 5, 0, 5), 0, 0));
         mainPanel.add(permissionsCombo, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.WEST,
@@ -262,7 +262,7 @@ public class AddPermissionPanel extends JPanel {
             enable = valid == PermissionError.OK;
 
             if (!enable) {
-                errorLabel.setText(getUIString("SECURITY_POLICY_EDITOR.ADD_PERMISSION.ERROR." + valid.name()));
+                errorLabel.setText(getUIString("ERR_AddPermission_" + valid.name()));
             }
         }
 
