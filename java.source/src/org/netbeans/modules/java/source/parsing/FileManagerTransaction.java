@@ -43,7 +43,15 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
@@ -51,7 +59,10 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.indexing.JavaIndexerWorker;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Parameters;
 
 /**
  * Transaction service for {@link JavaFileManager} IO operations.
@@ -61,6 +72,7 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 public abstract class FileManagerTransaction extends TransactionContext.Service {
     
     private final boolean writeable;
+    private Junction junction;
 
     protected FileManagerTransaction(boolean writeable) {
         this.writeable = writeable;
@@ -127,6 +139,11 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             @NonNull String relativeName) {
         return null;
     }
+
+    @CheckForNull
+    final CompletionHandler<Void,Void> getAsyncHandler() {
+        return junction;
+    }
     
     /**
      * Creates write back implementation of {@link FileManagerTransaction}.
@@ -165,7 +182,35 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
     public static FileManagerTransaction nullWrite() {
         return new Null();
     }
-    
+
+    public static Future<Void> runConcurrent(@NonNull final FileSystem.AtomicAction action) throws IOException {
+        Parameters.notNull("action", action);   //NOI18N
+        final FileManagerTransaction fmtx = TransactionContext.get().get(FileManagerTransaction.class);
+        if (fmtx == null) {
+            throw new IllegalStateException("No FileManagerTransaction");   //NOI18N
+        }
+        final Future<Void> res;
+        fmtx.fork();
+        try {
+            action.run();
+        } finally {
+            res = fmtx.join();
+        }
+        return res;
+    }
+
+    private void fork() {
+        junction = new Junction();
+    }
+
+    @NonNull
+    private Future<Void> join() {
+        final Junction result = junction;
+        junction = null;
+        assert result != null;
+        return result;
+    }
+
     private static class WriteThrogh extends FileManagerTransaction {
         
         private WriteThrogh() {
@@ -205,8 +250,17 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
                 @NonNull final File root,
                 @NullAllowed final JavaFileFilterImplementation filter,
                 @NullAllowed final Charset encoding) {
-            return FileObjects.fileFileObject(file, root, filter, encoding);
-        }
+            final CompletionHandler<Void,Void> handler = getAsyncHandler();
+            return handler == null || !JavaIndexerWorker.supportsConcurrent()?
+                FileObjects.fileFileObject(file, root, filter, encoding) :
+                FileObjects.asyncWriteFileObject(
+                    file,
+                    root,
+                    filter,
+                    encoding,
+                    JavaIndexerWorker.getExecutor(),
+                    handler);
+        }                
     }
     
     private static class Null extends FileManagerTransaction {
@@ -293,5 +347,98 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
             //NOP
         }
 
+    }
+
+    private static class Junction implements Runnable, CompletionHandler<Void, Void>, Future<Void> {
+
+        private final Lock lck;
+        private final Condition cnd;
+        //@GuardedBy("lck")
+        private int running;
+
+        Junction() {
+            lck = new ReentrantLock();
+            cnd = lck.newCondition();
+        }
+
+        @Override
+        public void run() {
+            lck.lock();
+            try {
+                running++;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        @Override
+        public void completed(Void result, Void attachment) {
+            done();
+        }
+
+        @Override
+        public void failed(Throwable exc, Void attachment) {
+            done();
+        }
+
+        private void done() {
+            lck.lock();
+            try {
+                running--;
+                if (running == 0) {
+                    cnd.signalAll();
+                }
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            lck.lock();
+            try {
+                return running == 0;
+            } finally {
+                lck.unlock();
+            }
+        }
+
+        @Override
+        public Void get() throws InterruptedException, ExecutionException {
+            lck.lock();
+            try {
+                while (running > 0) {
+                    cnd.await();
+                }
+            } finally {
+                lck.unlock();
+            }
+            return null;
+        }
+
+        @Override
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            lck.lock();
+            try {
+                while (running > 0) {
+                    if(!cnd.await(timeout, unit)) {
+                        throw new TimeoutException();
+                    }
+                }
+            } finally {
+                lck.unlock();
+            }
+            return null;
+        }
     }
 }
