@@ -829,7 +829,7 @@ is divided into following sections:
 
             <target name="-do-jar-update-manifest" depends="-do-jar-create-manifest,-do-jar-copy-manifest">
                 <manifest file="${{tmp.manifest.file}}" mode="update">
-                    <attribute name="Microedition-Profile" value="${{platform.profile}}"/>
+                    <attribute name="MicroEdition-Profile" value="${{platform.profile}}"/>
                     <attribute name="MicroEdition-Configuration" value="${{platform.configuration}}"/>
                 </manifest>
                 <script>
