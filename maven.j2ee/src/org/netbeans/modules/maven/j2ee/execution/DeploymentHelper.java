@@ -296,11 +296,11 @@ public final class DeploymentHelper {
         return readBooleanValue(config, MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY, true);
     }
 
-    private static boolean isDebugMode(RunConfig config) {
+    public static boolean isDebugMode(RunConfig config) {
         return readBooleanValue(config, MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE, false);
     }
 
-    private static boolean isProfileMode(RunConfig config) {
+    public static boolean isProfileMode(RunConfig config) {
         return readBooleanValue(config, "netbeans.deploy.profilemode", false); //NOI18N
     }
 
