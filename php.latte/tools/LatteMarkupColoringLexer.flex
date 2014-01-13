@@ -166,9 +166,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 WHITESPACE=[ \t\r\n]+
+D_STRING_START="\""([^"\r""\n""\r\n""\"""{"])*
+D_STRING_END=([^"\r""\n""\r\n""\"""$"] | "$}")*"\""
 D_STRING="\""([^"\r""\n""\r\n""\""])*"\""
 S_STRING="'"([^"\r""\n""\r\n""'"])*"'"
-STRING = {D_STRING} | {S_STRING}
 KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"return"|"continue"|"break"
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
@@ -186,6 +187,7 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
 
 %state ST_OTHER
 %state ST_END_MACRO
+%state ST_IN_D_STRING
 %state ST_HIGHLIGHTING_ERROR
 
 %%
@@ -231,7 +233,11 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
     {VARIABLE} {
         return LatteMarkupTokenId.T_VARIABLE;
     }
-    {STRING} {
+    {D_STRING} {
+        yypushback(yylength());
+        pushState(ST_IN_D_STRING);
+    }
+    {S_STRING} {
         return LatteMarkupTokenId.T_STRING;
     }
     {STRICT_CHAR} {
@@ -242,6 +248,23 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
     }
     {GLOBAL_CHAR} {
         return LatteMarkupTokenId.T_CHAR;
+    }
+}
+
+<ST_IN_D_STRING> {
+    ([^"$""{"] | "$}" | "{"[^"$"])+ "{$" {
+        yypushback(1);
+        return LatteMarkupTokenId.T_STRING;
+    }
+    {VARIABLE} {
+        return LatteMarkupTokenId.T_VARIABLE;
+    }
+    {D_STRING_START} {
+        return LatteMarkupTokenId.T_STRING;
+    }
+    {D_STRING_END} {
+        popState();
+        return LatteMarkupTokenId.T_STRING;
     }
 }
 

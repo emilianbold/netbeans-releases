@@ -44,8 +44,6 @@ package org.netbeans.modules.php.latte.lexer;
 import java.io.File;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.latte.utils.TestUtils;
 
 /**
@@ -152,33 +150,20 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("testIssue231475_NoSpaceAtCssTokenStart");
     }
 
+    public void testIssue2340146_01() throws Exception {
+        performTest("testIssue240146_01");
+    }
+
+    public void testIssue2340146_02() throws Exception {
+        performTest("testIssue240146_02");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));
         Language<LatteTopTokenId> language = LatteTopTokenId.language();
         TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
         return createResult(hierarchy.tokenSequence(language));
-    }
-
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            String token = TestUtils.replaceLinesAndTabs(text.toString());
-            if (!token.isEmpty()) {
-                result.append(" ");
-                result.append("[");
-                result.append(token);
-                result.append("]");
-            }
-            result.append("\n");
-        }
-        return result.toString();
     }
 
 }
