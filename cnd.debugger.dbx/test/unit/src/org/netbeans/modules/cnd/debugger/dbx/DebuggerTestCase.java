@@ -63,8 +63,10 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Base class for each debugger test case should extend this class. It provides a handle
@@ -131,7 +133,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
         this.testproj = testproj;
         this.executable = testapp_dir + '/' + executable;
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
-        conf = new TestConfiguration(args);
+        conf = createTestConfiguration(args);
 	DbxDebuggerInfo ddi = DbxDebuggerInfo.create();
 	ddi.setConfiguration(conf);
         ddi.setAction(NativeDebuggerManager.STEP);
@@ -298,7 +300,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
     public <T> T lookupFirst(String folder, Class<T> service) {
         if (service == ProjectActionEvent.class) {
             if (pae == null) {
-                conf = new TestConfiguration("");
+                conf = createTestConfiguration("");      
                 pae = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.DEBUG_STEPINTO, executable, null, null, false);
             }
             return (T) pae;
@@ -308,13 +310,13 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
         }
     }
 
-    class TestConfiguration extends MakeConfiguration {
-        public TestConfiguration(String args) {
-            super(project_dir, testproj, MakeConfiguration.TYPE_APPLICATION, HostInfoUtils.LOCALHOST);
-            RunProfile profile = getProfile();
-            profile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
-            profile.setArgs(args);
-        }
+    private MakeConfiguration createTestConfiguration(String args) {
+        FSPath toFSPath = FSPath.toFSPath(FileUtil.toFileObject(new File(project_dir)));
+        MakeConfiguration makeConf = MakeConfiguration.createConfiguration(toFSPath, testproj, MakeConfiguration.TYPE_APPLICATION, null, HostInfoUtils.LOCALHOST);
+        RunProfile profile = conf.getProfile();
+        profile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
+        profile.setArgs(args);
+        return makeConf;
     }
 
     private class NotifyingListener implements PropertyChangeListener {
