@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.faces.event.ActionEvent;
 
 /**
  *
@@ -51,6 +52,9 @@ public class Bean {
 
     public Cypris getMyCypris() {
         return new Cypris();
+    }
+
+    public void updateGameList(ActionEvent event) {
     }
 
 }

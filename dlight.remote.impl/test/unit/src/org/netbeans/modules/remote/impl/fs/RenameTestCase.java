@@ -101,7 +101,9 @@ public class RenameTestCase extends RemoteFileTestBase  {
             FileObject tmpDirFO = getFileObject(tmpDir);
             FileObject oldFO = tmpDirFO.createData("file_1");
             String newName = "file_1_renamed";
-            oldFO.rename(oldFO.lock(), newName, null);
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);

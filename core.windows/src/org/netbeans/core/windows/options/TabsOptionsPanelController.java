@@ -66,11 +66,13 @@ public class TabsOptionsPanelController extends OptionsPanelController {
     private TabsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
+    private boolean changedInnerTabsPanel;
 
     @Override
     public void update() {
         getPanel().load();
         changed = false;
+        changedInnerTabsPanel = false;
     }
 
     @Override
@@ -80,6 +82,7 @@ public class TabsOptionsPanelController extends OptionsPanelController {
             public void run() {
                 boolean refreshWinsys = getPanel().store();
                 changed = false;
+                changedInnerTabsPanel = false;
                 if (refreshWinsys) {
                     WindowSystem ws = Lookup.getDefault().lookup(WindowSystem.class);
                     ws.hide();
@@ -101,7 +104,7 @@ public class TabsOptionsPanelController extends OptionsPanelController {
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return changed || changedInnerTabsPanel;
     }
 
     @Override
@@ -131,10 +134,20 @@ public class TabsOptionsPanelController extends OptionsPanelController {
         return panel;
     }
 
-    protected void changed() {
+    /**
+     *
+     * @param isChanged true if global options under "Document Tabs" were modified, null otherwise
+     * @param isChangedInnerTabsPanel true if tab related options under "Document Tabs" were modified, null otherwise
+     */
+    protected void changed(Object isChanged, Object isChangedInnerTabsPanel) {
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        if(isChanged != null) {
+            changed = (boolean) isChanged;
+        }
+        if(isChangedInnerTabsPanel != null) {
+            changedInnerTabsPanel = (boolean) isChangedInnerTabsPanel;
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }

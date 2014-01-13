@@ -212,6 +212,9 @@ public final class TerminalSupportImpl {
                         }
 //                            npb.setWorkingDirectory("${HOME}");
                         npb.setExecutable(shell);
+                        if (shell.endsWith("bash") || shell.endsWith("bash.exe")) {
+                            npb.setArguments("--login");
+                        }
                         NativeExecutionDescriptor descr;
                         descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
                         descr.postExecution(new Runnable() {

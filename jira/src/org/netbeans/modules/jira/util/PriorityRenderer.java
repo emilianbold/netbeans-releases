@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.jira.util;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -51,6 +50,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.Priority;
 
 /**
  *

@@ -457,6 +457,9 @@ public class ODCSRepository implements PropertyChangeListener {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
             if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
                 for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                    if(ptq == PredefinedTaskQuery.RECENT) {
+                        continue;
+                    }
                     try {
                         MylynSupport supp = MylynSupport.getInstance();
                         IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));

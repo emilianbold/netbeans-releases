@@ -50,7 +50,9 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -69,7 +71,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -98,6 +99,9 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
     private static final Icon NOT_VALID_ICON = ImageUtilities.loadImageIcon(ICON_NOT_VALID_PATH, true);
     private static final Icon EMPTY_ICON = new EmptyIcon();
     private boolean detailsValid;
+    /* Contains all modified comments and is used to enable/disable the Apply button.
+       All the mappings are saved when OK or Apply buttons are pressed.*/
+    private final static Map<String, CommentTags> id2comments = new HashMap<String, CommentTags>();
     
     /** Creates new form ToDoCustomizer */
     public ToDoCustomizer() {
@@ -119,6 +123,10 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         btnRemove.setEnabled( selIndex >= 0 );
     }
     
+    void cancel() {
+        id2comments.clear();
+    }
+    
     void update() {
         isUpdating = true;
         Collection<String> patterns = Settings.getDefault().getPatterns();
@@ -128,6 +136,7 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         initList();
         changed = false;
         isUpdating = false;
+        id2comments.clear();
     }
     
     void applyChanges() {
@@ -150,10 +159,37 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
                 }
             }
             Settings.getDefault().setPatterns(patterns);
-            Settings.getDefault().setScanCommentsOnly(checkScanCommentsOnly.isSelected());
-
+            Settings.getDefault().setScanCommentsOnly(checkScanCommentsOnly.isSelected());            
+            
+            // make sure modified identifiers are saved
+            for (String id : id2comments.keySet()) {
+                CommentTags comments = id2comments.get(id);
+                for (int i = 0; i < extensionIdentifiers.size(); i++) {
+                    ExtensionIdentifier identifier = extensionIdentifiers.get(i);
+                    if (identifier.getId().equals(id)) {
+                        updateCommentTags(identifier, comments);
+                    }
+                }
+                for (int i = 0; i < mimeIdentifiers.size(); i++) {
+                    MimeIdentifier identifier = mimeIdentifiers.get(i);
+                    if (identifier.getId().equals(id)) {
+                        updateCommentTags(identifier, comments);
+                    }
+                }
+            }
             Settings.getDefault().setIdentifiers(mimeIdentifiers, extensionIdentifiers);
+            id2comments.clear();
         }
+    }
+    
+    private void updateCommentTags(FileIdentifier identifier, CommentTags comments) {
+        CommentTags tag = identifier.getCommentTags();
+        tag.setLineComment(comments.getLineComment());
+        tag.setLineCommentEnabled(comments.isLineCommentEnabled());
+
+        tag.setBlockCommentStart(comments.getBlockCommentStart());
+        tag.setBlockCommentEnd(comments.getBlockCommentEnd());
+        tag.setBlockCommentEnabled(comments.isBlockCommentEnabled());
     }
     
     boolean isDataValid() {
@@ -166,6 +202,30 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
     boolean isChanged() {
         return changed;
     }
+    
+    private void fireChanged() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        ArrayList<String> patterns = new ArrayList<String>(model.getRowCount());
+        for (int i = 0; i < model.getRowCount(); i++) {
+            Object value = model.getValueAt(i, 0);
+            if (value == null) {
+                continue;
+            }
+            String pattern = value.toString();
+            //remove empty patterns
+            if (!pattern.trim().isEmpty() && !pattern.trim().equals(getDummyPattern())) {
+                patterns.add(pattern);
+            }
+        }
+        changed = !id2comments.isEmpty()
+                || Settings.getDefault().isScanCommentsOnly() != checkScanCommentsOnly.isSelected()
+                || Settings.getDefault().getPatterns().size() != patterns.size()
+                || !Settings.getDefault().getPatterns().containsAll(patterns)
+                || Settings.getDefault().getExtensionIdentifiers().size() != extensionIdentifiers.size()
+                || !Settings.getDefault().getExtensionIdentifiers().containsAll(extensionIdentifiers)
+                || Settings.getDefault().getMimeIdentifiers().size() != mimeIdentifiers.size()
+                || !Settings.getDefault().getMimeIdentifiers().containsAll(mimeIdentifiers);
+    }
 
     private boolean isListValid() {
         saveDetails(selectedIndex);
@@ -173,7 +233,7 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
             return false;
         }
         for (MimeIdentifier mimeIdentifier : mimeIdentifiers) {
-            if (!mimeIdentifier.isValid()) {
+            if (!isCommentTagValid(mimeIdentifier)) {
                 return false;
             }
         }
@@ -181,11 +241,35 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
             return false;
         }
         for (ExtensionIdentifier extensionIdentifier : extensionIdentifiers) {
-            if (!extensionIdentifier.isValid()) {
+            if (!isCommentTagValid(extensionIdentifier)) {
                 return false;
             }
         }
         return true;
+    }
+    
+    private boolean isCommentTagValid(FileIdentifier identifier) {
+        CommentTags commentTags = id2comments.get(identifier.getId());
+        if(commentTags == null) { // identifier was not modified
+            return identifier.isValid();
+        }
+        boolean lineCommentValid = chbLine.isSelected();
+        boolean blockCommentValid = chbBlock.isSelected();
+        if(!lineCommentValid && !blockCommentValid) {
+            return false;
+        }
+        if(lineCommentValid) {
+            lineCommentValid = !commentTags.getLineComment().isEmpty() && commentTags.isLineCommentEnabled();
+        } else {
+            lineCommentValid = true;
+        }
+        
+        if(blockCommentValid) {
+            blockCommentValid = (!commentTags.getBlockCommentStart().isEmpty() && !commentTags.getBlockCommentEnd().isEmpty()) && commentTags.isBlockCommentEnabled();
+        } else {
+            blockCommentValid = true;
+        }
+        return lineCommentValid && blockCommentValid;
     }
     
     private DefaultTableModel createModel( Collection<String> patterns ) {
@@ -218,28 +302,35 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
             return;
         }
         removeDocumentListeners();
-        saveDetails(selectedIndex);
+        saveDetails(index == -1 ? index : selectedIndex);
         loadDetails(index);
         addDocumentListeners();
         selectedIndex = index;
     }
 
-    /*Save details to the object and return true if data is valid*/
+    /*Save details to the map, not the object itself, and return true if data is valid*/
     private boolean saveDetails(int index) {
         if (index == -1 || index == identifierModel.getSize()) {
             return false;
         }
         Object elementAt = identifierModel.getElementAt(index);
         if (elementAt instanceof FileIdentifier) {
-            FileIdentifier identifier = (FileIdentifier) elementAt;
+            FileIdentifier identifier = (FileIdentifier) elementAt;            
             CommentTags tag = identifier.getCommentTags();
-            tag.setLineComment(txtLine.getText().trim());
-            tag.setLineCommentEnabled(chbLine.isSelected());
-
-            tag.setBlockCommentStart(txtBlockStart.getText().trim());
-            tag.setBlockCommentEnd(txtBlockEnd.getText().trim());
-            tag.setBlockCommentEnabled(chbBlock.isSelected());
-            return identifier.isValid();
+            CommentTags commentTag = new CommentTags(txtLine.getText().trim(), txtBlockStart.getText().trim(), txtBlockEnd.getText().trim());            
+            String id = identifier.getId();
+            // check if there is a difference from the saved in Preferences and the currently showing in the UI state
+            if (tag.isBlockCommentEnabled() != commentTag.isBlockCommentEnabled()
+                    || tag.isLineCommentEnabled() != commentTag.isLineCommentEnabled()
+                    || !tag.getLineComment().equals(commentTag.getLineComment())
+                    || !tag.getBlockCommentStart().equals(commentTag.getBlockCommentStart())
+                    || !tag.getBlockCommentEnd().equals(commentTag.getBlockCommentEnd())) {
+                id2comments.put(id, commentTag);
+            } else {
+                id2comments.remove(id);
+            }
+            fireChanged();
+            return isCommentTagValid(identifier);
         }
         return false;
     }
@@ -250,18 +341,19 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
             return;
         }
         FileIdentifier identifier = (FileIdentifier) identifierModel.getElementAt(index);
-        CommentTags tag = identifier.getCommentTags();
+        CommentTags tag = id2comments.containsKey(identifier.getId()) ? id2comments.get(identifier.getId()) : identifier.getCommentTags();
         lblMimeName.setText(identifier.getDisplayName() + " - " + NbBundle.getMessage(ToDoCustomizer.class, "ToDoCustomizer.lblMimeName.text"));
         chbLine.setEnabled(true);
-        chbLine.setSelected(identifier.isValid() ? !tag.getLineComment().isEmpty() : true);
+        chbLine.setSelected(isCommentTagValid(identifier) ? !tag.getLineComment().isEmpty() : true);
         updateEnableLine();
         txtLine.setText(tag.getLineComment());
 
         chbBlock.setEnabled(true);
-        chbBlock.setSelected(identifier.isValid() ? !tag.getBlockCommentStart().isEmpty() : true);
+        chbBlock.setSelected(isCommentTagValid(identifier) ? !tag.getBlockCommentStart().isEmpty() : true);
         updateEnableBlock();
         txtBlockStart.setText(tag.getBlockCommentStart());
         txtBlockEnd.setText(tag.getBlockCommentEnd());
+        fireChanged();
     }
 
     private void disableDetails() {
@@ -288,6 +380,7 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         listIdentifiers.setModel(identifierModel);
         listIdentifiers.setSelectedIndex(indextToSelect);
         listIdentifiers.ensureIndexIsVisible(indextToSelect);
+        fireChanged();
     }
 
     private void addSelectedToModel(List<FileIdentifier> selectedIdentifiers) {
@@ -304,7 +397,6 @@ class ToDoCustomizer extends javax.swing.JPanel implements DocumentListener{
         updateListModel(indexToSelect);
 
         boolean oldChanged = changed;
-        changed = true;
         firePropertyChange(OptionsPanelController.PROP_CHANGED, oldChanged, true);
         firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
@@ -666,14 +758,14 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         table.getSelectionModel().setSelectionInterval( selRow, selRow );
     
     boolean wasChanged = changed;
-    changed = true;
+    fireChanged();
     firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
     
     firePropertyChange( OptionsPanelController.PROP_VALID, new Boolean(wasValid), new Boolean(isDataValid()));
 }//GEN-LAST:event_btnRemoveActionPerformed
 
 private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeActionPerformed
-    int selRow = table.getSelectedRow();
+    final int selRow = table.getSelectedRow();
     if( selRow < 0 )
         return;
     final boolean wasChanged = changed;
@@ -682,7 +774,8 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     editor.addCellEditorListener( new CellEditorListener() {
         public void editingStopped(ChangeEvent e) {
             editor.removeCellEditorListener( this );
-            changed = true;
+            table.setValueAt(editor.getCellEditorValue(), selRow, 0);
+            fireChanged();
             firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
             firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
         }
@@ -694,7 +787,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_btnChangeActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        DefaultTableModel model = (DefaultTableModel)table.getModel();
+        final DefaultTableModel model = (DefaultTableModel)table.getModel();
         model.addRow( new Object[] { getDummyPattern( ) } ); //NOI18N
         table.getSelectionModel().setSelectionInterval( model.getRowCount()-1, model.getRowCount()-1 );
         table.scrollRectToVisible(new Rectangle(table.getCellRect(model.getRowCount()-1, 0, true)));
@@ -704,7 +797,8 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         editor.addCellEditorListener( new CellEditorListener() {
             public void editingStopped(ChangeEvent e) {
                 editor.removeCellEditorListener( this );
-                changed = true;
+                table.setValueAt(editor.getCellEditorValue(), model.getRowCount() - 1, 0);
+                fireChanged();
                 firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
                 firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
             }
@@ -719,7 +813,7 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
     if( isUpdating )
         return;
     boolean wasChanged = changed;
-    changed = true;
+    fireChanged();
     firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
 }//GEN-LAST:event_scanCommentsOnlyChanged
 
@@ -753,7 +847,6 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
         int totalSize = mimeIdentifiers.size() + extensionIdentifiers.size() + 2;
         updateListModel(selected < totalSize ? selected : totalSize - 1);
         boolean oldChanged = changed;
-        changed = true;
         firePropertyChange(OptionsPanelController.PROP_CHANGED, oldChanged, true);
         firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }//GEN-LAST:event_btnRemoveMimeActionPerformed
@@ -819,7 +912,7 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
         boolean oldValid = detailsValid;
         boolean oldChanged = changed;
         detailsValid = saveDetails(selectedIndex);
-        changed = true;
+        fireChanged();
         if (!oldChanged) {
             firePropertyChange(OptionsPanelController.PROP_CHANGED, oldChanged, true);
         }
@@ -898,7 +991,7 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
 
     }
 
-    private static class IdentifierRenderer extends DefaultListCellRenderer {
+    private class IdentifierRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -907,7 +1000,7 @@ private void scanCommentsOnlyChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:
                 JLabel jLabel = (JLabel) comp;
                 if (value instanceof FileIdentifier) {
                     FileIdentifier identifier = (FileIdentifier) value;
-                    if (identifier.isValid()) {
+                    if (isCommentTagValid(identifier)) {
                         jLabel.setIcon(EMPTY_ICON);
                     } else {
                         jLabel.setIcon(NOT_VALID_ICON);

@@ -304,7 +304,7 @@ implements AbstractLookup.Storage<ArrayStorage.Transaction> {
         if (took > 500 && AbstractLookup.LOG != null) {
             AbstractLookup.LOG.log(Level.WARNING, 
                 "Too long ({0} ms and {1} references) cleanUpResult for {2}",
-                new Object[]{took, cnt, templ.getType()}
+                new Object[]{took, cnt, templ != null ? templ.getType() : null}
             );
         }
 

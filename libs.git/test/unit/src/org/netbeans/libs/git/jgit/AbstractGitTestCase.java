@@ -151,7 +151,7 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected static void assertStatus (Map<File, GitStatus> statuses, File workDir, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict) {
         GitStatus status = statuses.get(file);
-        assertNotNull(status);
+        assertNotNull(file.getAbsolutePath() + " not in " + statuses.keySet(), status);
         assertEquals(TestUtils.getRelativePath(file, workDir), status.getRelativePath());
         assertEquals(tracked, status.isTracked());
         assertEquals(headVsIndex, status.getStatusHeadIndex());

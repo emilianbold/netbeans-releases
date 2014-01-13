@@ -479,7 +479,7 @@ public class FileStatusCache {
                 synchronized (filesToRefresh) {
                     for (File file : files) {
                         if (recursively) {
-                            filesToRefresh.addAll(SvnUtils.listRecursively(file));
+                            filesToRefresh.addAll(SvnUtils.listManagedRecursively(file));
                         } else {
                             filesToRefresh.add(file);
                         }
@@ -520,25 +520,15 @@ public class FileStatusCache {
      * Refreshes the status for the given file and all its children
      * 
      * @param root
-     * @param traverseIgnored if set to false, the recursive refresh will stop on ignored folders
-     * XXX is traverseIgnored really necessary or should it always be considered false?
      */
-    public void refreshRecursively(File root, boolean traverseIgnored) {
-        if (traverseIgnored) {
-            // use old logic and refresh ALL files under the root
-            List<File> files = SvnUtils.listRecursively(root);
+    public void refreshRecursively (File root) {
+        // refresh the root itself
+        FileInformation info = refresh(root, REPOSITORY_STATUS_UNKNOWN);
+        // for unignored files, refresh recursively its direct children too
+        if (info == null || (info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+            List<File> files = SvnUtils.listChildren(root);
             for (File file : files) {
-                refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            }
-        } else {
-            // refresh the root itself
-            FileInformation info = refresh(root, REPOSITORY_STATUS_UNKNOWN);
-            // for unignored files, refresh recursively its direct children too
-            if (info == null || (info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-                List<File> files = SvnUtils.listChildren(root);
-                for (File file : files) {
-                    refreshRecursively(file, traverseIgnored);
-                }
+                refreshRecursively(file);
             }
         }
     }    
@@ -1347,6 +1337,10 @@ public class FileStatusCache {
 
         public void flushFileLabels(File... files) {
             synchronized (fileLabels) {
+                if (files == null) {
+                    fileLabels.clear();
+                    return;
+                }
                 for (File f : files) {
                     if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
                         LABELS_CACHE_LOG.log(Level.FINE, "Removing from cache: {0}", f.getAbsolutePath()); //NOI18N
@@ -1448,21 +1442,25 @@ public class FileStatusCache {
                             if (info.getLastChangedDate() != null) {
                                 lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
                             }
+                            FileInformation fi = master.getCachedStatus(file);
                             if (mimeTypeFlag) {
                                 // call svn prop command only when really needed
-                                FileInformation fi = master.getCachedStatus(file);
                                 if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
                                     binaryString = getMimeType(client, file);
                                 } else {
                                     binaryString = "";                  //NOI18N
                                 }
                             }
-                            // copy name
-                            if (info.getUrl() != null) {
-                                stickyString = SvnUtils.getCopy(info.getUrl());
+                            if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
+                                // copy name
+                                if (info.getUrl() != null) {
+                                    stickyString = SvnUtils.getCopy(info.getUrl());
+                                } else {
+                                    // slower
+                                    stickyString = SvnUtils.getCopy(file);
+                                }
                             } else {
-                                // slower
-                                stickyString = SvnUtils.getCopy(file);
+                                stickyString = ""; //NOI18N
                             }
                             labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString, info.getLastCommitAuthor(), lastDateString, lastRevisionString));
                         } catch (SVNClientException ex) {

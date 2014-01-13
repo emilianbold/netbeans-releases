@@ -79,7 +79,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author jungi
  */
-public class CarDeploymentConfiguration extends JBDeploymentConfiguration
+public class CarDeploymentConfiguration extends WildflyDeploymentConfiguration
 implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
     private File jbossClientFile;
@@ -252,7 +252,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 //if it doesn't exist yet, create a new one
                 ResourceRef newRR = new ResourceRef();
                 newRR.setResRefName(name);
-                newRR.setJndiName(JBossDatasource.PREFIX + name);
+                newRR.setJndiName(WildflyDatasource.PREFIX + name);
                 modifiedJbossClient.addResourceRef(newRR);
             }
         });
@@ -447,14 +447,6 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             String msg = NbBundle.getMessage(CarDeploymentConfiguration.class, "MSG_CannotUpdateFile", jbossClientFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);
         }
-    }
-
-    public boolean supportsCreateDatasource() {
-        return !isAs7();
-    }
-
-    public boolean supportsCreateMessageDestination() {
-        return false;
     }
     
     // private helper interface -----------------------------------------------

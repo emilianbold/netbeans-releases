@@ -934,12 +934,23 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 ListIterator<Item> dispIterator = dispResults.listIterator();
                 Item displayed = dispIterator.next();
                 index = 0;
+                int addedStart = -1, addedLast = 0;
+                int removedStart = -1, removedLast = 0;
                 while (allIterator.hasNext()) {
                     Item item = allIterator.next();
                     if (item == displayed) {
                         if (!item.isVisible()) {
                             dispIterator.remove();
-                            fireIntervalRemoved(this, index, index);
+                            if (removedStart == -1) {
+                                removedStart = removedLast = index;
+                            } else {
+                                if (removedLast < index -1) {
+                                    fireRemovals(removedStart, removedLast);
+                                    removedStart = index;
+                                } else {
+                                    removedLast = index;
+                                }
+                            }
                         }
                         if (dispIterator.hasNext()) {
                             displayed = dispIterator.next();
@@ -949,21 +960,45 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                         if (item.isVisible()) {
                             dispIterator.previous();
                             dispIterator.add(item);
-                            fireIntervalAdded(this, index, index);
-                            if (resultsList.getSelectionModel().isSelectedIndex(index)) {
-                                resultsList.getSelectionModel().removeSelectionInterval(index, index);
+                            if (addedStart == -1) {
+                                addedStart = addedLast = index;
+                            } else {
+                                if (addedLast < index -1) {
+                                    fireAdds(addedStart, addedLast);
+                                    addedStart = index;
+                                } else {
+                                    addedLast = index;
+                                }
                             }
                             dispIterator.next();
                             ++index;
                         }
                     }
                 }
+                fireAdds(addedStart, addedLast);
                 dispResults.remove(dispResults.size() - 1);
             }
         }
 
         private void fireChange (int index) {
             fireContentsChanged(this, index, index);
+        }
+
+        private void fireAdds (int start, int end) {
+            if (start != -1 && end >= start) {
+                fireIntervalAdded(this, start, end);
+                for (int i = start; i <= end; i++) {
+                    if (resultsList.getSelectionModel().isSelectedIndex(i)) {
+                        resultsList.getSelectionModel().removeSelectionInterval(i, i);
+                    }
+                }
+            }
+        }
+
+        private void fireRemovals (int start, int end) {
+            if (start != -1 && end >= start) {
+                fireIntervalRemoved(this, start, end);
+            }
         }
     }
 }

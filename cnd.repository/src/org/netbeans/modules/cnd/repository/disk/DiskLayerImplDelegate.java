@@ -51,7 +51,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.Layer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
-import org.netbeans.modules.cnd.repository.impl.spi.LayerExceptionsListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
@@ -90,8 +89,8 @@ final class DiskLayerImplDelegate implements Layer {
     
 
     @Override
-    public boolean startup(int persistMechanismVersion) {
-        return impl.startup(persistMechanismVersion, layerDescriptor.isWritable());
+    public boolean startup(int persistMechanismVersion, boolean recreate) {
+        return impl.startup(persistMechanismVersion, recreate, layerDescriptor.isWritable());
     }
 
     @Override
@@ -128,11 +127,6 @@ final class DiskLayerImplDelegate implements Layer {
     @Override
     public void closeUnit(int unitIdInLayer, boolean cleanRepository, Set<Integer> requiredUnits) {
         impl.closeUnit(unitIdInLayer, cleanRepository, requiredUnits, writableLayers.contains(impl));
-    }
-
-    @Override
-    public void setExceptionsListener(LayerExceptionsListener listener) {
-        impl.setExceptionsListener(listener);
     }
 
     @Override

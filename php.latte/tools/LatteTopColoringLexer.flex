@@ -92,6 +92,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     }
 
+    private boolean curlyInBalance(String text) {
+        int textLength = text.length();
+        int openCurly = textLength - text.replace("{", "").length();
+        int closeCurly = textLength - text.replace("}", "").length();
+        return openCurly == closeCurly;
+    }
+
     private enum Syntax {
         LATTE,
         DOUBLE,
@@ -434,23 +441,38 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE> {
-    {MACRO_SYNTAX_START} "latte" {
+    {MACRO_SYNTAX_START} "latte" "}"? {
+        if (yytext().endsWith("}")) {
+            yypushback(1);
+        }
         syntax = Syntax.LATTE;
         return LatteTopTokenId.T_LATTE;
     }
-    {MACRO_SYNTAX_START} "double" {
+    {MACRO_SYNTAX_START} "double" "}"? {
+        if (yytext().endsWith("}")) {
+            yypushback(1);
+        }
         syntax = Syntax.DOUBLE;
         return LatteTopTokenId.T_LATTE;
     }
-    {MACRO_SYNTAX_START} "asp" {
+    {MACRO_SYNTAX_START} "asp" "}"? {
+        if (yytext().endsWith("}")) {
+            yypushback(1);
+        }
         syntax = Syntax.ASP;
         return LatteTopTokenId.T_LATTE;
     }
-    {MACRO_SYNTAX_START} "python" {
+    {MACRO_SYNTAX_START} "python" "}"? {
+        if (yytext().endsWith("}")) {
+            yypushback(1);
+        }
         syntax = Syntax.PYTHON;
         return LatteTopTokenId.T_LATTE;
     }
-    {MACRO_SYNTAX_START} "off" {
+    {MACRO_SYNTAX_START} "off" "}"? {
+        if (yytext().endsWith("}")) {
+            yypushback(1);
+        }
         syntax = Syntax.OFF;
         return LatteTopTokenId.T_LATTE;
     }
@@ -465,9 +487,16 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_CLOSE_DELIMITER;
     }
-
+    [^"}"]+ "}" {
+        if (curlyInBalance(yytext().substring(0, yylength() - 1))) {
+            yypushback(1);
+            return LatteTopTokenId.T_LATTE;
+        }
+    }
     [^"}"]+ {
-        return LatteTopTokenId.T_LATTE;
+        if (curlyInBalance(yytext())) {
+            return LatteTopTokenId.T_LATTE;
+        }
     }
 }
 

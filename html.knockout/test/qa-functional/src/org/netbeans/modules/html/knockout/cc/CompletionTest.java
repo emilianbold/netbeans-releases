@@ -56,6 +56,8 @@ import org.netbeans.modules.html.knockout.GeneralKnockout;
  */
 public class CompletionTest extends GeneralKnockout {
 
+  public static final int WAIT_AFTER_PASTE = 400;
+    
   public CompletionTest(String args) {
     super(args);
   }
@@ -102,6 +104,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"\"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("\"\"", 0, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
 
@@ -124,6 +127,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: newVariable, \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("le,", 0, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -148,6 +152,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: newVariable, visible: \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("ible:", 0, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -179,6 +184,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("t: ", 0, true);
 
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -209,6 +215,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"mybinding: \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("g: ", 0, true);
 
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -239,6 +246,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"with: skills \"><span data-bind=\"text: \"></span></div></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("t: ", 0, true);
 
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -282,6 +290,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: $parents[0].\"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("[0].", false);
     eo.typeKey(' ', InputEvent.CTRL_MASK);
 
@@ -299,6 +308,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: $root.\"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("ot.", false);
     eo.typeKey(' ', InputEvent.CTRL_MASK);
 
@@ -316,6 +326,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"value: \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("ue:", false);
     eo.typeKey(' ', InputEvent.CTRL_MASK);
 
@@ -333,6 +344,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: newVariable\"></div>");
     eo.insert("<div data-bind=\"text: \"></div>");
+    evt.waitNoEvent(CompletionTest.WAIT_AFTER_PASTE);
     eo.setCaretPosition("t: ", 1, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
     eo.pressKey(KeyEvent.VK_RIGHT);

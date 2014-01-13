@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
@@ -88,6 +89,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -311,8 +313,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return OffsetableBase.getEndOffset(ast);
         }
         ast = getLastNode(ast, greedy);
-        if( ast instanceof CsmAST ) {
-            return ((CsmAST) ast).getEndOffset();
+        if( ast instanceof OffsetableAST ) {
+            return ((OffsetableAST) ast).getEndOffset();
         }
         return OffsetableBase.getEndOffset(node);
     }
@@ -385,6 +387,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     final void trimInstantiationParams() {
         if (instantiationParams != null) {
             instantiationParams.trimToSize();
+        }
+    }
+    
+    final void initInstantiationParams() {
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>();
         }
     }
     
@@ -487,7 +495,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
      * @param ptrOperator
      * @return true if visiting was finished successfully, false otherwise
      */
-    public static boolean visitPointerOperator(ASTTokenVisitor visitor, AST ptrOperator) {
+    public static boolean visitPointerOperator(DeepUtil.ASTTokenVisitor visitor, AST ptrOperator) {
         if (ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
             for (AST insideToken = ptrOperator.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
                 if (insideToken.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
@@ -1210,7 +1218,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     
-    private static class ASTPointerOperatorQualifiersCollector implements ASTTokenVisitor {
+    private static class ASTPointerOperatorQualifiersCollector implements DeepUtil.ASTTokenVisitor {
         
         private int constQualifiers;
         
@@ -1243,16 +1251,4 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return constQualifiers;
         }                                              
     }
-    
-
-    public static interface ASTTokenVisitor {
-        
-        /**
-         * @param token 
-         * @return true to continue visiting, false to abort
-         */
-        boolean visit(AST token);
-        
-    }
-    
 }

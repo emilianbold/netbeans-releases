@@ -49,9 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsSources;
@@ -61,6 +59,7 @@ import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -79,7 +78,7 @@ public class SourceRoots {
 
     public FileObject[] getRoots() {
         // FIXME optimize this
-        List<FileObject> result = new ArrayList<FileObject>();
+        List<FileObject> result = new ArrayList<>();
         addGrailsSourceRoots(projectRoot, result);
 
         if (project != null) {
@@ -104,10 +103,10 @@ public class SourceRoots {
     }
 
     public List<URL> getRootURLs() {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         try {
             for (FileObject fileObject : getRoots()) {
-                urls.add(FileUtil.toFile(fileObject).toURI().toURL());
+                urls.add(Utilities.toURI(FileUtil.toFile(fileObject)).toURL());
             }
         } catch (MalformedURLException murle) {
             Exceptions.printStackTrace(murle);
@@ -122,7 +121,7 @@ public class SourceRoots {
 
         final FileObject pluginsDir = FileUtil.toFileObject(FileUtil.normalizeFile(pluginsDirFile));
         if (pluginsDir != null) {
-            List<FileObject> result = new ArrayList<FileObject>();
+            List<FileObject> result = new ArrayList<>();
             for(Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
                     subfolders.hasMoreElements();) {
 

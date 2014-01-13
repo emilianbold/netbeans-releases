@@ -45,9 +45,9 @@ package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.awt.BorderLayout;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -66,9 +66,9 @@ public final class MacroExpansionTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
     private static final String PREFERRED_ID = "MacroExpansionTopComponent"; // NOI18N
+    private static final String LOCAL_KEY = "show-local-context"; // NOI18N
+    private static final String SYNC_KEY = "sync-context"; // NOI18N
     private MacroExpansionPanel panel = null;
-    private boolean lastSyncCaretAndContext = true;
-    private boolean lastLocalContext = true;
     private Document lastExpandedContextDoc = null;
 
     private MacroExpansionTopComponent() {
@@ -83,24 +83,18 @@ public final class MacroExpansionTopComponent extends TopComponent {
      */
     public void setDocuments(Document expandedContextDoc) {
         lastExpandedContextDoc = expandedContextDoc;
-        if (panel != null) {
-            lastSyncCaretAndContext = panel.isSyncCaretAndContext();
-            lastLocalContext = panel.isLocalContext();
-        } else {
+        if (panel == null) {
             panel = new MacroExpansionPanel(true);
             removeAll();
             add(panel, BorderLayout.CENTER);
         }
 
         panel.setContextExpansionDocument(expandedContextDoc);
-        panel.setLocalContext(isLocalContext());
-        panel.setSyncCaretAndContext(lastSyncCaretAndContext);
-        panel.setLocalContext(lastLocalContext);
-        if (panel.isSyncCaretAndContext()) {
+        if (MacroExpansionTopComponent.isSyncCaretAndContext()) {
             panel.updateCaretPosition();
         }
         validate();
-        OpenedEditors.getDefault().fireStateChanged();
+        panelInitialized.set(true);
     }
 
     /**
@@ -118,11 +112,19 @@ public final class MacroExpansionTopComponent extends TopComponent {
      * @return is macro expansion local
      */
     public static boolean isLocalContext() {
-        return NbPreferences.forModule(MacroExpansionTopComponent.class).getBoolean("show-local-context", true); // NOI18N
+        return NbPreferences.forModule(MacroExpansionTopComponent.class).getBoolean(LOCAL_KEY, true); // NOI18N
     }
 
     public static void setLocalContext(boolean localContext) {
-        NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean("show-local-context", localContext); // NOI18N
+        NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean(LOCAL_KEY, localContext); // NOI18N
+    }
+
+    public static boolean isSyncCaretAndContext() {
+        return NbPreferences.forModule(MacroExpansionTopComponent.class).getBoolean(SYNC_KEY, true); // NOI18N
+    }
+
+    public static void setSyncCaretAndContext(boolean syncContext) {
+        NbPreferences.forModule(MacroExpansionTopComponent.class).putBoolean(SYNC_KEY, syncContext); // NOI18N
     }
 
     /**
@@ -211,15 +213,18 @@ public final class MacroExpansionTopComponent extends TopComponent {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
+    private static final AtomicBoolean panelInitialized = new AtomicBoolean(false);
+
+    public static boolean isMacroExpansionInitialized() {
+        return panelInitialized.get();
+    }
+    
     public
     @Override
     void componentClosed() {
         removeAll();
         initComponents();
         if (panel != null) {
-            lastSyncCaretAndContext = panel.isSyncCaretAndContext();
-            lastLocalContext = panel.isLocalContext();
-
             Document doc = getExpandedContextDoc();
             if (doc != null) {
                 // clean reference on expanded document from real document
@@ -232,6 +237,7 @@ public final class MacroExpansionTopComponent extends TopComponent {
             lastExpandedContextDoc = null;
             panel.removeAll();
             panel = null;
+            panelInitialized.set(false);
         }
     }
 

@@ -175,7 +175,6 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_LOG, ""); // NOI18N
             }
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL, "file"); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {
@@ -434,7 +433,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     private void macroEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_macroEditButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(macroTextField.getText(), "; "); // NOI18N
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken().trim());
         }
@@ -456,7 +455,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     private void includeEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_includeEditButtonActionPerformed
         StringTokenizer tokenizer = new StringTokenizer(includeTextField.getText(), ";"); // NOI18N
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }

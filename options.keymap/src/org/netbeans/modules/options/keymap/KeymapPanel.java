@@ -87,6 +87,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 
 
 /**
@@ -662,6 +663,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         JComponent tf = (JComponent) evt.getSource();
         Point p = new Point(tf.getX(), tf.getY());
         SwingUtilities.convertPointToScreen(p, this);
+        Rectangle usableScreenBounds = Utilities.getUsableScreenBounds();
+        if (p.x + specialkeyList.getWidth() > usableScreenBounds.width) {
+            p.x = usableScreenBounds.width - specialkeyList.getWidth();
+        }
+        if (p.y + specialkeyList.getHeight() > usableScreenBounds.height) {
+            p.y = usableScreenBounds.height - specialkeyList.getHeight();
+        }
         //show special key popup
         searchPopup = PopupFactory.getSharedInstance().getPopup(this, specialkeyList, p.x, p.y);
         searchPopup.show();

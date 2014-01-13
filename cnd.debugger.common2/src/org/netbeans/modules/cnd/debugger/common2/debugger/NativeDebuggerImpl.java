@@ -136,7 +136,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     // turned on when killEngine is issued
     protected boolean postedKillEngine = false;
 
-    protected Location visitedLocation = null;
+    protected volatile Location visitedLocation = null;
 
     protected final DebuggerAnnotation visitMarker;
     protected final DebuggerAnnotation visitDisMarker;
@@ -878,9 +878,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                final boolean haveSource = haveSource();
+                final Location loc = getVisitedLocation();
+                final boolean haveSource = loc != null && loc.hasSource();
                 // Locations should already be in local path form.
-                final Line curentLine = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(getVisitedLocation().src()), getVisitedLocation().line(),
+                final Line curentLine = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(loc.src()), loc.line(),
                         NativeDebuggerImpl.this);
 
                 // To prevent locks on EDT when updateLocation is initiated by
@@ -901,7 +902,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                             ShowMode showMode = ShowMode.NONE;
                             if (andShow) {
                                 showMode = showModeOverride;
-                                NativeBreakpoint breakpoint = getVisitedLocation().getBreakpoint();
+                                NativeBreakpoint breakpoint = loc.getBreakpoint();
                                 if (breakpoint != null) {
                                     if (breakpoint instanceof InstructionBreakpoint) {
                                         showMode = ShowMode.DIS;
@@ -910,9 +911,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                                     }
                                 }
                             }
-                            setCurrentLine(curentLine, getVisitedLocation().visited(), getVisitedLocation().srcOutOfdate(), showMode, focus);
+                            setCurrentLine(curentLine, loc.visited(), loc.srcOutOfdate(), showMode, focus);
                         } else {
-                            if (getVisitedLocation() != null && getVisitedLocation().pc() != 0) {
+                            if (loc != null && loc.pc() != 0) {
                                 Disassembly.open();
                                 annotateDis(andShow);   // In order to update current line when source is unavailable
                             }
@@ -924,11 +925,6 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     }
 
-    private boolean haveSource() {
-	return getVisitedLocation() != null &&
-	       getVisitedLocation().hasSource();
-    }
-
     @Override
     public void requestDisassembly() {
         disRequested = true;
@@ -936,7 +932,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
     }
 
     public void showCurrentSource() {
-	if (!haveSource()) {
+        Location loc = getVisitedLocation();
+	if (! (loc != null && loc.hasSource()) ) {
 	    NativeDebuggerManager.warning(Catalog.get("Dis_MSG_NoSource"));
 	    return;
 	}

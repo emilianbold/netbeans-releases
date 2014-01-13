@@ -48,6 +48,7 @@ import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
 import org.netbeans.modules.test.refactoring.IntroduceConstantTest;
 import org.netbeans.modules.test.refactoring.IntroduceFieldTest;
 import org.netbeans.modules.test.refactoring.IntroduceMethodTest;
+import org.netbeans.modules.test.refactoring.IntroduceParameterTest;
 
 /**
  *
@@ -59,6 +60,7 @@ public class IntroduceSuite {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(IntroduceConstantTest.class).
                         addTest(IntroduceFieldTest.class).
+                        addTest(IntroduceParameterTest.class).
                         addTest(IntroduceMethodTest.class));
     }
 }

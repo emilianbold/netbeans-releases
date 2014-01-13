@@ -548,7 +548,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     
     private void insideReference(DocTreePath tag, JavadocContext jdctx) {
         ReferenceTree ref = (ReferenceTree) tag.getLeaf();
-        boolean isThrowsKind = tag.getParentPath().getLeaf().getKind() == Kind.THROWS;
+        Kind kind = tag.getParentPath().getLeaf().getKind();
         int start = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, ref);
         int end   = (int) jdctx.positions.getEndPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, ref);
         
@@ -564,13 +564,21 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 int substitutionOffset = caretOffset - sb.length();
                 ExpressionTree classReference = jdctx.javac.getTreeUtilities().getReferenceClass(tag);
                 if (classReference == null) {
-                    addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
+                    if (kind == Kind.VALUE) {
+                        addLocalConstants(jdctx, prefix, substitutionOffset);
+                    } else {
+                        addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
+                    }
                 } else {
                     Element elm = jdctx.javac.getDocTrees().getElement(new TreePath(jdctx.javadocFor, classReference));
                     if (elm != null) {
-                        addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
-                                EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),
-                                null);
+                        if (kind == Kind.VALUE) {
+                            addMemberConstants(jdctx, prefix, substitutionOffset, elm.asType());
+                        } else {
+                            addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
+                                    EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),
+                                    null);
+                        }
                     }
                 }
                 return;
@@ -579,7 +587,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 String prefix = sb.toString();
                 String fqn = cs.subSequence(0, i).toString();
                 int substitutionOffset = caretOffset - sb.length();
-                if (isThrowsKind) {
+                if (kind == Kind.THROWS) {
                     completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
                 } else {
                     completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
@@ -593,7 +601,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         String prefix = sb.toString();
         String fqn = null;
         int substitutionOffset = caretOffset - sb.length();
-        if (isThrowsKind) {
+        if (kind == Kind.THROWS) {
             completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
         } else {
             completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
@@ -866,6 +874,84 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //                    DeclaredType dt = (DeclaredType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
 //                    results.add(JavaCompletionItem.createTypeItem((TypeElement)e, dt, anchorOffset, false, elements.isDeprecated(e), insideNew, false));
 //                    break;
+            }
+        }
+    }
+
+    private void addMemberConstants(final JavadocContext env, final String prefix, final int substitutionOffset, final TypeMirror type) {
+        final CompilationInfo controller = env.javac;
+        final Trees trees = controller.getTrees();
+        final Elements elements = controller.getElements();
+        final Types types = controller.getTypes();
+        final TreeUtilities tu = controller.getTreeUtilities();
+        TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
+        Element docelm = env.handle.resolve(controller);
+        TreePath docpath = docelm != null ? trees.getPath(docelm) : null;
+        final Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
+        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+            public boolean accept(Element e, TypeMirror t) {
+                switch (e.getKind()) {
+                    case FIELD:
+                        String name = e.getSimpleName().toString();
+                        return ((VariableElement)e).getConstantValue() != null
+                                && Utilities.startsWith(name, prefix) && !CLASS_KEYWORD.equals(name)
+                                && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e));
+                    case ENUM_CONSTANT:
+                        return ((VariableElement)e).getConstantValue() != null &&
+                                Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                                (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+                                trees.isAccessible(scope, e, (DeclaredType)t);
+                }
+                return false;
+            }
+        };
+        for(Element e : controller.getElementUtilities().getMembers(type, acceptor)) {
+            switch (e.getKind()) {
+                case ENUM_CONSTANT:
+                case FIELD:
+                    TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
+                    break;
+            }
+        }
+    }
+
+    private void addLocalConstants(final JavadocContext env, final String prefix, final int substitutionOffset) {
+        final CompilationInfo controller = env.javac;
+        final Elements elements = controller.getElements();
+        final Types types = controller.getTypes();
+        final TreeUtilities tu = controller.getTreeUtilities();
+        final Trees trees = controller.getTrees();
+        Element docelm = env.handle.resolve(controller);
+        TreePath docpath = docelm != null ? trees.getPath(docelm) : null;
+        final Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
+        final TypeElement enclClass = scope.getEnclosingClass();
+        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+            public boolean accept(Element e, TypeMirror t) {
+                switch (e.getKind()) {
+                    case FIELD:
+                        String name = e.getSimpleName().toString();
+                        return ((VariableElement)e).getConstantValue() != null
+                                && Utilities.startsWith(name, prefix) && !CLASS_KEYWORD.equals(name)
+                                &&  (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e));
+                    case ENUM_CONSTANT:
+                        return ((VariableElement)e).getConstantValue() != null &&
+                                Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                                (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
+                                trees.isAccessible(scope, e, (DeclaredType)t);
+                }
+                return false;
+            }
+        };
+        for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
+            switch (e.getKind()) {
+                case ENUM_CONSTANT:
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
+                    break;
+                case FIELD:
+                    TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
+                    break;
             }
         }
     }

@@ -119,7 +119,7 @@ public class AddCommand extends GitCommand {
                 if (!relativePaths.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
                 }
-                treeWalk.setRecursive(true);
+                treeWalk.setRecursive(false);
                 treeWalk.reset();
                 treeWalk.addTree(new DirCacheBuildIterator(builder));
                 treeWalk.addTree(new FileTreeIterator(repository));
@@ -153,6 +153,9 @@ public class AddCommand extends GitCommand {
                                     entry.setLastModified(attrs.lastModifiedTime().toMillis());
                                 }
                                 entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, Constants.encode(link.toString())));
+                            } else if ((f.getEntryFileMode().getBits() & FileMode.TYPE_TREE) == FileMode.TYPE_TREE) {
+                                treeWalk.enterSubtree();
+                                continue;
                             } else {
                                 if (!checkExecutable) {
                                     fm = fm & ~0111;

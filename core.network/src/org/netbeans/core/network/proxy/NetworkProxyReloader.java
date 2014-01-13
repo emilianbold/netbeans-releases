@@ -146,7 +146,7 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                 LOGGER.log(Level.INFO, "System network proxy - https port: {0}", networkProxySettings.getHttpsProxyPort()); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy - socks host: {0}", networkProxySettings.getSocksProxyHost()); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy - socks port: {0}", networkProxySettings.getSocksProxyPort()); //NOI18N
-                LOGGER.log(Level.INFO, "System network proxy - no prohy hosts: {0}", getStringFromArray(networkProxySettings.getNoProxyHosts())); //NOI18N
+                LOGGER.log(Level.INFO, "System network proxy - no proxy hosts: {0}", getStringFromArray(networkProxySettings.getNoProxyHosts())); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy TEST - http host: {0}", networkProxySettings.getHttpProxyHost()); //NOI18N
                 LOGGER.log(Level.INFO, "System network proxy TEST - http port: {0}", networkProxySettings.getHttpProxyPort()); //NOI18N
                 getPreferences().put(ProxySettings.SYSTEM_PROXY_HTTP_HOST, networkProxySettings.getHttpProxyHost());

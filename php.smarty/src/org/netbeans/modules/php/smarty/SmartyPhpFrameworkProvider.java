@@ -38,27 +38,34 @@
  */
 package org.netbeans.modules.php.smarty;
 
-import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.api.queries.PhpVisibilityQuery;
+import org.netbeans.modules.php.api.queries.Queries;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
-import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
+import org.netbeans.modules.php.smarty.ui.notification.AutodetectionPanel;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -134,22 +141,8 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(final PhpModule phpModule) {
-        final Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
-
-        // TODO - could be removed one release after NB71
-        updateSmartyAvailableProperty(preferences);
-
-        return preferences.getBoolean(PROP_SMARTY_AVAILABLE, false);
-    }
-
-    /**
-     * Temporary method for updating Smarty php module preferences to use
-     * boolean value instead of flag for {@code #PROP_SMARTY_AVAILABLE).
-     */
-    private void updateSmartyAvailableProperty(Preferences preferences) {
-        if (preferences.get(PROP_SMARTY_AVAILABLE, "0").equals("1")) { //NOI18N
-            preferences.putBoolean(PROP_SMARTY_AVAILABLE, true);
-        }
+        Boolean enabled = getSmartyPropertyEnabled(phpModule);
+        return enabled != null && enabled;
     }
 
     @Override
@@ -196,29 +189,85 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
         return new SmartyPhpModuleCustomizerExtender(phpModule);
     }
 
-    private static final class SmartyVerificationVisitor extends DefaultVisitor {
+    @NbBundle.Messages({
+        "SmartyPhpFrameworkProvider.tit.smarty.template.autodetection=Smarty autodetection",
+    })
+    @Override
+    public void phpModuleOpened(final PhpModule phpModule) {
+        if (getSmartyPropertyEnabled(phpModule) == null) {
+            try {
+                ParserManager.parseWhenScanFinished(FileUtils.PHP_MIME_TYPE, new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        RP.post(new SmartyAutodetectionJob(phpModule));
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
-        private boolean foundSmarty;
+    /**
+     * Try to locate Smarty templates files in given directory.
+     * @param fo directory where to seek
+     * @return {@code true} if any Smarty template found, {@code false} otherwise
+     */
+    private static boolean detectSmartyTemplate(FileObject fo, PhpVisibilityQuery visibilityQuery) {
+        if (!fo.isValid() || !visibilityQuery.isVisible(fo)) {
+            return false;
+        }
 
-        public SmartyVerificationVisitor() {
-            foundSmarty = false;
+        assert fo.isFolder();
+        for (FileObject child : fo.getChildren()) {
+            if (child.isFolder()) {
+                if (detectSmartyTemplate(child, visibilityQuery)) {
+                    return true;
+                }
+            } else if (hasSmartyTemplateExtension(child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @CheckForNull
+    @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean getSmartyPropertyEnabled(PhpModule phpModule) {
+        Preferences preferences = phpModule.getPreferences(SmartyPhpFrameworkProvider.class, true);
+        String available = preferences.get(PROP_SMARTY_AVAILABLE, null);
+        if (available == null) {
+            return null;
+        } else {
+            return Boolean.valueOf(available);
+        }
+    }
+
+    private static class SmartyAutodetectionJob implements Runnable {
+
+        private final PhpModule phpModule;
+
+        public SmartyAutodetectionJob(PhpModule phpModule) {
+            this.phpModule = phpModule;
         }
 
         @Override
-        public void visit(ClassInstanceCreation node) {
-            super.visit(node);
-            if (node.getClassName().getName() instanceof NamespaceName) {
-                NamespaceName name = ((NamespaceName) node.getClassName().getName());
-                if (!name.getSegments().isEmpty()) {
-                    if (name.getSegments().iterator().next().getName().equals(SmartyFramework.BASE_CLASS_NAME)) {
-                        foundSmarty = true;
-                    }
-                }
+        public void run() {
+            long startTime = System.currentTimeMillis();
+            LOGGER.log(Level.FINEST, "Smarty templates autodetection started.");
+            FileObject sourceDirectory = phpModule.getSourceDirectory();
+            PhpVisibilityQuery visibilityQuery = Queries.getVisibilityQuery(phpModule);
+            if (sourceDirectory != null && detectSmartyTemplate(sourceDirectory, visibilityQuery)) {
+                NotificationDisplayer.getDefault().notify(
+                        Bundle.SmartyPhpFrameworkProvider_tit_smarty_template_autodetection(),
+                        NotificationDisplayer.Priority.LOW.getIcon(),
+                        new AutodetectionPanel(phpModule),
+                        new AutodetectionPanel(phpModule),
+                        NotificationDisplayer.Priority.LOW);
             }
-        }
-
-        public boolean isFoundSmarty() {
-            return foundSmarty;
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "Smarty templates autodetection took {0}ms.", System.currentTimeMillis() - startTime);
+            }
         }
     }
 }

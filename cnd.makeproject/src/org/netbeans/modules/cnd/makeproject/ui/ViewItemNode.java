@@ -60,6 +60,8 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.CodeAssistance;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.actions.CreateProjectAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugDialogAction;
@@ -77,9 +79,11 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.actions.PasteAction;
 import org.openide.actions.RenameAction;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -126,6 +130,10 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 ProjectNodesRefreshSupport.ProjectNodeRefreshListener.class, refreshListener, ProjectNodesRefreshSupport.class));
 
         this.simpleRunDebug = simpleRunDebug;
+        CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
+        if (CAProvider != null) {
+            CAProvider.addChangeListener(this);
+        }
     }
     
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
@@ -383,6 +391,12 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         if (itemConfiguration == null) {
             return false;
         }
+        CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
+        if (CAProvider != null) {
+            if (CAProvider.hasCodeAssistance(item)) {
+                return false;
+            }
+        }
         BooleanConfiguration excl = itemConfiguration.getExcluded();
         return excl.getValue();
     }
@@ -401,17 +415,25 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-//            String displayName = getDisplayName();
-//            fireDisplayNameChange(displayName, "");
-//            fireDisplayNameChange("", displayName);
-        EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
-//            fireIconChange(); // ViewItemNode
-//            fireOpenedIconChange();
+        Object source = e.getSource();
+        if (source instanceof FileObject) {
+            // See CsmCodeAssistanceProvider.fireChanges(CsmFile file)
+            if (source.equals(item.getFileObject())) {
+                EventQueue.invokeLater(new VisualUpdater());
+            }
+        } else if (source instanceof NativeProject) {
+            // See CsmCodeAssistanceProvider.fireChanges(CsmProject project)
+            if (source.equals(item.getNativeProject())) {
+                EventQueue.invokeLater(new VisualUpdater());
+            }
+        } else {
+            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
+        }
     }
 
     private static final class ViewItemTransferable extends ExTransferable.Single {
 
-        private ViewItemNode node;
+        private final ViewItemNode node;
 
         public ViewItemTransferable(ViewItemNode node, int operation) throws ClassNotFoundException {
             super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));

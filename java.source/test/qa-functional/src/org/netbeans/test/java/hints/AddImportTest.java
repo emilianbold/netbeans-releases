@@ -50,7 +50,7 @@ public class AddImportTest extends HintsTestCase{
 	String file = "Imports";
 	openSourceFile("org.netbeans.test.java.hints.HintsTest",file);
 	editor = new EditorOperator(file);
-	editor.setCaretPosition(8,1);
+	editor.setCaretPosition(46,1);
 	String pattern = ".*import java.net.URL;.*";
 	useHint("Add import for java.net",new String[]{"Add import for java.net.URL","Add import for javax.print.DocFlavor.URL","Create class \"URL\""},pattern);
     }
@@ -59,7 +59,7 @@ public class AddImportTest extends HintsTestCase{
         String file = "Imports";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(9,1);        
+        editor.setCaretPosition(47,1);        
         String pattern = ".*";
         useHint("Create",new String[]{"Create class \"NonExisting\""},pattern);
     }
@@ -68,7 +68,7 @@ public class AddImportTest extends HintsTestCase{
         String file = "Imports";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(10,1);        
+        editor.setCaretPosition(48,1);        
         String pattern = ".*import javax.swing.JButton;.*";
         useHint("Add import",new String[]{"Add import for javax.swing.JButton"},pattern);
     }
@@ -77,7 +77,7 @@ public class AddImportTest extends HintsTestCase{
         String file = "RemoveImport";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(7,1);        
+        editor.setCaretPosition(45,1);        
         String pattern = ".*import java\\.net\\.URL;\\simport java\\.util\\.List;.*";
         useHint("Remove Unused Import",new String[]{"Remove Unused Import","Remove All Unused Imports"},pattern);
     }
@@ -86,7 +86,7 @@ public class AddImportTest extends HintsTestCase{
         String file = "RemoveImport";
         openSourceFile("org.netbeans.test.java.hints.HintsTest", file);
         editor = new EditorOperator(file);
-        editor.setCaretPosition(7,1);        
+        editor.setCaretPosition(45,1);        
         String pattern = ".*package org.netbeans\\.test\\.java\\.hints\\.HintsTest;\\s*import java\\.io\\.FileReader;\\s*public class RemoveImport \\{.*";
         useHint("Remove All Unused Imports",new String[]{"Remove Unused Import","Remove All Unused Imports"},pattern);
     }

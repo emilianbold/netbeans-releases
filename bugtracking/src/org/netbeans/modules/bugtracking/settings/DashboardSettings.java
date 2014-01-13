@@ -71,9 +71,9 @@ public class DashboardSettings {
      * default values in fields
      */
     private static final boolean DEFAULT_AUTO_SYNC = true;
-    private static final int DEFAULT_AUTO_SYNC_VALUE = 15;
-    private static final boolean DEFAULT_TASKS_LIMIT = true;
-    private static final int DEFAULT_TASKS_LIMIT_VALUE = 50;
+    private static final int DEFAULT_AUTO_SYNC_VALUE = Integer.parseInt(System.getProperty("bugtracking.dashboard.autosync.interval", "15"));
+    private static final boolean DEFAULT_TASKS_LIMIT = Boolean.parseBoolean(System.getProperty("bugtracking.dashboard.autosync", "true"));
+    private static final int DEFAULT_TASKS_LIMIT_VALUE = Integer.parseInt(System.getProperty("bugtracking.dashboard.tasks.limit", "50"));
     private static final boolean DEFAULT_TASKS_LIMIT_CATEGORY = false;
     private static final boolean DEFAULT_TASKS_LIMIT_QUERY = true;
     private static final boolean DEFAULT_FINISHED_TASK_FILTER = true;

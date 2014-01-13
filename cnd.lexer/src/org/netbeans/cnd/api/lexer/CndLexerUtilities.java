@@ -297,23 +297,23 @@ public final class CndLexerUtilities {
         return getDefatultFilter(true).check(id) == null && getDefatultFilter(false).check(id) == null;
     }
 
-    public static boolean isCppIdentifierStart(char ch) {
+    public static boolean isCppIdentifierStart(int ch) {
         //MS VC also supports $ as start or part of id
         return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || (ch == '_') || (ch == '$');
     }
 
-    public static boolean isCppIdentifierPart(char ch) {
+    public static boolean isCppIdentifierPart(int ch) {
         return ('0' <= ch && ch <= '9') || isCppIdentifierStart(ch);
     }
 
-    public static boolean isCppIdentifierStart(int codePoint) {
-        return Character.isJavaIdentifierStart(codePoint);
-    }
-
-    public static boolean isCppIdentifierPart(int codePoint) {
-        return Character.isJavaIdentifierPart(codePoint);
-    }
-
+//    public static boolean isCppIdentifierStart(int codePoint) {
+//        return Character.isJavaIdentifierStart(codePoint);
+//    }
+//
+//    public static boolean isCppIdentifierPart(int codePoint) {
+//        return Character.isJavaIdentifierPart(codePoint);
+//    }
+//
     public static boolean isFortranIdentifierPart(int codePoint) {
         return Character.isJavaIdentifierPart(codePoint);
     }

@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,6 +68,7 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -333,6 +335,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
                 String s = "-D" + entry.getKey() + "=" + (Utilities.isWindows() && value.contains(" ") ? quote + value + quote : value);            
                 toRet.add(s);
+            }
+        }
+        
+        //TODO based on a property? or UI option? can this backfire?
+        //#224526 
+        //execute in encoding that is based on project.build.sourceEncoding to have the output of exec:exec, surefire:test and others properly encoded.
+        if (config.getMavenProject() != null) {
+            String enc = config.getMavenProject().getProperties().getProperty(Constants.ENCODING_PROP);
+            if (enc != null && !enc.equals(Charset.defaultCharset().name())) {
+                toRet.add("-Dfile.encoding=" + enc);
             }
         }
 

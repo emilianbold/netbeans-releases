@@ -106,9 +106,9 @@ public class VersionNode extends AbstractNode {
     private RepositoryInfo info;
     private FileObject localArtifact;
 
-    private static String toolTipJavadoc = "<img src=\"" + VersionNode.class.getClassLoader().getResource(IconResources.JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipJavadoc = "<img src=\"" + IconResources.class.getClassLoader().getResource(IconResources.JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(VersionNode.class, "ICON_JavadocBadge");//NOI18N
-    private static String toolTipSource = "<img src=\"" + VersionNode.class.getClassLoader().getResource(IconResources.SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipSource = "<img src=\"" + IconResources.class.getClassLoader().getResource(IconResources.SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(VersionNode.class, "ICON_SourceBadge");//NOI18N
 
     private static FileObject findLocalArtifact(RepositoryInfo info, NBVersionInfo record) {

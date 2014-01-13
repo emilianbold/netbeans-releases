@@ -45,7 +45,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>hibernate4-persistence-modelgen</name>
+    <name>hibernate4-persistencemodelgen</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/hibernate4lib/resources/Bundle</localizing-bundle>
     <volume>

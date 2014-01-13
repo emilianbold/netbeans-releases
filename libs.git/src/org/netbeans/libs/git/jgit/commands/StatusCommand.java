@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -166,20 +168,22 @@ public class StatusCommand extends GitCommand {
                 GitStatus[] conflicts = new GitStatus[3];
                 List<GitStatus> symLinks = new LinkedList<GitStatus>();
                 boolean checkExecutable = Utils.checkExecutable(repository);
-                boolean trackSymLinks = Boolean.valueOf(System.getProperty(PROP_TRACK_SYMLINKS, Boolean.FALSE.toString()));
                 WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
                 boolean autocrlf = opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE;
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
                     boolean symlink = false;
+                    File file = new File(workTreePath + File.separator + path);
                     if (path.equals(lastPath)) {
                         symlink = isKnownSymlink(symLinks, path);
                     } else {
+                        if (Files.isSymbolicLink(Paths.get(file.getAbsolutePath()))) {
+                            symlink = true;
+                        }
                         handleConflict(conflicts, workTreePath);
                         handleSymlink(symLinks, workTreePath);
                     }
                     lastPath = path;
-                    File file = new File(workTreePath + File.separator + path);
                     Logger.getLogger(StatusCommand.class.getName()).log(Level.FINE, "Inspecting file {0} ---- {1}", //NOI18N
                             new Object[] { path, file.getAbsolutePath() });
                     int mHead = treeWalk.getRawMode(T_COMMIT);
@@ -270,7 +274,7 @@ public class StatusCommand extends GitCommand {
 
                     GitStatus status = getClassFactory().createStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, null, isFolder, renames.get(path));
                     if (stage == 0) {
-                        if (!trackSymLinks && isSymlinkFolder(mHead, mWorking, symlink)) {
+                        if (isSymlinkFolder(mHead, symlink)) {
                             symLinks.add(status);
                         } else {
                             addStatus(file, status);
@@ -421,22 +425,47 @@ public class StatusCommand extends GitCommand {
         return !symLinks.isEmpty() && path.equals(symLinks.get(0).getRelativePath());
     }
 
-    private boolean isSymlinkFolder (int mHead, int mWorking, boolean isSymlink) {
+    private boolean isSymlinkFolder (int mHead, boolean isSymlink) {
         // it seems symlink to a folder comes as two separate tree entries, 
         // first has always mWorking set to 0 and is a symlink in index and HEAD
         // the other is identified as a new tree
-        return (mWorking == 0 && (mHead & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK)
-            || (isSymlink && mHead == 0 && (mWorking & FileMode.TYPE_TREE) == FileMode.TYPE_TREE);
+        return isSymlink || (mHead & FileMode.TYPE_SYMLINK) == FileMode.TYPE_SYMLINK;
     }
 
     private void handleSymlink (List<GitStatus> symLinks, String workTreePath) {
         if (!symLinks.isEmpty()) {
-            boolean removed = symLinks.size() == 1;
             GitStatus status = symLinks.get(0);
-            status = getClassFactory().createStatus(true, status.getRelativePath(), workTreePath, status.getFile(), status.getStatusHeadIndex(),
-                    !removed || status.getStatusHeadIndex() == GitStatus.Status.STATUS_REMOVED ? GitStatus.Status.STATUS_NORMAL : GitStatus.Status.STATUS_REMOVED,
-                    removed ? GitStatus.Status.STATUS_REMOVED : GitStatus.Status.STATUS_NORMAL,
-                    null, status.isFolder(), null);
+            GitStatus.Status statusIndexWC;
+            GitStatus.Status statusHeadWC;
+            GitStatus.Status statusHeadIndex;
+            if (symLinks.size() == 1) {
+                if (status.isTracked()) {
+                    statusIndexWC = status.getStatusIndexWC();
+                    statusHeadIndex = status.getStatusHeadIndex();
+                    statusHeadWC = status.getStatusHeadWC();
+                } else {
+                    statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                    statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
+                    statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                }
+            } else {
+                statusHeadIndex = status.getStatusHeadIndex();
+                switch (statusHeadIndex) {
+                    case STATUS_ADDED:
+                        statusIndexWC = GitStatus.Status.STATUS_NORMAL;
+                        statusHeadWC = GitStatus.Status.STATUS_ADDED;
+                        break;
+                    case STATUS_REMOVED:
+                        statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                        statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                        break;
+                    default:
+                        statusIndexWC = GitStatus.Status.STATUS_NORMAL;
+                        statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                }
+            }
+            status = getClassFactory().createStatus(status.isTracked(), status.getRelativePath(), workTreePath, status.getFile(),
+                    statusHeadIndex, statusIndexWC, statusHeadWC, null, status.isFolder(), null);
             addStatus(status.getFile(), status);
             symLinks.clear();
         }

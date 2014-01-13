@@ -2678,6 +2678,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         @Override
         public void valueForPathChanged(TreePath path, Object newValue) {
             boolean refreshTree = false;
+            if (path == null) {
+                // no idea
+                return;
+            }
             DirectoryNode node = (DirectoryNode)path.getLastPathComponent();
             File f = node.getFile();
             File newFile = getFileChooser().getFileSystemView().createFileObject(f.getParentFile(), (String)newValue);

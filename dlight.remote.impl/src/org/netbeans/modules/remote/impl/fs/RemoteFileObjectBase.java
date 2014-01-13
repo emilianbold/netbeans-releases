@@ -82,7 +82,7 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
     private final File cache;
-    private CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
+    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
     private FileLock lock;
     private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
@@ -102,6 +102,7 @@ public abstract class RemoteFileObjectBase {
     private static final byte CHECK_CAN_WRITE = 2;
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
+    protected static final byte MASK_WARMUP = 16;
     
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
@@ -264,10 +265,15 @@ public abstract class RemoteFileObjectBase {
     
     
     public final void delete(FileLock lock) throws IOException {
-        deleteImpl(lock, this);
+        fileSystem.setBeingRemoved(this);
+        try {
+            deleteImpl(lock, this);
+        } finally {
+            fileSystem.setBeingRemoved(null);
+        }
     }
     
-    protected void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
+    private void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
@@ -437,8 +443,12 @@ public abstract class RemoteFileObjectBase {
     void connectionChanged() {
         if (getFlag(CHECK_CAN_WRITE)) {
             setFlag(CHECK_CAN_WRITE, false);
-            fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
+            fireReadOnlyChangedEvent();
         }
+    }
+
+    final void fireReadOnlyChangedEvent() {
+        fireFileAttributeChangedEvent("DataEditorSupport.read-only.refresh", null, null);  //NOI18N
     }
 
     final void fireFileAttributeChangedEvent(final String attrName, final Object oldValue, final Object newValue) {
@@ -637,7 +647,7 @@ public abstract class RemoteFileObjectBase {
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                throw new IOException("Can not rename to " + newNameExt);//NOI18N
+                throw new IOException("Can not rename to " + newNameExt + ": the file already exists");//NOI18N
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
@@ -811,6 +821,9 @@ public abstract class RemoteFileObjectBase {
             validity = getFlag(MASK_VALID) ? " [invalid] (flagged)" : " [invalid]"; //NOI18N
         }
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
+    }
+    
+    public void warmup() {
     }
 
     @Override

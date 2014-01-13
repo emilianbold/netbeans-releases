@@ -121,8 +121,9 @@ public class AddExistingItemAction extends NodeAction {
         if (!projectDescriptor.okToChange()) {
             return;
         }
+        final String chooser_key = "AddExistingItem"; //NOI18N
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(projectDescriptor.getBaseDirFileSystem());
-        String seed = RemoteFileUtil.getCurrentChooserFile(env);
+        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
         if (seed == null) {
             seed = projectDescriptor.getBaseDir();
         }
@@ -147,7 +148,7 @@ public class AddExistingItemAction extends NodeAction {
 
         File[] files = fileChooser.getSelectedFiles();
         if (files.length > 0) {
-            RemoteFileUtil.setCurrentChooserFile(files[0].getParent(), env);
+            RemoteFileUtil.setCurrentChooserFile(chooser_key, files[0].getParent(), env);
         }
         addFilesWorker(project, projectDescriptor, folder, files);
 //	boolean notifySources = false;

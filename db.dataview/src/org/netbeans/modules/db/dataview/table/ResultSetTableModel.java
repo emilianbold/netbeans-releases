@@ -46,6 +46,7 @@ package org.netbeans.modules.db.dataview.table;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
@@ -91,7 +92,7 @@ public class ResultSetTableModel extends AbstractTableModel {
             case -100:
                 return Timestamp.class;
             case Types.BIGINT:
-                return Long.class;
+                return BigInteger.class;
             case Types.DOUBLE:
                 return Double.class;
             case Types.FLOAT:
@@ -103,7 +104,7 @@ public class ResultSetTableModel extends AbstractTableModel {
             case Types.INTEGER:
             case Types.SMALLINT:
             case Types.TINYINT:
-                return Integer.class;
+                return Long.class;
 
             case Types.CHAR:
             case Types.VARCHAR:

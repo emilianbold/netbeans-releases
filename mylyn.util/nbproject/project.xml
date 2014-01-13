@@ -118,6 +118,8 @@
             <test-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.bugzilla</friend>
+                <friend>org.netbeans.modules.jira.rest</friend>
+                <friend>org.netbeans.modules.jira.xmlrpc</friend>
                 <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.localtasks</friend>
                 <friend>org.netbeans.modules.odcs.tasks</friend>

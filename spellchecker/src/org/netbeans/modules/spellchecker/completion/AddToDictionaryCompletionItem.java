@@ -94,7 +94,7 @@ public class AddToDictionaryCompletionItem implements CompletionItem {
         FileObject fileObject = dataObject.getPrimaryFile ();
         Project project = FileOwnerQuery.getOwner (fileObject);
         Locale locale = LocaleQuery.findLocale(fileObject);
-        DictionaryImpl dictionary = projects ?
+        DictionaryImpl dictionary = projects && project != null ?
             ComponentPeer.getProjectDictionary (project, locale) :
             ComponentPeer.getUsersLocalDictionary (locale);
         dictionary.addEntry (word);

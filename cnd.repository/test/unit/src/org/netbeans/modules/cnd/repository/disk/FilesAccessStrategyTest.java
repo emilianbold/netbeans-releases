@@ -100,7 +100,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         super(testName);
         tmpDir = createTempFile("FilesAccessStrategyTest", "", true);
         diskLayerImpl = new DiskLayerImpl(new LayerDescriptor(tmpDir.toURI()));
-        diskLayerImpl.startup(0, true);
+        diskLayerImpl.startup(0, false, true);
     }
 
     @Override

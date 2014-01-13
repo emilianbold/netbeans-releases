@@ -118,11 +118,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final AtomicInteger dirSyncCount = new AtomicInteger(0);
     private static final Object mainLock = new Object();
     private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
-    private AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
+    private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<FileSystemProblemListener>();
     transient private final StatusImpl status = new StatusImpl();
     private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
+    private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -425,7 +426,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     /*package*/ void dumpAttrStat() {
-        Map<String, AttrStat> toDump = null;
+        Map<String, AttrStat> toDump;
         synchronized(attrStats) {
             toDump= new TreeMap<String, AttrStat>(attrStats);
         }
@@ -698,10 +699,19 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
     
+    /*package*/ void setBeingRemoved(RemoteFileObjectBase fo) {
+        beingRemoved.set(fo);
+    }
+
     private RemoteFileObjectBase vcsSafeGetFileObject(String path) {
-        return factory.getCachedFileObject(path);
-        //RemoteFileObject fo = findResource(path);
-        //return (fo == null) ? null : fo.getImplementor();
+        RemoteFileObjectBase fo = factory.getCachedFileObject(path);
+        if (fo == null) {
+            RemoteFileObjectBase removing = beingRemoved.get();
+            if (removing != null && removing.getPath().equals(path)) {
+                fo = removing;
+            }
+        }
+        return fo;
     }
     
     public Boolean vcsSafeIsDirectory(String path) {
@@ -777,7 +787,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
 
         /** result with providers */
-        private Lookup.Result<AnnotationProvider> annotationProviders;
+        private final Lookup.Result<AnnotationProvider> annotationProviders;
         private Collection<? extends AnnotationProvider> previousProviders;
 
         {

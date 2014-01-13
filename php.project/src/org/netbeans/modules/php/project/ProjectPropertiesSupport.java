@@ -132,6 +132,7 @@ public final class ProjectPropertiesSupport {
         return project.getProjectDirectory();
     }
 
+    @CheckForNull
     public static FileObject getSourcesDirectory(PhpProject project) {
         return project.getSourcesDirectory();
     }
@@ -487,9 +488,11 @@ public final class ProjectPropertiesSupport {
             File copyTarget = ProjectPropertiesSupport.getCopySourcesTarget(project);
             if (copyTarget != null && copyTarget.exists()) {
                 FileObject copySourceFo = ProjectPropertiesSupport.getSourcesDirectory(project);
-                File copySource = FileUtil.toFile(copySourceFo);
-                if (copySource != null && copySource.exists()) {
-                    copySupportPair = Pair.of(copyTarget.getAbsolutePath(), copySource.getAbsolutePath());
+                if (copySourceFo != null) {
+                    File copySource = FileUtil.toFile(copySourceFo);
+                    if (copySource != null && copySource.exists()) {
+                        copySupportPair = Pair.of(copyTarget.getAbsolutePath(), copySource.getAbsolutePath());
+                    }
                 }
             }
         }

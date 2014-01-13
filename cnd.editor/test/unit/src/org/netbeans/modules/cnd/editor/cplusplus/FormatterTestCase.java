@@ -5666,6 +5666,34 @@ public class FormatterTestCase extends EditorBase {
               + "};\n");
     }
     
+    public void test238995_1() {
+        setLoadDocumentText(
+                "std::vector<std::shared_ptr<int>> indices = m_indices;\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect template formatting",
+                "std::vector<std::shared_ptr<int>> indices = m_indices;\n"
+                );
+    }
+
+    public void test238995_1_2() {
+        setLoadDocumentText(
+                "int foo()\n" +
+                "{\n" +
+                "    std::vector<std::shared_ptr<int>> indices = m_indices;\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("Incorrect template formatting",
+                "int foo()\n" +
+                "{\n" +
+                "    std::vector<std::shared_ptr<int>> indices = m_indices;\n" +
+                "}\n"
+                );
+    }
+
     public void test238995_2() {
         setLoadDocumentText(
                 "ClassA::ClassA() :\n" +

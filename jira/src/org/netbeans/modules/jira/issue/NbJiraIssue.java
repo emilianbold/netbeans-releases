@@ -42,18 +42,6 @@
 
 package org.netbeans.modules.jira.issue;
 
-import com.atlassian.connector.eclipse.internal.jira.core.IJiraConstants;
-import com.atlassian.connector.eclipse.internal.jira.core.JiraAttribute;
-import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraWorkLog;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
-import com.atlassian.connector.eclipse.internal.jira.core.model.User;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -97,6 +85,20 @@ import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.jira.JiraConfig;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraConstants;
+import org.netbeans.modules.jira.client.spi.JiraStatus;
+import org.netbeans.modules.jira.client.spi.JiraWorkLog;
+import static org.netbeans.modules.jira.client.spi.JiraWorkLog.AdjustEstimateMethod.LEAVE;
+import static org.netbeans.modules.jira.client.spi.JiraWorkLog.AdjustEstimateMethod.REDUCE;
+import static org.netbeans.modules.jira.client.spi.JiraWorkLog.AdjustEstimateMethod.SET;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.Resolution;
+import org.netbeans.modules.jira.client.spi.User;
+import org.netbeans.modules.jira.client.spi.Version;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -182,6 +184,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
    
+    private final static JiraConstants jiraConstants = JiraConnectorSupport.getInstance().getConnector().getJiraConstants();;
+    
     @Override
     protected void taskDeleted (NbTask task) {
         getRepository().taskDeleted(getKey(task));
@@ -372,7 +376,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         NbTaskDataModel model = getModel();
         TaskData td = model == null ? null : model.getLocalTaskData();
         if (td != null) {
-            TaskAttribute ta = td.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            TaskAttribute ta = td.getRoot().getMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW());
             if (ta != null) {
                 return new NewWorkLog(ta);
             }
@@ -403,30 +407,30 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
     
     public enum IssueField {
-        KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
-        SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),
-        DESCRIPTION(JiraAttribute.DESCRIPTION.id(), "LBL_DESCRIPTION"),
+        KEY(jiraConstants.getJiraAttribute_ISSUE_KEY_id(), "LBL_KEY"),
+        SUMMARY(jiraConstants.getJiraAttribute_SUMMARY_id(), "LBL_SUMMARY"),
+        DESCRIPTION(jiraConstants.getJiraAttribute_DESCRIPTION_id(), "LBL_DESCRIPTION"),
         STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
-        PRIORITY(JiraAttribute.PRIORITY.id(), "LBL_PRIORITY"),
-        RESOLUTION(JiraAttribute.RESOLUTION.id(), "LBL_RESOLUTION"),
-        PROJECT(JiraAttribute.PROJECT.id(), "LBL_PROJECT"),
-        COMPONENT(JiraAttribute.COMPONENTS.id(), "LBL_COMPONENT", false),
-        AFFECTSVERSIONS(JiraAttribute.AFFECTSVERSIONS.id(),"LBL_AFFECTSVERSIONS", false),
-        FIXVERSIONS(JiraAttribute.FIXVERSIONS.id(), "LBL_FIXVERSIONS", false),
-        ENVIRONMENT(JiraAttribute.ENVIRONMENT.id(), "LBL_ENVIRONMENT"),
-        REPORTER(JiraAttribute.USER_REPORTER.id(), "LBL_REPORTER"),
-        ASSIGNEE(JiraAttribute.USER_ASSIGNED.id(), "LBL_ASSIGNED_TO"),
-        TYPE(JiraAttribute.TYPE.id(), "LBL_TYPE"),
-        CREATION(JiraAttribute.CREATION_DATE.id(), null),
-        MODIFICATION(JiraAttribute.MODIFICATION_DATE.id(), null),
-        DUE(JiraAttribute.DUE_DATE.id(), "LBL_DUE"),
-        ESTIMATE(JiraAttribute.ESTIMATE.id(), "LBL_ESTIMATE"),
-        INITIAL_ESTIMATE(JiraAttribute.INITIAL_ESTIMATE.id(), "LBL_INITIAL_ESTIMATE"),
-        ACTUAL(JiraAttribute.ACTUAL.id(), "LBL_ACTUALL"),
-        PARENT_ID(JiraAttribute.PARENT_ID.id(), null),
-        PARENT_KEY(JiraAttribute.PARENT_KEY.id(), null),
-        SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
-        SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
+        PRIORITY(jiraConstants.getJiraAttribute_PRIORITY_id(), "LBL_PRIORITY"),
+        RESOLUTION(jiraConstants.getJiraAttribute_RESOLUTION_id(), "LBL_RESOLUTION"),
+        PROJECT(jiraConstants.getJiraAttribute_PROJECT_id(), "LBL_PROJECT"),
+        COMPONENT(jiraConstants.getJiraAttribute_COMPONENTS_id(), "LBL_COMPONENT", false),
+        AFFECTSVERSIONS(jiraConstants.getJiraAttribute_AFFECTSVERSIONS_id(),"LBL_AFFECTSVERSIONS", false),
+        FIXVERSIONS(jiraConstants.getJiraAttribute_FIXVERSIONS_id(), "LBL_FIXVERSIONS", false),
+        ENVIRONMENT(jiraConstants.getJiraAttribute_ENVIRONMENT_id(), "LBL_ENVIRONMENT"),
+        REPORTER(jiraConstants.getJiraAttribute_USER_REPORTER_id(), "LBL_REPORTER"),
+        ASSIGNEE(jiraConstants.getJiraAttribute_USER_ASSIGNED_id(), "LBL_ASSIGNED_TO"),
+        TYPE(jiraConstants.getJiraAttribute_TYPE_id(), "LBL_TYPE"),
+        CREATION(jiraConstants.getJiraAttribute_CREATION_DATE_id(), null),
+        MODIFICATION(jiraConstants.getJiraAttribute_MODIFICATION_DATE_id(), null),
+        DUE(jiraConstants.getJiraAttribute_DUE_DATE_id(), "LBL_DUE"),
+        ESTIMATE(jiraConstants.getJiraAttribute_ESTIMATE_id(), "LBL_ESTIMATE"),
+        INITIAL_ESTIMATE(jiraConstants.getJiraAttribute_INITIAL_ESTIMATE_id(), "LBL_INITIAL_ESTIMATE"),
+        ACTUAL(jiraConstants.getJiraAttribute_ACTUAL_id(), "LBL_ACTUALL"),
+        PARENT_ID(jiraConstants.getJiraAttribute_PARENT_ID_id(), null),
+        PARENT_KEY(jiraConstants.getJiraAttribute_PARENT_KEY_id(), null),
+        SUBTASK_IDS(jiraConstants.getJiraAttribute_SUBTASK_IDS_id(), null, false),
+        SUBTASK_KEYS(jiraConstants.getJiraAttribute_SUBTASK_KEYS_id(), null, false),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
         COMMENT(TaskAttribute.COMMENT_NEW, null),
         ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
@@ -496,7 +500,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        repository.scheduleForRefresh(getNbTask());
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getKey()});
     }
 
@@ -509,7 +512,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 editorClosed();
             }
         });
-        repository.stopRefreshing(getNbTask());
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getKey()});
     }
 
@@ -619,7 +621,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         List<CustomField> fields = new ArrayList<CustomField>(10);
         
         for (TaskAttribute attribute : attrs.values()) {
-            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)) {
+            String prefix = jiraConstants.getATTRIBUTE_CUSTOM_PREFIX();
+            if (attribute.getId().startsWith(prefix)) {
                 CustomField field = new CustomField(attribute);
                 fields.add(field);
             }
@@ -634,7 +637,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return;
         }
         for (TaskAttribute attribute : attrs.values()) {
-            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
+            if (attribute.getId().startsWith(jiraConstants.getATTRIBUTE_CUSTOM_PREFIX())
                     && customField.getId().equals(attribute.getId())) {
                 setTaskAttributeValues(m, attribute, customField.getValues());
             }
@@ -650,7 +653,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         List<LinkedIssue> linkedIssues = new ArrayList<LinkedIssue>();
 
         for (TaskAttribute attribute : attrs.values()) {
-            if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_LINK_PREFIX)) {
+            if (attribute.getId().startsWith(jiraConstants.getATTRIBUTE_LINK_PREFIX())) {
                 LinkedIssue linkedIssue = new LinkedIssue(attribute);
                 linkedIssues.add(linkedIssue);
             }
@@ -665,13 +668,13 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     public WorkLog[] getWorkLogs () {
         NbTaskDataModel m = getModel();
         List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
-                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), WorkLogConverter.TYPE_WORKLOG);
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), jiraConstants.getWorkLogConverter_TYPE_WORKLOG());
         if (attrs == null) {
             return new WorkLog[0];
         }
         List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
-            if (!WorkLogConverter.ATTRIBUTE_WORKLOG_NEW.equals(taskAttribute.getId())) {
+            if (!jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW().equals(taskAttribute.getId())) {
                 workLogs.add(new WorkLog(taskAttribute));
             }
         }
@@ -688,7 +691,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if (taskData == null) {
             return;
         }
-        TaskAttribute attribute = taskData.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+        TaskAttribute attribute = taskData.getRoot().getMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW());
         if (!log.isToSubmit()) {
             if (attribute != null && !attribute.getAttributes().isEmpty()) {
                 attribute.clearAttributes();
@@ -696,9 +699,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
         } else if (log.getStartDate() != null) {
             if (attribute == null) {
-                attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+                attribute = taskData.getRoot().createMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW());
             }
-            JiraWorkLog workLog = new JiraWorkLog();
+            JiraWorkLog workLog = JiraConnectorSupport.getInstance().getConnector().createWorkLog();
             workLog.setComment(log.getComment());
             workLog.setStartDate(log.getStartDate());
             workLog.setTimeSpent(log.getTimeSpent());
@@ -711,8 +714,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             } else if (log.isSetEstimate()) {
                 workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.SET);
             }
-            new WorkLogConverter().applyTo(workLog, attribute);
-            attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+            workLog.applyTo(attribute);
+            attribute.createMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG()).setValue("true"); //NOI18N
             attribute.createMappedAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME).setValue(String.valueOf(log.getEstimatedTime()));
             m.attributeChanged(attribute);
         }
@@ -1852,8 +1855,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 NewWorkLog log = getEditedWorkLog();
                 NbTaskDataModel m = getModel();
                 if (log != null && log.isToSubmit() && log.getStartDate() != null) {
-                    TaskAttribute attribute = m.getLocalTaskData().getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
-                    JiraWorkLog workLog = new JiraWorkLog();
+                    TaskAttribute attribute = m.getLocalTaskData().getRoot().getMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW());
+                    JiraWorkLog workLog = JiraConnectorSupport.getInstance().getConnector().createWorkLog();
                     workLog.setComment(log.getComment());
                     workLog.setStartDate(log.getStartDate());
                     workLog.setTimeSpent(log.getTimeSpent());
@@ -1868,8 +1871,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                         workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
                         setFieldValue(NbJiraIssue.IssueField.ESTIMATE, String.valueOf(log.getEstimatedTime()));
                     }
-                    new WorkLogConverter().applyTo(workLog, attribute);
-                    attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+                    workLog.applyTo(attribute);
+                    attribute.createMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG()).setValue("true"); //NOI18N
                     m.attributeChanged(attribute);
                 }
             }
@@ -2166,7 +2169,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         private CustomField(TaskAttribute attribute) {
             id = attribute.getId();
             label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
-            type = attribute.getMetaData().getValue(IJiraConstants.META_TYPE);
+            type = attribute.getMetaData().getValue(jiraConstants.getMETA_TYPE());
             values = attribute.getValues();
             readOnly = attribute.getMetaData().isReadOnly();
         }
@@ -2225,7 +2228,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         private final boolean inward;
 
         private LinkedIssue(TaskAttribute attribute) {
-            String suffix = attribute.getId().substring(IJiraConstants.ATTRIBUTE_LINK_PREFIX.length());
+            String suffix = attribute.getId().substring(jiraConstants.getATTRIBUTE_LINK_PREFIX().length());
             inward = suffix.endsWith("inward"); // NOI18N
             linkId = suffix.substring(0, suffix.length()-(inward?6:7));
             label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
@@ -2258,11 +2261,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         public WorkLog(TaskAttribute workLogTA) {
             TaskAttributeMapper mapper = workLogTA.getTaskData().getAttributeMapper();
-            startDate = mapper.getDateValue(workLogTA.getMappedAttribute(WorkLogConverter.START_DATE.key()));
-            IRepositoryPerson person = mapper.getRepositoryPerson(workLogTA.getMappedAttribute(WorkLogConverter.AUTOR.key()));
+            startDate = mapper.getDateValue(workLogTA.getMappedAttribute(jiraConstants.getWorkLogConverter_START_DATE_key()));
+            IRepositoryPerson person = mapper.getRepositoryPerson(workLogTA.getMappedAttribute(jiraConstants.getWorkLogConverter_AUTOR_key()));
             author = person == null ? null : person.getPersonId();
-            comment = mapper.getValue(workLogTA.getMappedAttribute(WorkLogConverter.COMMENT.key()));
-            Long timeSpentValue = mapper.getLongValue(workLogTA.getMappedAttribute(WorkLogConverter.TIME_SPENT.key()));
+            comment = mapper.getValue(workLogTA.getMappedAttribute(jiraConstants.getWorkLogConverter_COMMENT_key()));
+            Long timeSpentValue = mapper.getLongValue(workLogTA.getMappedAttribute(jiraConstants.getWorkLogConverter_TIME_SPENT_key()));
             this.timeSpent = timeSpentValue == null ? 0 : timeSpentValue.longValue();
         }
 
@@ -2305,12 +2308,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         private boolean autoAdjust;
 
         private NewWorkLog (TaskAttribute workLogTA) {
-            JiraWorkLog workLog = new WorkLogConverter().createFrom(workLogTA);
+            JiraWorkLog workLog = JiraConnectorSupport.getInstance().getConnector().createWorkLogFrom(workLogTA);
             startDate = workLog.getStartDate();
             author = workLog.getAuthor();
             timeSpent = workLog.getTimeSpent();
             comment = workLog.getComment();
-            TaskAttribute toSubmitFlag = workLogTA.getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG);
+            TaskAttribute toSubmitFlag = workLogTA.getMappedAttribute(jiraConstants.getWorkLogConverter_ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG());
             toSubmit = toSubmitFlag != null && Boolean.parseBoolean(toSubmitFlag.getValue());
             TaskAttribute att = workLogTA.getAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME);
             if (att != null) {

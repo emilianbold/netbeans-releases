@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.indexing.spi.TextIndexLayer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 
@@ -56,7 +57,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
  *
  * @author akrasny
  */
-public final class TextIndexStorage {
+public final class TextIndexStorage implements LayerListener{
 
     private final List<TextIndexLayer> layers;
     private final LayeringSupport layeringSupport;
@@ -116,6 +117,27 @@ public final class TextIndexStorage {
         return new CndTextIndexKey(writeUnitsConverter.clientToLayer(clientUnitID), clientKey.getFileNameIndex());
     }
 
+    @Override
+    public boolean layerOpened(LayerDescriptor layerDescriptor) {
+        //find the layer
+        for (TextIndexLayer layer : layers) {
+            if (layerDescriptor.equals(layer.getDescriptor())) {
+                return layer.isValid();
+            }
+        }
+        return true;
+    }
+    
+    
+    
+    public boolean isValid() {
+        boolean isOK = true;
+        for (TextIndexLayer layer : layers) {
+            isOK &= layer.isValid();
+        }        
+        return isOK;
+    }
+
     private CndTextIndexKey toClientKey(LayerDescriptor layerDescriptor, CndTextIndexKey layerKey) {
         int layerUnitID = layerKey.getUnitId();
         UnitsConverter readUnitsConverter = layeringSupport.getReadUnitsConverter(layerDescriptor);
@@ -129,5 +151,17 @@ public final class TextIndexStorage {
                 layer.shutdown();
             }
         }
+    }
+
+    void unitRemoved(int unitId) {
+        if (unitId < 0) {
+            return;
+        }
+        for (TextIndexLayer layer : layers) {
+            //otherwise need to implement Removed objects
+            if (layer.getDescriptor().isWritable()) {
+                layer.unitRemoved(unitId);
+            }
+        }            
     }
 }

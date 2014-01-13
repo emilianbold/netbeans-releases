@@ -142,11 +142,11 @@ public class LafOptionsPanelController extends OptionsPanelController {
         }
     }
 
-    protected void changed() {
+    protected void changed(boolean isChanged) {
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
+        changed = isChanged;
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 }

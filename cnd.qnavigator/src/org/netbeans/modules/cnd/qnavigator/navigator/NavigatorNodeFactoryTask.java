@@ -73,6 +73,7 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
         synchronized (this) {
+            canceled.set(true);
             canceled = new AtomicBoolean(false);
         }
         final NavigatorComponent navigator = NavigatorComponent.getInstance();

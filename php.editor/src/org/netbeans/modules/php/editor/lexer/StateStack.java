@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 public class StateStack {
     private static final Logger LOGGER = Logger.getLogger(StateStack.class.getName());
-    private static final byte SIZE = 4;
+    private static final byte SIZE = 5;
     public byte[] stack;
     private int lastIn = -1;
 
@@ -82,7 +82,7 @@ public class StateStack {
 
     private void multiplySize() {
         int length = stack.length;
-        LOGGER.log(Level.INFO, "PHP_STATE_STACK - increasing size: {0} by {1}", new Object[]{length, SIZE});
+        LOGGER.log(Level.FINE, "PHP_STATE_STACK - increasing size: {0} by {1}", new Object[]{length, SIZE});
         byte[] temp = new byte[length + SIZE];
         System.arraycopy(stack, 0, temp, 0, length);
         stack = temp;

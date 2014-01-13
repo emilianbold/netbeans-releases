@@ -210,16 +210,11 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         AbstractCompiler compiler = (AbstractCompiler) tool;
         
         StringBuilder options = new StringBuilder();
-        options.append(getCFlagsBasic(compiler));
-        options.append(" "); // NOI18N
-        CCompilerConfiguration master = this;
-        while (master != null) {
-            options.append(master.getCommandLineConfiguration().getValue());
-            options.append(" "); // NOI18N
-            master = (CCompilerConfiguration)master.getMaster();
+        options.append(getCFlagsBasic(compiler)).append(" "); // NOI18N
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            options.append(master.getCommandLineConfiguration().getValue()).append(" "); // NOI18N
         }
-        options.append(getAllOptions2(compiler));
-        options.append(" "); // NOI18N
+        options.append(getAllOptions2(compiler)).append(" "); // NOI18N
         return CppUtils.reformatWhitespaces(options.toString());
     }
     
@@ -238,54 +233,42 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     }
     
     public int getInheritedCStandard() {
-        CCompilerConfiguration master = this;
-        while (master != null) {
-            if (master.getCStandard().getValue() != STANDARD_INHERITED) {
-                return master.getCStandard().getValue();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            if (((CCompilerConfiguration)master).getCStandard().getValue() != STANDARD_INHERITED) {
+                return ((CCompilerConfiguration)master).getCStandard().getValue();
             }
-            master = (CCompilerConfiguration) master.getMaster();
         }
         return STANDARDS_DEFAULT;
     }
     
     public String getPreprocessorOptions(CompilerSet cs) {
-        CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
-        List<CCompilerConfiguration> list = new ArrayList<CCompilerConfiguration>();
-        list.add(this);
-        while (master != null && getInheritPreprocessor().getValue()) {
-            list.add(master);
-            if (master.getInheritPreprocessor().getValue()) {
-                master = (CCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        List<CCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            list.add((CCompilerConfiguration)master);
+            if (!((CCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
+                break;
             }
         }
+        OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
         StringBuilder options = new StringBuilder();
         for(int i = list.size() - 1; i >= 0; i--) {
-            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor));
-            options.append(' '); // NOI18N
+            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor)).append(' '); // NOI18N
         }
         return options.toString();
     }
     
     public String getIncludeDirectoriesOptions(CompilerSet cs) {
-        CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
-        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
-        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
-        options.append(' '); // NOI18N
-        List<CCompilerConfiguration> list = new ArrayList<CCompilerConfiguration>();
-        while (master != null && getInheritIncludes().getValue()) {
-            list.add(master);
-            if (master.getInheritIncludes().getValue()) {
-                master = (CCompilerConfiguration) master.getMaster();
-            } else {
-                master = null;
+        List<CCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            list.add((CCompilerConfiguration)master);
+            if (!((CCompilerConfiguration)master).getInheritIncludes().getValue()) {
+                break;
             }
         }
-        for(int i = list.size() - 1; i >= 0; i--) {
-            options.append(list.get(i).getIncludeDirectories().toString(visitor));
-            options.append(' '); // NOI18N
+        OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
+        StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor)).append(' '); // NOI18N
+        for(int i = list.size() - 1; i > 0; i--) {
+            options.append(list.get(i).getIncludeDirectories().toString(visitor)).append(' '); // NOI18N
         }
         return options.toString();
     } 
@@ -343,9 +326,9 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
                     set2.setName("OtherOptions"); // NOI18N
                     set2.setDisplayName(getString("OtherOptionsTxt"));
                     set2.setShortDescription(getString("OtherOptionsHint"));
-                    set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
-                    set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getMTLevel(), (getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getStandardsEvolution(), (getMaster() == null), "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
+                    set2.put(new IntNodeProp(getLanguageExt(), (getMaster() == null), "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
                 }
                 if (getMaster() != null) {

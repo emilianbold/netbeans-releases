@@ -93,11 +93,12 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -113,72 +114,89 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class LineFactoryTask extends ParserResultTask<CndParserResult> {
-    private final AtomicBoolean canceled = new AtomicBoolean(false);
+public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResult> {
+    private AtomicBoolean canceled = new AtomicBoolean(false);
     
     public LineFactoryTask() {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
+        synchronized (this) {
+            canceled.set(true);
+            canceled = new AtomicBoolean(false);
+        }
         final Document doc = result.getSnapshot().getSource().getDocument(false);
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
         final CsmFile file = result.getCsmFile();
         if (file != null && doc != null) {
             if (event instanceof CursorMovedSchedulerEvent) {
-                clearHint(doc, fileObject);
-                CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
-                int caretOffset = cursorEvent.getCaretOffset();
-                JTextComponent comp = EditorRegistry.lastFocusedComponent();
-                int selectionStart = caretOffset;
-                int selectionEnd = caretOffset;
-                if (comp != null) {
-                    selectionStart = Math.min(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionStart();
-                    selectionEnd = Math.max(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionEnd();
-                }
-                StatementResult res = findExpressionStatement(file.getDeclarations(), selectionStart, selectionEnd, doc);
-                if (res == null) {
-                    return;
-                }
-                CsmExpressionStatement expression = res.expression;
-                if (expression != null) {
-                    createStatementHint(expression, doc, fileObject);
-                } 
-                if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
-                    if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
-                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
-                        isExpressionSelection(doc, selectionStart, selectionEnd)) {
-                        if (!(res.container.getStartOffset() == selectionStart &&
-                            res.container.getEndOffset() == selectionEnd)) {
-                            try {
-                                final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
-                                if(text.length() > 0) {
-                                    CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
-                                    if (isApplicableExpression(csmOffsetable, doc)) {
-                                        createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
-                                    }
-                                }
-                            } catch (BadLocationException ex) {
+                process(doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
+            }
+        }
+    }
+
+    private void process(final Document doc, final FileObject fileObject, CursorMovedSchedulerEvent cursorEvent, final CsmFile file, final AtomicBoolean canceled) {
+        clearHint(doc, fileObject);
+        int caretOffset = cursorEvent.getCaretOffset();
+        JTextComponent comp = EditorRegistry.lastFocusedComponent();
+        int selectionStart = caretOffset;
+        int selectionEnd = caretOffset;
+        if (comp != null) {
+            selectionStart = Math.min(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionStart();
+            selectionEnd = Math.max(cursorEvent.getCaretOffset(),cursorEvent.getMarkOffset());//comp.getSelectionEnd();
+        }
+        if (canceled.get())  {
+            return;
+        }
+        StatementResult res = findExpressionStatement(file.getDeclarations(), selectionStart, selectionEnd, doc, canceled);
+        if (res == null) {
+            return;
+        }
+        if (canceled.get())  {
+            return;
+        }
+        CsmExpressionStatement expression = res.expression;
+        if (expression != null) {
+            createStatementHint(expression, doc, fileObject);
+        }
+        if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+            if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
+                    CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                    isExpressionSelection(doc, selectionStart, selectionEnd)) {
+                if (!(res.container.getStartOffset() == selectionStart &&
+                        res.container.getEndOffset() == selectionEnd)) {
+                    try {
+                        final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
+                        if(text.length() > 0) {
+                            CsmOffsetable csmOffsetable = new CsmOffsetableImpl(file, selectionStart, selectionEnd, text);
+                            if (isApplicableExpression(csmOffsetable, doc)) {
+                                createExpressionHint(res.statementInBody, csmOffsetable, doc, comp, fileObject);
                             }
                         }
+                    } catch (BadLocationException ex) {
                     }
                 }
             }
         }
     }
     
-    private StatementResult findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls, int selectionStart, int selectionEnd, Document doc) {
+    private StatementResult findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls, int selectionStart, int selectionEnd, Document doc, final AtomicBoolean canceled) {
         for(CsmOffsetableDeclaration decl : decls) {
+            if (canceled.get()) {
+                return null;
+            }
             if (decl.getStartOffset() < selectionStart && selectionEnd < decl.getEndOffset()) {
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
                     CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
                     return findExpressionStatementInBody(def.getBody(), selectionStart, selectionEnd, doc);
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     CsmNamespaceDefinition def = (CsmNamespaceDefinition) decl;
-                    return findExpressionStatement(def.getDeclarations(), selectionStart, selectionEnd, doc);
+                    return findExpressionStatement(def.getDeclarations(), selectionStart, selectionEnd, doc, canceled);
                 } else if (CsmKindUtilities.isClass(decl)) {
                     CsmClass cls = (CsmClass) decl;
-                    return findExpressionStatement(cls.getMembers(), selectionStart, selectionEnd, doc);
+                    return findExpressionStatement(cls.getMembers(), selectionStart, selectionEnd, doc, canceled);
                 }
             }
         }

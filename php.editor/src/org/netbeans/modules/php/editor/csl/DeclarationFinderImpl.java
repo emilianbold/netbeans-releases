@@ -145,7 +145,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return DeclarationLocation.NONE;
         }
         PHPParseResult result = (PHPParseResult) info;
-        final Model model = result.getModel();
+        final Model model = result.getModel(Model.Type.COMMON);
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(caretOffset);
         Occurence underCaret = occurencesSupport.getOccurence();
         return findDeclarationImpl(underCaret, info);
@@ -243,7 +243,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     Result parserResult = resultIterator.getParserResult();
                     if (parserResult instanceof PHPParseResult) {
                         PHPParseResult phpParserResult = (PHPParseResult) parserResult;
-                        crate.setModel(phpParserResult.getModel());
+                        crate.setModel(phpParserResult.getModel(Model.Type.COMMON));
                         crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
                     }
                 }

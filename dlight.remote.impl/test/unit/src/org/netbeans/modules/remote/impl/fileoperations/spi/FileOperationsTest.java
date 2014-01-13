@@ -43,20 +43,20 @@ package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FileOperationsTest extends NativeExecutionBaseTestSuite {
+public class FileOperationsTest extends RemoteTestSuiteBase {
     
-    static {
-        System.setProperty("remote.fs_server.verbose", "1");
-        System.setProperty("remote.fs_server.log", "true");
-        //System.setProperty("remote.fs_server.suppress.stderr", "false");
-        //System.setProperty("remote.fs_server.refresh", "0");
-    }
+//    static {
+//        System.setProperty("remote.fs_server.verbose", "1");
+//        System.setProperty("remote.fs_server.log", "true");
+//        //System.setProperty("remote.fs_server.suppress.stderr", "false");
+//        //System.setProperty("remote.fs_server.refresh", "0");
+//    }
     
     @SuppressWarnings("unchecked")
     public FileOperationsTest() {
