@@ -544,7 +544,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
 
         @Override
         public CsmDeclaration.Kind getKind() {
-            return CsmDeclaration.Kind.FUNCTION;
+            return CsmDeclaration.Kind.FUNCTION_TYPE;
         }
 
         @Override

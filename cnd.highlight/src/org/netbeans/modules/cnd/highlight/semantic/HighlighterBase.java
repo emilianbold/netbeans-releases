@@ -43,45 +43,28 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.HashSet;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.openide.util.Cancellable;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 
 /**
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase extends ParserResultTask<CndParserResult> implements CsmFontColorManager.FontColorChangeListener {
+public abstract class HighlighterBase extends IndexingAwareParserResultTask<CndParserResult> implements CsmFontColorManager.FontColorChangeListener {
 
     /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
     
-    private final WeakReference<BaseDocument> weakDoc;
-
-    public HighlighterBase(Document doc) {
-        if (doc instanceof BaseDocument) {
-            weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-        } else {
-            weakDoc = null;
-        }
+    public HighlighterBase() {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
-    protected void init(Document doc){
-        String mimeType = DocumentUtilities.getMimeType(doc);
+    protected void init(String mimeType){
         CsmFontColorManager.instance().addListener(mimeType, this);
     }
     
-    protected BaseDocument getDocument() {
-        return weakDoc != null ? weakDoc.get() : null;
-    }
-
     // ChangeListener
     @Override
     public void stateChanged(FontColorProvider provider) {
@@ -94,27 +77,4 @@ public abstract class HighlighterBase extends ParserResultTask<CndParserResult> 
     protected boolean isCancelled() {
         return Thread.currentThread().isInterrupted();
     }
-
-    private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
-    protected void addCancelListener(Cancellable interruptor){
-        synchronized(listeners) {
-            listeners.add(interruptor);
-        }
-    }
-    
-    protected void removeCancelListener(Cancellable interruptor){
-        synchronized(listeners) {
-            listeners.remove(interruptor);
-        }
-    }
-
-    @Override
-    public void cancel() {
-        synchronized(listeners) {
-            for(Cancellable interruptor : listeners) {
-                interruptor.cancel();
-            }
-        }
-    }
-
 }

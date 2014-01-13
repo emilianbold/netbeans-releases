@@ -390,6 +390,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
     }
     
+    final void initInstantiationParams() {
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        }
+    }
+    
     final void addAllInstantiationParams(Collection<CsmSpecializationParameter> params) {
         if (params == null || params.isEmpty()) {
             return;

@@ -56,6 +56,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test239814() throws Exception {
+        // #239814 - When clicks "Find usages" shows error alert "Cannot refactor here".
+        performTest("iz239814.cpp", 11, 10, "iz239814.cpp", 8, 1);
+        performTest("iz239814.cpp", 11, 20, "iz239814.cpp", 3, 5);
+    }
+    
     public void test229003() throws Exception {
         // #229003 - inaccuracy tests: Perl project has unresolved identifiers
         

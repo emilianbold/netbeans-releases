@@ -787,4 +787,8 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
         return remoteTmpDir;
     }
+    
+    protected static void threadsDump(String header, String footer) {
+        NativeExecutionTestSupport.threadsDump(header, footer);
+    }
 }
