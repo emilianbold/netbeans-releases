@@ -59,8 +59,8 @@ made subject to such option by the copyright holder.
                 </file>
                 
                 <file name="RegistryNodeFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.nodes.JBRegistryNodeFactory"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.nodes.JBRegistryNodeFactory"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.nodes.WildflyRegistryNodeFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
                 </file>
 
@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
                     <attr name="displayName" bundlevalue="org.netbeans.modules.javaee.wildfly.Bundle#SERVER_NAME"/>
                 </file>
                 <file name="JBModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.JBModuleConfigurationFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.WildlfyModuleConfigurationFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 <folder name="DeploymentFileNames">

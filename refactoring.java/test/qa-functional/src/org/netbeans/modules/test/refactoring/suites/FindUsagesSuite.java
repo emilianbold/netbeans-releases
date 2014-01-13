@@ -48,10 +48,10 @@ import org.netbeans.modules.test.refactoring.*;
 public class FindUsagesSuite {
 
     public static Test suite() {
-//        return NbModuleSuite.create(
-//                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class));
-        
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(IntroduceParameterTest.class));
+                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class));
+        
+//        return NbModuleSuite.create(
+//                NbModuleSuite.createConfiguration(IntroduceParameterTest.class));
     }
 }

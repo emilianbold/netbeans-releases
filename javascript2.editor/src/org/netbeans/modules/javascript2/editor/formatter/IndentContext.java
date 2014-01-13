@@ -60,6 +60,8 @@ public final class IndentContext {
 
     private final Context context;
 
+    private final DefaultsProvider provider;
+
     private final boolean embedded;
 
     /**
@@ -88,8 +90,9 @@ public final class IndentContext {
 
     private final int caretLineEnd;
 
-    public IndentContext(Context context) {
+    public IndentContext(Context context, DefaultsProvider provider) {
         this.context = context;
+        this.provider = provider;
 
         this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
                 && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
@@ -111,6 +114,10 @@ public final class IndentContext {
             lineEnd = context.caretOffset();
         }
         this.caretLineEnd = lineEnd;
+    }
+
+    public DefaultsProvider getDefaultsProvider() {
+        return provider;
     }
 
     public BaseDocument getDocument() {

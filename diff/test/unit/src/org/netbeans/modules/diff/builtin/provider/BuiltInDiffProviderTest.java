@@ -47,7 +47,6 @@ package org.netbeans.modules.diff.builtin.provider;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.junit.NbTestCase;
@@ -75,6 +74,11 @@ public class BuiltInDiffProviderTest extends NbTestCase {
     
     private static DiffProvider createDiffProvider() {
         BuiltInDiffProvider provider = new BuiltInDiffProvider();
+        BuiltInDiffProvider.Options options = new BuiltInDiffProvider.Options();
+        options.ignoreCase = false;
+        options.ignoreInnerWhitespace = false;
+        options.ignoreLeadingAndtrailingWhitespace = false;
+        provider.setOptions(options);
         return provider;
         // Use CmdlineDiffProvider as a reference to check the test is O.K.
         //return org.netbeans.modules.diff.cmdline.CmdlineDiffProvider.createDefault();

@@ -56,8 +56,8 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
-            <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc"/>
+            <file name="spring-webmvc-4.0.xml" url="spring-webmvc-4.0.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc4"/>
             </file>
             <file name="spring-webmvc-3.0.xml" url="spring-webmvc-3.0.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc3"/>
@@ -98,11 +98,11 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="applicationContext-2.5.xml" url="templates/applicationContext25.template">
+            <file name="applicationContext-4.0.xml" url="templates/applicationContext40.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>
-            <file name="dispatcher-servlet-2.5.xml" url="templates/dispatcher-servlet25.template">
+            <file name="dispatcher-servlet-4.0.xml" url="templates/dispatcher-servlet40.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
             </file>

@@ -39,8 +39,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="cbBackground" alignment="1" pref="49" max="32767" attributes="1"/>
-                          <Component id="cbForeground" alignment="1" pref="49" max="32767" attributes="1"/>
+                          <Component id="cbBackground" alignment="1" max="32767" attributes="1"/>
+                          <Component id="cbForeground" alignment="1" max="32767" attributes="1"/>
                           <Component id="cbEffects" max="32767" attributes="1"/>
                           <Component id="cbEffectColor" max="32767" attributes="1"/>
                       </Group>

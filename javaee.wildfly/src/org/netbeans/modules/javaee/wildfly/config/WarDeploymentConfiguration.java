@@ -84,7 +84,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Stepan Herold, Libor Kotouc
  */
-public class WarDeploymentConfiguration extends JBDeploymentConfiguration 
+public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration 
 implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration, 
         DeploymentPlanConfiguration, PropertyChangeListener {
     
@@ -186,7 +186,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String resType = resourceRef.getResType();
                     if ("javax.sql.DataSource".equals(resType)) { // NOI18N
-                        addResReference(resourceRef.getResRefName(), JBossDatasource.PREFIX + resourceRef.getResRefName());
+                        addResReference(resourceRef.getResRefName(), WildflyDatasource.PREFIX + resourceRef.getResRefName());
                     } else if ("javax.mail.Session".equals(resType)) { // NOI18N
                         addMailReference(resourceRef.getResRefName());
                     } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
@@ -212,7 +212,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String messageDestinationType = messageDestinationRef.getMessageDestinationType();
                     String destPrefix = "javax.jms.Queue".equals(messageDestinationType) // NOI18N
-                                            ? JBossMessageDestination.QUEUE_PREFIX : JBossMessageDestination.TOPIC_PREFIX;
+                                            ? WildflyMessageDestination.QUEUE_PREFIX : WildflyMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
                     Exceptions.printStackTrace(ce);
@@ -235,7 +235,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             if (referenceName.equals(rrn)) {
                 String jndiName = resourceRef.getJndiName();
                 if (jndiName != null) {
-                    return JBossDatasource.getJndiName(jndiName);
+                    return WildflyDatasource.getJndiName(jndiName);
                 }
             }
         }
@@ -306,11 +306,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         
         String jndiName = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
-            jndiName = JBossMessageDestination.QUEUE_PREFIX + destName;
+            jndiName = WildflyMessageDestination.QUEUE_PREFIX + destName;
         }
         else
         if (MessageDestination.Type.TOPIC.equals(type)) {
-            jndiName = JBossMessageDestination.TOPIC_PREFIX + destName;
+            jndiName = WildflyMessageDestination.TOPIC_PREFIX + destName;
         }
 
         addMsgDestReference(referenceName, jndiName);

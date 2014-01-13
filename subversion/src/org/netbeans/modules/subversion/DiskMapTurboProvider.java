@@ -65,13 +65,13 @@ class DiskMapTurboProvider implements TurboProvider {
 
     static final String ATTR_STATUS_MAP = "subversion.STATUS_MAP";  // NOI18N
 
-    private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
+    private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED
+            & ~FileInformation.STATUS_VERSIONED_UPTODATE & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     private static final String CACHE_DIRECTORY = "svncache"; // NOI18N
     private static final int DIRECTORY = Integer.highestOneBit(Integer.MAX_VALUE);
     private static final Logger LOG = Logger.getLogger(DiskMapTurboProvider.class.getName());
 
     private File                            cacheStore;
-    private int                             storeSerial;
 
     private final CacheIndex index = createCacheIndex();
     private final CacheIndex conflictedIndex = createCacheIndex();
@@ -84,9 +84,9 @@ class DiskMapTurboProvider implements TurboProvider {
     File[] getIndexValues(File file, int includeStatus) {
         if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return conflictedIndex.get(file);
-        } else if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
+        } else if (includeStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
             return ignoresIndex.get(file);
-        } else if ((includeStatus & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+        } else if ((includeStatus & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
             File[] files = index.get(file);
             File[] ignores = ignoresIndex.get(file);
             return mergeArrays(files, ignores);
@@ -182,19 +182,12 @@ class DiskMapTurboProvider implements TurboProvider {
                                     conflictedIndex.add(f);
                                 }
                                 if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                    if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                                        ignoresIndex.add(f);
-                                    } else {
-                                        if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
-                                            ignoresIndex.add(f);
-                                        }
-                                        index.add(f);
-                                        modifiedFiles++;
-                                        addModifiedFile(modifiedFolders, f);
-                                        if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                                            locallyNewFiles++;
-                                            addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
-                                        }
+                                    index.add(f);
+                                    modifiedFiles++;
+                                    addModifiedFile(modifiedFolders, f);
+                                    if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                                        locallyNewFiles++;
+                                        addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
                                     }
                                 }
                             }
@@ -392,7 +385,6 @@ class DiskMapTurboProvider implements TurboProvider {
         }
         adjustIndex(dir, value);
 
-        storeSerial++;
         if (readFailed) {
             store.delete(); // cache file is corrupted, delete it (will be recreated on-demand later)
             return true;
