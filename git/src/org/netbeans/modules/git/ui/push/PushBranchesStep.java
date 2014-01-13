@@ -142,6 +142,10 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                     client = null;
                 }
                 for (GitBranch branch : localBranches.values()) {
+                    if (branch.getName() == GitBranch.NO_BRANCH) {
+                        // unnamed branch cannot be pushed
+                        continue;
+                    }
                     if (!branch.isRemote()) {
                         GitBranch remoteBranch = branches.get(branch.getName());
                         boolean conflicted = false;
