@@ -813,7 +813,9 @@ tokens {
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()
-        setPreprocPossible(t == END_PREPROC_DIRECTIVE);
+        if (t != COMMENT) { // block comment is valid anywhere
+            setPreprocPossible(t == END_PREPROC_DIRECTIVE);
+        }
         return k;
     }
 

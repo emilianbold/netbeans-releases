@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -96,8 +97,7 @@ public class NativeExecutionTestSupport {
         if (localRcFile == null) {
             String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
             if (rcFileName == null) {
-                String homePath = System.getProperty("user.home");
-                if (homePath != null) {
+                String homePath = System.getProperty("user.home");                if (homePath != null) {
                     File homeDir = new File(homePath);
                     localRcFile = RcFile.create(new File(homeDir, ".cndtestrc"));
                 }
@@ -420,4 +420,18 @@ public class NativeExecutionTestSupport {
         }
         return res.output;
     }    
+    
+    public static void threadsDump(String header, String footer) {
+        final Set<Map.Entry<Thread, StackTraceElement[]>> stack = Thread.getAllStackTraces().entrySet();
+        System.err.println(header);
+        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
+            System.err.println(entry.getKey().getName());
+            for (StackTraceElement element : entry.getValue()) {
+                System.err.println("\tat " + element.toString());
+            }
+            System.err.println();
+        }
+        System.err.println(footer);
+    }
+
 }

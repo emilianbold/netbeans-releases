@@ -61,10 +61,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class FssDispatchedHangupTestCase extends RemoteFileTestBase {
 
-    static {
-        System.setProperty("remote.fs_server.verbose", "2");
-        System.setProperty("remote.fs_server.log", "true");
-    }
+//    static {
+//        System.setProperty("remote.fs_server.verbose", "2");
+//        System.setProperty("remote.fs_server.log", "true");
+//    }
 
     public FssDispatchedHangupTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);

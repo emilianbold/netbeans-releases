@@ -42,37 +42,170 @@
 
 package org.netbeans.modules.cnd.navigation.overrides;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=50)
-public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
-
+public class OverrideTaskFactory extends IndexingAwareParserResultTask<CndParserResult> {
+    private static final RequestProcessor RP = new RequestProcessor("OverrideTaskFactory runner", 1); //NOI18N"
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
-    private static final int RESCHEDULE_DELAY = getInt("cnd.overrides.reschedule.delay", 500); // NOI18N
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private CndParserResult lastParserResult;
 
-    public OverrideTaskFactory() {
+    public OverrideTaskFactory(String mimeType) {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
+    @Override
+    public void run(CndParserResult result, SchedulerEvent event) {
+        synchronized (this) {
+            if (lastParserResult == result) {
+                return;
+            }
+            canceled.set(true);
+            lastParserResult = result;
+            canceled = new AtomicBoolean(false);
+        }
+        FileObject fo = result.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return;
+        }
+        Document doc = result.getSnapshot().getSource().getDocument(false);
+        if (!(doc instanceof StyledDocument)) {
+            return;
+        }
+        CsmFile csmFile = result.getCsmFile();
+        if (csmFile == null) {
+            return;
+        }
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            ex.printStackTrace(System.err);
+        }
+        if (dobj == null) {
+            return;
+        }
+        if (canceled.get()) {
+            return;
+        }
+        RP.post(new RunnerImpl(dobj, csmFile, (StyledDocument)doc, canceled), TASK_DELAY);
+    }
+
+    @Override
+    public int getPriority() {
+        return 1000;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    @Override
+    public final synchronized void cancel() {
+        canceled.set(true);
+        lastParserResult = null;
+    }
+
+    private static boolean isEnabled() {
+        return NamedOption.getAccessor().getBoolean(OverrideOptions.NAME);
+    }
+
+    private static int getInt(String name, int result){
+        String text = System.getProperty(name);
+        if( text != null ) {
+            try {
+                result = Integer.parseInt(text);
+            } catch(NumberFormatException e){
+                // default value
+            }
+        }
+        return result;
+    }
+
+    private static final class RunnerImpl implements Runnable {
+
+        private final DataObject dobj;
+        private final CsmFile file;
+        private final Reference<StyledDocument> weakDoc;
+        private final AtomicBoolean canceled;
+
+        private RunnerImpl(DataObject dobj, CsmFile file, StyledDocument doc, AtomicBoolean canceled){
+            this.dobj = dobj;
+            this.file = file;
+            weakDoc = new WeakReference<StyledDocument>((StyledDocument) doc);
+            this.canceled = canceled;
+        }
+
+        @Override
+        public void run() {
+            if (!isEnabled()) {
+                AnnotationsHolder.clearIfNeed(dobj);
+                return;
+            }
+            if (canceled.get()) {
+                return;
+            }
+            StyledDocument doc = weakDoc.get();
+            if (doc != null) {
+                addAnnotations(file, doc, dobj, canceled);
+            }
+        }
+
+        private void addAnnotations(CsmFile file, StyledDocument doc, DataObject dobj, AtomicBoolean canceled) {
+            final Collection<BaseAnnotation> toAdd = new ArrayList<BaseAnnotation>();
+            BaseAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
+            long time = System.currentTimeMillis();
+            ComputeAnnotations.getInstance(file, doc, canceled).computeAnnotations(toAdd);
+            time = System.currentTimeMillis() - time;
+            BaseAnnotation.LOGGER.log(Level.FINE, "<< Computed annotations for {0} in {1} ms", new Object[] { file, time });
+            if (canceled.get()) {
+                return;
+            }
+            AnnotationsHolder.get(dobj).setNewAnnotations(toAdd);
+        }
+
+        @Override
+        public String toString() {
+            if (file == null) {
+                return "OverrideTaskFactory runner"; //NOI18N
+            } else {
+                return "OverrideTaskFactory runner for "+file.getAbsolutePath(); //NOI18N
+            }
+        }
+    }
+    
     @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1300)
     public static final class OverrideOptions extends NamedOption {
         private static final String NAME = "overrides-annotations"; //NOI18N
@@ -103,123 +236,14 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         }
     }
     
-    private static boolean isEnabled() {
-        return NamedOption.getAccessor().getBoolean(OverrideOptions.NAME);
-    }
-
-    @Override
-    protected PhaseRunner createTask(FileObject fo) {
-        PhaseRunner pr = null;
-        if (isEnabled()) {
-            try {
-                final DataObject dobj = DataObject.find(fo);
-                    EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-                    final CsmFile file = CsmUtilities.getCsmFile(dobj, false, false);
-                    final StyledDocument doc = ec.getDocument();
-                    if (doc != null && file != null) {
-                        pr = new PhaseRunnerImpl(dobj, file, doc);
-                    }
-            } catch (DataObjectNotFoundException ex)  {
-                ex.printStackTrace(System.err);
-            }
-        }
-        return pr != null ? pr : lazyRunner();
-    }
-
-    @Override
-    protected int taskDelay() {
-        return TASK_DELAY;
-    }
-
-    @Override
-    protected int rescheduleDelay() {
-        return RESCHEDULE_DELAY;
-    }
-
-    private static int getInt(String name, int result){
-        String text = System.getProperty(name);
-        if( text != null ) {
-            try {
-                result = Integer.parseInt(text);
-            } catch(NumberFormatException e){
-                // default value
-            }
-        }
-        return result;
-    }
-
-    private static final class PhaseRunnerImpl implements PhaseRunner {
-
-        private final DataObject dobj;
-        private final CsmFile file;
-        private final WeakReference<StyledDocument> weakDoc;
-
-        private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
-            this.dobj = dobj;
-            this.file = file;
-            if (doc instanceof StyledDocument) {
-                weakDoc = new WeakReference<StyledDocument>((StyledDocument) doc);
-            } else {
-                weakDoc = null;
-            }
-        }
-
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class)
+    })
+    public static final class OverrideTaskFactoryImpl extends TaskFactory {
         @Override
-        public void run(Phase phase) {
-            if (!isEnabled()) {
-                AnnotationsHolder.clearIfNeed(dobj);
-                return;
-            }
-            StyledDocument doc = getDocument();
-            if (doc != null) {
-                if (phase == Phase.PARSED || phase == Phase.INIT || phase == Phase.PROJECT_PARSED) {
-                    addAnnotations(file, doc, dobj);
-                } else if (phase == Phase.CLEANUP) {
-                    clearAnnotations(doc, dobj);
-                }
-            }
-        }
-
-        protected StyledDocument getDocument() {
-            return weakDoc != null ? weakDoc.get() : null;
-        }
-
-        private void addAnnotations(CsmFile file, StyledDocument doc, DataObject dobj) {
-            final Collection<BaseAnnotation> toAdd = new ArrayList<BaseAnnotation>();
-            BaseAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
-            long time = System.currentTimeMillis();
-            ComputeAnnotations.getInstance(file, doc, dobj).computeAnnotations(toAdd);
-            time = System.currentTimeMillis() - time;
-            BaseAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
-            AnnotationsHolder.get(dobj).setNewAnnotations(toAdd);
-        }
-
-        private void clearAnnotations(StyledDocument doc, DataObject dobj) {
-            AnnotationsHolder.clearIfNeed(dobj);
-        }
-
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @Override
-        public void cancel() {
-        }
-
-        @Override
-        public boolean isHighPriority() {
-            return false;
-        }
-
-        @Override
-        public String toString() {
-            if (file == null) {
-                return "OverrideTaskFactory runner"; //NOI18N
-            } else {
-                return "OverrideTaskFactory runner for "+file.getAbsolutePath(); //NOI18N
-            }
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            return Collections.singletonList(new OverrideTaskFactory(snapshot.getMimeType()));
         }
     }
 }

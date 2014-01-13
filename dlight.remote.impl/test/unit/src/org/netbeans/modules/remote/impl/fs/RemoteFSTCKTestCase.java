@@ -72,9 +72,9 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
         // Needed for native execution...
         System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters()); // NOI18N
         System.setProperty("remote.user.password.keep_in_memory", "true"); // NOI18N
+        System.setProperty("cnd.mode.unittest", "true");        
 
         String mspec = null;
-
         try {
             RcFile rcFile = NativeExecutionTestSupport.getRcFile();
             mspec = rcFile.get("remote", "fstck.mspec");

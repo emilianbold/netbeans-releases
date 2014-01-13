@@ -42,9 +42,12 @@
 package org.netbeans.modules.php.latte.lexer;
 
 import java.io.File;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import static org.netbeans.junit.NbTestCase.assertFile;
 import static org.netbeans.modules.csl.api.test.CslTestBase.copyStringToFileObject;
 import org.netbeans.modules.php.latte.LatteTestBase;
+import org.netbeans.modules.php.latte.utils.TestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -90,6 +93,27 @@ public abstract class LatteLexerTestBase extends LatteTestBase {
             copyStringToFileObject(resultFO, result);
             assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
         }
+    }
+
+    protected String createResult(TokenSequence<?> ts) throws Exception {
+        StringBuilder result = new StringBuilder();
+        while (ts.moveNext()) {
+            TokenId tokenId = ts.token().id();
+            CharSequence text = ts.token().text();
+            result.append("token #");
+            result.append(ts.index());
+            result.append(" ");
+            result.append(tokenId.name());
+            String token = TestUtils.replaceLinesAndTabs(text.toString());
+            if (!token.isEmpty()) {
+                result.append(" ");
+                result.append("[");
+                result.append(token);
+                result.append("]");
+            }
+            result.append("\n");
+        }
+        return result.toString();
     }
 
 }

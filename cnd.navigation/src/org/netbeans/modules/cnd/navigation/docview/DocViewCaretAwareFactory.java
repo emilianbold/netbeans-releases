@@ -41,138 +41,186 @@
  */
 package org.netbeans.modules.cnd.navigation.docview;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position = 12)
-public class DocViewCaretAwareFactory extends CaretAwareCsmFileTaskFactory {
-
+public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<CndParserResult> {
+    private static final RequestProcessor RP = new RequestProcessor("DocViewCaretAwareFactory runner", 1); //NOI18N"
+    private static final int TASK_DELAY = getInt("cnd.docview.delay", 500); // NOI18N
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    
+    public DocViewCaretAwareFactory(String mimeType) {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
+        
+    }
     @Override
-    protected PhaseRunner createTask(final FileObject fo) {
-        return new PhaseRunner() {
-            private final AtomicBoolean isCanceled = new AtomicBoolean(false);
-
-            @Override
-            public void run(Phase phase) {
-                if (phase != Phase.PARSED) {
-                    return;
-                }
-                isCanceled.set(false);
-                if (!isDocViewActive()) {
-                    return;
-                }
-                Document doc = CsmUtilities.getDocument(fo);
-                if (doc == null) {
-                    return;
-                }
-                if (isCanceled.get()) {
-                    return;
-                }
-                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
-                if (csmFile == null) {
-                    return;
-                }
-                if (isCanceled.get()) {
-                    return;
-                }
-                updateDoc(doc, fo, csmFile, isCanceled);
-            }
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public void cancel() {
-                isCanceled.set(true);
-            }
-
-            @Override
-            public boolean isHighPriority() {
-                return false;
-            }
-
-            @Override
-            public String toString() {
-                return "DocViewCaretAwareFactory runner"; //NOI18N
-            }
-        };
+    public void run(CndParserResult result, SchedulerEvent event) {
+        synchronized (this) {
+            canceled.set(true);
+            canceled = new AtomicBoolean(false);
+        }
+        if (!isDocViewActive()) {
+            return;
+        }
+        Document doc = result.getSnapshot().getSource().getDocument(false);
+        if (!(doc instanceof StyledDocument)) {
+            return;
+        }
+        CsmFile csmFile = result.getCsmFile();
+        if (csmFile == null) {
+            csmFile = (CsmFile) doc.getProperty(CsmFile.class);
+        }
+        if (csmFile == null) {
+            return;
+        }
+        if (canceled.get()) {
+          return;
+        }
+        if (event instanceof CursorMovedSchedulerEvent) {
+            RP.post(new RunnerImpl(csmFile, (StyledDocument)doc, (CursorMovedSchedulerEvent)event, canceled), TASK_DELAY);
+        }
+    }
+    
+    @Override
+    public synchronized void cancel() {
+        canceled.set(true);
     }
 
-    private static boolean isDocViewActive() {
+    @Override
+    public int getPriority() {
+        return 1000;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    private static int getInt(String name, int result){
+        String text = System.getProperty(name);
+        if( text != null ) {
+            try {
+                result = Integer.parseInt(text);
+            } catch(NumberFormatException e){
+                // default value
+            }
+        }
+        return result;
+    }
+
+    private boolean isDocViewActive() {
         DocViewTopComponent instance = DocViewTopComponent.getInstance();
         return instance != null && instance.isActivated();
     }
 
-    private static void updateDoc(Document doc, FileObject fo, CsmFile csmFile, AtomicBoolean isCanceled) {
-        CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
-        if (ref == null) {
-            return;
-        }
-        if (isCanceled.get()) {
-            return;
-        }
-        CsmObject csmObject = ref.getReferencedObject();
-        if (csmObject == null) {
-            return;
-        }
-        if (isCanceled.get()) {
-            return;
-        }
-        CsmDocProvider p = Lookup.getDefault().lookup(CsmDocProvider.class);
-        if (p == null) {
-            return;
-        }
-        CharSequence documentation = p.getDocumentation(csmObject, csmFile);
-        if (documentation == null) {
-            return;
-        }
-        if (isCanceled.get()) {
-            return;
-        }
-        CharSequence selfDoc = CsmDisplayUtilities.getTooltipText(csmObject);
-        if (selfDoc != null) {
-            documentation = selfDoc.toString() + documentation.toString();
-        }
-        if (isCanceled.get()) {
-            return;
-        }
-        final CharSequence toShow = documentation;
-        SwingUtilities.invokeLater(new Runnable() {
+    private static final class RunnerImpl implements Runnable {
 
-            @Override
-            public void run() {
-                DocViewTopComponent topComponent = DocViewTopComponent.findInstance();
-                if (topComponent != null && topComponent.isOpened()) {
-                    topComponent.setDoc(toShow);
-                }
+        private final CsmFile file;
+        private final StyledDocument doc;
+        private final AtomicBoolean canceled;
+        private final CursorMovedSchedulerEvent event;
+
+        private RunnerImpl(CsmFile file, StyledDocument doc, CursorMovedSchedulerEvent event, AtomicBoolean canceled){
+            this.file = file;
+            this.doc = doc;
+            this.event = event;
+            this.canceled = canceled;
+        }
+
+        @Override
+        public void run() {
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, event.getCaretOffset());
+            if (ref == null) {
+                return;
             }
-        });
+            if (canceled.get()) {
+                return;
+            }
+            CsmObject csmObject = ref.getReferencedObject();
+            if (csmObject == null) {
+                return;
+            }
+            if (canceled.get()) {
+                return;
+            }
+            CsmDocProvider p = Lookup.getDefault().lookup(CsmDocProvider.class);
+            if (p == null) {
+                return;
+            }
+            CharSequence documentation = p.getDocumentation(csmObject, file);
+            if (documentation == null) {
+                return;
+            }
+            if (canceled.get()) {
+                return;
+            }
+            CharSequence selfDoc = CsmDisplayUtilities.getTooltipText(csmObject);
+            if (selfDoc != null) {
+                documentation = selfDoc.toString() + documentation.toString();
+            }
+            if (canceled.get()) {
+                return;
+            }
+            final CharSequence toShow = documentation;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    DocViewTopComponent topComponent = DocViewTopComponent.findInstance();
+                    if (topComponent != null && topComponent.isOpened()) {
+                        topComponent.setDoc(toShow);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public String toString() {
+            if (file == null) {
+                return "DocViewCaretAwareFactory runner"; //NOI18N
+            } else {
+                return "DocViewCaretAwareFactory runner for "+file.getAbsolutePath(); //NOI18N
+            }
+        }
     }
 
-    @Override
-    protected int taskDelay() {
-        return 500;
-    }
-
-    @Override
-    protected int rescheduleDelay() {
-        return 500;
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class),
+    })
+    public static final class DocViewCaretAwareFactoryImpl extends TaskFactory {
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            return Collections.singletonList(new DocViewCaretAwareFactory(snapshot.getMimeType()));
+        }
     }
 }

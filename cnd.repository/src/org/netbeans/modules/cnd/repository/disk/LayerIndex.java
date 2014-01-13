@@ -157,7 +157,7 @@ public final class LayerIndex {
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    RepositoryExceptions.throwException(this, ex);
                 }
             }
         }

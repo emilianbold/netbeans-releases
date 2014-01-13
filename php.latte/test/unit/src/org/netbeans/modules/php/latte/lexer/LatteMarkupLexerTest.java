@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.model.services;
 
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactoryManager;
-import org.netbeans.spi.editor.highlighting.HighlightsLayer;
-import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+package org.netbeans.modules.php.latte.lexer;
+
+import java.io.File;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.php.latte.utils.TestUtils;
 
 /**
- * This fake factory is needed to prevent usage of installer. See bug 177518.
  *
- * @author Vladimir Voskresensky
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class FakeHighlightsFactory implements HighlightsLayerFactory {
+public class LatteMarkupLexerTest extends LatteLexerTestBase {
 
-    private static final HighlightsLayer[] EMPTY = {};
+    public LatteMarkupLexerTest() {
+        super(null);
+    }
 
-    public FakeHighlightsFactory() {
-        CsmFileTaskFactoryManager.register();
+    public void testIssue2340146_01() throws Exception {
+        performTest("testIssue2340146_01");
+    }
+
+    public void testIssue2340146_02() throws Exception {
+        performTest("testIssue2340146_02");
+    }
+
+    public void testIssue2340146_03() throws Exception {
+        performTest("testIssue2340146_03");
     }
 
     @Override
-    public HighlightsLayer[] createLayers(Context context) {
-        return EMPTY;
+    protected String getTestResult(String filename) throws Exception {
+        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/markup/" + filename + ".latte-markup"));
+        Language<LatteMarkupTokenId> language = LatteMarkupTokenId.language();
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
+        return createResult(hierarchy.tokenSequence(language));
     }
+
 }

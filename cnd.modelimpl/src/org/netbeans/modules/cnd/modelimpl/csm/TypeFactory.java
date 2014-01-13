@@ -327,6 +327,7 @@ public class TypeFactory {
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
                                 templateDepth++;
+                                type.initInstantiationParams();
                             } else if( namePart.getType() == CPPTokenTypes.GREATERTHAN ) {
                                 // the beginning of template parameters
                                 templateDepth--;

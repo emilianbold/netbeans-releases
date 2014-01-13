@@ -2435,7 +2435,8 @@ initializer
     |   
         array_initializer
     | 
-        lazy_expression[false, false, 0]
+        (options {greedy=true;} : IDENT COLON)? // GCC designated initializer
+        lazy_expression[false, false, 0] 
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
