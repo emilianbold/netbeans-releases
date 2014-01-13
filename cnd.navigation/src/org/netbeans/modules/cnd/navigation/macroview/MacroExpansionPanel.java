@@ -59,7 +59,6 @@ import javax.swing.JPanel;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.explorer.ExplorerManager;
@@ -75,7 +74,7 @@ import org.openide.util.NbBundle;
 public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provider, HelpCtx.Provider {
 
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/macroview/resources/macroexpansion.png"; // NOI18N
-    private transient ExplorerManager explorerManager = new ExplorerManager();
+    private final transient ExplorerManager explorerManager = new ExplorerManager();
 
     /** Creates new form MacroExpansionPanel. */
     public MacroExpansionPanel(boolean isView) {
@@ -83,7 +82,7 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
         autoRefresh.setSelected(MacroExpansionTopComponent.isSyncCaretAndContext());
         localContext.setSelected(MacroExpansionTopComponent.isLocalContext());
         fileContext.setSelected(!MacroExpansionTopComponent.isLocalContext());
-        jCodeExpansionEditorPane.putClientProperty(OpenedEditors.CND_EDITOR_COMPONENT, Boolean.TRUE);
+        jCodeExpansionEditorPane.putClientProperty(MacroExpansionViewUtils.CND_EDITOR_COMPONENT, Boolean.TRUE);
         setName(NbBundle.getMessage(getClass(), "CTL_MacroExpansionTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_MacroExpansionTopComponent")); // NOI18N
     }

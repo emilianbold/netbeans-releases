@@ -51,13 +51,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.model.tasks.CndParser;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
-import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -129,7 +129,7 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
        if (doc == null) {
             return;
         }
-        Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
+        Object obj = doc.getProperty(CndParser.USE_OWN_CARET_POSITION);
         if (obj != null) {
             if(!(Boolean) obj) {
                 return;
@@ -159,7 +159,7 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
             Document doc2 = (Document) doc.getProperty(Document.class);
             if (doc2 != null) {
                 JTextComponent comp2 = null;
-                for(JTextComponent comp : OpenedEditors.getDefault().getVisibleEditors()) {
+                for(JTextComponent comp : EditorRegistry.componentList()) {
                     if (doc2.equals(comp.getDocument())) {
                         comp2 = comp;
                         break;

@@ -56,6 +56,8 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -74,12 +76,12 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
+import org.netbeans.modules.cnd.model.tasks.CndParser;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
-import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -151,7 +153,10 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             interrupter.cancel();
             this.interrupter = new InterrupterImpl();
         }
-        runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), interrupter);
+        if (event instanceof CursorMovedSchedulerEvent) {
+            runImpl((BaseDocument)result.getSnapshot().getSource().getDocument(false), (CursorMovedSchedulerEvent) event, interrupter);
+        }
+        
     }
 
     @Override
@@ -169,7 +174,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
-    private void runImpl(final BaseDocument doc, final InterrupterImpl interrupter) {
+    private void runImpl(final BaseDocument doc, CursorMovedSchedulerEvent event, final InterrupterImpl interrupter) {
         if (!SemanticHighlightingOptions.instance().getEnableMarkOccurrences()) {
             clean(doc);
             return;
@@ -187,21 +192,30 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             return;
         }
         final String mimeType = DocumentUtilities.getMimeType(doc);
-        int lastPosition = CaretAwareCsmFileTaskFactory.getLastPosition(fo);
+        int lastPosition = event.getCaretOffset();
 
         // Check existance of related document
         // And if it exist and check should we use its caret position or not
         Document doc2 = (Document) doc.getProperty(Document.class);
         if (doc2 != null) {
             boolean useOwnCarretPosition = true;
-            Object obj = doc.getProperty(CsmFileTaskFactory.USE_OWN_CARET_POSITION);
+            Object obj = doc.getProperty(CndParser.USE_OWN_CARET_POSITION);
             if (obj != null) {
                 useOwnCarretPosition = (Boolean) obj;
             }
             if (!useOwnCarretPosition) {
                 FileObject fo2 = CsmUtilities.getFileObject(doc2);
                 if (fo2 != null) {
-                    lastPosition = getDocumentOffset(doc, getFileOffset(doc2, CaretAwareCsmFileTaskFactory.getLastPosition(fo2)));
+                    JTextComponent comp2 = null;
+                    for(JTextComponent comp : EditorRegistry.componentList()) {
+                        if (doc2.equals(comp.getDocument())) {
+                            comp2 = comp;
+                            break;
+                        }
+                    }
+                    if (comp2 != null) {
+                        lastPosition = getDocumentOffset(doc, getFileOffset(doc2, comp2.getCaretPosition()));
+                    }
                 }
             }
         }

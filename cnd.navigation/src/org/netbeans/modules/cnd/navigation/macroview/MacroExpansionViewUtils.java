@@ -93,6 +93,8 @@ public final class MacroExpansionViewUtils {
     public final static String MACRO_EXPANSION_START_OFFSET = "macro-expansion-start-offset"; // NOI18N
     /** End offset of expansion */
     public final static String MACRO_EXPANSION_END_OFFSET = "macro-expansion-end-offset"; // NOI18N
+    // marker for non standard editor components where semantic services are expected to work
+    public static final String CND_EDITOR_COMPONENT = "CND_EDITOR_COMPONENT"; // NOI18N
 
     /**
      * Updates content of macro expansion panel on offset change.
