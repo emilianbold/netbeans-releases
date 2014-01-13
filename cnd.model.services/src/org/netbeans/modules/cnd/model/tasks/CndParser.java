@@ -73,7 +73,6 @@ import org.openide.util.WeakSet;
  */
 public final class CndParser extends Parser implements CsmProgressListener {
     public final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
-    public final static String USE_OWN_CARET_POSITION = "use-own-caret-position"; // NOI18N
     private CndParserResult cndParserResult;
     private static final class Lock{}
     private final Lock lock = new Lock();

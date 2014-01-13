@@ -56,7 +56,6 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.model.tasks.CndParser;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -129,7 +128,7 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
        if (doc == null) {
             return;
         }
-        Object obj = doc.getProperty(CndParser.USE_OWN_CARET_POSITION);
+        Object obj = doc.getProperty(CsmMacroExpansion.USE_OWN_CARET_POSITION);
         if (obj != null) {
             if(!(Boolean) obj) {
                 return;

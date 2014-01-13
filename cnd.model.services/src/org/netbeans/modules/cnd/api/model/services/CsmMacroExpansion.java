@@ -71,6 +71,7 @@ public final class CsmMacroExpansion {
     // Flags for document of macro expansion view panel
     /** Flag of macro expansion view document. */
     public static final String MACRO_EXPANSION_VIEW_DOCUMENT = "macro-expansion-view-document"; // NOI18N
+    public final static String USE_OWN_CARET_POSITION = "use-own-caret-position"; // NOI18N
     /** A dummy providers that never returns any results.*/
     private static final CsmMacroExpansionDocProvider EMPTY_MACRO_EXPANSION_DOC_PROVIDER = new EmptyMacroExpansionDoc();
     /** A dummy providers that never returns any results.*/

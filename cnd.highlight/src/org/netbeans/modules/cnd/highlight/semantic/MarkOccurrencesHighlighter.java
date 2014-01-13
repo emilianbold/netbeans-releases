@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CndParser;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
@@ -199,7 +198,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         Document doc2 = (Document) doc.getProperty(Document.class);
         if (doc2 != null) {
             boolean useOwnCarretPosition = true;
-            Object obj = doc.getProperty(CndParser.USE_OWN_CARET_POSITION);
+            Object obj = doc.getProperty(CsmMacroExpansion.USE_OWN_CARET_POSITION);
             if (obj != null) {
                 useOwnCarretPosition = (Boolean) obj;
             }
