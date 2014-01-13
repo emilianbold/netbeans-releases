@@ -53,7 +53,9 @@
         <node name="org.netbeans.modules.java.metrics.hints.ClassMetrics.tooCoupledClass"/>
         <node name="ProjectUtils.hint"/>
         <node name="org.netbeans.modules.java.hints.WrongPackageSuggestion"/>
-        <node name="org.netbeans.modules.java.hints.jdk.IteratorToFor"/>
+        <node name="org.netbeans.modules.java.hints.jdk.IteratorToFor">
+            <attribute name="enabled" value="false"/>
+        </node>
         <node name="org.netbeans.modules.java.hints.threading.Tiny.nestedSynchronized"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Lambda.explicitParameterTypes"/>
         <node name="org.netbeans.modules.java.metrics.hints.ClassMetrics.tooManyConstructors"/>

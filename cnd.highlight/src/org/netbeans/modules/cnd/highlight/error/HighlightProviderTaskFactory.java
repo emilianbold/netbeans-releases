@@ -51,11 +51,12 @@ import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -77,12 +78,13 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         return Collections.singletonList(new ErrorsHighlighter());
     }
 
-    private final class ErrorsHighlighter extends ParserResultTask<CndParserResult> {
+    private final class ErrorsHighlighter extends IndexingAwareParserResultTask<CndParserResult> {
 
         private InterrupterImpl interrupter = new InterrupterImpl();
         private CndParserResult lastParserResult;
 
         public ErrorsHighlighter() {
+            super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         @Override
@@ -91,6 +93,7 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                 if (lastParserResult == result) {
                     return;
                 }
+                interrupter.cancel();
                 this.lastParserResult = result;
                 this.interrupter = new InterrupterImpl();
             }

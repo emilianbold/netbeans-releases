@@ -45,10 +45,8 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -67,7 +65,6 @@ public class MarkOccurrencesHighlighterFactory extends TaskFactory {
     
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        Document doc = snapshot.getSource().getDocument(false);
-        return Collections.singletonList(new MarkOccurrencesHighlighter(doc, new InterrupterImpl()));
+        return Collections.singletonList(new MarkOccurrencesHighlighter(snapshot.getMimeType()));
     }
 }

@@ -55,6 +55,7 @@
 package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -92,6 +93,8 @@ public final class MacroExpansionViewUtils {
     public final static String MACRO_EXPANSION_START_OFFSET = "macro-expansion-start-offset"; // NOI18N
     /** End offset of expansion */
     public final static String MACRO_EXPANSION_END_OFFSET = "macro-expansion-end-offset"; // NOI18N
+    // marker for non standard editor components where semantic services are expected to work
+    public static final String CND_EDITOR_COMPONENT = "CND_EDITOR_COMPONENT"; // NOI18N
 
     /**
      * Updates content of macro expansion panel on offset change.
@@ -99,26 +102,23 @@ public final class MacroExpansionViewUtils {
      * @param newOffset - offset
      * @return true if something was changed during update
      */
-    public static boolean updateView(int newOffset) {
-        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
-        boolean localContext = MacroExpansionTopComponent.isLocalContext();
+    public static void updateView(Document mainDoc, int newOffset, final CsmFile csmFile, final AtomicBoolean canceled, final Runnable syncPositions) {
+        if (!MacroExpansionTopComponent.isSyncCaretAndContext()) {
+            return;
+        }
 
+        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
         final Document expandedContextDoc = view.getExpandedContextDoc();
         if (expandedContextDoc == null) {
-            return false;
+            return;
         }
-        final Document mainDoc = (Document) expandedContextDoc.getProperty(Document.class);
-        if (mainDoc == null) {
-            return false;
-        }
-        CsmFile csmFile = CsmUtilities.getCsmFile(mainDoc, true, false);
         if (csmFile == null) {
-            return false;
+            return;
         }
-
         // Get ofsets and check if update needed
         int startOffset = 0;
         int endOffset = mainDoc.getLength();
+        boolean localContext = MacroExpansionTopComponent.isLocalContext();
         if (localContext) {
             CsmScope scope = ContextUtils.findInnerFileScope(csmFile, newOffset);
             if (CsmKindUtilities.isOffsetable(scope)) {
@@ -126,14 +126,20 @@ public final class MacroExpansionViewUtils {
                 endOffset = ((CsmOffsetable) scope).getEndOffset();
             }
         }
-        if (!isOffsetChanged(expandedContextDoc, startOffset, endOffset)) {
-            return false;
+        if (canceled.get()) {
+            return;
+        }
+        final Document doc = (Document) expandedContextDoc.getProperty(Document.class);
+        if (mainDoc.equals(doc)) {
+            if (!isOffsetChanged(expandedContextDoc, startOffset, endOffset)) {
+                SwingUtilities.invokeLater(syncPositions);
+            }
         }
         
         // Init expanded context field
         final Document newExpandedContextDoc = createExpandedContextDocument(mainDoc, csmFile);
         if (newExpandedContextDoc == null) {
-            return false;
+            return;
         }
         final int expansionsNumber = CsmMacroExpansion.expand(mainDoc, startOffset, endOffset, newExpandedContextDoc);
         setOffset(newExpandedContextDoc, startOffset, endOffset);
@@ -149,14 +155,10 @@ public final class MacroExpansionViewUtils {
                 }
                 view.setDocuments(newExpandedContextDoc);
                 view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
+                syncPositions.run();
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
-            openView.run();
-        } else {
-            SwingUtilities.invokeLater(openView);
-        }
-        return true;
+        SwingUtilities.invokeLater(openView);
     }
 
     /**

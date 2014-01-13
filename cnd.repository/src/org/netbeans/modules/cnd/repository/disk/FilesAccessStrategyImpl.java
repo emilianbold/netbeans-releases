@@ -175,15 +175,15 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             dos = new RepositoryDataOutputImpl(RepositoryImplUtil.getBufferedDataOutputStream(file));
             removedKeysFile.write(dos);
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         } finally {
             if (dos != null) {
                 try {
                     dos.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    RepositoryExceptions.throwException(this, ex);
                 }
             }
         }
@@ -398,7 +398,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         try {
             layerIndex.storeFilesTable(unitIDInLayer, filesList);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
     }
 
@@ -431,7 +431,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             try {
                 dblStorage.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
         }
 
@@ -459,7 +459,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
                     fileStorage.remove(key);
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
                         
         }
@@ -478,7 +478,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             try {
                 return dblStorage.maintenance(timeout);
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
             return false;
         }

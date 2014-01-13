@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.highlight.semantic.actions;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
@@ -118,12 +117,11 @@ public class SemanticUtils {
         String mime = (fo == null) ? "" : fo.getMIMEType();
         if (MIMENames.isHeaderOrCppOrC(mime)) {
             EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            JEditorPane pane = NbDocument.findRecentEditorPane(ec);
             Document doc = ec.getDocument();
-
-            int position = CaretAwareCsmFileTaskFactory.getLastPosition(dobj.getPrimaryFile());
+            int position = pane.getCaretPosition();
             int goTo = findOccurrencePosition(next, doc, position);
             if (goTo > 0) {
-                JEditorPane pane = NbDocument.findRecentEditorPane(ec);
                 pane.setCaretPosition(goTo);
             } else {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SemanticUtils.class, "cpp-no-marked-occurrence"));

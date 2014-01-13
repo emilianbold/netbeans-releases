@@ -188,8 +188,8 @@ public class RepositoryListenerImpl implements RepositoryListener, RepositoryExc
             return;
         }
         if (exc.getCause() != null) {
-            DiagnosticExceptoins.register(exc.getCause());
-        }
+            DiagnosticExceptoins.register(exc.getCause()); 
+       }
     }
 
     // NB: un-synchronized!

@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.navigation.overrides;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -54,8 +55,8 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -63,7 +64,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.loaders.DataObject;
 
 /**
  * A class that computes annotations -
@@ -72,31 +72,37 @@ import org.openide.loaders.DataObject;
  */
 public class ComputeAnnotations {
 
-    public static ComputeAnnotations getInstance(CsmFile csmFile, StyledDocument doc, DataObject dobj) {
-        return new ComputeAnnotations(csmFile, doc, dobj);
+    public static ComputeAnnotations getInstance(CsmFile csmFile, StyledDocument doc, AtomicBoolean canceled) {
+        return new ComputeAnnotations(csmFile, doc, canceled);
     }
 
-    private final CsmProject csmProject;
     private final CsmFile csmFile;
     private final StyledDocument doc;
-    private final DataObject dobj;
+    private final AtomicBoolean canceled;
 
-    private ComputeAnnotations(CsmFile csmFile, StyledDocument doc, DataObject dobj) {
+    private ComputeAnnotations(CsmFile csmFile, StyledDocument doc, AtomicBoolean canceled) {
        this.csmFile = csmFile;
-       this.csmProject = csmFile.getProject();
        this.doc = doc;
-       this.dobj = dobj;
+       this.canceled = canceled;
     }
 
     /*package*/ void computeAnnotations(Collection<BaseAnnotation> toAdd) {
-        computeAnnotations(csmFile.getDeclarations(), toAdd);
+        if (canceled.get()) {
+            return;
+        }
+        CsmCacheManager.enter();
+        try {
+            computeAnnotations(csmFile.getDeclarations(), toAdd);
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
-    private void computeAnnotations(
-            Collection<? extends CsmOffsetableDeclaration> toProcess,
-            Collection<BaseAnnotation> toAdd) {
-
+    private void computeAnnotations(Collection<? extends CsmOffsetableDeclaration> toProcess, Collection<BaseAnnotation> toAdd) {
         for (CsmOffsetableDeclaration decl : toProcess) {
+            if (canceled.get()) {
+                return;
+            }
             if (this.csmFile.equals(decl.getContainingFile())) {
                 if (CsmKindUtilities.isFunction(decl)) {
                     computeAnnotation((CsmFunction) decl, toAdd);
@@ -134,8 +140,17 @@ public class ComputeAnnotations {
                 baseMethods.remove(meth);
             }
         }
+        if (canceled.get()) {
+            return;
+        }
         Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(func);
+        if (canceled.get()) {
+            return;
+        }
         Collection<CsmOffsetableDeclaration> templateSpecializations = CsmInstantiationProvider.getDefault().getSpecializations(func);
+        if (canceled.get()) {
+            return;
+        }
         if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty() || !baseTemplates.isEmpty() || !templateSpecializations.isEmpty()) {
             toAdd.add(new OverrideAnnotation(doc, func, baseMethods, overriddenMethods, baseTemplates, templateSpecializations));
         }
@@ -143,9 +158,18 @@ public class ComputeAnnotations {
 
     private void computeAnnotation(CsmClass cls, Collection<BaseAnnotation> toAdd) {
         Collection<CsmReference> subRefs = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false);
+        if (canceled.get())  {
+            return;
+        }
         Collection<CsmClass> subClasses = new ArrayList<CsmClass>(subRefs.size());
         Collection<CsmOffsetableDeclaration> baseTemplateClasses = CsmInstantiationProvider.getDefault().getBaseTemplate(cls);
+        if (canceled.get())  {
+            return;
+        }
         Collection<CsmOffsetableDeclaration> templateSpecializationClasses = CsmInstantiationProvider.getDefault().getSpecializations(cls);
+        if (canceled.get())  {
+            return;
+        }
         if (!subRefs.isEmpty()) {
             for (CsmReference ref : subRefs) {
                 CsmObject obj = ref.getReferencedObject();

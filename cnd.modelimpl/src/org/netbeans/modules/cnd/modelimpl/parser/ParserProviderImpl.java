@@ -458,6 +458,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         @Override
         public CsmParserProvider.CsmParserResult parse(ConstructionKind kind) {
             long start = System.currentTimeMillis();
+            CsmCacheManager.enter();
             try {
                 this.kind = kind;
                 switch (kind) {
@@ -475,6 +476,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N
                 ex.printStackTrace(System.err);
+            } finally {
+                CsmCacheManager.leave();
             }
             parseTime = System.currentTimeMillis() - start;
             return this;

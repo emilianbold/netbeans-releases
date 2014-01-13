@@ -377,8 +377,9 @@ public class KeyObjectFactory extends KeyFactory {
     public static final short KEY_ENUM_FORWARD_DECLARATION_KEY = KEY_CLASS_FORWARD_DECLARATION_KEY + 1;
     public static final short KEY_FUNCTION_FRIEND_KEY = KEY_ENUM_FORWARD_DECLARATION_KEY + 1;
     public static final short KEY_FUNCTION_FRIEND_DEFINITION_KEY = KEY_FUNCTION_FRIEND_KEY + 1;
+    public static final short KEY_FUNCTION_TYPE_KEY = KEY_FUNCTION_FRIEND_DEFINITION_KEY + 1;
     
-    public static final short KEY_INSTANTIATION_KEY = KEY_FUNCTION_FRIEND_DEFINITION_KEY + 1;
+    public static final short KEY_INSTANTIATION_KEY = KEY_FUNCTION_TYPE_KEY + 1;
     
     public static final short KEY_PROJECT_DECLARATION_CONTAINER_KEY = KEY_INSTANTIATION_KEY + 1;
     public static final short KEY_FILE_CONTAINER_KEY = KEY_PROJECT_DECLARATION_CONTAINER_KEY + 1;
