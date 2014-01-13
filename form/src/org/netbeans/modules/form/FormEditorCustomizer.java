@@ -412,10 +412,48 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         return changed;
     }
     
+    private void fireChanged() {
+        FormLoaderSettings options = FormLoaderSettings.getInstance();
+        boolean isChanged = false;
+        if (rbGenerateFields.isSelected()) {
+            switch (cbModifier.getSelectedIndex()) {
+                case 0:
+                    isChanged = options.getVariablesModifier() != Modifier.PUBLIC;
+                    break;
+                case 1:
+                    isChanged = options.getVariablesModifier() != 0;
+                    break;
+                case 2:
+                    isChanged = options.getVariablesModifier() != Modifier.PROTECTED;
+                    break;
+                case 3:
+                    isChanged = options.getVariablesModifier() != Modifier.PRIVATE;
+                    break;
+            }
+        }
+        try {
+            changed = isChanged || options.getFoldGeneratedCode() != cbFold.isSelected()
+                    || options.getAssistantShown() != cbAssistant.isSelected()
+                    || options.getGenerateFQN() != cbFQN.isSelected()
+                    || options.getListenerGenerationStyle() != cbListenerStyle.getSelectedIndex()
+                    || options.getLayoutCodeTarget() != cbLayoutStyle.getSelectedIndex()
+                    || options.getAutoSetComponentName() != cbComponentNames.getSelectedIndex()
+                    || options.getI18nAutoMode() != cbAutoI18n.getSelectedIndex()
+                    || options.getVariablesLocal() != rbGenerateLocals.isSelected()
+                    || options.getGridX() != (Integer) spGridSize.getValue()
+                    || options.getGridY() != (Integer) spGridSize.getValue()
+                    || !options.getGuidingLineColor().equals(guideLineColorProperty.getValue())
+                    || !options.getSelectionBorderColor().equals(selectionBorderColorProperty.getValue())
+                    || options.getPaintAdvancedLayoutInfo() != (cbPaintLayout.isSelected() ? 3 : 0);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     @Override
     public void actionPerformed (ActionEvent e) {
         if (listen) {
-            changed = true;
+            fireChanged();
             if (rbGenerateLocals == e.getSource() && rbGenerateLocals.isSelected()) {
                 cbModifier.setEnabled(false);
             } else if (rbGenerateFields == e.getSource() && rbGenerateFields.isSelected()) {
@@ -427,11 +465,11 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
     @Override
     public void stateChanged (ChangeEvent e) {
         if (listen) {
-            changed = true;
+            fireChanged();
         }
     }
 
-    private static class ColorSettingsProperty extends PropertySupport.Reflection<Color> {
+    private class ColorSettingsProperty extends PropertySupport.Reflection<Color> {
         private Color color;
 
         ColorSettingsProperty(String settingName) throws NoSuchMethodException {
@@ -459,6 +497,7 @@ public final class FormEditorCustomizer extends JPanel implements  ActionListene
         @Override
         public void setValue(Color val) {
             color = val;
+            fireChanged();
         }
 
         @Override
