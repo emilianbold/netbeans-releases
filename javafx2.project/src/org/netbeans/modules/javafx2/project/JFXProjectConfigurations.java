@@ -1377,9 +1377,9 @@ public class JFXProjectConfigurations {
     */
     private boolean storeParamsAsCommandLine(String config, EditableProperties projectProperties) {
         assert !configNameWrong(config);
-        String params = appParams.getEntriesTransparentAsString(config, true);
+        String params = appParams.getEntriesTransparentAsString(config, true, true);
         if(config != null) {
-            if(JFXProjectProperties.isEqualText(params, appParams.getDefaultEntriesAsString(true))) {
+            if(JFXProjectProperties.isEqualText(params, appParams.getDefaultEntriesAsString(true, true))) {
                 params = null;
             }
         }
@@ -2057,6 +2057,10 @@ public class JFXProjectConfigurations {
             return getEntriesAsString(getEntries(config), commandLine);
         }
 
+        private String getDefaultEntriesAsString(boolean commandLine, boolean quoteEntries) {
+            return getEntriesAsString(getDefaultEntries(), commandLine, quoteEntries);
+        }
+
         private String getDefaultEntriesAsString(boolean commandLine) {
             return getEntriesAsString(getDefaultEntries(), commandLine);
         }
@@ -2070,6 +2074,11 @@ public class JFXProjectConfigurations {
             return getEntriesAsString(getEntriesTransparent(config), commandLine);
         }
 
+        public String getEntriesTransparentAsString(String config, boolean commandLine, boolean quoteParams) {
+            assert !configNameWrong(config);
+            return getEntriesAsString(getEntriesTransparent(config), commandLine, quoteParams);
+        }
+
         public String getDefaultEntriesTransparentAsString(boolean commandLine) {
             return getEntriesAsString(getDefaultEntriesTransparent(), commandLine);
         }
@@ -2078,8 +2087,11 @@ public class JFXProjectConfigurations {
             return getEntriesAsString(getActiveEntriesTransparent(), commandLine);
         }
 
-        private String getEntriesAsString(List<Map<String,String/*|null*/>> props, boolean commandLine)
-        {
+        private String getEntriesAsString(List<Map<String,String/*|null*/>> props, boolean commandLine) {
+            return getEntriesAsString(props, commandLine, false);
+        }
+
+        private String getEntriesAsString(List<Map<String,String/*|null*/>> props, boolean commandLine, boolean quoteParams) {
             StringBuilder sb = new StringBuilder();
             if(props != null) {
                 int index = 0;
@@ -2097,15 +2109,27 @@ public class JFXProjectConfigurations {
                             if(commandLine) {
                                 sb.append("--"); // NOI18N
                             }
-                            sb.append(name);
+                            if (quoteParams) {
+                                sb.append("'").append(name).append("'");
+                            } else {
+                                sb.append(name);
+                            }
                             if(commandLine) {
                                 sb.append("="); // NOI18N
                             } else {
                                 sb.append(connectSign); // NOI18N
                             }
-                            sb.append(value);
+                            if (quoteParams) {
+                                sb.append("'").append(value).append("'");
+                            } else {
+                                sb.append(value);
+                            }
                         } else {
-                            sb.append(name);                        
+                            if (quoteParams) {
+                                sb.append("'").append(name).append("'");
+                            } else {
+                                sb.append(name);
+                            }
                         }
                         index++;
                     }
