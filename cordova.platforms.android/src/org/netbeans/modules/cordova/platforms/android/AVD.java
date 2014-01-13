@@ -171,4 +171,9 @@ public class AVD implements Device {
         return new AndroidDebugTransport();
     }
 
+    @Override
+    public boolean isWebViewDebugSupported() {
+        return AndroidPlatform.getDefault().isWebViewDebugSupported(isEmulator());
+    }
+
 }

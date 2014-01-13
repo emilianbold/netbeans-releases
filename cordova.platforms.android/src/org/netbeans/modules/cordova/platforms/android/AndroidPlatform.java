@@ -373,5 +373,26 @@ public class AndroidPlatform implements MobilePlatform {
         }
         return null;
     }
+
+    boolean isWebViewDebugSupported(boolean emulator) {
+        try {
+            String version = ProcessUtilities.callProcess(
+                    getAdbCommand(),
+                    true,
+                    -1,
+                    emulator?"-e":"-d", // NOI18N
+                    "wait-for-device", // NOI18N
+                    "shell", // NOI18N
+                    "getprop", //NOI18N
+                    "ro.build.version.release"); //NOI18N
+            
+            return version.compareTo("4.4") >= 0;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+        
+        
+    }
 }
 
