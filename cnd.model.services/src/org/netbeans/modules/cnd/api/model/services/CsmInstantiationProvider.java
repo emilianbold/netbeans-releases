@@ -131,10 +131,10 @@ public abstract class CsmInstantiationProvider {
      * Returns template parameter instantiated type
      * 
      * @param templateParam
-     * @param instantiation
+     * @param instantiations
      * @return parameter type
      */
-    public abstract CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation);
+    public abstract CsmType instantiate(CsmTemplateParameter templateParam, List<CsmInstantiation> instantiations);
 
     /**
      * Creates specialization parameter based on type.
@@ -202,7 +202,7 @@ public abstract class CsmInstantiationProvider {
         }
 
         @Override
-        public CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation) {
+        public CsmType instantiate(CsmTemplateParameter templateParam, List<CsmInstantiation> instantiations) {
             return null;
         }
 

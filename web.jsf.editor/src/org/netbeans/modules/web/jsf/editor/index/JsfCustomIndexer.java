@@ -94,7 +94,6 @@ public class JsfCustomIndexer extends CustomIndexer {
             return;
         }
 
-        boolean[] usesComposites = new boolean[1];
         List<URL> toRescan = new ArrayList<>();
         for (Indexable i : files) {
             URL indexableURL = i.getURL();
@@ -111,12 +110,12 @@ public class JsfCustomIndexer extends CustomIndexer {
             } else if (JsfIndexSupport.isTagLibraryDescriptor(file)) {
                 processTlds(file, context);
             } else if (JsfUtils.XHTML_MIMETYPE.equals(file.getMIMEType())) {
-                processFaceletsCompositeLibraries(file, context, toRescan, usesComposites);
+                processFaceletsCompositeLibraries(file, context, toRescan);
             }
         }
 
         // issue #226968 - rescan files which could contain composites
-        if (usesComposites[0] && !toRescan.isEmpty() && !context.isSupplementaryFilesIndexing()) {
+        if (!toRescan.isEmpty() && !context.isSupplementaryFilesIndexing()) {
             context.addSupplementaryFiles(context.getRootURI(), toRescan);
         }
     }
@@ -149,7 +148,7 @@ public class JsfCustomIndexer extends CustomIndexer {
         }
     }
 
-    private void processFaceletsCompositeLibraries(final FileObject file, final Context context, final List<URL> toRescan, final boolean[] usesComposites) {
+    private void processFaceletsCompositeLibraries(final FileObject file, final Context context, final List<URL> toRescan) {
         try {
             Source source = Source.create(file);
             ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -170,9 +169,6 @@ public class JsfCustomIndexer extends CustomIndexer {
                             //get JSF models and index them
                             Collection<JsfPageModel> models = JsfPageModelFactory.getModels(parserResult);
                             for (JsfPageModel model : models) {
-                                if (model instanceof CompositeComponentModel) {
-                                    usesComposites[0] = true;
-                                }
                                 IndexDocument document = support.createDocument(file);
                                 model.storeToIndex(document);
                                 documents.add(document);

@@ -110,6 +110,17 @@ public class CssPreprocessorUtilsTest extends NbTestCase {
     }
 
     @Test
+    public void testResolveTargetOutsideWebRoot() {
+        File root = new File("/root");
+        File webRoot = new File(root, "web");
+        List<Pair<String, String>> mappings = Collections.singletonList(Pair.of("../scss", "/css"));
+        File input1 = new File(root, "scss/file1.scss");
+        assertEquals(new File(webRoot, "css/file1.css"), CssPreprocessorUtils.resolveTarget(webRoot, mappings, input1, "file1"));
+        File input2 = new File(root, "scss/subdir/file2.scss");
+        assertEquals(new File(webRoot, "css/subdir/file2.css"), CssPreprocessorUtils.resolveTarget(webRoot, mappings, input2, "file2"));
+    }
+
+    @Test
     public void testValidMappingsFormat() throws Exception {
         // non-existing folder
         File root = new File("/root");

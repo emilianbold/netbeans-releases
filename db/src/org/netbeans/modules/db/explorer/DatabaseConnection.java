@@ -1061,15 +1061,12 @@ public final class DatabaseConnection implements DBConnection {
     public boolean equals(Object obj) {
         if (obj instanceof DatabaseConnection) {
             DatabaseConnection conn = (DatabaseConnection) obj;
-            if (toString().equals(conn.toString())) {
-                if ((connectionProperties == null
-                        && conn.getConnectionProperties() == null)) {
-                    return true;
-                } else if (connectionProperties != null) {
-                    return connectionProperties.equals(
-                            conn.getConnectionProperties());
-        }
-            }
+            return Objects.equals(drv, conn.drv)
+                    && Objects.equals(drvname, conn.drvname)
+                    && Objects.equals(db, conn.db)
+                    && Objects.equals(usr, conn.usr)
+                    && Objects.equals(getSchema(), conn.getSchema())
+                    && Objects.equals(getConnectionProperties(), conn.getConnectionProperties());
         }
 
         return false;

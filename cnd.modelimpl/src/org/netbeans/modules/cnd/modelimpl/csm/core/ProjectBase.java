@@ -1089,7 +1089,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return fileAndHandler;
     }
 
-    /*package*/final FileImpl createIfNeed(NativeFileItem nativeFile, FileModel lwm,
+    /*package*/final FileImpl createIfNeed(NativeFileItem nativeFile,
             boolean validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
         FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile);
@@ -1147,14 +1147,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         } else {
             // put directly into parser queue if needed
-            if (lwm == null || !lwm.fill(fileImpl)){
-                boolean addToQueue = true;
-                if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    addToQueue = fileImpl.isSourceFile();
-                }
-                if (addToQueue) {
-                    ParserQueue.instance().add(fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
-                }
+            boolean addToQueue = true;
+            if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                addToQueue = fileImpl.isSourceFile();
+            }
+            if (addToQueue) {
+                ParserQueue.instance().add(fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
             }
         }
         return fileImpl;

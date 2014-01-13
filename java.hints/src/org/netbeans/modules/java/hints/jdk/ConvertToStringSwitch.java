@@ -202,7 +202,7 @@ public class ConvertToStringSwitch {
 
                 TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(variable);
 
-                if (!ctx.getInfo().getTypes().isSameType(varType, jlString.asType())) {
+                if (varType == null || !ctx.getInfo().getTypes().isSameType(varType, jlString.asType())) {
                     return null;
                 }
                 

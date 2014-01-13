@@ -207,7 +207,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                             classTemplateSuffix.append(TemplateUtils.getSpecializationSuffix(qIdToken, null));
                         }        
                         templateClassNodes.add(templateNode);
-                        templateNode = templateNode.getNextSibling();
+                        templateNode = AstUtil.findSiblingOfType(templateNode.getNextSibling(), CPPTokenTypes.LITERAL_template);
                         startTemplateSign = AstUtil.findSiblingOfType(endTemplateSign, CPPTokenTypes.LESSTHAN);
                     } else {
                         break;

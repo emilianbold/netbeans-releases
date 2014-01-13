@@ -804,6 +804,7 @@ is divided into following sections:
             <target name="-add-apipermissions">
                 <xsl:attribute name="if">manifest.apipermissions</xsl:attribute>
                 <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.apipermissions}}"/>
+                <echo append="true" encoding="UTF-8" file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.apipermissions.classes}}"/>
             </target>
 
             <target name="-add-pushregistry">
@@ -828,7 +829,7 @@ is divided into following sections:
 
             <target name="-do-jar-update-manifest" depends="-do-jar-create-manifest,-do-jar-copy-manifest">
                 <manifest file="${{tmp.manifest.file}}" mode="update">
-                    <attribute name="Microedition-Profile" value="${{platform.profile}}"/>
+                    <attribute name="MicroEdition-Profile" value="${{platform.profile}}"/>
                     <attribute name="MicroEdition-Configuration" value="${{platform.configuration}}"/>
                 </manifest>
                 <script>
@@ -868,6 +869,8 @@ is divided into following sections:
                 updateManifest(others);
                 var apipermissions = new String(project.getProperty("manifest.apipermissions"));
                 updateManifest(apipermissions);
+                var apipermissionsClasses = new String(project.getProperty("manifest.apipermissions.classes"));
+                updateManifest(apipermissionsClasses);
                 var pushregistry = new String(project.getProperty("manifest.pushregistry"));
                 updateManifest(pushregistry);
                 var manifestExtra = new String(project.getProperty("manifest.manifest"));

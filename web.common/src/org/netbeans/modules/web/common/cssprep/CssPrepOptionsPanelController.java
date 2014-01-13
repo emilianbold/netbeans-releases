@@ -139,7 +139,11 @@ public final class CssPrepOptionsPanelController extends OptionsPanelController 
 
     @Override
     public boolean isChanged() {
-        return changed;
+        boolean isChanged = false;
+        for (CssPreprocessorImplementation.Options options : allOptions) {
+            isChanged |= options.changed();
+        }
+        return isChanged;
     }
 
     @Override

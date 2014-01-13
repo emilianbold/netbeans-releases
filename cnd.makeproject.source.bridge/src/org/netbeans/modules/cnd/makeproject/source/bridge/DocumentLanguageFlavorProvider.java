@@ -73,7 +73,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * bridge which affects editor bahavior based on options from makeproject.
+ * bridge which affects editor behavior based on options from makeproject.
  * @author Vladimir Voskresensky
  */
 @ServiceProvider(path=CndSourcePropertiesProvider.REGISTRATION_PATH, service=CndSourcePropertiesProvider.class, position=1000)
@@ -96,6 +96,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             for (NativeFileItem nativeFileItem : nfis.getItems()) {
                 doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nativeFileItem));
                 setLanguage(nativeFileItem, doc);
+                rebuildTH(doc);
                 return;
             }
         }
@@ -119,10 +120,11 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             }            
             return;
         }
-        setLanguage(nfi, doc);
         doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nfi));
+        setLanguage(nfi, doc);
+        rebuildTH(doc);
     }
-
+    
     private static void setLanguage(NativeFileItem nfi, StyledDocument doc) {
         Language<?> language = null;
         Filter<?> filter = null;
@@ -167,6 +169,31 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         doc.putProperty(Language.class, language);
         InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
         lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+    }
+
+    private static void rebuildTH(final StyledDocument doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                BaseDocument bdoc = (BaseDocument) doc;
+                try {
+                    if (bdoc != null) {
+                        bdoc.extWriteLock();
+                        MutableTextInput mti = (MutableTextInput) bdoc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            TokenHierarchyControl thc = mti.tokenHierarchyControl();
+                            if (thc != null) {
+                                thc.rebuild();
+                            }
+                        }
+                    }
+                } finally {
+                    if (bdoc != null) {
+                        bdoc.extWriteUnlock();
+                    }
+                }
+            }
+        });
     }
 
     private final static class ListenerImpl extends NativeProjectItemsAdapter implements PropertyChangeListener {
@@ -244,28 +271,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 if (!languageFlavor.equals(newFlavor)) {
                     setLanguage(fileItem, doc);
                     languageFlavor = newFlavor;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            BaseDocument bdoc = (BaseDocument) doc;
-                            try {
-                                if (bdoc != null) {
-                                    bdoc.extWriteLock();
-                                    MutableTextInput mti = (MutableTextInput) bdoc.getProperty(MutableTextInput.class);
-                                    if (mti != null) {
-                                        TokenHierarchyControl thc = mti.tokenHierarchyControl();
-                                        if (thc != null) {
-                                            thc.rebuild();
-                                        }
-                                    }
-                                }
-                            } finally {
-                                if (bdoc != null) {
-                                    bdoc.extWriteUnlock();
-                                }
-                            }
-                        }
-                    });
+                    rebuildTH(doc);
                 }
             }
         }

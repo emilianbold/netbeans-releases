@@ -311,7 +311,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         if (isMethodMatch(el, p)) {
             List<? extends DocTree> blockTags = node.getBlockTags();
             List<DocTree> newTags = new LinkedList<DocTree>();
-            List<ParamTree> oldParams = new LinkedList<ParamTree>();
+            Map<String, ParamTree> oldParams = new HashMap<>();
             ParamTree fake = new FakaParamTree();
             int index = 0;
             for (DocTree docTree : blockTags) {
@@ -321,7 +321,8 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         index++;
                     }
                 } else {
-                    oldParams.add((ParamTree) docTree);
+                    ParamTree paramTree = (ParamTree) docTree;
+                    oldParams.put(paramTree.getName().getName().toString(), paramTree);
                 }
             }
             for (ParameterInfo parameterInfo : paramInfos) {
@@ -329,8 +330,11 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 if(parameterInfo.getOriginalIndex() == -1) {
                     tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), Collections.singletonList(make.Text("the value of " + parameterInfo.getName())));
                 } else {
-                    tag = oldParams.get(parameterInfo.getOriginalIndex());
-                    if(parameterInfo.getName() != null) {
+                    String name = ((ExecutableElement)el).getParameters().get(parameterInfo.getOriginalIndex()).getSimpleName().toString();
+                    tag = oldParams.get(name);
+                    if(tag == null) {
+                        tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), Collections.singletonList(make.Text("the value of " + parameterInfo.getName())));
+                    } else if(parameterInfo.getName() != null) {
                         tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), tag.getDescription());
                     }
                 }

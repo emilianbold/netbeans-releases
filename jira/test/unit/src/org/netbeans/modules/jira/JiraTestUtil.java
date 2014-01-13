@@ -42,30 +42,24 @@
 
 package org.netbeans.modules.jira;
 
-import com.atlassian.connector.eclipse.internal.jira.core.*;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
-import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraIssue;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertNotNull;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -80,6 +74,20 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.jira.client.spi.Component;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.IssueType;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraConstants;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
+import org.netbeans.modules.jira.client.spi.Priority;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.Version;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.issue.NbJiraIssueTest;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -97,116 +105,165 @@ public class JiraTestUtil {
 
     public static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     private static JiraClient client;
-    private static JiraRepositoryConnector jrc;
     private static TaskRepository taskRepository;
     private static JiraRepository repository;
 
-    public static RepositoryResponse createIssue(String summary, String desc, String typeName) throws CoreException, JiraException {
-        return createIssue(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), getProject(getClient()), summary, desc, typeName);
+    public static NbJiraIssue createIssue(String summary, String desc, String typeName) {
+        return createIssue(getProject(), summary, desc, typeName);
     }
 
-    public static RepositoryResponse createIssue(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc, String typeName) throws CoreException, JiraException {
+    public static NbJiraIssue createIssue(String summary, String desc, String typeName, String estimate) {
+        return createIssue(getProject(), summary, desc, typeName, estimate);
+    }
+
+    public static NbJiraIssue createIssue(Project p, String summary, String desc, String typeName) {
+        return createIssue(p, summary, desc, typeName, null);
+    }
+
+    public static NbJiraIssue createIssue(String projectId, String summary, String desc, String typeName, String estimate) {
+        return createIssue(getProject(projectId), summary, desc, typeName, estimate);
+    }
+
+    public static NbJiraIssue createIssue(Project p, String summary, String desc, String typeName, String estimate) {
+        NbJiraIssue issue = (NbJiraIssue) getRepository().createIssue();
+        issue.loadModel();
+        issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, p.getId());
+        if (summary == null) {
+            summary = "Summary " + System.currentTimeMillis();
+        }
+        if(desc == null) {
+            desc = "Description for " + summary;
+        }
+        issue.setFieldValue(NbJiraIssue.IssueField.SUMMARY, summary);
+        issue.setFieldValue(NbJiraIssue.IssueField.DESCRIPTION, desc);
+        if(typeName != null) {
+            issue.setFieldValue(NbJiraIssue.IssueField.TYPE, getIssueTypeByName(client, typeName).getId());
+        }        
+        if(estimate != null) {
+            issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, estimate);
+        }
+        
+        assertTrue(issue.submitAndRefresh());
+        
+        String id = issue.getKey();
+        assertNotNull(id);
+        assertFalse(id.trim().equals(""));
+        assertNotNull(issue.getKey());
+        assertFalse("".equals(issue.getKey()));
+        assertEquals(summary, issue.getSummary());
+        assertEquals(desc, issue.getDescription());
+        assertEquals(NbJiraIssueTest.JiraIssueStatus.OPEN.statusName, issue.getJiraStatus().getName());
+        return issue;
+    }
+    
+//    public static RepositoryResponse createIssue(String summary, String desc, String typeName) throws CoreException {
+//        return createIssue(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), getProject(getClient()), summary, desc, typeName);
+//    }
+//
+//    public static RepositoryResponse createIssue(AbstractRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc, String typeName) throws CoreException {
+//        // project
+//        project.setVersions(new Version[0]); // XXX HACK
+//        project.setComponents(new Component[0]);
+//
+//        TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(repository);
+//        TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
+//        ITaskMapping mapping = rc.getTaskMapping(data);
+//        rc.getTaskDataHandler().initializeTaskData(repository, data, mapping, new NullProgressMonitor());
+//        TaskAttribute rta = data.getRoot();
+//        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
+//        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
+//        ta.setValue(summary);
+//        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
+//        ta.setValue(desc);
+//        ta = rta.createMappedAttribute(getJiraConstants().getJiraAttribute_TYPE_id());
+//        ta.setValue(getIssueTypeByName(client, typeName).getId());
+//        ta = rta.createMappedAttribute(getJiraConstants().getJiraAttribute_INITIAL_ESTIMATE_id());
+//        ta.setValue("600");
+//
+//        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
+//        return rc.getTaskDataHandler().postTaskData(repository, data, attrs, nullProgressMonitor);
+//    }
+
+    public static RepositoryResponse createSubtask(TaskData parent, AbstractRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc) throws CoreException {
         // project
         project.setVersions(new Version[0]); // XXX HACK
         project.setComponents(new Component[0]);
 
         final TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(repository);
         final TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-        rc.getTaskDataHandler().initializeTaskData(repository, data, client, project, new NullProgressMonitor());
+        ITaskMapping mapping = rc.getTaskMapping(data);
+        rc.getTaskDataHandler().initializeTaskData(repository, data, mapping, new NullProgressMonitor());
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
         ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);
         ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
         ta.setValue(desc);
-        ta = rta.createMappedAttribute(JiraAttribute.TYPE.id());
-        ta.setValue(getIssueTypeByName(client, typeName).getId());
-        ta = rta.createMappedAttribute(JiraAttribute.INITIAL_ESTIMATE.id());
-        ta.setValue("600");
-
-        Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
-        return rc.getTaskDataHandler().postTaskData(repository, data, attrs, nullProgressMonitor);
-    }
-
-    public static RepositoryResponse createSubtask(TaskData parent, JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project, String summary, String desc) throws CoreException, JiraException {
-        // project
-        project.setVersions(new Version[0]); // XXX HACK
-        project.setComponents(new Component[0]);
-
-        final TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(repository);
-        final TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-        rc.getTaskDataHandler().initializeTaskData(repository, data, client, project, new NullProgressMonitor());
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
-        ta.setValue(summary);
-        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
-        ta.setValue(desc);
-        ta = rta.createMappedAttribute(JiraAttribute.TYPE.id());
-        ta.getMetaData().putValue(IJiraConstants.META_SUB_TASK_TYPE, Boolean.toString(true));
+        ta = rta.createMappedAttribute(getJiraConstants().getJiraAttribute_TYPE_id());
+        ta.getMetaData().putValue(getJiraConstants().getMETA_SUB_TASK_TYPE(), Boolean.toString(true));
         ta.setValue(getIssueTypeByName(client, "Sub-task").getId());
-        ta = rta.createMappedAttribute(JiraAttribute.PARENT_ID.id());
+        ta = rta.createMappedAttribute(getJiraConstants().getPARENT_ID_id());
         ta.setValue(parent.getTaskId());
 
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
         return rc.getTaskDataHandler().postTaskData(repository, data, attrs, nullProgressMonitor);
     }
 
-    public static JiraIssue createJiraIssue(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, String projectID, String summary, String desc, String typeName) throws CoreException, JiraException {
-        JiraIssue issue = new JiraIssue();
-        issue.setReporter(REPO_USER);
-        issue.setSummary(summary);
-        issue.setDescription(desc);
-        issue.setType(getIssueTypeByName(client, typeName));
-        issue.setProject(getProject(client));
-        issue.setPriority(getPriorityByName(client, "Blocker"));
-        issue.setReporter(JiraTestUtil.REPO_USER);
-        issue.setInitialEstimate(60 * 10);
+//    public static JiraIssue createJiraIssue(AbstractRepositoryConnector rc, TaskRepository repository, JiraClient client, String projectID, String summary, String desc, String typeName) throws CoreException, JiraException {
+//        JiraIssue issue = new JiraIssue();
+//        issue.setReporter(REPO_USER);
+//        issue.setSummary(summary);
+//        issue.setDescription(desc);
+//        issue.setType(getIssueTypeByName(client, typeName));
+//        issue.setProject(getProject(client));
+//        issue.setPriority(getPriorityByName(client, "Blocker"));
+//        issue.setReporter(JiraTestUtil.REPO_USER);
+//        issue.setInitialEstimate(60 * 10);
+//
+//        return client.createIssue(issue, nullProgressMonitor);
+//    }
 
-        return client.createIssue(issue, nullProgressMonitor);
+//    public static JiraIssue createJiraSubtask(AbstractRepositoryConnector rc, TaskRepository repository, JiraClient client, String projectID, String summary, String desc) throws CoreException, JiraException {
+//        JiraIssue issue = new JiraIssue();
+//        issue.setReporter(REPO_USER);
+//        issue.setSummary(summary);
+//        issue.setDescription(desc);
+//        issue.setType(getIssueTypeByName(client, "Sub-task"));
+//        issue.setProject(getProject(client));
+//		issue.setPriority(getPriorityByName(client, "Blocker"));
+//        issue.setReporter(JiraTestUtil.REPO_USER);
+//
+//        return issue;
+//    }
+
+    public static TaskData getTaskData(AbstractRepositoryConnector rc, TaskRepository repository, String taskId) throws CoreException {
+        return rc.getTaskData(repository, taskId, JiraTestUtil.nullProgressMonitor);
     }
 
-    public static JiraIssue createJiraSubtask(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, String projectID, String summary, String desc) throws CoreException, JiraException {
-        JiraIssue issue = new JiraIssue();
-        issue.setReporter(REPO_USER);
-        issue.setSummary(summary);
-        issue.setDescription(desc);
-        issue.setType(getIssueTypeByName(client, "Sub-task"));
-        issue.setProject(getProject(client));
-		issue.setPriority(getPriorityByName(client, "Blocker"));
-        issue.setReporter(JiraTestUtil.REPO_USER);
-
-        return issue;
+    private static TestTaskDataCollector list(JiraFilter jf) {
+        return list(jf, null);
     }
 
-    public static TaskData getTaskData(JiraRepositoryConnector rc, TaskRepository repository, String taskId) throws CoreException {
-        return rc.getTaskDataHandler().getTaskData(repository, taskId, JiraTestUtil.nullProgressMonitor);
-    }
-
-    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, JiraFilter jf) {
-        return list(rc, repository, jf, null);
-    }
-
-    public static TestTaskDataCollector list(JiraRepositoryConnector rc, TaskRepository repository, JiraFilter jf, ISynchronizationSession session) {
-        final RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query");
-        JiraUtil.setQuery(repository, repositoryQuery, jf);
+    private static TestTaskDataCollector list(JiraFilter jf, ISynchronizationSession session) {
+        final RepositoryQuery repositoryQuery = new RepositoryQuery(getRepositoryConnector().getConnectorKind(), "query");
+        JiraConnectorSupport.getInstance().getConnector().setQuery(getTaskRepository(), repositoryQuery, jf);
         TestTaskDataCollector tdc = new TestTaskDataCollector();
-        rc.performQuery(repository, repositoryQuery, tdc, session, JiraTestUtil.nullProgressMonitor);
+        getRepositoryConnector().performQuery(getTaskRepository(), repositoryQuery, tdc, session, JiraTestUtil.nullProgressMonitor);
         return tdc;
     }
 
-
-    public static void cleanProject(JiraRepositoryConnector rc, TaskRepository repository, JiraClient client, Project project) throws JiraException, CoreException {
-        FilterDefinition fd = new FilterDefinition();
-        fd.setProjectFilter(new ProjectFilter(project));
-        TestTaskDataCollector tdc = list(rc, repository, fd);
+    public static void cleanProject(Project project) throws CoreException, IOException {
+        JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = cp.createFilterDefinition();
+        fd.setProjectFilter(cp.createProjectFilter(project));
+        TestTaskDataCollector tdc = list(fd);
         for (TaskData d : tdc.data) {
-            delete(client, d.getTaskId());
+            getClient().delete(d.getTaskId());
         }
     }
 
     private static IssueType getIssueTypeByName(JiraClient client, String name) {
-        IssueType[] types = client.getCache().getIssueTypes();
+        IssueType[] types = client.getIssueTypes();
         for (IssueType issueType : types) {
             if(issueType.getName().equals(name)) return issueType;
         }
@@ -214,7 +271,7 @@ public class JiraTestUtil {
     }
 
     private static Project getProjectByID(JiraClient client, String name) {
-        return client.getCache().getProjectById(name);
+        return client.getProjectById(name);
 //        getProjects();
 //        for (Project p : projetcts) {
 //            if(p.getId().equals(name)) return p;
@@ -223,17 +280,11 @@ public class JiraTestUtil {
     }
 
     private static Priority getPriorityByName(JiraClient client, String name) {
-        Priority[] prios = client.getCache().getPriorities();
+        Priority[] prios = client.getPriorities();
         for (Priority p : prios) {
             if(p.getName().equals(name)) return p;
         }
         return null;
-    }
-
-    private static void delete(JiraClient client, String taskId) throws JiraException, CoreException {
-        String key = client.getKeyFromId(taskId, JiraTestUtil.nullProgressMonitor);
-        JiraIssue issue = client.getIssueByKey(key, JiraTestUtil.nullProgressMonitor);
-        client.deleteIssue(issue, JiraTestUtil.nullProgressMonitor);
     }
 
     public static class TestTaskDataCollector extends TaskDataCollector {
@@ -263,44 +314,51 @@ public class JiraTestUtil {
         throw exception;
     }
 
-    public static Project getProject(JiraClient client) throws JiraException {
-        // XXX query ???
-        Project[] projects = client.getProjects(JiraTestUtil.nullProgressMonitor);
-        for (Project p : projects) {
-            if (p.getKey().equals(JiraTestUtil.TEST_PROJECT)) {
-                return p;
+    public static Project getProject() {
+        return getProject(null);
             }
+    public static Project getProject(String projectId) {
+        if(projectId == null) {
+            projectId = TEST_PROJECT;
         }
-        return null;
+        // XXX query ???
+        return getClient().getProjectByKey(projectId);
+//        Project[] projects = getClient().getProjects();
+//        for (Project p : projects) {
+//            if (p.getKey().equals(projectName)) {
+//                return p;
+//            }
+//        }
+//        return null;
     }
 
     public static void initClient(File workDir) {
         if(client == null) {
             try {
-                client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
-            } catch (Throwable t) {
-                try {
-                    // lests asume it's not initialized yet
-                    JiraCorePlugin.initialize(new File(workDir, "jiraservercache"));
-                } catch (Exception e) {
-                    System.out.println("");
+                client = Jira.getInstance().getClient(getTaskRepository());
+                if(!client.hasDetails()) {
+                    Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
                 }
-                client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
+            } catch (Throwable t) {
+//                try {
+//                    // lests asume it's not initialized yet
+//                    JiraCorePlugin.initialize(new File(workDir, "jiraservercache"));
+//                } catch (Exception e) {
+//                    System.out.println("");
+//                }
+//                client = JiraClientFactory.getDefault().getJiraClient(getTaskRepository());
+                }
             }            
         }
-    }
     
     public static JiraClient getClient() {
         assert client != null : "invoke init client first";
         return client;
     }
 
-    public static JiraRepositoryConnector getRepositoryConnector() {
-        if(jrc == null) {
-            jrc = new JiraRepositoryConnector();
+    public static AbstractRepositoryConnector getRepositoryConnector() {
+        return Jira.getInstance().getRepositoryConnector();
         }
-        return jrc;
-    }
 
     public static TaskRepository getTaskRepository() {
         if(taskRepository == null) {
@@ -321,7 +379,7 @@ public class JiraTestUtil {
     }
     
     public static Query getQuery(JiraQuery jiraQuery) {
-        return getQuery(JiraUtils.getRepository(jiraQuery.getRepository()), jiraQuery);
+        return getQuery(JiraUtils.createRepository(jiraQuery.getRepository()), jiraQuery);
     }        
     
     private static Query getQuery(Repository repository, JiraQuery q) {
@@ -332,4 +390,8 @@ public class JiraTestUtil {
         }
         return impl.getQuery();
     }        
+    
+    public static JiraConstants getJiraConstants() {
+        return JiraConnectorSupport.getInstance().getConnector().getJiraConstants();
+}
 }

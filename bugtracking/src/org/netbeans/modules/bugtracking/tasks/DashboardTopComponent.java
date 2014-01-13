@@ -122,7 +122,7 @@ public final class DashboardTopComponent extends TopComponent {
         filterTimer = new Timer(500, new FilterTimerListener());
         filterTimer.stop();
         refresher = DashboardRefresher.getInstance();
-        filterPanel = new FilterPanel();
+        filterPanel = FilterPanel.getInstance();
         if (filterListener == null) {
             filterListener = new FilterDocumentListener(filterTimer);
         }

@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -151,6 +152,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     public void fillRemoteBranches (final Map<String, GitBranch> branches) {
+        fillRemoteBranches(Collections.<String,GitBranch>emptyMap(), Collections.<String,GitBranch>emptyMap());
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {

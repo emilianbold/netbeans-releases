@@ -50,9 +50,10 @@ made subject to such option by the copyright holder.
         <error pattern="^&quot;(.*)&quot;, line ([0-9]+): Warning:(.*)" severity="warning" language="cpp"/>
         <error pattern="^&quot;(.*)&quot;, line ([0-9]+):     Where:(.*)" severity="warning" language="cpp"/>
         <error pattern="^&quot;(.*)&quot;, line ([0-9]+): Error:(.*)" severity="error" language="cpp"/>
-        <error pattern="^&quot;(.*)&quot;, .* ([0-9]+):(.*)" severity="error" language="c,cpp"/>
-        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+), Column = ([0-9]+): WARNING:(.*)" severity="warning" language="fortran"/>
+        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+), Column = [0-9]+: WARNING:(.*)" severity="warning" language="fortran"/>
+        <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+), Column = [0-9]+: ERROR:(.*)" severity="error" language="fortran"/>
         <error pattern="^&quot;(.*)&quot;, Line = ([0-9]+),(.*)" severity="error" language="fortran"/>
+        <error pattern="^&quot;(.*)&quot;, .* ([0-9]+):(.*)" severity="error" language="c,cpp"/>
 	<!-- Pro*C/C++ -->
         <error pattern="(.*) at line ([0-9]+), column ([0-9]+), file (.*\.pc):([^$]*)" severity="error" language="c,cpp,fortran,assembler"/>        
         <enter_directory pattern="^\(([^)]*)\)[^:]*:"/>

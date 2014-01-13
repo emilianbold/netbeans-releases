@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.git.ui.actions;
 
+import java.awt.EventQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -81,10 +84,29 @@ public abstract class GitAction extends NodeAction {
     }
 
     @Override
+    @NbBundle.Messages({
+        "MSG_GitAction.savingFiles.progress=Preparing Git action"
+    })
     protected final void performAction(final Node[] nodes) {
-        LifecycleManager.getDefault().saveAll();
-        Utils.logVCSActionEvent("Git"); //NOI18N
-        performContextAction(nodes);
+        final AtomicBoolean canceled = new AtomicBoolean(false);
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run () {
+                LifecycleManager.getDefault().saveAll();
+                Utils.logVCSActionEvent("Git"); //NOI18N
+                if (!canceled.get()) {
+                    EventQueue.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run () {
+                            performContextAction(nodes);
+                        }
+                    });
+                }
+            }
+        };
+        ProgressUtils.runOffEventDispatchThread(run, Bundle.MSG_GitAction_savingFiles_progress(), canceled, false);
     }
 
     protected abstract void performContextAction(Node[] nodes);

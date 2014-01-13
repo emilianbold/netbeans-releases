@@ -35,9 +35,9 @@ FUNCTION DEFINITION boo229003  [15:1/299-21:2/489] FunctionDDImpl SCOPE: $Global
     UNIQUE NAME f:boo229003(void()(int),void(*)(void*),void()(double))
     DECLARATION: boo229003  [15:1/299-21:2/489]
     PARAMETERS:
-        fun1 [15:15/313-15:37/335]  TYPE: void TEXT=void()(int)  [15:15/313-15:37/335]  INIT: null  SCOPE: boo229003 
-        fun2 [15:39/337-15:64/362]  TYPE: void TEXT=void(*)(void*)  [15:39/337-15:64/362]  INIT: null  SCOPE: boo229003 
-        fun3 [15:66/364-15:91/389]  TYPE: void TEXT=void()(double)  [15:66/364-15:91/389]  INIT: null  SCOPE: boo229003 
+        fun1 [15:15/313-15:37/335]  TYPE: void(int) TEXT=void()(int)  [15:15/313-15:37/335]  INIT: null  SCOPE: boo229003 
+        fun2 [15:39/337-15:64/362]  TYPE: void(void*) TEXT=void(*)(void*)  [15:39/337-15:64/362]  INIT: null  SCOPE: boo229003 
+        fun3 [15:66/364-15:91/389]  TYPE: void(double) TEXT=void()(double)  [15:66/364-15:91/389]  INIT: null  SCOPE: boo229003 
     RETURNS int TEXT=int  [15:1/299-15:4/302]
     STATEMENT COMPOUND  [15:93/391-21:2/489] SCOPE: boo229003 
         STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun1(0)'
@@ -71,9 +71,9 @@ FUNCTION DEFINITION boo229003  [15:1/299-21:2/489] FunctionDDImpl SCOPE: $Global
     UNIQUE NAME f:boo229003(void()(int),void(*)(void*),void()(double))
     DECLARATION: boo229003  [15:1/299-21:2/489]
     PARAMETERS:
-        fun1 [15:15/313-15:37/335]  TYPE: void TEXT=void()(int)  [15:15/313-15:37/335]  INIT: null  SCOPE: boo229003 
-        fun2 [15:39/337-15:64/362]  TYPE: void TEXT=void(*)(void*)  [15:39/337-15:64/362]  INIT: null  SCOPE: boo229003 
-        fun3 [15:66/364-15:91/389]  TYPE: void TEXT=void()(double)  [15:66/364-15:91/389]  INIT: null  SCOPE: boo229003 
+        fun1 [15:15/313-15:37/335]  TYPE: void(int) TEXT=void()(int)  [15:15/313-15:37/335]  INIT: null  SCOPE: boo229003 
+        fun2 [15:39/337-15:64/362]  TYPE: void(void*) TEXT=void(*)(void*)  [15:39/337-15:64/362]  INIT: null  SCOPE: boo229003 
+        fun3 [15:66/364-15:91/389]  TYPE: void(double) TEXT=void()(double)  [15:66/364-15:91/389]  INIT: null  SCOPE: boo229003 
     RETURNS int TEXT=int  [15:1/299-15:4/302]
     STATEMENT COMPOUND  [15:93/391-21:2/489] SCOPE: boo229003 
         STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun1(0)'

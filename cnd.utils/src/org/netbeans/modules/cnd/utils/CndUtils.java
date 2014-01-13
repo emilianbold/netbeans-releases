@@ -46,12 +46,15 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -158,7 +161,7 @@ public class CndUtils {
     public static int getNumberCndWorkerThreads() {
         int threadCount = Math.min(4, Runtime.getRuntime().availableProcessors()-2);
         if (System.getProperty("cnd.modelimpl.parser.threads") != null) { // NOI18N
-            threadCount = Integer.getInteger("cnd.modelimpl.parser.threads").intValue(); // NOI18N
+            threadCount = Integer.getInteger("cnd.modelimpl.parser.threads"); // NOI18N
         }
         return Math.max(threadCount, 1);
     }
@@ -203,15 +206,37 @@ public class CndUtils {
         }
     }
     
+    private static final ConcurrentHashMap<CharSequence,AtomicInteger> restrictLog = new ConcurrentHashMap<CharSequence,AtomicInteger>();
     public static void assertTrueInConsole(boolean value, String message) {
         if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
-            LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
+            Exception exception = new Exception(message);
+            Level level = Level.INFO;
+            StackTraceElement[] stackTrace = exception.getStackTrace();
+            for(StackTraceElement element : stackTrace) {
+                String className = element.getClassName();
+                if (!className.contains(".CndUtils")) { //NOI18N
+                    int lineNumber = element.getLineNumber();
+                    CharSequence key = CharSequences.create(className+"-"+lineNumber); //NOI18N
+                    AtomicInteger counter = new AtomicInteger();
+                    AtomicInteger old = restrictLog.putIfAbsent(key, counter);
+                    if (old != null) {
+                        counter = old;
+                    }
+                    int i = counter.incrementAndGet();
+                    if (i > 3) {
+                        level = Level.FINE;
+                    }
+                    break;
+                }
+            }
+            lastAssertion = exception;
+            LOG.log(level, message, exception);
         }
     }
 
     public static void assertTrueInConsole(boolean value, String prefix, Object message) {
         if (isDebugMode() && !value && LOG.isLoggable(Level.INFO)) {
-            LOG.log(Level.INFO, prefix + message, lastAssertion = new Exception(prefix + message));
+            assertTrueInConsole(value, prefix + message);
         }
     }
 

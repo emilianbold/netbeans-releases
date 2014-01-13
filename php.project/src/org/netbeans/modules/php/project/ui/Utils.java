@@ -591,6 +591,7 @@ public final class Utils {
 
     private static String browseSource(PhpProject project, String preselected, boolean selectDirectory) {
         FileObject rootFolder = ProjectPropertiesSupport.getSourcesDirectory(project);
+        assert rootFolder != null;
         FileObject selected = BrowseFolders.showDialog(PhpVisibilityQuery.forProject(project), new FileObject[] {rootFolder},
                 selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {

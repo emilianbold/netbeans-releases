@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -59,7 +60,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
 
 /**
- *
+ * TODO: cache resolved type for last instantitations.
+ * 
  * @author petrk
  */
 public class DeclTypeImpl extends TypeImpl {
@@ -82,7 +84,7 @@ public class DeclTypeImpl extends TypeImpl {
     DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, constQualifiers, startOffset, endOffset);
         AST expressionAst = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_EXPRESSION);
-        this.typeExpression = ExpressionBase.create(expressionAst, file, scope);
+        this.typeExpression = ExpressionsFactory.create(expressionAst, file, scope);
     }
 
     public CsmExpression getTypeExpression() {
@@ -128,7 +130,47 @@ public class DeclTypeImpl extends TypeImpl {
         }
         return classifier;
     }    
+
+    @Override
+    public boolean isPointer() {
+        return isPointer(null);
+    }
     
+    public boolean isPointer(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isPointer() : false;
+    }
+
+    @Override
+    public boolean isReference() {
+        return isReference(null);
+    }
+    
+    public boolean isReference(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isReference() : false;
+    }
+
+    @Override
+    public boolean isConst() {
+        return isConst(null);
+    }
+    
+    public boolean isConst(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isConst() : false;
+    }    
+
+    @Override
+    public boolean isRValueReference() {
+        return isRValueReference(null);
+    }
+    
+    public boolean isRValueReference(List<CsmInstantiation> instantiations) {
+        CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
+        return type != null ? type.isRValueReference(): false;
+    }
+
     private boolean canUseCache() {
         // We are allowed to use cache only if context is null
         return instantiations == null;

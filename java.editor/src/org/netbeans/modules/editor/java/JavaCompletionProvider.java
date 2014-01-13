@@ -1569,7 +1569,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (((TryTree)last).getFinallyBlock() == null) {
                     addKeyword(env, CATCH_KEYWORD, null, false);
                     addKeyword(env, FINALLY_KEYWORD, null, false);
-                    if (((TryTree)last).getCatches().size() == 0)
+                    if (((TryTree)last).getCatches().isEmpty() && ((TryTree)last).getResources().isEmpty())
                         return;
                 }
             } else if (last.getKind() == Tree.Kind.IF) {
@@ -3089,6 +3089,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Elements elements = controller.getElements();
             final Trees trees = controller.getTrees();
             final TreeUtilities tu = controller.getTreeUtilities();
+            final ElementUtilities eu = controller.getElementUtilities();
             final Scope scope = env.getScope();
             final TypeElement enclClass = scope.getEnclosingClass();
             final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
@@ -3106,7 +3107,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case EXCEPTION_PARAMETER:
                         case PARAMETER:
                             return startsWith(env, e.getSimpleName().toString()) &&
-                                    (method == e.getEnclosingElement() || e.getModifiers().contains(FINAL) ||
+                                    (method == e.getEnclosingElement() || eu.isEffectivelyFinal((VariableElement)e) ||
                                     (method == null && (e.getEnclosingElement().getKind() == INSTANCE_INIT ||
                                     e.getEnclosingElement().getKind() == STATIC_INIT ||
                                     e.getEnclosingElement().getKind() == METHOD && e.getEnclosingElement().getEnclosingElement().getKind() == FIELD))) &&
@@ -3261,7 +3262,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 ClassIndex.NameKind kind = Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
                 Iterable<Symbols> declaredSymbols = controller.getClasspathInfo().getClassIndex().getDeclaredSymbols(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class));
                 for (Symbols symbols : declaredSymbols) {
-                    if (excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType()) || isAnnonInner(symbols.getEnclosingType()))
+                    if (Utilities.isExcludeMethods() && Utilities.isExcluded(symbols.getEnclosingType().getQualifiedName())
+                            || excludeHandles != null && excludeHandles.contains(symbols.getEnclosingType())
+                            || isAnnonInner(symbols.getEnclosingType()))
                         continue;
                     for (String name : symbols.getSymbols()) {
                         results.add(javaCompletionItemFactory.createStaticMemberItem(symbols.getEnclosingType(), name, anchorOffset, env.addSemicolon(), env.getReferencesCount(), controller.getSnapshot().getSource(), env.getWhiteList()));

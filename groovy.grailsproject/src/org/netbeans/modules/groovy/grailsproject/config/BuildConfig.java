@@ -118,13 +118,13 @@ public final class BuildConfig {
         GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
 
         File pluginsDirFile;
-        String strPluginsDir = System.getProperty("grails.project.plugins.dir"); // NOI18N
+        String strPluginsDir = System.getProperty(GrailsProjectConfig.GRAILS_PROJECT_PLUGINS_DIR_PROPERTY);
         if (strPluginsDir == null) {
             File projectWorkDirFile;
-            String projectWorkDir = System.getProperty("grails.project.work.dir"); // NOI18N
+            String projectWorkDir = System.getProperty(GrailsProjectConfig.GRAILS_PROJECT_WORK_DIR_PROPERTY);
             if (projectWorkDir == null) {
                 File workDirFile;
-                String workDir = System.getProperty("grails.work.dir"); // NOI18N
+                String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
                 if (workDir == null) {
                     workDir = System.getProperty("user.home"); // NOI18N
                     workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
@@ -153,6 +153,40 @@ public final class BuildConfig {
         return FileUtil.normalizeFile(pluginsDirFile);
     }
 
+    /**
+     * Returns {@link File} representing Ivy cache used for plugin jars.
+     *
+     * In case if "grails.dependency.cache.dir" property is set either in BuildConfig.groovy
+     * or in settings.groovy we will use that one. If not, the default location is used.
+     *
+     * @return {@link File} representing Ivy cache used for plugin jars
+     */
+    public File getIvyCacheDir() {
+        File ivyCacheDir;
+        String ivyCache = System.getProperty(GrailsProjectConfig.GRAILS_IVY_CACHE_DIR_PROPERTY);
+        if (ivyCache == null) {
+            File workDirFile;
+            String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
+            if (workDir == null) {
+                workDir = System.getProperty("user.home"); // NOI18N
+                workDir = workDir + File.separator + ".grails"; // NOI18N
+                workDirFile = new File(workDir);
+            } else {
+                workDirFile = new File(workDir);
+                if (!workDirFile.isAbsolute()) {
+                    workDirFile = new File(projectRoot, workDir);
+                }
+            }
+            ivyCacheDir = new File(workDirFile, "ivy-cache"); // NOI18N
+        } else {
+            ivyCacheDir = new File(ivyCache);
+            if (!ivyCacheDir.isAbsolute()) {
+                ivyCacheDir = new File(projectRoot, ivyCache);
+            }
+        }
+        return ivyCacheDir;
+    }
+
     private synchronized void loadGlobalPluginsDirDefault() {
         if (GrailsPlatform.Version.VERSION_1_1.compareTo(GrailsProjectConfig.forProject(project).getGrailsPlatform().getVersion()) <= 0) {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
@@ -171,10 +205,10 @@ public final class BuildConfig {
         GrailsPlatform platform = GrailsProjectConfig.forProject(project).getGrailsPlatform();
 
         File pluginsDirFile;
-        String strPluginsDir = System.getProperty("grails.global.plugins.dir"); // NOI18N
+        String strPluginsDir = System.getProperty(GrailsProjectConfig.GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY);
         if (strPluginsDir == null) {
             File workDirFile;
-            String workDir = System.getProperty("grails.work.dir"); // NOI18N
+            String workDir = System.getProperty(GrailsProjectConfig.GRAILS_WORK_DIR_PROPERTY);
             if (workDir == null) {
                 workDir = System.getProperty("user.home"); // NOI18N
                 workDir = workDir + File.separator + ".grails" + File.separator + platform.getVersion(); // NOI18N
@@ -201,7 +235,7 @@ public final class BuildConfig {
             GrailsProjectConfig config = GrailsProjectConfig.forProject(project);
             Map<String, File> cached = config.getLocalPlugins();
             if (cached != null && isBuildConfigPresent()) {
-                localPlugins = new ArrayList<GrailsPlugin>();
+                localPlugins = new ArrayList<>();
                 for (Map.Entry<String, File> entry : cached.entrySet()) {
                     localPlugins.add(new GrailsPlugin(entry.getKey(), null, null, entry.getValue()));
                 }
@@ -255,7 +289,7 @@ public final class BuildConfig {
                     config.setProjectPluginsDir(FileUtil.normalizeFile(currentProjectPluginsDir));
                     config.setGlobalPluginsDir(FileUtil.normalizeFile(currentGlobalPluginsDir));
 
-                    Map<String, File> prepared = new HashMap<String, File>();
+                    Map<String, File> prepared = new HashMap<>();
                     for (GrailsPlugin plugin : currentLocalPlugins) {
                         prepared.put(plugin.getName(), plugin.getPath());
                     }
@@ -289,11 +323,7 @@ public final class BuildConfig {
                 Method getCompileDependenciesMethod = buildSettingsInstance.getClass().getMethod("getCompileDependencies", new Class[] {}); // NOI18N
                 return (List<File>) getCompileDependenciesMethod.invoke(buildSettingsInstance, new Object[] {});
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
         return Collections.emptyList();
@@ -320,11 +350,7 @@ public final class BuildConfig {
                     return FileUtil.normalizeFile(file);
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -372,11 +398,7 @@ public final class BuildConfig {
                     return FileUtil.normalizeFile(file);
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -420,7 +442,7 @@ public final class BuildConfig {
 
                 if (converted instanceof Properties) {
                     Properties properties = (Properties) converted;
-                    List<GrailsPlugin> plugins = new ArrayList<GrailsPlugin>();
+                    List<GrailsPlugin> plugins = new ArrayList<>();
                     for (Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
                         String key = (String) e.nextElement();
                         if (key.startsWith("grails.plugin.location.")) { // NOI18N
@@ -436,11 +458,7 @@ public final class BuildConfig {
                     return plugins;
                 }
             }
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
 
@@ -474,15 +492,7 @@ public final class BuildConfig {
             loadConfigMethod.invoke(instance, new Object[] {});
 
             return instance;
-        } catch (ClassNotFoundException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (NoSuchMethodException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InstantiationException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (IllegalAccessException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } catch (InvocationTargetException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException ex) {
             LOGGER.log(Level.FINE, null, ex);
         }
         return null;

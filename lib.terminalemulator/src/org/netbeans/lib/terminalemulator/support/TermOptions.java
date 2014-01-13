@@ -71,6 +71,7 @@ public final class TermOptions {
 
     private boolean dirty = false;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private Preferences preferences;
 
     private TermOptions() {
 	resetToDefault();
@@ -153,6 +154,7 @@ public final class TermOptions {
      * Assign the values in 'that' to 'this'.
      */
     public void assign (TermOptions that) {
+        this.preferences = that.preferences;
 	this.font= that.font;
 	this.fontSize = that.fontSize;
 	this.tabSize = that.tabSize;
@@ -185,6 +187,7 @@ public final class TermOptions {
     void loadFrom(Preferences prefs) {
         if (prefs == null)
             return;
+        preferences = prefs;
 	String fontFamily = prefs.get(PREFIX + PROP_FONT_FAMILY, font.getFamily());
 	int fontStyle = prefs.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle());
 	fontSize = prefs.getInt(PREFIX + PROP_FONT_SIZE, fontSize);
@@ -460,7 +463,25 @@ public final class TermOptions {
     } 
 
     private void markDirty() {
-        this.dirty = true;
         pcs.firePropertyChange(null, null, null);
+        if (preferences == null 
+                || !preferences.get(PREFIX + PROP_FONT_FAMILY, font.getFamily()).equals(font.getFamily())
+                || preferences.getInt(PREFIX + PROP_FONT_STYLE, font.getStyle()) != font.getStyle()
+                || preferences.getInt(PREFIX + PROP_FONT_SIZE, fontSize) != fontSize
+                || preferences.getInt(PREFIX + PROP_TAB_SIZE, tabSize) != tabSize
+                || preferences.getInt(PREFIX + PROP_HISTORY_SIZE, historySize) != historySize
+                || preferences.getInt(PREFIX + PROP_FOREGROUND, foreground.getRGB()) != foreground.getRGB()
+                || preferences.getInt(PREFIX + PROP_BACKGROUND, background.getRGB()) != background.getRGB()
+                || preferences.getInt(PREFIX + PROP_SELECTION_BACKGROUND, selectionBackground.getRGB()) != selectionBackground.getRGB()
+                || !preferences.get(PREFIX + PROP_SELECT_BY_WORD_DELIMITERS, selectByWordDelimiters).equals(selectByWordDelimiters)
+                || preferences.getBoolean(PREFIX + PROP_CLICK_TO_TYPE, clickToType) != clickToType
+                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_INPUT, scrollOnInput) != scrollOnInput
+                || preferences.getBoolean(PREFIX + PROP_SCROLL_ON_OUTPUT, scrollOnOutput) != scrollOnOutput
+                || preferences.getBoolean(PREFIX + PROP_LINE_WRAP, lineWrap) != lineWrap
+                || preferences.getBoolean(PREFIX + PROP_IGNORE_KEYMAP, ignoreKeymap) != ignoreKeymap) {
+            dirty = true;
+            return;
+        }
+        dirty = false;
     }
 }

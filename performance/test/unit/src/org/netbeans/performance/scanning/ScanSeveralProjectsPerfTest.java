@@ -75,6 +75,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
         Logger.getLogger(RepositoryUpdater.class.getName()).setLevel(Level.INFO);
         Logger.getLogger("org.netbeans.api.java.source.ClassIndex").setLevel(Level.WARNING);
         Logger.getLogger("SpringBinaryIndexer").setLevel(Level.WARNING);
+        clearWorkDir();
         Utilities.setCacheFolder(getWorkDir());
     }
 

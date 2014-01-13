@@ -92,7 +92,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Stepan Herold, Libor Kotouc
  */
-public class EjbDeploymentConfiguration extends JBDeploymentConfiguration 
+public class EjbDeploymentConfiguration extends WildflyDeploymentConfiguration 
 implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
     
     private static final String SESSION_RESOURCE_REF = "/ejb-jar/enterprise-beans/session/resource-ref"; // NOI18N
@@ -143,45 +143,18 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 Exceptions.printStackTrace(donfe);
             }
         }
-        // TODO: rewrite
-//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
-//        if (ejbJar != null) {
-//            ejbJar.addPropertyChangeListener(this);
-//        }
     }
     
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
     
+    @Override
     public void dispose() {
-//        EjbJar ejbJar = (EjbJar) j2eeModule.getMetadataModel(J2eeModule.EJBJAR_XML);
-//        if (ejbJar != null) {
-//            ejbJar.removePropertyChangeListener(this);
-//        }
     }
 
-    public boolean supportsCreateDatasource() {
-        return !isAs7();
-    }
     
-    public boolean supportsCreateMessageDestination() {
-        return !isAs7();
-    }
-    
-//        //listen on the resource-ref element
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_RESOURCE_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_EJB_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST, this);
-//        deplObj.getDDBeanRoot().addXpathListener(SESSION_MSG_DEST_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(ENTITY_MSG_DEST_REF, this);
-//        deplObj.getDDBeanRoot().addXpathListener(MSGDRV_MSG_DEST_REF, this);
-       
     /**
      * Return jboss graph. If it was not created yet, load it from the file
      * and cache it. If the file does not exist, generate it.
@@ -274,7 +247,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
 //                        Set beanNames = null;
 //                        if (desc.length > 0  && "javax.sql.DataSource".equals(type[0])) { // NOI18N
 //                            beanNames = getRelevantBeansDataRef(desc[0], name[0], eventDDBean.getRoot(), beanType);
-//                            String jndiName = JBDeploymentConfiguration.JBOSS4_DATASOURCE_JNDI_PREFIX + resRefName;
+//                            String jndiName = WildflyDeploymentConfiguration.JBOSS4_DATASOURCE_JNDI_PREFIX + resRefName;
 //                            addResReference(jndiName, name[0], beanNames, beanType);
 //                        }
 //                        else
@@ -798,7 +771,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                     if (referenceName.equals(rrn)) {
                         String jndiName = resourceRef.getJndiName();
                         if (jndiName != null) {
-                            return JBossDatasource.getJndiName(jndiName);
+                            return WildflyDatasource.getJndiName(jndiName);
                         }
                     }
                 }
@@ -990,8 +963,8 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
             if (mdbName.equals(mdb.getEjbName())) {
                 String destJndiName = mdb.getDestinationJndiName();
                 if (destJndiName != null) {
-                    if (destJndiName.startsWith(JBossMessageDestination.QUEUE_PREFIX) || destJndiName.startsWith(JBossMessageDestination.TOPIC_PREFIX)) {
-                        return destJndiName.substring(6); // JBossMessageDestination.QUEUE_PREFIX.length() == JBossMessageDestination.TOPIC_PREFIX.length() == 6
+                    if (destJndiName.startsWith(WildflyMessageDestination.QUEUE_PREFIX) || destJndiName.startsWith(WildflyMessageDestination.TOPIC_PREFIX)) {
+                        return destJndiName.substring(6); // WildflyMessageDestination.QUEUE_PREFIX.length() == WildflyMessageDestination.TOPIC_PREFIX.length() == 6
                     }
                     else {
                         Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(EjbDeploymentConfiguration.class, "MSG_NoPrefix", destJndiName));
@@ -1036,11 +1009,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 MessageDriven mdb = new MessageDriven();
                 mdb.setEjbName(name);
                 if (MessageDestination.Type.QUEUE.equals(destType)) {
-                    mdb.setDestinationJndiName(JBossMessageDestination.QUEUE_PREFIX + destName); // NOI18N
+                    mdb.setDestinationJndiName(WildflyMessageDestination.QUEUE_PREFIX + destName); // NOI18N
                 }
                 else
                 if (MessageDestination.Type.TOPIC.equals(destType)) {
-                    mdb.setDestinationJndiName(JBossMessageDestination.TOPIC_PREFIX + destName); // NOI18N
+                    mdb.setDestinationJndiName(WildflyMessageDestination.TOPIC_PREFIX + destName); // NOI18N
                 }
                 eb.addMessageDriven(mdb);
             }
@@ -1091,11 +1064,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         
         String destPrefix = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
-            destPrefix = JBossMessageDestination.QUEUE_PREFIX;
+            destPrefix = WildflyMessageDestination.QUEUE_PREFIX;
         }
         else
         if (MessageDestination.Type.TOPIC.equals(type)) {
-            destPrefix = JBossMessageDestination.TOPIC_PREFIX;
+            destPrefix = WildflyMessageDestination.TOPIC_PREFIX;
         }
         
         if (org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.SESSION.equals(ejbType)) {
@@ -1183,7 +1156,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
                 if (oldJboss == null) {
                     // neither the old graph is parseable, there is not much we can do here
                     // TODO: should we notify the user?
-                    String msg = NbBundle.getMessage(JBDeploymentConfiguration.class, "MSG_jbossXmlCannotParse", jbossFile.getAbsolutePath());
+                    String msg = NbBundle.getMessage(WildflyDeploymentConfiguration.class, "MSG_jbossXmlCannotParse", jbossFile.getAbsolutePath());
                     throw new ConfigurationException(msg);
                 }
                 // current editor content is not parseable, ask whether to override or not
@@ -1223,6 +1196,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         }
     }
     
+    @Override
     public void save(OutputStream os) throws ConfigurationException {
         Jboss jboss = getJboss();
         if (jboss == null) {

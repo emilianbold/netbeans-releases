@@ -108,6 +108,7 @@ public class ConsistencyVerifier {
         dummy.getMainAttributes().putValue("OpenIDE-Module-Provides",
                 "org.openide.modules.ModuleFormat1, " + // NOI18N
                 "org.openide.modules.ModuleFormat2, " + // NOI18N
+                "org.openide.modules.jre.JavaFX, " + // NOI18N
                 "org.openide.modules.os.Unix, " + // NOI18N
                 "org.openide.modules.os.PlainUnix, " + // NOI18N
                 "org.openide.modules.os.Windows, " + // NOI18N

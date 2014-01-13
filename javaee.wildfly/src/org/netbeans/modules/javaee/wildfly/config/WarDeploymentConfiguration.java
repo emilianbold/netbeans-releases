@@ -84,7 +84,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Stepan Herold, Libor Kotouc
  */
-public class WarDeploymentConfiguration extends JBDeploymentConfiguration 
+public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration 
 implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration, 
         DeploymentPlanConfiguration, PropertyChangeListener {
     
@@ -112,20 +112,14 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
     }
     
+    @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
     
 
+    @Override
     public void dispose() {
-    }
-
-    public boolean supportsCreateDatasource() {
-        return !isAs7();
-    }
-    
-    public boolean supportsCreateMessageDestination() {
-        return !isAs7();
     }
 
     /**
@@ -133,6 +127,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
      * 
      * @return context path or null, if the file is not parseable.
      */
+    @Override
     public String getContextRoot() throws ConfigurationException {
         JbossWeb jbossWeb = getJbossWeb();
         if (jbossWeb == null) { // graph not parseable
@@ -145,13 +140,14 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     /**
      * Set context path.
      */
+    @Override
     public void setContextRoot(String contextPath) throws ConfigurationException {
         // TODO: this contextPath fix code will be removed, as soon as it will 
         // be moved to the web project
         if (!isCorrectCP(contextPath)) {
             String ctxRoot = contextPath;
             java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
-            StringBuffer buf = new StringBuffer(); //NOI18N
+            StringBuilder buf = new StringBuilder(); 
             while (tok.hasMoreTokens()) {
                 buf.append("/"+tok.nextToken()); //NOI18N
             }
@@ -164,6 +160,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
         final String newContextPath = contextPath;
         modifyJbossWeb(new JbossWebModifier() {
+            @Override
             public void modify(JbossWeb jbossWeb) {
                 jbossWeb.setContextRoot(newContextPath);
             }
@@ -173,6 +170,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     /**
      * Listen to jboss-web.xml document changes.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object newValue = evt.getNewValue();
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED && newValue == Boolean.FALSE) {
@@ -188,7 +186,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String resType = resourceRef.getResType();
                     if ("javax.sql.DataSource".equals(resType)) { // NOI18N
-                        addResReference(resourceRef.getResRefName(), JBossDatasource.PREFIX + resourceRef.getResRefName());
+                        addResReference(resourceRef.getResRefName(), WildflyDatasource.PREFIX + resourceRef.getResRefName());
                     } else if ("javax.mail.Session".equals(resType)) { // NOI18N
                         addMailReference(resourceRef.getResRefName());
                     } else if ("javax.jms.ConnectionFactory".equals(resType)) { // NOI18N
@@ -214,7 +212,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String messageDestinationType = messageDestinationRef.getMessageDestinationType();
                     String destPrefix = "javax.jms.Queue".equals(messageDestinationType) // NOI18N
-                                            ? JBossMessageDestination.QUEUE_PREFIX : JBossMessageDestination.TOPIC_PREFIX;
+                                            ? WildflyMessageDestination.QUEUE_PREFIX : WildflyMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
                     Exceptions.printStackTrace(ce);
@@ -223,10 +221,12 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
     }
     
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         addResReference(referenceName, jndiName);
     }
     
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         
         ResourceRef resourceRefs[] = getJbossWeb().getResourceRef();
@@ -235,7 +235,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             if (referenceName.equals(rrn)) {
                 String jndiName = resourceRef.getJndiName();
                 if (jndiName != null) {
-                    return JBossDatasource.getJndiName(jndiName);
+                    return WildflyDatasource.getJndiName(jndiName);
                 }
             }
         }
@@ -306,11 +306,11 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         
         String jndiName = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
-            jndiName = JBossMessageDestination.QUEUE_PREFIX + destName;
+            jndiName = WildflyMessageDestination.QUEUE_PREFIX + destName;
         }
         else
         if (MessageDestination.Type.TOPIC.equals(type)) {
-            jndiName = JBossMessageDestination.TOPIC_PREFIX + destName;
+            jndiName = WildflyMessageDestination.TOPIC_PREFIX + destName;
         }
 
         addMsgDestReference(referenceName, jndiName);

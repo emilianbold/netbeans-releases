@@ -175,8 +175,7 @@ public class NewFileWizardTest extends JavaTestCase {
                 "org.netbeans.modules.java.j2seproject.Bundle",
                 "NAME_src.dir")+"|"+TEST_PACKAGE_NAME);
         n.select();
-        n.performPopupAction(org.netbeans.jellytools.Bundle.getString(
-                "org.netbeans.core.projects.Bundle", "LBL_action_delete"));
+        n.performPopupAction("Delete");
         
         // confirm
         new NbDialogOperator(Bundle.getString("org.openide.explorer.Bundle",
@@ -209,7 +208,7 @@ public class NewFileWizardTest extends JavaTestCase {
         NewFileWizardOperator op = NewFileWizardOperator.invoke();
         
         op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes"));
-        op.selectFileType(Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Class.java"));
+        op.selectFileType("Java Class");
         op.next();
         
         JTextFieldOperator tf = new JTextFieldOperator(op);
@@ -268,8 +267,7 @@ public class NewFileWizardTest extends JavaTestCase {
         // choose package
         op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,
                 "Templates/Classes"));
-        op.selectFileType(Bundle.getString(JAVA_BUNDLE_PATH,
-                "Templates/Classes/Package"));
+        op.selectFileType("Java Package");
         op.next();
         
         // try to set an invalid name
@@ -296,72 +294,62 @@ public class NewFileWizardTest extends JavaTestCase {
         new NbDialogOperator(Bundle.getString(
                 "org.netbeans.modules.project.ui.Bundle",
                 "LBL_NewProjectWizard_Subtitle")+" "
-                +Bundle.getString(JAVA_BUNDLE_PATH,
-                "Templates/Classes/Package")).cancel();
+                +"Java Package").cancel();
     }
     
     public void testCreateInterface() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyIface" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Interface.java"),
+        createAndVerify("MyIface" , "Java Interface",
                 Common.unify(expected),true);
         
     }
     
     public void testCreateAnnotation() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyAnnot" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/AnnotationType.java"),
+        createAndVerify("MyAnnot" , "Java Annotation Type",
                 Common.unify(expected),true);
     }
     
     public void testCreateEnum() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyEnum" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Enum.java"),
+        createAndVerify("MyEnum" ,"Java Enum",
                 Common.unify(expected),true);
     }
     
     public void testCreateException() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyExp" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Exception.java"),
+        createAndVerify("MyExp" ,"Java Exception",
                 Common.unify(expected),true);
     }
     
     
     public void testCreateJApplet() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyJApplet" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/JApplet.java"),
+        createAndVerify("MyJApplet" , "JApplet",
                 Common.unify(expected),true);
     }
     
     public void testCreateEmptyFile() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("Empty" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Empty.java"),
+        createAndVerify("Empty" ,"Empty Java File", 
                 Common.unify(expected),true);
     }
     
     public void testCreateMainClass() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("MyMain" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Main.java"),
+        createAndVerify("MyMain" , "Java Main Class",
                 Common.unify(expected),true);
     }
     
     public void testCreatePackageInfo() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("package-info" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/package-info.java"),
+        createAndVerify("package-info" , "Java Package Info",
                 Common.unify(expected),true);
     }
     
     public void testCreateClass() {
         String expected = getContentOfGoldenFile();
-        createAndVerify("JavaClass" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Class.java"),
+        createAndVerify("JavaClass" , "Java Class",
                 Common.unify(expected),true);
     }
     
@@ -369,16 +357,13 @@ public class NewFileWizardTest extends JavaTestCase {
     
     public void testInvalidName() {
         String expected = "";
-        createAndVerify("Name.invalid" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Class.java"),
+        createAndVerify("Name,invalid" ,"Java Class",
                 Common.unify(expected),false);
     }
     
     public void testExistingName() {
-        String expected = "";
-        createAndVerify("MyMain" ,
-                Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes/Class.java"),
-                Common.unify(expected),false);
+        createFile("TestExisting", "Java Class", true);
+        createAndVerify("TestExisting" , "Java Class", "",false);
     }
     
     private void createIfNotOpened(String projName,String packName) {
@@ -415,6 +400,30 @@ public class NewFileWizardTest extends JavaTestCase {
      * @param shouldPass Indicated it there is expected error in the wizard
      */
     private void createAndVerify(String name, String type, String expectedContent, boolean shouldPass) {
+        if(createFile(type, name, shouldPass)) return;
+        // check generated source
+        EditorOperator editor = null;
+        try {
+            editor = new EditorOperator(name);
+            String text = Common.unify(editor.getText());
+            log(expectedContent);
+            log(text);
+            assertEquals("File doesnt have expected content",expectedContent,text);
+        } finally {
+            if(editor!=null) editor.close();
+        }
+        
+        
+    }
+
+    /**
+     * Creates new file
+     * @param type Type of new file
+     * @param name Name of new file
+     * @param shouldPass Indicated it there is expected error in the wizard
+     * @return True is file was created successfully 
+     */
+    private boolean createFile(String type, String name, boolean shouldPass) {
         createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
         // select project node
         Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
@@ -425,13 +434,12 @@ public class NewFileWizardTest extends JavaTestCase {
         n.select();
         // create test class
         NewFileWizardOperator op = NewFileWizardOperator.invoke();
-        
         op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes"));
         op.selectFileType(type);
         op.next();
         JTextFieldOperator tf = new JTextFieldOperator(op);
         tf.setText(name);
-        if(!shouldPass) {
+        if (!shouldPass) {
             Utilities.takeANap(1000);
             JButtonOperator jbo = new JButtonOperator(op,"Finish");
             assertFalse("Finish button should be disabled", jbo.isEnabled());
@@ -440,20 +448,10 @@ public class NewFileWizardTest extends JavaTestCase {
                     "org.netbeans.modules.project.ui.Bundle",
                     "LBL_NewProjectWizard_Subtitle")+" "
                     +type).cancel();
-            return;
+            return true;
         }
         op.finish();
-        // check generated source
-        EditorOperator editor = null;
-        try {
-            editor = new EditorOperator(name);
-            String text = Common.unify(editor.getText());
-            assertEquals("File doesnt have expected content",expectedContent,text);
-        } finally {
-            if(editor!=null) editor.close();
-        }
-        
-        
+        return false;
     }
     
     /**
@@ -464,8 +462,8 @@ public class NewFileWizardTest extends JavaTestCase {
         try {
             File golden = getGoldenFile();
             BufferedReader br = new BufferedReader(new FileReader(golden));
-            StringBuffer res = new StringBuffer();
-            String line = "";
+            StringBuilder res = new StringBuilder();
+            String line;
             while((line = br.readLine())!=null) {
                 res.append(line);
                 res.append("\n");

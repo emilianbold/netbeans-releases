@@ -126,10 +126,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
     }
     
     public boolean isLocalServer(){
-        if (serverType.getSelectedItem().equals("Local"))
-            return true;
-        else
-            return false;
+        return  ("Local".equals(serverType.getSelectedItem()));
     }
     
     public String getHost(){
@@ -158,7 +155,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
    
     private void domainChanged(){
         DomainComboModel model = (DomainComboModel)domainField.getModel();
-        
         String path = model.getCurrentPath();
         domainPathField.setText(path);
         portField.setText(JBPluginUtils.getHTTPConnectorPort(path));
@@ -169,12 +165,19 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
         String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
         domainModel.setDomains(JBPluginUtils.getRegisteredDomains(serverLocation));
+        String configLocation = JBPluginProperties.getInstance().getConfigLocation();
+        File domainDir = new File(configLocation).getParentFile().getParentFile();
+        if(domainModel.hasDomain(domainDir.getName())) {
+            domainModel.setSelectedItem(domainDir.getName());
+        } else {
+            domainModel.addDomain(domainDir.getName(), domainDir.getAbsolutePath());
+        }    
         domainChanged();
     }
             
     private void serverTypeChanged(){
         
-        if (serverType.getSelectedItem().equals("Local")){  //NOI18N 
+        if (isLocalServer()){  //NOI18N 
             domainLabel.setVisible(true);
             domainField.setVisible(true);
                     
@@ -182,7 +185,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             domainPathField.setVisible(true);
 
             hostField.setEditable(false);
-        }else{  // REMOTE
+        } else {  // REMOTE
             
             domainLabel.setVisible(false);
             domainField.setVisible(false);
@@ -208,7 +211,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             }
         });
        
-        
+
         domainPathLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));//NOI18N
         domainPathField = new JTextField();
         domainPathField.setColumns(20);
@@ -224,7 +227,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains(serverLocation)));
         domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
-        //domainField.setEditable(true);
+        
         domainField.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 domainChanged();
@@ -324,16 +327,6 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 5);
         add(domainPathField, gridBagConstraints);
-        
-//        gridBagConstraints = new java.awt.GridBagConstraints();
-//        gridBagConstraints.gridy = 2;
-//        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-//        add(browseButton, gridBagConstraints);
-//        
-        
-        
-        
-        
         
         //-------------- host ---------------
         gridBagConstraints = new java.awt.GridBagConstraints();

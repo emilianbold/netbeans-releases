@@ -400,13 +400,20 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(int c) {
         doWrite(new String(new char[]{(char)c}), 0, 1);
-        lines.checkLimits();
+        checkLimits();
+    }
+
+    private void checkLimits() {
+        int shift = lines.checkLimits();
+        if (lineStart > 0) {
+            lineStart -= shift;
+        }
     }
     
     @Override
     public synchronized void write(char data[], int off, int len) {
         doWrite(new CharArrayWrapper(data), off, len);
-        lines.checkLimits();
+        checkLimits();
     }
     
     /** write buffer size in chars */
@@ -535,13 +542,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[]) {
         doWrite(new CharArrayWrapper(data), 0, data.length);
-        lines.checkLimits();
+        checkLimits();
     }
 
     @Override
     public synchronized void println() {
         printLineEnd();
-        lines.checkLimits();
+        checkLimits();
     }
 
     private void printLineEnd() {
@@ -557,13 +564,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(String s, int off, int len) {
         doWrite(s, off, len);
-        lines.checkLimits();
+        checkLimits();
     }
 
     @Override
     public synchronized void write(String s) {
         doWrite(s, 0, s.length());
-        lines.checkLimits();
+        checkLimits();
     }
 
     public synchronized void println(String s, OutputListener l) {
@@ -588,7 +595,7 @@ class OutWriter extends PrintWriter {
             printLineEnd();
         }
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, outKind, c, b);
-        lines.checkLimits();
+        checkLimits();
     }
     private Color ansiColor;
     private Color ansiBackground;
@@ -726,7 +733,7 @@ class OutWriter extends PrintWriter {
         if (info != null) {
             lines.addLineInfo(line, info, important);
         }
-        lines.checkLimits();
+        checkLimits();
     }
 
     /**

@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -67,8 +68,10 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
+import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
@@ -145,7 +148,10 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.COMPLETED, ""));
+                for(TargetModuleID tmid : tmids) {
+                    ((WildflyTargetModuleID) tmid).setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
+                    progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                }
             } else {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.FAILED, ""));
             }
@@ -161,21 +167,25 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        List<TargetModuleID> moduleIds = new ArrayList<TargetModuleID>(targets.length);
+        List<WildflyTargetModuleID> moduleIds = new ArrayList<WildflyTargetModuleID>(targets.length);
         for (Target target : targets) {
-            moduleIds.add(new JBTargetModuleID(target, deployment.getModuleFile().getName()));
+            moduleIds.add(new WildflyTargetModuleID(target, deployment.getModuleFile().getName()));
         }
-        final WildflyProgressObject progress = new WildflyProgressObject(moduleIds.toArray(new TargetModuleID[targets.length]));
+        WildflyTargetModuleID[] tmids = moduleIds.toArray(new WildflyTargetModuleID[targets.length]);
+        final WildflyProgressObject progress = new WildflyProgressObject(tmids);
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                for(WildflyTargetModuleID tmid : tmids) {
+                    tmid.setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
+                    progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
+                }
             } else {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
+                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ""));
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
+            progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, ex.getMessage()));
         }
         return progress;
     }
@@ -202,8 +212,30 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        return new TargetModuleID[]{};
+        List<TargetModuleID> result = new ArrayList<TargetModuleID>();
+        Collection<WildflyModule> modules;
+        try {
+            modules = getClient().listAvailableModules();
+
+            if (ModuleType.EJB.equals(mt)) {
+                for (WildflyModule module : modules) {
+                    if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
+                    }
+                }
+            } else if (ModuleType.WAR.equals(mt)) {
+                for (WildflyModule module : modules) {
+                    if (module.getArchiveName().endsWith("war") && module.isRunning()) {
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
+                        moduleId.setContextURL(module.getUrl());
+                        result.add(moduleId);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result.toArray(new TargetModuleID[result.size()]);
     }
 
     @Override
@@ -220,8 +252,30 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         if (df == null) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // XXX WILDFLY IMPLEMENT
-        return new TargetModuleID[]{};
+        List<TargetModuleID> result = new ArrayList<TargetModuleID>();
+        Collection<WildflyModule> modules;
+        try {
+            modules = getClient().listAvailableModules();
+
+            if (ModuleType.EJB.equals(mt)) {
+                for (WildflyModule module : modules) {
+                    if (module.getArchiveName().endsWith("jar") && module.isRunning()) {
+                        result.add(new WildflyTargetModuleID(targets[0], module.getArchiveName()));
+                    }
+                }
+            } else if (ModuleType.WAR.equals(mt)) {
+                for (WildflyModule module : modules) {
+                    if (module.getArchiveName().endsWith("war")) {
+                        WildflyTargetModuleID moduleId = new WildflyTargetModuleID(targets[0], module.getArchiveName());
+                        moduleId.setContextURL(module.getUrl());
+                        result.add(moduleId);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result.toArray(new TargetModuleID[result.size()]);
     }
 
     @Override
@@ -240,12 +294,12 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING, null));
         try {
             if (client.startModule(tmids[0].getModuleID())) {
-                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                         ActionType.EXECUTE, CommandType.START, StateType.COMPLETED, null));
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+            progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                     ActionType.EXECUTE, CommandType.START, StateType.FAILED, null));
         }
         return progress;
@@ -263,7 +317,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject undeploy(TargetModuleID[] tmids) throws IllegalStateException {
         final WildflyProgressObject progress = new WildflyProgressObject(tmids);
-        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+        progress.fireProgressEvent(tmids[0], new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
         try {
             if (client.undeploy(tmids[0].getModuleID())) {
@@ -410,6 +464,23 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     @Override
     public void setDConfigBeanVersion(DConfigBeanVersionType dcbvt) throws DConfigBeanVersionUnsupportedException {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
+    }
+
+    public ProgressObject deployMessageDestinations(final Collection<WildflyMessageDestination> destinations) {
+        final WildflyProgressObject progress = new WildflyProgressObject(new TargetModuleID[0]);
+        progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
+        try {
+            if (client.addMessageDestinations(destinations))  {
+                progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                        ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            progress.fireProgressEvent(null, new WildflyDeploymentStatus(
+                    ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.FAILED, null));
+        }
+        return progress;
     }
 
 }

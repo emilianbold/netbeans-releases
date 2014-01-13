@@ -163,7 +163,7 @@ final class IntMap {
     }
     
     private void growArrays() {
-        int newSize = last * 2;
+        int newSize = keys.length * 2;
         int[] newKeys = new int[newSize];
         Object[] newVals = new Object[newSize];
         Arrays.fill (newKeys, Integer.MAX_VALUE); //So binarySearch works

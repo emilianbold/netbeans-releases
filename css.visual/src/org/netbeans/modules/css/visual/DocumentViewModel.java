@@ -148,13 +148,13 @@ public class DocumentViewModel implements ChangeListener {
 
     /**
      * Gets a map of stylesheets -> list of rules.
-     * 
+     *
      * <b>The method must be called in parsing thread!</b>
      */
     public Map<FileObject, List<RuleHandle>> getFilesToRulesMap() {
         assert !EventQueue.isDispatchThread();
 //        assert ParserManager.isParsingThread(); //TODO uncomment once resolved: https://netbeans.org/bugzilla/show_bug.cgi?id=228251
-        
+
         initialize();
 
         if (needsRefresh) {
@@ -181,22 +181,24 @@ public class DocumentViewModel implements ChangeListener {
                             ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
                             if (ri != null) {
                                 final CssParserResult result = (CssParserResult) ri.getParserResult();
-                                final Model model = Model.getModel(result);
+                                if (result != null) {
+                                    final Model model = Model.getModel(result);
 
-                                final List<RuleHandle> rules = new ArrayList<>();
-                                final ModelVisitor visitor = new ModelVisitor.Adapter() {
-                                    @Override
-                                    public void visitRule(Rule rule) {
-                                        rules.add(RuleHandle.createRuleHandle(rule));
-                                    }
-                                };
-                                model.runReadTask(new Model.ModelTask() {
-                                    @Override
-                                    public void run(StyleSheet styleSheet) {
-                                        styleSheet.accept(visitor);
-                                    }
-                                });
-                                relatedStylesheets.put(related, rules);
+                                    final List<RuleHandle> rules = new ArrayList<>();
+                                    final ModelVisitor visitor = new ModelVisitor.Adapter() {
+                                        @Override
+                                        public void visitRule(Rule rule) {
+                                            rules.add(RuleHandle.createRuleHandle(rule));
+                                        }
+                                    };
+                                    model.runReadTask(new Model.ModelTask() {
+                                        @Override
+                                        public void run(StyleSheet styleSheet) {
+                                            styleSheet.accept(visitor);
+                                        }
+                                    });
+                                    relatedStylesheets.put(related, rules);
+                                }
                             }
                         }
                     });

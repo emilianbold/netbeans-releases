@@ -553,6 +553,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
 
         public void switchManifestModel(boolean toLIBlet) {
             isLIBlet = toLIBlet;
+            uiProperties.LIBLET_PACKAGING = isLIBlet;
             final String FROM = toLIBlet ? "MIDlet-" : "LIBlet-"; //NOI18N
             final String TO = toLIBlet ? "LIBlet-" : "MIDlet-"; //NOI18N
             for (int i = 0; i< items.size(); i++) {

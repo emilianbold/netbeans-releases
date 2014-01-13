@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -63,6 +64,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -103,7 +105,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
+        RemoteTestSuiteBase.registerTestSetup(this);
         if (FSSTransport.getInstance(execEnv) != null) {
             FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
         }
@@ -133,7 +135,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         setLoggers(false);
-        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
+        RemoteTestSuiteBase.registerTestTearDown(this);
     }
    
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")

@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionsFactory;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -95,7 +96,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         if (checkExplicitType(ast)) {
             AST expressionAst = AstUtil.findSiblingOfType(ast.getFirstChild(), CPPTokenTypes.CSM_EXPRESSION);
             if (expressionAst != null) {
-                CsmExpression expr = ExpressionBase.create(expressionAst, file, scope);
+                CsmExpression expr = ExpressionsFactory.create(expressionAst, file, scope);
                 value = ExpressionBasedSpecializationParameterImpl.create(expr.getText(), file, expr.getStartOffset(), expr.getEndOffset(), true);
             }
         }

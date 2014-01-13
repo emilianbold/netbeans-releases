@@ -222,6 +222,7 @@ public class OptionsPanel extends JPanel {
     void enablePanel(boolean enabled) {
         watchLabel.setEnabled(enabled);
         mappingsTable.setEnabled(enabled);
+        mappingsInfoLabel.setEnabled(enabled);
         addButton.setEnabled(enabled);
         configureExecutablesButton.setEnabled(enabled);
         if (enabled) {
@@ -253,6 +254,7 @@ public class OptionsPanel extends JPanel {
         mappingsTable = new JTable();
         addButton = new JButton();
         removeButton = new JButton();
+        mappingsInfoLabel = new JLabel();
         compilerOptionsLabel = new JLabel();
         compilerOptionsTextField = new JTextField();
         compilerOptionsInfoLabel = new JLabel();
@@ -285,6 +287,8 @@ public class OptionsPanel extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(mappingsInfoLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.mappingsInfoLabel.text")); // NOI18N
+
         compilerOptionsLabel.setLabelFor(compilerOptionsTextField);
         Mnemonics.setLocalizedText(compilerOptionsLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsLabel.text")); // NOI18N
 
@@ -307,9 +311,6 @@ public class OptionsPanel extends JPanel {
                     .addComponent(addButton)
                     .addComponent(removeButton)))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(watchLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addComponent(compilerOptionsLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -317,6 +318,11 @@ public class OptionsPanel extends JPanel {
                         .addComponent(compilerOptionsInfoLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(compilerOptionsTextField)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(watchLabel)
+                    .addComponent(mappingsInfoLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
@@ -337,6 +343,8 @@ public class OptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton)))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mappingsInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(compilerOptionsLabel)
                     .addComponent(compilerOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -372,6 +380,7 @@ public class OptionsPanel extends JPanel {
     private JTextField compilerOptionsTextField;
     private JButton configureExecutablesButton;
     private JCheckBox enabledCheckBox;
+    private JLabel mappingsInfoLabel;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
     private JButton removeButton;

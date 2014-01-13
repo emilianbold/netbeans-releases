@@ -61,14 +61,11 @@ import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.VersionsCache;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
@@ -370,25 +367,11 @@ class RevisionSetupsSupport {
             }
             if (leftExists && rightExists) {
                 if (diffSummaries == null) {
-                    try {
-                        diffSummaries = client.diffSummarize(
-                                leftFileUrl,
-                                leftRevision,
-                                rightFileUrl,
-                                rightRevision, depth, true);
-                    } catch (NullPointerException ex) {
-                        // workaround for svnkit's bug: #239010
-                        if (SvnClientFactory.isSvnKit() && infoLeft.getNodeKind() == SVNNodeKind.FILE && infoRight.getNodeKind() == SVNNodeKind.FILE) {
-                            LOG.log(logged ? Level.FINE : Level.INFO, "Fallback on workaround for SVNKit bug", ex);
-                            logged = true;
-                            boolean differ = compareContents(repositoryUrl, leftFileUrl, leftRevision, rightFileUrl, rightRevision);
-                            diffSummaries = new SVNDiffSummary[] {
-                                new SVNDiffSummary("", differ ? SVNDiffKind.MODIFIED : SVNDiffKind.NORMAL, false, SVNNodeKind.FILE.toInt())
-                            };
-                        } else {
-                            throw ex;
-                        }
-                    }
+                    diffSummaries = client.diffSummarize(
+                            leftFileUrl,
+                            leftRevision,
+                            rightFileUrl,
+                            rightRevision, depth, true);
                     cacheSummaries(diffSummaries, leftFileUrl, leftRevision, rightRevision);
                 }
                 List<String> skippedPaths = new ArrayList<>();
@@ -548,34 +531,6 @@ class RevisionSetupsSupport {
 
     protected File[] getRoots () {
         return SvnUtils.getActionRoots(context, false);
-    }
-
-    private boolean compareContents (SVNUrl repositoryUrl, SVNUrl leftFileUrl, SVNRevision leftRevision,
-            SVNUrl rightFileUrl, SVNRevision rightRevision) {
-        VersionsCache versionCache = VersionsCache.getInstance();
-        File leftContent = null;
-        File rightContent = null;
-        try {
-            leftContent = versionCache.getFileRevision(repositoryUrl, leftFileUrl, leftRevision.toString(), "left-file");
-            rightContent = versionCache.getFileRevision(repositoryUrl, rightFileUrl, rightRevision.toString(), "right-file");
-            if (leftContent == null || rightContent == null) {
-                // could not get bot files
-                return false;
-            } else {
-                Difference[] differences = DiffUtils.getDifferences(leftContent, rightContent);
-                return differences != null && differences.length > 0;
-            }
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, null, ex);
-            return false;
-        } finally {
-            if (leftContent != null) {
-                leftContent.delete();
-            }
-            if (rightContent != null) {
-                rightContent.delete();
-            }
-        }
     }
 
     private static class RevisionsFileInformation extends FileInformation {

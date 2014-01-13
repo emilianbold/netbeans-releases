@@ -77,6 +77,7 @@ import javax.swing.JPanel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.xml.util.Util;
 import org.openide.explorer.view.Visualizer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -237,6 +238,8 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
     }
     
      protected Node createRootNode() {
+        Node[] rootNodes = null;
+        java.util.List projectRoots = new java.util.ArrayList();
         try {
                 DataFolder folder = templateWizard.getTargetFolder();
                 Project project = FileOwnerQuery.getOwner(folder.getPrimaryFile());
@@ -250,12 +253,11 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
                     it = refProjects.iterator();
                 }
 
-                Node[] rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
+                rootNodes = new Node[1 + (refProjects == null ? 0 : refProjects.size())];
                 LogicalViewProvider viewProvider = (LogicalViewProvider) project.getLookup().lookup(LogicalViewProvider.class);
                 rootNodes[0] = decorator.createExternalReferenceNode(viewProvider.createLogicalView());
                 int rootIndex = 1;
 
-                java.util.List projectRoots = new java.util.ArrayList();
                 projectRoots.add(project.getProjectDirectory());
                 if (refProjects != null) {
                     while(it.hasNext()){
@@ -268,33 +270,34 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
                         projectRoots.add(refPrj.getProjectDirectory());
                     }
                 }
-                FileObject[] roots = (FileObject[])projectRoots.toArray(new FileObject[projectRoots.size()]);
-                Children fileChildren = new Children.Array();
-                fileChildren.add(rootNodes);
-                Node byFilesNode = new FolderNode(fileChildren);
-                byFilesNode.setDisplayName(NbBundle.getMessage(
-                SchemaImportGUI.class,
-                "LBL_SchemaPanel_Category_By_File"));
-
-                // Construct the By Namespace node.
-                Children nsChildren = new NamespaceChildren(roots, decorator);
-                Node byNsNode = new FolderNode(nsChildren);
-                byNsNode.setDisplayName(NbBundle.getMessage(
-                SchemaImportGUI.class,
-                "LBL_SchemaPanel_Category_By_Namespace"));
-                Children categories = new Children.Array();
-                categories.add(new Node[] { byFilesNode, byNsNode });
-                Node rootNode = new AbstractNode(categories);
-                // Surprisingly, this becomes the name and description of the first column.
-                rootNode.setDisplayName(NbBundle.getMessage(SchemaImportGUI.class,
-                "CTL_SchemaPanel_Column_Name_name"));
-                rootNode.setShortDescription(NbBundle.getMessage(SchemaImportGUI.class,
-                "CTL_SchemaPanel_Column_Desc_name"));
-                return rootNode;
          } catch(Exception e){
-             e.printStackTrace();
+             Exceptions.printStackTrace(e);
          }
-        return null;
+         Children fileChildren = new Children.Array();
+         if (rootNodes != null) {
+             fileChildren.add(rootNodes);
+         }
+         Node byFilesNode = new FolderNode(fileChildren);
+         byFilesNode.setDisplayName(NbBundle.getMessage(
+                 SchemaImportGUI.class,
+                 "LBL_SchemaPanel_Category_By_File"));
+
+         FileObject[] roots = (FileObject[]) projectRoots.toArray(new FileObject[projectRoots.size()]);
+         // Construct the By Namespace node.
+         Children nsChildren = new NamespaceChildren(roots, decorator);
+         Node byNsNode = new FolderNode(nsChildren);
+         byNsNode.setDisplayName(NbBundle.getMessage(
+                 SchemaImportGUI.class,
+                 "LBL_SchemaPanel_Category_By_Namespace"));
+         Children categories = new Children.Array();
+         categories.add(new Node[]{byFilesNode, byNsNode});
+         Node rootNode = new AbstractNode(categories);
+         // Surprisingly, this becomes the name and description of the first column.
+         rootNode.setDisplayName(NbBundle.getMessage(SchemaImportGUI.class,
+                 "CTL_SchemaPanel_Column_Name_name"));
+         rootNode.setShortDescription(NbBundle.getMessage(SchemaImportGUI.class,
+                 "CTL_SchemaPanel_Column_Desc_name"));
+         return rootNode;
     }
      
      public ExplorerManager getExplorerManager() {

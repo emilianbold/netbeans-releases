@@ -307,12 +307,17 @@ public abstract class Group {
                         if (!projectsLoaded || switchingGroup.get()) {
                             return;
                         }
-                        String propertyName = evt.getPropertyName();
+                        final String propertyName = evt.getPropertyName();
                         if (propertyName != null) {
-                            Group g = getActiveGroup();
+                            final Group g = getActiveGroup();
                             if (g != null) {
                                 LOG.log(Level.FINE, "received {0} on {1}", new Object[] {propertyName, g.id});
-                                g.openProjectsEvent(propertyName);
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        g.openProjectsEvent(propertyName);
+                                    }
+                                });
                             }
                         }
                     }

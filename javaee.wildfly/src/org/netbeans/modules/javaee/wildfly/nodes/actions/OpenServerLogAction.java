@@ -48,9 +48,9 @@ import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.JBOutputSupport;
+import org.netbeans.modules.javaee.wildfly.ide.WildlfyOutputSupport;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.nodes.JBManagerNode;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -72,22 +72,22 @@ public class OpenServerLogAction extends NodeAction {
 
     protected void performAction(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
-            Object node = activatedNode.getLookup().lookup(JBManagerNode.class);
+            Object node = activatedNode.getLookup().lookup(WildflyManagerNode.class);
             
-            if (!(node instanceof JBManagerNode)) {
+            if (!(node instanceof WildflyManagerNode)) {
                 continue;
             }
             
-            WildFlyDeploymentManager dm = ((JBManagerNode)node).getDeploymentManager();
+            WildFlyDeploymentManager dm = ((WildflyManagerNode)node).getDeploymentManager();
             InputOutput io = UISupport.getServerIO(dm.getUrl());
             if (io != null) {
                 io.select();
             }
             
             InstanceProperties ip = dm.getInstanceProperties();
-            JBOutputSupport outputSupport = JBOutputSupport.getInstance(ip, false);
+            WildlfyOutputSupport outputSupport = WildlfyOutputSupport.getInstance(ip, false);
             if (outputSupport == null) {
-                outputSupport = JBOutputSupport.getInstance(ip, true);
+                outputSupport = WildlfyOutputSupport.getInstance(ip, true);
                 String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
                 String logFileName = serverDir + File.separator + "log" + File.separator + "server.log" ; // NOI18N
                 File logFile = new File(logFileName);

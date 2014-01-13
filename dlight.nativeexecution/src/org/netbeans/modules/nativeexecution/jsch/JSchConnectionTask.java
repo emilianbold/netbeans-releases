@@ -300,6 +300,15 @@ public final class JSchConnectionTask implements Cancellable {
         public Result(JSchChannelsSupport cs, Problem problem) {
             this.cs = cs;
             this.problem = problem;
+            if (problem != null && isUnitTestMode()) {
+                new Exception("That's just a trace: connection failed: " + problem.type, problem.cause).printStackTrace(System.err); //NOI18N
+            }
         }
     }
+    
+    // copy-paste from CndUtils
+    private static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
+    
 }

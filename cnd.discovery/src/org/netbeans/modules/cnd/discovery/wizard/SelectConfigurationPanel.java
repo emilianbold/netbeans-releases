@@ -84,8 +84,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class SelectConfigurationPanel extends JPanel {
     private static final RequestProcessor RP = new RequestProcessor(SelectConfigurationPanel.class.getName(), 1);
-    private SelectConfigurationWizard wizard;
-    private String oldConsolidation;
+    private final SelectConfigurationWizard wizard;
     private boolean showResulting;
     private boolean wasTerminated = false;
     private boolean isStoped = false;
@@ -280,12 +279,6 @@ public final class SelectConfigurationPanel extends JPanel {
     }
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
-        String consolidation = wizardDescriptor.getLevel();
-        boolean changedConsolidation = false;
-        if (!consolidation.equals(oldConsolidation)) {
-            oldConsolidation = consolidation;
-            changedConsolidation = true;
-        }
         if (wizardDescriptor.isInvokeProvider() || wasTerminated) {
             // clear model
             wizardDescriptor.setConfigurations(null);
@@ -302,15 +295,14 @@ public final class SelectConfigurationPanel extends JPanel {
             //task.start();
             isStoped = false;
             wasTerminated = true;
-        } else if (changedConsolidation){
-            List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
-            if (projectConfigurations != null) {
-                for(ProjectConfiguration project : projectConfigurations){
-                    ConsolidationStrategy.consolidateModel(project, consolidation);
-                }
-            }
-            updateListModels();
         }
+        List<ProjectConfiguration> projectConfigurations = wizardDescriptor.getConfigurations();
+        if (projectConfigurations != null) {
+            for(ProjectConfiguration project : projectConfigurations){
+                ConsolidationStrategy.consolidateModel(project);
+            }
+        }
+        updateListModels();
     }
     
     private void creteTreeModel(DiscoveryDescriptor wizardDescriptor){
@@ -384,7 +376,7 @@ public final class SelectConfigurationPanel extends JPanel {
     }
     
     private class AnalyzingTask extends Thread {
-        private DiscoveryDescriptor wizardDescriptor;
+        private final DiscoveryDescriptor wizardDescriptor;
         public AnalyzingTask(DiscoveryDescriptor wizardDescriptor){
             this.wizardDescriptor = wizardDescriptor;
         }

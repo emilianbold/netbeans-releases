@@ -1212,11 +1212,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    void checkLimits() {
+    int checkLimits() {
         synchronized (readLock()) {
             if (getLineCount() >= outputLimits.getMaxLines()
-                    || getCharCount() >= outputLimits.getMaxChars()) {
-                removeOldLines();
+                    || getCharCount() >= outputLimits.getMaxChars()
+                    || linesToInfos.size() >= 524288) { // #239445
+                return removeOldLines();
+            } else {
+                return 0;
             }
         }
     }
@@ -1225,7 +1228,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
      * Tell the storage that oldest bytes can be forgotten, and update all data
      * structures.
      */
-    private void removeOldLines() {
+    private int removeOldLines() {
         int newFirstLine = Math.min(outputLimits.getRemoveLines(),
                 lineStartList.size() / 2);
         int firstByteOffset = lineStartList.get(newFirstLine);
@@ -1258,6 +1261,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         updateVisibleToRealLines(0);
         getStorage().shiftStart(firstByteOffset);
         fire();
+        return firstByteOffset;
     }
 
     private void recomputeRealToVisibleLine() {

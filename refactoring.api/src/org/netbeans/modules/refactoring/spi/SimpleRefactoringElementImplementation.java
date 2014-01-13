@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.spi.impl.PreviewManager;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -71,6 +72,7 @@ import org.openide.windows.TopComponent;
  * @see RefactoringElementImplementation
  * @since 1.5.0
  */
+@NbBundle.Messages({"WARN_ElementNotFound=The destination was not found."})
 public abstract class SimpleRefactoringElementImplementation implements RefactoringElementImplementation {
     
     private boolean enabled = true;
@@ -102,9 +104,14 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         PositionBounds bounds = getPosition();
         if (bounds == null)
             return;
-        
         PositionRef beginPos=bounds.getBegin();
         CloneableEditorSupport editSupp=beginPos.getCloneableEditorSupport();
+        if(editSupp.getDocument() == null) {
+             StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(SimpleRefactoringElementImplementation.class, "WARN_ElementNotFound"), 
+                    StatusDisplayer.IMPORTANCE_ANNOTATION);
+            return;
+        }
         editSupp.edit();
         JEditorPane[] panes=editSupp.getOpenedPanes();
         

@@ -846,36 +846,46 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (index < 0 || index >= diffs.length || index >= manager.getDecorations().length) {
             return;
         }
-        Difference diff = diffs[index];
-        
-        int offFirstStart, offSecondStart, offCurrent, offSecondEnd;
+        final Difference diff = diffs[index];
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
-            StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
+            final StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
+            final StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
             
-            offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
-            offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
-           
-            if(diff.getSecondEnd() > diff.getSecondStart()) {
-                offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
-            } else {
-                int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
-                if(diff.getSecondStart() < lastLine) {
-                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
-                } else {
-                    offSecondEnd = doc2.getLength();
+            final int offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
+            doc1.render(new Runnable() {
+
+                @Override
+                public void run () {
+                    int offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
+                    jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
                 }
-            }
-            
-            jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
-            if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
-                // it could be somebody is editing right now,
-                // so set the caret on the diferences first lines first column only in case
-                // it isn't already somrwhere in the line 
-                jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
-            }
+            });
+            doc2.render(new Runnable() {
+
+                @Override
+                public void run () {
+                    int offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
+                    int offSecondEnd;
+                    if(diff.getSecondEnd() > diff.getSecondStart()) {
+                        offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
+                    } else {
+                        int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
+                        if(diff.getSecondStart() < lastLine) {
+                            offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
+                        } else {
+                            offSecondEnd = doc2.getLength();
+                        }
+                    }
+
+                    if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
+                        // it could be somebody is editing right now,
+                        // so set the caret on the diferences first lines first column only in case
+                        // it isn't already somrwhere in the line 
+                        jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
+                    }
+                }
+            });
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
@@ -885,7 +895,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 5;
             }
             jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
-        } catch (IndexOutOfBoundsException ex) {
+        } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
 
@@ -1157,6 +1167,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                 open = DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
                             }
                             if (open) {
+                                LOG.log(Level.INFO, "User acepted UQE: {0}", fo.getPath()); //NOI18N
                                 ex.confirmed();
                                 sdoc = ec.openDocument();
                             } else {
@@ -1249,6 +1260,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setTextualContent () {
+        if (jTabbedPane.getSelectedComponent() == textualPanel) {
+            countTextualDiff();
+        } else {
+            jTabbedPane.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged (ChangeEvent e) {
+                    if (jTabbedPane.getSelectedComponent() == textualPanel) {
+                        jTabbedPane.removeChangeListener(this);
+                        countTextualDiff();
+                    }
+                }
+            });
+        }
+        textualEditorPane.setEditable(false);
+    }
+
+    private void countTextualDiff () {
         final EditorKit kit = textualEditorPane.getEditorKit();
         rp.post(new Runnable() {
             @Override
@@ -1260,7 +1289,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 textualRefreshTask.refresh();
             }
         });
-        textualEditorPane.setEditable(false);
     }
 
     private TextualDiffRefreshTask textualRefreshTask;
