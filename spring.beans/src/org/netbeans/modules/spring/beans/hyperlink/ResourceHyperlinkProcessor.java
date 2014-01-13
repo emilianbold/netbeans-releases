@@ -99,7 +99,7 @@ public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
         if (project != null) {
             List<SourceGroup> groups = new ArrayList<>();
             Sources sources = ProjectUtils.getSources(project);
-            groups.addAll(Arrays.asList(sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT)));
+            groups.addAll(Arrays.asList(sources.getSourceGroups("doc_root"))); //NOI18N
             groups.addAll(Arrays.asList(sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)));
             for (SourceGroup sourceGroup : groups) {
                 FileObject fileObject = sourceGroup.getRootFolder().getFileObject(subPath);
