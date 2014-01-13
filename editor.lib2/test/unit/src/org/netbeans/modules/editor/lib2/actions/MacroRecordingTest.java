@@ -80,7 +80,8 @@ public class MacroRecordingTest {
     public void testRecording() {
         MacroRecording macroRecording = MacroRecording.get();
         assertNotNull(macroRecording.startRecording());
-        macroRecording.recordAction(new MacroRecordingTestAction(), new ActionEvent(new JEditorPane(), 0, ""));
+        JEditorPane pane = new JEditorPane();
+        macroRecording.recordAction(new MacroRecordingTestAction(), new ActionEvent(pane, 0, ""), pane);
         String text = macroRecording.stopRecording();
         assertEquals(TEST_ACTION_NAME, text);
     }
