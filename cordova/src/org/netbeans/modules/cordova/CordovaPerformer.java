@@ -174,7 +174,7 @@ public class CordovaPerformer implements BuildPerformer {
         
 
         if (!CordovaPlatform.getDefault().isReady()) {
-            throw new IllegalStateException(Bundle.ERR_NO_Cordova());
+            throw new UnsupportedOperationException(Bundle.ERR_NO_Cordova());
         }
         
         ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
@@ -225,6 +225,9 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                if (!device.isWebViewDebugSupported()) {
+                                    return;
+                                }
                                 final FileObject startFile = ClientProjectUtilities.getStartFile(project);
                                 
                                 //#231037
