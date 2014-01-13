@@ -80,6 +80,11 @@ public class DiffContext {
     public final String mainCode;
     
     public final int textLength;
+    
+    /**
+     * Special flag; when creating new CUs from template, always include their initial comments
+     */
+    public final boolean forceInitialComment;
 
     public DiffContext(CompilationInfo copy) {
         this(copy, new HashSet<Tree>());
@@ -98,8 +103,13 @@ public class DiffContext {
         this.syntheticTrees = syntheticTrees;
         
         this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
+        
+        this.forceInitialComment = false;
     }
 
+    /**
+     * Note: the constructor is only used when creating new compilation units; a special flag will be set up, so an initial comment is not skipped.
+     */
     public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> syntheticTrees, CompilationUnitTree mainUnit, String mainCode) {
         this.tokenSequence = TokenHierarchy.create(code, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         this.origText = code;
@@ -115,6 +125,8 @@ public class DiffContext {
         this.mainCode = mainCode;
         
         this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
+        
+        this.forceInitialComment = true;
     }
 
     public static final CodeStyle getCodeStyle(CompilationInfo info) {
