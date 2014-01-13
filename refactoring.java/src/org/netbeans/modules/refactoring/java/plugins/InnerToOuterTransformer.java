@@ -279,24 +279,6 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = RefactoringUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newInnerClass, workingCopy, make);
-//                try {
-//                    newCompilation = genUtils.createFromTemplate(sourceRoot, relativePath, ElementKind.CLASS);
-//                    List<? extends Tree> typeDecls = newCompilation.getTypeDecls();
-//                    if(workingCopy.getTreeUtilities().getComments(newInnerClass, true).isEmpty()) {
-//                        if (!typeDecls.isEmpty()) {
-//                            ClassTree templateClazz = (ClassTree) typeDecls.get(0);
-//                            genUtils.copyComments(templateClazz, newInnerClass, true);
-//                        }
-//                    }
-//                    if(typeDecls.isEmpty()) {
-//                        newCompilation = make.addCompUnitTypeDecl(newCompilation, newInnerClass);
-//                    } else {
-//                        rewrite(typeDecls.get(0), newInnerClass);
-//                    }
-//                } catch (IOException ex) {
-//                    Exceptions.printStackTrace(ex);
-//                    newCompilation = make.CompilationUnit(sourceRoot, relativePath, null, Collections.singletonList(newInnerClass));
-//                }
                 rewrite(null, newCompilation);
                 return newOuter;
             } else {
