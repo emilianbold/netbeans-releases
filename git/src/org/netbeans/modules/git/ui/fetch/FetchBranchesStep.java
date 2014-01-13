@@ -151,6 +151,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         if (repository == null) {
             fillRemoteBranches(branches, Collections.<String, GitBranch>emptyMap());
         } else {
+            fillRemoteBranches(Collections.<String,GitBranch>emptyMap(), Collections.<String,GitBranch>emptyMap());
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
