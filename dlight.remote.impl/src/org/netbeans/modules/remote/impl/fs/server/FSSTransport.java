@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.impl.fs.server;
  */
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -293,6 +294,20 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);
+    }
+    
+    public static final void testDumpInstances(PrintStream ps) {
+        Collection<FSSTransport> transports;
+        synchronized (instancesLock) {
+            transports = instances.values();
+        }
+        for (FSSTransport tr : transports) {
+            tr.testDump(ps);
+        }
+    }
+    
+    protected void testDump(PrintStream ps) {
+        this.dispatcher.testDump(ps);
     }
 
     @Override

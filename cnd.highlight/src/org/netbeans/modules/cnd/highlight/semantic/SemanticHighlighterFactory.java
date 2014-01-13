@@ -48,7 +48,6 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
@@ -66,6 +65,6 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public final class SemanticHighlighterFactory extends TaskFactory {
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new SemanticHighlighter(snapshot.getSource().getDocument(true), new InterrupterImpl()));
+        return Collections.singletonList(new SemanticHighlighter(snapshot.getMimeType()));
     }
 }

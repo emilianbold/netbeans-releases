@@ -269,7 +269,8 @@ import org.openide.util.lookup.Lookups;
     
 
     public RepositoryDataInputStream getInputStream(Key key) {
-            
+        int unitId = key.getUnitId();
+        openUnit(unitId);
         for (Layer layer : layers) {
             final LayerDescriptor ld = layer.getLayerDescriptor();
             LayerKey layerKey = getReadLayerKey(key, layer);
@@ -338,6 +339,8 @@ import org.openide.util.lookup.Lookups;
         // 100001
         int unitId = key.getUnitId();
         // 5
+        int clientShortUnitID = storageMask.clientToLayer(unitId);
+
         Integer layerUnitID = unitIDConverter.clientToLayer(unitId);
         if (layerUnitID < 0) {
             // Not in this layer...
@@ -361,8 +364,19 @@ import org.openide.util.lookup.Lookups;
     void openUnit(int clientUnitID) {
         // unitID == 100001
         // 1
+        //check if layers are opened already, check files table
         Integer clientShortUnitID = storageMask.clientToLayer(clientUnitID);
+        synchronized (filePathDictionaries) {
+            FilePathsDictionary fsDict = filePathDictionaries.get(clientShortUnitID);
+            if (fsDict != null) {
+                return;
+            }
+        }
         UnitDescriptor clientUnitDescriptor = clientUnitDescriptorsDictionary.getUnitDescriptor(clientShortUnitID);
+        if (clientUnitDescriptor == null) {
+            //was not registered, at all, what should we do here?
+           return;
+        }
         int clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(clientUnitDescriptor.getFileSystem());
         Layer layer_to_read_files_from = null;
         int unit_id_layer_to_read_files_from = -1;
@@ -478,8 +492,14 @@ import org.openide.util.lookup.Lookups;
     }
 
     CharSequence getUnitName(int unitID) {
-        Integer unmaskedID = storageMask.clientToLayer(unitID);
-        return clientUnitDescriptorsDictionary.getUnitDescriptor(unmaskedID).getName();
+        openUnit(unitID);
+        Integer unmaskedID = storageMask.clientToLayer(unitID);        
+        final UnitDescriptor unitDescriptor = clientUnitDescriptorsDictionary.getUnitDescriptor(unmaskedID);
+        if (unitDescriptor == null) {
+            log.log(Level.FINE, "unitDescriptor is null for unitID={0}", unitID);//NOI18N
+            return null;
+        }
+        return unitDescriptor.getName();
     }
 
 

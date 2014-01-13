@@ -290,9 +290,7 @@ public final class CsmCacheManager {
                 return null;
             }
             if (activeReferences == 0) {
-                if (LOGGER.isLoggable(Level.FINE) || CndTraceFlags.TRACE_CSM_CACHE) {
-                    LOGGER.log(Level.INFO, "no any active cache transaction\n", new Exception("" + entryKey));
-                }
+                CndUtils.printStackTraceOnce(new Exception("no any active cache transaction:" + entryKey)); // NOI18N
                 return null;
             }
             CsmClientCache out = cacheEntries.get(entryKey);

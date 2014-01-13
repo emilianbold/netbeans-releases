@@ -380,6 +380,10 @@ public class RemoteFileSystemUtils {
         return NbBundle.getMessage(RemoteFileSystemUtils.class, "NotConnectedExceptionMessage", env.getDisplayName());
     }
     
+    public static boolean isUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
+    }
+
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
 
    /** Copy-paste from FileObject.copy */

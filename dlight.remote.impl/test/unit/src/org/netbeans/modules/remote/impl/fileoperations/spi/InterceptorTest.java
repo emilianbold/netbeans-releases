@@ -52,7 +52,7 @@ import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 public class InterceptorTest extends RemoteTestSuiteBase {
     @SuppressWarnings("unchecked")
     public InterceptorTest() {
-        this("FileOperations API", getTestClasses());
+        this("FileOperations Interceptor API", getTestClasses());
     }
 
     @SuppressWarnings("unchecked")

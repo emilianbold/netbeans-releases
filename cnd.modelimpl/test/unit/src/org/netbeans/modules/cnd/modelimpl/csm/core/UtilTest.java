@@ -239,6 +239,8 @@ public class UtilTest extends ModelBasedTestCase {
                         return KeyObjectFactory.KEY_FUNCTION_FRIEND_KEY;
                     case FUNCTION_FRIEND_DEFINITION:
                         return KeyObjectFactory.KEY_FUNCTION_FRIEND_DEFINITION_KEY;
+                    case FUNCTION_TYPE:
+                        return KeyObjectFactory.KEY_FUNCTION_TYPE_KEY;
                 }
                 throw new IllegalArgumentException(""+(char) kind);
             }

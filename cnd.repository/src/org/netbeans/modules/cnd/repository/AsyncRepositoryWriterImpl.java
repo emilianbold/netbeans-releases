@@ -50,12 +50,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import static org.netbeans.modules.cnd.repository.RepositoryImpl.REMOVED_OBJECT;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.storage.StorageManager;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -180,13 +180,13 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
             try {
                 flush();
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
             mapIsNotEmpty.signalAll();
             try {
                 writerDone.await();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
         } finally {
             lock.unlock();
@@ -234,7 +234,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                        RepositoryExceptions.throwException(this, ex);
                     }
                 }
 
@@ -286,7 +286,7 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                         }
                     }
                 } catch (Throwable th) {
-                    th.printStackTrace(System.err);
+                    RepositoryExceptions.throwException(this, th);
                 } finally {
                     lock.unlock();
                 }
@@ -322,10 +322,14 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
                 assert out != null;
                 key.getPersistentFactory().write(out, REMOVED_OBJECT.equals(value) ? null : value);
             } catch (Throwable ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, key, ex);
             } finally {
-                if (out != null) {
-                    out.commit();
+                try{
+                    if (out != null) {
+                        out.commit();
+                    }
+                } catch (Throwable ex) {
+                    RepositoryExceptions.throwException(this, key, ex);
                 }
             }
         }

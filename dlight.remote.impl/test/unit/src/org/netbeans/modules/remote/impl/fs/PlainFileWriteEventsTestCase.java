@@ -62,12 +62,12 @@ import org.openide.filesystems.FileRenameEvent;
  */
 public class PlainFileWriteEventsTestCase extends RemoteFileTestBase {
 
-    static {
-        //System.setProperty("remote.fs_server", "false");
-        //System.setProperty("remote.fs_server.verbose", "3");
-        System.setProperty("remote.fs_server.suppress.stderr", "false");
-        //System.setProperty("remote.fs_server.refresh", "60000"); // NOI18N
-    }    
+//    static {
+//        //System.setProperty("remote.fs_server", "false");
+//        //System.setProperty("remote.fs_server.verbose", "3");
+//        System.setProperty("remote.fs_server.suppress.stderr", "false");
+//        //System.setProperty("remote.fs_server.refresh", "60000"); // NOI18N
+//    }    
         
     public PlainFileWriteEventsTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);

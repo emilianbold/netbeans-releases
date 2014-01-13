@@ -51,12 +51,12 @@ import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
  */
 public class FileOperationsTest extends RemoteTestSuiteBase {
     
-    static {
-        System.setProperty("remote.fs_server.verbose", "1");
-        System.setProperty("remote.fs_server.log", "true");
-        //System.setProperty("remote.fs_server.suppress.stderr", "false");
-        //System.setProperty("remote.fs_server.refresh", "0");
-    }
+//    static {
+//        System.setProperty("remote.fs_server.verbose", "1");
+//        System.setProperty("remote.fs_server.log", "true");
+//        //System.setProperty("remote.fs_server.suppress.stderr", "false");
+//        //System.setProperty("remote.fs_server.refresh", "0");
+//    }
     
     @SuppressWarnings("unchecked")
     public FileOperationsTest() {

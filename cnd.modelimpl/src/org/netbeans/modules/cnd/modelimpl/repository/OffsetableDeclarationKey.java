@@ -122,6 +122,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND(obj);
             case FUNCTION_FRIEND_DEFINITION:
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND_DEFINITION(obj);
+            case FUNCTION_TYPE:
+                return new OffsetableDeclarationKey.FUNCTION_TYPE(obj);
         }
         throw new IllegalArgumentException();
     }
@@ -184,6 +186,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND(obj, index);
             case FUNCTION_FRIEND_DEFINITION:
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND_DEFINITION(obj, index);
+            case FUNCTION_TYPE:
+                return new OffsetableDeclarationKey.FUNCTION_TYPE(obj, index);
         }
         throw new IllegalArgumentException();
     }
@@ -479,4 +483,12 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
         @Override char getKind() {return Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);}
         @Override public short getHandler() {return KeyObjectFactory.KEY_FUNCTION_FRIEND_DEFINITION_KEY;}
     }
+    static final class FUNCTION_TYPE extends OffsetableDeclarationKey {
+        FUNCTION_TYPE(OffsetableDeclarationBase<?> obj) {super(obj);}
+        FUNCTION_TYPE(OffsetableDeclarationBase<?> obj, int index) {super(obj, index);}
+        FUNCTION_TYPE(KeyDataPresentation presentation) {super(presentation);}
+        FUNCTION_TYPE(RepositoryDataInput aStream) throws IOException {super(aStream);}
+        @Override char getKind() {return Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_TYPE);}
+        @Override public short getHandler() {return KeyObjectFactory.KEY_FUNCTION_TYPE_KEY;}
+    }    
 }

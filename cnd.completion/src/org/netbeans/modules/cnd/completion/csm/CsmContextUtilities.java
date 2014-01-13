@@ -45,11 +45,19 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -529,20 +537,72 @@ public class CsmContextUtilities {
 
     public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
-        CsmScope enumScope = null;
-        for (int i = context.size() - 1; 0 <= i; --i) {
-            CsmScope scope = context.get(i).getScope();
-            if (CsmKindUtilities.isEnum(scope)) {
-                enumScope = ((CsmEnum)scope).getScope();
-            }
-            if (CsmKindUtilities.isClass(scope)
-                    && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
-                clazz = (CsmClass)scope;
-                break;
-            }
+        
+        // Support of GCC extension - designated initializers (bug 240016)
+        if (CsmKindUtilities.isVariable(context.getLastObject()) && CsmContextUtilities.isInInitializerList(context, context.getOffset())) {
+            CsmVariable var = (CsmVariable) context.getLastObject();
+            
+            CsmClassifier classifier = var.getType().getClassifier();
+            
+            if (classifier != null && CsmKindUtilities.isClass(classifier)) {
+                CsmExpression expression = var.getInitialValue();
+                String expressionText = expression.getExpandedText().toString();        
+                int startOffset = expression.getStartOffset();
+
+                TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
+                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+                // Go from inner to outer TSes
+                TokenSequence<TokenId> cppts = null;
+                for (int i = tsList.size() - 1; i >= 0; i--) {
+                    TokenSequence<?> ts = tsList.get(i);
+                    final Language<?> lang = ts.languagePath().innerLanguage();
+                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                        @SuppressWarnings("unchecked") // NOI18N
+                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                        cppts = uts;
+                    }
+                }    
+                if (cppts != null) {
+                    cppts.move(context.getOffset() - startOffset);
+                    if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
+                        boolean leftSeparatorFound = findToken(
+                                cppts,
+                                true,
+                                Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
+                                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                        ) != null;
+
+                        boolean rightSeparatorFound = findToken(
+                                cppts,
+                                false,
+                                Arrays.asList(CppTokenId.COLON),
+                                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                        ) != null;
+
+                        if (leftSeparatorFound && rightSeparatorFound) {
+                            clazz = (CsmClass) classifier;
+                        }
+                    }
+                }
+            }    
         }
-        if (CsmKindUtilities.isClass(enumScope)) {
-            clazz = (CsmClass) enumScope;
+        
+        if (clazz == null) {
+            CsmScope enumScope = null;
+            for (int i = context.size() - 1; 0 <= i; --i) {
+                CsmScope scope = context.get(i).getScope();
+                if (CsmKindUtilities.isEnum(scope)) {
+                    enumScope = ((CsmEnum)scope).getScope();
+                }
+                if (CsmKindUtilities.isClass(scope)
+                        && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
+                    clazz = (CsmClass)scope;
+                    break;
+                }
+            }
+            if (CsmKindUtilities.isClass(enumScope)) {
+                clazz = (CsmClass) enumScope;
+            }
         }
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
@@ -561,6 +621,49 @@ public class CsmContextUtilities {
             }
         }
         return clazz;
+    }
+    
+    private static Token<TokenId> findToken(TokenSequence<TokenId> ts,
+                                            boolean backward, 
+                                            List<? extends TokenId> targetTokens, 
+                                            TokenId ... skipTokens
+    ) {
+        int offset = ts.offset();
+        
+        Token<TokenId> result = null;
+        
+        while (backward ? ts.movePrevious() : ts.moveNext())  {
+            Token<TokenId> token = ts.token();
+
+            for (TokenId tId : targetTokens) {
+                if (tId.equals(token.id())) {
+                    result = token;
+                    break;
+                }
+            }
+            
+            if (result != null) {
+                break;
+            }
+
+            boolean skip = false;
+            
+            for (TokenId tId : skipTokens) {
+                if (tId.equals(token.id())) {
+                    skip = true;
+                    break;
+                }
+            }
+            
+            if (!skip) {
+                break;
+            }
+        }
+        
+        ts.move(offset);
+        ts.moveNext();
+        
+        return result;
     }
 
     public static CsmFunction getFunction(CsmContext context, boolean inScope) {
