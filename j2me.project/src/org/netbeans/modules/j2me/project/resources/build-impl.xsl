@@ -852,7 +852,18 @@ is divided into following sections:
                             if (propertyArray[i].indexOf(":") == -1) {
                                 continue;
                             }
-                            var splitted = propertyArray[i].split(":");
+                            var colonCount = 0;
+                            for (var j = 0; j < propertyArray[i].length; j++) {
+                                if (propertyArray[i].charAt(j) == ':') {
+                                    colonCount++;
+                                }
+                            }
+                            splitted = propertyArray[i].split(":");
+                            if (colonCount > 1) {
+                                var colonIndex = propertyArray[i].indexOf(":");
+                                splitted[0] = propertyArray[i].substring(0, colonIndex);
+                                splitted[1] = propertyArray[i].substring(colonIndex + 1);
+                            }
                             var propertyAttr = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
                             propertyAttr.setName(splitted[0].trim());
                             propertyAttr.setValue(splitted[1].trim());
