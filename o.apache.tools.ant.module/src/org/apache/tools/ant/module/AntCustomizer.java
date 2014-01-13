@@ -112,9 +112,11 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 }
                 classpath = new ArrayList<File>();
                 for (String f : cp.split(Pattern.quote(File.pathSeparator))) {
-                    classpath.add(new File(f));
+                    if(!f.trim().isEmpty()) {
+                        classpath.add(new File(f));
+                    }
                 }
-                changed = true;
+                fireChanged();
             }
         };
         propertiesProperty = new PropertySupport.ReadWrite<Properties>("properties", Properties.class, null, null) {
@@ -125,7 +127,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
             }
             public void setValue(Properties val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                 properties = NbCollections.checkedMapByCopy(val, String.class, String.class, true);
-                changed = true;
+                fireChanged();
             }
         };
         setUpPropertyPanels();
@@ -216,20 +218,30 @@ public class AntCustomizer extends JPanel implements ActionListener {
         return changed;
     }
     
+    private void fireChanged() {
+        changed = !AntSettings.getAntHome().getPath().equals(tfAntHome.getText().trim())
+                || AntSettings.getAutoCloseTabs() != cbReuseOutput.isSelected()
+                || AntSettings.getSaveAll() != cbSaveFiles.isSelected()
+                || AntSettings.getAlwaysShowOutput() != cbAlwaysShowOutput.isSelected()
+                || AntSettings.getVerbosity() != cbVerbosity.getSelectedIndex() + 1
+                || !AntSettings.getProperties().equals(properties)
+                || !AntSettings.getExtraClasspath().equals(classpath);
+    }
+    
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
         Object o = e.getSource ();
         if (o == cbAlwaysShowOutput) {
-            changed = true;
+            fireChanged();
         } else
         if (o == cbReuseOutput) {
-            changed = true;
+            fireChanged();
         } else
         if (o == cbSaveFiles) {
-            changed = true;
+            fireChanged();
         } else
         if (o == cbVerbosity) {
-            changed = true;
+            fireChanged();
         } else
         if (o == bAntHome) {
             JFileChooser chooser = new JFileChooser (tfAntHome.getText ());
@@ -250,7 +262,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
                 tfAntHome.setText (file.getAbsolutePath ());
                 AntSettings.setAntHome(file);
                 updateAntVersion();
-                changed = true;
+                fireChanged();
             }
         }
     }
@@ -392,7 +404,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
             tfAntHome.setText(null);
         }
         updateAntVersion();
-        changed = true;
+        fireChanged();
     }//GEN-LAST:event_bAntHomeDefaultActionPerformed
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
