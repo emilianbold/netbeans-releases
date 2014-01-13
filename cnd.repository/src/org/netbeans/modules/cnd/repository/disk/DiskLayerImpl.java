@@ -46,6 +46,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
@@ -94,7 +95,7 @@ public final class DiskLayerImpl {
         try {
             layerIndex.loadUnitIndex(unitIdx);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
     }
 
@@ -144,7 +145,7 @@ public final class DiskLayerImpl {
         try {
             layerIndex.store();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
     }
 }

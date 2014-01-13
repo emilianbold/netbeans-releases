@@ -257,9 +257,9 @@ public final class RepositoryUtils {
     }
 
     public static void startup() {
-        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
         Repository.addRepositoryExceptionListener(getRepositoryListenerProxy());
-        Repository.registerRepositoryListener(getRepositoryListenerProxy());
+        Repository.registerRepositoryListener(getRepositoryListenerProxy());        
+        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
     }
 
     private static RepositoryListenerProxy myRepositoryListenerProxy;
