@@ -155,4 +155,9 @@ public enum IOSDevice implements Device {
             return new DeviceDebugTransport();
         }
     }
+
+    @Override
+    public boolean isWebViewDebugSupported() {
+        return true;
+    }
 }

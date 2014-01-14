@@ -74,4 +74,6 @@ public interface Device {
     
     public MobileDebugTransport getDebugTransport();
     
+    public boolean isWebViewDebugSupported();
+    
 }
