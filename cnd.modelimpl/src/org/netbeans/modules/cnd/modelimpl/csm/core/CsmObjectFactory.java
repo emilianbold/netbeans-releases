@@ -180,7 +180,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof TypedefImpl) {
             if (object instanceof ClassImpl.MemberTypedef) {
                 aHandler = MEMBER_TYPEDEF;
-            } else if (object instanceof ClassImpl.MemberTypeAlias) {
+            } else if (object instanceof ClassImpl.MemberTypeAliasImpl) {
                 aHandler = MEMBER_TYPEALIAS;
             } else {
                 aHandler = TYPEDEF_IMPL;
@@ -410,7 +410,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 break;
                 
             case MEMBER_TYPEALIAS:
-                obj = new ClassImpl.MemberTypeAlias(stream);
+                obj = new ClassImpl.MemberTypeAliasImpl(stream);
                 break;
 
             case NAMESPACE_IMPL:
