@@ -166,6 +166,7 @@ public enum PHPTokenId implements TokenId {
     PHP__DIR__(null, "constant"), //NOI18N
     PHP__NAMESPACE__(null, "constant"), //NOI18N
     PHP_OPERATOR(null, "operator"), //NOI18N
+    PHP_TEXTUAL_OPERATOR(null, "operator"), //NOI18N
     PHP_PARENT(null, "keyword"), //NOI18N
     PHP__CLASS__(null, "constant"), //NOI18N
     PHP__METHOD__(null, "constant"), //NOI18N
