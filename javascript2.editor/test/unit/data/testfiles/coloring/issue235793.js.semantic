@@ -1,0 +1,10 @@
+function |>METHOD:a<|() {
+    var a, b, c;
+    return [a, b, c];     
+}
+   
+function |>METHOD:b<|() {
+    return [function() {
+        var |>UNUSED:something<|;
+    }];
+}
