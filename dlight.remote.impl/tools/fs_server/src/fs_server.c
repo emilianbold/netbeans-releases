@@ -86,7 +86,7 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 0
+#define FS_SERVER_MID_VERSION 1
 #define FS_SERVER_MINOR_VERSION 22
 
 typedef struct fs_entry {
@@ -238,17 +238,22 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     } else {
         p = raw_request + 2;
         p = decode_int(p, &id);
-        if (p == NULL) {
-            return NULL;
-        }
-        //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-        p = decode_int(p, &path_len);
-        if (p == NULL) {
-            return NULL;
-        }
-        if (!path_len && *raw_request != FS_REQ_QUIT) {
-            report_error("wrong (zero path) request: %s", raw_request);
-            return NULL;
+        if (*raw_request == FS_REQ_SERVER_INFO) {
+            path_len=0;
+            p = "";
+        } else {
+            if (p == NULL) {
+                return NULL;
+            }
+            //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+            p = decode_int(p, &path_len);
+            if (p == NULL) {
+                return NULL;
+            }
+            if (!path_len && *raw_request != FS_REQ_QUIT) {
+                report_error("wrong (zero path) request: %s", raw_request);
+                return NULL;
+            }
         }
     }
     //fs_request->kind = request->kind;
@@ -562,6 +567,12 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
 
 static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
     my_fprintf(STDOUT, "%c %i %i %s: %s: %s\n", FS_RSP_ERROR, request_id, err_code, err_msg, (err_code) ? err_to_string(err_code) : "", path);
+    my_fflush(STDOUT);
+}
+
+static void response_info(int request_id) {
+    my_fprintf(STDOUT, "%c %i %i.%i.%i\n", FS_RSP_SERVER_INFO, request_id, FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION);
+    my_fflush(STDOUT);
 }
 
 static void response_delete(int request_id, const char* path) {
@@ -881,6 +892,9 @@ static void process_request(fs_request* request) {
     switch (request->kind) {
         case FS_REQ_DELETE:
             response_delete(request->id, request->path);
+            break;
+        case FS_REQ_SERVER_INFO:
+            response_info(request->id);
             break;
         case FS_REQ_LS:
             response_ls(request->id, request->path, false, false);

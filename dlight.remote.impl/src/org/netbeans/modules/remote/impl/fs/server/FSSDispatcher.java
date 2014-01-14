@@ -121,6 +121,8 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
+    private static final String MIN_SERVER_VERSION = "1.1.22"; // NOI18N
+    
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
@@ -162,6 +164,8 @@ import org.openide.util.RequestProcessor;
         FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
         try {
             dispatch(req);
+        } catch (ConnectException ex) {
+            // nothing to report: no connection => no refresh
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         } catch (CancellationException ex) {
@@ -344,6 +348,8 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             setInvalid(false);
             throw ex;
+        } catch (InitializationException ex) {
+            throw new ExecutionException(ex);
         }
         PrintWriter writer = srv.getWriter();
         sendRequest(writer, request);
@@ -484,7 +490,8 @@ import org.openide.util.RequestProcessor;
     }
 
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
-            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+            ConnectionManager.CancellationException, InterruptedException, 
+            ExecutionException, InitializationException {
         synchronized (serverLock) {
             if (server != null) {
                 if (!ProcessUtils.isAlive(server.getProcess())) {
@@ -497,13 +504,73 @@ import org.openide.util.RequestProcessor;
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);
-                RP.post(new MainLoop());
                 RP.post(new ErrorReader(server.getProcess().getErrorStream()));
+                try {
+                    handShake();
+                } catch (InitializationException ex) {
+                    setInvalid(true);
+                    throw ex;
+                }
+                RP.post(new MainLoop());
             }
             return server;
         }
     }
     
+    private void handShake() throws IOException, InitializationException, InterruptedException {
+        FSSRequest infoReq = new FSSRequest(FSSRequestKind.FS_REQ_SERVER_INFO, "");
+        sendRequest(server.getWriter(), infoReq);
+        String line = server.getReader().readLine();
+        if (line == null) {
+            NativeProcess.State state = server.getProcess().getState();
+            if (state == NativeProcess.State.FINISHED) {
+                int rc = server.getProcess().waitFor();
+                if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
+                    throw new InitializationException(lastErrorMessage.get());
+                }
+            }
+        } else {
+            Buffer buf = new Buffer(line);
+            char respKind = buf.getChar();
+            RemoteLogger.assertTrue(respKind == FSSResponseKind.FS_RSP_SERVER_INFO.getChar());
+            int respId = buf.getInt();
+            RemoteLogger.assertTrue(respId == infoReq.getId());
+            String rest = buf.getRest().trim();
+            checkVersions(MIN_SERVER_VERSION, rest);
+        }
+    }
+    
+    /** 
+     * Checks versions in format N.N.N where N a number that has 1 or more digits 
+     */
+    private void checkVersions(String ref, String fact) throws InitializationException {
+        String[] refArr = ref.split("\\."); //NOI18N
+        String[] factArr = fact.split("\\."); //NOI18N
+        if (refArr.length != 3) {
+            Exceptions.printStackTrace(new IllegalArgumentException("wrong version format: " + ref)); //NOI18N
+        }
+        if (factArr.length != 3) {
+            throw new InitializationException("Wrong version format: " + fact); // NOI18N
+        }
+        for (int i = 0; i < 3; i++) {
+            int refValue;
+            int factValue;
+            try {
+                refValue = Integer.parseInt(refArr[i]);
+            } catch (NumberFormatException nfe) {
+                throw new InitializationException("Wrong version format: " + ref); // NOI18N
+            }
+            try {
+                factValue = Integer.parseInt(factArr[i]);
+            } catch (NumberFormatException nfe) {
+                throw new InitializationException("Wrong version format: " + fact); // NOI18N
+            }
+            if (factValue < refValue) {
+                throw new InitializationException("Wrong server version: " + fact + " should be more or equal to " + MIN_SERVER_VERSION); // NOI18N`
+            }
+        }        
+    }
+
     private class ErrorReader implements Runnable {
         
         private final InputStream inputStream;
@@ -634,4 +701,10 @@ import org.openide.util.RequestProcessor;
             ps.print('\n');
         }
     }
+    
+    public static class InitializationException extends Exception {
+        public InitializationException(String message) {
+            super(message);
+        }
+    }    
 }
