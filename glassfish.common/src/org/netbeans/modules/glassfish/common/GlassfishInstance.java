@@ -655,9 +655,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             FileObject[] instanceFOs = dir.getChildren();
             FileObject instanceFO = null;
 
-            for(int i = 0; i < instanceFOs.length; i++) {
-                if(url.equals(instanceFOs[i]
-                        .getAttribute(GlassfishModule.URL_ATTR))) {
+            for (int i = 0; i < instanceFOs.length; i++) {
+                if (url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))
+                        && !GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
                     instanceFO = instanceFOs[i];
                 }
             }

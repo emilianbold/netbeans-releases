@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.test;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
-import org.openide.filesystems.URLMapperTestHidden;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author vv159170
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class RemoteFSTCKUrlMapperTest extends RemoteFSTCKTestCase {
-   
-    public RemoteFSTCKUrlMapperTest(Test test) {
-        super(test);
+public class PHPCodeCompletion240242Test extends PHPCodeCompletionTestBase {
+
+    public PHPCodeCompletion240242Test() {
+        super(null);
     }
-    
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(URLMapperTestHiddenEx.class);
-        return new RemoteFSTCKUrlMapperTest(suite);
-    }    
 
-    @RandomlyFails
-    public static class URLMapperTestHiddenEx extends URLMapperTestHidden {
-
-        public URLMapperTestHiddenEx(String name) {
-            super(name);
-        }
-
-        @Override
-        protected void setUp() throws Exception {
-            RemoteTestSuiteBase.registerTestSetup(this);
-            super.setUp();
-        }        
-        
-        @Override
-        protected void tearDown() throws Exception {
-            super.tearDown();
-            RemoteTestSuiteBase.registerTestTearDown(this);
-        }
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test240242/issue240242.php", "$this->^ //cc", false);
     }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test240242/"))
+            })
+        );
+    }
+
 }

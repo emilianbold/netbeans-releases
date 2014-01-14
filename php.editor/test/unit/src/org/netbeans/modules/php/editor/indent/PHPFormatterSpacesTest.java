@@ -976,4 +976,10 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.SPACE_BEFORE_FINALLY_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/finally_04.php", options);
     }
+
+    public void testIssue240274() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_BINARY_OPS, false);
+        reformatFileContents("testfiles/formatting/spaces/issue240274.php", options);
+    }
 }

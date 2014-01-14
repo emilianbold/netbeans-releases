@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 import org.openide.filesystems.FileObjectTestHid;
 
@@ -62,6 +63,7 @@ public class RemoteFSTCKFileObjectTest extends RemoteFSTCKTestCase {
         return new RemoteFSTCKFileObjectTest(suite);
     }    
 
+    @RandomlyFails
     public static class FileObjectTestHidEx extends FileObjectTestHid {
 
         public FileObjectTestHidEx(String name) {

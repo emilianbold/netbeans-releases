@@ -270,7 +270,7 @@ public final class PhpUnit {
         }
         // test groups, not for rerun
         if (PhpUnitPreferences.getAskForTestGroups(phpModule)) {
-            List<String> testGroups;
+            List<String> testGroups = null;
             if (runInfo.isRerun()) {
                 @SuppressWarnings("unchecked")
                 List<String> savedGroups = runInfo.getParameter(PHP_UNIT_GROUPS_PARAM, List.class);
@@ -278,14 +278,12 @@ public final class PhpUnit {
             } else {
                 // ask user
                 List<String> allTestGroups = getTestGroups(phpModule);
-                if (allTestGroups == null) {
-                    // some error
-                    return null;
-                }
-                testGroups = PhpUnitTestGroupsPanel.showDialog(allTestGroups, PhpUnitPreferences.getTestGroups(phpModule));
-                if (testGroups != null) {
-                    PhpUnitPreferences.setTestGroups(phpModule, testGroups);
-                    runInfo.setParameter(PHP_UNIT_GROUPS_PARAM, testGroups);
+                if (allTestGroups != null) {
+                    testGroups = PhpUnitTestGroupsPanel.showDialog(allTestGroups, PhpUnitPreferences.getTestGroups(phpModule));
+                    if (testGroups != null) {
+                        PhpUnitPreferences.setTestGroups(phpModule, testGroups);
+                        runInfo.setParameter(PHP_UNIT_GROUPS_PARAM, testGroups);
+                    }
                 }
             }
             if (testGroups != null
@@ -325,8 +323,11 @@ public final class PhpUnit {
             params.add(String.format(SUITE_RUN, joinPaths(runInfo.getStartFiles(), SUITE_PATH_DELIMITER)));
         }
 
-        phpUnit.workDir(getWorkingDirectory(phpModule))
-                .additionalParameters(params);
+        File workingDirectory = getWorkingDirectory(phpModule);
+        if (workingDirectory != null) {
+            phpUnit.workDir(workingDirectory);
+        }
+        phpUnit.additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return phpUnit.runAndWait(getDescriptor(), "Running PhpUnit tests..."); // NOI18N
@@ -356,7 +357,11 @@ public final class PhpUnit {
         PhpExecutable phpUnit = getExecutable(phpModule, Bundle.PhpUnit_fetch_testGroups());
         assert phpUnit != null;
 
-        phpUnit.workDir(getWorkingDirectory(phpModule));
+        File workingDirectory = getWorkingDirectory(phpModule);
+        if (workingDirectory == null) {
+            return null;
+        }
+        phpUnit.workDir(workingDirectory);
 
         List<String> params = createParams(true);
         addBootstrap(phpModule, params);
@@ -435,12 +440,18 @@ public final class PhpUnit {
     }
 
     // #170120
+    @CheckForNull
     private File getWorkingDirectory(PhpModule phpModule) {
         if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
             return new File(PhpUnitPreferences.getConfigurationPath(phpModule)).getParentFile();
         }
-        // backward compatibility, simply return the first test directory
-        return FileUtil.toFile(phpModule.getTestDirectory(null));
+        // backward compatibility, simply return the first test directory if any
+        FileObject testDirectory = phpModule.getTestDirectory(null);
+        if (testDirectory == null) {
+            // #240173
+            return null;
+        }
+        return FileUtil.toFile(testDirectory);
     }
 
     @NbBundle.Messages({
