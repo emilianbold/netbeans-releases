@@ -49,6 +49,7 @@ import com.sun.el.parser.AstDynamicExpression;
 import com.sun.el.parser.AstFunction;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstInteger;
+import com.sun.el.parser.AstLambdaExpression;
 import com.sun.el.parser.AstListData;
 import com.sun.el.parser.AstMapData;
 import com.sun.el.parser.AstMethodArguments;
@@ -180,8 +181,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     if (ELTypeUtilities.isRawObjectReference(ccontext, node, false)) {
                         attrsObjects = ELVariableResolvers.getRawObjectProperties(ccontext, "attrs", context.getParserResult().getSnapshot());
                     }
-                    // resolve the element
-                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments, attrsObjects);
+
+                    Element resolved = null;
+                    if (!isInLambda(rootToNode)) {
+                        // resolve the element
+                        resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments, attrsObjects);
+                    }
 
                     if (ELTypeUtilities.isStaticIterableElement(ccontext, node)) {
                         proposeStream(ccontext, context, prefixMatcher, proposals);
@@ -303,6 +308,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
         return result;
+    }
+
+    private static boolean isInLambda(List<Node> rootToNode) {
+        boolean inLambda = false;
+        for (int i = rootToNode.size() - 1; i >= 0; i--) {
+            Node node = rootToNode.get(i);
+            if (node instanceof AstDotSuffix) {
+                break;
+            } else if (node instanceof AstLambdaExpression) {
+                inLambda = true;
+            }
+        }
+        return inLambda;
     }
 
     private static Node getLastAssigneableLeaf(Node root) {
