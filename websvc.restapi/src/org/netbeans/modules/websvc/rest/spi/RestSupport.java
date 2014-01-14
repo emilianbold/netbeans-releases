@@ -192,7 +192,10 @@ public abstract class RestSupport {
                     applicationSubclassGenerator.refreshApplicationSubclass();
                 }
             };
-            getRestServicesModel().addPropertyChangeListener(restModelListener);
+            RestServicesModel servicesModel = getRestServicesModel();
+            if (servicesModel != null) {
+                servicesModel.addPropertyChangeListener(restModelListener);
+            }
         }
     }
 
