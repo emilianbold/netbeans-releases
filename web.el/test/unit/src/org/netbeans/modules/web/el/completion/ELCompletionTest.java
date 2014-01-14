@@ -221,4 +221,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion24.xhtml", "#{(()->2 * ^)}", false, toCheck);
     }
 
+    public void testIssue236574() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion25.xhtml", "#{['pear', 'whatever'].stream().distinct().substream(5).^}", false);
+    }
+
 }
