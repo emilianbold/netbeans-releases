@@ -2523,15 +2523,25 @@ abstract public class CsmCompletionQuery {
                                 if (look4Constructors) {
                                     Collection<? extends CsmObject> candidates = new ArrayList<CsmObject>();
                                     // try to resolve the most visible
-                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS | CompletionResolver.RESOLVE_CONTEXT_CLASSES);
+                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_LOCAL_VARIABLES);
                                     if (resolve(varPos, mtdName, true)) {
                                         compResolver.getResult().addResulItemsToCol(candidates);
                                     }
+                                    
+                                    if (candidates.isEmpty()) {
+                                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_FUNCTIONS | CompletionResolver.RESOLVE_CONTEXT_CLASSES);
+                                        if (resolve(varPos, mtdName, true)) {
+                                            compResolver.getResult().addResulItemsToCol(candidates);
+                                        }
+                                    }
+                                    
                                     for (CsmObject object : candidates) {
                                         if (CsmKindUtilities.isClass(object)) {
                                             mtdList.addAll(getConstructors((CsmClass) object));
                                         } else if (CsmKindUtilities.isFunction(object)) {
                                             mtdList.add((CsmFunction) object);
+                                        } else if (CsmKindUtilities.isVariable(object)) {
+                                            updateWithVariableOperator(mtdList, (CsmVariable) object);
                                         }
                                     }
                                 }
@@ -2547,31 +2557,12 @@ abstract public class CsmCompletionQuery {
                                     }
                                     for (CsmObject object : candidates) {
                                         if (CsmKindUtilities.isVariable(object)) {
-                                            CsmType varType = ((CsmVariable) object).getType();
-                                            if (varType != null) {
-                                                CsmClassifier cls = getClassifier(varType, contextFile, endOffset);
-                                                if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
-                                                    mtdList.add((CsmFunctional) cls);
-                                                } else {
-                                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                                    if (funCall != null) {
-                                                        mtdList.add(funCall);
-                                                    }
-                                                }
-                                            }
+                                            updateWithVariableOperator(mtdList, (CsmVariable)object);
                                         }
                                     }
                                 }
                                 if (lastType != null && (!last || findType)) {
-                                    CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
-                                    if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
-                                        mtdList.add((CsmFunctional) cls);
-                                    } else {
-                                        CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
-                                        if (funCall != null) {
-                                            mtdList.add(funCall);
-                                        }
-                                    }
+                                    updateWithOperator(mtdList, lastType);
                                 }
                             } else {
                                 // if prev expression was resolved => get it's class
@@ -2789,6 +2780,40 @@ abstract public class CsmCompletionQuery {
             }
             return cont;
         }
+        
+        private void updateWithVariableOperator(Collection<CsmFunctional> mtdList, CsmVariable var) {
+            CsmFunctional fun = lookForVariableOperator(var);
+            if (fun != null) {
+                mtdList.add(fun);
+            }
+        }
+        
+        private void updateWithOperator(Collection<CsmFunctional> mtdList, CsmType type) {        
+            CsmFunctional fun = lookForOperator(type);
+            if (fun != null) {
+                mtdList.add(fun);
+            }
+        }
+        
+        private CsmFunctional lookForVariableOperator(CsmVariable object) {
+            CsmType varType = ((CsmVariable) object).getType();
+            return lookForOperator(varType);
+        }
+        
+        private CsmFunctional lookForOperator(CsmType type) {
+            if (type != null) {
+                CsmClassifier cls = getClassifier(type, contextFile, endOffset);
+                if (CsmKindUtilities.isFunctionPointerClassifier(cls)) {
+                    return (CsmFunctional) cls;
+                } else {
+                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
+                    if (funCall != null) {
+                        return funCall;
+                    }
+                }
+            }
+            return null;
+        }        
         
         private boolean checkQualifier(CsmCompletionExpression exp, CppTokenId qualifier) {
             // start and end are set to default values for CsmCompletionExpression.TYPE

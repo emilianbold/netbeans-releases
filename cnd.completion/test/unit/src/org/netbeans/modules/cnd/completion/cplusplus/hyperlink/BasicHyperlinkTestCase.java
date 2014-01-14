@@ -1055,6 +1055,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug238041.c", 10, 14, "bug238041.c", 5, 5);
     }
     
+    public void testBug240446() throws Exception {
+        // Bug 240446 - Wrong priority of local variable. 
+        performTest("bug240446.cpp", 20, 22, "bug240446.cpp", 10, 9);
+        performTest("bug240446.cpp", 24, 22, "bug240446.cpp", 4, 9);
+    }
+    
     public void testBug239739() throws Exception {
         // Bug 239739 - regression in inaccuracy tests
         performTest("bug239739.cpp", 12, 12, "bug239739.cpp", 6, 9);
