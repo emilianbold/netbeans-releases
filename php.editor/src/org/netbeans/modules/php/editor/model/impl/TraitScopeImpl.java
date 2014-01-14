@@ -63,13 +63,15 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TraitedScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
+class TraitScopeImpl extends TypeScopeImpl implements TraitScope, VariableNameFactory {
     private final Collection<QualifiedName> usedTraits;
     private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
     private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
@@ -243,6 +245,30 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public VariableNameImpl createElement(Variable node) {
+        VariableNameImpl retval = new VariableNameImpl(this, node, false);
+        addElement(retval);
+        return retval;
+    }
+
+    @Override
+    public Collection<? extends VariableName> getDeclaredVariables() {
+        return filter(getElements(), new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                if (element instanceof MethodScope && ((MethodScope) element).isInitiator()
+                        && element instanceof LazyBuild) {
+                    LazyBuild scope = (LazyBuild) element;
+                    if (!scope.isScanned()) {
+                        scope.scan();
+                    }
+                }
+                return element.getPhpElementKind().equals(PhpElementKind.VARIABLE);
+            }
+        });
     }
 
 }
