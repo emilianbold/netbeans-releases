@@ -106,10 +106,10 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     private static final VariableInfo VARIABLE_INFO__RENDERED = VariableInfo.createResolvedVariable(ATTR_NAME__RENDERED, Object.class.getName());
     
     @Override
-    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+    public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
         for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
             if (beanName.equals(bean.getManagedBeanName())) {
-                return bean.getManagedBeanClass();
+                return new FieldInfo(bean.getManagedBeanClass());
             }
         }
         return null;
