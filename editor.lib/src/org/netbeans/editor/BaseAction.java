@@ -44,9 +44,6 @@
 
 package org.netbeans.editor;
 
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
@@ -55,9 +52,12 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.TextAction;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.TextAction;
+import org.netbeans.modules.editor.lib2.actions.MacroRecording;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * This is the parent of majority of the actions. It implements
@@ -129,8 +129,6 @@ public abstract class BaseAction extends TextAction {
     protected int updateMask;
 
     private static boolean recording;
-    private static StringBuffer macroBuffer = new StringBuffer();
-    private static StringBuffer textBuffer = new StringBuffer();
 
     static final long serialVersionUID =-4255521122272110786L;
 
@@ -297,8 +295,8 @@ public abstract class BaseAction extends TextAction {
             return;
         }
                               
-        if( recording && 0 == (updateMask & NO_RECORDING) ) {
-            recordAction( target, evt );
+        if(0 == (updateMask & NO_RECORDING) ) {
+            MacroRecording.get().recordAction(this, evt, target);
         }
         
 
@@ -340,69 +338,32 @@ public abstract class BaseAction extends TextAction {
         }
     }
     
-    private void recordAction( JTextComponent target, ActionEvent evt ) {
-        if( this == target.getKeymap().getDefaultAction() ) { // defaultKeyTyped
-            // see #218258; must filter key-typed events after key-pressed. Not ideal,
-            // but shares logic with the actual action that inserts content into the editor.
-            if (BaseKit.isValidDefaultTypedAction(evt) &&
-                BaseKit.isValidDefaultTypedCommand(evt)) {
-                textBuffer.append( evt.getActionCommand() );
-            }
-        } else { // regular action
-            if( textBuffer.length() > 0 ) {
-                if( macroBuffer.length() > 0 ) macroBuffer.append( ' ' ); 
-                macroBuffer.append( encodeText( textBuffer.toString() ) );
-                textBuffer.setLength( 0 );
-            }
-            if( macroBuffer.length() > 0 ) macroBuffer.append( ' ' ); 
-            String name = (String)getValue( Action.NAME );
-            macroBuffer.append( encodeActionName( name ) );
-        }
-    }
-    
+    /**
+     * Use MacroRecording from editor.lib2
+     */
+    @Deprecated
     boolean startRecording( JTextComponent target ) {
-        if( recording ) return false;
-        recording = true;
-        macroBuffer.setLength(0);
-        textBuffer.setLength(0);
-        Utilities.setStatusText( target,
+        boolean b = MacroRecording.get().startRecording();
+        if (b) {
+            recording = true;
+            Utilities.setStatusText( target,
                 NbBundle.getBundle(BaseAction.class).getString( "macro-recording" ) );
-        return true;
+        }
+        return b;
     }
     
+    /**
+     * Use MacroRecording from editor.lib2
+     */
+    @Deprecated
     String stopRecording( JTextComponent target ) {
-        if( !recording ) return null;
-
-        if( textBuffer.length() > 0 ) {
-            if( macroBuffer.length() > 0 ) macroBuffer.append( ' ' ); 
-            macroBuffer.append( encodeText( textBuffer.toString() ) );
-        }        
-        String retVal = macroBuffer.toString();
+        String s = MacroRecording.get().stopRecording();
+        if (s == null) {
+            return s;
+        }
         recording = false;
         Utilities.setStatusText( target, "" ); // NOI18N
-        return retVal;
-    }
-    
-    private String encodeText( String s ) {
-        char[] text = s.toCharArray();
-        StringBuffer encoded = new StringBuffer( "\""); // NOI18N
-        for( int i=0; i < text.length; i++ ) {
-            char c = text[i];
-            if( c == '"' || c == '\\' ) encoded.append( '\\' );
-            encoded.append( c );
-        }
-        return encoded.append( '"' ).toString();
-    }
-
-    private String encodeActionName( String s ) {
-        char[] actionName = s.toCharArray();
-        StringBuffer encoded = new StringBuffer();
-        for( int i=0; i < actionName.length; i++ ) {
-            char c = actionName[i];
-            if( Character.isWhitespace( c ) || c == '\\' ) encoded.append( '\\' );
-            encoded.append( c );
-        }
-        return encoded.toString();
+        return s;
     }
     
     /** The target method that performs the real action functionality.

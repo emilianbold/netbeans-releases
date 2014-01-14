@@ -56,6 +56,14 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -433,6 +441,28 @@ public final class JFXProjectUtils {
         fo = fo.getFileObject("pom.xml"); //NOI18N
         if (fo != null) {
             return true;
+        }
+        return false;
+    }
+    
+    public static boolean isMavenFXProject(@NonNull final Project prj) {
+        if (isMavenProject(prj)) {
+            try {
+                FileObject pomXml = prj.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document doc = builder.parse(FileUtil.toFile(pomXml));
+                XPathFactory xPathfactory = XPathFactory.newInstance();
+                XPath xpath = xPathfactory.newXPath();
+                XPathExpression exprJfxrt = xpath.compile("//bootclasspath[contains(text(),'jfxrt')]");
+                XPathExpression exprPackager = xpath.compile("//executable[contains(text(),'javafxpackager')]");
+                boolean jfxrt = (Boolean) exprJfxrt.evaluate(doc, XPathConstants.BOOLEAN);
+                boolean packager = (Boolean) exprPackager.evaluate(doc, XPathConstants.BOOLEAN);
+                return jfxrt && packager;
+            } catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
         }
         return false;
     }
