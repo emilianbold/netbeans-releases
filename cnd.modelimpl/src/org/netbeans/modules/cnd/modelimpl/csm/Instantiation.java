@@ -269,7 +269,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
         } else if (template instanceof CsmTypeAlias) {
-            return new TypeAlias((CsmTypeAlias)template, mapping);
+            CsmTypeAlias alias = (CsmTypeAlias) template;
+            return CsmKindUtilities.isClassMember(alias) ? new MemberTypeAlias(alias, mapping) : new TypeAlias(alias, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
                 CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template); // NOI18N
@@ -436,7 +437,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             } else if (member instanceof CsmMethod) {
                 return new Method((CsmMethod)member, this);
             } else if (member instanceof CsmTypeAlias) {
-                return new TypeAlias((CsmTypeAlias)member, this);
+                return new MemberTypeAlias((CsmTypeAlias)member, this);
             } else if (member instanceof CsmTypedef) {
                 return new Typedef((CsmTypedef)member, this);
             } else if (member instanceof CsmClass) {
@@ -808,8 +809,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return ((CsmMember)declaration).isStatic();
         }
     }
-    
-    private static class TypeAlias extends Instantiation<CsmTypeAlias> implements CsmTypeAlias, CsmMember {
+            
+    private static class TypeAlias extends Instantiation<CsmTypeAlias> implements CsmTypeAlias {
+        
         private final CsmType type;
 
         public TypeAlias(CsmTypeAlias typeAlias, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
@@ -830,21 +832,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public CsmType getType() {
             return type;
-        }
-
-        @Override
-        public CsmClass getContainingClass() {
-            return ((CsmMember)declaration).getContainingClass();
-        }
-
-        @Override
-        public CsmVisibility getVisibility() {
-            return ((CsmMember)declaration).getVisibility();
-        }
-
-        @Override
-        public boolean isStatic() {
-            return ((CsmMember)declaration).isStatic();
         }
 
         @Override
@@ -872,6 +859,34 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return ((CsmTypeAlias)declaration).getDisplayName();
         }
     }    
+    
+    private static class MemberTypeAlias extends TypeAlias implements CsmMember {
+        
+        public MemberTypeAlias(CsmTypeAlias typeAlias, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(typeAlias, mapping);
+            assert CsmKindUtilities.isClassMember(typeAlias) : "Attempt to instantiate member typealias from " + typeAlias; //NOI18N
+        }
+        
+        public MemberTypeAlias(CsmTypeAlias typeAlias, CsmInstantiation instantiation) {
+            super(typeAlias, instantiation.getMapping());
+            assert CsmKindUtilities.isClassMember(typeAlias) : "Attempt to instantiate member typealias from " + typeAlias; //NOI18N;
+        }        
+        
+        @Override
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }        
+    }
       
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
@@ -1555,7 +1570,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember taMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
-                        resolved = new TypeAlias((CsmTypeAlias)resolved, instantiation);
+                        resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
                         return resolved;
                     }
                 }
@@ -1759,7 +1774,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember taMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
-                        resolved = new TypeAlias((CsmTypeAlias)resolved, instantiation);
+                        resolved = new MemberTypeAlias((CsmTypeAlias)resolved, instantiation);
                         return resolved;
                     }
                 }          
