@@ -640,14 +640,36 @@ public class SourceUtils {
      * @param element to find the Javadoc for
      * @param cpInfo classpaths used to resolve (currently unused)
      * @return the URL of the javadoc page or null when the javadoc is not available.
+     * @deprecated use {@link SourceUtils#getJavadoc(javax.lang.model.element.Element)}.
      */
+    @Deprecated
     public static URL getJavadoc (final Element element, final ClasspathInfo cpInfo) {      
-        JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element);
+        final Collection<? extends URL> res = getJavadoc(element);
+        return res.isEmpty() ?
+            null :
+            res.iterator().next();
+    }
+
+    /**
+     * Finds {@link URL}s of a javadoc page for given element when available. This method
+     * uses {@link JavadocForBinaryQuery} to find the javadoc page for the give element.
+     * For {@link PackageElement} it returns the package-summary.html for given package.
+     * Due to the https://bugs.openjdk.java.net/browse/JDK-8025633 there are more possible 
+     * URLs for {@link ExecutableElement}s, this method returns all of them.
+     * @param element to find the Javadoc for
+     * @return the URLs of the javadoc page or an empty collection when the javadoc is not available.
+     * @since 0.133
+     */
+    @NonNull
+    public static Collection<? extends URL> getJavadoc (
+        @NonNull final Element element) {
+        Parameters.notNull("element", element); //NOI18N
+        final JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element);
         if (page == null) {
-            return null;
+            return Collections.<URL>emptySet();
         } else {
             page.close();
-            return page.getLocation();
+            return page.getLocations();
         }
     }
     

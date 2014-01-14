@@ -96,6 +96,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.text.ChangedCharSetException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -126,6 +127,12 @@ import org.openide.util.Exceptions;
  * @author Dusan Balek
  */
 public class TreeLoader extends LazyTreeLoader {
+
+    private static final Pattern ctor_summary_name = Pattern.compile("constructor[_.]summary"); //NOI18N
+    private static final Pattern method_summary_name = Pattern.compile("method[_.]summary"); //NOI18N
+    private static final Pattern field_detail_name = Pattern.compile("field[_.]detail"); //NOI18N
+    private static final Pattern ctor_detail_name = Pattern.compile("constructor[_.]detail"); //NOI18N
+    private static final Pattern method_detail_name = Pattern.compile("method[_.]detail"); //NOI18N
 
     public static void preRegister(final Context context, final ClasspathInfo cpInfo, final boolean detached) {
         context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo, detached));
@@ -478,13 +485,7 @@ public class TreeLoader extends LazyTreeLoader {
                 is = page.openStream();
                 Reader reader = charset == null ? new InputStreamReader(is): new InputStreamReader(is, charset);
                 parser = new ParserDelegator();
-                parser.parse(reader, new ParserCallback() {
-
-                    private static final String ctor_summary_name = "constructor_summary"; //NOI18N
-                    private static final String method_summary_name = "method_summary"; //NOI18N
-                    private static final String field_detail_name = "field_detail"; //NOI18N
-                    private static final String ctor_detail_name = "constructor_detail"; //NOI18N
-                    private static final String method_detail_name = "method_detail"; //NOI18N
+                parser.parse(reader, new ParserCallback() {                    
 
                     private int state = 0; //init
                     private String signature = null;
@@ -494,17 +495,17 @@ public class TreeLoader extends LazyTreeLoader {
                     public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                         if (t == HTML.Tag.A) {
                             String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
-                            if (ctor_summary_name.equals(attrName)) {
+                            if (attrName != null && ctor_summary_name.matcher(attrName).matches()) {
                                 // we have found desired javadoc constructor info anchor
                                 state = 10; //ctos open
-                            } else if (method_summary_name.equals(attrName)) {
+                            } else if (attrName != null && method_summary_name.matcher(attrName).matches()) {
                                 // we have found desired javadoc method info anchor
                                 state = 20; //methods open
-                            } else if (field_detail_name.equals(attrName)) {
+                            } else if (attrName != null && field_detail_name.matcher(attrName).matches()) {
                                 state = 30; //end
-                            } else if (ctor_detail_name.equals(attrName)) {
+                            } else if (attrName != null && ctor_detail_name.matcher(attrName).matches()) {
                                 state = 30; //end
-                            } else if (method_detail_name.equals(attrName)) {
+                            } else if (attrName != null && method_detail_name.matcher(attrName).matches()) {
                                 state = 30; //end
                             } else if (state == 12 || state == 22) {
                                 String attrHref = (String)a.getAttribute(HTML.Attribute.HREF);
@@ -572,7 +573,7 @@ public class TreeLoader extends LazyTreeLoader {
                         int idx = -1;
                         for(int i = 0; i < signature.length(); i++) {
                             switch(signature.charAt(i)) {
-                                case '(':
+                                case '(':                                    
                                     idx = i;
                                     break;
                                 case ')':
