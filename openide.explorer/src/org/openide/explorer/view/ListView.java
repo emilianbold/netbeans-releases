@@ -762,6 +762,10 @@ public class ListView extends JScrollPane implements Externalizable {
         if (!popupAllowed) {
             return;
         }
+        
+        if (!isShowing()) {
+            return;
+        }
 
         JPopupMenu popup;
 

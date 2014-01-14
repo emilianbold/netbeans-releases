@@ -59,6 +59,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileChooserBuilder;
@@ -77,6 +78,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     
     private final GeneralOptionsPanelController controller;
     private String[] keywords;
+    private boolean originalLabels;
     
     GeneralOptionsPanel (GeneralOptionsPanelController controller) {
         this.controller = controller;        
@@ -136,6 +138,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         btnAdd = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        cbShowLabels = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(cmbVersioningSystems);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.jLabel1.text")); // NOI18N
@@ -153,6 +156,14 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_OptionsPanel.disconnectedFolders.title")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbShowLabels, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.cbShowLabels.text")); // NOI18N
+        cbShowLabels.setToolTipText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.cbShowLabels.TTtext")); // NOI18N
+        cbShowLabels.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbShowLabelsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,6 +171,9 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbShowLabels)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,6 +197,8 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(cbShowLabels)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -202,12 +218,19 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cbShowLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbShowLabelsActionPerformed
+        controller.changed(originalLabels != cbShowLabels.isSelected());
+    }//GEN-LAST:event_cbShowLabelsActionPerformed
+
     void load () {
         fillVersioningSystems();
+        originalLabels = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+        cbShowLabels.setSelected(originalLabels);
     }
     
     void store() {
-        
+        originalLabels = cbShowLabels.isSelected();
+        VersioningSupport.getPreferences().putBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, originalLabels);
     }
     
     boolean valid() {
@@ -217,6 +240,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnRemove;
+    private javax.swing.JCheckBox cbShowLabels;
     private javax.swing.JComboBox cmbVersioningSystems;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

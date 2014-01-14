@@ -74,7 +74,7 @@
                   <Component id="jScrollPane1" min="-2" pref="109" max="-2" attributes="0"/>
                   <Component id="lblMappings" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblGoals" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtGoals" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -97,7 +97,7 @@
                       <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane5" pref="86" max="32767" attributes="0"/>
+                  <Component id="jScrollPane5" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -138,7 +138,6 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="jScrollPane1.setBorder(BorderFactory.createEmptyBorder(0, 0, 7, 0));"/>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
 
