@@ -57,6 +57,7 @@ import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
  * 
  * @author Anton Chechel
  * @author Petr Somol
+ * @author Roman Svitanic
  */
 public final class JavaFXProjectUtils {
 
@@ -68,6 +69,10 @@ public final class JavaFXProjectUtils {
     
     public static boolean isJavaFxEnabled(Project prj) {
         return JFXProjectUtils.isFXProject(prj);
+    }
+
+    public static boolean isMavenFxProject(Project prj) {
+        return JFXProjectUtils.isMavenFXProject(prj);
     }
 
     public static ComboBoxModel createPlatformComboBoxModel() {

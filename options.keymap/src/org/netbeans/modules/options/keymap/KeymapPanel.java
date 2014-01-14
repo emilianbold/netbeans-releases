@@ -381,8 +381,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     }
 
     void update() {
-        getMutableModel().refreshActions();
-
         //do not remember search state
         getModel().setSearchText(""); //NOI18N
         searchSCField.setText("");
@@ -391,18 +389,29 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
         //setup profiles
         refreshProfileCombo ();
+        
+        class I implements Runnable, TaskListener {
+            int stage;
+            
+            public void run() {
+                if (stage > 0) {
+                    ((CardLayout)actionsView.getLayout()).show(actionsView, "actions"); // NOI18N
+                } else {
+                    getMutableModel().refreshActions();
+                    Task t = getModel().postUpdate();
+                    t.addTaskListener(this);
+                }
+            }
+            
+            @Override
+            public void taskFinished(Task t) {
+                stage++;
+                SwingUtilities.invokeLater(this);
+            } 
+        }
 
         //update model
-        Task t = getModel().postUpdate();
-        t.addTaskListener(new TaskListener() {
-           public void taskFinished(Task t) {
-               SwingUtilities.invokeLater(new Runnable() {
-                   public void run() {
-                       ((CardLayout)actionsView.getLayout()).show(actionsView, "actions"); // NOI18N
-                   }
-               });
-           } 
-        });
+        KeymapModel.RP.post(new I());
     }
 
     //controller method end
