@@ -354,7 +354,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (canceled) {
             Thread.currentThread().interrupt();
         } else {
-            refreshDiff(0);
+            refreshDiff(100);
         }
     }
 
@@ -1286,7 +1286,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 doc.putProperty("mimeType", CONTENT_TYPE_DIFF); //NOI18N
                 StyledDocument sdoc = doc instanceof StyledDocument ? (StyledDocument) doc : null;
                 textualRefreshTask = new TextualDiffRefreshTask(sdoc);
-                textualRefreshTask.refresh();
+                textualRefreshTask.refresh(diffs);
             }
         });
     }
@@ -1301,13 +1301,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             this.out = out;
         }
 
-        public void refresh () {
+        public void refresh (Difference[] differences) {
             canceled = false;
             synchronized (this) {
                 boolean docReady = false;
                 if (out != null) {
                     try {
-                        exportDiff();
+                        exportDiff(differences);
                         docReady = true;
                     } catch (IOException ex) {
                         Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
@@ -1333,42 +1333,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
 
-        private void exportDiff () throws IOException {
-            DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
-
+        private void exportDiff (Difference[] differences) throws IOException {
             Reader r1 = null;
             Reader r2 = null;
-            Difference[] differences;
-
-            try {
-                r1 = getReader(jEditorPane1.getEditorPane().getDocument());
-                if (r1 == null) {
-                    r1 = new StringReader("");  // NOI18N
-                }
-                if (isCanceled()) {
-                    return;
-                }
-                r2 = getReader(jEditorPane2.getEditorPane().getDocument());
-                if (r2 == null) {
-                    r2 = new StringReader("");  // NOI18N
-                }
-                if (isCanceled()) {
-                    return;
-                }
-                differences = diff.computeDiff(r1, r2);
-            } finally {
-                if (r1 != null) {
-                    try {
-                        r1.close();
-                    } catch (Exception e) {
-                    }
-                }
-                if (r2 != null) {
-                    try {
-                        r2.close();
-                    } catch (Exception e) {
-                    }
-                }
+            
+            if (differences == null) {
+                differences = computeDiff();
             }
 
             try {
@@ -1487,7 +1457,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             synchronized (RefreshDiffTask.this) {
                 final Difference[] differences = computeDiff();
                 if (textualRefreshTask != null) {
-                    textualRefreshTask.refresh();
+                    textualRefreshTask.refresh(differences);
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -1514,47 +1484,47 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 });
             }
         }
+    }
 
-        private Difference[] computeDiff() {
-            
-            if(editableDocument != null) { 
-                // refresh fo before computing the diff, external changes might not have been recognized in some setups
-                // see also issue #210834
-                DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
-                if (dao != null) {
-                    Set<FileObject> files = dao.files();
-                    if(files != null) {
-                        for (FileObject fo : files) {
-                            LOG.log(Level.FINE, "refreshing FileOBject {0}", fo); // NOI18N
-                            fo.refresh();
-                        }
-                    } else {
-                        LOG.log(Level.FINE, "no FileObjects to refresh for {0}", dao); // NOI18N
+    private Difference[] computeDiff () {
+
+        if(editableDocument != null) { 
+            // refresh fo before computing the diff, external changes might not have been recognized in some setups
+            // see also issue #210834
+            DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
+            if (dao != null) {
+                Set<FileObject> files = dao.files();
+                if(files != null) {
+                    for (FileObject fo : files) {
+                        LOG.log(Level.FINE, "refreshing FileOBject {0}", fo); // NOI18N
+                        fo.refresh();
                     }
                 } else {
-                    LOG.log(Level.FINE, "no DataObject to refresh"); // NOI18N
+                    LOG.log(Level.FINE, "no FileObjects to refresh for {0}", dao); // NOI18N
                 }
+            } else {
+                LOG.log(Level.FINE, "no DataObject to refresh"); // NOI18N
             }
-            
-            if (!secondSourceAvailable || !firstSourceAvailable) {
-                return NO_DIFFERENCES;
-            }
-
-            Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
-            Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
-            if (first == null || second == null) {
-                return NO_DIFFERENCES;
-            }
-
-            DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
-            Difference[] diffs;
-            try {
-                diffs = diff.computeDiff(first, second);
-            } catch (IOException e) {
-                diffs = NO_DIFFERENCES;
-            }
-            return diffs;
         }
+
+        if (!secondSourceAvailable || !firstSourceAvailable) {
+            return NO_DIFFERENCES;
+        }
+
+        Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
+        Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
+        if (first == null || second == null) {
+            return NO_DIFFERENCES;
+        }
+
+        DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
+        Difference[] diffs;
+        try {
+            return diff.computeDiff(first, second);
+        } catch (IOException e) {
+            diffs = NO_DIFFERENCES;
+        }
+        return diffs;
     }
 
     /**
