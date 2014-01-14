@@ -77,16 +77,21 @@ public final class UnitTestRunner {
 
 
     public UnitTestRunner(PhpProject project, TestRunInfo info, ControllableRerunHandler rerunHandler) {
+        this(project, info, rerunHandler, project.getTestingProviders());
+    }
+
+    public UnitTestRunner(PhpProject project, TestRunInfo info, ControllableRerunHandler rerunHandler, List<PhpTestingProvider> testingProviders) {
         assert project != null;
         assert rerunHandler != null;
         assert info != null;
+        assert testingProviders != null;
 
         this.project = project;
         this.info = info;
         this.rerunHandler = rerunHandler;
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
-        testingProviders = project.getTestingProviders();
+        this.testingProviders = testingProviders;
 
         testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
         testSession.setRerunHandler(rerunHandler);
