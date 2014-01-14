@@ -184,7 +184,7 @@ public class ToolTipAnnotation extends Annotation
         }
         
         ScopedRemoteObject tooltipVariable = null;
-        String tooltipText = null;
+        String tooltipText;
         final Debugger d = getDebugger();
         if (d != null && d.isSuspended()) {
             CallFrame frame = d.getCurrentCallFrame();
@@ -223,6 +223,8 @@ public class ToolTipAnnotation extends Annotation
                         tooltipText = Bundle.var_undefined(expression);
                     }
                 }
+            } else {
+                return ;
             }
         } else {
             return;

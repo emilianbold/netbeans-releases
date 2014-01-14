@@ -413,6 +413,32 @@ class CategoryPanelStepFilters extends StorablePanel {
         p.setBoolean("StepThroughFilters", stepThroughFiltersCheckBox.isSelected());
     }
 
+    @Override
+    public boolean isChanged() {
+        TableModel filterClassesModel = filterClassesTable.getModel();
+        Set<String> allFilters = new LinkedHashSet<String>();
+        Set<String> enabledFilters = new HashSet<String>();
+        for (int i = 0; i < filterClassesModel.getRowCount(); i++) {
+            boolean isEnabled = (Boolean) filterClassesModel.getValueAt(i, 0);
+            String clazz = (String) filterClassesModel.getValueAt(i, 1);
+            allFilters.add(clazz);
+            if (isEnabled) {
+                enabledFilters.add(clazz);
+            }
+        }
+        Set savedEnabledFilters = (Set) Properties.getDefault().getProperties("debugger").
+                getProperties("sources").getProperties("class_filters").getCollection("enabled", Collections.EMPTY_SET);
+        Set<String> savedAllFilters = (Set<String>) Properties.getDefault().getProperties("debugger").
+                getProperties("sources").getProperties("class_filters").getCollection("all", Collections.EMPTY_SET);
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        return useStepFiltersCheckBox.isSelected() != p.getBoolean("UseStepFilters", true)
+                || filterSyntheticCheckBox.isSelected() != p.getBoolean("FilterSyntheticMethods", true)
+                || filterStaticInitCheckBox.isSelected() != p.getBoolean("FilterStaticInitializers", false)
+                || filterConstructorsCheckBox.isSelected() != p.getBoolean("FilterConstructors", false)
+                || stepThroughFiltersCheckBox.isSelected() != p.getBoolean("StepThroughFilters", false)
+                || !savedAllFilters.equals(allFilters)
+                || !savedEnabledFilters.equals(enabledFilters);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton filterAddButton;

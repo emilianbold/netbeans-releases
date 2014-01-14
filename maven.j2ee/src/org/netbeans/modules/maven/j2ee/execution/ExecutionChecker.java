@@ -96,7 +96,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
-        if (!isSupported()) { // #234767
+        if (!isSupported(config)) { // #234767
             return false;
         }
 
@@ -114,20 +114,23 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         "MSG_Server_No_Profiling=<html>The target server does not support profiling.<br><b>Choose a different server</b> in project properties.</html>",
         "MSG_Server_No_Debugging=<html>The target server does not support debugging.<br><b>Choose a different server</b> in project properties.</html>"
     })
-    private boolean isSupported() {
+    private boolean isSupported(RunConfig config) {
         String serverInstanceID = getServerInstanceID();
         if (serverInstanceID == null) {
             return false;
         }
 
+        boolean debugmode = DeploymentHelper.isDebugMode(config);
+        boolean profilemode = DeploymentHelper.isProfileMode(config);
+
         ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
             if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
-                if (!serverInstance.isDebuggingSupported()) {
+                if (debugmode && !serverInstance.isDebuggingSupported()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
                     return false;
                 }
-                if (!serverInstance.isProfilingSupported()) {
+                if (profilemode && !serverInstance.isProfilingSupported()) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Profiling(), NotifyDescriptor.WARNING_MESSAGE));
                     return false;
                 }

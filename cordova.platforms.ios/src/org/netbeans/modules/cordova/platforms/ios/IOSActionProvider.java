@@ -128,7 +128,7 @@ public class IOSActionProvider implements ActionProvider {
                 case COMMAND_REBUILD:
                     build.perform(BuildPerformer.REBUILD_IOS, p);
             }
-        } catch (IllegalStateException ex) {
+        } catch (UnsupportedOperationException | IllegalStateException ex) {
                 NotifyDescriptor.Message not = new DialogDescriptor.Message(
                         ex.getMessage(),
                         DialogDescriptor.ERROR_MESSAGE);
