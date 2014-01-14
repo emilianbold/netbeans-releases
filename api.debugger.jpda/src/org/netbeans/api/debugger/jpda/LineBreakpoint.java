@@ -445,10 +445,13 @@ public class LineBreakpoint extends JPDABreakpoint {
                                             implements Comparable, FileChangeListener,
                                                        ChangeListener, PropertyChangeListener {
         
+        public static final String          PROP_PREFERRED_CLASS_TYPE = "classTypePreferred"; // NOI18N
+        
         // We need to hold our FileObject so that it's not GC'ed, because we'd loose our listener.
         private FileObject fo;
         private ChangeListener registryListener;
         private FileChangeListener fileListener;
+        private JPDAClassType classType;
        
         public LineBreakpointImpl(String url) {
             super(url);
@@ -490,6 +493,22 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
+        public void setPreferredClassType(JPDAClassType classType) {
+            JPDAClassType old;
+            synchronized (this) {
+                if (classType == null ? this.classType == null : classType.equals(this.classType)) {
+                    return ;
+                }
+                old = classType;
+                this.classType = classType;
+            }
+            firePropertyChange (PROP_PREFERRED_CLASS_TYPE, old, classType);
+        }
+
+        public JPDAClassType getPreferredClassType() {
+            return classType;
+        }
+    
         @Override
         public GroupProperties getGroupProperties() {
             return new LineGroupProperties();

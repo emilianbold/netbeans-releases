@@ -202,4 +202,9 @@ public class AndroidDevice implements Device {
     private String getPrefferedBrowser() {
         return browser.getCommand();
     }
+
+    @Override
+    public boolean isWebViewDebugSupported() {
+        return AndroidPlatform.getDefault().isWebViewDebugSupported(isEmulator());
+    }
 }
