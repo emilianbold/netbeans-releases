@@ -219,122 +219,122 @@ public class JBProperties {
 
     public List<URL> getClasses() {
         List<URL> list = new ArrayList<URL>();
-            File rootDir = getRootDir();
-            File serverDir = getServerDir();
-            File commonLibDir =  new File(rootDir, "common" + File.separator + "lib");
+        File rootDir = getRootDir();
+        File serverDir = getServerDir();
+        File commonLibDir =  new File(rootDir, "common" + File.separator + "lib");
 
-            File javaEE = new File(commonLibDir, "jboss-javaee.jar");
+        File javaEE = new File(commonLibDir, "jboss-javaee.jar");
+        if (!javaEE.exists()) {
+            javaEE = new File(rootDir, "client/jboss-j2ee.jar"); // NOI18N
             if (!javaEE.exists()) {
-                javaEE = new File(rootDir, "client/jboss-j2ee.jar"); // NOI18N
-                if (!javaEE.exists()) {
-                    // jboss 5
-                    javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
-                }
-            } else {
-                assert version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0;
+                // jboss 5
+                javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
             }
+        } else {
+            assert version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0;
+        }
 
-            if (javaEE.exists()) {
-                addFileToList(list, javaEE);
-            }
+        if (javaEE.exists()) {
+            addFileToList(list, javaEE);
+        }
 
-            File jaxWsAPILib = new File(rootDir, "client/jboss-jaxws.jar"); // NOI18N
-            if (jaxWsAPILib.exists()) {
-               addFileToList(list, jaxWsAPILib);
-            }
+        File jaxWsAPILib = new File(rootDir, "client/jboss-jaxws.jar"); // NOI18N
+        if (jaxWsAPILib.exists()) {
+           addFileToList(list, jaxWsAPILib);
+        }
 
-            File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
-            if (wsClientLib.exists()) {
-                addFileToList(list, wsClientLib);
-            }
+        File wsClientLib = new File(rootDir, "client/jbossws-client.jar"); // NOI18N
+        if (wsClientLib.exists()) {
+            addFileToList(list, wsClientLib);
+        }
 
-            addFiles(new File(rootDir, "lib"), list); // NOI18N
-            addFiles(new File(serverDir, "lib"), list); // NOI18N
+        addFiles(new File(rootDir, "lib"), list); // NOI18N
+        addFiles(new File(serverDir, "lib"), list); // NOI18N
 
-            if (version != null
-                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
-                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
-                        "javax"), list); // NOI18N
-                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
-                        "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
-            }
-            
-            Set<String> commonLibs = new HashSet<String>();
-    
-            if (version != null
-                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
-                // Needed for JBoss 6
-                Collections.addAll(commonLibs, "jboss-servlet-api_3.0_spec.jar", // NOI18N
-                    "jboss-jsp-api_2.2_spec.jar", "jboss-el-api_2.2_spec.jar", // NOI18N
-                    "mail.jar", "jboss-jsr77.jar", "jboss-ejb-api_3.1_spec.jar", // NOI18N
-                    "hibernate-jpa-2.0-api.jar", "hibernate-entitymanager.jar", // NOI18N
-                    "jboss-transaction-api_1.1_spec.jar", "jbossws-common.jar", // NOI18N
-                    "jbossws-framework.jar", "jbossws-jboss60.jar",  // NOI18N
-                    "jbossws-native-core.jar", "jbossws-spi.jar"); // NOI18N
-            } else {
-                // Add common libs for JBoss 5.x
-                Collections.addAll(commonLibs, "servlet-api.jar", // NOI18N
-                    "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
-                    "ejb3-persistence.jar", "hibernate-entitymanager.jar","jbossws-native-jaxws.jar", // NOI18N
-                    "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
-                    "jbossws-native-saaj.jar"); // NOI18N                
-            }
+        if (version != null
+                && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
+            addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                    "javax"), list); // NOI18N
+            addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                    "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
+        }
 
-            for (String commonLib : commonLibs) {
-                File libJar = new File(commonLibDir, commonLib);
-                if (libJar.exists()) {
-                    addFileToList(list, libJar);
-                }
-            }
+        Set<String> commonLibs = new HashSet<String>();
 
-            if (supportsJavaEE5ejb3()) {
-                File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
-                if (ejb3deployer.exists()) {
-                    addFiles(ejb3deployer, list);
-                } else if ((ejb3deployer = new File(serverDir, "/deployers/ejb3.deployer/")).exists()) { // NOI18N
-                    addFiles(ejb3deployer, list);
-                }
-            }
+        if (version != null
+                && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
+            // Needed for JBoss 6
+            Collections.addAll(commonLibs, "jboss-servlet-api_3.0_spec.jar", // NOI18N
+                "jboss-jsp-api_2.2_spec.jar", "jboss-el-api_2.2_spec.jar", // NOI18N
+                "mail.jar", "jboss-jsr77.jar", "jboss-ejb-api_3.1_spec.jar", // NOI18N
+                "hibernate-jpa-2.0-api.jar", "hibernate-entitymanager.jar", // NOI18N
+                "jboss-transaction-api_1.1_spec.jar", "jbossws-common.jar", // NOI18N
+                "jbossws-framework.jar", "jbossws-jboss60.jar",  // NOI18N
+                "jbossws-native-core.jar", "jbossws-spi.jar"); // NOI18N
+        } else {
+            // Add common libs for JBoss 5.x
+            Collections.addAll(commonLibs, "servlet-api.jar", // NOI18N
+                "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
+                "ejb3-persistence.jar", "hibernate-entitymanager.jar","jbossws-native-jaxws.jar", // NOI18N
+                "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
+                "jbossws-native-saaj.jar"); // NOI18N                
+        }
 
-            // JBoss 6
-            File jsfAPI = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-api-2.0.2-FCS.jar"); // NOI18N
-            if (jsfAPI.exists()) {
-                addFileToList(list, jsfAPI);
-            // JBoss 5
-            } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar")).exists()) {
-                addFileToList(list, jsfAPI);
-            } else if ((jsfAPI = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfAPI);
-            } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-api.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfAPI);
-            } else if ((jsfAPI = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfAPI);
+        for (String commonLib : commonLibs) {
+            File libJar = new File(commonLibDir, commonLib);
+            if (libJar.exists()) {
+                addFileToList(list, libJar);
             }
+        }
 
-            // JBoss 6
-            File jsfIMPL = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-impl-2.0.2-FCS.jar"); // NOI18N
-            if (jsfIMPL.exists()) {
-                addFileToList(list, jsfIMPL);
-            // JBoss 5
-            } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfIMPL);
-            } else if ((jsfIMPL = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfIMPL);
-            } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-impl.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfIMPL);
-            } else if ((jsfIMPL = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
-                addFileToList(list, jsfIMPL);
+        if (supportsJavaEE5ejb3()) {
+            File ejb3deployer = new File(serverDir, "/deploy/ejb3.deployer/");  // NOI18N
+            if (ejb3deployer.exists()) {
+                addFiles(ejb3deployer, list);
+            } else if ((ejb3deployer = new File(serverDir, "/deployers/ejb3.deployer/")).exists()) { // NOI18N
+                addFiles(ejb3deployer, list);
             }
+        }
 
-            // JBoss 5 & 6
-            File jstlImpl = new File(serverDir, "/deploy/jbossweb.sar/jstl.jar"); // NOI18N
-            if (jstlImpl.exists()) {
-                addFileToList(list, jstlImpl);
-            } else if ((jstlImpl = new File(serverDir, "/deploy/jboss-web.deployer/jstl.jar")).exists()) { // NOI18N
-                addFileToList(list, jstlImpl);
-            } else if ((jstlImpl = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/jstl.jar")).exists()) { // NOI18N
-                addFileToList(list, jstlImpl);
-            }
+        // JBoss 6
+        File jsfAPI = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-api-2.0.2-FCS.jar"); // NOI18N
+        if (jsfAPI.exists()) {
+            addFileToList(list, jsfAPI);
+        // JBoss 5
+        } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-api.jar")).exists()) {
+            addFileToList(list, jsfAPI);
+        } else if ((jsfAPI = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfAPI);
+        } else if ((jsfAPI = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-api.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfAPI);
+        } else if ((jsfAPI = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-api.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfAPI);
+        }
+
+        // JBoss 6
+        File jsfIMPL = new File(serverDir, "/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/jsf-impl-2.0.2-FCS.jar"); // NOI18N
+        if (jsfIMPL.exists()) {
+            addFileToList(list, jsfIMPL);
+        // JBoss 5
+        } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfIMPL);
+        } else if ((jsfIMPL = new File(serverDir, "/deploy/jboss-web.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfIMPL);
+        } else if ((jsfIMPL = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/myfaces-impl.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfIMPL);
+        } else if ((jsfIMPL = new File(serverDir, "/deployers/jbossweb.deployer/jsf-libs/jsf-impl.jar")).exists()) { // NOI18N
+            addFileToList(list, jsfIMPL);
+        }
+
+        // JBoss 5 & 6
+        File jstlImpl = new File(serverDir, "/deploy/jbossweb.sar/jstl.jar"); // NOI18N
+        if (jstlImpl.exists()) {
+            addFileToList(list, jstlImpl);
+        } else if ((jstlImpl = new File(serverDir, "/deploy/jboss-web.deployer/jstl.jar")).exists()) { // NOI18N
+            addFileToList(list, jstlImpl);
+        } else if ((jstlImpl = new File(serverDir, "/deploy/jbossweb-tomcat55.sar/jsf-libs/jstl.jar")).exists()) { // NOI18N
+            addFileToList(list, jstlImpl);
+        }
         return list;
     }
 
