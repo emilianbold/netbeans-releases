@@ -77,6 +77,9 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
      * After jump in editor QuietEditorPane is refreshed by events from
      * breadcrumbs, annotations, code folding and editor status panel. For
      * editors without such effects is expected time set individually.
+     * TODO - rather measure time of some objective event than end of event
+     * queue activity (e.g. possibility of typing after jump in editor - see
+     * TypingInScriptingEditorTest)
      */
     private static final long EXPECTED_TIME = 800;
 
@@ -103,7 +106,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(3000);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
@@ -121,6 +124,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         } else {
             editorOperator.setCaretPositionToLine(1);
         }
+        new EventTool().waitNoEvent(1000);
     }
 
     @Override

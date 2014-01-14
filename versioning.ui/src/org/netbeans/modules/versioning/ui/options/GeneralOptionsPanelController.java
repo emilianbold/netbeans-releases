@@ -130,10 +130,10 @@ final class GeneralOptionsPanelController extends OptionsPanelController impleme
         return panel;
     }
     
-    void changed() {
-        if (!changed) {
-            changed = true;
-            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+    void changed (boolean changed) {
+        if (this.changed != changed) {
+            this.changed = changed;
+            pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, !changed, changed);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }

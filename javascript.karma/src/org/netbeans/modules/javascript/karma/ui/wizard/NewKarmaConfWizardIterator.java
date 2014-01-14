@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
         content = "../resources/karma.conf.js",
         scriptEngine = "freemarker",
         position = 100,
+        category = "html5-test",
         displayName = "#NewKarmaConfWizardIterator.karma.template.displayName",
         description = "../resources/KarmaConfDescription.html")
 @NbBundle.Messages("NewKarmaConfWizardIterator.karma.template.displayName=Karma Configuration File")

@@ -99,6 +99,11 @@ public class TabsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(isCloseActivatesMostRecentDocument, org.openide.util.NbBundle.getMessage(TabsPanel.class, "LBL_CloseActivatesRecentDocument")); // NOI18N
         isCloseActivatesMostRecentDocument.setToolTipText(org.openide.util.NbBundle.getMessage(TabsPanel.class, "TIP_CloseActivatesMostRecentDocument")); // NOI18N
+        isCloseActivatesMostRecentDocument.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isCloseActivatesMostRecentDocumentActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -110,6 +115,11 @@ public class TabsPanel extends javax.swing.JPanel {
         isCloseActivatesMostRecentDocument.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TabsPanel.class, "TabsPanel.isCloseActivatesMostRecentDocument.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(isNewDocumentOpensNextToActiveTab, NbBundle.getMessage(TabsPanel.class, "TabsPanel.isNewDocumentOpensNextToActiveTab.text")); // NOI18N
+        isNewDocumentOpensNextToActiveTab.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isNewDocumentOpensNextToActiveTabActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -193,6 +203,23 @@ public class TabsPanel extends javax.swing.JPanel {
         add(filler, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void isNewDocumentOpensNextToActiveTabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isNewDocumentOpensNextToActiveTabActionPerformed
+        fireChanged();
+    }//GEN-LAST:event_isNewDocumentOpensNextToActiveTabActionPerformed
+
+    private void isCloseActivatesMostRecentDocumentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isCloseActivatesMostRecentDocumentActionPerformed
+        fireChanged();
+    }//GEN-LAST:event_isCloseActivatesMostRecentDocumentActionPerformed
+
+    private void fireChanged() {
+        boolean isChanged = false;
+        if(isCloseActivatesMostRecentDocument.isSelected() != prefs.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true)
+                || isNewDocumentOpensNextToActiveTab.isSelected() != prefs.getBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, false)) {
+            isChanged = true;
+        }
+        controller.changed(isChanged, null);
+    }
+    
     protected void load() {
         isCloseActivatesMostRecentDocument.setSelected(prefs.getBoolean(WinSysPrefs.EDITOR_CLOSE_ACTIVATES_RECENT, true));
         isNewDocumentOpensNextToActiveTab.setSelected(prefs.getBoolean(WinSysPrefs.OPEN_DOCUMENTS_NEXT_TO_ACTIVE_TAB, false));

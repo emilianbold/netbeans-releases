@@ -64,6 +64,7 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGripFactory;
 import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -76,6 +77,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
+@NbBundle.Messages({"WARN_ElementNotFound=The destination was not found."})
 public class WhereUsedElement extends SimpleRefactoringElementImplementation implements FiltersManager.Filterable {
     private PositionBounds bounds;
     private String displayText;
@@ -152,6 +154,16 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public void performChange() {
+    }
+
+    @Override
+    public void openInEditor() {
+        if(parentFile == null || !parentFile.isValid()) {
+             StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(SimpleRefactoringElementImplementation.class, "WARN_ElementNotFound"));
+        } else {
+            super.openInEditor();
+        }
     }
 
     @Override

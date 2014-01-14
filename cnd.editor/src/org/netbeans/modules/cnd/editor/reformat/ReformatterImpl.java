@@ -517,7 +517,6 @@ public class ReformatterImpl {
                 case BAR: //("|", "operator"),
                 case PERCENT: //("%", "operator"),
                 case LTLT: //("<<", "operator"),
-                case GTGT: //(">>", "operator"),
                 {
                     if (doFormat()) {
                         if (isOperator()) {
@@ -526,6 +525,24 @@ public class ReformatterImpl {
                         } else {
                             spaceBefore(previous, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
+                        }
+                    }
+                    break;
+                }
+                case GTGT: //(">>", "operator"),
+                {
+                    if (doFormat()) {
+                        if (isOperator()) {
+                            spaceBefore(previous, false, false);
+                            spaceAfter(current, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
+                        } else {
+                            OperatorKind kind = ts.getOperatorKind(current);
+                            if (kind == OperatorKind.BINARY){
+                                spaceBefore(previous, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
+                                spaceAfter(current, codeStyle.spaceAroundBinaryOps(), codeStyle.spaceKeepExtra());
+                            } else {
+                                //TODO style of template declaration
+                            }
                         }
                     }
                     break;

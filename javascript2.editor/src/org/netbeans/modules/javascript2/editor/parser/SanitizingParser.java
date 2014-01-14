@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Arrays;
 import java.util.Collections;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
@@ -44,7 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -63,8 +63,10 @@ import org.openide.filesystems.FileObject;
 public abstract class SanitizingParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(SanitizingParser.class.getName());
-
-    private static final long MAX_FILE_SIZE_TO_PARSE = 1024 * 1024;
+    
+    private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.js.parse.big.files"); //NOI18N
+    private static final long MAX_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.file.size", 1024 * 1024); //NOI18N
+    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", 1024 * 1024); //NOI18N
 
     private final Language<JsTokenId> language;
 
@@ -102,19 +104,12 @@ public abstract class SanitizingParser extends Parser {
         FileObject fo = snapshot.getSource().getFileObject();
         long startTime = System.nanoTime();
         String scriptName;
-        Long size;
-        boolean isEmbeded = !getMimeType().equals(snapshot.getMimePath().getPath());
         if (fo != null) {
             scriptName = snapshot.getSource().getFileObject().getNameExt();
-            size = fo.getSize();
         } else {
-            size = (long)snapshot.getText().length();
             scriptName = getDefaultScriptName();
         }
-        if (size > MAX_FILE_SIZE_TO_PARSE && !isEmbeded) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "The file {0} was not parsed because the size is too big.", scriptName);
-            }
+        if (!isParsable(snapshot)) {
             return new JsParserResult(snapshot, null);
         }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
@@ -127,6 +122,60 @@ public abstract class SanitizingParser extends Parser {
                     new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
         }
         return result;
+    }
+    
+    /**
+     * This method try to analyze the text and says whether the snapshot should be file
+     * @param snapshot
+     * @return whether the snapshot should be parsed
+     */
+    private boolean isParsable (Snapshot snapshot) {
+        FileObject fo = snapshot.getSource().getFileObject();
+        boolean isEmbeded = !getMimeType().equals(snapshot.getMimePath().getPath());
+        Long size;
+        CharSequence text = snapshot.getText();
+        String scriptName;
+        if (fo != null) {
+            size = fo.getSize();
+            scriptName = snapshot.getSource().getFileObject().getNameExt();
+        } else {
+            size = (long)text.length();
+            scriptName = getDefaultScriptName();
+        }
+        if (!PARSE_BIG_FILES) {
+            if (size > MAX_FILE_SIZE_TO_PARSE && !isEmbeded) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "The file {0} was not parsed because the size is too big.", scriptName);
+                }
+                return false;
+            }
+
+            if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE) {
+                // try to find only for the file that has size bigger then 1/3 of the max size
+                boolean isMinified = false;
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(snapshot, 0, language);
+                if (ts != null) {
+                    int offset = 0;
+                    int countedLines = 0;
+                    int countChars = 0;
+                    while (!isMinified && ts.moveNext() && countedLines < 5) {
+                        LexUtilities.findNext(ts, Arrays.asList(JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                        offset = ts.offset();
+                        LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.EOL));
+                        countChars += (ts.offset() - offset);
+                        countedLines++;
+                    }
+                    countedLines = 0;
+                    if ((countChars / countedLines) > 300) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "The file {0} was not parsed because the is minimize and size is big.", scriptName);
+                        }
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
     
     JsParserResult parseContext(Context context, Sanitize sanitizing,

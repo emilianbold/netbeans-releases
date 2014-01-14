@@ -58,6 +58,13 @@ public abstract class StorablePanel extends javax.swing.JPanel {
      */
     public abstract void store();
     
+    /**
+     * Notify whether any settings are modified. This will help the infrastructure decide 
+     * if the Apply button in the Options window should be enabled or disabled.
+     * @return <code>true</code> if any setting is modified by the user in the UI, <code>false</code> otherwise.
+     * @since 1.41
+     */
+    public abstract boolean isChanged();
     
     public static interface Provider {
         

@@ -46,7 +46,7 @@ package org.netbeans.modules.javaee.wildfly.ide;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-import org.netbeans.modules.javaee.wildfly.config.JBossDatasourceManager;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasourceManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.JBInstantiatingIterator;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
@@ -54,7 +54,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestinationManager;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestinationManager;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
@@ -65,7 +65,7 @@ public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentM
 
     @Override
     public StartServer getStartServer(DeploymentManager dm) {
-        return new JBStartServer(dm);
+        return new WildflyStartServer(dm);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentM
         }
 
         WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
-        return new JBossDatasourceManager(jbdm);
+        return new WildflyDatasourceManager(jbdm);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentM
         }
 
         WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
-        return new JBossMessageDestinationManager(jbdm.getUrl(), true);
+        return new WildflyMessageDestinationManager(jbdm, true);
     }
 
     @Override

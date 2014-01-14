@@ -349,12 +349,13 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
     protected String getResultsText() {
         synchronized(resultsSync) {
             if (hasResults()) {
-                return (results.size() == 1)
-                       ? Bundle.ResetResultsProfilingPoint_OneHitString(
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()))
-                       : Bundle.ResetResultsProfilingPoint_NHitsString(
-                            results.size(),
-                            Utils.formatProfilingPointTime(results.get(results.size() - 1).getTimestamp()));
+                int size = results.size();
+                long timeStamp = results.get(size - 1).getTimestamp();
+                String time = Utils.formatProfilingPointTime(timeStamp);
+
+                return (size == 1)
+                       ? Bundle.ResetResultsProfilingPoint_OneHitString(time)
+                       : Bundle.ResetResultsProfilingPoint_NHitsString(size, time);
             } else {
                 return Bundle.LoadGenProfilingPoint_NoResultsString();
             }

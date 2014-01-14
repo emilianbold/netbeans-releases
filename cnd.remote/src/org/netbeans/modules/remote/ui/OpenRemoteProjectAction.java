@@ -160,7 +160,8 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     }
     
     private void openRemoteProject(final ExecutionEnvironment env) {            
-        final String homeDir = RemoteFileUtil.getCurrentChooserFile(env);
+        final String chooser_key = "open.remote.project";//NOI18N
+        final String homeDir = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
         final Callable<String> homeDirCallable = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -186,7 +187,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             return;
         }
         String currentChooserFile = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(currentChooserFile, env);
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, currentChooserFile, env);
         Project project;
         try {
             project = ProjectManager.getDefault().findProject(remoteProjectFO);

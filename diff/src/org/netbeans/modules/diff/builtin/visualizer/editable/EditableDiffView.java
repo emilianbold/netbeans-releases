@@ -354,7 +354,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (canceled) {
             Thread.currentThread().interrupt();
         } else {
-            refreshDiff(0);
+            refreshDiff(100);
         }
     }
 
@@ -846,36 +846,46 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (index < 0 || index >= diffs.length || index >= manager.getDecorations().length) {
             return;
         }
-        Difference diff = diffs[index];
-        
-        int offFirstStart, offSecondStart, offCurrent, offSecondEnd;
+        final Difference diff = diffs[index];
         initGlobalSizes(); // The window might be resized in the mean time.
         try {
-            StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
-            StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
+            final StyledDocument doc1 = (StyledDocument) jEditorPane1.getEditorPane().getDocument();
+            final StyledDocument doc2 = (StyledDocument) jEditorPane2.getEditorPane().getDocument();
             
-            offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
-            offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
-            offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
-           
-            if(diff.getSecondEnd() > diff.getSecondStart()) {
-                offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
-            } else {
-                int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
-                if(diff.getSecondStart() < lastLine) {
-                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
-                } else {
-                    offSecondEnd = doc2.getLength();
+            final int offCurrent = jEditorPane2.getEditorPane().getCaretPosition();
+            doc1.render(new Runnable() {
+
+                @Override
+                public void run () {
+                    int offFirstStart = org.openide.text.NbDocument.findLineOffset(doc1, diff.getFirstStart() > 0 ? diff.getFirstStart() - 1 : 0);
+                    jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
                 }
-            }
-            
-            jEditorPane1.getEditorPane().setCaretPosition(offFirstStart);
-            if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
-                // it could be somebody is editing right now,
-                // so set the caret on the diferences first lines first column only in case
-                // it isn't already somrwhere in the line 
-                jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
-            }
+            });
+            doc2.render(new Runnable() {
+
+                @Override
+                public void run () {
+                    int offSecondStart = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() > 0 ? diff.getSecondStart() - 1 : 0);
+                    int offSecondEnd;
+                    if(diff.getSecondEnd() > diff.getSecondStart()) {
+                        offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondEnd() > 0 ? diff.getSecondEnd() - 1 : 0);
+                    } else {
+                        int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
+                        if(diff.getSecondStart() < lastLine) {
+                            offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
+                        } else {
+                            offSecondEnd = doc2.getLength();
+                        }
+                    }
+
+                    if(offCurrent < offSecondStart || offCurrent > offSecondEnd) {
+                        // it could be somebody is editing right now,
+                        // so set the caret on the diferences first lines first column only in case
+                        // it isn't already somrwhere in the line 
+                        jEditorPane2.getEditorPane().setCaretPosition(offSecondStart);
+                    }
+                }
+            });
             
             DiffViewManager.DecoratedDifference ddiff = manager.getDecorations()[index];
             int offset;
@@ -885,7 +895,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 offset = jEditorPane2.getScrollPane().getViewport().getViewRect().height / 5;
             }
             jEditorPane2.getScrollPane().getVerticalScrollBar().setValue(ddiff.getTopRight() - offset);
-        } catch (IndexOutOfBoundsException ex) {
+        } catch (IndexOutOfBoundsException | IllegalArgumentException ex) {
             Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
         }
 
@@ -1157,6 +1167,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                 open = DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
                             }
                             if (open) {
+                                LOG.log(Level.INFO, "User acepted UQE: {0}", fo.getPath()); //NOI18N
                                 ex.confirmed();
                                 sdoc = ec.openDocument();
                             } else {
@@ -1249,6 +1260,24 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private void setTextualContent () {
+        if (jTabbedPane.getSelectedComponent() == textualPanel) {
+            countTextualDiff();
+        } else {
+            jTabbedPane.addChangeListener(new ChangeListener() {
+
+                @Override
+                public void stateChanged (ChangeEvent e) {
+                    if (jTabbedPane.getSelectedComponent() == textualPanel) {
+                        jTabbedPane.removeChangeListener(this);
+                        countTextualDiff();
+                    }
+                }
+            });
+        }
+        textualEditorPane.setEditable(false);
+    }
+
+    private void countTextualDiff () {
         final EditorKit kit = textualEditorPane.getEditorKit();
         rp.post(new Runnable() {
             @Override
@@ -1257,10 +1286,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 doc.putProperty("mimeType", CONTENT_TYPE_DIFF); //NOI18N
                 StyledDocument sdoc = doc instanceof StyledDocument ? (StyledDocument) doc : null;
                 textualRefreshTask = new TextualDiffRefreshTask(sdoc);
-                textualRefreshTask.refresh();
+                textualRefreshTask.refresh(diffs);
             }
         });
-        textualEditorPane.setEditable(false);
     }
 
     private TextualDiffRefreshTask textualRefreshTask;
@@ -1273,13 +1301,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             this.out = out;
         }
 
-        public void refresh () {
+        public void refresh (Difference[] differences) {
             canceled = false;
             synchronized (this) {
                 boolean docReady = false;
                 if (out != null) {
                     try {
-                        exportDiff();
+                        exportDiff(differences);
                         docReady = true;
                     } catch (IOException ex) {
                         Logger.getLogger(EditableDiffView.class.getName()).log(Level.INFO, null, ex);
@@ -1305,42 +1333,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
 
-        private void exportDiff () throws IOException {
-            DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
-
+        private void exportDiff (Difference[] differences) throws IOException {
             Reader r1 = null;
             Reader r2 = null;
-            Difference[] differences;
-
-            try {
-                r1 = getReader(jEditorPane1.getEditorPane().getDocument());
-                if (r1 == null) {
-                    r1 = new StringReader("");  // NOI18N
-                }
-                if (isCanceled()) {
-                    return;
-                }
-                r2 = getReader(jEditorPane2.getEditorPane().getDocument());
-                if (r2 == null) {
-                    r2 = new StringReader("");  // NOI18N
-                }
-                if (isCanceled()) {
-                    return;
-                }
-                differences = diff.computeDiff(r1, r2);
-            } finally {
-                if (r1 != null) {
-                    try {
-                        r1.close();
-                    } catch (Exception e) {
-                    }
-                }
-                if (r2 != null) {
-                    try {
-                        r2.close();
-                    } catch (Exception e) {
-                    }
-                }
+            
+            if (differences == null) {
+                differences = computeDiff();
             }
 
             try {
@@ -1459,7 +1457,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             synchronized (RefreshDiffTask.this) {
                 final Difference[] differences = computeDiff();
                 if (textualRefreshTask != null) {
-                    textualRefreshTask.refresh();
+                    textualRefreshTask.refresh(differences);
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -1486,47 +1484,47 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 });
             }
         }
+    }
 
-        private Difference[] computeDiff() {
-            
-            if(editableDocument != null) { 
-                // refresh fo before computing the diff, external changes might not have been recognized in some setups
-                // see also issue #210834
-                DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
-                if (dao != null) {
-                    Set<FileObject> files = dao.files();
-                    if(files != null) {
-                        for (FileObject fo : files) {
-                            LOG.log(Level.FINE, "refreshing FileOBject {0}", fo); // NOI18N
-                            fo.refresh();
-                        }
-                    } else {
-                        LOG.log(Level.FINE, "no FileObjects to refresh for {0}", dao); // NOI18N
+    private Difference[] computeDiff () {
+
+        if(editableDocument != null) { 
+            // refresh fo before computing the diff, external changes might not have been recognized in some setups
+            // see also issue #210834
+            DataObject dao = (DataObject) editableDocument.getProperty(Document.StreamDescriptionProperty);
+            if (dao != null) {
+                Set<FileObject> files = dao.files();
+                if(files != null) {
+                    for (FileObject fo : files) {
+                        LOG.log(Level.FINE, "refreshing FileOBject {0}", fo); // NOI18N
+                        fo.refresh();
                     }
                 } else {
-                    LOG.log(Level.FINE, "no DataObject to refresh"); // NOI18N
+                    LOG.log(Level.FINE, "no FileObjects to refresh for {0}", dao); // NOI18N
                 }
+            } else {
+                LOG.log(Level.FINE, "no DataObject to refresh"); // NOI18N
             }
-            
-            if (!secondSourceAvailable || !firstSourceAvailable) {
-                return NO_DIFFERENCES;
-            }
-
-            Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
-            Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
-            if (first == null || second == null) {
-                return NO_DIFFERENCES;
-            }
-
-            DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
-            Difference[] diffs;
-            try {
-                diffs = diff.computeDiff(first, second);
-            } catch (IOException e) {
-                diffs = NO_DIFFERENCES;
-            }
-            return diffs;
         }
+
+        if (!secondSourceAvailable || !firstSourceAvailable) {
+            return NO_DIFFERENCES;
+        }
+
+        Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
+        Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
+        if (first == null || second == null) {
+            return NO_DIFFERENCES;
+        }
+
+        DiffProvider diff = DiffModuleConfig.getDefault().getDefaultDiffProvider();
+        Difference[] diffs;
+        try {
+            return diff.computeDiff(first, second);
+        } catch (IOException e) {
+            diffs = NO_DIFFERENCES;
+        }
+        return diffs;
     }
 
     /**

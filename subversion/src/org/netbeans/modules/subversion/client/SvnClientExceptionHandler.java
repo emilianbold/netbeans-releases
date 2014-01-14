@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import org.netbeans.modules.subversion.util.NotifyHtmlPanel;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileInputStream;
@@ -1067,7 +1068,7 @@ public class SvnClientExceptionHandler {
                     WARNING_WC_TOO_NEW_DISPLAYED = true;
                     JButton okButton = new JButton();
                     Mnemonics.setLocalizedText(okButton, Bundle.CTL_WC18SwitchToCmd());
-                    SwitchToCliPanel p = new SwitchToCliPanel();
+                    NotifyHtmlPanel p = new NotifyHtmlPanel();
                     p.setText(format18WCMessage(exMessage));
                     NotifyDescriptor descriptor = new NotifyDescriptor(
                             p, 

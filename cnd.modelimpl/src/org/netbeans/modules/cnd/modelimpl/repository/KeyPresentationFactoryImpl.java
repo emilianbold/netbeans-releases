@@ -154,6 +154,8 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND(presentation);
             case KeyObjectFactory.KEY_FUNCTION_FRIEND_DEFINITION_KEY:
                 return new OffsetableDeclarationKey.FUNCTION_FRIEND_DEFINITION(presentation);
+            case KeyObjectFactory.KEY_FUNCTION_TYPE_KEY:
+                return new OffsetableDeclarationKey.FUNCTION_TYPE(presentation);
         }
         return null;
     }

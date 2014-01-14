@@ -75,4 +75,12 @@ public class AndroidManifest extends XMLFile {
         setAttributeText("/manifest", "package", packageName); // NOI18N
     }
     
+    public boolean isDebuggable() {
+        return Boolean.parseBoolean(getAttributeText("/manifest/application", "android:debuggable")); // NOI18N
+    }
+    
+    public void setDebuggable(boolean debuggable) {
+        setAttributeText("/manifest/application", "android:debuggable", Boolean.toString(debuggable));
+    }
+    
 }

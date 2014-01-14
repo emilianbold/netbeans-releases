@@ -1102,6 +1102,19 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug234667.cpp", 10, 48, "bug234667.cpp", 4, 13);
     }    
     
+    public void testBug240016() throws Exception {
+        // Bug 240016 - Struct initializer is flagged as error
+        performTest("bug240016.cpp", 10, 39, "bug240016.cpp", 10, 5);   
+        performTest("bug240016.cpp", 11, 16, "bug240016.cpp", 3, 7);   
+        performTest("bug240016.cpp", 11, 34, "bug240016.cpp", 8, 5);   
+        performTest("bug240016.cpp", 12, 11, "bug240016.cpp", 4, 7);
+        performTest("bug240016.cpp", 13, 10, "bug240016.cpp", 5, 7);
+        
+        performTest("bug240016.cpp", 25, 14, "bug240016.cpp", 17, 9);
+        performTest("bug240016.cpp", 26, 14, "bug240016.cpp", 18, 9);
+        performTest("bug240016.cpp", 26, 19, "bug240016.cpp", 22, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

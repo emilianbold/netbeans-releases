@@ -46,9 +46,9 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
-import org.netbeans.modules.cnd.repository.impl.spi.LayerExceptionsListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
@@ -79,8 +79,8 @@ public final class DiskLayerImpl {
     }
         
     
-    public boolean startup(int persistMechanismVersion, boolean isWritable) {
-        return layerIndex.load(persistMechanismVersion, isWritable);
+    public boolean startup(int persistMechanismVersion, boolean recreate, boolean isWritable) {
+        return layerIndex.load(persistMechanismVersion, recreate, isWritable);
     }
 
     public LayerDescriptor getLayerDescriptor() {
@@ -95,7 +95,7 @@ public final class DiskLayerImpl {
         try {
             layerIndex.loadUnitIndex(unitIdx);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
     }
 
@@ -106,10 +106,6 @@ public final class DiskLayerImpl {
     void closeUnit(int unitIdInLayer, boolean cleanRepository, Set<Integer> requiredUnits, boolean isWritable) {
         layerIndex.closeUnit(unitIdInLayer, cleanRepository, requiredUnits);
         fas.closeUnit(unitIdInLayer, cleanRepository);
-    }
-
-    public void setExceptionsListener(LayerExceptionsListener listener) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public List<CharSequence> getFileNameTable(int unitIdx) {
@@ -149,7 +145,7 @@ public final class DiskLayerImpl {
         try {
             layerIndex.store();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
     }
 }

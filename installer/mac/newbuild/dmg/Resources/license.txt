@@ -16,7 +16,7 @@ THIS LICENSE DO NOT CLICK "ACCEPT" OR THE
 EQUIVALENT AND DO NOT INSTALL OR USE THIS
 SOFTWARE.
 
-Copyright (c) 1997, 2013, Oracle and/or its affiliates. All
+Copyright (c) 1997, 2014, Oracle and/or its affiliates. All
 rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or
@@ -58,7 +58,7 @@ Contributor(s):
 
 The original software is NetBeans. The initial developer of
 the original software is Oracle Corporation; portions
-Copyright (c) 1997, 2013 Oracle and/or its affiliates. All
+Copyright (c) 1997, 2014 Oracle and/or its affiliates. All
 rights reserved.
 
 LICENSES AND OTHER TERMS AND CONDITIONS
@@ -77,7 +77,7 @@ The use of Java Card Development Kit 3.0.2 is subject to the
 terms and conditions set forth at
 http://download.oracle.com/otn-pub/java/licenses/OTN_Java_Card_Classic_Connected_SDK_4April2012.pdf
 
-Last updated 10 January 2013
+Last updated 2 January 2014
 
 ************************************************************
 

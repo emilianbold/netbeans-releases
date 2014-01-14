@@ -331,6 +331,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbShowBraceOutline.setSelected(model.isBraceOutline());
 
         listen = true;
+        changed = false;
     }
     
     void applyChanges () {
@@ -363,7 +364,10 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed (ActionEvent e) {
         if (!listen) return;
-        changed = true;
+        changed = model.isCamelCaseJavaNavigation() != cbCamelCaseBehavior.isSelected()
+                || !model.getEditorSearchType().equals((String) cboEditorSearchType.getSelectedItem())
+                || model.isBraceOutline() != cbShowBraceOutline.isSelected()
+                || model.isBraceTooltip() != cbBraceTooltip.isSelected();
     }
     
     

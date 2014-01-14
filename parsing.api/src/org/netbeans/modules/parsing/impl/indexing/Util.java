@@ -49,6 +49,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -61,6 +62,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
 /**
@@ -71,6 +73,7 @@ public final class Util {
 
 
     /*tests*/ static Set<String> allMimeTypes;
+    private static volatile boolean hadCycles;
 
     public static Set<String> getAllMimeTypes () {
         return allMimeTypes != null ? allMimeTypes : EditorSettings.getDefault().getAllMimeTypes();
@@ -302,7 +305,59 @@ public final class Util {
         //Create inverse dependencies
         final Map<URL, List<URL>> inverseDeps = findReverseDependencies(deps);
         //Collect dependencies
-        //Todo: Perf compute at once - top sort + calculate in order
+        if (!hadCycles) {
+            try {
+                return fastTransitiveDeps(inverseDeps, peers);
+            } catch (TopologicalSortException tse) {
+                hadCycles = true;
+            }
+        }
+        return slowTransitiveDeps(inverseDeps, peers);
+    }
+
+    @NonNull
+    private static Map<URL,Collection<URL>> fastTransitiveDeps(
+        @NonNull final Map<URL,? extends Collection<URL>> inverseDeps,
+        @NonNull final Map<URL,? extends Collection<URL>> peers) throws TopologicalSortException {
+        final List<URL> sortedNodes = Utilities.topologicalSort(inverseDeps.keySet(), inverseDeps);
+        Collections.reverse(sortedNodes);        
+        final Map<URL,Collection<URL>> result = new HashMap<URL,Collection<URL>>();
+        for (Map.Entry<URL,? extends Collection<URL>> peerEntry : peers.entrySet()) {
+            final Collection<URL> deps = inverseDeps.get(peerEntry.getKey());
+            if (deps != null) {
+                final Collection<URL> peerValue = peerEntry.getValue();
+                if (peerValue != null) {
+                    for (URL peer : peerValue) {
+                        deps.add(peer);
+                        final Collection<URL> peerDeps = inverseDeps.get(peer);
+                        if (peerDeps != null) {
+                            deps.addAll(peerDeps);
+                        }
+                    }
+                }
+            }
+        }
+        for (URL root : sortedNodes) {
+            final Set<URL> deps = new HashSet<URL>();
+            result.put(root, deps);
+            deps.add(root);
+            final Collection<URL> directDeps = inverseDeps.get(root);
+            for (URL dd : directDeps) {
+                final Collection<URL> transitiveDeps = result.get(dd);
+                if (transitiveDeps != null) {
+                    deps.addAll(transitiveDeps);
+                } else {
+                    deps.add(dd);
+                }
+            }
+        }        
+        return result;
+    }
+
+    @NonNull
+    private static Map<URL,Collection<URL>> slowTransitiveDeps(
+        @NonNull final Map<URL,? extends Collection<URL>> inverseDeps,
+        @NonNull final Map<URL,? extends Collection<URL>> peers) {
         final Map<URL,Collection<URL>> result = new HashMap<URL,Collection<URL>>();
         for (URL thisSourceRoot : inverseDeps.keySet()) {
             final LinkedList<URL> todo = new LinkedList<URL> ();
@@ -312,7 +367,7 @@ public final class Util {
                 final URL u = todo.removeFirst();
                 if (!partialResult.contains(u)) {
                     partialResult.add (u);
-                    List<URL> ideps = inverseDeps.get(u);
+                    Collection<URL> ideps = inverseDeps.get(u);
                     if (ideps != null) {
                         todo.addAll (ideps);
                     }
@@ -334,6 +389,9 @@ public final class Util {
         final Map<URL, List<URL>> inverseDeps = new HashMap<URL, List<URL>> ();
         for (Map.Entry<URL,List<URL>> entry : deps.entrySet()) {
             final URL u1 = entry.getKey();
+            if (inverseDeps.get(u1) == null) {
+                inverseDeps.put(u1, new ArrayList<URL>());
+            }
             final List<URL> l1 = entry.getValue();
             for (URL u2 : l1) {
                 List<URL> l2 = inverseDeps.get(u2);

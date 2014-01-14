@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.jira.util;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import java.util.Comparator;
+import org.netbeans.modules.jira.client.spi.Priority;
 
 
 /**

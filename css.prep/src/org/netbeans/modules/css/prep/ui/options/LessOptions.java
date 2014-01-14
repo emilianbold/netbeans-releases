@@ -122,6 +122,13 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
     }
 
     @Override
+    public boolean changed() {
+        return !getComponent().getLessPath().equals(getOptions().getLessPath())
+                || getComponent().getLessOutputOnError() != getOptions().getLessOutputOnError()
+                || getComponent().getLessDebug()!= getOptions().getLessDebug();
+    }
+
+    @Override
     public void save() throws IOException {
         Warnings.resetWarning(CssPreprocessorType.LESS);
         LessExecutable.resetVersion();

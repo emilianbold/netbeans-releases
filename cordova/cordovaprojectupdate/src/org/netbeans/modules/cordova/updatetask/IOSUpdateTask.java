@@ -60,9 +60,7 @@ public class IOSUpdateTask extends CordovaTask {
             File root = new File(
                     getProject().getBaseDir().getAbsolutePath() 
                     + "/" + getProperty("cordova.platforms") + "/ios");
-            File configFile = new File(
-                    getProject().getBaseDir().getAbsolutePath() 
-                    + "/" + getProperty("site.root") + "/config.xml");
+            File configFile = getConfigFile();
 
             String[] list = root.list(new FilenameFilter() {
                 @Override

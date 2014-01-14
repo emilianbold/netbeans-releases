@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.nodes;
 
 import java.io.IOException;
@@ -73,17 +72,29 @@ import org.xml.sax.SAXException;
  * @author Michal Mocnak
  */
 public class Util {
+
     public static final String WAIT_NODE = "wait_node"; //NOI18N
     public static final String INFO_NODE = "info_node"; //NOI18N
-    
-    public static final String JDBC_RESOURCE_ICON = 
-            "org/netbeans/modules/javaee/wildfly/resources/jdbc.gif"; // NOI18N
-    public static final String CONNECTOR_ICON =
-            "org/netbeans/modules/javaee/wildfly/resources/connector.gif"; // NOI18N
-    public static final String APPCLIENT_ICON =
-            "org/netbeans/modules/javaee/wildfly/resources/appclient.gif"; // NOI18N
-    public static final String JAVAMAIL_ICON =
-            "org/netbeans/modules/javaee/resources/javamail.gif";
+
+    public static final String JDBC_RESOURCE_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/jdbc.gif"; // NOI18N
+    public static final String CONNECTOR_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/connector.gif"; // NOI18N
+    public static final String APPCLIENT_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/appclient.gif"; // NOI18N
+    public static final String JAVAMAIL_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/javamail.gif";// NOI18N
+    public static final String JMS_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/jms.gif";// NOI18N
+    public static final String RESOURCES_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/ResNodeNodeIcon.gif";// NOI18N
+
+    public static final String EJB_MESSAGE_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/MessageBean.png";// NOI18N
+    public static final String EJB_ENTITY_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/EntityBean.png";// NOI18N
+    public static final String EJB_SESSION_ICON
+            = "org/netbeans/modules/javaee/wildfly/resources/SessionBean.png";// NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
@@ -94,7 +105,7 @@ public class Util {
      */
     public static Node createWaitNode() {
         AbstractNode n = new AbstractNode(Children.LEAF);
-        n.setName(NbBundle.getMessage(JBItemNode.class, "LBL_WaitNode_DisplayName")); //NOI18N
+        n.setName(NbBundle.getMessage(WildflyItemNode.class, "LBL_WaitNode_DisplayName")); //NOI18N
         n.setIconBaseWithExtension("org/netbeans/modules/javaee/wildfly/resources/wait.gif"); // NOI18N
         return n;
     }
@@ -106,8 +117,8 @@ public class Util {
      */
     public static Node createInfoNode() {
         AbstractNode n = new AbstractNode(Children.LEAF);
-        n.setName(NbBundle.getMessage(JBItemNode.class, "LBL_InfoNode_DisplayName")); //NOI18N
-        n.setShortDescription(NbBundle.getMessage(JBItemNode.class, "LBL_InfoNode_ToolTip")); //NOI18N
+        n.setName(NbBundle.getMessage(WildflyItemNode.class, "LBL_InfoNode_DisplayName")); //NOI18N
+        n.setShortDescription(NbBundle.getMessage(WildflyItemNode.class, "LBL_InfoNode_ToolTip")); //NOI18N
         n.setIconBaseWithExtension("org/netbeans/core/resources/exception.gif"); // NOI18N
         return n;
     }
@@ -129,17 +140,19 @@ public class Util {
     }
 
     /**
-     * It only returns string representation of the ModuleType (accorded to the JBoss JMX requirements)
+     * It only returns string representation of the ModuleType (accorded to the
+     * JBoss JMX requirements)
      *
      * @return string representation of the ModuleType
      */
     public static String getModuleTypeString(ModuleType mt) {
-        if(mt.equals(ModuleType.EAR))
+        if (mt.equals(ModuleType.EAR)) {
             return "J2EEApplication";
-        else if(mt.equals(ModuleType.WAR))
+        } else if (mt.equals(ModuleType.WAR)) {
             return "WebModule";
-        else if(mt.equals(ModuleType.EJB))
+        } else if (mt.equals(ModuleType.EJB)) {
             return "EJBModule";
+        }
 
         return "undefined";
     }
@@ -176,8 +189,8 @@ public class Util {
 
     /**
      * Parse web application's deployment descriptor and returns context root.
-     * According to the jboss specification, if no context root specification exists,
-     * the context root will be the base name of the WAR file.
+     * According to the jboss specification, if no context root specification
+     * exists, the context root will be the base name of the WAR file.
      *
      * @param descriptor deployment descriptor
      * @param warName name of the war

@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.persistence.unit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -250,6 +252,7 @@ public class PersistenceCfgProperties {
                 ret.addAll(props.keySet());
             }
         }
+        Collections.sort(ret, new KeyOrder());
         return ret;
     }
     
@@ -265,5 +268,19 @@ public class PersistenceCfgProperties {
         ret.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         ret.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
         return ret;
+    }
+    
+    private final static class KeyOrder implements Comparator<String>{
+
+        @Override
+        public int compare(String o1, String o2) {
+            if(o1.startsWith("javax.persistence.") && !o2.startsWith("javax.persistence")) {//NOI18N
+                return -11;
+            } else if (!o1.startsWith("javax.persistence.") && o2.startsWith("javax.persistence")){//NOI18N
+                return 1;
+            }
+            return o1.compareTo(o2);
+        }
+        
     }
 }

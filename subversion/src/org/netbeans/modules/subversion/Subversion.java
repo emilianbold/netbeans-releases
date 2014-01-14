@@ -585,7 +585,7 @@ public class Subversion {
      * @param files files to chage the annotations and sidebars for
      */
     public void refreshAnnotationsAndSidebars (File... files) {
-        Set<File> s = new HashSet<File>(Arrays.asList(files));
+        Set<File> s = files == null ? null : new HashSet<>(Arrays.asList(files));
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 

@@ -48,6 +48,8 @@ import java.sql.*;
 import java.util.*;
 
 public class ViewDependency {
+    private static final int MAX_RECURSION = 50;
+    
     private Connection con;
     private String user;
     private String view;
@@ -82,13 +84,13 @@ public class ViewDependency {
             }  
             database = database.trim();
             if (database.equalsIgnoreCase("Oracle")) {
-                getOraclePKTable(user, view);
+                getOraclePKTable(user, view, 0);
                 getOracleViewColumns();
                 return;
             }
             
             if (database.equalsIgnoreCase("Microsoft SQL Server")) {
-                getMSSQLServerPKTable(user, view);
+                getMSSQLServerPKTable(user, view, 0);
                 getMSSQLServerViewColumns();
                 return;
             }
@@ -97,7 +99,16 @@ public class ViewDependency {
         }
     }
 
-    private void getOraclePKTable(String user, String view) throws SQLException {
+    private void getOraclePKTable(String user, String view, int recursionlevel) throws SQLException {
+        recursionlevel++;
+        // Limit dependency depth to a sensible level 
+        // (see MAX_RECURSION for actual limit)
+        if(recursionlevel > MAX_RECURSION) {
+            throw new SQLException(String.format(
+                    "View analyser level (%d) reached - potential reference cycle.",
+                    MAX_RECURSION));
+        }
+        
         PreparedStatement stmt;
         ResultSet rs;
         
@@ -116,13 +127,22 @@ public class ViewDependency {
             }
 
             if (type.equalsIgnoreCase("VIEW"))
-                getOraclePKTable(rs.getString(2), rs.getString(3));
+                getOraclePKTable(rs.getString(2), rs.getString(3), recursionlevel);
         }
         rs.close();
         stmt.close();
     }
 
-    private void getMSSQLServerPKTable(String user, String view) throws SQLException {
+    private void getMSSQLServerPKTable(String user, String view, int recursionlevel) throws SQLException {
+        recursionlevel++;
+        // Limit dependency depth to a sensible level 
+        // (see MAX_RECURSION for actual limit)
+        if(recursionlevel > MAX_RECURSION) {
+            throw new SQLException(String.format(
+                    "View analyser level (%d) reached - potential reference cycle.",
+                    MAX_RECURSION));
+        }
+        
         CallableStatement cs;
         ResultSet rs;
         String name;
@@ -146,7 +166,7 @@ public class ViewDependency {
                     }
 
                 if (type.equals("view"))
-                    getMSSQLServerPKTable(user, name);
+                    getMSSQLServerPKTable(user, name, recursionlevel);
             }
             rs.close();
         } catch (Exception exc) {

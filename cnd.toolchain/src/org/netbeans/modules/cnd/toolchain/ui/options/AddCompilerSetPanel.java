@@ -363,10 +363,11 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
 
     private void updateBaseDirectory() {
         String seed = null;
+        final String chooser_key = "AddCompilerSet"; //NOI18N
         if (tfBaseDirectory.getText().length() > 0) {
             seed = tfBaseDirectory.getText();
-        } else if (RemoteFileUtil.getCurrentChooserFile(csm.getExecutionEnvironment()) != null) {
-            seed = RemoteFileUtil.getCurrentChooserFile(csm.getExecutionEnvironment());
+        } else if (RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment()) != null) {
+            seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, csm.getExecutionEnvironment());
         } else {
             ExecutionEnvironment env = csm.getExecutionEnvironment();
             if (env.isLocal()){
@@ -389,6 +390,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             return;
         }
         String dirPath = fileChooser.getSelectedFile().getPath();
+        RemoteFileUtil.setCurrentChooserFile(chooser_key, dirPath, csm.getExecutionEnvironment());
         tfBaseDirectory.setText(dirPath);
         //updateDataBaseDir();
     }

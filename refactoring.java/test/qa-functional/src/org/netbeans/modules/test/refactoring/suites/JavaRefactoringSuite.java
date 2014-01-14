@@ -43,6 +43,8 @@ package org.netbeans.modules.test.refactoring.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.test.refactoring.ConvertAnonymousToMemberTest;
+import org.netbeans.modules.test.refactoring.EncapsulateFieldTest;
 import org.netbeans.modules.test.refactoring.FindUsagesClassTest;
 import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
 import org.netbeans.modules.test.refactoring.MoveTest;
@@ -56,7 +58,14 @@ public class JavaRefactoringSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class).addTest(MoveTest.class).addTest(RenameTest.class));
+                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).
+                    addTest(FindUsagesMethodTest.class).
+                    addTest(MoveTest.class).
+                    addTest(RenameTest.class).
+                    addTest(ConvertAnonymousToMemberTest.class).
+                    addTest(EncapsulateFieldTest.class));
+        
+                    // addTest(PullUpTest.class))
     }
         
 }

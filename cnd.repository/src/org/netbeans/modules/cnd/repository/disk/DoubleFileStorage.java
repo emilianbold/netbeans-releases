@@ -51,6 +51,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.disk.index.ChunkInfo;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
@@ -93,7 +94,7 @@ public final class DoubleFileStorage implements FileStorage {
             try {
                 close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
 
             boolean writable = openForWriting;
@@ -126,7 +127,7 @@ public final class DoubleFileStorage implements FileStorage {
                 cache0 = null;
                 return false;
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             } finally {
                 cache_0_dataFile = cache0;
                 cache_1_dataFile = cache1;

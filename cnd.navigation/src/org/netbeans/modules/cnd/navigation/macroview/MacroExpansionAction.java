@@ -46,11 +46,9 @@ package org.netbeans.modules.cnd.navigation.macroview;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.navigation.hierarchy.HierarchyAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -88,7 +86,6 @@ public class MacroExpansionAction extends CallableSystemAction {
             return;
         }
         MacroExpansionTopComponent win = MacroExpansionTopComponent.findInstance();
-//        Preferences ps = NbPreferences.forModule(MacroExpansionTopComponent.class);
         win.open();
         win.requestActive();
     }
@@ -112,10 +109,4 @@ public class MacroExpansionAction extends CallableSystemAction {
     protected boolean asynchronous () {
         return false;
     }
-    
-//    public MacroExpansionAction() {
-//        super(NbBundle.getMessage(MacroExpansionAction.class, "CTL_MacroExpansionAction"));
-//        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(MacroExpansionTopComponent1.ICON_PATH, true)));
-//    }
-    
 }

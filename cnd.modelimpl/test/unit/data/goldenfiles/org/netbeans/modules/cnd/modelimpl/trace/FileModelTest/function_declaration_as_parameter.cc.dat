@@ -16,7 +16,7 @@ FUNCTION DEFINITION searchLocal  [2:1/1-5:2/112] FunctionDDImpl SCOPE: function_
     UNIQUE NAME f:searchLocal(bool()(const int&))
     DECLARATION: searchLocal  [2:1/1-5:2/112]
     PARAMETERS:
-        is_okay [2:25/25-2:59/59]  TYPE: bool TEXT=bool()(const int&)  [2:25/25-2:59/59]  INIT: null  SCOPE: searchLocal 
+        is_okay [2:25/25-2:59/59]  TYPE: bool(const int&) TEXT=bool()(const int&)  [2:25/25-2:59/59]  INIT: null  SCOPE: searchLocal 
     RETURNS bool TEXT=bool  [2:8/8-2:12/12]
     STATEMENT COMPOUND  [2:61/61-5:2/112] SCOPE: searchLocal 
         STATEMENT DECLARATION  [3:5/67-3:18/80] SCOPE: Stmt  [2:61/61-5:2/112]

@@ -135,13 +135,6 @@ public class KenaiQueryController extends QueryController {
     }
 
     @Override
-    public void closed() {
-        super.closed();
-        // override
-        scheduleForRefresh();
-    }
-
-    @Override
     protected void openIssue(BugzillaIssue issue) {
         if(issue != null) {
             if(!checkIssueProduct(issue)) {

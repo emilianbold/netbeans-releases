@@ -45,9 +45,11 @@ package org.netbeans.modules.j2me.project.ui.customizer;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -56,6 +58,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -64,6 +67,7 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Theofanis Oikonomou
+ * @author Roman Svitanic
  */
 public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     
@@ -194,36 +198,43 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddActionPerformed
-        final AddAPIPanel add = new AddAPIPanel(tableModel.getKeys());
-        final DialogDescriptor dd = new DialogDescriptor(
-            add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_AddAPI"), //NOI18N
-            true, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
-                        int row = tableModel.addRow(add.getAPIName());
-                        table.getSelectionModel().setSelectionInterval(row, row);
-                    }
-                }
-            }
-        );
-        add.setDialogDescriptor(dd);
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
+        J2MEPlatform selectedPlatform = (J2MEPlatform) uiProperties.J2ME_PLATFORM_MODEL.getSelectedItem();
+        if (selectedPlatform != null) {
+            File libsDir = new File(selectedPlatform.getHomePath() + File.separator + "lib"); //NOI18N
+            final AddPermissionPanel add = new AddPermissionPanel(null, new PermissionsProvider(libsDir), tableModel.getKeys());
+            final DialogDescriptor dd = new DialogDescriptor(add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_AddAPI"),
+                    true, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
+                                PermissionsProvider.PermissionDefinition pd = add.getPermission();
+                                if (pd != null) {
+                                    int row = tableModel.addRow(pd.toString(), pd.isPermissionClass());
+                                    table.getSelectionModel().setSelectionInterval(row, row);
+                                }
+                            }
+                        }
+                    });
+            add.setDialogDescriptor(dd);
+            final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.setVisible(true);
+        }
     }//GEN-LAST:event_bAddActionPerformed
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
         final int i = table.getSelectedRow();
-        if (i < 0)
-        return;
+        if (i < 0) {
+            return;
+        }
         tableModel.removeRow(i);
         final int max = tableModel.getRowCount();
-        if (max <= 0)
-        table.getSelectionModel().clearSelection();
-        else if (i < max)
-        table.getSelectionModel().setSelectionInterval(i, i);
-        else
-        table.getSelectionModel().setSelectionInterval(max - 1, max - 1);
+        if (max <= 0) {
+            table.getSelectionModel().clearSelection();
+        } else if (i < max) {
+            table.getSelectionModel().setSelectionInterval(i, i);
+        } else {
+            table.getSelectionModel().setSelectionInterval(max - 1, max - 1);
+        }
     }//GEN-LAST:event_bRemoveActionPerformed
 
 
@@ -241,10 +252,12 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             
             final private String name;
             private boolean required;
+            private boolean permissionClass;
             
-            public Item(String name, boolean required) {
+            public Item(String name, boolean required, boolean permissionClass) {
                 this.name = name;
                 this.required = required;
+                this.permissionClass = permissionClass;
             }
             
             public String getName() {
@@ -258,14 +271,24 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             public void setRequired(final boolean required) {
                 this.required = required;
             }
+
+            public boolean isPermissionClass() {
+                return permissionClass;
+            }
+
+            public void setPermissionClass(boolean permissionClass) {
+                this.permissionClass = permissionClass;
+            }
             
+            @Override
             public String toString() {
                 return name;
             }
         }
-        
-        private HashMap<String,String> map = new HashMap<String,String>();
-        final private ArrayList<Item> items = new ArrayList<Item>();
+
+        private HashMap<String,String> map = new HashMap<>();
+        private HashMap<String,String> mapClassPerm = new LinkedHashMap<>();
+        final private ArrayList<Item> items = new ArrayList<>();
         
         private static final long serialVersionUID = -6523408202243150812L;
         private final J2MEProjectProperties uiProperties;
@@ -276,25 +299,30 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         }
         
         public HashSet<String> getKeys() {
-            final HashSet<String> set = new HashSet<String>();
-            for (int a = 0; a < items.size(); a ++)
+            final HashSet<String> set = new HashSet<>();
+            for (int a = 0; a < items.size(); a++) {
                 set.add(items.get(a).getName());
+            }
             return set;
         }
         
+        @Override
         public int getRowCount() {
             return items.size();
         }
         
+        @Override
         public int getColumnCount() {
             return 2;
         }
         
+        @Override
         public boolean isCellEditable(@SuppressWarnings("unused")
 		final int rowIndex, final int columnIndex) {
             return columnIndex == 1;
         }
         
+        @Override
         public String getColumnName(final int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -306,6 +334,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
 		public Class<?> getColumnClass(final int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -327,9 +356,10 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
                 setDataDelegates(values);
             }
             updateMapFromItems();
-            return new Object[]{map};
+            return new Object[]{map, mapClassPerm};
         }
         
+        @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
             assert rowIndex < items.size();
             switch (columnIndex) {
@@ -342,6 +372,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
         public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
             assert columnIndex == 1  &&  value instanceof Boolean;
             items.get(rowIndex).setRequired(((Boolean) value).booleanValue());
@@ -351,6 +382,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
 	public synchronized void setDataDelegates(final String data[]) {
             assert data != null;
             map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
+            mapClassPerm = data[1] == null ? new LinkedHashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[1]);
             updateItemsFromMap();
             fireTableDataChanged();
             dataDelegatesWereSet = true;
@@ -361,35 +393,73 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             String perms;
             StringTokenizer tokens;
             
-            perms = map.get("MIDlet-Permissions"); //NOI18N
+            String packaging = uiProperties.LIBLET_PACKAGING == false ? "MIDlet" : "LIBlet"; //NOI18N
+            perms = map.get(packaging + "-Permissions"); //NOI18N
             if (perms != null) {
                 tokens = new StringTokenizer(perms, ","); //NOI18N
                 while (tokens.hasMoreTokens())
-                    items.add(new Item(tokens.nextToken().trim(), true));
+                    items.add(new Item(tokens.nextToken().trim(), true, false));
             }
-            perms = map.get("MIDlet-Permissions-Opt"); //NOI18N
+            perms = map.get(packaging + "-Permissions-Opt"); //NOI18N
             if (perms != null) {
                 tokens = new StringTokenizer(perms, ","); //NOI18N
                 while (tokens.hasMoreTokens())
-                    items.add(new Item(tokens.nextToken().trim(), false));
+                    items.add(new Item(tokens.nextToken().trim(), false, false));
+            }
+            
+            int i = 1;
+            while ((perms = mapClassPerm.get(packaging + "-Permission-" + i)) != null) {
+                items.add(new Item(perms.trim(), true, true));
+                i++;
+            }
+            i = 1;
+            while ((perms = mapClassPerm.get(packaging + "-Permission-Opt-" + i)) != null) {
+                items.add(new Item(perms.trim(), false, true));
+                i++;
             }
         }
         
         public void updateMapFromItems() {
-            final ArrayList<String> req = new ArrayList<String>();
-            final ArrayList<String> opt = new ArrayList<String>();
-            for (int a = 0; a < items.size(); a ++) {
+            final ArrayList<String> reqClass = new ArrayList<>();
+            final ArrayList<String> optClass = new ArrayList<>();
+            final ArrayList<String> reqNotClass = new ArrayList<>();
+            final ArrayList<String> optNotClass = new ArrayList<>();
+            for (int a = 0; a < items.size(); a++) {
                 final Item i = items.get(a);
-                if (i.isRequired())
-                    req.add(i.getName());
-                else
-                    opt.add(i.getName());
+                if (i.isPermissionClass()) {
+                    if (i.isRequired()) {
+                        reqClass.add(i.getName());
+                    } else {
+                        optClass.add(i.getName());
+                    }
+                } else {
+                    if (i.isRequired()) {
+                        reqNotClass.add(i.getName());
+                    } else {
+                        optNotClass.add(i.getName());
+                    }
+                }
             }
-            map = new HashMap<String,String>();
-            if (req.size() > 0)
-                map.put("MIDlet-Permissions", commaSeparatedList(req)); //NOI18N
-            if (opt.size() > 0)
-                map.put("MIDlet-Permissions-Opt", commaSeparatedList(opt)); //NOI18N
+
+            String packaging = uiProperties.LIBLET_PACKAGING == false ? "MIDlet" : "LIBlet"; //NOI18N
+            map = new HashMap<>();
+            if (!reqNotClass.isEmpty()) {
+                map.put(packaging + "-Permissions", commaSeparatedList(reqNotClass)); //NOI18N
+            }
+            if (!optNotClass.isEmpty()) {
+                map.put(packaging + "-Permissions-Opt", commaSeparatedList(optNotClass)); //NOI18N
+            }
+            mapClassPerm = new LinkedHashMap<>();
+            if (!reqClass.isEmpty()) {
+                for (int i = 0; i < reqClass.size(); i++) {
+                    mapClassPerm.put(packaging + "-Permission-" + (i + 1), reqClass.get(i)); //NOI18N
+                }
+            }
+            if (!optClass.isEmpty()) {
+                for (int i = 0; i < optClass.size(); i++) {
+                    mapClassPerm.put(packaging + "-Permission-Opt-" + (i + 1), optClass.get(i)); //NOI18N
+                }
+            }
         }
         
         public String commaSeparatedList(final ArrayList<String> list) {
@@ -405,9 +475,9 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             return sb.toString();
         }
         
-        public int addRow(final String name) {
+        public int addRow(final String name, final boolean permissionClass) {
             final int row = items.size();
-            items.add(new Item(name, true));
+            items.add(new Item(name, true, permissionClass));
             fireTableRowsInserted(row, row);
             return row;
         }

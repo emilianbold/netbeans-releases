@@ -69,12 +69,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.CharBuffer;
+import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.Modifier;
@@ -268,6 +271,25 @@ public class FileObjects {
         } catch (URISyntaxException use) {
             throw new IOException(use);
         }
+    }
+
+    @NonNull
+    public static PrefetchableJavaFileObject asyncWriteFileObject(
+        @NonNull final File file,
+        @NonNull final File root,
+        @NullAllowed JavaFileFilterImplementation filter,
+        @NullAllowed Charset encoding,
+        @NonNull final Executor pool,
+        @NonNull final CompletionHandler<Void,Void> done) {
+        final String[] pkgNamePair = getFolderAndBaseName(getRelativePath(root,file),File.separatorChar);
+        return new AsyncWriteFileObject(
+            file,
+            convertFolder2Package(pkgNamePair[0], File.separatorChar),
+            pkgNamePair[1],
+            filter,
+            encoding,
+            pool,
+            done);
     }
 
     /**
@@ -1125,7 +1147,7 @@ public class FileObjects {
     }
         
     @Trusted
-    private static class NewFromTemplateFileObject extends FileBase {
+    private static final class NewFromTemplateFileObject extends FileBase {
 
         public NewFromTemplateFileObject (File f, String packageName, String baseName, JavaFileFilterImplementation filter, Charset encoding) {
             super (f,packageName,baseName, filter, encoding);
@@ -1636,6 +1658,7 @@ public class FileObjects {
         
     }
 
+    @Trusted
     private static class NullWriteFileObject extends ForwardingInferableJavaFileObject {
         private NullWriteFileObject (@NonNull final InferableJavaFileObject delegate) {
             super (delegate);
@@ -1655,6 +1678,116 @@ public class FileObjects {
             @Override
             public void write(int b) throws IOException {
                 //pass
+            }
+        }
+    }
+
+    @Trusted
+    private static final class AsyncWriteFileObject extends FileBase {
+
+        private final Executor pool;
+        private final CompletionHandler<Void,Void> done;
+
+        AsyncWriteFileObject(
+            @NonNull final File file,
+            @NonNull final String pkgName,
+            @NonNull final String name,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            @NullAllowed final Charset encoding,
+            @NonNull final Executor pool,
+            @NonNull final CompletionHandler<Void,Void> done) {
+            super(file, pkgName, name, filter, encoding);
+            Parameters.notNull("pool", pool);   //NOI18N
+            Parameters.notNull("done", done);   //NOI18N
+            this.pool = pool;
+            this.done = done;
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {            
+            return new AsyncOutputStream(
+                new Callable<OutputStream>() {
+                    @Override
+                    public OutputStream call() throws Exception {
+                        return AsyncWriteFileObject.super.openOutputStream();
+                    }
+                },
+                pool,
+                done);
+        }
+    }
+
+    private static final class AsyncOutputStream extends OutputStream  {
+
+        private static final int BUFSIZ = 1<<12;
+        private final Callable<OutputStream> superOpenOututStream;
+        private final Executor pool;
+        private final CompletionHandler<Void,Void> done;
+        private byte[] buffer;
+        private int index;
+
+        AsyncOutputStream(
+            @NonNull final Callable<OutputStream> superOpenOututStream,
+            @NonNull final Executor pool,
+            @NonNull final CompletionHandler<Void,Void> done) {
+            this.superOpenOututStream = superOpenOututStream;
+            this.pool = pool;
+            this.done = done;
+            if (done instanceof Runnable) {
+                ((Runnable)done).run();
+            }
+            this.buffer = new byte[BUFSIZ];
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            ensureSize(1);
+            buffer[index++] = (byte) b;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            ensureSize(len);
+            System.arraycopy(b, off, buffer, index, len);
+            index+=len;
+        }
+
+        @Override
+        public void close() throws IOException {
+            pool.execute(new Runnable() {
+                @Override
+                public void run() {
+                    Throwable ex = null;
+                    try (final OutputStream out = superOpenOututStream.call();){
+                        out.write(buffer, 0, index);
+                    } catch (Throwable t) {
+                        ex = t;
+                        if (t instanceof ThreadDeath) {
+                            throw (ThreadDeath) t;
+                        } else if (!(t instanceof InterruptedException)) {
+                            Exceptions.printStackTrace(t);
+                        }
+                    } finally {
+                        if (ex == null) {
+                            done.completed(null, null);
+                        } else {
+                            done.failed(ex, null);
+                        }
+                    }
+                }
+            });
+        }
+
+        private void ensureSize(final int added) {
+            final int required = index + added;
+            int bufLen = buffer.length;
+            if (bufLen < required) {
+                while (bufLen < required) {
+                    bufLen<<=1;
+                }
+                final byte[] newBuffer = new byte[bufLen];
+                System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+                buffer = newBuffer;
             }
         }
     }

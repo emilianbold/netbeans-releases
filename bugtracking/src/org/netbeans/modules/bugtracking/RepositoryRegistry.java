@@ -163,9 +163,7 @@ public class RepositoryRegistry {
             final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
             if(m != null) {
                 ret.addAll(m.values());
-            } else {
-                return Collections.emptyList();
-            }
+            } 
         }
         if(allKnown) {
             // team repos (not registered by user)

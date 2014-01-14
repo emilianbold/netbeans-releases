@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -67,6 +68,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -106,7 +108,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         showCustomizer( preselectedCategory, null );
     }
     
-    public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
+    public void showCustomizer( final String preselectedCategory, String preselectedSubCategory ) {
         
         Dialog dialog = (Dialog)project2Dialog.get (project);
         if ( dialog != null ) {            
@@ -114,23 +116,30 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
             return;
         }
         else {
-            WebProjectProperties uiProperties = new WebProjectProperties(project, updateHelper, evaluator, refHelper);
-            Lookup context = Lookups.fixed(new Object[] {
+            final WebProjectProperties uiProperties = new WebProjectProperties(project, updateHelper, evaluator, refHelper);
+            final Lookup context = Lookups.fixed(new Object[] {
                 project,
                 uiProperties,
                 new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
             });
 
-            OptionListener listener = new OptionListener( project, uiProperties );
-            StoreListener storeListener = new StoreListener(uiProperties);
-            dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
-            dialog.addWindowListener( listener );
-            dialog.setTitle( MessageFormat.format(                 
-                    NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
+            Mutex.EVENT.readAccess(new Runnable() {
 
-            project2Dialog.put(project, dialog);
-            dialog.setVisible(true);
+                @Override
+                public void run() {
+                    assert EventQueue.isDispatchThread();
+                    OptionListener listener = new OptionListener( project, uiProperties );
+                    StoreListener storeListener = new StoreListener(uiProperties);
+                    Dialog dialog = ProjectCustomizer.createCustomizerDialog(CUSTOMIZER_FOLDER_PATH, context, preselectedCategory, listener, storeListener, null);
+                    dialog.addWindowListener( listener );
+                    dialog.setTitle( MessageFormat.format(
+                            NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N
+                            new Object[] { ProjectUtils.getInformation(project).getDisplayName() } ) );
+
+                    project2Dialog.put(project, dialog);
+                    dialog.setVisible(true);
+                }
+            });
         }
     }
 

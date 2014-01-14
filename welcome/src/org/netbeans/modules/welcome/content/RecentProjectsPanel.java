@@ -73,6 +73,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -85,6 +86,8 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
     private static final int MAX_PROJECTS = 10;
     private PropertyChangeListener changeListener;
     
+    private static final RequestProcessor RP = new RequestProcessor("RecentProjects"); //NOI18N
+    
     /** Creates a new instance of RecentProjectsPanel */
     public RecentProjectsPanel() {
         super( new BorderLayout() );
@@ -95,7 +98,7 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
     public void addNotify() {
         super.addNotify();
         removeAll();
-        add( rebuildContent(), BorderLayout.CENTER );
+        add( startBuildingContent(), BorderLayout.CENTER );
         RecentProjects.getDefault().addPropertyChangeListener( getPropertyChangeListener() );
     }
 
@@ -122,25 +125,63 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
     @Override
     public void run() {
         removeAll();
-        add( rebuildContent(), BorderLayout.CENTER );
+        add( rebuildContent(RecentProjects.getDefault().getRecentProjectInformation()), BorderLayout.CENTER );
         invalidate();
         revalidate();
         repaint();
     }
     
-    private JPanel rebuildContent() {
+    private JPanel startBuildingContent() {
+        JPanel panel = new JPanel( new BorderLayout() );
+        panel.setOpaque( false );
+        JLabel lbl = new JLabel(BundleSupport.getLabel( "LoadingProjects" ));
+        lbl.setHorizontalAlignment(JLabel.CENTER);
+        panel.add( lbl, BorderLayout.CENTER );
+        
+        loadProjects();
+        
+        return panel;
+    }
+    
+    private void loadProjects() {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                List<UnloadedProjectInformation> projects = new ArrayList<UnloadedProjectInformation>(RecentProjects.getDefault().getRecentProjectInformation());
+                final List<UnloadedProjectInformation> existingProjects = new ArrayList<UnloadedProjectInformation>(projects.size());
+                for( UnloadedProjectInformation p : projects ) {
+                    try {
+                        File projectDir = Utilities.toFile( p.getURL().toURI() );
+                        if( !projectDir.exists() || !projectDir.isDirectory() )
+                            continue;
+                        existingProjects.add(p);
+                        if( existingProjects.size() >= MAX_PROJECTS )
+                            break;
+                    } catch( Exception e ) {
+                        Logger.getLogger( RecentProjectsPanel.class.getName() ).log( Level.FINER, null, e );
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        removeAll();
+                        add( rebuildContent(existingProjects), BorderLayout.CENTER );
+                        invalidate();
+                        revalidate();
+                        repaint();
+                    }
+                });
+            }
+        });
+    }
+    
+    private JPanel rebuildContent(List<UnloadedProjectInformation> projects) {
         JPanel panel = new JPanel( new GridBagLayout() );
         panel.setOpaque( false );
         int row = 0;
-        List<UnloadedProjectInformation> projects = new ArrayList<UnloadedProjectInformation>(RecentProjects.getDefault().getRecentProjectInformation());
         for( UnloadedProjectInformation p : projects ) {
-            try {
-                File projectDir = Utilities.toFile( p.getURL().toURI() );
-                if( !projectDir.exists() || !projectDir.isDirectory() )
-                    continue;
-            } catch( Exception e ) {
-                Logger.getLogger( RecentProjectsPanel.class.getName() ).log( Level.FINER, null, e );
-            }
             addProject( panel, row++, p );
             if( row >= MAX_PROJECTS )
                 break;
@@ -171,7 +212,7 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
     }
     
     private class OpenProjectAction extends AbstractAction {
-        private UnloadedProjectInformation project;
+        private final UnloadedProjectInformation project;
         public OpenProjectAction( UnloadedProjectInformation project ) {
             super( project.getDisplayName(), project.getIcon() );
             this.project = project;
@@ -201,7 +242,7 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
                         String msg = BundleSupport.getMessage("ERR_InvalidProject", project.getDisplayName()); //NOI18N
                         NotifyDescriptor nd = new NotifyDescriptor.Message( msg );
                         DialogDisplayer.getDefault().notify( nd );
-                        rebuildContent();
+                        startBuildingContent();
                     }
                 }
             };

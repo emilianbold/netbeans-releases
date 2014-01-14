@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.config.ds;
 
 import java.io.ByteArrayInputStream;
@@ -54,12 +53,13 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
 import org.netbeans.modules.javaee.wildfly.config.ResourceConfigurationHelper;
 import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
 import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
 import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
+import org.netbeans.modules.javaee.wildfly.config.xml.ConfigurationParser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -78,9 +78,9 @@ import org.openide.util.NbBundle;
  * @author Libor Kotouc
  */
 public class DatasourceSupport {
-    
+
     private static final String DS_RESOURCE_NAME = "jboss-ds.xml"; // NOI18N
-    
+
     // the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
 
@@ -92,30 +92,32 @@ public class DatasourceSupport {
 
     //destination service file object
     private FileObject datasourcesFO;
-    
+
     public DatasourceSupport(File resourceDir) {
         assert resourceDir != null : "Resource directory can't be null"; // NOI18N
-        
+
         this.resourceDir = resourceDir;
         this.datasourcesFile = new File(resourceDir, DS_RESOURCE_NAME);
         ensureDatasourcesFOExists();
     }
-    
+
     /**
      * Listener of jboss-ds.xml document changes.
      */
     private class DatasourceFileListener extends FileChangeAdapter {
-        
+
+        @Override
         public void fileChanged(FileEvent fe) {
-            assert(fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
+            assert (fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assert ((FileObject) fe.getSource()).getPath().equals(datasourcesFO.getPath()) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
-    } 
+    }
 
     private void ensureDatasourcesFOExists() {
         if (!datasourcesFile.exists()) {
@@ -123,48 +125,57 @@ public class DatasourceSupport {
         }
         if (datasourcesFO == null || !datasourcesFO.isValid()) {
             datasourcesFO = FileUtil.toFileObject(datasourcesFile);
-            assert(datasourcesFO != null);
+            assert (datasourcesFO != null);
             datasourcesFO.addFileChangeListener(new DatasourceFileListener());
         }
     }
-    
+
 //---------------------------------------- READING --------------------------------------
-    
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        
+        try {
+            if (datasourcesFile.exists()) {
+                return ConfigurationParser.INSTANCE.listDatasources(
+                        FileUtil.toFileObject(datasourcesFile));
+            }
+        } catch (Exception ex) {
+            throw new ConfigurationException("Wrong configuration in " + datasourcesFile, ex);
+        }
+
         HashSet<Datasource> projectDS = new HashSet<Datasource>();
         Datasources dss = getDatasourcesGraph(false);
         if (dss != null) {
             DatasourceType ltxds[] = datasources.getDatasource();
             for (int i = 0; i < ltxds.length; i++) {
                 if (ltxds[i].getJndiName().length() > 0) {
-                    projectDS.add(new JBossDatasource(
-                                    ltxds[i].getJndiName(),
-                                    ltxds[i].getConnectionUrl(),
-                                    ltxds[i].getSecurity().getUserName(),
-                                    ltxds[i].getSecurity().getPassword(),
-                                    ltxds[i].getDriverClass()));
+                    projectDS.add(new WildflyDatasource(
+                            ltxds[i].getJndiName(),
+                            ltxds[i].getConnectionUrl(),
+                            ltxds[i].getSecurity().getUserName(),
+                            ltxds[i].getSecurity().getPassword(),
+                            ltxds[i].getDriverClass()));
                 }
             }
         }
-        
+
         return projectDS;
     }
-    
+
     /**
-     * Return Datasources graph. If it was not created yet, load it from the file
-     * and cache it. If the file does not exist, generate it.
+     * Return Datasources graph. If it was not created yet, load it from the
+     * file and cache it. If the file does not exist, generate it.
      *
-     * @return Datasources graph or null if the jboss-ds.xml file is not parseable.
+     * @return Datasources graph or null if the jboss-ds.xml file is not
+     * parseable.
      */
     private synchronized Datasources getDatasourcesGraph(boolean create) {
-        
+
         try {
             if (datasourcesFile.exists()) {
                 // load configuration if already exists
                 try {
-                    if (datasources == null)
+                    if (datasources == null) {
                         datasources = Datasources.createGraph(datasourcesFile);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 } catch (RuntimeException re) {
@@ -184,49 +195,48 @@ public class DatasourceSupport {
 
         return datasources;
     }
-    
+
 //---------------------------------------- WRITING --------------------------------------
-    
     private abstract class DSResourceModifier {
+
         String rawName;
         String url;
         String username;
         String password;
         String driver;
 
-        DSResourceModifier(String jndiName, String  url, String username, String password, String driver) {
-            this.rawName = JBossDatasource.getRawName(jndiName);
+        DSResourceModifier(String jndiName, String url, String username, String password, String driver) {
+            this.rawName = WildflyDatasource.getRawName(jndiName);
             this.url = url;
             this.username = username;
             this.password = password;
             this.driver = driver;
         }
-        
-        abstract JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
+
+        abstract WildflyDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
     }
-    
-    public JBossDatasource createDatasource(String jndiName, String  url, String username, String password, String driver) 
-    throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException
-    {
-        JBossDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
-            JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
-               
+
+    public WildflyDatasource createDatasource(String jndiName, String url, String username, String password, String driver)
+            throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
+        WildflyDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
+            WildflyDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
+
                 DatasourceType ltxds[] = datasources.getDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
                     String jndiName = ltxds[i].getJndiName();
-                    if (rawName.equals(JBossDatasource.getRawName(jndiName))) {
+                    if (rawName.equals(WildflyDatasource.getRawName(jndiName))) {
                         //already exists
-                        JBossDatasource ds = new JBossDatasource(
+                        WildflyDatasource ds = new WildflyDatasource(
                                 jndiName,
                                 ltxds[i].getConnectionUrl(),
                                 ltxds[i].getSecurity().getUserName(),
                                 ltxds[i].getSecurity().getPassword(),
                                 ltxds[i].getDriverClass());
-                        
+
                         throw new DatasourceAlreadyExistsException(ds);
                     }
                 }
-                
+
                 DatasourceType lds = new DatasourceType();
                 lds.setJndiName(rawName);
                 lds.setConnectionUrl(url);
@@ -241,35 +251,36 @@ public class DatasourceSupport {
                 lds.setPool(pool);
 
                 datasources.addDatasource(lds);
-                
-                return new JBossDatasource(rawName, url, username, password, driver);
-           }
+
+                return new WildflyDatasource(rawName, url, username, password, driver);
+            }
         });
-        
+
         return ds;
     }
-    
+
     /**
-     * Perform datasources graph changes defined by the jbossWeb modifier. Update editor
-     * content and save changes, if appropriate.
+     * Perform datasources graph changes defined by the jbossWeb modifier.
+     * Update editor content and save changes, if appropriate.
      *
      * @param modifier
      */
-    private JBossDatasource modifyDSResource(DSResourceModifier modifier) 
-    throws ConfigurationException, DatasourceAlreadyExistsException {
+    private WildflyDatasource modifyDSResource(DSResourceModifier modifier)
+            throws ConfigurationException, DatasourceAlreadyExistsException {
 
-        JBossDatasource ds = null;
-        
+        WildflyDatasource ds = null;
+
         try {
             ensureResourceDirExists();
             ensureDatasourcesFileExists();
-            
+
             DataObject datasourcesDO = DataObject.find(datasourcesFO);
 
-            EditorCookie editor = (EditorCookie)datasourcesDO.getCookie(EditorCookie.class);
+            EditorCookie editor = (EditorCookie) datasourcesDO.getCookie(EditorCookie.class);
             StyledDocument doc = editor.getDocument();
-            if (doc == null)
+            if (doc == null) {
                 doc = editor.openDocument();
+            }
 
             Datasources newDatasources = null;
             try {  // get the up-to-date model
@@ -286,7 +297,7 @@ public class DatasourceSupport {
                 }
                 // current editor content is not parseable, ask whether to override or not
                 NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(DatasourceSupport.class, "MSG_datasourcesXmlNotValid", DS_RESOURCE_NAME),       // NOI18N
+                        NbBundle.getMessage(DatasourceSupport.class, "MSG_datasourcesXmlNotValid", DS_RESOURCE_NAME), // NOI18N
                         NotifyDescriptor.OK_CANCEL_OPTION);
                 Object result = DialogDisplayer.getDefault().notify(notDesc);
                 if (result == NotifyDescriptor.CANCEL_OPTION) {
@@ -304,13 +315,13 @@ public class DatasourceSupport {
             boolean modified = datasourcesDO.isModified();
             ResourceConfigurationHelper.replaceDocument(doc, newDatasources);
             if (!modified) {
-                SaveCookie cookie = (SaveCookie)datasourcesDO.getCookie(SaveCookie.class);
+                SaveCookie cookie = (SaveCookie) datasourcesDO.getCookie(SaveCookie.class);
                 cookie.save();
             }
 
             datasources = newDatasources;
 
-        } catch(DataObjectNotFoundException donfe) {
+        } catch (DataObjectNotFoundException donfe) {
             Exceptions.printStackTrace(donfe);
         } catch (BadLocationException ble) {
             // this should not occur, just log it if it happens
@@ -319,20 +330,21 @@ public class DatasourceSupport {
             String msg = NbBundle.getMessage(DatasourceSupport.class, "MSG_CannotUpdateFile", datasourcesFile.getAbsolutePath());
             throw new ConfigurationException(msg, ioe);
         }
-        
+
         return ds;
     }
-    
-//---------------------------------------- HELPERS --------------------------------------
 
+//---------------------------------------- HELPERS --------------------------------------
     private void ensureResourceDirExists() {
-        if (!resourceDir.exists())
+        if (!resourceDir.exists()) {
             resourceDir.mkdir();
+        }
     }
-    
+
     private void ensureDatasourcesFileExists() {
-        if (!datasourcesFile.exists())
+        if (!datasourcesFile.exists()) {
             getDatasourcesGraph(true);
+        }
     }
 
 }

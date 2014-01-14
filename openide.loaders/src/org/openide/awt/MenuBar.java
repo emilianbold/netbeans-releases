@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -133,6 +134,9 @@ public class MenuBar extends JMenuBar implements Externalizable {
             throw new ExceptionInInitializerError(x);
         }
     }
+
+    // -J-Dorg.openide.awt.MenuBar.level=FINE
+    private static final Logger LOG = Logger.getLogger(MenuBar.class.getName());
 
     /** Don't call this constructor or this class will not get
      * initialized properly. This constructor is only for externalization.
@@ -213,59 +217,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
         super.addImpl (c, constraint, idx);
     }
     
-    /**
-     * Overridden to handle mac conversion from Alt to Ctrl and vice versa so
-     * Alt can be used as the compose character on international keyboards.
-     */
-    protected @Override boolean processKeyBinding(KeyStroke ks,
-                                    KeyEvent e,
-                                    int condition,
-                                    boolean pressed) {
-        if (Utilities.isMac()) {
-            int mods = e.getModifiers();
-            boolean isCtrl = (mods & KeyEvent.CTRL_MASK) != 0;
-            boolean isAlt = (mods & KeyEvent.ALT_MASK) != 0;
-            if (isAlt) {
-                return false;
-            }
-            if (isAlt && !isCtrl) {
-                mods = mods & ~ KeyEvent.ALT_MASK;
-                mods = mods & ~ KeyEvent.ALT_DOWN_MASK;
-                mods |= KeyEvent.CTRL_MASK;
-                mods |= KeyEvent.CTRL_DOWN_MASK;
-            } else if (!isAlt && isCtrl) {
-                mods = mods & ~ KeyEvent.CTRL_MASK;
-                mods = mods & ~ KeyEvent.CTRL_DOWN_MASK;
-                mods |= KeyEvent.ALT_MASK;
-                mods |= KeyEvent.ALT_DOWN_MASK;
-            } else if (!isAlt && !isCtrl) {
-                return super.processKeyBinding (ks, e, condition, pressed);
-            }
-            
-            KeyEvent newEvent = new MarkedKeyEvent ((Component) e.getSource(), e.getID(), 
-                e.getWhen(), mods, e.getKeyCode(), e.getKeyChar(), 
-                e.getKeyLocation());
-            
-            KeyStroke newStroke = null;
-            if( null != ks ) {
-                newStroke = e.getID() == KeyEvent.KEY_TYPED ?
-                    KeyStroke.getKeyStroke (ks.getKeyChar(), mods) :
-                    KeyStroke.getKeyStroke (ks.getKeyCode(), mods,
-                    !ks.isOnKeyRelease());
-            }
-            
-            boolean result = super.processKeyBinding (newStroke, newEvent, 
-                condition, pressed);
-            
-            if (newEvent.isConsumed()) {
-                e.consume();
-            }
-            return result;
-        } else {
-            return super.processKeyBinding (ks, e, condition, pressed);
-        }                     
-    }    
-
     /** Blocks until the menubar is completely created. */
     public void waitFinished () {
         menuBarFolder.instanceFinished();

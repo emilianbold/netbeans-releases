@@ -42,21 +42,22 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.jira.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.JiraFilter;
+import org.netbeans.modules.jira.client.spi.NamedFilter;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
@@ -77,7 +78,7 @@ public class JiraQueryTest extends NbTestCase {
         JiraTestUtil.initClient(getWorkDir());
         // need this to initialize cache -> server defined status values & co
 //        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
-        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
+        JiraTestUtil.cleanProject(JiraTestUtil.getProject());
     }
 
     public static Test suite () {
@@ -90,8 +91,9 @@ public class JiraQueryTest extends NbTestCase {
             ids.add(createIssue("1"));
             ids.add(createIssue("2"));
 
-            FilterDefinition fd = new FilterDefinition();
-            fd.setProjectFilter(new ProjectFilter(JiraTestUtil.getProject(JiraTestUtil.getClient())));
+            JiraConnectorProvider cp = JiraConnectorSupport.getInstance().getConnector();
+            FilterDefinition fd = cp.createFilterDefinition();
+            fd.setProjectFilter(cp.createProjectFilter(JiraTestUtil.getProject()));
             executeFilter(fd, 2);
 
         } catch (Exception exception) {
@@ -99,8 +101,8 @@ public class JiraQueryTest extends NbTestCase {
         }
     }
 
-    public void testFilters() throws JiraException, CoreException {
-        NamedFilter[] filters = JiraTestUtil.getClient().getNamedFilters(JiraTestUtil.nullProgressMonitor);
+    public void testFilters() throws CoreException, IOException {
+        NamedFilter[] filters = JiraTestUtil.getClient().getNamedFilters();
         assertTrue(filters.length > 0);
 
         NamedFilter filter = null;
@@ -116,11 +118,9 @@ public class JiraQueryTest extends NbTestCase {
         executeFilter(filter, 1);
     }
 
-    private String createIssue(String id) throws CoreException, JiraException {
-        RepositoryResponse rr = JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), "Kaputt " + id, "Alles Kaputt! " + id, "Bug");
-        assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-        assertNotNull(JiraTestUtil.getTaskData(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), rr.getTaskId()));
-        return rr.getTaskId();
+    private String createIssue(String summary) throws CoreException {
+        NbJiraIssue issue = JiraTestUtil.createIssue("Kaputt " + summary, "Alles Kaputt! " + summary, "Bug");
+        return issue.getID();
     }
 
     private void executeFilter(JiraFilter fd, int issuesCount) {

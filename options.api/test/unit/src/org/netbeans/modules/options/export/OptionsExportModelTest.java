@@ -280,6 +280,36 @@ public class OptionsExportModelTest extends NbTestCase {
         model.doImport(targetUserdir);
         assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
     }
+
+    public void test239958() throws Exception {
+        // import from source userdir to current userdir
+        // exclude pattern equals with another include pattern leads to that pattern being skipped
+        createModel(new String[][]{
+                    {"Category0", "Item00", "dir0/subdir0/.*", "dir0/subdir1/.*"},
+                    {"Category0", "Item01", "dir0/subdir1/.*", null}
+                });
+        File targetUserdir = new File(getWorkDir(), "userdir");
+        targetUserdir.mkdir();
+        model.doImport(targetUserdir);
+        List<String> expected = new ArrayList<String>();
+        expected.add("dir0/subdir0/file0.properties");
+        expected.add("dir0/subdir0/file1.properties");
+        assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
+
+        // import from zipped userdir to current userdir
+        // exclude pattern does not equal with another include pattern leads to that pattern being processed properly
+        File sourceZipFile = new File(getWorkDir(), "sourceUserdir.zip");
+        OptionsExportModel.createZipFile(sourceZipFile, sourceUserdir, OptionsExportModel.getRelativePaths(sourceUserdir));
+        createModel(new String[][]{
+                    {"Category0", "Item00", "dir0/subdir0/.*", null},
+                    {"Category0", "Item01", "dir0/subdir1/.*", null}
+                }, sourceZipFile);
+        targetUserdir = new File(getWorkDir(), "userdir1");
+        model.doImport(targetUserdir);
+        expected.add("dir0/subdir1/file0.properties");
+        expected.add("dir0/subdir1/file1.properties");
+        assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
+    }
     
     public void test227906() throws Exception {
         createModel(new String[][]{

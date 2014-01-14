@@ -93,7 +93,6 @@ import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -183,7 +182,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private FileObject configureFileObject;
-    private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
+    private final Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     private static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
     private static final String CND_TOOLS_VALUE = System.getProperty("cnd.buildtrace.tools", "gcc:c++:g++:gfortran:g77:g90:g95:cc:CC:ffortran:f77:f90:f95"); //NOI18N
@@ -933,7 +932,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
         try {
             String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
             String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
-            String CONSOLIDATION_STRATEGY = "DW:consolidationLevel"; // NOI18N
             if (!isProjectOpened()) {
                 isFinished = true;
                 return;
@@ -949,7 +947,6 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             final Map<String, Object> map = new HashMap<String, Object>();
                             map.put(ROOT_FOLDER, nativeProjectPath);
                             map.put(EXEC_LOG_FILE, execLog.getAbsolutePath());
-                            map.put(CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
                             if (extension.canApply(map, makeProject, interrupter)) {
                                 if (TRACE) {
                                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N

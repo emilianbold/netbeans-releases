@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
  *
  * @author Dmitriy Ivanov
  */
-public class CsmAST extends BaseAST implements Serializable {
+public class CsmAST extends BaseAST implements OffsetableAST, Serializable {
 
     private static final long serialVersionUID = -1975495157952833337L;
     private static final Token NIL;
@@ -132,6 +132,7 @@ public class CsmAST extends BaseAST implements Serializable {
         return token.getColumn();
     }
 
+    @Override
     public int getOffset() {
         if (token instanceof APTToken) {
             return ((APTToken)token).getOffset();
@@ -140,6 +141,7 @@ public class CsmAST extends BaseAST implements Serializable {
         }
     }
 
+    @Override
     public int getEndOffset() {
         if (token instanceof APTToken) {
             return ((APTToken)token).getEndOffset();

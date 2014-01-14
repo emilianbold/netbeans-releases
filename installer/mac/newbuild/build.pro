@@ -10,6 +10,7 @@
     
     <!-- Base IDE properties   -->       
     <property name="baseide.version" value="Dev"/>
+    <property name="baseide.id" value="Dev"/>
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
     <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
@@ -17,9 +18,9 @@
     <property name="nb.check.build.number" value="0"/>
 
     <!-- Unique ID in db/receipts for Development builds -->
-    <property name="nb.id" value="${baseide.version}-${buildnumber}"/>
+    <property name="nb.id" value="${baseide.id}-${buildnumber}"/>
     <!-- Unique ID in db/receipts for release build -->
-    <!-- <property name="nb.id" value="${baseide.version}"/>-->
+    <!--<property name="nb.id" value="${baseide.id}"/>-->
 
     <property name="appversion" value="Development Version"/>
     <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>

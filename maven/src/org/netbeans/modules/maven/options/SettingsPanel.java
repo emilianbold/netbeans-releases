@@ -291,7 +291,6 @@ public class SettingsPanel extends javax.swing.JPanel {
     }
     
     private void listDataChanged() {
-        changed = true;
         boolean oldvalid = valid;
         int selected = comMavenHome.getSelectedIndex();
         String path = getSelectedRuntime(selected);
@@ -325,6 +324,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (oldvalid != valid) {
             controller.firePropChange(MavenOptionController.PROP_VALID, Boolean.valueOf(oldvalid), Boolean.valueOf(valid));
         }
+        fireChanged();
     }
 
     private ComboBoxModel createComboModel() {
@@ -1025,11 +1025,66 @@ public class SettingsPanel extends javax.swing.JPanel {
         return changed;
     }
     
+    private void fireChanged() {
+        boolean isChanged = false;
+        isChanged = !MavenSettings.getDefault().getDefaultOptions().equals(txtOptions.getText().trim());
+
+        // remember only user-defined runtimes of RUNTIME_COUNT_LIMIT count at the most
+        List<String> runtimes = new ArrayList<String>();
+        for (int i = 0; i < userDefinedMavenRuntimes.size() && i < RUNTIME_COUNT_LIMIT; ++i) {
+            runtimes.add(0, userDefinedMavenRuntimes.get(userDefinedMavenRuntimes.size() - 1 - i));
+        }
+        int selected = comMavenHome.getSelectedIndex() - predefinedRuntimes.size() - 1;
+        if (selected >= 0 && runtimes.size() == RUNTIME_COUNT_LIMIT
+                && userDefinedMavenRuntimes.size() - RUNTIME_COUNT_LIMIT > selected) {
+            runtimes.set(0, userDefinedMavenRuntimes.get(selected));
+        }
+        if (predefinedRuntimes.size() > 1) {
+            runtimes.add(0, predefinedRuntimes.get(1));
+        }
+        isChanged |= !MavenSettings.getDefault().getUserDefinedMavenRuntimes().equals(runtimes);
+        String cl = mavenRuntimeHome;
+        //MEVENIDE-553
+        File command = (cl == null || cl.isEmpty()) ? null : new File(cl);
+        File mavenHome = EmbedderFactory.getMavenHome();
+        if(mavenHome == null) {
+            isChanged |= command != null && command.isDirectory();
+        } else {
+            isChanged |= !mavenHome.equals(command == null ? EmbedderFactory.getDefaultMavenHome() : command);
+        }
+        isChanged |= RepositoryPreferences.getIndexUpdateFrequency() != comIndex.getSelectedIndex();
+        isChanged |= RepositoryPreferences.isIndexRepositories() == cbDisableIndex.isSelected();
+        isChanged |= MavenSettings.getDefault().getBinaryDownloadStrategy().compareTo((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem()) != 0;
+        isChanged |= MavenSettings.getDefault().getJavadocDownloadStrategy().compareTo((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem()) != 0;
+        isChanged |= MavenSettings.getDefault().getSourceDownloadStrategy().compareTo((MavenSettings.DownloadStrategy) comSource.getSelectedItem()) != 0;
+        isChanged |= MavenSettings.getDefault().isSkipTests() != cbSkipTests.isSelected();
+        isChanged |= MavenSettings.getDefault().isAlwaysShowOutput() != cbAlwaysShow.isSelected();
+        isChanged |= MavenSettings.getDefault().isReuseOutputTabs() != cbReuse.isSelected();
+        isChanged |= MavenSettings.getDefault().isCollapseSuccessFolds() != cbCollapseSuccessFolds.isSelected();
+        isChanged |= MavenSettings.getDefault().isOutputTabShowConfig() != cbOutputTabShowConfig.isSelected();
+        MavenSettings.OutputTabName name = rbOutputTabName.isSelected() ? MavenSettings.OutputTabName.PROJECT_NAME : MavenSettings.OutputTabName.PROJECT_ID;
+        isChanged |= MavenSettings.getDefault().getOutputTabName().compareTo(name) != 0;
+        String projectNodeNamePattern = MavenSettings.getDefault().getProjectNodeNamePattern();
+        if (cbProjectNodeNameMode.getSelectedIndex() == 0) {
+            //selected "default" entry
+            isChanged |= projectNodeNamePattern != null;
+        } else {
+            if (cbProjectNodeNameMode.getSelectedIndex() == cbProjectNodeNameMode.getItemCount() - 1) {
+                //selected "custom..." entry
+                isChanged |= (projectNodeNamePattern == null ? !txtProjectNodeNameCustomPattern.getText().isEmpty() : !projectNodeNamePattern.equals(txtProjectNodeNameCustomPattern.getText()));
+            } else {
+                //a predefined pattern entry was selected
+                isChanged |= (projectNodeNamePattern == null ? !cbProjectNodeNameMode.getSelectedItem().toString().isEmpty() : !projectNodeNamePattern.equals(cbProjectNodeNameMode.getSelectedItem().toString()));
+            }
+        }
+        changed = isChanged;
+    }
+    
     private class ActionListenerImpl implements ActionListener {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            changed = true;
+            fireChanged();
         }
         
     }
@@ -1037,17 +1092,17 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            changed = true;
+            fireChanged();
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            changed = true;
+            fireChanged();
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            changed = true;
+            fireChanged();
         }
         
     }

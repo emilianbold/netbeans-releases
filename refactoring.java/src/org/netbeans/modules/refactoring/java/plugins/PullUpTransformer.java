@@ -49,12 +49,14 @@ import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -100,14 +102,14 @@ public class PullUpTransformer extends RefactoringVisitor {
         GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy); // helper
         AtomicBoolean classIsAbstract = new AtomicBoolean(classElement.getKind().isInterface());
         if (classElement.equals(targetType)) {
-            addMembersToTarget(tree, classIsAbstract, classElement, genUtils);
+            addMembersToTarget(tree, classIsAbstract, targetType, genUtils);
         } else if (classElement.equals(sourceType)) {
             removeMembersFromSource(tree, classIsAbstract);
         }
         return super.visitClass(tree, p);
     }
 
-    private void addMembersToTarget(ClassTree tree, AtomicBoolean classIsAbstract, Element classElement, GeneratorUtilities genUtils) {
+    private void addMembersToTarget(ClassTree tree, AtomicBoolean classIsAbstract, TypeElement classElement, GeneratorUtilities genUtils) {
         ClassTree njuClass = tree;
         for (int i = 0; i < members.length; i++) {
             Element member = members[i].getElementHandle().resolve(workingCopy);
@@ -125,7 +127,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                             && classIsAbstract.compareAndSet(false, true)) {
                         makeClassAbstract(njuClass);
                     }
-                    njuClass = addMemberToTarget(njuClass, member, group, genUtils);
+                    njuClass = addMemberToTarget(njuClass, member, classElement, group, genUtils);
                 }
             }
         }
@@ -208,7 +210,7 @@ public class PullUpTransformer extends RefactoringVisitor {
         rewrite(njuClass.getModifiers(), modifiers);
     }
 
-    private ClassTree addMemberToTarget(ClassTree njuClass, Element member, Group group, GeneratorUtilities genUtils) {
+    private ClassTree addMemberToTarget(ClassTree njuClass, Element member, TypeElement classElement, Group group, GeneratorUtilities genUtils) {
         TreePath mpath = workingCopy.getTrees().getPath(member);
         Tree memberTree = genUtils.importComments(mpath.getLeaf(), mpath.getCompilationUnit());
         memberTree = genUtils.importFQNs(memberTree);
@@ -278,8 +280,9 @@ public class PullUpTransformer extends RefactoringVisitor {
             if (group == Group.METHOD) {
                 MethodTree oldOne = (MethodTree) memberTree;
                 BlockTree body = updateSuperThisReferences(oldOne.getBody(), mpath);
+                ExecutableElement overriddenMethod = workingCopy.getElementUtilities().getOverriddenMethod((ExecutableElement) member);
                 MethodTree newMemberTree = make.Method(
-                        oldOne.getModifiers(),
+                        overriddenMethod != null && workingCopy.getElementUtilities().isMemberOf(overriddenMethod, targetType)? oldOne.getModifiers() : removeAnnotations(oldOne.getModifiers(), mpath),
                         oldOne.getName(),
                         oldOne.getReturnType(),
                         oldOne.getTypeParameters(),
@@ -295,6 +298,21 @@ public class PullUpTransformer extends RefactoringVisitor {
             }
         }
         return njuClass;
+    }
+
+    private ModifiersTree removeAnnotations(ModifiersTree oldOne, TreePath path) {
+        TypeElement override = workingCopy.getElements().getTypeElement("java.lang.Override");
+        if(override == null) {
+            return oldOne;
+        }
+        List<AnnotationTree> newAnnotations = new LinkedList<>();
+        for (AnnotationTree annotationTree : oldOne.getAnnotations()) {
+            Element el = workingCopy.getTrees().getElement(new TreePath(path, annotationTree));
+            if(!override.equals(el)) {
+                newAnnotations.add(annotationTree);
+            }
+        }
+        return make.Modifiers(oldOne, newAnnotations);
     }
 
     private <E extends Tree> E fixGenericTypes(E tree, final TreePath path, final Element member) {

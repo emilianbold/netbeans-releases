@@ -76,6 +76,9 @@ public class ProjectsRootNodeNotRecognizedTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #4346: child at 0
     public void testBadgingNodeIsOKIfProjectIsNoLongerRecognized() throws Exception{
+        
+        //compute project root node children in sync mode
+        System.setProperty("test.projectnode.sync", "true");        
         //prepearing project
         MockLookup.setInstances(new TestFactory());
         down = new CountDownLatch(1);

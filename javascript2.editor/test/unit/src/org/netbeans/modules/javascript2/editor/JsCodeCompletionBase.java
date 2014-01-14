@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +52,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -69,7 +67,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -80,10 +77,6 @@ public class JsCodeCompletionBase extends JsTestBase {
 
     public JsCodeCompletionBase(String testName) {
         super(testName);
-    }
-
-    static {
-        MockServices.setServices(IFL.class);
     }
 
     @Override
@@ -97,36 +90,6 @@ public class JsCodeCompletionBase extends JsTestBase {
         OpenProjects.getDefault().getOpenProjects();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).autoCompletionTypeResolution();
         OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).setTestTypeResolution(true);
-    }
-
-//    @Override
-//    protected boolean cleanCacheDir() {
-//        return false;
-//    }
-
-    public static final class IFL extends InstalledFileLocator {
-
-        @Override
-        public File locate(String relativePath, String codeNameBase, boolean localized) {
-            if (relativePath.equals("docs/jquery-api.xml")) {
-                String path = System.getProperty("test.jquery.api.file");
-                System.err.println(path);
-                //assertNotNull("must set test.jquery.api.file", path);
-                if (path == null) {
-                    return null;
-                }
-                return new File(path);
-            } else if (relativePath.equals("docs/jquery-propertyNames.xml")) {
-                String path = System.getProperty("test.jquery.propertyNames.file");
-                System.err.println(path);
-                //assertNotNull("must set test.jquery.api.file", path);
-                if (path == null) {
-                    return null;
-                }
-                return new File(path);
-            }
-            return null;
-        }
     }
 
     public static enum Match {
