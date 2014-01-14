@@ -517,9 +517,9 @@ public final class ColorModel {
                 exampleMimeType = mimeType;
             }
             
-            if (exampleFile != null && exampleFile.isValid()) {
+            if (exampleFile != null && exampleFile.isValid() && exampleFile.getSize() > 0) {
                 StringBuilder sb;
-                if (exampleFile.getSize() < Integer.MAX_VALUE) {
+                if (exampleFile.getSize() < (long) Integer.MAX_VALUE) {
                     sb = new StringBuilder((int)exampleFile.getSize());
                 } else {
                     sb = new StringBuilder(Integer.MAX_VALUE);
