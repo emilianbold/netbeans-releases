@@ -47,8 +47,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -278,10 +280,19 @@ public class ScreenshotComponent extends TopComponent {
         final boolean[] ignoreChanges = { false };
         cb.setEditable(true);
         Font font = cb.getEditor().getEditorComponent().getFont();
-        int textWidth = cb.getEditor().getEditorComponent().getFontMetrics(font).stringWidth(ZOOM_PERCENTS[ZOOM_PERCENTS.length - 1]);
+        int textWidth = 0;
+        FontMetrics fm = cb.getEditor().getEditorComponent().getFontMetrics(font);
+        for (String zp : ZOOM_PERCENTS) {
+            int sw = fm.stringWidth(zp);
+            textWidth = Math.max(textWidth, sw);
+        }
         for (Component c : cb.getComponents()) {
             if (c instanceof AbstractButton) {
-                int buttonWidth = c.getMinimumSize().width;
+                AbstractButton ab = (AbstractButton) c;
+                Insets insets = ab.getInsets();
+                int buttonWidth = insets.left +
+                                  Math.max(c.getMinimumSize().width, c.getPreferredSize().width) +
+                                  insets.right;
                 Dimension dim = new Dimension(buttonWidth + textWidth + 10, cb.getPreferredSize().height);
                 cb.setPreferredSize(dim);
                 cb.setMinimumSize(dim);

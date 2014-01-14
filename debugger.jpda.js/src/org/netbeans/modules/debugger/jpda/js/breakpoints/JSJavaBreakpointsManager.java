@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
 import com.sun.jdi.request.EventRequest;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +69,7 @@ import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.util.Exceptions;
 
 /**
  * Manages creation/removal of Java breakpoints corresponding to JS breakpoints.
@@ -365,7 +367,8 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             lineNo += source.getContentLineShift();
             LineBreakpoint lb = LineBreakpoint.create("", lineNo);
             lb.setHidden(true);
-            lb.setPreferredClassName(source.getClassName());
+            //lb.setPreferredClassType(source.getClassType());
+            setPreferredClassType(lb, source.getClassType());
             lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
             lb.setSession(debugger);
             return lb;
@@ -373,6 +376,18 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         
         void destroy() {
             DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+        }
+        
+        private void setPreferredClassType(LineBreakpoint lb, JPDAClassType classType) {
+            try {
+                Method setPreferredClassTypeMethod = lb.getClass().getMethod("setPreferredClassType", JPDAClassType.class);
+                setPreferredClassTypeMethod.setAccessible(true);
+                setPreferredClassTypeMethod.invoke(lb, classType);
+            } catch (NoSuchMethodException | SecurityException |
+                     IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+                lb.setPreferredClassName(source.getClassType().getName());
+            }
         }
     }
     

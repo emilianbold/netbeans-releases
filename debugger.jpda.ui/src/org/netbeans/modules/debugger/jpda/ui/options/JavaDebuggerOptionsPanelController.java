@@ -81,7 +81,7 @@ public final class JavaDebuggerOptionsPanelController extends OptionsPanelContro
     }
 
     public boolean isChanged() {
-        return changed;
+        return getPanel().isChanged();
     }
 
     public HelpCtx getHelpCtx() {

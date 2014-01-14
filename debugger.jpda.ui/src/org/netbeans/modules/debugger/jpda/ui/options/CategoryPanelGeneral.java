@@ -180,6 +180,17 @@ class CategoryPanelGeneral extends StorablePanel {
         p.setBoolean("ReuseEditorTabs", reuseTabsCheckBox.isSelected());
     }
 
+    @Override
+    public boolean isChanged() {
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        return applyCodeChangesCheckBox.isSelected() != p.getBoolean("ApplyCodeChangesOnSave", false)
+                || stopOnExceptionsCheckBox.isSelected() != p.getBoolean("CatchExceptions", false)
+                || breakpointsSuspendComboBox.getSelectedIndex() != suspendIndex(p.getInt("BreakpointSuspend", JPDABreakpoint.SUSPEND_EVENT_THREAD))
+                || stepsResumeComboBox.getSelectedIndex() != resumeIndex(p.getInt("StepResume", 1))
+                || openDebuggerConsoleCheckBox.isSelected() != p.getBoolean("OpenDebuggerConsole", true)
+                || reuseTabsCheckBox.isSelected() != p.getBoolean("ReuseEditorTabs", true);
+    }
+
     private static int suspendIndex(int jpdaBreakpointSuspend) {
         switch (jpdaBreakpointSuspend) {
             case JPDABreakpoint.SUSPEND_ALL: return 0;
