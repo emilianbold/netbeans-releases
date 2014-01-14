@@ -60,14 +60,14 @@ public interface ELVariableResolver {
     String getBeanName(String clazz, FileObject target, ResolverContext context);
 
     /**
-     * Gets the class of the bean identified by the given {@code beanName}.
-     * 
+     * Gets the injectable field of the bean identified by the given {@code beanName}.
+     *
      * @param beanName the bean name
      * @param target
      * @param context
-     * @return the FQN of the bean or {@code null}.
+     * @return the field if found or {@code null}.
      */
-    String getBeanClass(String beanName, FileObject target, ResolverContext context);
+    FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context);
 
 //    /**
 //     * Gets the expression referred by the variable at the given {@code offset}.
@@ -106,7 +106,44 @@ public interface ELVariableResolver {
 
     List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context);
 
-    
+    /**
+     * Hold information about injectable field.
+     */
+    public static final class FieldInfo {
+
+        /** The FQN of the class which is enclosing that field. */
+        private final String enclosingClass;
+
+        /** Return type of the field. */
+        private final String type;
+
+        /**
+         * Constructor for injectable fields.
+         * @param enclosingClass FQN of the enclosing class
+         * @param type return type of the field
+         */
+        public FieldInfo(String enclosingClass, String type) {
+            this.enclosingClass = enclosingClass;
+            this.type = type;
+        }
+
+        /**
+         * Constructor for injectable beans.
+         * @param type FQN of the class
+         */
+        public FieldInfo(String type) {
+            this.type = enclosingClass = type;
+        }
+
+        public String getEnclosingClass() {
+            return enclosingClass;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
+
     public static final class VariableInfo {
 
         public final String name;

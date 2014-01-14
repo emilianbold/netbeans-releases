@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
+import org.netbeans.modules.web.el.spi.ELVariableResolver.FieldInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -74,9 +75,9 @@ public final class ELVariableResolvers {
                     @Override
                     public String get() {
                         for (ELVariableResolver resolver : getResolvers()) {
-                            String beanClass = resolver.getBeanClass(beanName, context, compilationContext.context());
+                            FieldInfo beanClass = resolver.getInjectableField(beanName, context, compilationContext.context());
                             if (beanClass != null) {
-                                return beanClass;
+                                return beanClass.getEnclosingClass();
                             }
                         }
                         return null;

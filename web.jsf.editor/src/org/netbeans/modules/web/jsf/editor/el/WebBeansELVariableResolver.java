@@ -69,10 +69,10 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     private static final String CONTENT_NAME = "NamedBeans"; //NOI18N
 
     @Override
-    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+    public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
         for (WebBean bean : getWebBeans(target, context)) {
             if (beanName.equals(bean.getName())) {
-                return bean.getBeanClassName();
+                return new FieldInfo(bean.getEnclodingClass(), bean.getBeanClassName());
             }
         }
         return null;
@@ -184,6 +184,15 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
 
         public String getName() {
             return name;
+        }
+
+        private String getEnclodingClass() {
+            if (getElement() instanceof ExecutableElement) {
+                ExecutableElement methodElement = (ExecutableElement) getElement();
+                return methodElement.getEnclosingElement().asType().toString();
+            } else {
+                return getElement().asType().toString();
+            }
         }
     }
      
