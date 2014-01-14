@@ -73,8 +73,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  */
 class TraitScopeImpl extends TypeScopeImpl implements TraitScope, VariableNameFactory {
     private final Collection<QualifiedName> usedTraits;
-    private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
-    private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
+    private final Set<? super TypeScope> superRecursionDetection = new HashSet<>();
+    private final Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     TraitScopeImpl(Scope inScope, TraitElement indexedTrait) {
         super(inScope, indexedTrait);
