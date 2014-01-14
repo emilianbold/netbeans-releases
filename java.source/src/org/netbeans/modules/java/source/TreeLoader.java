@@ -573,9 +573,8 @@ public class TreeLoader extends LazyTreeLoader {
                         int idx = -1;
                         for(int i = 0; i < signature.length(); i++) {
                             switch(signature.charAt(i)) {
-                                case '(':                                    
-                                    idx = i;
-                                    break;
+                                case '-':
+                                case '(':
                                 case ')':
                                 case ',':
                                     if (idx > -1 && idx < i - 1) {
