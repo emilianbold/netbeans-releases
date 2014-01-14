@@ -579,15 +579,15 @@ import org.openide.util.RequestProcessor;
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             if (RemoteFileSystemUtils.isUnitTestMode()) {
-                StringBuilder sb = new StringBuilder("launching ").append(path);
+                StringBuilder sb = new StringBuilder("launching ").append(path); // NOI18N
                 for (String p : args) {
                     sb.append(p).append(' ');
                 }
                 try {
                     int pid = process.getPID();
-                    sb.append(" [pid=").append(pid).append("] ");
+                    sb.append(" [pid=").append(pid).append("] "); // NOI18N
                 } catch (IllegalStateException ex) {
-                    sb.append(" [no pid] ");
+                    sb.append(" [no pid] "); // NOI18N
                 }
                 RemoteLogger.info(sb.toString());                
             }

@@ -92,7 +92,7 @@ public final class TwigOptionsPanelController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("org.netbeans.modules.php.twig.editor.Options"); //NOI18N
     }
 
     @Override
