@@ -72,10 +72,10 @@ public final class SpringBeansELVariableResolver implements ELVariableResolver {
     private static final String CONTENT_NAME = "SpringBeans"; //NOI18N
     
     @Override
-    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+    public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
         for (SpringBean bean : getSpringBeans(target, context)) {
             if (beanName.equals(getBeanName(bean))) {
-                return bean.getClassName();
+                return new FieldInfo(bean.getClassName());
             }
         }
         return null;
