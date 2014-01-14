@@ -50,11 +50,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -68,8 +64,8 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.j2ee.Bundle.*;
 
 
 /**
@@ -85,8 +81,9 @@ public class MissingJavaEEForUnitTestExecutionHint extends AbstractHint {
     }
     
     @Override
+    @NbBundle.Messages("MissingJavaEEForUnitTestExecutionHint_Description=Find out whether Java EE API is available on project classpath. Java EE API is necessary for successful test execution. This hint also warns about incorrect usage of javaee-web-api artifact - that artifact is suitable only for compilation but not for test execution because body of all API methods was removed from the bytecode.")
     public String getDescription() {
-        return NbBundle.getMessage(MissingJavaEEForUnitTestExecutionHint.class, "MissingJavaEEForUnitTestExecutionHint_Description"); // NOI18N
+        return MissingJavaEEForUnitTestExecutionHint_Description();
     }
 
     @Override
@@ -210,11 +207,15 @@ public class MissingJavaEEForUnitTestExecutionHint extends AbstractHint {
         return getDisplayName(false);
     }
 
+    @NbBundle.Messages({
+        "MissingJavaEEForUnitTestExecutionHint_DisplayName2=Java EE API is missing on project classpath (javaee-web-api artifact cannot be used for test execution).",
+        "MissingJavaEEForUnitTestExecutionHint_DisplayName=Java EE API is missing on project classpath."
+    })
     public String getDisplayName(boolean javaeeJar) {
         if (javaeeJar) {
-            return NbBundle.getMessage(MissingJavaEEForUnitTestExecutionHint.class, "MissingJavaEEForUnitTestExecutionHint_DisplayName2"); // NOI18N
+            return MissingJavaEEForUnitTestExecutionHint_DisplayName2();
         } else {
-            return NbBundle.getMessage(MissingJavaEEForUnitTestExecutionHint.class, "MissingJavaEEForUnitTestExecutionHint_DisplayName"); // NOI18N
+            return MissingJavaEEForUnitTestExecutionHint_DisplayName();
         }
     }
     
