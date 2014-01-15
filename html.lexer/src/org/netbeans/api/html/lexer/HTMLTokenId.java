@@ -111,24 +111,24 @@ public enum HTMLTokenId implements TokenId {
     /** HTML close tag symbol: <code> "&lt;/"BODY&gt; </code>.*/
     TAG_CLOSE_SYMBOL("tag"),
     /**
-     * Custom expression language open delimiter. 
+     * Custom expression language open delimiter.
      * <pre>"{{"var}}</pre>
      * See {@link HtmlLexerELFactory#getOpenDelimiter()}.
      */
     EL_OPEN_DELIMITER("el-delimiter"),
     /**
-     * Custom expression language close delimiter. 
+     * Custom expression language close delimiter.
      * <pre>{{var"}}"</pre>
      * See {@link HtmlLexerELFactory#getCloseDelimiter()}.
      */
     EL_CLOSE_DELIMITER("el-delimiter"),
     /**
-     * Custom expression language expression content. 
+     * Custom expression language expression content.
      * <pre>{{"var"}}</pre>
      * See {@link HtmlLexerELFactory#getContentMimeType() }.
      */
     EL_CONTENT("el-content");
-    
+
     private final String primaryCategory;
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
     private static final String STYLE_MIMETYPE = "text/css";//NOI18N
@@ -161,14 +161,14 @@ public enum HTMLTokenId implements TokenId {
      * this token as a class selector.
      */
     public static final String VALUE_CSS_TOKEN_TYPE_CLASS = "class"; //NOI18N
-    
+
     /**
      * Token property name for the SCRIPT tokens.
-     * 
+     *
      * Allows to get value of the type attribute of script tag.
      */
     public static final String SCRIPT_TYPE_TOKEN_PROPERTY = "type"; //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(HtmlLexer.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -209,7 +209,7 @@ public enum HTMLTokenId implements TokenId {
                     return super.embeddingPresence(id);
             }
         }
-        
+
         @SuppressWarnings("unchecked")
         @Override
         protected LanguageEmbedding embedding(
@@ -218,49 +218,48 @@ public enum HTMLTokenId implements TokenId {
             int startSkipLen = 0;
             int endSkipLen = 0;
             boolean joinSections = true;
-            
+
             switch (token.id()) {
                 case VALUE_JAVASCRIPT:
                     mimeType = JAVASCRIPT_MIMETYPE;
-                    
+
                     PartType ptype = token.partType();
                     startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
                     endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
                     //do not join css code sections in attribute value between each other, only token parts inside one value
                     joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
                     break;
-                    
+
                 case VALUE_CSS:
                     mimeType = STYLE_MIMETYPE;
-                    
+
                     ptype = token.partType();
                     startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
                     endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
                     //do not join css code sections in attribute value between each other, only token parts inside one value
                     joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
                     break;
-                    
+
                 case VALUE:
                     //HtmlLexerPlugin can inject a custom embdedding to html tag attributes,
                     //then the embedding mimetype is set to the value token property
                     mimeType = (String)token.getProperty(HtmlLexer.ATTRIBUTE_VALUE_EMBEDDING_MIMETYPE_TOKEN_PROPERTY_KEY);
-                        
+
                     ptype = token.partType();
                     startSkipLen = ptype == PartType.COMPLETE || ptype == PartType.START ? 1 : 0;
                     endSkipLen = ptype == PartType.COMPLETE || ptype == PartType.END ? 1 : 0;
                     //do not join css code sections in attribute value between each other, only token parts inside one value
                     joinSections = !(ptype == PartType.END || ptype == PartType.COMPLETE);
                     break;
-                    
+
                 case SCRIPT:
-                    String scriptType = (String)token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
-                    mimeType = scriptType != null ? scriptType : JAVASCRIPT_MIMETYPE;
+                    mimeType = (String) token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
                     break;
-                    
+
                 case STYLE:
                     mimeType = STYLE_MIMETYPE;
                     break;
-                    
+
                 case EL_CONTENT:
                     Byte elContentProviderIndex = (Byte)token.getProperty(HtmlLexer.EL_CONTENT_PROVIDER_INDEX);
                     if(elContentProviderIndex != null) {
@@ -269,12 +268,12 @@ public enum HTMLTokenId implements TokenId {
                     }
                     break;
             }
-            
+
             if (LOG) {
                 LOGGER.log(Level.FINE,
                         String.format("creating embedding for %s on %s (%s)", mimeType, token.text() != null ? token.text().toString() : "no-text", token.id())); //NOI18N
             }
-            
+
             if (mimeType != null) {
                 if (MimePath.validate(mimeType)) {
                     //valid mimetype
