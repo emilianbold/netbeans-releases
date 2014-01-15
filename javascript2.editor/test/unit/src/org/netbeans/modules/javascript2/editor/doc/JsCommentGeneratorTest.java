@@ -152,6 +152,10 @@ public class JsCommentGeneratorTest extends JsTestBase {
         insertBreak(getOriginalContent("js"), getExpectedContent("js"));
     }
 
+    public void testIssue238683() throws Exception {
+        insertBreak(getOriginalContent("js"), getExpectedContent("js"));
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
