@@ -227,6 +227,17 @@ final class FoldOptionsPanel extends javax.swing.JPanel implements ActionListene
         }
     }
     
+    boolean isChanged() {
+        boolean isChanged= false;
+        for(String mime : panels.keySet()) {
+            JComponent panel = panels.get(mime);
+            if(panel instanceof DefaultFoldingOptions) {
+                isChanged |= ((DefaultFoldingOptions)panel).isChanged();
+            }
+        }
+        return isChanged;
+    }
+    
     void update() {
         initialize();
     }

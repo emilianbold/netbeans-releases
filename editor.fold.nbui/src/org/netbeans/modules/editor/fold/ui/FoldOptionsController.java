@@ -132,6 +132,7 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
         if (panel != null) {
             panel.update();
         }
+        changed = false;
     }
     
     private Collection<String> updatedLangs = Collections.EMPTY_SET;
@@ -231,7 +232,6 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
             }
         }
         if (ch != changed) {
-            changed = ch;
             propSupport.firePropertyChange(PROP_CHANGED, !ch, ch);
         }
     }
@@ -298,7 +298,7 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().isChanged();
         
     }
     

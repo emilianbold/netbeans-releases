@@ -224,6 +224,8 @@ final class FrameworksPanel extends JPanel {
         panelContent.invalidate();
         panelContent.revalidate();
         panelContent.repaint();
+        // #240467
+        masterController.fireChange(new PropertyChangeEvent(this, OptionsPanelController.PROP_HELP_CTX, null, null));
     }
 
     private OptionsPanelController getController(AdvancedOption option) {

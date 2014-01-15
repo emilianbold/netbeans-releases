@@ -127,38 +127,33 @@ public class Configuration {
 
     public Configuration(Project project) {
         //TODO fix the conf location in maven and other project types
-        FileObject nbproject = project.getProjectDirectory().getFileObject("config"); //NOI18N
+        FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); //NOI18N
+        nbproject = nbproject == null ? project.getProjectDirectory() : nbproject;
         if (nbproject != null) {
             try {
                 configFile = nbproject.getFileObject(CONF_FILE_NAME);
-
-//            if (configFile == null) {
-//                configFile = nbproject.createData(CONF_FILE_NAME); //create one if doesn't exist
-//                LOGGER.log(Level.INFO, "Created configuration file {0} ", configFile.getPath()); //NOI18N
-//            }
-                if (configFile != null) {
-                    configFile.addFileChangeListener(new FileChangeAdapter() {
-
-                        @Override
-                        public void fileChanged(FileEvent fe) {
-                            LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
-                            try {
-                                reload();
-                            } catch (IOException ex) {
-                                handleIOEFromReload(ex);
-                            }
-                        }
-
-                    });
-
-                    reload();
+                if (configFile == null) {
+                    configFile = nbproject.createData(CONF_FILE_NAME); //create one if doesn't exist
+                    LOGGER.log(Level.INFO, "Created configuration file {0} ", configFile.getPath()); //NOI18N
                 }
+                configFile.addFileChangeListener(new FileChangeAdapter() {
 
+                    @Override
+                    public void fileChanged(FileEvent fe) {
+                        LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
+                        try {
+                            reload();
+                        } catch (IOException ex) {
+                            handleIOEFromReload(ex);
+                        }
+                    }
+
+                });
+                reload();
             } catch (IOException ex) {
                 handleIOEFromReload(ex);
             }
         }
-
     }
 
     public FileObject getProjectsConfigurationFile() {
@@ -250,26 +245,22 @@ public class Configuration {
 
         String content = docContentRef.get();
         root = (JSONObject) JSONValue.parse(content);
-        if (root == null) {
-            //parsing error
-            throw new IOException("Can't parse the JSON source"); //NOI18N
-        }
-
-        JSONObject elements = (JSONObject) root.get(ELEMENTS);
-        if (elements != null) {
-            Collection<Tag> rootTags = loadTags(elements, null);
-            for (Tag rootTag : rootTags) {
-                tags.put(rootTag.getName(), rootTag);
+        if (root != null) {
+            JSONObject elements = (JSONObject) root.get(ELEMENTS);
+            if (elements != null) {
+                Collection<Tag> rootTags = loadTags(elements, null);
+                for (Tag rootTag : rootTags) {
+                    tags.put(rootTag.getName(), rootTag);
+                }
+            }
+            JSONObject attributes = (JSONObject) root.get(ATTRIBUTES);
+            if (attributes != null) {
+                Collection<Attribute> rootAttrs = loadAttributes(attributes, null);
+                for (Attribute a : rootAttrs) {
+                    attrs.put(a.getName(), a);
+                }
             }
         }
-        JSONObject attributes = (JSONObject) root.get(ATTRIBUTES);
-        if (attributes != null) {
-            Collection<Attribute> rootAttrs = loadAttributes(attributes, null);
-            for (Attribute a : rootAttrs) {
-                attrs.put(a.getName(), a);
-            }
-        }
-
     }
 
     private Document getDocument(FileObject file) throws IOException {
