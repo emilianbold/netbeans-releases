@@ -102,6 +102,7 @@ import org.openide.util.RequestProcessor;
     private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
+    private static final String SERVER_PERSISTENCE_ROOT = System.getProperty("remote.fs_server.remote.cache.root");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -662,7 +663,13 @@ import org.openide.util.RequestProcessor;
         
         private String getSubdir() {
             String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
-            return Integer.toString(tmp.hashCode()).replace('-', '0');
+            String subdir = Integer.toString(tmp.hashCode()).replace('-', '0');
+            if (SERVER_PERSISTENCE_ROOT == null) {
+                return subdir;
+            } else {
+                String root = SERVER_PERSISTENCE_ROOT.trim();                
+                return  root + (root.endsWith("/") ? "" : "/") + subdir; // NOI18N
+            }
         }
 
         public PrintWriter getWriter() {
@@ -707,7 +714,7 @@ import org.openide.util.RequestProcessor;
                 } catch (ConnectionManager.CancellationException ex) {
                 }
                 if (hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
-                    ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid);
+                    ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid); // NOI18N
                     if (res.isOK()) {
                         System.err.println(res.output);
                     }
