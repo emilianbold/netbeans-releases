@@ -533,7 +533,7 @@ public class CheckoutTest extends AbstractGitTestCase {
         write(file, BRANCH);
         add(file);
         client.commit(files, BRANCH, null, null, NULL_PROGRESS_MONITOR);
-        write(file, "initial");
+        write(file, "branch change");
         try {
             client.checkoutRevision(Constants.MASTER, true, NULL_PROGRESS_MONITOR);
             fail("Should fail, there are conflicts");
@@ -543,6 +543,11 @@ public class CheckoutTest extends AbstractGitTestCase {
             Map<String, GitBranch> branches = client.getBranches(false, NULL_PROGRESS_MONITOR);
             assertTrue(branches.get(BRANCH).isActive());
         }
+
+        checkJGitFix(Constants.MASTER, file);
+        client.reset(BRANCH, GitClient.ResetType.HARD, NULL_PROGRESS_MONITOR);
+        write(file, "branch change");
+        
         CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, ApiUtils.getClassFactory(), Constants.MASTER, false, NULL_PROGRESS_MONITOR, new FileListener() {
             @Override
             public void notifyFile (File file, String relativePathToRoot) { }
@@ -550,18 +555,26 @@ public class CheckoutTest extends AbstractGitTestCase {
         cmd.execute();
         Map<File, GitStatus> status = client.getStatus(files, NULL_PROGRESS_MONITOR);
         assertTrue(status.get(file).isConflict());
+        assertEquals("<<<<<<< OURS\nbranch change\n=======\ninitial\n>>>>>>> THEIRS", read(file));
+    }
+    
+    private void checkJGitFix (String branch, File file) throws Exception {
+        ObjectId headTree = null;
+        try {
+            headTree = Utils.findCommit(repository, Constants.HEAD).getTree();
+        } catch (GitException.MissingObjectException ex) { }
+
+        DirCache cache = repository.lockDirCache();
+        RevCommit commit;
+        commit = Utils.findCommit(repository, branch);
+        DirCacheCheckout dco = new DirCacheCheckout(repository, headTree, cache, commit.getTree());
+        dco.setFailOnConflict(false);
+        dco.checkout();
         if (file.exists()) {
-            // and do not forget to fix this code when JGit is fixed.
+            // and do not forget to remove WA in checkout command when JGit is fixed.
             fail("Hey, JGit is fixed, why don't you fix me as well?");
-        } else {
-            // until JGit is fixed...
-            try {
-                client.checkoutRevision(Constants.MASTER, false, NULL_PROGRESS_MONITOR);
-                fail("Must not be allowed");
-            } catch (IllegalArgumentException ex) {
-                assertEquals("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy.", ex.getMessage());
-            }
         }
+        cache.unlock();
     }
 
     public void testCheckoutNoHeadYet () throws Exception {
