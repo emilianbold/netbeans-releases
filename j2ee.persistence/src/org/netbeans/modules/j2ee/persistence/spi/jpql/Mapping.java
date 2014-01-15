@@ -117,7 +117,7 @@ public class Mapping implements IMapping {
 
     @Override
     public boolean isCollection() {
-        return (attribute.getMappingType() == IMappingType.ELEMENT_COLLECTION);
+        return (attribute.getMappingType() == IMappingType.ELEMENT_COLLECTION || attribute.getMappingType() == IMappingType.ONE_TO_MANY || attribute.getMappingType() == IMappingType.MANY_TO_MANY);
     }
 
     @Override
