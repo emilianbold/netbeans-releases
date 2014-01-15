@@ -80,6 +80,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.ChangedCharSetException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -113,7 +114,7 @@ public class JavadocHelper {
      * (and {@linkplain InputStream#close close} it) at least once.
      */
     public static final class TextStream {
-        private final Collection<? extends URL> urls;
+        private final List<? extends URL> urls;
         private final AtomicReference<InputStream> stream = new AtomicReference<InputStream>();
         private byte[] cache;
         /**
@@ -122,12 +123,12 @@ public class JavadocHelper {
          */
         public TextStream(@NonNull final URL url) {
             Parameters.notNull("url", url); //NOI18N
-            this.urls = Collections.singleton(url);
+            this.urls = Collections.singletonList(url);
         }
 
         TextStream(@NonNull final Collection<? extends URL> urls) {
             Parameters.notNull("urls", urls);   //NOI18N            
-            final Collection<URL> tmpUrls = new ArrayList<>(urls.size());
+            final List<URL> tmpUrls = new ArrayList<>(urls.size());
             for (URL u : urls) {
                 Parameters.notNull("urls[]", u);  //NOI18N
                 tmpUrls.add(u);
@@ -135,7 +136,7 @@ public class JavadocHelper {
             if (tmpUrls.isEmpty()) {
                 throw new IllegalArgumentException("At least one URL has to be given.");    //NOI18N
             }
-            this.urls = Collections.unmodifiableCollection(tmpUrls);
+            this.urls = Collections.unmodifiableList(tmpUrls);
         }
 
         TextStream(@NonNull final Collection<? extends URL> urls, InputStream stream) {
@@ -152,7 +153,7 @@ public class JavadocHelper {
         }
 
         @NonNull
-        public Collection<? extends URL> getLocations() {
+        public List<? extends URL> getLocations() {
             return urls;
         }
         /**
@@ -279,6 +280,54 @@ public class JavadocHelper {
      */
     public static TextStream getJavadoc(Element element) {
         return getJavadoc(element, null);
+    }
+
+    /**
+     * Returns the charset from given {@link ChangedCharSetException}
+     * @param e the {@link ChangedCharSetException}
+     * @return the charset or null
+     */
+    @CheckForNull
+    public static String getCharSet(ChangedCharSetException e) {
+        String spec = e.getCharSetSpec();
+        if (e.keyEqualsCharSet()) {
+            //charsetspec contains only charset
+            return spec;
+        }
+
+        //charsetspec is in form "text/html; charset=UTF-8"
+
+        int index = spec.indexOf(";"); // NOI18N
+        if (index != -1) {
+            spec = spec.substring(index + 1);
+        }
+
+        spec = spec.toLowerCase();
+
+        StringTokenizer st = new StringTokenizer(spec, " \t=", true); //NOI18N
+        boolean foundCharSet = false;
+        boolean foundEquals = false;
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (token.equals(" ") || token.equals("\t")) { //NOI18N
+                continue;
+            }
+            if (foundCharSet == false && foundEquals == false
+                    && token.equals("charset")) { //NOI18N
+                foundCharSet = true;
+                continue;
+            } else if (foundEquals == false && token.equals("=")) {//NOI18N
+                foundEquals = true;
+                continue;
+            } else if (foundEquals == true && foundCharSet == true) {
+                return token;
+            }
+
+            foundCharSet = false;
+            foundEquals = false;
+        }
+
+        return null;
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="URLs have never host part")
