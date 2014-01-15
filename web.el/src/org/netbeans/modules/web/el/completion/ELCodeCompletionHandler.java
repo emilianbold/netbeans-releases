@@ -289,7 +289,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         ELParserResult elParserResult = (ELParserResult) parserResult;
         for (ELElement elElement : elParserResult.getElementsTo(offset)) {
             if (elElement.getError() != null) {
-                elElement = getElementAt(parserResult, elElement.getOriginalOffset().getEnd());
+                elElement = getElementAt(parserResult, offset);
             }
             if (elElement.getNode() == null) {
                 continue;

@@ -225,4 +225,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion25.xhtml", "#{['pear', 'whatever'].stream().distinct().substream(5).^}", false);
     }
 
+    public void testIssue236148() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion26.xhtml", "#{v = {\"one\":1, \"two\":2, \"three\":3}; v.^", false);
+    }
+
 }
