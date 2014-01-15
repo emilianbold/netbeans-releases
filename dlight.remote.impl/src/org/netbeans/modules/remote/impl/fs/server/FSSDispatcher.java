@@ -646,13 +646,13 @@ import org.openide.util.RequestProcessor;
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             if (RemoteFileSystemUtils.isUnitTestMode()) {
-                StringBuilder sb = new StringBuilder("launching ").append(path); // NOI18N
+                StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
                 for (String p : args) {
                     sb.append(p).append(' ');
                 }
                 try {
                     int pid = process.getPID();
-                    sb.append(" [pid=").append(pid).append("] "); // NOI18N
+                    sb.append(" [pid=").append(pid).append(" at ").append(env).append("] "); // NOI18N
                 } catch (IllegalStateException ex) {
                     sb.append(" [no pid] "); // NOI18N
                 }
@@ -699,6 +699,20 @@ import org.openide.util.RequestProcessor;
             } catch (Throwable thr) {
             }
             ps.print('\n');
+            if (ProcessUtils.isAlive(process)) {
+                HostInfo hostInfo = null;
+                try {
+                    hostInfo = HostInfoUtils.getHostInfo(env);
+                } catch (IOException ex) {
+                } catch (ConnectionManager.CancellationException ex) {
+                }
+                if (hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
+                    ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid);
+                    if (res.isOK()) {
+                        System.err.println(res.output);
+                    }
+                }
+            }
         }
     }
     
