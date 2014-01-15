@@ -63,6 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -129,6 +130,8 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
     private PreferenceChangeListener weakL;
     
     private Collection<String>    parentFoldTypes;
+    
+    private boolean isChanged= false;
     
     /**
      * Creates new form DefaultFoldingOptions
@@ -275,7 +278,7 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         // similar for javadoc and inner classes.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                updateCheckers(evt);
+                fireChanged(updateCheckers(evt));
             }
         });
     }
@@ -306,17 +309,48 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         }
     }
     
-    private void updateCheckers(PreferenceChangeEvent evt) {
+    boolean isChanged() {
+        return isChanged;
+    }
+
+    private void fireChanged(String pk) {
+        if (pk == null) {
+            isChanged = false;
+            return;
+        }
+        Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        boolean changed = preferences.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true) != prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, true)
+                || preferences.getBoolean(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS, true) != prefs.getBoolean(FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS, true)
+                || preferences.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_PREVIEW, true) != prefs.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_PREVIEW, true)
+                || preferences.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_SUMMARY, true) != prefs.getBoolean(FoldUtilitiesImpl.PREF_CONTENT_SUMMARY, true);
+        for (JCheckBox cb : controls) {
+            changed |= isFoldTypeChanged((FoldType) cb.getClientProperty("type"), prefs); // NOI18N
+        }
+        isChanged = changed;
+    }
+
+    private boolean isFoldTypeChanged(FoldType ft, Preferences prefs) {
+        if (defaultPrefs == null) {
+            return preferences.getBoolean(k(ft), ft.parent() == null ? false : preferences.getBoolean(k(ft.parent()), false))
+                    != prefs.getBoolean(k(ft), ft.parent() == null ? false : prefs.getBoolean(k(ft.parent()), false));
+        } else {
+            String k = k(ft);
+            return preferences.getBoolean(k, defaultPrefs.getBoolean(k, ft.parent() == null ? false : preferences.getBoolean(k(ft.parent()), false)))
+                    != prefs.getBoolean(k, defaultPrefs.getBoolean(k, ft.parent() == null ? false : prefs.getBoolean(k(ft.parent()), false)));
+        }
+    }
+    
+    private String updateCheckers(PreferenceChangeEvent evt) {
         String pk = evt.getKey();
         if (pk != null) {
             if (pk.equals(SimpleValueNames.CODE_FOLDING_ENABLE)) {
                 updateEnabledState();
-                return;
+                return pk;
             }
             if (pk.equals(PREF_OVERRIDE_DEFAULTS)) {
                 updateOverrideChanged();
             } else if (!pk.startsWith(COLLAPSE_PREFIX)) {
-                return;
+                return pk;
             }
         } else {
             updateEnabledState();
@@ -327,9 +361,10 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
             FoldType ftp = ft.parent();
             if (c == null || ft.code().equals(c) || (ftp != null && ftp.code().equals(c))) {
                 updateChecker(pk, cb, ft);
-                return;
+                return pk;
             }
         }
+        return pk;
     }
     
     private boolean isCollapseEnabled(FoldType ft) {
