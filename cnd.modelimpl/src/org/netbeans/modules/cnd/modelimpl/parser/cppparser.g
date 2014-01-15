@@ -2131,6 +2131,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_char16_t      {ts |= tsOTHER;}
         | LITERAL_char32_t      {ts |= tsOTHER;}
         | LITERAL_bool          {ts |= tsBOOL;}
+        | LITERAL__Bool         {ts |= tsBOOL;}
         | LITERAL_short         {ts |= tsSHORT;}
         | LITERAL_int           {ts |= tsINT;}
         | literal_int64         {ts |= tsLONG;}

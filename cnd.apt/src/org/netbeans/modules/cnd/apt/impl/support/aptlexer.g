@@ -299,6 +299,7 @@ tokens {
     LITERAL___imag="__imag__"; // NOI18N
     LITERAL___real="__real__"; // NOI18N
     LITERAL___global="__global"; // NOI18N
+    LITERAL__Bool="_Bool"; // NOI18N
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
