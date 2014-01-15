@@ -104,7 +104,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-    protected String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
+    String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
