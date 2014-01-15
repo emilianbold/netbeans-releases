@@ -63,7 +63,6 @@ public class RemoteFSTCKTempFileObjectTest extends RemoteFSTCKTestCase {
         return new RemoteFSTCKTempFileObjectTest(suite);
     }    
 
-    @RandomlyFails
     public static class TempFileObjectTestHidEx extends TempFileObjectTestHid {
 
         public TempFileObjectTestHidEx(String name) {

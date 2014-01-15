@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 1
-#define FS_SERVER_MINOR_VERSION 22
+#define FS_SERVER_MINOR_VERSION 23
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -103,6 +103,8 @@ typedef struct fs_entry {
 } fs_entry;
 
 static struct {
+    /** This mutex to be used ONLY to guard access to proceed field. 
+     * NO other activity should be done under this mutex except for getting/setting proceed field. */
     pthread_mutex_t mutex;
     bool proceed;
 } state;
@@ -162,14 +164,14 @@ static void err_set(int code, const char *format, ...) {
 static bool state_get_proceed() {    
     bool proceed;
     mutex_lock(&state.mutex);
-    proceed = state.proceed;
+    proceed = state.proceed; // don't even think of doing smth else under this mutex!
     mutex_unlock(&state.mutex);    
     return proceed;
 }
 
 static void state_set_proceed(bool proceed) {
     mutex_lock(&state.mutex);
-    state.proceed = proceed;
+    state.proceed = proceed; // don't even think of doing smth else under this mutex!
     mutex_unlock(&state.mutex);    
 }
 
@@ -516,6 +518,10 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
+    
+    if (is_broken_pipe() || !state_get_proceed()) {
+        return;
+    }
 
     my_fprintf(STDOUT, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
             request_id, (long) utf8_strlen(path), path);
@@ -651,7 +657,7 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
     if (S_ISDIR(stat_buf->st_mode)) {
         response_ls(data->request_id, child_abspath, true, true);
     }
-    return true;
+    return !is_broken_pipe() && state_get_proceed();
 }
 
 
@@ -834,7 +840,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     dirtab_unlock(el);
     array_free(&old_entries);
     array_free(&new_entries);
-    return true;        
+    return !is_broken_pipe() && state_get_proceed();
 }
 
 static void thread_init() {

@@ -63,7 +63,6 @@ public class RemoteFSTCKFileObjectTest extends RemoteFSTCKTestCase {
         return new RemoteFSTCKFileObjectTest(suite);
     }    
 
-    @RandomlyFails
     public static class FileObjectTestHidEx extends FileObjectTestHid {
 
         public FileObjectTestHidEx(String name) {

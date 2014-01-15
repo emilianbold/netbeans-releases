@@ -63,7 +63,6 @@ public class RemoteFSTCKUrlMapperTest extends RemoteFSTCKTestCase {
         return new RemoteFSTCKUrlMapperTest(suite);
     }    
 
-    @RandomlyFails
     public static class URLMapperTestHiddenEx extends URLMapperTestHidden {
 
         public URLMapperTestHiddenEx(String name) {
