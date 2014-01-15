@@ -104,7 +104,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     }
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
-    private String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
+    protected String mainClassSetManually = null; // used for case when the main class is not set in project and user is prompted for it
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -232,12 +232,7 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
     public void setupProjectSessionSettings(SessionSettings ss) {
         final PropertyEvaluator pp = getProjectProperties(getProject());
 
-        if (mainClassSetManually == null) {
-            String mainClass = pp.getProperty("main.class"); // NOI18N
-            ss.setMainClass((mainClass != null) ? mainClass : ""); // NOI18N
-        } else {
-            ss.setMainClass(mainClassSetManually);
-        }
+        this.setMainClass(pp, ss);
 
         // is this all really necessary???
         String appArgs = pp.getProperty("application.args"); // NOI18N
@@ -256,6 +251,15 @@ public class J2SEProjectProfilingSupportProvider extends JavaProjectProfilingSup
         }
         
         super.setupProjectSessionSettings(ss);
+    }
+    
+    protected void setMainClass(final PropertyEvaluator pp, SessionSettings ss) {
+        if (mainClassSetManually == null) {
+            String mainClass = pp.getProperty("main.class"); // NOI18N
+            ss.setMainClass((mainClass != null) ? mainClass : ""); // NOI18N
+        } else {
+            ss.setMainClass(mainClassSetManually);
+        }
     }
     
     private static String getRemotePlatformHost(JavaPlatform platform) {
