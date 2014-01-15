@@ -114,7 +114,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     /** Language which related info the panel currently displays. */
     private String panelLanguage;
 
-    /** Points to modified template (its row index in templates table). */
+    /** Points to modified template (its row index in templates table model, NOT view index). */
     private int unsavedTemplateIndex = -1;
 
     /** Allows to remember last edited template when templates panel gets reopened. */
@@ -408,7 +408,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         }
                     }
                     if (i == rows) {
-                        int rowIdx = tableModel.addCodeTemplate(newAbbrev);
+                        //rowIdx must be recalculated to view index
+                        int rowIdx = tTemplates.convertRowIndexToView(tableModel.addCodeTemplate(newAbbrev));
                         tTemplates.getSelectionModel().setSelectionInterval(rowIdx, rowIdx);
                     }
                 }
@@ -427,7 +428,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             }
         } else if (e.getSource () == bRemove) {
             CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
-            int index = tTemplates.getSelectedRow ();
+            int index = tTemplates.convertRowIndexToModel(tTemplates.getSelectedRow());
             unsavedTemplateIndex = -1;
             tableModel.removeCodeTemplate(index);
 
@@ -554,7 +555,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
     private void textModified() {
         if (unsavedTemplateIndex < 0) {
-            unsavedTemplateIndex = tTemplates.getSelectedRow();
+            int row = tTemplates.getSelectedRow();
+            unsavedTemplateIndex = row < 0 ? -1 : tTemplates.convertRowIndexToModel(row);
         }
     }
 
@@ -799,7 +801,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             }
             lContexts.repaint();
             if (unsavedTemplateIndex < 0) {
-                unsavedTemplateIndex = tTemplates.getSelectedRow();
+                int row = tTemplates.getSelectedRow();
+                unsavedTemplateIndex = row < 0 ? -1 : tTemplates.convertRowIndexToModel(row);
             }
         }
     }
