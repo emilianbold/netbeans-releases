@@ -1126,7 +1126,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 // getIOPack().console() != null &&
                 getIOPack().console().getTerm() != null) {
 
-            String warn = debuggerType() + " terminated"; // NOI18N
+            String warn = debuggerType() + " terminated\n"; // NOI18N
             char[] warnArray = warn.toCharArray();
             getIOPack().console().getTerm().putChars(warnArray,
                     0, warnArray.length);
