@@ -66,6 +66,7 @@ import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
+import org.apache.maven.index.creator.OsgiArtifactIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.updater.IndexUpdateRequest;
@@ -304,7 +305,14 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                 List<IndexCreator> creators = new ArrayList<IndexCreator>();
                 try {
-                    creators.addAll(embedder.lookupList(IndexCreator.class));
+                    for (IndexCreator creator : embedder.lookupList(IndexCreator.class)) {
+                        if (OsgiArtifactIndexCreator.ID.equals(creator.getId())) {
+                            continue; //we are no interested in osgi related content in lucene documents or ArtifactInfo objects.
+                            //they take up a lot of memory and we never query them AFAIK. (import/export packages can take up to 300k
+                            //239915, 240150 + according to my knowledge we don't expose any api that would allow 3rd party plugins to query the osgi stuff
+                        }
+                        creators.add(creator);
+                    }
                 } catch (ComponentLookupException x) {
                     throw new IOException(x);
                 }
@@ -615,6 +623,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
  
         // always use temporary context when reindexing
+        //TODO select a location within netbeans cache directory not File.createTempFile
         final File tmpFile = File.createTempFile( context.getId() + "-tmp", "" );
         final File tmpDir = new File( tmpFile.getParentFile(), tmpFile.getName() + ".dir" );
         if ( !tmpDir.mkdirs() )
@@ -915,25 +924,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         }, skipAction, skipUnIndexed);
         
-        //the slow check kicking in is nowadays very rare, used to be a workaround for old versions of indexing data..
-        iterate(slowCheck, new RepoAction() {
-            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
-                BooleanQuery bq = new BooleanQuery();
-                bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
-                GroupedSearchRequest gsr = new GroupedSearchRequest(bq, new GGrouping(), new Comparator<String>() {
-                    @Override public int compare(String o1, String o2) {
-                        return o1.compareTo(o2);
-                    }
-                });
-                GroupedSearchResponse response = searcher.searchGrouped(gsr, Collections.singletonList(context));
-                groups.addAll(response.getResults().keySet());
-            }
-        }, skipAction, skipUnIndexed);
+//        //the slow check kicking in is nowadays very rare, used to be a workaround for old versions of indexing data..
+// #240150 can cause OOME as the number of grouped results (ArtifactInfo instances) in this case is huge.
+//        
+//        iterate(slowCheck, new RepoAction() {
+//            @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
+//                BooleanQuery bq = new BooleanQuery();
+//                bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
+//                GroupedSearchRequest gsr = new GroupedSearchRequest(bq, new GGrouping(), new Comparator<String>() {
+//                    @Override public int compare(String o1, String o2) {
+//                        return o1.compareTo(o2);
+//                    }
+//                });
+//                GroupedSearchResponse response = searcher.searchGrouped(gsr, Collections.singletonList(context));
+//                groups.addAll(response.getResults().keySet());
+//            }
+//        }, skipAction, skipUnIndexed);
         
         Accessor.ACCESSOR.setStringResults(result, groups);
         return result;
     }
 
+    @Override
     public Result<String> getGAVsForPackaging(final String packaging, List<RepositoryInfo> repos) {
         RepositoryQueries.Result<String> result = Accessor.ACCESSOR.createStringResult(new Redo<String>() {
             @Override

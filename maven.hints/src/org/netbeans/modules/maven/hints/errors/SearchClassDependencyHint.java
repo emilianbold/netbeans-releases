@@ -111,7 +111,12 @@ public class SearchClassDependencyHint extends AbstractHint {
                  hint=new SearchClassDependencyHint();
             }
         }
-        return hint.getPreferences(null).getBoolean(OPTION_DIALOG, true);
+        Preferences prefs = hint.getPreferences(null);
+        assert prefs != null; //#240220
+        if (prefs == null) {
+            return true;
+        }
+        return prefs.getBoolean(OPTION_DIALOG, true);
     }
 
     public static boolean isHintEnabled() {
