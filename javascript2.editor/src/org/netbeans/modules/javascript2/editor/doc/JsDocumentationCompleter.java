@@ -135,7 +135,11 @@ public class JsDocumentationCompleter {
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
+                                // looks to be within anonymous object, use the global object instead
+                                if (jsObject == null) {
+                                    jsObject = jsParserResult.getModel().getGlobalObject();
                                 }
+                            }
                             JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, originalExaminedOffset);
                             if (wrapperScope != null) {
                                 if (nearestNode instanceof VarNode && wrapperScope instanceof JsFunction) {
