@@ -48,6 +48,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -98,21 +99,36 @@ import org.openide.util.TaskListener;
 public final class RemoteConnectionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
     private static final long serialVersionUID = -6457687532146576878L;
 
-    private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(RemoteConnectionsPanel.class);
+    private static final int VALIDATION_DELAY = 300; // in ms
 
     private final ConfigListModel configListModel = new ConfigListModel();
     private final RemoteConnections remoteConnections;
     private final ConfigManager configManager;
     private final Map<Configuration, RemoteConfigurationPanel> configPanels = new HashMap<>();
+    private final RequestProcessor.Task validationTask;
 
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport = null;
     private RequestProcessor.Task testConnectionTask = null;
 
+
     public RemoteConnectionsPanel(RemoteConnections remoteConnections, ConfigManager configManager) {
         this.remoteConnections = remoteConnections;
         this.configManager = configManager;
+
+        validationTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        validateActiveConfig();
+                    }
+                });
+            }
+        });
 
         initComponents();
 
@@ -131,7 +147,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     }
 
     public boolean open(final RemoteConfiguration remoteConfiguration) {
-        testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
+        testConnectionTask = RP.create(new Runnable() {
             @Override
             public void run() {
                 testConnection();
@@ -389,10 +405,6 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         setWarning(null);
     }
 
-    private boolean isValidConfiguration() {
-        return configurationPanel.isValidConfiguration();
-    }
-
     private String getError() {
         return configurationPanel.getError();
     }
@@ -439,7 +451,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
     @NbBundle.Messages("RemoteConnectionsPanel.warning.name.empty=Default name will be used.")
     void validateActiveConfig() {
-        boolean valid = isValidConfiguration();
+        boolean valid = configurationPanel.isValidConfiguration();
         String error = getError();
         Configuration cfg = getSelectedConfiguration();
         cfg.setErrorMessage(error);
@@ -504,7 +516,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         if (cfg != null) {
             switchConfigurationPanel();
             // validate fields only if there's valid config
-            validateActiveConfig();
+            validationTask.schedule(VALIDATION_DELAY);
         } else {
             resetFields();
             checkAllConfigs();
@@ -674,7 +686,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         Configuration cfg = getSelectedConfiguration();
         if (cfg != null) {
             // no config selected
-            validateActiveConfig();
+            validationTask.schedule(VALIDATION_DELAY);
             storeActiveConfig(cfg);
         }
 
