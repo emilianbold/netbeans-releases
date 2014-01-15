@@ -47,11 +47,15 @@ import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Validator for FTP configuration.
  */
 public class FtpConfigurationValidator {
+
+    //@GuardedBy("FtpConfigurationValidator.class")
+    private static Pair<String, Boolean> lastProxy = null;
 
     private final ValidationResult result = new ValidationResult();
 
@@ -100,7 +104,9 @@ public class FtpConfigurationValidator {
             result.addError(new ValidationResult.Message("keepAliveInterval", err)); // NOI18N
         }
 
-        validateProxy(host, passiveMode);
+        if (result.isFaultless()) {
+            validateProxy(host, passiveMode);
+        }
         return this;
     }
 
@@ -116,11 +122,25 @@ public class FtpConfigurationValidator {
 
     // #195879
     @NbBundle.Messages({
-        "FtpConfigurationValidator.proxy.detecting=Detecting HTTP proxy...",
         "FtpConfigurationValidator.error.proxyAndNotPassive=Only passive mode is supported with HTTP proxy.",
         "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP. To avoid problems, do not use any SOCKS proxy."
     })
     private void validateProxy(final String host, boolean passiveMode) {
+        if (hasProxy(host)) {
+            if (!passiveMode) {
+                result.addError(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_error_proxyAndNotPassive())); // NOI18N
+            }
+            result.addWarning(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_warning_proxy())); // NOI18N
+        }
+    }
+
+    @NbBundle.Messages("FtpConfigurationValidator.proxy.detecting=Detecting HTTP proxy...")
+    private static synchronized boolean hasProxy(final String host) {
+        assert Thread.holdsLock(FtpConfigurationValidator.class);
+        if (lastProxy != null
+                && lastProxy.first().equals(host)) {
+            return lastProxy.second();
+        }
         final AtomicBoolean hasProxy = new AtomicBoolean();
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
@@ -128,12 +148,8 @@ public class FtpConfigurationValidator {
                 hasProxy.set(RemoteUtils.hasHttpProxy(host));
             }
         }, Bundle.FtpConfigurationValidator_proxy_detecting(), new AtomicBoolean(), false);
-        if (hasProxy.get()) {
-            if (!passiveMode) {
-                result.addError(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_error_proxyAndNotPassive())); // NOI18N
-            }
-            result.addWarning(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_warning_proxy())); // NOI18N
-        }
+        lastProxy = Pair.of(host, hasProxy.get());
+        return lastProxy.second();
     }
 
 }
