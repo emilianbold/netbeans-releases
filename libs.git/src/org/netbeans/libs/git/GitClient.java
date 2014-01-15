@@ -365,9 +365,6 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public void checkoutRevision (String revision, boolean failOnConflict, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
-        if (!failOnConflict) {
-            throw new IllegalArgumentException("Currently unsupported. failOnConflict must be set to true. JGit lib is buggy."); //NOI18N
-        }
         Repository repository = gitRepository.getRepository();
         CheckoutRevisionCommand cmd = new CheckoutRevisionCommand(repository, getClassFactory(), revision, failOnConflict, monitor, delegateListener);
         cmd.execute();
