@@ -92,7 +92,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -645,7 +644,7 @@ public class TreeLoader extends LazyTreeLoader {
                 return true;
             } catch (ChangedCharSetException e) {
                 if (charset == null) {
-                    charset = getCharSet(e);
+                    charset = JavadocHelper.getCharSet(e);
                     //restart with valid charset
                 } else {
                     e.printStackTrace();
@@ -686,48 +685,6 @@ public class TreeLoader extends LazyTreeLoader {
                 }
             }
         }
-    }
-
-    private String getCharSet(ChangedCharSetException e) {
-        String spec = e.getCharSetSpec();
-        if (e.keyEqualsCharSet()) {
-            //charsetspec contains only charset
-            return spec;
-        }
-        
-        //charsetspec is in form "text/html; charset=UTF-8"
-                
-        int index = spec.indexOf(";"); // NOI18N
-        if (index != -1) {
-            spec = spec.substring(index + 1);
-        }
-        
-        spec = spec.toLowerCase();
-        
-        StringTokenizer st = new StringTokenizer(spec, " \t=", true); //NOI18N
-        boolean foundCharSet = false;
-        boolean foundEquals = false;
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            if (token.equals(" ") || token.equals("\t")) { //NOI18N
-                continue;
-            }
-            if (foundCharSet == false && foundEquals == false
-                    && token.equals("charset")) { //NOI18N
-                foundCharSet = true;
-                continue;
-            } else if (foundEquals == false && token.equals("=")) {//NOI18N
-                foundEquals = true;
-                continue;
-            } else if (foundEquals == true && foundCharSet == true) {
-                return token;
-            }
-            
-            foundCharSet = false;
-            foundEquals = false;
-        }
-        
-        return null;
     }
 
     private synchronized boolean attachTo(final Thread thread) {

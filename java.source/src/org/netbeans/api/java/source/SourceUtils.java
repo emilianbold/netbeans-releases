@@ -78,14 +78,23 @@ import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import java.net.URISyntaxException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.util.ElementScanner6;
 import javax.swing.SwingUtilities;
+import javax.swing.text.ChangedCharSetException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -137,6 +146,23 @@ import org.openide.util.Utilities;
 public class SourceUtils {    
      
     private static final Logger LOG = Logger.getLogger(SourceUtils.class.getName());
+    private static final Map<URI,Integer> jdocCache = new ConcurrentHashMap<>();
+    private static final Set<String> docLet1 = Collections.unmodifiableSet(new HashSet<String>(
+        Arrays.asList(new String[]{
+            "constructor_summary",  //NOI18N
+            "method_summary",       //NOI18N
+            "field_detail",         //NOI18N
+            "constructor_detail",   //NOI18N
+            "method_detail"         //NOI18N
+        })));
+    private static final Set<String> docLet2 = Collections.unmodifiableSet(new HashSet<String>(
+        Arrays.asList(new String[]{
+            "constructor.summary",  //NOI18N
+            "method.summary",       //NOI18N
+            "field.detail",         //NOI18N
+            "constructor.detail",   //NOI18N
+            "method.detail"         //NOI18N
+        })));
 
     private SourceUtils() {}
     
@@ -640,7 +666,8 @@ public class SourceUtils {
      * @param element to find the Javadoc for
      * @param cpInfo classpaths used to resolve (currently unused)
      * @return the URL of the javadoc page or null when the javadoc is not available.
-     * @deprecated use {@link SourceUtils#getJavadoc(javax.lang.model.element.Element)}.
+     * @deprecated use {@link SourceUtils#getJavadoc(javax.lang.model.element.Element)}
+     * or {@link SourceUtils#getPreferredJavadoc(javax.lang.model.element.Element)}
      */
     @Deprecated
     public static URL getJavadoc (final Element element, final ClasspathInfo cpInfo) {      
@@ -648,6 +675,81 @@ public class SourceUtils {
         return res.isEmpty() ?
             null :
             res.iterator().next();
+    }
+
+    /**
+     * Returns preferred Javadoc {@link URL}.
+     * Threading: The method parses the javadoc to find out the used doclet,
+     * so it should not be called from EDT.
+     * @param element to find the Javadoc for
+     * @return the URL of the javadoc page or null when the javadoc is not available.
+     * @since 0.134
+     */
+    @CheckForNull
+    public static URL getPreferredJavadoc(@NonNull final Element element) {
+        Parameters.notNull("element", element); //NOI18N
+        final JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element);
+        if (page == null) {
+            return null;
+        }
+        final List<? extends URL> javadocs = page.getLocations();
+        if (javadocs.size() == 1) {
+            return javadocs.get(0);
+        } else {
+            final URI jdocRoot = findJavadocRoot(javadocs.get(0), element);
+            Integer index = jdocRoot == null ? null : jdocCache.get(jdocRoot);
+            if (index == null || index >= javadocs.size()) {
+                try {
+                    String charset = null;
+                    for (;;) {
+                        try (Reader reader = charset == null?
+                                new InputStreamReader(page.openStream()) :
+                                new InputStreamReader(page.openStream(), charset)){
+                            final HTMLEditorKit.Parser parser = new ParserDelegator();
+                            final int[] state = {-1};
+                            try {
+                                parser.parse(
+                                    reader,
+                                    new HTMLEditorKit.ParserCallback() {
+                                        @Override
+                                        public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+                                            if (state[0] == -1) {
+                                                if (t == HTML.Tag.A) {
+                                                    final String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
+                                                    if (attrName != null) {
+                                                        if (docLet1.contains(attrName)) {
+                                                            state[0] = 0;
+                                                        } else if (docLet2.contains(attrName)) {
+                                                            state[0] = 1;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    charset != null);
+                                index = state[0] == -1 ? 0 : state[0];
+                                if (jdocRoot != null) {
+                                    jdocCache.put(jdocRoot,index);
+                                }
+                                break;
+                            } catch (ChangedCharSetException e) {
+                                if (charset == null) {
+                                    charset = JavadocHelper.getCharSet(e);
+                                    //restart with valid charset
+                                } else {
+                                    throw new IOException(e);
+                                }
+                            }                            
+                        }
+                    }
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+            assert index != null && index != -1;
+            return javadocs.get(index);
+        }
     }
 
     /**
@@ -1264,5 +1366,41 @@ public class SourceUtils {
             res.add(fo.toURL());
         }
         return res;
+    }
+
+    @CheckForNull
+    private static URI findJavadocRoot(
+            @NonNull final URL javadocURL,
+            @NonNull Element element) {
+        final String protocol = javadocURL.getProtocol();
+        final String host = javadocURL.getHost();
+        final int port = javadocURL.getPort();
+        String path = javadocURL.getPath();        
+        while (element.getKind() != ElementKind.PACKAGE &&
+            !(element.getKind().isClass() || element.getKind().isInterface())) {
+            element = element.getEnclosingElement();
+        }
+        int count = ((QualifiedNameable)element).getQualifiedName().toString().split("\\.").length;
+        final String[] parts = path.split("/"); //NOI18N
+        final StringBuilder sb = new StringBuilder();
+        for (int i=0; i < parts.length - count; i++) {
+            sb.append(parts[i]).append('/');    //NOI18N
+        }
+        try {
+            final URL rootURL = new URL(protocol, host, port, sb.toString());
+            return rootURL.toURI();
+        } catch (MalformedURLException | URISyntaxException e) {
+            LOG.log(
+                Level.WARNING,
+                "Invalid javadoc URL: {0}, protocol: {1}, host: {2}, port: {3}, path: {4}", //NOI18N
+                new Object[]{
+                    javadocURL,
+                    protocol,
+                    host,
+                    port,
+                    sb.toString()
+                });
+            return null;
+        }
     }
 }
