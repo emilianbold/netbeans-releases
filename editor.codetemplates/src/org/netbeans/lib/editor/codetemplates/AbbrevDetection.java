@@ -116,7 +116,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
             = "abbrev-ignore-modification"; // NOI18N
 
-    private static final String EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template"; //NOI18N
+    private static final String EDITING_TEMPLATE_DOC_PROPERTY = "code-template-insert-handler"; //NOI18N
 
     private static final String SURROUND_WITH = NbBundle.getMessage(SurroundWithFix.class, "TXT_SurroundWithHint_Label"); //NOI18N
     private static final int SURROUND_WITH_DELAY = 250;
@@ -319,7 +319,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
             if (abbrevEndPosition != null && component != null && doc != null
                 && component.getCaretPosition() == abbrevEndPosition.getOffset()
                 && !isAbbrevDisabled()
-                && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
+                && doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY) == null
             ) {
                 pos = abbrevEndPosition;
                 d = component.getDocument();
