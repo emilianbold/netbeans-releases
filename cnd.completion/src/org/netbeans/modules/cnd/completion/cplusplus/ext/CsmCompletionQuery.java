@@ -3670,15 +3670,25 @@ abstract public class CsmCompletionQuery {
             CsmOffsetableDeclaration contextElement, boolean instantiateTypes, CsmResultItem.SubstitutionHint hint) {
         List<CsmResultItem> ret = new ArrayList<CsmResultItem>();
         for (Object obj : dataList) {
-            CsmResultItem item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement, instantiateTypes);
-            assert item != null : "why null item? object " + obj + " iof " + (obj==null?"null":obj.getClass()) + " in expr" + substituteExp;
-            if (item != null) {
-                item.setSubstituteOffset(substituteOffset);
-                item.setHint(hint);
-                ret.add(item);
+            if (!isProhibitedResultItem(obj)) {
+                CsmResultItem item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement, instantiateTypes);
+                assert item != null : "why null item? object " + obj + " iof " + (obj==null?"null":obj.getClass()) + " in expr" + substituteExp;
+                if (item != null) {
+                    item.setSubstituteOffset(substituteOffset);
+                    item.setHint(hint);
+                    ret.add(item);
+                }
             }
         }
         return ret;
+    }
+    
+    private static boolean isProhibitedResultItem(Object obj) {
+        if (obj instanceof CsmObject) {
+            CsmObject csmObj = (CsmObject) obj;
+            return CsmKindUtilities.isFunctionPointerClassifier(csmObj);
+        }
+        return false;
     }
 
     private static CsmResultItem createResultItem(Object obj, int classDisplayOffset, CsmCompletionExpression substituteExp, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
