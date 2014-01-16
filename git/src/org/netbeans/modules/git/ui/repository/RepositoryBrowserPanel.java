@@ -92,6 +92,7 @@ import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
@@ -1021,6 +1022,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         @NbBundle.Messages({
+            "# {0} - branch name", "LBL_DiffToTrackedBranchAction_PopupName=Diff to \"{0}\"",
             "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
         })
         protected Action[] getPopupActions (boolean context) {
@@ -1089,6 +1091,25 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     }
                 });
                 if (!remote) {
+                    actions.add(null);
+                    if (trackedBranch != null) {
+                        final Node rootNode = new AbstractNode(Children.LEAF, Lookups.fixed(repo)) {
+
+                            @Override
+                            public String getName () {
+                                return repo.getName();
+                            }
+
+                        };
+                        actions.add(new AbstractAction(Bundle.LBL_DiffToTrackedBranchAction_PopupName(trackedBranch.getName())) {
+                            @Override
+                            public void actionPerformed (ActionEvent e) {
+                                SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(new Node[] { rootNode }),
+                                        new Revision.BranchReference(branchName, branchId),
+                                        new Revision.BranchReference(trackedBranch));
+                            }
+                        });
+                    }
                     actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
                         @Override
                         public void actionPerformed (ActionEvent e) {
