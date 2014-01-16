@@ -1,5 +1,4 @@
 UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
-  UNKNOWN:FIELD:[PUBLIC]:ESCAPED{UNKNOWN}<font color="#999999">ESCAPED{ : }Array</font>:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   $className:FIELD:[PUBLIC]:ESCAPED{$className}:
   displayName:FIELD:[PUBLIC]:ESCAPED{displayName}:
@@ -89,7 +88,7 @@ data:PARAMETER:[PUBLIC]:ESCAPED{data}:
 alternate:VARIABLE:[PRIVATE]:ESCAPED{alternate}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-alternates:FIELD:[PUBLIC]:ESCAPED{alternates}<font color="#999999">ESCAPED{ : }Array</font>:
+alternates:VARIABLE:[PRIVATE]:ESCAPED{alternates}:
 Ext:CLASS:[PUBLIC]:ESCAPED{Ext}:
   create:FIELD:[PUBLIC]:ESCAPED{create}:
   createByAlias:FIELD:[PUBLIC]:ESCAPED{createByAlias}:
