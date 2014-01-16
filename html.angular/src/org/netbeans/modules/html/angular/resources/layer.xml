@@ -32,6 +32,14 @@
                         </folder>
                     </folder>                                        
                 </folder>
+                <!-- code templates -->
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-html-angular-editor-codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.angular.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>
