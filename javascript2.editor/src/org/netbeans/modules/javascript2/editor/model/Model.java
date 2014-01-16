@@ -382,7 +382,7 @@ public final class Model {
                 while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() < expRange.getEnd() && ts.moveNext()) {
                     token = ts.token();
                 }
-                if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
+                if (parent != null && token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
                     JsObject property = parent.getProperty(name);
                     if (property != null) {
                         property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
@@ -396,7 +396,7 @@ public final class Model {
                 while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {
                     token = ts.token();
                 }
-                if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
+                if (parent != null && token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
                     JsObject property = parent.getProperty(name);
                     if (property != null) {
                         property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
