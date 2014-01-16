@@ -1711,8 +1711,16 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 if(instance != null) {
                     NbProcessDescriptor proc = instance.getBrowserExecutable();
                     if(proc != null) {
-                        String path = proc.getProcessName();
-                        jfxProps.getBrowserPaths().put(browser.getDisplayName(), path);
+                        StringBuilder path = new StringBuilder();
+                        path.append(proc.getProcessName());
+                        if (Utilities.isMac()) {                            
+                            String args = proc.getArguments();
+                            if (args != null && !args.trim().startsWith("{")) { //NOI18N
+                                path.append(" ");//NOI18N
+                                path.append(args.substring(0, args.indexOf("{")).trim()); //NOI18N
+                            }
+                        }
+                        jfxProps.getBrowserPaths().put(browser.getDisplayName(), path.toString());
                     }
                 }
             }
