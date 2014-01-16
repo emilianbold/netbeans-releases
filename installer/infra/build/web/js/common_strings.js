@@ -51,7 +51,7 @@ BUNDLE_SHORT_NAMES[0] = "Java&nbsp;SE";
 BUNDLE_SHORT_NAMES[1] = "Java&nbsp;EE";
 //BUNDLE_SHORT_NAMES[2] = "Ruby";
 BUNDLE_SHORT_NAMES[2] = "C/C++";
-BUNDLE_SHORT_NAMES[3] = "PHP";
+BUNDLE_SHORT_NAMES[3] = "HTML5&nbsp;&amp;&nbsp;PHP";
 BUNDLE_SHORT_NAMES[4] = "";
 
 BUNDLE_LONG_NAMES[0] = "Java&nbsp;SE";
@@ -59,7 +59,7 @@ BUNDLE_LONG_NAMES[0] = "Java&nbsp;SE";
 BUNDLE_LONG_NAMES[1] = "Java&nbsp;EE";
 //BUNDLE_LONG_NAMES[2] = "Ruby";
 BUNDLE_LONG_NAMES[2] = "C/C++";
-BUNDLE_LONG_NAMES[3] = "PHP";
+BUNDLE_LONG_NAMES[3] = "HTML5&nbsp;&amp;&nbsp;PHP";
 BUNDLE_LONG_NAMES[4] = "All";
 
 var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/74/relnotes.html";
