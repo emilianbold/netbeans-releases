@@ -245,7 +245,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             LOG.log(Level.FINEST, "instantiate 2 {0}; spec:{1};mapping={2}\n", new Object[]{template.getDisplayName(), specialize, mapping});
             result = template;
             time = System.currentTimeMillis();
-            if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypeAlias(template)) {
+            if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunctional(template) || CsmKindUtilities.isTypeAlias(template)) {
                 if (contextFile == null) {
                     contextFile = ((CsmOffsetable) template).getContainingFile();
                     contextOffset = ((CsmOffsetable) template).getStartOffset();
