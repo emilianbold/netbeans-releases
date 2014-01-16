@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.*;
-import java.net.ConnectException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,7 +63,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -340,6 +338,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     }
                 }
                 process.waitFor();
+                pair.exitCode = process.exitValue();
                 startedProcess = null;
                 errorTask = null;
             }
@@ -587,104 +586,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
     
-    protected void checkModel(Pair res, MyCallable<Pair> get) {
-        if (!LOG.isLoggable(Level.FINE)) {
-            return;
-        }
-        final CompilerDescriptor descriptor = getDescriptor();
-        if (descriptor == null) {
-            return;
-        }
-        final List<ToolchainManager.PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
-        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
-            return;
-        }
-        StringBuilder buf = new StringBuilder();
-        buf.append("Compiler: ").append(getPath()); // NOI18N
-        Set<String> checked = new HashSet<String>();
-        for (ToolchainManager.PredefinedMacro macro : predefinedMacros) {
-            if (macro.getFlags() != null && !checked.contains(macro.getFlags())) {
-                checked.add(macro.getFlags());
-                Pair tmp = get.call(macro.getFlags());
-                if (tmp.systemPreprocessorSymbolsList.size() == 0) {
-                    buf.append("\nThe flag ").append(macro.getFlags()).append(" is not supported"); // NOI18N
-                    continue;
-                }
-                completePredefinedMacros(tmp);
-                List<String> acatualDiff = new ArrayList<String>();
-                for (String t : tmp.systemPreprocessorSymbolsList) {
-                    boolean found = false;
-                    for (String s : res.systemPreprocessorSymbolsList) {
-                        if (s.equals(t)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        acatualDiff.add(t);
-                    }
-                }
-                List<String> actualRm = new ArrayList<String>();
-                for (String t : res.systemPreprocessorSymbolsList) {
-                    boolean found = false;
-                    for (String s : tmp.systemPreprocessorSymbolsList) {
-                        if (s.equals(t)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        actualRm.add(t);
-                    }
-                }
-                List<String> expectedDiff = new ArrayList<String>();
-                List<String> expectedRm = new ArrayList<String>();
-                for (ToolchainManager.PredefinedMacro m : predefinedMacros) {
-                    if (m.getFlags() != null && m.getFlags().equals(macro.getFlags())) {
-                        if (m.isHidden()) {
-                            expectedRm.add(m.getMacro());
-                        } else {
-                            expectedDiff.add(m.getMacro());
-                        }
-                    }
-                }
-                if (!acatualDiff.isEmpty() || !expectedDiff.isEmpty() || !actualRm.isEmpty() || !expectedRm.isEmpty()) {
-                    buf.append("\nThe flag ").append(macro.getFlags()); // NOI18N
-                    if (!acatualDiff.isEmpty() || !expectedDiff.isEmpty()) {
-                        buf.append("\n\tadds/changes predefined macros:"); // NOI18N
-                        for (String t : acatualDiff) {
-                            buf.append("\n\t\t").append(t); // NOI18N
-                        }
-                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
-                        for (String t : expectedDiff) {
-                            buf.append("\n\t\t").append(t); // NOI18N
-                        }
-                    }
-                    if (!actualRm.isEmpty() || !expectedRm.isEmpty()) {
-                        buf.append("\n\tremoves predefined macros:"); // NOI18N
-                        for (String t : actualRm) {
-                            buf.append("\n\t\t").append(t); // NOI18N
-                        }
-                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
-                        for (String t : expectedRm) {
-                            buf.append("\n\t\t").append(t); // NOI18N
-                        }
-                    }
-                }
-            }
-        }
-        LOG.log(Level.FINE, buf.toString());
-    }
-
-    protected static final class Pair {
-        public CompilerDefinition systemIncludeDirectoriesList;
-        public CompilerDefinition systemPreprocessorSymbolsList;
-        public Pair(){
-            systemIncludeDirectoriesList = new CompilerDefinition(0);
-            systemPreprocessorSymbolsList = new CompilerDefinition(0);
-        }
-    }
-    
     protected void completePredefinedMacros(Pair pair) {
         final CompilerDescriptor descriptor = getDescriptor();
         if (descriptor != null) {
@@ -704,6 +605,364 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
     }
+    
+    //For testing. Compare compiler macros definition with real mactos privided by compiler.
+    protected void checkModel(Pair res, MyCallable<Pair> get) {
+        if (!LOG.isLoggable(Level.FINE)) {
+            return;
+        }
+        final CompilerDescriptor descriptor = getDescriptor();
+        if (descriptor == null) {
+            return;
+        }
+        final List<PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
+        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
+            return;
+        }
+        StringBuilder buf = new StringBuilder();
+        buf.append("Compiler: ").append(getPath()); // NOI18N
+        StringBuilder toolChainPatch = new StringBuilder();
+        toolChainPatch.append("Proposed patch for compiler: ").append(getPath()); // NOI18N
+        StringBuilder importantFlags = new StringBuilder();
+        importantFlags.append("Important flags for compiler: ").append(getPath()).append("\n"); // NOI18N
+        Set<String> checked = new HashSet<String>();
+        List<String> allFlags =  new ArrayList<String>();
+        for (PredefinedMacro macro : predefinedMacros) {
+            if (macro.getFlags() != null && !checked.contains(macro.getFlags())) {
+                allFlags.add(macro.getFlags());
+                checked.add(macro.getFlags());
+            }
+        }
+        if (getPath().endsWith("/g++") || getPath().endsWith("/gcc")) { // NOI18N
+            List<String> flags = new ArrayList<String>();
+            getCompilerOutput("-v --help", flags, true); // NOI18N
+            for(final String flag : flags) {
+                if (!checked.contains(flag)) {
+                    allFlags.add(flag);
+                    checked.add(flag);
+                }
+            }
+        } else if (getPath().endsWith("/CC") || getPath().endsWith("/cc")) { // NOI18N
+            List<String> flags = new ArrayList<String>();
+            getCompilerOutput(" -flags", flags, false); // NOI18N
+            for(final String flag : flags) {
+                if (!checked.contains(flag)) {
+                    allFlags.add(flag);
+                    checked.add(flag);
+                }
+            }
+        }
+        for (String flag : allFlags) {
+            Pair tmp = get.call(flag);
+            if (tmp.systemPreprocessorSymbolsList.size() <= 6 || tmp.exitCode != 0) {
+                if (LOG.isLoggable(Level.FINER)) {
+                    buf.append("\nThe flag ").append(flag).append(" is not supported. Exit code "+tmp.exitCode); // NOI18N
+                }
+                continue;
+            }
+            completePredefinedMacros(tmp);
+            FlagModel flagModel = new FlagModel(flag);
+            flagModel.diff(res, tmp);
+            List<String> expectedDiff = new ArrayList<String>();
+            List<String> expectedRm = new ArrayList<String>();
+            for (PredefinedMacro m : predefinedMacros) {
+                if (m.getFlags() != null && m.getFlags().equals(flag)) {
+                    if (m.isHidden()) {
+                        expectedRm.add(m.getMacro());
+                    } else {
+                        expectedDiff.add(m.getMacro());
+                    }
+                }
+            }
+            if (!flagModel.added.isEmpty() || !flagModel.changed.isEmpty() || !flagModel.removed.isEmpty()) {
+                importantFlags.append(flagModel.flag).append(";"); // NOI18N
+                toolChainPatch.append("\n"); // NOI18N
+                if (!flagModel.added.isEmpty()) {
+                    for (String t : flagModel.added) {
+                        toolChainPatch.append("\n            <macro stringvalue=\"").append(t) // NOI18N
+                                      .append("\" flags=\"").append(flagModel.flag).append("\"/>"); // NOI18N
+                    }
+                }
+                if (!flagModel.changed.isEmpty()) {
+                    for (String t : flagModel.changed) {
+                        toolChainPatch.append("\n            <macro stringvalue=\"").append(t) // NOI18N
+                                      .append("\" flags=\"").append(flagModel.flag).append("\"/>"); // NOI18N
+                    }
+                }
+                if (!flagModel.removed.isEmpty()) {
+                    for (String t : flagModel.removed) {
+                        toolChainPatch.append("\n            <macro stringvalue=\"").append(t).append("\" flags=\"").append(flagModel.flag).append("\" hide=\"true\"/>"); // NOI18N
+                    }
+                }
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                if (!flagModel.added.isEmpty() || !flagModel.changed.isEmpty() || !expectedDiff.isEmpty() || !flagModel.removed.isEmpty() || !expectedRm.isEmpty()) {
+                    buf.append("\nThe flag ").append(flag); // NOI18N
+                    if (!flagModel.added.isEmpty() || !flagModel.changed.isEmpty() || !expectedDiff.isEmpty()) {
+                        if (!flagModel.added.isEmpty()) {
+                            buf.append("\n\tadds predefined macros:"); // NOI18N
+                            for (String t : flagModel.added) {
+                                buf.append("\n\t\t").append(t); // NOI18N
+                            }
+                        }
+                        if (!flagModel.changed.isEmpty()) {
+                            buf.append("\n\tchanges predefined macros:"); // NOI18N
+                            for (String t : flagModel.changed) {
+                                buf.append("\n\t\t").append(t); // NOI18N
+                            }
+                        }
+                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
+                        for (String t : expectedDiff) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                    }
+                    if (!flagModel.removed.isEmpty() || !expectedRm.isEmpty()) {
+                        buf.append("\n\tremoves predefined macros:"); // NOI18N
+                        for (String t : flagModel.removed) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                        buf.append("\n\tby tool collection descriptor:"); // NOI18N
+                        for (String t : expectedRm) {
+                            buf.append("\n\t\t").append(t); // NOI18N
+                        }
+                    }
+                } else {
+                    buf.append("\nNo changes for flag ").append(flag); // NOI18N
+                }
+            }
+        }
+        LOG.log(Level.FINE, buf.toString());
+        LOG.log(Level.FINE, toolChainPatch.toString());
+        LOG.log(Level.FINE, importantFlags.toString());
+    }
+
+    //For testing. Run compiler to obtain flags help.
+    private void getCompilerOutput(String arguments, List<String> options, boolean isGcc) {
+        String compilerPath = getPath();
+        if (compilerPath == null || compilerPath.length() == 0) {
+            return;
+        }
+        ExecutionEnvironment execEnv = getExecutionEnvironment();
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
+        }
+        try {
+            if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                compilerPath = getDefaultPath();
+                if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                    return;
+                }
+            }
+        } catch (Throwable ex) {
+            return;
+        }
+
+        List<String> argsList = new ArrayList<String>();
+        argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
+        ProcessUtils.ExitStatus execute = ProcessUtils.execute(execEnv, compilerPath, argsList.toArray(new String[argsList.size()]));
+        if (execute.isOK()) {
+            discoverFlags(execute.output, options, isGcc);
+        }
+    }
+
+    //For testing. Discover compiler flags from compiler help output.
+    protected static void discoverFlags(String output, List<String> options, boolean isGcc) {
+        String[] split = output.split("\n"); // NOI18N
+        for(int index = 0; index < split.length; index++) {
+            String line = split[index];
+            String s = line.trim();
+            if (s.startsWith("-") && !s.startsWith("--")) { // NOI18N
+                final String[] splitOption = s.split(" "); // NOI18N
+                if (splitOption.length > 1 && splitOption[1].startsWith("<")) { // NOI18N
+                    continue;
+                }
+                String option = splitOption[0];
+                if (isGcc) {
+                    if (option.indexOf("<") >= 0) { // NOI18N
+                        int i = option.indexOf("<"); // NOI18N
+                        int j = option.indexOf(">"); // NOI18N
+                        if (j > i) {
+                            String alternatives = option.substring(i+1, j);
+                            if (alternatives.indexOf("|")>0) { // NOI18N
+                                final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
+                                if (splitAlternatives.length > 1) {
+                                    for(String alternative : splitAlternatives) {
+                                        options.add(option.substring(0,i)+alternative);
+                                    }
+                                }
+                            } else {
+                                if ("-O".equals(option.substring(0,i))) { // NOI18N
+                                    for(int n = 0; n < 6; n++) {
+                                        options.add(option.substring(0,i)+n);
+                                    }
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    if (option.indexOf("[") >= 0) { // NOI18N
+                        int i = option.indexOf("["); // NOI18N
+                        int j = option.indexOf("]"); // NOI18N
+                        if (j > i) {
+                            String alternatives = option.substring(i+1, j);
+                            final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
+                            if (splitAlternatives.length > 1) {
+                                for(String alternative : splitAlternatives) {
+                                    options.add(option.substring(0,i)+alternative);
+                                }
+                                continue;
+                            }
+                            option = option.substring(0, i)+option.substring(j+1);
+                        } else {
+                            continue;
+                        }
+                    }
+                    if (option.indexOf("=CPU") > 0) { // NOI18N
+                        if (index +1 < split.length)
+                        if (line.indexOf("CPU is one of:")>0 || (index +1 < split.length && split[index +1].indexOf("CPU is one of:")>0)) { // NOI18N
+                            List<String> CPUTypes = new ArrayList<String>();
+                            int shift = line.indexOf("CPU is one of:")>0 ? 1 : 2; // NOI18N
+                            for(int lineNumber = index+shift; index < split.length; lineNumber++) {
+                                String current = split[lineNumber];
+                                current = current.trim();
+                                if (current.startsWith("-")) { // NOI18N
+                                    break;
+                                }
+                                for(String variant : current.split("\\,")) { // NOI18N
+                                    variant = variant.trim();
+                                    if (!variant.isEmpty() && variant.indexOf(" ") < 0) { // NOI18N
+                                        CPUTypes.add(variant);
+                                    }
+                                }
+                                if (!current.endsWith(",")) { // NOI18N
+                                    break;
+                                }
+                            }
+                            if (CPUTypes.size()>0) {
+                                int start = option.indexOf("=CPU"); // NOI18N
+                                for(String type : CPUTypes) {
+                                    options.add(option.substring(0,start+1)+type);
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                    options.add(option);
+                } else {
+                    if (option.indexOf("<") >= 0) { // NOI18N
+                        int i = option.indexOf("<"); // NOI18N
+                        int j = option.indexOf(">"); // NOI18N
+                        if (j > i) {
+                            String subtitute = option.substring(i, j+1);
+                            boolean found = false;
+                            for(int k= 1; k < splitOption.length; k++) {
+                                if (splitOption[k].startsWith(subtitute+"=")) { // NOI18N
+                                    option = option.substring(0,i)+splitOption[k].substring(subtitute.length()+1)+option.substring(j+1);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found && index+1 < split.length && !split[index+1].trim().startsWith("-")) { // NOI18N
+                                String[] nextLine = split[index+1].trim().split(" "); // NOI18N
+                                for(int k= 0; k < nextLine.length; k++) {
+                                    if (nextLine[k].startsWith(subtitute+"=")) { // NOI18N
+                                        option = option.substring(0,i)+nextLine[k].substring(subtitute.length()+1)+option.substring(j+1);
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!found) {
+                                if ("-O".equals(option.substring(0,i))) { // NOI18N
+                                    for(int n = 0; n < 6; n++) {
+                                        options.add(option.substring(0,i)+n);
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (option.indexOf("[") >= 0) { // NOI18N
+                        int i = option.indexOf("["); // NOI18N
+                        int j = option.lastIndexOf("]"); // NOI18N
+                        if (j > i && option.substring(0,i).indexOf("<") < 0) { // NOI18N
+                            options.add(option.substring(0,i));
+                            String alternatives = option.substring(i+1, j);
+                            if (alternatives.indexOf("{") < 0 && alternatives.indexOf("<") < 0) { // NOI18N
+                                if (alternatives.indexOf("|")>0) { // NOI18N
+                                    final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
+                                    if (splitAlternatives.length > 1) {
+                                        for(String alternative : splitAlternatives) {
+                                            options.add(option.substring(0,i)+alternative);
+                                        }
+                                    }
+                                    continue;
+                                } else if (alternatives.indexOf(",")>0) { // NOI18N
+                                    final String[] splitAlternatives = alternatives.split(","); // NOI18N
+                                    if (splitAlternatives.length > 1) {
+                                        for(String alternative : splitAlternatives) {
+                                            options.add(option.substring(0,i)+alternative);
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
+                            option = option.substring(0,i)+option.substring(i+1, j);
+                        } else {
+                            continue;
+                        }
+                    }
+                    if (option.indexOf("<") >= 0) { // NOI18N
+                        continue;
+                    }
+                    if (option.indexOf("{") >= 0) { // NOI18N
+                        int i = option.indexOf("{"); // NOI18N
+                        int j = option.lastIndexOf("}"); // NOI18N
+                        if (j > i) {
+                            String alternatives = option.substring(i+1, j);
+                            if (alternatives.indexOf("|")>0) { // NOI18N
+                                final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
+                                if (splitAlternatives.length > 1) {
+                                    for(String alternative : splitAlternatives) {
+                                        options.add(option.substring(0,i)+alternative);
+                                    }
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    if (option.indexOf("[") >= 0) { // NOI18N
+                        int i = option.indexOf("["); // NOI18N
+                        int j = option.indexOf("]"); // NOI18N
+                        if (j > i) {
+                            String alternatives = option.substring(i+1, j);
+                            final String[] splitAlternatives = alternatives.split("\\|"); // NOI18N
+                            if (splitAlternatives.length > 1) {
+                                for(String alternative : splitAlternatives) {
+                                    options.add(option.substring(0,i)+alternative);
+                                }
+                            }
+                        }
+                        continue;
+                    }
+                    options.add(option);
+                }
+            }
+        }
+    }
+    
+    protected static final class Pair {
+        public CompilerDefinition systemIncludeDirectoriesList;
+        public CompilerDefinition systemPreprocessorSymbolsList;
+        public int exitCode;
+        public Pair(){
+            systemIncludeDirectoriesList = new CompilerDefinition(0);
+            systemPreprocessorSymbolsList = new CompilerDefinition(0);
+            exitCode = 0;
+        }
+    }
+    
     
     public static final class CompilerDefinition extends ArrayList<String> {
         private List<Integer> userAddedDefinitions = new ArrayList<Integer>(0);
@@ -758,5 +1017,85 @@ public abstract class CCCCompiler extends AbstractCompiler {
     
     protected interface MyCallable<V>{
         V call(String p);
+    }
+    
+    protected static final class FlagModel {
+        private final String flag;
+        private final List<String> added;
+        private final List<String> changed;
+        private final List<String> removed;
+        
+        private FlagModel(String flag) {
+            this.flag = flag;
+            added = new ArrayList<String>();
+            changed = new ArrayList<String>();
+            removed = new ArrayList<String>();
+        }
+        private boolean isIgnored(String macro) {
+            return macro.startsWith("__LINE__") || macro.startsWith("__FILE__") || macro.startsWith("__DATE__") || macro.startsWith("__TIME__"); // NOI18N
+                
+        }
+        private void diff(Pair golden, Pair particular) {
+            for (String t : particular.systemPreprocessorSymbolsList) {
+                String pattern = t;
+                int i = t.indexOf('='); // NOI18N
+                if (i > 0) {
+                    pattern = pattern.substring(0, i);
+                }
+                String found = null;
+                for (String s : golden.systemPreprocessorSymbolsList) {
+                    i = s.indexOf('='); // NOI18N
+                    if (i > 0) {
+                        if (pattern.equals(s.substring(0, i))) {
+                            found = s;
+                            break;
+                        }
+                    } else {
+                        if (pattern.equals(s)) {
+                            found = s;
+                            break;
+                        }
+                    }
+                }
+                if (found == null) {
+                    if (!isIgnored(t)) {
+                        added.add(t);
+                    }
+                } else {
+                    if (!t.equals(found)) {
+                        if (!isIgnored(t)) {
+                            changed.add(t);
+                        }
+                    }
+                }
+            }
+            for (String t : golden.systemPreprocessorSymbolsList) {
+                String pattern = t;
+                int i = t.indexOf('='); // NOI18N
+                if (i > 0) {
+                    pattern = pattern.substring(0, i);
+                }
+                boolean found = false;
+                for (String s : particular.systemPreprocessorSymbolsList) {
+                    i = s.indexOf('='); // NOI18N
+                    if (i > 0) {
+                        if (pattern.equals(s.substring(0, i))) {
+                            found = true;
+                            break;
+                        }
+                    } else {
+                        if (pattern.equals(s)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found) {
+                    if (!isIgnored(pattern)) {
+                        removed.add(pattern);
+                    }
+                }
+            }
+        }
     }
 }

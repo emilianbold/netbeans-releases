@@ -57,27 +57,435 @@ made subject to such option by the copyright holder.
             <macro stringvalue="_OPENMP=200805" flags="-fopenmp"/>
 
             <macro stringvalue="__SSP__=1" flags="-fstack-protector"/>
+
             <macro stringvalue="__SSP_ALL__=2" flags="-fstack-protector-all"/>
-            
+
             <macro stringvalue="__pic__=1" flags="-fpic"/>
             <macro stringvalue="__PIC__=1" flags="-fpic"/>
+
             <macro stringvalue="__pic__=2" flags="-fPIC"/>
             <macro stringvalue="__PIC__=2" flags="-fPIC"/>
-            
+
             <macro stringvalue="__pie__=1" flags="-fpie"/>
             <macro stringvalue="__PIE__=1" flags="-fpie"/>
             <macro stringvalue="__pic__=1" flags="-fpie"/>
             <macro stringvalue="__PIC__=1" flags="-fpie"/>
+
             <macro stringvalue="__pie__=2" flags="-fPIE"/>
             <macro stringvalue="__PIE__=2" flags="-fPIE"/>
             <macro stringvalue="__pic__=2" flags="-fPIE"/>
             <macro stringvalue="__PIC__=2" flags="-fPIE"/>
 
-            <macro stringvalue="_OPTIMIZE__=1" flags="-O3"/>
+            <macro stringvalue="__OPTIMIZE__=1" flags="-O3"/>
             <macro stringvalue="__NO_INLINE__" flags="-O3" hide="true"/>
 
             <macro stringvalue="_REENTRANT=1" flags="-pthreads"/>
             <macro stringvalue="_PTHREADS=1" flags="-pthreads"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-ansi"/>
+
+            <macro stringvalue="__STDC_HOSTED__=0" flags="-ffreestanding"/>
+
+            <macro stringvalue="__DBL_MIN_EXP__=(-125)" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_DENORM_MIN__=((double)1.40129846432481707092e-45L)" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MIN_10_EXP__=(-37)" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_DIG__=6" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MAX__=((double)3.40282346638528859812e+38L)" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MAX_EXP__=128" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MIN__=((double)1.17549435082228750797e-38L)" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MANT_DIG__=24" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_EPSILON__=((double)1.19209289550781250000e-7L)" flags="-fshort-double"/>
+            <macro stringvalue="__SIZEOF_DOUBLE__=4" flags="-fshort-double"/>
+            <macro stringvalue="__DBL_MAX_10_EXP__=38" flags="-fshort-double"/>
+
+            <macro stringvalue="__WCHAR_MAX__=65535" flags="-fshort-wchar"/>
+            <macro stringvalue="__WCHAR_MIN__=0" flags="-fshort-wchar"/>
+            <macro stringvalue="__WCHAR_TYPE__=short unsigned int" flags="-fshort-wchar"/>
+            <macro stringvalue="__SIZEOF_WCHAR_T__=2" flags="-fshort-wchar"/>
+
+            <macro stringvalue="__CHAR_UNSIGNED__=1" flags="-funsigned-char"/>
+            <macro stringvalue="__INT_FAST8_MAX__=255" flags="-funsigned-char"/>
+            <macro stringvalue="__INT_LEAST8_MAX__=255" flags="-funsigned-char"/>
+            <macro stringvalue="__INT8_MAX__=255" flags="-funsigned-char"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=c89"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=c90"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=c99"/>
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=c99"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=c99"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=c99" hide="true"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=c9x"/>
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=c9x"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=c9x"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=c9x" hide="true"/>
+
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=gnu99"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=gnu99"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=gnu99" hide="true"/>
+
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=gnu9x"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=gnu9x"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=gnu9x" hide="true"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=iso9899:1990"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=iso9899:199409"/>
+            <macro stringvalue="__STDC_VERSION__=199409L" flags="-std=iso9899:199409"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=iso9899:1999"/>
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=iso9899:1999"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=iso9899:1999"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=iso9899:1999" hide="true"/>
+
+            <macro stringvalue="__STRICT_ANSI__=1" flags="-std=iso9899:199x"/>
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=iso9899:199x"/>
+            <macro stringvalue="__GNUC_STDC_INLINE__=1" flags="-std=iso9899:199x"/>
+            <macro stringvalue="__GNUC_GNU_INLINE__" flags="-std=iso9899:199x" hide="true"/>
+
+            <macro stringvalue="__OPTIMIZE__=1" flags="-O1"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O1" hide="true"/>
+
+            <macro stringvalue="__OPTIMIZE__=1" flags="-O2"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O2" hide="true"/>
+
+            <macro stringvalue="__OPTIMIZE__=1" flags="-O4"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O4" hide="true"/>
+
+            <macro stringvalue="__OPTIMIZE__=1" flags="-O5"/>
+            <macro stringvalue="__NO_INLINE__" flags="-O5" hide="true"/>
+
+            <macro stringvalue="__OPTIMIZE__=1" flags="-Os"/>
+            <macro stringvalue="__OPTIMIZE_SIZE__=1" flags="-Os"/>
+            <macro stringvalue="__NO_INLINE__" flags="-Os" hide="true"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fasynchronous-unwind-tables"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fexceptions"/>
+            <macro stringvalue="__EXCEPTIONS=1" flags="-fexceptions"/>
+
+            <macro stringvalue="__FINITE_MATH_ONLY__=1" flags="-ffinite-math-only"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-fnon-call-exceptions"/>
+
+            <macro stringvalue="__SUPPORT_SNAN__=1" flags="-fsignaling-nans"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-funwind-tables"/>
+
+            <macro stringvalue="__SIZEOF_LONG_DOUBLE__=16" flags="-m128bit-long-double"/>
+
+            <macro stringvalue="__3dNOW__=1" flags="-m3dnow"/>
+
+            <macro stringvalue="__x86_64=1" flags="-m64"/>
+            <macro stringvalue="__SSE2_MATH__=1" flags="-m64"/>
+            <macro stringvalue="__amd64=1" flags="-m64"/>
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-m64"/>
+            <macro stringvalue="__LP64__=1" flags="-m64"/>
+            <macro stringvalue="__SSE_MATH__=1" flags="-m64"/>
+            <macro stringvalue="__k8=1" flags="-m64"/>
+            <macro stringvalue="__x86_64__=1" flags="-m64"/>
+            <macro stringvalue="__k8__=1" flags="-m64"/>
+            <macro stringvalue="__amd64__=1" flags="-m64"/>
+            <macro stringvalue="_LP64=1" flags="-m64"/>
+            <macro stringvalue="__INTMAX_C(c)=c ## L" flags="-m64"/>
+            <macro stringvalue="__WINT_MAX__=2147483647" flags="-m64"/>
+            <macro stringvalue="__SIZE_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__WCHAR_MAX__=2147483647" flags="-m64"/>
+            <macro stringvalue="__FLT_EVAL_METHOD__=0" flags="-m64"/>
+            <macro stringvalue="__UINT_FAST64_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__UINT_LEAST64_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__UINTMAX_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__INT64_C(c)=c ## L" flags="-m64"/>
+            <macro stringvalue="__SIZEOF_POINTER__=8" flags="-m64"/>
+            <macro stringvalue="__SIZEOF_LONG__=8" flags="-m64"/>
+            <macro stringvalue="__SIZEOF_LONG_DOUBLE__=16" flags="-m64"/>
+            <macro stringvalue="__PTRDIFF_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__SIZEOF_SIZE_T__=8" flags="-m64"/>
+            <macro stringvalue="__INT_FAST64_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__UINT64_C(c)=c ## UL" flags="-m64"/>
+            <macro stringvalue="__SIZE_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__UINT64_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__UINTMAX_C(c)=c ## UL" flags="-m64"/>
+            <macro stringvalue="__SIZEOF_PTRDIFF_T__=8" flags="-m64"/>
+            <macro stringvalue="__UINT_LEAST64_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__LONG_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__INT64_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__INT_LEAST64_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__INTPTR_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__INTPTR_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__WCHAR_TYPE__=int" flags="-m64"/>
+            <macro stringvalue="__UINTPTR_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__INT_FAST64_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__UINT_FAST64_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__INT64_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__INT_LEAST64_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__WINT_TYPE__=int" flags="-m64"/>
+            <macro stringvalue="__UINT64_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__INTMAX_MAX__=9223372036854775807L" flags="-m64"/>
+            <macro stringvalue="__INTMAX_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__UINTMAX_MAX__=18446744073709551615UL" flags="-m64"/>
+            <macro stringvalue="__PTRDIFF_TYPE__=long int" flags="-m64"/>
+            <macro stringvalue="__UINTPTR_TYPE__=long unsigned int" flags="-m64"/>
+            <macro stringvalue="__pentium4" flags="-m64" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-m64" hide="true"/>
+            <macro stringvalue="__i386" flags="-m64" hide="true"/>
+            <macro stringvalue="__i386__" flags="-m64" hide="true"/>
+            <macro stringvalue="i386" flags="-m64" hide="true"/>
+
+            <macro stringvalue="__POPCNT__=1" flags="-mabm"/>
+            <macro stringvalue="__ABM__=1" flags="-mabm"/>
+
+            <macro stringvalue="__AES__=1" flags="-maes"/>
+
+            <macro stringvalue="__SSE4_1__=1" flags="-mavx"/>
+            <macro stringvalue="__POPCNT__=1" flags="-mavx"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-mavx"/>
+            <macro stringvalue="__AVX__=1" flags="-mavx"/>
+            <macro stringvalue="__SSSE3__=1" flags="-mavx"/>
+            <macro stringvalue="__SSE3__=1" flags="-mavx"/>
+            <macro stringvalue="__BIGGEST_ALIGNMENT__=32" flags="-mavx"/>
+
+            <macro stringvalue="__SSE4_1__=1" flags="-mfma"/>
+            <macro stringvalue="__POPCNT__=1" flags="-mfma"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-mfma"/>
+            <macro stringvalue="__AVX__=1" flags="-mfma"/>
+            <macro stringvalue="__FMA__=1" flags="-mfma"/>
+            <macro stringvalue="__SSSE3__=1" flags="-mfma"/>
+            <macro stringvalue="__SSE3__=1" flags="-mfma"/>
+            <macro stringvalue="__BIGGEST_ALIGNMENT__=32" flags="-mfma"/>
+
+            <macro stringvalue="__FMA4__=1" flags="-mfma4"/>
+            <macro stringvalue="__SSE4_1__=1" flags="-mfma4"/>
+            <macro stringvalue="__POPCNT__=1" flags="-mfma4"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-mfma4"/>
+            <macro stringvalue="__AVX__=1" flags="-mfma4"/>
+            <macro stringvalue="__SSE4A__=1" flags="-mfma4"/>
+            <macro stringvalue="__SSSE3__=1" flags="-mfma4"/>
+            <macro stringvalue="__SSE3__=1" flags="-mfma4"/>
+            <macro stringvalue="__BIGGEST_ALIGNMENT__=32" flags="-mfma4"/>
+
+            <macro stringvalue="__LWP__=1" flags="-mlwp"/>
+
+            <macro stringvalue="__PCLMUL__=1" flags="-mpclmul"/>
+
+            <macro stringvalue="__POPCNT__=1" flags="-mpopcnt"/>
+
+            <macro stringvalue="__SSE3__=1" flags="-msse3"/>
+
+            <macro stringvalue="__SSE4_1__=1" flags="-msse4"/>
+            <macro stringvalue="__POPCNT__=1" flags="-msse4"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-msse4"/>
+            <macro stringvalue="__SSSE3__=1" flags="-msse4"/>
+            <macro stringvalue="__SSE3__=1" flags="-msse4"/>
+
+            <macro stringvalue="__SSE4_1__=1" flags="-msse4.1"/>
+            <macro stringvalue="__SSSE3__=1" flags="-msse4.1"/>
+            <macro stringvalue="__SSE3__=1" flags="-msse4.1"/>
+
+            <macro stringvalue="__SSE4_1__=1" flags="-msse4.2"/>
+            <macro stringvalue="__POPCNT__=1" flags="-msse4.2"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-msse4.2"/>
+            <macro stringvalue="__SSSE3__=1" flags="-msse4.2"/>
+            <macro stringvalue="__SSE3__=1" flags="-msse4.2"/>
+
+            <macro stringvalue="__SSE4A__=1" flags="-msse4a"/>
+            <macro stringvalue="__SSE3__=1" flags="-msse4a"/>
+
+            <macro stringvalue="__SSSE3__=1" flags="-mssse3"/>
+            <macro stringvalue="__SSE3__=1" flags="-mssse3"/>
+
+            <macro stringvalue="__XOP__=1" flags="-mxop"/>
+            <macro stringvalue="__FMA4__=1" flags="-mxop"/>
+            <macro stringvalue="__SSE4_1__=1" flags="-mxop"/>
+            <macro stringvalue="__POPCNT__=1" flags="-mxop"/>
+            <macro stringvalue="__SSE4_2__=1" flags="-mxop"/>
+            <macro stringvalue="__AVX__=1" flags="-mxop"/>
+            <macro stringvalue="__SSE4A__=1" flags="-mxop"/>
+            <macro stringvalue="__SSSE3__=1" flags="-mxop"/>
+            <macro stringvalue="__SSE3__=1" flags="-mxop"/>
+            <macro stringvalue="__BIGGEST_ALIGNMENT__=32" flags="-mxop"/>
+
+            <macro stringvalue="__FAST_MATH__=1" flags="-ffast-math"/>
+            <macro stringvalue="__FINITE_MATH_ONLY__=1" flags="-ffast-math"/>
+
+            <macro stringvalue="__USER_LABEL_PREFIX__=_" flags="-fleading-underscore"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-g"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-ggdb"/>
+
+            <macro stringvalue="__GCC_HAVE_DWARF2_CFI_ASM=1" flags="-gtoggle"/>
+
+            <macro stringvalue="__tune_i386__=1" flags="-march=i386"/>
+            <macro stringvalue="__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__pentium4" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=i386" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=i386" hide="true"/>
+
+            <macro stringvalue="__tune_i486__=1" flags="-march=i486"/>
+            <macro stringvalue="__i486__=1" flags="-march=i486"/>
+            <macro stringvalue="__i486=1" flags="-march=i486"/>
+            <macro stringvalue="__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8" flags="-march=i486" hide="true"/>
+            <macro stringvalue="__pentium4" flags="-march=i486" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=i486" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=i486" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=i486" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=i486" hide="true"/>
+
+            <macro stringvalue="__i586=1" flags="-march=i586"/>
+            <macro stringvalue="__tune_i586__=1" flags="-march=i586"/>
+            <macro stringvalue="__pentium=1" flags="-march=i586"/>
+            <macro stringvalue="__i586__=1" flags="-march=i586"/>
+            <macro stringvalue="__pentium__=1" flags="-march=i586"/>
+            <macro stringvalue="__tune_pentium__=1" flags="-march=i586"/>
+            <macro stringvalue="__pentium4" flags="-march=i586" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=i586" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=i586" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=i586" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=i586" hide="true"/>
+
+            <macro stringvalue="__pentiumpro__=1" flags="-march=i686"/>
+            <macro stringvalue="__i686=1" flags="-march=i686"/>
+            <macro stringvalue="__i686__=1" flags="-march=i686"/>
+            <macro stringvalue="__pentiumpro=1" flags="-march=i686"/>
+            <macro stringvalue="__pentium4" flags="-march=i686" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=i686" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=i686" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=i686" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=i686" hide="true"/>
+
+            <macro stringvalue="__i586=1" flags="-march=pentium"/>
+            <macro stringvalue="__tune_i586__=1" flags="-march=pentium"/>
+            <macro stringvalue="__pentium=1" flags="-march=pentium"/>
+            <macro stringvalue="__i586__=1" flags="-march=pentium"/>
+            <macro stringvalue="__pentium__=1" flags="-march=pentium"/>
+            <macro stringvalue="__tune_pentium__=1" flags="-march=pentium"/>
+            <macro stringvalue="__pentium4" flags="-march=pentium" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=pentium" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=pentium" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=pentium" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=pentium" hide="true"/>
+
+            <macro stringvalue="__pentiumpro__=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__tune_i686__=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__i686=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__i686__=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__pentiumpro=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__tune_pentiumpro__=1" flags="-march=pentiumpro"/>
+            <macro stringvalue="__pentium4" flags="-march=pentiumpro" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=pentiumpro" hide="true"/>
+            <macro stringvalue="__MMX__" flags="-march=pentiumpro" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=pentiumpro" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=pentiumpro" hide="true"/>
+
+            <macro stringvalue="__tune_pentium4__=1" flags="-march=pentium4"/>
+
+            <macro stringvalue="__tune_nocona__=1" flags="-march=prescott"/>
+            <macro stringvalue="__nocona=1" flags="-march=prescott"/>
+            <macro stringvalue="__nocona__=1" flags="-march=prescott"/>
+            <macro stringvalue="__SSE3__=1" flags="-march=prescott"/>
+            <macro stringvalue="__pentium4" flags="-march=prescott" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=prescott" hide="true"/>
+
+            <macro stringvalue="__tune_nocona__=1" flags="-march=nocona"/>
+            <macro stringvalue="__nocona=1" flags="-march=nocona"/>
+            <macro stringvalue="__nocona__=1" flags="-march=nocona"/>
+            <macro stringvalue="__SSE3__=1" flags="-march=nocona"/>
+            <macro stringvalue="__pentium4" flags="-march=nocona" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=nocona" hide="true"/>
+
+            <macro stringvalue="__core2__=1" flags="-march=core2"/>
+            <macro stringvalue="__tune_core2__=1" flags="-march=core2"/>
+            <macro stringvalue="__SSSE3__=1" flags="-march=core2"/>
+            <macro stringvalue="__core2=1" flags="-march=core2"/>
+            <macro stringvalue="__SSE3__=1" flags="-march=core2"/>
+            <macro stringvalue="__pentium4" flags="-march=core2" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=core2" hide="true"/>
+
+            <macro stringvalue="__k6__=1" flags="-march=k6"/>
+            <macro stringvalue="__tune_k6__=1" flags="-march=k6"/>
+            <macro stringvalue="__k6=1" flags="-march=k6"/>
+            <macro stringvalue="__pentium4" flags="-march=k6" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=k6" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=k6" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=k6" hide="true"/>
+
+            <macro stringvalue="__athlon=1" flags="-march=athlon"/>
+            <macro stringvalue="__athlon__=1" flags="-march=athlon"/>
+            <macro stringvalue="__3dNOW__=1" flags="-march=athlon"/>
+            <macro stringvalue="__3dNOW_A__=1" flags="-march=athlon"/>
+            <macro stringvalue="__tune_athlon__=1" flags="-march=athlon"/>
+            <macro stringvalue="__pentium4" flags="-march=athlon" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=athlon" hide="true"/>
+            <macro stringvalue="__SSE2__" flags="-march=athlon" hide="true"/>
+            <macro stringvalue="__SSE__" flags="-march=athlon" hide="true"/>
+
+            <macro stringvalue="__3dNOW__=1" flags="-march=opteron"/>
+            <macro stringvalue="__3dNOW_A__=1" flags="-march=opteron"/>
+            <macro stringvalue="__k8=1" flags="-march=opteron"/>
+            <macro stringvalue="__k8__=1" flags="-march=opteron"/>
+            <macro stringvalue="__tune_k8__=1" flags="-march=opteron"/>
+            <macro stringvalue="__pentium4" flags="-march=opteron" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=opteron" hide="true"/>
+
+            <macro stringvalue="__3dNOW__=1" flags="-march=k8"/>
+            <macro stringvalue="__3dNOW_A__=1" flags="-march=k8"/>
+            <macro stringvalue="__k8=1" flags="-march=k8"/>
+            <macro stringvalue="__k8__=1" flags="-march=k8"/>
+            <macro stringvalue="__tune_k8__=1" flags="-march=k8"/>
+            <macro stringvalue="__pentium4" flags="-march=k8" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=k8" hide="true"/>
+
+            <macro stringvalue="__POPCNT__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__ABM__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__amdfam10__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__3dNOW__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__SSE4A__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__amdfam10=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__3dNOW_A__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__tune_amdfam10__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__SSE3__=1" flags="-march=amdfam10"/>
+            <macro stringvalue="__pentium4" flags="-march=amdfam10" hide="true"/>
+            <macro stringvalue="__pentium4__" flags="-march=amdfam10" hide="true"/>
+
+            <macro stringvalue="__tune_i386__=1" flags="-mtune=i386"/>
+
+            <macro stringvalue="__tune_i486__=1" flags="-mtune=i486"/>
+
+            <macro stringvalue="__tune_i586__=1" flags="-mtune=i586"/>
+            <macro stringvalue="__tune_pentium__=1" flags="-mtune=i586"/>
+
+            <macro stringvalue="__tune_i586__=1" flags="-mtune=pentium"/>
+            <macro stringvalue="__tune_pentium__=1" flags="-mtune=pentium"/>
+
+            <macro stringvalue="__tune_i686__=1" flags="-mtune=pentiumpro"/>
+            <macro stringvalue="__tune_pentiumpro__=1" flags="-mtune=pentiumpro"/>
+
+            <macro stringvalue="__tune_pentium4__=1" flags="-mtune=pentium4"/>
+
+            <macro stringvalue="__tune_nocona__=1" flags="-mtune=prescott"/>
+
+            <macro stringvalue="__tune_nocona__=1" flags="-mtune=nocona"/>
+
+            <macro stringvalue="__tune_core2__=1" flags="-mtune=core2"/>
+
+            <macro stringvalue="__tune_k6__=1" flags="-mtune=k6"/>
+
+            <macro stringvalue="__tune_athlon_sse__=1" flags="-mtune=athlon"/>
+            <macro stringvalue="__tune_athlon__=1" flags="-mtune=athlon"/>
+
+            <macro stringvalue="__tune_k8__=1" flags="-mtune=opteron"/>
+
+            <macro stringvalue="__tune_k8__=1" flags="-mtune=k8"/>
+
+            <macro stringvalue="__tune_amdfam10__=1" flags="-mtune=amdfam10"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
