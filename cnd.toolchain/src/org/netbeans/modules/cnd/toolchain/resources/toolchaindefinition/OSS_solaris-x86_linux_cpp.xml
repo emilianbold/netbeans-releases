@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <compiler name="CC"/>
         <version flags="-V" fingerprint_flags="-Wd,-xide" fingerprint_pattern="#\s*__tool_build_number\s*(\w*)"/>
         <system_include_paths parser="Fingerprint"/>
+        <important_flags flags="-xopenmp*;-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt;-mt=yes;-native;-std*;-xO*;-xautopar;-xchar*;-xmaxopt*;"/>
         <system_macros parser="Fingerprint">
             <macro hide="true" stringvalue="__LINE__"/>
             <macro hide="true" stringvalue="__FILE__"/>

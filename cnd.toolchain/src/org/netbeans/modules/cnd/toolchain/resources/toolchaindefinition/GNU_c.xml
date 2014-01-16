@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <compiler name="gcc"/>
         <version flags="--version"/>
         <system_include_paths flags="-x c -E -v" parser="GNU"/>
+        <important_flags flags="-xopenmp*;-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt*;-native;-std*;-xO*;-xautopar;-xchar*;-xmaxopt*;"/>
         <system_macros flags="-x c -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
 

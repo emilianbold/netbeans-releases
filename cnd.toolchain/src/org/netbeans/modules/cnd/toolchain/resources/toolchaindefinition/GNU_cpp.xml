@@ -49,6 +49,7 @@ made subject to such option by the copyright holder.
         <compiler name="g++"/>
         <version flags="--version"/>
         <system_include_paths flags="-x c++ -E -v" parser="GNU"/>
+        <important_flags flags="-fopenmp;-fstack-protector;-fstack-protector-all;-fpic;-fPIC;-fpie;-fPIE;-fno-exceptions;-fno-rtti;-std*;-O3;-pthreads;-ansi;-ffreestanding;-fshort-double;-fshort-wchar;-funsigned-char;-O1;-O2;-O4;-O5;-Os;-ffinite-math-only;-fsignaling-nans;-m128bit-long-double;-m3dnow;-m64;-mabm;-maes;-mavx;-mfma;-mfma4;-mlwp;-mpclmul;-mpopcnt;-msse3;-msse4;-msse4.1;-msse4.2;-msse4a;-mssse3;-mxop;-ffast-math;-fleading-underscore;-march*;-mtune*;"/>
         <system_macros flags="-x c++ -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
             
