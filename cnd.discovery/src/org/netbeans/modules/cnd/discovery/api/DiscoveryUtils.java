@@ -540,7 +540,7 @@ public class DiscoveryUtils {
                 artifacts.languageArtifacts.add("c99"); // NOI18N
                 isCpp = false;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
-            } else if (option.equals("-std=c11") ||
+            } else if (option.equals("-std=c11") || // NOI18N
                        option.equals("-std=gnu1x") || // NOI18N
                        option.equals("-std=gnu11") || // NOI18N
                        option.equals("-std=iso9899:2011") || // NOI18N
