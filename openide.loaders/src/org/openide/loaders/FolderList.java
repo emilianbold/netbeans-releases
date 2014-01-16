@@ -114,7 +114,7 @@ implements FileChangeListener, DataObject.Container {
     transient private volatile RequestProcessor.Task refreshTask;
     /** task that is non-null if a setOrder has been called
      */
-    transient private volatile RequestProcessor.Task comparatorTask;
+    transient private volatile ComparatorTask comparatorTask;
 
     /** Primary files in this folder. Maps (FileObject, Reference (DataObject))
     */
@@ -285,7 +285,7 @@ implements FileChangeListener, DataObject.Container {
     */
     public void waitProcessingFinished () {
         {
-            Task t;
+            ComparatorTask t;
             synchronized (this) {
                 t = comparatorTask;
                 err.log(Level.FINE, "Waiting for comparator {0}", t);
@@ -324,57 +324,13 @@ implements FileChangeListener, DataObject.Container {
     /** Setter for sort mode.
     */
     private synchronized void changeComparator () {
-        final boolean LOG = err.isLoggable(Level.FINE);
-        if (LOG) {
-            err.fine("changeComparator on " + folder);
+        boolean log = err.isLoggable(Level.FINE);
+        if (log) {
+            err.log(Level.FINE, "changeComparator on {0}", folder);     //NOI18N
         }
-        final RequestProcessor.Task previous = comparatorTask;
-        final RequestProcessor.Task[] COMP = new RequestProcessor.Task[1];
-        synchronized (COMP) {
-            comparatorTask = PROCESSOR.post (new Runnable () {
-                @Override
-                public void run () {
-                    List<DataObject> v = null;
-                    List<DataObject> r = null;
-                    synchronized (COMP) {
-                        if (previous != null) {
-                            previous.waitFinished ();
-                        }
-                        // if has been notified
-                        // change mode and regenerated children
-                        if (LOG) {
-                            err.fine("changeComparator on " + folder + ": get old");
-                        }
-                        // the old children
-                        v = getObjects(null);
-                        if (v.size () != 0) {
-                            // the new children - also are stored to be returned next time from getChildrenList ()
-                            order = null;
-                            if (LOG) {
-                                err.fine("changeComparator: get new");
-                            }
-                            r = getObjects (null);
-                        }
-                        synchronized (FolderList.this) {
-                            // clean  the task if is my own not assigned by somebody else
-                            if (comparatorTask == COMP[0]) {
-                                comparatorTask = null;
-                                err.fine("changeComparator: task set to null");
-                            } else {
-                                err.fine("changeComparator: task changed meanwhile");
-                                return;
-                            }
-                        }
-                        if (r != null && v != null) {
-                            if (LOG) {
-                                err.fine("changeComparator: fire change");
-                            }
-                            fireChildrenChange (r, v);
-                        }
-                    }
-                }
-            }, 0, Thread.MIN_PRIORITY);
-            COMP[0] = comparatorTask;
+        final Object lock = new Object(); // lock that will be used in the task
+        synchronized (lock) {
+            comparatorTask = new ComparatorTask(comparatorTask, log, lock).post();
         }
     }
     
@@ -401,7 +357,7 @@ implements FileChangeListener, DataObject.Container {
             if (refreshTask == null) {
                 refreshTask = PROCESSOR.post (new Runnable () {
                     public void run () {
-                        RequestProcessor.Task t = comparatorTask;
+                        ComparatorTask t = comparatorTask;
                         if (t != null) {
                             // first of all finish setting up comparator
                             t.waitFinished ();
@@ -1017,5 +973,108 @@ implements FileChangeListener, DataObject.Container {
         }
     }
     
+    private class ComparatorTask implements Runnable {
 
+        private final ComparatorTask previous;
+        private final boolean log;
+        private final Object lock;
+        private RequestProcessor.Task rpTask;
+
+        /**
+         * @param previous The previously scheduled unfinished comparator task.
+         * @param log True to enable fine logging.
+         * @param lock Lock that will be released when the newly created
+         * ComparatorTask is assigned to field {@link #comparatorTask} (so we
+         * can be sure that we aren't working with an old value, see
+         * {@link #changeComparator()}).
+         */
+        ComparatorTask(ComparatorTask previous, boolean log, Object lock) {
+            this.previous = previous;
+            this.log = log;
+            this.lock = lock;
+        }
+
+        @Override
+        public void run() {
+
+            List<DataObject> v;
+            List<DataObject> r = null;
+
+            synchronized (lock) { // wait until comparatorTask is set in changeComparator
+                if (log) {
+                    err.log(Level.FINE, "changeComparator on {0}: previous", folder); //NOI18N
+                }
+                if (previous != null) {
+                    previous.cancelOrWaitFinished();
+                }
+                if (this != comparatorTask) { // this is not the latest task
+                    err.log(Level.FINE, "changeComparator on {0}: skipped", folder); //NOI18N
+                    return;
+                }
+
+                // if has been notified
+                // change mode and regenerated children
+                if (log) {
+                    err.log(Level.FINE, "changeComparator on {0}: get old", folder); //NOI18N
+                }
+                // the old children
+                v = getObjects(null);
+                if (!v.isEmpty()) {
+                    // the new children - also are stored to be returned next time from getChildrenList ()
+                    order = null;
+                    if (log) {
+                        err.fine("changeComparator: get new"); //NOI18N
+                    }
+                    r = getObjects(null);
+                }
+            }
+            synchronized (FolderList.this) {
+                // clean  the task if is my own not assigned by somebody else
+                if (comparatorTask == this) {
+                    comparatorTask = null;
+                    err.fine("changeComparator: task set to null"); //NOI18N
+                } else {
+                    err.fine("changeComparator: task changed meanwhile"); //NOI18N
+                    return;
+                }
+            }
+            if (r != null) {
+                if (log) {
+                    err.fine("changeComparator: fire change"); //NOI18N
+                }
+                fireChildrenChange(r, v);
+            }
+        }
+
+        /**
+         * Try to cancel this and the previous tasks. If it is not possible,
+         * wait until they are finished.
+         */
+        private void cancelOrWaitFinished() {
+            if (previous != null) {
+                previous.cancelOrWaitFinished();
+            }
+            if (!rpTask.cancel()) {
+                rpTask.waitFinished();
+            }
+        }
+
+        /**
+         * Wait until the task in request processor is finished.
+         */
+        void waitFinished() {
+            rpTask.waitFinished();
+        }
+
+        /**
+         * Post this task to request processor and set its {@link #rpTask} field
+         * to the newly created request processor task.
+         *
+         * @return This task itself.
+         */
+        ComparatorTask post() {
+            this.rpTask = PROCESSOR.post(this, 0, Thread.MIN_PRIORITY);
+            return this;
+        }
+    }
 }
