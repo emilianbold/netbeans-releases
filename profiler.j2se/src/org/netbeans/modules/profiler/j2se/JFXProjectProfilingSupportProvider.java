@@ -42,6 +42,7 @@
 package org.netbeans.modules.profiler.j2se;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.common.SessionSettings;
 import org.netbeans.modules.profiler.spi.project.ProjectProfilingSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -78,6 +79,23 @@ public class JFXProjectProfilingSupportProvider extends J2SEProjectProfilingSupp
         return super.checkProjectCanBeProfiled(profiledClassFile);
     }
 
+    @Override
+    protected void setMainClass(final PropertyEvaluator pp, SessionSettings ss) {
+        String jdkVersion=getProjectJavaPlatform().getPlatformJDKVersion();        
+        String fxMainClassProp=pp.getProperty("javafx.main.class"); // NOI18N
+        if (mainClassSetManually == null) {
+            String mainClass;
+            if ((jdkVersion!=null)&&((jdkVersion.equals("jdk18"))||(jdkVersion.equals("jdk19"))) && (fxMainClassProp!=null)) { // NOI18N
+                mainClass=fxMainClassProp;
+            } else {
+                mainClass=pp.getProperty("main.class"); // NOI18N
+            }
+            ss.setMainClass((mainClass != null) ? mainClass : ""); // NOI18N
+        } else {
+            ss.setMainClass(mainClassSetManually);
+        }
+    }
+    
     private boolean isFXProject() {
         final PropertyEvaluator ep = getProjectProperties(getProject());
         if (ep == null) {

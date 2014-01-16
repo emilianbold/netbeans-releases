@@ -409,13 +409,13 @@ public class ConnectionNode extends BaseNode {
     
     @Override
     public String getName() {
-        return connection.getName();
+        return connection.getDisplayName();
     }
 
     @Override
     public void setName(String name) {
         String old = getName();
-        connection.setName(name);
+        connection.setDisplayName(name);
         fireNameChange(old, name);
     }
 
