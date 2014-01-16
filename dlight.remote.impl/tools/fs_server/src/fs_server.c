@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 1
-#define FS_SERVER_MINOR_VERSION 23
+#define FS_SERVER_MINOR_VERSION 24
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -753,6 +753,17 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_state state = dirtab_get_state(el);
+    if (state == DE_STATE_REMOVED) {
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: already marked as removed %s\n", path);
+        return need_to_proceed();
+    }
+    if (!dir_exists(path)) {
+        dirtab_set_state(el, DE_STATE_REMOVED);
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: does not exist, marking as removed %s\n", path);
+        return need_to_proceed();
+    }
     if (!request && state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);

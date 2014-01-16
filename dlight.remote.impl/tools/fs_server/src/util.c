@@ -175,8 +175,15 @@ bool file_exists(const char* path) {
 
 bool dir_exists(const char* path) {
     struct stat stat_buf;
-    if (stat(path, &stat_buf) == -1 ) {
-        return errno != ENOENT;        
+    if (lstat(path, &stat_buf) == -1 ) {
+        switch (errno) {
+            case ENOENT:
+            case ENOTDIR:
+            case 0: // errno is often set to 0 if a file does not exist
+                return false;
+            default:
+                return true;
+        }
     }
     return S_ISDIR(stat_buf.st_mode);
 }
