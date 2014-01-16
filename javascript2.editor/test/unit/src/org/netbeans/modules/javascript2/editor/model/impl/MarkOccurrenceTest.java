@@ -971,6 +971,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/issue238693.js", "this.lo^gger.printLevel = 1; // here is this purple as variable", true); 
     }
     
+    public void testIssue239967_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue239967.js", "var po^ol = []; // purple", true); 
+    }
+    
+    public void testIssue239967_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue239967.js", "var poo^l2 = [];", true); 
+    }
+    
+    public void testIssue239967_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue239967.js", "po^ol[i] = i;", true); 
+    }
+    
+    public void testIssue239967_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue239967.js", "po^ol2[i] = i;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
