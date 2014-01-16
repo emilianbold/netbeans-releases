@@ -49,27 +49,12 @@ made subject to such option by the copyright holder.
         <compiler name="cc"/>
         <version flags="-V" fingerprint_flags="-Wd,-xide" fingerprint_pattern="#\s*__tool_build_number\s*(\w*)"/>
         <system_include_paths parser="Fingerprint"/>
-        <important_flags flags="-xc99;-xopenmp*;-O;-O0;-O1;-O2;-O3;-O4;-O5;-Xc;-Xa;-Xt;-Xs;-ansi;-fast;-fnonstd;-fns;-fns=yes;-fopenmp;-fprecision*;-m64;-mt;-mt=yes;-native;-pedantic;-pedantic=yes;-std*;-xO*;-xautopar;-xchar*;-xlang*;-xmaxopt*;"/>
+        <important_flags flags="-O;-O0;-O1;-O2;-O3;-O4;-O5;-Xa;-Xc;-Xs;-Xt;-ansi;-fast;-fnonstd;-fns;-fns=yes;-fopenmp;-fprecision=*;-m64;-mt;-mt=yes;-native;-pedantic;-pedantic=yes;-std=*;-xO1;-xO2;-xO3;-xO4;-xO5;-xautopar;-xc99;-xchar=*;-xlang=c11;-xlang=c99;-xmaxopt=*;-xopenmp;-xopenmp=*;"/>
         <system_macros parser="Fingerprint">
             <macro hide="true" stringvalue="__LINE__"/>
             <macro hide="true" stringvalue="__FILE__"/>
             <macro hide="true" stringvalue="__DATE__"/>
             <macro hide="true" stringvalue="__TIME__"/>
-
-            <macro stringvalue="__STDC_VERSION__=199901L" flags="-xc99"/>
-            <macro stringvalue="__C11FEATURES__" flags="-xc99" hide="true"/>
-
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp" hide="true"/>
-
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=parallel"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=parallel"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=parallel" hide="true"/>
-
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=noopt"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=noopt"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=noopt" hide="true"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-O" hide="true"/>
 
@@ -85,17 +70,14 @@ made subject to such option by the copyright holder.
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-O5" hide="true"/>
 
+            <macro stringvalue="__C11FEATURES__" flags="-Xa" hide="true"/>
+
             <macro stringvalue="__STDC__=1" flags="-Xc"/>
             <macro stringvalue="__C11FEATURES__" flags="-Xc" hide="true"/>
             <macro stringvalue="unix" flags="-Xc" hide="true"/>
             <macro stringvalue="sun" flags="-Xc" hide="true"/>
             <macro stringvalue="i386" flags="-Xc" hide="true"/>
             <macro stringvalue="__RESTRICT" flags="-Xc" hide="true"/>
-
-            <macro stringvalue="__C11FEATURES__" flags="-Xa" hide="true"/>
-
-            <macro stringvalue="__C11FEATURES__" flags="-Xt" hide="true"/>
-            <macro stringvalue="__C99FEATURES__" flags="-Xt" hide="true"/>
 
             <macro stringvalue="__STDC_VERSION__" flags="-Xs"/>
             <macro stringvalue="__STDC_IEC_559__=0" flags="-Xs"/>
@@ -106,6 +88,9 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__PRAGMA_REDEFINE_EXTNAME" flags="-Xs" hide="true"/>
             <macro stringvalue="__RESTRICT" flags="-Xs" hide="true"/>
             <macro stringvalue="__FLT_EVAL_METHOD__" flags="-Xs" hide="true"/>
+
+            <macro stringvalue="__C11FEATURES__" flags="-Xt" hide="true"/>
+            <macro stringvalue="__C99FEATURES__" flags="-Xt" hide="true"/>
 
             <macro stringvalue="__STDC_IEC_559__=0" flags="-ansi"/>
             <macro stringvalue="__STDC_IEC_559_COMPLEX__=0" flags="-ansi"/>
@@ -130,11 +115,11 @@ made subject to such option by the copyright holder.
             <macro stringvalue="_OPENMP=201307L" flags="-fopenmp"/>
             <macro stringvalue="__NOVECTORSIZE__" flags="-fopenmp" hide="true"/>
 
-            <macro stringvalue="__FLT_EVAL_METHOD__=-1" flags="-fprecision=single"/>
-
             <macro stringvalue="__FLT_EVAL_METHOD__=-1" flags="-fprecision=double"/>
 
             <macro stringvalue="__FLT_EVAL_METHOD__=-1" flags="-fprecision=extended"/>
+
+            <macro stringvalue="__FLT_EVAL_METHOD__=-1" flags="-fprecision=single"/>
 
             <macro stringvalue="__x86_64=1" flags="-m64"/>
             <macro stringvalue="__x86_64__=1" flags="-m64"/>
@@ -157,6 +142,8 @@ made subject to such option by the copyright holder.
 
             <macro stringvalue="__STDC__=1" flags="-pedantic=yes"/>
 
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=c11"/>
+
             <macro stringvalue="__STDC_IEC_559__=0" flags="-std=c89"/>
             <macro stringvalue="__STDC_IEC_559_COMPLEX__=0" flags="-std=c89"/>
             <macro stringvalue="__STDC_HOSTED__" flags="-std=c89"/>
@@ -165,8 +152,6 @@ made subject to such option by the copyright holder.
 
             <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=c99"/>
             <macro stringvalue="__C11FEATURES__" flags="-std=c99" hide="true"/>
-
-            <macro stringvalue="__STDC_VERSION__=199901L" flags="-std=c11"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-xO1" hide="true"/>
 
@@ -181,13 +166,16 @@ made subject to such option by the copyright holder.
             <macro stringvalue="_REENTRANT=1" flags="-xautopar"/>
             <macro stringvalue="__NOVECTORSIZE__" flags="-xautopar" hide="true"/>
 
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-xc99"/>
+            <macro stringvalue="__C11FEATURES__" flags="-xc99" hide="true"/>
+
             <macro stringvalue="_CHAR_IS_UNSIGNED=1" flags="-xchar=u"/>
 
             <macro stringvalue="_CHAR_IS_UNSIGNED=1" flags="-xchar=unsigned"/>
 
-            <macro stringvalue="__STDC_VERSION__=199901L" flags="-xlang=c99"/>
-
             <macro stringvalue="__STDC_VERSION__=199901L" flags="-xlang=c11"/>
+
+            <macro stringvalue="__STDC_VERSION__=199901L" flags="-xlang=c99"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-xmaxopt=1" hide="true"/>
 
@@ -198,6 +186,18 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__NOVECTORSIZE__" flags="-xmaxopt=4" hide="true"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-xmaxopt=5" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=noopt"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=noopt"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=noopt" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=parallel"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=parallel"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=parallel" hide="true"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>

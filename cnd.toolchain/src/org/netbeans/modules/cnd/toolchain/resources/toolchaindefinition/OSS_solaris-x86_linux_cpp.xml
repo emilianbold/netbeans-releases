@@ -49,25 +49,13 @@ made subject to such option by the copyright holder.
         <compiler name="CC"/>
         <version flags="-V" fingerprint_flags="-Wd,-xide" fingerprint_pattern="#\s*__tool_build_number\s*(\w*)"/>
         <system_include_paths parser="Fingerprint"/>
-        <important_flags flags="-xopenmp*;-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt;-mt=yes;-native;-std*;-xO*;-xautopar;-xchar*;-xmaxopt*;"/>
+        <important_flags flags="-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt;-mt=yes;-native;-std=*;-xO1;-xO2;-xO3;-xO4;-xO5;-xautopar;-xchar=*;-xmaxopt=*;-xopenmp;-xopenmp=*;"/>
         <system_macros parser="Fingerprint">
             <macro hide="true" stringvalue="__LINE__"/>
             <macro hide="true" stringvalue="__FILE__"/>
             <macro hide="true" stringvalue="__DATE__"/>
             <macro hide="true" stringvalue="__TIME__"/>
             
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp" hide="true"/>
-
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=parallel"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=parallel"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=parallel" hide="true"/>
-
-            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=noopt"/>
-            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=noopt"/>
-            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=noopt" hide="true"/>
-
             <macro stringvalue="__NOVECTORSIZE__" flags="-O" hide="true"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-O0" hide="true"/>
@@ -217,6 +205,18 @@ made subject to such option by the copyright holder.
             <macro stringvalue="__NOVECTORSIZE__" flags="-xmaxopt=4" hide="true"/>
 
             <macro stringvalue="__NOVECTORSIZE__" flags="-xmaxopt=5" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=noopt"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=noopt"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=noopt" hide="true"/>
+
+            <macro stringvalue="_REENTRANT=1" flags="-xopenmp=parallel"/>
+            <macro stringvalue="_OPENMP=201307L" flags="-xopenmp=parallel"/>
+            <macro stringvalue="__NOVECTORSIZE__" flags="-xopenmp=parallel" hide="true"/>
         </system_macros>
         <user_include flags="-I"/>
         <user_macro flags="-D"/>
