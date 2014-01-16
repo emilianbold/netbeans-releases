@@ -2,72 +2,65 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>General PHP Options</title>
+<title>Options Window: PHP: General</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-07</p>
+<p>Beta Draft: 2014-01-16</p>
 <p><a id="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" name="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref473" name="sthref473"></a>
-<h1>General PHP Options</h1>
+<!-- infolevel="all" infotype="General" --><a id="sthref470" name="sthref470"></a>
+<h1>Options Window: PHP: General</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this tab you set the path to the default PHP interpreter and the global Include path.</p>
-<!-- infolevel="all" infotype="General" --><a id="sthref474" name="sthref474"></a>
-<h2>Command Line</h2>
-<p>You can set a PHP project to run as a command-line script in the project's Run Configuration properties. Note that you can override the default path to the PHP interpreter and set an interpreter for a project. Note also that a project can have multiple run configurations.</p>
+<p>In this tab you can set the path to the default PHP interpreter and the global Include path.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t23">Element</th>
-<th align="left" valign="bottom" id="r1c2-t23">Description</th>
+<th align="left" valign="bottom" id="r1c1-t24">Element</th>
+<th align="left" valign="bottom" id="r1c2-t24">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t23" headers="r1c1-t23">
+<td align="left" id="r2c1-t24" headers="r1c1-t24">
+<p>Command Line</p>
+</td>
+<td align="left" headers="r2c1-t24 r1c2-t24">
+<p>If you set a PHP project to run as a command-line script in the project's Run Configuration properties you can use this panel to specify the default PHP interpreter.</p>
+<p>Note that you can override the default path to the PHP interpreter and set an interpreter for an individual project. Note also that a project can have multiple run configurations.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t24" headers="r1c1-t24">
 <p>PHP 5 Interpreter</p>
 </td>
-<td align="left" headers="r2c1-t23 r1c2-t23">
-<p>The path to the default PHP interpreter. The PHP interpreter is used to execute a PHP script from the command line.</p>
+<td align="left" headers="r3c1-t24 r1c2-t24">
+<p>The path to the default PHP interpreter. The PHP interpreter is used to execute a PHP script from the command line. Use the Search and Browse buttons to locate the interpreter installation on your local file system.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t23" headers="r1c1-t23">
-<p>Search</p>
+<td align="left" id="r4c1-t24" headers="r1c1-t24">
+<p>Open result in</p>
 </td>
-<td align="left" headers="r3c1-t23 r1c2-t23">
-<p>The IDE searches for all PHP interpreters that you have installed. A dialog opens in which you select which interpreter to use.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t23" headers="r1c1-t23">
-<p>Browse...</p>
-</td>
-<td align="left" headers="r4c1-t23 r1c2-t23">
-<p>Manually browse your file system for the interpreter.</p>
+<td align="left" headers="r4c1-t24 r1c2-t24">
+<p>Select where to display the results of running a PHP application from the command-line. Select the appropriate box to display the results in the IDE's Output window, a browser, or the editor's main pane.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t23" headers="r1c1-t23">
-<p>Open result in:</p>
+<td align="left" id="r5c1-t24" headers="r1c1-t24">
+<p>Global Include Path</p>
 </td>
-<td align="left" headers="r5c1-t23 r1c2-t23">
-<p>Select where to display the results of running a PHP application from the command-line. Tick the appropriate box to display the results in the IDE's Output window, a browser, or the editor's main pane.</p>
+<td align="left" headers="r5c1-t24 r1c2-t24">
+<p>The Global Include Path lists the folders that are included in all PHP projects' include paths.</p>
+<p>You can click Add Folder to browse for a folder to add to the global include path. You can use the Move Up and Move Down buttons to change the order of the folders in the global include path. Higher folders are given priority. If you are using a PHP framework, add that framework's library folder to the global include path.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
-<!-- -->
-<!-- -->
-<!-- infolevel="all" infotype="General" --><a id="sthref475" name="sthref475"></a>
-<h2>Global Include Path</h2>
-<p>The Global Include Path are folders that are included in all PHP projects' include paths. Click Add Folder to browse for a folder to add to the global include path.You can move folders up or down in the global include path. Higher folders are given priority.If you are using a PHP framework, add that framework's library folder to the global include path.</p>
-
 <!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 

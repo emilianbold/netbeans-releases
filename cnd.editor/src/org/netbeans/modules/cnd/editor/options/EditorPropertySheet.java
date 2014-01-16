@@ -53,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -97,6 +99,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private PreviewPreferencesModel preferencesModel;
     private Filter filter;
     private PropertySheet holder;
+    private boolean propertyChanged = false;
+    private boolean stylesChanged = false;
 
     EditorPropertySheet(EditorOptionsPanelController topControler, CodeStyle.Language language, PreviewPreferencesModel preferencesModel, Filter filter) {
         this.topController = topControler;
@@ -390,6 +394,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
         initLanguageCategory();
         loaded = true;
         repaintPreview();
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     void store() {
@@ -441,6 +447,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
         EditorOptions.setAllStyles(language, buf.toString());
         preferencesModel.clear(language);
         holder.setNodes(null);
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     void cancel() {
@@ -449,6 +457,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
             return;
         }
         preferencesModel.clear(language);
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     // Change in the combo
@@ -490,11 +500,12 @@ public class EditorPropertySheet extends javax.swing.JPanel
         if ( !loaded ) {
             return;
         }
+        firePrefsChanged();
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 // Notify the main controler that the page has changed
-                topController.changed();
+                topController.changed(stylesChanged || propertyChanged);
                 // Repaint the preview
                 repaintPreview();
             }
@@ -504,6 +515,24 @@ public class EditorPropertySheet extends javax.swing.JPanel
         } else {
             SwingUtilities.invokeLater(run);
         }
+    }
+    
+    private void firePrefsChanged() {
+        boolean isChanged = false;
+        Map<String, PreviewPreferences> languagePreferences = preferencesModel.getLanguagePreferences(language);
+        Set<String> keys = EditorOptions.keys();
+        for (String style : languagePreferences.keySet()) {
+            for(String key : keys) {
+                String currentValue = languagePreferences.get(style).get(key, null);
+                String savedValue = EditorOptions.getPreferences(language, style).get(key, null);
+                if(currentValue == null) {
+                    isChanged |= savedValue != null;
+                } else {
+                    isChanged |= savedValue == null ? !EditorOptions.getDefault(language, style, key).toString().equals(currentValue) : !savedValue.equals(currentValue);
+                }
+            }
+        }
+        propertyChanged = isChanged;
     }
 
     public void repaintPreview() {
@@ -693,7 +722,10 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         preferencesModel.resetPreferences(language, clone);
         initLanguageCategory();
         //change();
-        topController.changed();
+        Set<String> saved = new HashSet<String>();
+        saved.addAll(EditorOptions.getAllStyles(language));
+        stylesChanged = !clone.keySet().equals(saved);
+        topController.changed(stylesChanged || propertyChanged);
     }
 }//GEN-LAST:event_manageStylesActionPerformed
 

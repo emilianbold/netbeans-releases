@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 1
-#define FS_SERVER_MINOR_VERSION 23
+#define FS_SERVER_MINOR_VERSION 24
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -173,6 +173,10 @@ static void state_set_proceed(bool proceed) {
     mutex_lock(&state.mutex);
     state.proceed = proceed; // don't even think of doing smth else under this mutex!
     mutex_unlock(&state.mutex);    
+}
+
+static bool need_to_proceed() {
+    return !is_broken_pipe() && state_get_proceed();
 }
 
 static void state_init() {
@@ -443,7 +447,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     } else {
         report_error("error creating entry for %s\n", abspath);
     }
-    return true;
+    return need_to_proceed();
 }
 
 static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {    
@@ -638,7 +642,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
     // for now just ignoring such entries
     if (strchr(name, '/')) {
         report_error("skipping entry %s\n", name);
-        return true;
+        return need_to_proceed();
     }
     if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf)) {
         my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
@@ -649,7 +653,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
         report_error("error formatting response for '%s'\n", child_abspath);
     }
     
-    return true;
+    return need_to_proceed();
 }
 
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
@@ -657,7 +661,7 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
     if (S_ISDIR(stat_buf->st_mode)) {
         response_ls(data->request_id, child_abspath, true, true);
     }
-    return !is_broken_pipe() && state_get_proceed();
+    return need_to_proceed();
 }
 
 
@@ -730,29 +734,40 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     fs_request *request = data;
     if (is_prohibited(path)) {
         trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     if (request) {
         if (!is_subdir(path, request->path)) {
             trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
-            return true;
+            return need_to_proceed();
         }
     }
     dirtab_lock(el);
     if (!request && dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     trace(TRACE_FINER, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_state state = dirtab_get_state(el);
+    if (state == DE_STATE_REMOVED) {
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: already marked as removed %s\n", path);
+        return need_to_proceed();
+    }
+    if (!dir_exists(path)) {
+        dirtab_set_state(el, DE_STATE_REMOVED);
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: does not exist, marking as removed %s\n", path);
+        return need_to_proceed();
+    }
     if (!request && state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     bool success = read_entries_from_cache(&old_entries, el, path);
     bool differs;
@@ -840,7 +855,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     dirtab_unlock(el);
     array_free(&old_entries);
     array_free(&new_entries);
-    return !is_broken_pipe() && state_get_proceed();
+    return need_to_proceed();
 }
 
 static void thread_init() {
@@ -877,7 +892,7 @@ static void *refresh_loop(void *data) {
     while (!is_broken_pipe() && dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
-    while (!is_broken_pipe() && state_get_proceed()) {
+    while (need_to_proceed()) {
         pass++;
         trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
         refresh_cycle(NULL);

@@ -590,6 +590,11 @@ public final class ToolchainManagerImpl {
             }
             element.appendChild(e);
         }
+        if (compiler.getImportantFlags() != null) {
+            e = doc.createElement("important_flags"); // NOI18N
+            e.setAttribute("flags", compiler.getImportantFlags()); // NOI18N
+            element.appendChild(e);
+        }
         if (compiler.getMacroFlags() != null ||
                 compiler.getMacroParser() != null ||
                 compiler.getPredefinedMacros() != null) {
@@ -1202,6 +1207,7 @@ public final class ToolchainManagerImpl {
         String removeIncludePathPrefix;
         String removeIncludeOutputPrefix;
         String userIncludeFlag;
+        String importantFlags;
         String macrosFlags;
         String macrosOutputParser;
         String userMacroFlag;
@@ -1846,6 +1852,8 @@ public final class ToolchainManagerImpl {
                 c.removeIncludeOutputPrefix = getValue(attributes, "remove_in_output"); // NOI18N
             } else if (path.endsWith(".user_include")) { // NOI18N
                 c.userIncludeFlag = flags;
+            } else if (path.endsWith(".important_flags")) { // NOI18N
+                c.importantFlags = flags;
             } else if (path.endsWith(".system_macros")) { // NOI18N
                 c.macrosFlags = flags;
                 c.macrosOutputParser = getValue(attributes, "parser"); // NOI18N
@@ -2471,6 +2479,11 @@ public final class ToolchainManagerImpl {
         @Override
         public String getUserIncludeFlag() {
             return tool.userIncludeFlag;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return tool.importantFlags;
         }
 
         @Override

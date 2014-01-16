@@ -456,6 +456,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         if (!report.isFile() || report.lastModified() < startTimeStamp) { //#219097 ignore results from previous invokation.
             return;
         }
+        if (report.length() > 50 * 1024 * 1024) {
+            LOG.log(Level.INFO, "Skipping report file as size is too big (> 50MB): {0}", report.getPath());
+            return;
+        }
         try {
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(report);

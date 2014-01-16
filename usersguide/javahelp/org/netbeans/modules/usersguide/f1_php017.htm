@@ -7,9 +7,9 @@
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-07</p>
+<p>Beta Draft: 2014-01-16</p>
 <p><a id="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" name="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref454" name="sthref454"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref451" name="sthref451"></a>
 <h1>Find Usages Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use this dialog box to specify search options for the Find Usages command. You can use the Find Usages command to determine all of the places a class, function, or variable is used in your project's source code.</p>
@@ -18,46 +18,6 @@
 <li><b>Search in Comments</b>. If selected, occurrences of the identifier that appear in code comments are also displayed.</li>
 </ul>
 <p>For classes and interfaces, the Find Usages dialog box displays the following additional options:</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t17">Element</th>
-<th align="left" valign="bottom" id="r1c2-t17">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t17" headers="r1c1-t17">
-<p>Find Usages</p>
-</td>
-<td align="left" headers="r2c1-t17 r1c2-t17">
-<p>If selected, all usages of the class are displayed.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t17" headers="r1c1-t17">
-<p>Find All Subtypes</p>
-</td>
-<td align="left" headers="r3c1-t17 r1c2-t17">
-<p>If selected, usages of all subtypes of the class, including subtypes of subtypes, are displayed. Usages of the class itself are not displayed.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t17" headers="r1c1-t17">
-<p>Find Direct Subtypes Only</p>
-</td>
-<td align="left" headers="r4c1-t17 r1c2-t17">
-<p>If selected, only usages of direct subtypes are displayed. Subtypes of those subtypes are ignored.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>For functions, the Find Usages dialog box sometimes displays the following additional options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -74,22 +34,62 @@
 <p>Find Usages</p>
 </td>
 <td align="left" headers="r2c1-t18 r1c2-t18">
-<p>If selected, all usages of that specific function in your project are displayed.</p>
+<p>If selected, all usages of the class are displayed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t18" headers="r1c1-t18">
-<p>Find Overriding Functions</p>
+<p>Find All Subtypes</p>
 </td>
 <td align="left" headers="r3c1-t18 r1c2-t18">
-<p>If selected, the output will show every usage of a function that overrides this function in your project.</p>
+<p>If selected, usages of all subtypes of the class, including subtypes of subtypes, are displayed. Usages of the class itself are not displayed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t18" headers="r1c1-t18">
-<p>Search from Base Class</p>
+<p>Find Direct Subtypes Only</p>
 </td>
 <td align="left" headers="r4c1-t18 r1c2-t18">
+<p>If selected, only usages of direct subtypes are displayed. Subtypes of those subtypes are ignored.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>For functions, the Find Usages dialog box sometimes displays the following additional options:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t19">Element</th>
+<th align="left" valign="bottom" id="r1c2-t19">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t19" headers="r1c1-t19">
+<p>Find Usages</p>
+</td>
+<td align="left" headers="r2c1-t19 r1c2-t19">
+<p>If selected, all usages of that specific function in your project are displayed.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t19" headers="r1c1-t19">
+<p>Find Overriding Functions</p>
+</td>
+<td align="left" headers="r3c1-t19 r1c2-t19">
+<p>If selected, the output will show every usage of a function that overrides this function in your project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Search from Base Class</p>
+</td>
+<td align="left" headers="r4c1-t19 r1c2-t19">
 <p>This option is only relevant if the function for which you are finding usages overrides another function. If selected, the output will show every usage of that base function.</p>
 </td>
 </tr>

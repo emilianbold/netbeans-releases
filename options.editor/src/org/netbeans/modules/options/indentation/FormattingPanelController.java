@@ -46,6 +46,7 @@ package org.netbeans.modules.options.indentation;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -244,8 +245,62 @@ public final class FormattingPanelController extends OptionsPanelController {
     
     public boolean isChanged() {
         synchronized (this) {
-            return changed;
+            return changed || areCNDPrefsChanged();
         }
+    }
+    
+    private boolean areCNDPrefsChanged() {
+        boolean isChanged = false;
+        for (String mimeType : pf.getAccessedMimeTypes()) {
+            for (PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                    isChanged |= ((CustomizerSelector.WrapperCustomizer) c).isChanged();
+                    if (isChanged) { // no need to iterate further
+                        return true;
+                    }
+                }
+            }
+        }
+        return isChanged;
+    }
+    
+    private void firePrefsChanged() {
+        boolean isChanged = false;
+        for (String mimeType : pf.getAccessedMimeTypes()) {
+            for (PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                    isChanged |= ((CustomizerSelector.WrapperCustomizer) c).isChanged();
+                    continue;
+                }
+                isChanged |= arePrefsChanged(mimeType, c);
+                if (isChanged) { // no need to iterate further
+                    changed = true;
+                    return;
+                }
+            }
+        }
+        changed = isChanged;
+    }
+
+    private boolean arePrefsChanged(String mimeType, PreferencesCustomizer c) {
+        boolean isChanged = false;
+        Preferences prefs = selector.getCustomizerPreferences(c);
+        Preferences savedPrefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        HashSet<String> hashSet = new HashSet<String>();
+        try {
+            hashSet.addAll(Arrays.asList(prefs.keys()));
+            hashSet.addAll(Arrays.asList(savedPrefs.keys()));
+        } catch (BackingStoreException ex) {
+            return false;
+        }
+        for (String key : hashSet) {
+            if (key.equals(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS)) {
+                continue;
+            }
+            isChanged |= (prefs.get(key, null) == null ? savedPrefs.get(key, null) != null : !prefs.get(key, null).equals(savedPrefs.get(key, null)))
+                    || (prefs.get(key, null) == null ? savedPrefs.get(key, null) != null : !prefs.get(key, null).equals(savedPrefs.get(key, null)));
+        }
+        return isChanged;
     }
     
     public HelpCtx getHelpCtx() {
@@ -306,6 +361,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         if (fire) {
             pcs.firePropertyChange(PROP_CHANGED, !changed, changed);
         }
+        firePrefsChanged();
     }
 
     private static final class MimeLookupPreferencesFactory implements CustomizerSelector.PreferencesFactory, PreferenceChangeListener, NodeChangeListener {
@@ -382,7 +438,7 @@ public final class FormattingPanelController extends OptionsPanelController {
                 pp = ProxyPreferences.getProxyPreferences(this, p);
                 if (mimeType.length() > 0) {
                     final ProxyPreferences finalPP = pp;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    PROCESSOR.post(new Runnable() {
                         public void run() {
                             boolean overriden = isKeyOverridenForMimeType(SimpleValueNames.EXPAND_TABS, mimeType)
                                     || isKeyOverridenForMimeType(SimpleValueNames.INDENT_SHIFT_WIDTH, mimeType)
@@ -442,6 +498,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         private final PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, this, null);
         private final NodeChangeListener weakNodeL = WeakListeners.create(NodeChangeListener.class, this, null);
         private final Callable callback;
+        private final RequestProcessor PROCESSOR = new RequestProcessor(MimeLookupPreferencesFactory.class); // NOI18N
 
     } // End of MimeLookupPreferencesFactory class
 }
