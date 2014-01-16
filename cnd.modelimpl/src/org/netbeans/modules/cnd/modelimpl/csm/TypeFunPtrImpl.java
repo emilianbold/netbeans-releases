@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImp
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -158,8 +159,15 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         AST fakeTypeAst = AstUtil.cloneAST(typeASTStart, typeASTEnd);
         
         initFunctionReturnType(fakeTypeAst, this, this, getContainingFile());
+        
+        setClassifierText(NameCache.getManager().getString(decorateText("", this, false, null)));
     }
 
+    @Override
+    protected CsmClassifier _getClassifier() {
+        return new FunctionPointerImpl(this);
+    }
+    
     @Override
     public CsmClassifier getClassifier() {
         return getClassifier(null, false);
@@ -168,7 +176,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     @Override
     public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {
         if (instantiations != null && !instantiations.isEmpty()) {
-            CsmClassifier classifier = new FunctionPointerImpl(this);
+            CsmClassifier classifier = _getClassifier();
             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
             CsmObject obj = classifier;
             if (ip instanceof InstantiationProviderImpl) {
@@ -193,12 +201,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
                 return (CsmClassifier)obj;
             }
         }
-        return new FunctionPointerImpl(this);
-    }
-
-    @Override
-    public CharSequence getClassifierText() {
-        return getReturnType().getClassifierText();
+        return _getClassifier();
     }
 
     @Override
@@ -237,7 +240,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         if (decorator.isConst()) {
             sb.append("const "); // NOI18N
         }
-        sb.append(classifierText);
+        sb.append(getReturnType().getText());
         for (int i = 0; i < decorator.getPointerDepth(); i++) {
             sb.append('*');
         }

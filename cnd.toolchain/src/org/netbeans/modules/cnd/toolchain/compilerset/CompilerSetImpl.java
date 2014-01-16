@@ -495,6 +495,14 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public String getImportantFlags() {
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getImportantFlags();
+        }
+
+        @Override
         public String getMacroFlags() {
             if (proxy == null) {
                 return "";//NOI18N
