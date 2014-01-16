@@ -641,7 +641,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 //PENDING Now we have to search folders which not included in Search API
                 st = System.currentTimeMillis();
                 Collection <FileObject> allFolders = new HashSet<FileObject>();
-                List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
+                List<SearchFilter> filters = Collections.<SearchFilter>singletonList(SearchInfoUtils.VISIBILITY_FILTER);
                 for (FileObject root : sgRoots) {
                     allFolders = searchSources(root, allFolders, excludes, filters);
                 }

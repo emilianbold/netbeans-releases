@@ -106,26 +106,28 @@ public final class ExportPackageAction extends AbstractAction implements Context
                     return new ExportPackageAction.ContextAction();
                 }
             }
-            PackageModifierImplementation pmi = project.getLookup().lookup(PackageModifierImplementation.class);
-            if(pmi != null) {
-                Collection<String> packagesToExport = new ArrayList<>();
-                boolean export = false;
-                for(FileObject selectedPkgIter : selectedPackages) {
-                    Boolean isPublic = AccessibilityQuery.isPubliclyAccessible(selectedPkgIter);
-                    if (isPublic != null) {
-                        ClassPath cp = ClassPath.getClassPath(selectedPkgIter, ClassPath.SOURCE);
-                        assert cp != null;
-                        String packageName = cp.getResourceName(selectedPkgIter, '.', false);
-                        if (!isPublic) {
-                            export = true;
+            if (project != null) {
+                PackageModifierImplementation pmi = project.getLookup().lookup(PackageModifierImplementation.class);
+                if(pmi != null) {
+                    Collection<String> packagesToExport = new ArrayList<>();
+                    boolean export = false;
+                    for(FileObject selectedPkgIter : selectedPackages) {
+                        Boolean isPublic = AccessibilityQuery.isPubliclyAccessible(selectedPkgIter);
+                        if (isPublic != null) {
+                            ClassPath cp = ClassPath.getClassPath(selectedPkgIter, ClassPath.SOURCE);
+                            assert cp != null;
+                            String packageName = cp.getResourceName(selectedPkgIter, '.', false);
+                            if (!isPublic) {
+                                export = true;
+                            }
+                            packagesToExport.add(packageName);
                         }
-                        packagesToExport.add(packageName);
+                        else {
+                            return new ExportPackageAction.ContextAction();
+                        }
                     }
-                    else {
-                        return new ExportPackageAction.ContextAction();
-                    }
+                    return new ExportPackageAction.ContextAction(pmi, packagesToExport, export);
                 }
-                return new ExportPackageAction.ContextAction(pmi, packagesToExport, export);
             }
         }
         return new ExportPackageAction.ContextAction();

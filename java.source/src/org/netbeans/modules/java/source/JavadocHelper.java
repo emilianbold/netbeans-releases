@@ -53,7 +53,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,6 +80,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.ChangedCharSetException;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
@@ -85,10 +90,12 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Convertors;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -107,26 +114,47 @@ public class JavadocHelper {
      * (and {@linkplain InputStream#close close} it) at least once.
      */
     public static final class TextStream {
-        private final URL url;
+        private final List<? extends URL> urls;
         private final AtomicReference<InputStream> stream = new AtomicReference<InputStream>();
         private byte[] cache;
         /**
          * Creates a text stream from a given URL with no preopened stream.
          * @param url a URL
          */
-        public TextStream(URL url) {
-            this.url = url;
+        public TextStream(@NonNull final URL url) {
+            Parameters.notNull("url", url); //NOI18N
+            this.urls = Collections.singletonList(url);
         }
-        TextStream(URL url, InputStream stream) {
-            this(url);
+
+        TextStream(@NonNull final Collection<? extends URL> urls) {
+            Parameters.notNull("urls", urls);   //NOI18N            
+            final List<URL> tmpUrls = new ArrayList<>(urls.size());
+            for (URL u : urls) {
+                Parameters.notNull("urls[]", u);  //NOI18N
+                tmpUrls.add(u);
+            }
+            if (tmpUrls.isEmpty()) {
+                throw new IllegalArgumentException("At least one URL has to be given.");    //NOI18N
+            }
+            this.urls = Collections.unmodifiableList(tmpUrls);
+        }
+
+        TextStream(@NonNull final Collection<? extends URL> urls, InputStream stream) {
+            this(urls);
             this.stream.set(stream);
         }
         /**
          * Location of the text.
          * @return its (possibly network) location
          */
+        @CheckForNull
         public URL getLocation() {
-            return url;
+            return urls.iterator().next();
+        }
+
+        @NonNull
+        public List<? extends URL> getLocations() {
+            return urls;
         }
         /**
          * Close any preopened stream without reading it.
@@ -149,13 +177,13 @@ public class JavadocHelper {
          */
         public synchronized InputStream openStream() throws IOException {
             if (cache != null) {
-                LOG.log(Level.FINE, "loaded cached content for {0}", url);
+                LOG.log(Level.FINE, "loaded cached content for {0}", getLocation());
                 return new ByteArrayInputStream(cache);
             }
             assert !isRemote() || !EventQueue.isDispatchThread();
             InputStream uncached = stream.getAndSet(null);
             if (uncached == null) {
-                uncached = JavadocHelper.openStream(url);
+                uncached = JavadocHelper.openStream(getLocation());
             }
             if (isRemote()) {
                 try {
@@ -165,7 +193,7 @@ public class JavadocHelper {
                 } finally {
                     uncached.close();
                 }
-                LOG.log(Level.FINE, "cached content for {0} ({1}k)", new Object[] {url, cache.length / 1024});
+                LOG.log(Level.FINE, "cached content for {0} ({1}k)", new Object[] {getLocation(), cache.length / 1024});
                 return new ByteArrayInputStream(cache);
             } else {
                 return uncached;
@@ -175,7 +203,7 @@ public class JavadocHelper {
          * @return true if this looks to be a web location
          */
         public boolean isRemote() {
-            return JavadocHelper.isRemote(url);
+            return JavadocHelper.isRemote(getLocation());
         }
     }
 
@@ -254,6 +282,54 @@ public class JavadocHelper {
         return getJavadoc(element, null);
     }
 
+    /**
+     * Returns the charset from given {@link ChangedCharSetException}
+     * @param e the {@link ChangedCharSetException}
+     * @return the charset or null
+     */
+    @CheckForNull
+    public static String getCharSet(ChangedCharSetException e) {
+        String spec = e.getCharSetSpec();
+        if (e.keyEqualsCharSet()) {
+            //charsetspec contains only charset
+            return spec;
+        }
+
+        //charsetspec is in form "text/html; charset=UTF-8"
+
+        int index = spec.indexOf(";"); // NOI18N
+        if (index != -1) {
+            spec = spec.substring(index + 1);
+        }
+
+        spec = spec.toLowerCase();
+
+        StringTokenizer st = new StringTokenizer(spec, " \t=", true); //NOI18N
+        boolean foundCharSet = false;
+        boolean foundEquals = false;
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (token.equals(" ") || token.equals("\t")) { //NOI18N
+                continue;
+            }
+            if (foundCharSet == false && foundEquals == false
+                    && token.equals("charset")) { //NOI18N
+                foundCharSet = true;
+                continue;
+            } else if (foundEquals == false && token.equals("=")) {//NOI18N
+                foundEquals = true;
+                continue;
+            } else if (foundEquals == true && foundCharSet == true) {
+                return token;
+            }
+
+            foundCharSet = false;
+            foundEquals = false;
+        }
+
+        return null;
+    }
+
     @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="URLs have never host part")
     private static TextStream doGetJavadoc(final Element element, final boolean allowRemoteJavadoc, final Callable<Boolean> cancel) {
         if (element == null) {
@@ -307,7 +383,7 @@ public class JavadocHelper {
                 final URL classFile = clsSym.classfile.toUri().toURL();
                 final String pkgNameF = pkgName;
                 final String pageNameF = pageName;
-                final CharSequence fragment = buildFragment ? getFragment(element) : null;
+                final Collection<? extends CharSequence> fragment = buildFragment ? getFragment(element) : Collections.<CharSequence>emptySet();
                 if (cancel == null) {
                     return findJavadoc(classFile, pkgName, pageNameF, fragment, allowRemoteJavadoc);
                 }
@@ -338,10 +414,10 @@ public class JavadocHelper {
     private static final String PACKAGE_SUMMARY = "package-summary"; // NOI18N
 
     private static TextStream findJavadoc(
-            final URL classFile,
-            final String pkgName,
-            final String pageName,
-            final CharSequence fragment,
+            @NonNull final URL classFile,
+            @NonNull final String pkgName,
+            @NonNull final String pageName,
+            @NonNull final Collection<? extends CharSequence> fragment,
             final boolean allowRemoteJavadoc) {
 
         URL sourceRoot = null;
@@ -427,15 +503,19 @@ public class JavadocHelper {
                             continue;
                         }
                     }
-                    if (fragment != null && fragment.length() > 0) {
+                    if (!fragment.isEmpty()) {
                         try {
                             // Javadoc fragments may contain chars that must be escaped to comply with RFC 2396.
                             // Unfortunately URLEncoder escapes almost everything but
                             // spaces replaces with '+' char which is wrong so it is
-                            // replaced with "%20"escape sequence here.
-                            String encodedfragment = URLEncoder.encode(fragment.toString(), "UTF-8"); // NOI18N
-                            encodedfragment = encodedfragment.replace("+", "%20"); // NOI18N
-                            return new TextStream(new URI(url.toExternalForm() + '#' + encodedfragment).toURL(), is);
+                            // replaced with "%20"escape sequence here.                            
+                            final Collection<URL> urls = new ArrayList<>(fragment.size());
+                            for (CharSequence f : fragment) {
+                                final String encodedfragment = URLEncoder.encode(f.toString(), "UTF-8").  // NOI18N
+                                    replace("+", "%20"); // NOI18N
+                                urls.add(new URI(url.toExternalForm() + '#' + encodedfragment).toURL());
+                            }
+                            return new TextStream(urls, is);
                         } catch (URISyntaxException x) {
                             LOG.log(Level.INFO, null, x);
                         } catch (UnsupportedEncodingException x) {
@@ -444,7 +524,7 @@ public class JavadocHelper {
                             LOG.log(Level.INFO, null, x);
                         }
                     }
-                    return new TextStream(url, is);
+                    return new TextStream(Collections.<URL>singleton(url), is);
                 }
             }
 
@@ -461,41 +541,118 @@ public class JavadocHelper {
      */
     private static final Set<String> knownGoodRoots = Collections.synchronizedSet(new HashSet<String>());
 
-    private static CharSequence getFragment(Element e) {
-        StringBuilder sb = new StringBuilder();
+    @NonNull
+    private static Collection<? extends CharSequence> getFragment(Element e) {
+        final FragmentBuilder fb = new FragmentBuilder();
         if (!e.getKind().isClass() && !e.getKind().isInterface()) {
             if (e.getKind() == ElementKind.CONSTRUCTOR) {
-                sb.append(e.getEnclosingElement().getSimpleName());
+                fb.append(e.getEnclosingElement().getSimpleName());
             } else {
-                sb.append(e.getSimpleName());
+                fb.append(e.getSimpleName());
             }
             if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement ee = (ExecutableElement) e;
-                sb.append('('); // NOI18N
+                fb.append("("); //NOI18N
                 for (Iterator<? extends VariableElement> it = ee.getParameters().iterator(); it.hasNext();) {
                     VariableElement param = it.next();
-                    appendType(sb, param.asType(), ee.isVarArgs() && !it.hasNext());
+                    appendType(fb, param.asType(), ee.isVarArgs() && !it.hasNext());
                     if (it.hasNext()) {
-                        sb.append(", ");
+                        fb.append(", ");    //NOI18N
                     }
                 }
-                sb.append(')'); // NOI18N
+                fb.append(")"); //NOI18N
             }
         }
-        return sb;
+        return fb.getFragments();
     }
     
-    private static void appendType(StringBuilder sb, TypeMirror type, boolean varArg) {
+    private static void appendType(FragmentBuilder fb, TypeMirror type, boolean varArg) {
         switch (type.getKind()) {
         case ARRAY:
-            appendType(sb, ((ArrayType) type).getComponentType(), false);
-            sb.append(varArg ? "..." : "[]"); // NOI18N
+            appendType(fb, ((ArrayType) type).getComponentType(), false);
+            fb.append(varArg ? "..." : "[]"); // NOI18N
             break;
         case DECLARED:
-            sb.append(((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName());
+            fb.append(((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName());
             break;
         default:
-            sb.append(type);
+            fb.append(type.toString());
+        }
+    }
+
+    private static final class FragmentBuilder {
+        private static final List<Convertor<CharSequence,CharSequence>> FILTERS;
+        static  {
+            final List<Convertor<CharSequence,CharSequence>> tmp = new ArrayList<>();
+            tmp.add(Convertors.<CharSequence>identity());
+            tmp.add(new JDoc8025633());
+            FILTERS = Collections.unmodifiableList(tmp);
+        };
+        private final StringBuilder[] sbs;
+
+        FragmentBuilder() {
+            this.sbs = new StringBuilder[FILTERS.size()];
+            for (int i = 0; i < sbs.length; i++) {
+                sbs[i] = new StringBuilder();
+            }
+        }
+
+        @NonNull
+        FragmentBuilder append(@NonNull final CharSequence text) {
+            for (int i = 0; i < sbs.length; i++) {
+                sbs[i].append(FILTERS.get(i).convert(text));
+            }
+            return this;
+        }
+
+        @NonNull
+        Collection<? extends CharSequence> getFragments() {
+            final Collection<CharSequence> res = new ArrayList<>(sbs.length);
+            for (StringBuilder sb : sbs) {
+                res.add(sb.toString());
+            }
+            return Collections.unmodifiableCollection(res);
+        }
+
+        private static final class JDoc8025633 implements Convertor<CharSequence,CharSequence> {
+            @Override
+            @NonNull
+            @SuppressWarnings("fallthrough")
+            public CharSequence convert(@NonNull final CharSequence text) {
+                final StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < text.length(); i++) {
+                    final char c = text.charAt(i);
+                    switch (c) {
+                        case '(':    //NOI18N
+                        case ')':    //NOI18N
+                        case '<':    //NOI18N
+                        case '>':    //NOI18N
+                        case ',':    //NOI18N
+                            sb.append('-');    //NOI18N
+                            break;
+                        case ' ':    //NOI18N
+                        case '[':    //NOI18N
+                            //NOP
+                            break;
+                        case ']':    //NOI18N
+                            sb.append(":A");    //NOI18N
+                            break;
+                        case '$':   //NOI18N
+                            if (i == 0) {
+                                sb.append("Z:Z");   //NOI18N
+                            }
+                            sb.append(":D");        //NOI18N
+                            break;
+                        case '_':   //NOI18N
+                            if (i == 0) {
+                                sb.append("Z:Z");   //NOI18N
+                            }
+                        default:
+                            sb.append(c);
+                    }
+                }
+                return sb.toString();
+            }
         }
     }
 

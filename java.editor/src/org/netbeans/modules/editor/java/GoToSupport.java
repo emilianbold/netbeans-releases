@@ -221,7 +221,7 @@ public class GoToSupport {
                     }
                     
                     if (javadoc) {
-                        URL url = SourceUtils.getJavadoc(resolved.resolved, controller.getClasspathInfo());
+                        final URL url = SourceUtils.getPreferredJavadoc(resolved.resolved);
                         if (url != null) {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                         } else {
