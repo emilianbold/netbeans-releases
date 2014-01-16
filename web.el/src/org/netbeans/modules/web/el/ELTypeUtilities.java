@@ -906,7 +906,7 @@ public final class ELTypeUtilities {
                                 result = propertyType;
                             } else if (propertyType.getKind() == ElementKind.METHOD) {
                                 final ExecutableElement method = (ExecutableElement) propertyType;
-                                TypeMirror returnType = getReturnType(info, method);
+                                TypeMirror returnType = getReturnType(info, method, elem, NodeUtil.getRootToNode(elem, target));
                                 if (returnType.getKind() == TypeKind.ARRAY) {
                                     // for array try to look like Iterable (operators for array return type)
                                     enclosing = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
