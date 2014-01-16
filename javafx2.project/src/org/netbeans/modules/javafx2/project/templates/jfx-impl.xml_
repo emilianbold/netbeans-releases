@@ -3703,7 +3703,7 @@
     <target name="jfxsa-debug" depends="-mark-project-state-debugging,-clean-if-config-changed,jar,-check-jfx-runtime,-warn-of-preloader,jfx-project-debug"/>
     <target name="jfxsa-debug-noscript" depends="-set-fallback-no-javascript, jfxsa-debug"/>
     
-    <target name="jfxsa-profile" depends="-mark-project-state-profiling,-check-jfx-runtime,-warn-of-preloader,profile"/>
+    <target name="jfxsa-profile" depends="-mark-project-state-profiling,-check-jfx-runtime,-warn-of-preloader,jfx-project-profile"/>
     <target name="jfxsa-profile-noscript" depends="-set-fallback-no-javascript, jfxsa-profile"/>
 
     <target name="-check-clean-if-config-changed" depends="-init-project">
@@ -3724,7 +3724,11 @@
         <echo message="Config change detected. Invoking clean." level="verbose"/>
         <antcall target="clean"/>
     </target>
-
+    
+    <target depends="-profile-check-1,-profile-pre72" description="Profile a project in the IDE." if="profiler.configured" name="jfx-project-profile" unless="profiler.info.jvmargs.agent">
+        <startprofiler/>
+        <antcall target="jfxsa-run"/>
+    </target>
 
     <!-- Shared Debugging init -->
 
