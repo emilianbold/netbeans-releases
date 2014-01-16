@@ -184,9 +184,11 @@ public class NotificationTable extends ETable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            setIcon(((NotificationDisplayer.Priority) value).getIcon());
-            setText("");
-            setToolTipText(((NotificationDisplayer.Priority) value).name());
+            if (value != null) {
+                setIcon(((NotificationDisplayer.Priority) value).getIcon());
+                setText("");
+                setToolTipText(((NotificationDisplayer.Priority) value).name());
+            }
             return this;
         }
     }
