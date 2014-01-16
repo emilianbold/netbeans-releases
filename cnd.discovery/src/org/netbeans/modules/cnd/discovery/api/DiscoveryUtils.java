@@ -510,18 +510,24 @@ public class DiscoveryUtils {
                 if (st.hasNext()){
                     String lang = st.next();
                     artifacts.languageArtifacts.add(lang);
+                    if (lang.equals("c")) {// NOI18N
+                        isCpp = false;
+                    } else if (lang.equals("c++")) {// NOI18N
+                        isCpp = true;
+                    } 
                 }
             } else if (option.equals("-xc")){ // NOI18N
                 artifacts.languageArtifacts.add("c"); // NOI18N	
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                isCpp = false;
             } else if (option.equals("-xc++")){ // NOI18N
                 artifacts.languageArtifacts.add("c++"); // NOI18N
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                isCpp = true;
             } else if (option.equals("-std=c89") || // NOI18N
                        option.equals("-std=iso9899:1990") || // NOI18N
                        option.equals("-std=iso9899:1990") || // NOI18N
                        option.equals("-std=c90")){ // NOI18N
                 artifacts.languageArtifacts.add("c89"); // NOI18N
+                isCpp = false;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-xc99") || // NOI18N
                        option.equals("-std=c9x") || // NOI18N
@@ -532,6 +538,7 @@ public class DiscoveryUtils {
                        option.equals("-std=gnu9x") || // NOI18N
                        option.equals("-std=c99")){ // NOI18N
                 artifacts.languageArtifacts.add("c99"); // NOI18N
+                isCpp = false;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-std=c11") ||
                        option.equals("-std=gnu1x") || // NOI18N
@@ -540,6 +547,7 @@ public class DiscoveryUtils {
                        option.equals("-std=c1x") || // NOI18N
                        option.equals("-std=c11")){ // NOI18N
                 artifacts.languageArtifacts.add("c11"); // NOI18N
+                isCpp = false;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-std=c++0x") || // NOI18N
                        option.equals("-std=c++11") || // NOI18N
@@ -548,10 +556,12 @@ public class DiscoveryUtils {
                        option.equals("-std=gnu++1y") || // NOI18N
                        option.equals("-std=c++1y")){ // NOI18N
                 artifacts.languageArtifacts.add("c++11"); // NOI18N
+                isCpp = true;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-std=c++98") ||  // NOI18N
                        option.equals("-std=c++03")){ // NOI18N
                 artifacts.languageArtifacts.add("c++98"); // NOI18N
+                isCpp = true;
                 addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-xMF")){ // NOI18N
                 // ignore dependency output file
