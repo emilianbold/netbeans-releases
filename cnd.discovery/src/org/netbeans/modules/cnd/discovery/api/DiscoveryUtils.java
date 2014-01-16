@@ -513,22 +513,46 @@ public class DiscoveryUtils {
                 }
             } else if (option.equals("-xc")){ // NOI18N
                 artifacts.languageArtifacts.add("c"); // NOI18N	
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-xc++")){ // NOI18N
                 artifacts.languageArtifacts.add("c++"); // NOI18N
-            } else if (option.equals("-std=c89")){ // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+            } else if (option.equals("-std=c89") || // NOI18N
+                       option.equals("-std=iso9899:1990") || // NOI18N
+                       option.equals("-std=iso9899:1990") || // NOI18N
+                       option.equals("-std=c90")){ // NOI18N
                 artifacts.languageArtifacts.add("c89"); // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-xc99") || // NOI18N
+                       option.equals("-std=c9x") || // NOI18N
+                       option.equals("-std=iso9899:199409") || // NOI18N
+                       option.equals("-std=iso9899:199x") || // NOI18N
+                       option.equals("-std=iso9899:1999") || // NOI18N
+                       option.equals("-std=gnu99") || // NOI18N
+                       option.equals("-std=gnu9x") || // NOI18N
                        option.equals("-std=c99")){ // NOI18N
                 artifacts.languageArtifacts.add("c99"); // NOI18N
-            } else if (option.equals("-std=c11")){ // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+            } else if (option.equals("-std=c11") ||
+                       option.equals("-std=gnu1x") || // NOI18N
+                       option.equals("-std=gnu11") || // NOI18N
+                       option.equals("-std=iso9899:2011") || // NOI18N
+                       option.equals("-std=c1x") || // NOI18N
+                       option.equals("-std=c11")){ // NOI18N
                 artifacts.languageArtifacts.add("c11"); // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-std=c++0x") || // NOI18N
                        option.equals("-std=c++11") || // NOI18N
                        option.equals("-std=gnu++0x") || // NOI18N
-                       option.equals("-std=gnu++11")){ // NOI18N
+                       option.equals("-std=gnu++11") || // NOI18N
+                       option.equals("-std=gnu++1y") || // NOI18N
+                       option.equals("-std=c++1y")){ // NOI18N
                 artifacts.languageArtifacts.add("c++11"); // NOI18N
-            } else if (option.equals("-std=c++98")){ // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+            } else if (option.equals("-std=c++98") ||  // NOI18N
+                       option.equals("-std=c++03")){ // NOI18N
                 artifacts.languageArtifacts.add("c++98"); // NOI18N
+                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
             } else if (option.equals("-xMF")){ // NOI18N
                 // ignore dependency output file
                 if (st.hasNext()){
