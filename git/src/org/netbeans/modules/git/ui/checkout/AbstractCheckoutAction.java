@@ -146,17 +146,25 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                         @Override
                         public Void call () throws Exception {
                             LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
-                            try {
-                                client.checkoutRevision(revision, true, getProgressMonitor());
-                                if (!isCanceled() && isBranch(revision, client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR))) {
-                                    Utils.insert(NbPreferences.forModule(AbstractCheckoutAction.class), PREF_KEY_RECENT_BRANCHES + repository.getAbsolutePath(), revision, 5);
+                            boolean failOnConflict = true;
+                            boolean cont = true;
+                            while (cont) {
+                                cont = false;
+                                try {
+                                    client.checkoutRevision(revision, failOnConflict, getProgressMonitor());
+                                    if (!isCanceled() && isBranch(revision, client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR))) {
+                                        Utils.insert(NbPreferences.forModule(AbstractCheckoutAction.class), PREF_KEY_RECENT_BRANCHES + repository.getAbsolutePath(), revision, 5);
+                                    }
+                                } catch (GitException.CheckoutConflictException ex) {
+                                    if (LOG.isLoggable(Level.FINE)) {
+                                        LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
+                                    }
+                                    File[] conflicts = getFilesInConflict(ex.getConflicts());
+                                    if (resolveConflicts(conflicts, failOnConflict)) {
+                                        cont = true;
+                                        failOnConflict = false;
+                                    }
                                 }
-                            } catch (GitException.CheckoutConflictException ex) {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
-                                }
-                                File[] conflicts = getFilesInConflict(ex.getConflicts());
-                                resolveConflicts(conflicts);
                             }
                             return null;
                         }
@@ -182,22 +190,30 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                 logger.outputLine(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
             }
 
-            private void resolveConflicts (File[] conflicts) throws GitException {
+            private boolean resolveConflicts (File[] conflicts, boolean mergeAllowed) throws GitException {
                 JButton merge = new JButton();
                 Mnemonics.setLocalizedText(merge, NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.mergeButton.text")); //NOI18N
                 merge.setToolTipText(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.mergeButton.TTtext")); //NOI18N
-                merge.setEnabled(false);
                 JButton revert = new JButton();
                 Mnemonics.setLocalizedText(revert, NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.revertButton.text")); //NOI18N
                 revert.setToolTipText(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.revertButton.TTtext")); //NOI18N
                 JButton review = new JButton();
                 Mnemonics.setLocalizedText(review, NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.reviewButton.text")); //NOI18N
                 review.setToolTipText(NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.reviewButton.TTtext")); //NOI18N
+                Object initialValue;
+                Object[] buttons;
+                if (mergeAllowed) {
+                    initialValue = merge;
+                    buttons = new Object[] { merge, revert, review, NotifyDescriptor.CANCEL_OPTION };                    
+                } else {
+                    initialValue = review;
+                    buttons = new Object[] { revert, review, NotifyDescriptor.CANCEL_OPTION };
+                }
                 Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.checkoutConflicts"), //NOI18N
                         NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_CheckoutRevisionAction.checkoutConflicts"), //NOI18N
-                        NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] { merge, revert, review, NotifyDescriptor.CANCEL_OPTION }, merge));
+                        NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, buttons, initialValue));
                 if (o == merge) {
-                    // not yet implemented
+                    return true;
                 } else if (o == revert) {
                     GitClient client = getClient();
                     LOG.log(Level.FINE, "Checking out paths from HEAD"); //NOI18N
@@ -211,6 +227,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                     setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
                     GitUtils.openInVersioningView(Arrays.asList(conflicts), repository, getProgressMonitor());
                 }
+                return false;
             }
 
             private File[] getFilesInConflict (String[] conflicts) {

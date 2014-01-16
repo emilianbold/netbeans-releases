@@ -51,9 +51,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
@@ -145,7 +142,7 @@ public class AddCommand extends GitCommand {
                                 entry.setLength(sz);
                                 entry.setObjectId(f.getEntryObjectId());
                             } else if (Files.isSymbolicLink(p)) {
-                                Path link = getLinkPath(p);                                
+                                Path link = Utils.getLinkPath(p);                                
                                 entry.setFileMode(FileMode.SYMLINK);
                                 entry.setLength(0);
                                 BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
@@ -201,19 +198,6 @@ public class AddCommand extends GitCommand {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);
-        }
-    }
-
-    private Path getLinkPath (final Path p) throws IOException {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<Path>() {
-                @Override
-                public Path run () throws IOException {
-                    return Files.readSymbolicLink(p);
-                }
-            });
-        } catch (PrivilegedActionException e) {
-            throw (IOException) e.getException();
         }
     }
 
