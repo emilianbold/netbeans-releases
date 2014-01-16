@@ -1065,7 +1065,19 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 } else {
                     if (!t.equals(found)) {
                         if (!isIgnored(t)) {
-                            changed.add(t);
+                            boolean skip = false;
+                            if (t.endsWith("=1")) { // NOI18N
+                                if (found.indexOf("=") < 0) { // NOI18N
+                                    skip = true;
+                                }
+                            } else if (found.endsWith("=1")) { // NOI18N
+                                if (t.indexOf("=") < 0) { // NOI18N
+                                    skip = true;
+                                }
+                            }
+                            if (!skip) {
+                                changed.add(t);
+                            }
                         }
                     }
                 }
