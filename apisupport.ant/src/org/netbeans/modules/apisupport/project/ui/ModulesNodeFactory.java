@@ -333,11 +333,16 @@ public class ModulesNodeFactory implements NodeFactory {
                     // #137021: suite may have broken platform dependency, so just continue
                 }
                 if (remove) {
-                    try {
-                        SuiteUtils.removeModuleFromSuiteWithDependencies(suiteComponent);
-                    } catch (Exception x) {
-                        Exceptions.printStackTrace(x);
-                    }
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public @Override void run() {
+                            try {
+                                SuiteUtils.removeModuleFromSuiteWithDependencies(suiteComponent);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+
                 }
             }
         }

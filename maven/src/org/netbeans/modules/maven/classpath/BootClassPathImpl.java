@@ -100,12 +100,23 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 boolean[] includeJDK = { true };
-                result.addAll(ecpImpl.getResources(includeJDK));
+                boolean[] includeFX = { false };
+                result.addAll(ecpImpl.getResources(includeJDK, includeFX));
                 lastHintValue = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
                 if (includeJDK[0]) {
                     JavaPlatform pat = findActivePlatform();
+                    boolean hasFx = false;
                     for (ClassPath.Entry entry : pat.getBootstrapLibraries().entries()) {
+                        if (entry.getURL().getPath().endsWith("/jfxrt.jar!/")) {
+                            hasFx = true;
+                        }
                         result.add(ClassPathSupport.createResource(entry.getURL()));
+                    }
+                    if (includeFX[0] && !hasFx) {
+                        PathResourceImplementation fxcp = createFxCPImpl(pat);
+                        if (fxcp != null) {
+                            result.add(fxcp);
+                        }
                     }
                     result.addAll(nbPlatformJavaFxCp(project, pat));
                 }
@@ -234,21 +245,29 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
         //TODO do we even need this, once people setup compiler plugin correctly to use jfxrt.jar, it should appear on boot cp anyway
         for (Artifact a : project.getOriginalMavenProject().getArtifacts()) {
             if ("org.netbeans.api".equals(a.getGroupId()) && "org-netbeans-libs-javafx".equals(a.getArtifactId())) {
-                for (FileObject fo : pat.getInstallFolders()) {
-                    FileObject jdk8 = fo.getFileObject("jre/lib/ext/jfxrt.jar"); // NOI18N
-                    if (jdk8 == null) {
-                        FileObject jdk7 = fo.getFileObject("jre/lib/jfxrt.jar"); // NOI18N
-                        if (jdk7 != null) {
-                            // jdk7 add the classes on bootclasspath
-                            if (FileUtil.isArchiveFile(jdk7)) {
-                                toRet.add(ClassPathSupport.createResource(FileUtil.getArchiveRoot(jdk7.toURL())));
-                            }
-                        }
-                    }
+                PathResourceImplementation fxcp = createFxCPImpl(pat);
+                if (fxcp != null) {
+                    toRet.add(fxcp);
                 }
             }
         }
         return toRet;
+    }
+
+    private PathResourceImplementation createFxCPImpl(JavaPlatform pat) {
+        for (FileObject fo : pat.getInstallFolders()) {
+            FileObject jdk8 = fo.getFileObject("jre/lib/ext/jfxrt.jar"); // NOI18N
+            if (jdk8 == null) {
+                FileObject jdk7 = fo.getFileObject("jre/lib/jfxrt.jar"); // NOI18N
+                if (jdk7 != null) {
+                    // jdk7 add the classes on bootclasspath
+                    if (FileUtil.isArchiveFile(jdk7)) {
+                        return ClassPathSupport.createResource(FileUtil.getArchiveRoot(jdk7.toURL()));
+                    }
+                }
+            }
+        }
+        return null;
     }
     
 }

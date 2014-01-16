@@ -94,7 +94,8 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
 
     private List<? extends PathResourceImplementation> resourcesCache;
     private boolean includeJDKCache;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private boolean includeFXCache;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final NbMavenProjectImpl project;
     private BootClassPathImpl bcp;
     private String[] current;
@@ -110,24 +111,29 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
 
     public @Override List<? extends PathResourceImplementation> getResources() {
         boolean[] arr = { false };
-        return getResources(arr);
+        return getResources(arr, arr);
     }
     
-    final List<? extends PathResourceImplementation> getResources(boolean[] includeJDK) {
+    final List<? extends PathResourceImplementation> getResources(boolean[] includeJDK, boolean[] includeFx) {
         assert bcp != null;
         synchronized (bcp.LOCK) {
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 String[] boot = getBootClasspath();
                 includeJDKCache = true;
+                includeFXCache = false;
                 if (boot != null) {
                     for (String b : boot) {
                         if ("netbeans.ignore.jdk.bootclasspath".equals(b)) { // NOI18N
                             includeJDK[0] = false;
+                            includeFXCache = false;
                             includeJDKCache = false;
                         }
                     }
-                    for (URL u :  stripDefaultJavaPlatform(boot)) {
+                    StripPlatformResult res = stripDefaultJavaPlatform(boot);
+                    includeFx[0] = res.hasFx;
+                    includeFXCache = res.hasFx;
+                    for (URL u :  res.urls) {
                         if (u != null) {
                             result.add (ClassPathSupport.createResource(u));
                         }
@@ -194,6 +200,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                 resourcesCache = Collections.unmodifiableList (result);
             } else {
                 includeJDK[0] = includeJDKCache;
+                includeFx[0] = includeFXCache;
             }
             return this.resourcesCache;
         }
@@ -244,18 +251,33 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
     void setBCP(BootClassPathImpl aThis) {
         bcp = aThis;
     }
+    private class StripPlatformResult {
+        List<URL> urls;
+        boolean hasFx = false;
+    }
 
-    private List<URL> stripDefaultJavaPlatform(String[] boot) {
+    private StripPlatformResult stripDefaultJavaPlatform(String[] boot) {
+        StripPlatformResult res = new StripPlatformResult();
         List<URL> toRet = new ArrayList<URL>();
+        res.urls = toRet;
         Set<URL> defs = getDefJavaPlatBCP();
-        for (String s : boot) {
+        OUTER: for (String s : boot) {
             File f = FileUtilities.convertStringToFile(s);
             URL entry = FileUtil.urlForArchiveOrDir(f);
             if (entry != null && !defs.contains(entry)) {
+                if (entry.getPath().endsWith("/jfxrt.jar!/")) {
+                    //we need to iterate the defs and check again as jdk8 and jdk7 have these at different places
+                    for (URL d : defs) {
+                        if (d.getPath().endsWith("/jfxrt.jar!/")) {
+                            res.hasFx = true;
+                            continue OUTER;
+                        }
+                    }
+                }
                 toRet.add(entry);
             }
         }
-        return toRet;
+        return res;
     }
 
     private final Set<URL> djpbcp = new HashSet<URL>();

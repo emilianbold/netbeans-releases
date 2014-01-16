@@ -68,32 +68,36 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
     private static final PreviewPreferencesModel preferencesModel = new PreviewPreferencesModel();
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
+    private boolean changed = false;
+    private final PreviewPreferencesModel.Filter filter;
 
     
     public EditorOptionsPanelController(CodeStyle.Language language, PreviewPreferencesModel.Filter filter){
         if (TRACE) {System.out.println("EditorOptionsPanelController.ctor()");} // NOI18N
         this.language = language;
+        this.filter = filter;
         this.panel = new EditorPropertySheet(this, language, preferencesModel, filter);
     }
 
     @Override
     public void update() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.update()");} // NOI18N
-        changed = false;
         panel.load();
+        changed = false;
     }
     
     @Override
     public void applyChanges() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.applyChanges()");} // NOI18N
         panel.store();
+        changed = false;
     }
     
     @Override
     public void cancel() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.cancel()");} // NOI18N
         panel.cancel();
+        changed = false;
     }
     
     @Override
@@ -105,7 +109,7 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
     @Override
     public boolean isChanged() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
-        return changed;
+        return filter == PreviewPreferencesModel.Filter.All ? changed : false; // Filter.All contains all preferences, so skip the individual ones
     }
 
     @Override
@@ -129,11 +133,11 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
         pcs.removePropertyChangeListener(l);
     }
         
-    void changed() {
+    void changed(boolean isChanged) {
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
+        changed = isChanged;
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
