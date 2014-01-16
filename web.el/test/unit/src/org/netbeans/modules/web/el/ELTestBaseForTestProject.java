@@ -221,8 +221,11 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
         @Override
         public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
-            if ("bean".equals(beanName)) {
-                return new FieldInfo("beans.Bean");
+            switch (beanName) {
+                case "bean":
+                    return new FieldInfo("beans.Bean");
+                case "appleBean":
+                    return new FieldInfo("issue239883.AppleBean");
             }
             return null;
         }
