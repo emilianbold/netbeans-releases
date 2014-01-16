@@ -652,6 +652,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
             }
         }
+        Collections.sort(allFlags);
         for (String flag : allFlags) {
             Pair tmp = get.call(flag);
             if (tmp.systemPreprocessorSymbolsList.size() <= 6 || tmp.exitCode != 0) {
