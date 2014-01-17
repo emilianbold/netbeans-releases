@@ -136,6 +136,14 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     public boolean isChanged() {
         return changed;
     }
+    
+    private void fireChanged() {
+        boolean isChanged = false;
+        for (AnalysisCategoryPanel panel : getCategoryPanels()) {
+            isChanged |= panel.isChanged();
+        }
+        changed = isChanged;
+    }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
@@ -161,9 +169,9 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
     @Override
     public void stateChanged(ChangeEvent e) {
         if (!changed) {
-            changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
+        fireChanged();
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 

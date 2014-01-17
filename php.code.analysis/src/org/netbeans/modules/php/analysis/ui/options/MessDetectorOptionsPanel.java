@@ -175,6 +175,16 @@ public class MessDetectorOptionsPanel extends AnalysisCategoryPanel {
         analysisOptions.setMessDetectorPath(getMessDetectorPath());
         analysisOptions.setMessDetectorRuleSets(getMessDetectorRuleSets());
     }
+    
+    @Override
+    public boolean isChanged() {
+        String saved = AnalysisOptions.getInstance().getMessDetectorPath();
+        String current = getMessDetectorPath().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        return !AnalysisOptions.getInstance().getMessDetectorRuleSets().equals(getMessDetectorRuleSets());
+    }
 
     @Override
     public ValidationResult getValidationResult() {
