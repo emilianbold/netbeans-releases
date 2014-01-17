@@ -51,6 +51,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="try-lock">
+        <api name="util"/>
+        <summary>Try to lock a Mutex</summary>
+        <version major="8" minor="37"/>
+        <date year="2014" month="1" day="20"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                Two new methods, <code>tryReadAccess</code> and <code>tryWriteAccess</code>,
+                added to <a href="@TOP@org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
+                to allow better control when waiting for a lock.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Mutex"/>
+        <issue number="240442"/>
+    </change>
     <change id="darklaf">
         <api name="util"/>
         <summary>Added an option to load different images and icons when using a dark look and feel.</summary>
