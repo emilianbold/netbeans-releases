@@ -214,7 +214,7 @@ public final class MIMEResolverImpl {
      * {@literal {image/jpeg=[jpg, jpeg], image/gif=[]}}.
      * @return true, if first user defined resolver was created
      */
-    public static boolean storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
+    public static synchronized boolean storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
         Parameters.notNull("mimeToExtensions", mimeToExtensions);  //NOI18N
         final FileObject userDefinedResolverFO = getUserDefinedResolver();
         if (userDefinedResolverFO != null) {
