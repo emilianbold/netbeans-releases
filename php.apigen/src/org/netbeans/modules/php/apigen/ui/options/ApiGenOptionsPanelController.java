@@ -79,7 +79,9 @@ public class ApiGenOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        apiGenOptionsPanel.setApiGen(getOptions().getApiGen());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            apiGenOptionsPanel.setApiGen(getOptions().getApiGen());
+        }
 
         changed = false;
     }
@@ -93,6 +95,9 @@ public class ApiGenOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            apiGenOptionsPanel.setApiGen(getOptions().getApiGen());
+        }
     }
 
     @Override
@@ -111,7 +116,9 @@ public class ApiGenOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getApiGen();
+        String current = apiGenOptionsPanel.getApiGen().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

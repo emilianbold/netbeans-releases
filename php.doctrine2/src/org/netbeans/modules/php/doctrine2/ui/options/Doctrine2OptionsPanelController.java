@@ -80,7 +80,9 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
 
     @Override
     public void update() {
-        doctrine2OptionsPanel.setScript(getOptions().getScript());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            doctrine2OptionsPanel.setScript(getOptions().getScript());
+        }
 
         changed = false;
     }
@@ -94,6 +96,9 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            doctrine2OptionsPanel.setScript(getOptions().getScript());
+        }
     }
 
     @Override
@@ -117,7 +122,9 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getScript();
+        String current = doctrine2OptionsPanel.getScript().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override
