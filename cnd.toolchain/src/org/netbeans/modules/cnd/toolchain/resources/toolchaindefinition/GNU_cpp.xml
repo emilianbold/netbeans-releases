@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <compiler name="g++"/>
         <version flags="--version"/>
         <system_include_paths flags="-x c++ -E -v" parser="GNU"/>
-        <important_flags flags="-O1;-O2;-O3;-O4;-O5;-Ofast;-Og;-Os;-ansi;-fPIC;-fPIE;-fbuilding-libgcc;-ffast-math;-ffinite-math-only;-ffreestanding;-fgnu-tm;-fleading-underscore;-fno-exceptions;-fno-rtti;-fopenmp;-fpic;-fpie;-fsanitize=address;-fshort-double;-fshort-wchar;-fsignaling-nans;-fstack-protector;-fstack-protector-all;-funsigned-char;-m128bit-long-double;-m3dnow;-m64;-mabm;-madx;-maes;-march=*;-mavx;-mavx2;-mbmi;-mbmi2;-mf16c;-mfma;-mfma4;-mfsgsbase;-mlong-double-64;-mlwp;-mlzcnt;-mpclmul;-mpopcnt;-mprfchw;-mrdrnd;-mrdseed;-mrtm;-msse3;-msse4;-msse4.1;-msse4.2;-msse4a;-msse5;-mssse3;-mtbm;-mtune=*;-mx32;-mxop;-mxsave;-mxsaveopt;-pthreads;-std=*;"/>
+        <important_flags flags="-O;-O1;-O2;-O3;-O4;-O5;-Ofast;-Og;-Os;-ansi;-fPIC;-fPIE;-fbuilding-libgcc;-ffast-math;-ffinite-math-only;-ffreestanding;-fgnu-tm;-fleading-underscore;-fno-exceptions;-fno-rtti;-fopenmp;-fpic;-fpie;-fsanitize=address;-fshort-double;-fshort-wchar;-fsignaling-nans;-fstack-protector;-fstack-protector-all;-funsigned-char;-m128bit-long-double;-m32;-m3dnow;-m64;-m96bit-long-double;-mabm;-madx;-maes;-mandroid;-march=*;-mavx;-mavx2;-mbionic;-mbmi;-mbmi2;-mcx16;-mf16c;-mfma;-mfma4;-mfsgsbase;-mlong-double-64;-mlwp;-mlzcnt;-mpclmul;-mpopcnt;-mprfchw;-mrdrnd;-mrdseed;-mrtm;-msse3;-msse4;-msse4.1;-msse4.2;-msse4a;-msse5;-mssse3;-mtbm;-mtune=*;-muclibc;-mx32;-mxop;-mxsave;-mxsaveopt;-nostdlib;-pthreads;-std=*;"/>
         <system_macros flags="-x c++ -E -dM" parser="GNU">
             <macro stringvalue="__STDC__=1"/>
             
