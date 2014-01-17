@@ -70,10 +70,12 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public void update() {
-        symfonyOptionsPanel.setSymfony(getOptions().getSymfony());
-        symfonyOptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
-        symfonyOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
-        symfonyOptionsPanel.setDefaultParamsForApps(getOptions().getDefaultParamsForApps());
+        if (!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            symfonyOptionsPanel.setSymfony(getOptions().getSymfony());
+            symfonyOptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
+            symfonyOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
+            symfonyOptionsPanel.setDefaultParamsForApps(getOptions().getDefaultParamsForApps());
+        }
 
         changed = false;
     }
@@ -90,6 +92,12 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public void cancel() {
+        if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            symfonyOptionsPanel.setSymfony(getOptions().getSymfony());
+            symfonyOptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
+            symfonyOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
+            symfonyOptionsPanel.setDefaultParamsForApps(getOptions().getDefaultParamsForApps());
+        }
     }
 
     @Override
@@ -108,7 +116,14 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getSymfony();
+        String current = symfonyOptionsPanel.getSymfony().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        return getOptions().getIgnoreCache() != symfonyOptionsPanel.getIgnoreCache()
+                || !getOptions().getDefaultParamsForProject().equals(symfonyOptionsPanel.getDefaultParamsForProject().trim())
+                || !getOptions().getDefaultParamsForApps().equals(symfonyOptionsPanel.getDefaultParamsForApps().trim());
     }
 
     @Override
