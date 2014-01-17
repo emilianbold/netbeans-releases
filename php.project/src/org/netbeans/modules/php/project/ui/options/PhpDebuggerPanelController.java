@@ -90,6 +90,23 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
         getPhpOptions().setDebuggerShowUrls(debuggerPanel.isShowUrls());
         getPhpOptions().setDebuggerShowConsole(debuggerPanel.isShowConsole());
     }
+    
+    @Override
+    protected boolean areOptionsChanged() {
+        if(parseInteger(debuggerPanel.getPort()) == null || parseInteger(debuggerPanel.getMaxDataLength()) == null
+                || parseInteger(debuggerPanel.getMaxStructuresDepth()) == null || parseInteger(debuggerPanel.getMaxChildren()) == null) {
+            return false;
+        }
+        return getPhpOptions().getDebuggerPort() != parseInteger(debuggerPanel.getPort())
+                || !getPhpOptions().getDebuggerSessionId().equals(debuggerPanel.getSessionId())
+                || getPhpOptions().getDebuggerMaxDataLength() != parseInteger(debuggerPanel.getMaxDataLength())
+                || getPhpOptions().isDebuggerStoppedAtTheFirstLine() != debuggerPanel.isStoppedAtTheFirstLine()
+                || getPhpOptions().getDebuggerMaxStructuresDepth() != parseInteger(debuggerPanel.getMaxStructuresDepth())
+                || getPhpOptions().getDebuggerMaxChildren() != parseInteger(debuggerPanel.getMaxChildren())
+                || getPhpOptions().isDebuggerShowUrls() != debuggerPanel.isShowUrls()
+                || getPhpOptions().isDebuggerShowConsole() != debuggerPanel.isShowConsole()
+                || getPhpOptions().isDebuggerWatchesAndEval() != debuggerPanel.isWatchesAndEval();
+    }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
