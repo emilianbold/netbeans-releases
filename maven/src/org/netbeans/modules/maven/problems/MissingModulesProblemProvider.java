@@ -268,6 +268,30 @@ public class MissingModulesProblemProvider implements ProjectProblemsProvider {
             RP.execute(task);
             return task;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 67 * hash + (this.codenamebase != null ? this.codenamebase.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final InstallModulesResolver other = (InstallModulesResolver) obj;
+            if ((this.codenamebase == null) ? (other.codenamebase != null) : !this.codenamebase.equals(other.codenamebase)) {
+                return false;
+            }
+            return true;
+        }
+        
+        
     }
 
 }
