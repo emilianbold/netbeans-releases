@@ -2391,11 +2391,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     
                     if(!node.isLeaf()) {
                         newFolderAction.enable(file);
-                        // see BasicFileChooserUI.valueChanged and issue #239192
-                        if (getFileChooser().getFileSelectionMode() == JFileChooser.FILES_ONLY) {
-                            setDirectorySelected(true);
-                            setDirectory(file);
-                        }
+                        setDirectorySelected(true);
                     }
                 }
             }

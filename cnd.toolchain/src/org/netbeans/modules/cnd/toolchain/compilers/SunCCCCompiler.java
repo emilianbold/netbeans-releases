@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -114,6 +115,7 @@ import org.openide.util.NbBundle;
                     if (getCompilerStderrCommand2() != null) {
                         getSystemIncludesAndDefines(getCompilerStderrCommand2()+" "+p, false, tmp); // NOI18N
                     }
+                    addUnique(tmp.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
