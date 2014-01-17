@@ -2633,10 +2633,11 @@ public abstract class HgCommand<T> implements Callable<T> {
      * Removes newly added files and folders under revertFiles
      * @param repository
      * @param revertFiles
+     * @param excludedPaths
      * @param logger
      * @throws HgException 
      */
-    public static void doPurge (File repository, List<File> revertFiles, OutputLogger logger) throws HgException {
+    public static void doPurge (File repository, List<File> revertFiles, List<String> excludedPaths, OutputLogger logger) throws HgException {
         if (repository == null) return;
 
         final List<String> command = new ArrayList<String>();
@@ -2647,6 +2648,10 @@ public abstract class HgCommand<T> implements Callable<T> {
         command.add(HG_EXT_PURGE);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
+        for (String excluded : excludedPaths) {
+            command.add(HG_OPT_EXCLUDE);
+            command.add(excluded);
+        }
 
         for (File f : revertFiles){
             command.add(f.getAbsolutePath());
