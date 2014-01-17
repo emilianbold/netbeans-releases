@@ -55,6 +55,8 @@ public abstract class AnalysisCategoryPanel extends JPanel {
 
     public abstract void applyChanges();
 
+    public abstract boolean isChanged();
+
     public abstract ValidationResult getValidationResult();
 
 }

@@ -77,8 +77,10 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getPanel().setTesterPath(getTesterOptions().getTesterPath());
-        getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            getPanel().setTesterPath(getTesterOptions().getTesterPath());
+            getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
+        }
         changed = false;
     }
 
@@ -96,6 +98,10 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            getPanel().setTesterPath(getTesterOptions().getTesterPath());
+            getPanel().setPhpIniPath(getTesterOptions().getPhpIniPath());
+        }
     }
 
     @Override
@@ -122,7 +128,14 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getTesterOptions().getTesterPath();
+        String current = getPanel().getTesterPath().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getTesterOptions().getPhpIniPath();
+        current = getPanel().getPhpIniPath().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

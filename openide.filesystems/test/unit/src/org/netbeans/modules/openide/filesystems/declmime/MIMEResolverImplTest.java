@@ -46,7 +46,11 @@ package org.netbeans.modules.openide.filesystems.declmime;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -385,5 +389,65 @@ public class MIMEResolverImplTest extends NbTestCase {
         logger.setLevel(Level.FINEST);
         declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
         logger.removeHandler(handler);
+    }
+
+    /**
+     * Bug 240518 - org.openide.filesystems.FileAlreadyLockedException:
+     * Services/MIMEResolver/user-defined-mime-resolver.xml.
+     *
+     * @throws InterruptedException
+     */
+    public void testStoreUserDefinedResolver() throws InterruptedException {
+        final Logger mimeResLog = Logger.getLogger(
+                MIMEResolverImpl.class.getName());
+        final Map<String, Set<String>> mimeToExtensions
+                = new HashMap<String, Set<String>>();
+        final Throwable[] throwable = new Throwable[1];
+        mimeToExtensions.put("text/plan", Collections.singleton("log"));
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+            }
+        };
+
+        Handler h = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                String msg = record.getMessage();
+                if (msg != null && msg.startsWith("Cannot delete resolver ")) {
+                    throwable[0] = record.getThrown();
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+
+        mimeResLog.addHandler(h);
+        try {
+            // run now to initialize the file
+            r.run();
+
+            // run twice in parallel.
+            for (int i = 0; i < 10; i++) {
+                Thread t1 = new Thread(r, "T1");
+                Thread t2 = new Thread(r, "T2");
+                t1.start();
+                t2.start();
+                t1.join();
+                t2.join();
+                assertNull("No error should occur", throwable[0]);
+            }
+        } finally {
+            mimeResLog.removeHandler(h);
+        }
     }
 }
