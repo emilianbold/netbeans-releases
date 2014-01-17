@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.execute.BeanRunConfig;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
@@ -102,4 +103,27 @@ public class SanityBuildAction implements ProjectProblemResolver {
         return toRet;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = SanityBuildAction.class.hashCode();
+        hash = 67 * hash + (this.nbproject != null ? this.nbproject.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SanityBuildAction other = (SanityBuildAction) obj;
+        if (this.nbproject != other.nbproject && (this.nbproject == null || !this.nbproject.equals(other.nbproject))) {
+            return false;
+        }
+        return true;
+    }
+
+    
 }

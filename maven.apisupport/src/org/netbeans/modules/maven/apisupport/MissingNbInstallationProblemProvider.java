@@ -128,16 +128,17 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
         if (parent == null) {
             File install = MavenNbModuleImpl.findIDEInstallation(project);
             if (install == null || !install.exists()) {
-                return Collections.singleton(ProjectProblem.createWarning(Bundle.TIT_Missing_platform(), Bundle.DESC_Missing_platform(), new ProjectProblemResolverImpl()));
+                return Collections.singleton(ProjectProblem.createWarning(Bundle.TIT_Missing_platform(), Bundle.DESC_Missing_platform(), new ProjectProblemResolverImpl(project)));
             }
         }
         return Collections.emptySet();     
     }
 
     private static class ProjectProblemResolverImpl implements ProjectProblemResolver {
+        private final Project project;
 
-        boolean one;
-        public ProjectProblemResolverImpl() {
+        public ProjectProblemResolverImpl(Project p) {
+            this.project = p;
         }
 
         @Override
@@ -175,7 +176,9 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
 
         @Override
         public int hashCode() {
-            return MissingNbInstallationProblemProvider.class.hashCode();
+            int hash = MissingNbInstallationProblemProvider.class.hashCode();
+            hash = 73 * hash + (this.project != null ? this.project.hashCode() : 0);
+            return hash;
         }
 
         @Override
@@ -186,8 +189,13 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
             if (getClass() != obj.getClass()) {
                 return false;
             }
+            final ProjectProblemResolverImpl other = (ProjectProblemResolverImpl) obj;
+            if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+                return false;
+            }
             return true;
         }
+
         
         
     }
