@@ -195,7 +195,7 @@ public class StatusAction  extends ContextAction {
                 // a newly created folders children.
                 // As this is the place were such files should be recognized,
                 // we will force the refresh recursivelly.
-                cache.refreshRecursively(file, false);
+                cache.refreshRecursively(file);
             } else {
                 cache.refresh(file, new FileStatusCache.RepositoryStatus(status, locks.get(file)));
             }

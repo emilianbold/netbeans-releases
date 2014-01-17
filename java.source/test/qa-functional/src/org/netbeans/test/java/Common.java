@@ -455,6 +455,7 @@ public class Common extends Object {
         int right=result.indexOf('\n',left);
         if (left > -1)
             result=result.substring(0,left+"@author".length())+result.substring(right);
+        result = result.replaceAll("\\r\\n", "\n"); // Get rid of win EOL
         return result;
     }
     

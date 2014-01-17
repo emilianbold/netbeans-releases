@@ -418,7 +418,7 @@ public class HgUtils {
     }
 
     // cached not sharable files and folders
-    private static final Map<File, Set<String>> notSharable = Collections.synchronizedMap(new HashMap<File, Set<String>>(5));
+    private static final Map<File, Set<String>> notSharable = new HashMap<File, Set<String>>(5);
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns
@@ -447,13 +447,13 @@ public class HgUtils {
     }
 
     private static boolean isNotSharable (String path, File topFile) {
-        boolean retval = false;
-        Set<String> notSharablePaths = notSharable.get(topFile);
-        if (notSharablePaths == null) {
-            notSharablePaths = Collections.emptySet();
+        synchronized (notSharable) {
+            Set<String> notSharablePaths = notSharable.get(topFile);
+            if (notSharablePaths == null) {
+                notSharablePaths = Collections.emptySet();
+            }
+            return notSharablePaths.contains(path);
         }
-        retval = notSharablePaths.contains(path);
-        return retval;
     }
 
     /**
@@ -468,7 +468,6 @@ public class HgUtils {
 
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
-        String path = file.getPath();
         File topFile = Mercurial.getInstance().getRepositoryRoot(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -477,14 +476,7 @@ public class HgUtils {
         }
         
         Set<Pattern> patterns = getIgnorePatterns(topFile);
-        try {
-        path = path.substring(topFile.getAbsolutePath().length() + 1);
-        } catch(StringIndexOutOfBoundsException e) {
-            throw e;
-        }
-        if (File.separatorChar != '/') {
-            path = path.replace(File.separatorChar, '/');
-        }
+        String path = getRelativePath(file, topFile);
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
@@ -528,6 +520,19 @@ public class HgUtils {
             }
         }
         return false;
+    }
+
+    private static String getRelativePath (File file, File ancestor) {
+        String path = file.getAbsolutePath();
+        String ancestorPath = ancestor.getAbsolutePath();
+        path = path.substring(ancestorPath.length());
+        if (File.separatorChar != '/') {
+            path = path.replace(File.separatorChar, '/');
+        }
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return path;
     }
 
     /**
@@ -1510,6 +1515,28 @@ itor tabs #66700).
 
     public static String getColorString (Color c) {
         return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    public static List<String> getNotSharablePaths (File repository, List<File> roots) {
+        List<String> ignored;
+        synchronized (notSharable) {
+            ignored = new ArrayList<String>(notSharable.get(repository));
+        }
+        if (ignored.size() > 10 && !roots.contains(repository)) {
+            // we could optimize and return only a subset of ignored files/folders
+            // there are applicable to the selected context
+            Set<String> acceptedPaths = new HashSet<String>(ignored.size());
+            for (File root : roots) {
+                String relPath = getRelativePath(root, repository);
+                for (String ignoredPath : ignored) {
+                    if (ignoredPath.startsWith(relPath) || relPath.startsWith(ignoredPath)) {
+                        acceptedPaths.add(ignoredPath);
+                    }
+                }
+            }
+            ignored = new ArrayList<String>(acceptedPaths);
+        }
+        return ignored;
     }
 
     /**

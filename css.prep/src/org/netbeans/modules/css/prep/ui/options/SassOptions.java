@@ -122,6 +122,13 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
     }
 
     @Override
+    public boolean changed() {
+        return !getComponent().getSassPath().equals(getOptions().getSassPath())
+                || getComponent().getSassOutputOnError() != getOptions().getSassOutputOnError()
+                || getComponent().getSassDebug()!= getOptions().getSassDebug();
+    }
+
+    @Override
     public void save() throws IOException {
         Warnings.resetWarning(CssPreprocessorType.SASS);
         SassExecutable.resetVersion();

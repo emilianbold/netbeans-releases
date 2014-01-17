@@ -165,7 +165,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     void updateContentAndSelect(Collection<TaskNode> toSelect) {
         this.toSelect = toSelect;
-        final boolean empty = getChildren().isEmpty();
+        List<TreeListNode> emptyList = Collections.emptyList();
+        final boolean childrenLoaded = getChildren() == emptyList;
         boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
         updateNodes();
         updateCounts();
@@ -175,8 +176,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             setExpanded(true);
         }
 
-        // if getChildren().isEmpty() is true, refresh was already performed in setExpanded
-        if (!empty || !expand) {
+        // if getChildren() is the empty list children were not loaded and refresh was already performed in setExpanded
+        if (!childrenLoaded || !expand) {
             refreshChildren();
         }
     }

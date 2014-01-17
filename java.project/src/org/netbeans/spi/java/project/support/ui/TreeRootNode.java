@@ -54,11 +54,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.SourceGroup;
@@ -101,7 +103,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jesse Glick
  */
 final class TreeRootNode extends FilterNode implements PropertyChangeListener {
-    
+
+    private static final AtomicReference<Action[]> actions = new AtomicReference<Action[]>();
     private final SourceGroup g;
     
     TreeRootNode(SourceGroup g, boolean reduced) {
@@ -161,6 +164,22 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
     public boolean canCut() {
         return false;
     }
+
+    @Override
+    @NonNull
+    public Action[] getActions(boolean context) {
+        Action[] res = actions.get();
+        if (res == null) {
+            res = PackageView.createRootNodeActions();
+            if (!actions.compareAndSet(null, res)) {
+                res = actions.get();
+            }
+        }
+        assert  res != null;
+        return res;
+    }
+
+
 
     public void propertyChange(PropertyChangeEvent ev) {
         // XXX handle SourceGroup.rootFolder change too

@@ -185,6 +185,15 @@ public abstract class CoreBridge {
         if ((Utilities.getOperatingSystem() & Utilities.OS_SOLARIS) != 0) {
             provides.add("org.openide.modules.os.Solaris"); // NOI18N
         }
+        
+        if (isJavaFX(new File(System.getProperty("java.home")))) {
+            provides.add("org.openide.modules.jre.JavaFX"); // NOI18N
+        }
     }
-    
+
+    static boolean isJavaFX(File javaHome) {
+        return 
+            new File(new File(javaHome, "lib"), "jfxrt.jar").exists() || 
+            new File(new File(new File(javaHome, "lib"), "ext"), "jfxrt.jar").exists();
+    }
 }

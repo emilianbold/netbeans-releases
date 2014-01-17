@@ -215,12 +215,14 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                                 //resolved variable
                                 beanClass = var.clazz;
                             } else {
-                                //unresolved, we need to resolve the corresponding expression
-                                //to get the type
-                                fmbType = (TypeElement)ELTypeUtilities.getReferredType(info, var, context);
+                                // unresolved, we need to resolve the corresponding expression to get the type
+                                Element referredType = ELTypeUtilities.getReferredType(info, var, context);
+                                if (referredType instanceof TypeElement) {
+                                    fmbType = (TypeElement) referredType;
+                                }
                             }
                         }
-                    } 
+                    }
                     
                     if(fmbType == null) {
                         //no such element found on the classpath

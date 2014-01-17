@@ -88,7 +88,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
     private String stringCtx = null;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
-        if (Utilities.isJavaContext(component, offset, false)) {
+        if (Utilities.isJavaContext(component, offset, true)) {
             final int startOffset = offset;
             final int endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;
             final Source source = Source.create(component.getDocument());

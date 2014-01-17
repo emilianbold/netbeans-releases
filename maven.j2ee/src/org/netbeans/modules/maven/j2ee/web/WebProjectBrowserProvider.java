@@ -64,6 +64,7 @@ import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 
 /**
  *
@@ -135,12 +136,12 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
     @Override
     public boolean hasCustomizer() {
-        return false;
+        return true;
     }
 
     @Override
     public void customize() {
-//        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("run");
+        project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("run", null);
     }
 
     @Override

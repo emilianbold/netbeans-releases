@@ -385,7 +385,14 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             if (d instanceof DataFolder && !isTemplate((DataFolder)d))  {
                 Object o = d.getPrimaryFile().getAttribute("simple"); // NOI18N
                 if (o == null || Boolean.TRUE.equals(o)) {
-                    return hasChildren((Project) projectsComboBox.getSelectedItem(), d);
+                    boolean hasChildren = hasChildren((Project) projectsComboBox.getSelectedItem(), d);
+                    if (hasChildren)
+                        return hasChildren;
+                    else {
+                        for (DataObject child : ((DataFolder) d).getChildren()) {
+                            return isFolderOfTemplates(child);
+                        }
+                    }
                 }
             }
             return false;

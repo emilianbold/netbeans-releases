@@ -1061,15 +1061,12 @@ public final class DatabaseConnection implements DBConnection {
     public boolean equals(Object obj) {
         if (obj instanceof DatabaseConnection) {
             DatabaseConnection conn = (DatabaseConnection) obj;
-            if (toString().equals(conn.toString())) {
-                if ((connectionProperties == null
-                        && conn.getConnectionProperties() == null)) {
-                    return true;
-                } else if (connectionProperties != null) {
-                    return connectionProperties.equals(
-                            conn.getConnectionProperties());
-        }
-            }
+            return Objects.equals(drv, conn.drv)
+                    && Objects.equals(drvname, conn.drvname)
+                    && Objects.equals(db, conn.db)
+                    && Objects.equals(usr, conn.usr)
+                    && Objects.equals(getSchema(), conn.getSchema())
+                    && Objects.equals(getConnectionProperties(), conn.getConnectionProperties());
         }
 
         return false;
@@ -1188,7 +1185,7 @@ public final class DatabaseConnection implements DBConnection {
     }
     
     public void refreshInExplorer() throws DatabaseException {
-        final ConnectionNode connectionNode = findConnectionNode(getName());
+        final ConnectionNode connectionNode = findConnectionNode(getDisplayName());
         if (connectionNode != null) {
             RP.post(
                 new Runnable() {
@@ -1219,7 +1216,7 @@ public final class DatabaseConnection implements DBConnection {
     public void showConnectionDialog() {
         try {
             final ConnectionNode cni = findConnectionNode(getDisplayName());
-            assert cni != null : "DatabaseConnection node found for " + this;
+            assert cni != null : "DatabaseConnection node not found for " + this;
             if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
@@ -1256,7 +1253,21 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    // Needed by unit tests as well as internally
+    /**
+     * Find a connection node using the supplied name.
+     *
+     * <p>
+     * Assumption: the name of the connection node is the display name of the
+     * connection</p>
+     *
+     * <p>
+     * Needed by unit tests as well as internally</p>
+     *
+     * @param connection display name of the connection for which the connection
+     * node should be found
+     * @return
+     * @throws DatabaseException
+     */
     public static ConnectionNode findConnectionNode(String connection) throws DatabaseException {
         assert connection != null;
 

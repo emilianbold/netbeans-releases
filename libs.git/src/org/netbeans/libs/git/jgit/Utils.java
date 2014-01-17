@@ -44,6 +44,11 @@ package org.netbeans.libs.git.jgit;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +61,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.RawText;
 import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
@@ -65,6 +71,7 @@ import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectDatabase;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefComparator;
@@ -177,8 +184,8 @@ public final class Utils {
         return result;
     }
 
-    private static Collection<PathFilter> getPathFilters (Collection<String> relativePaths) {
-        Collection<PathFilter> filters = new LinkedList<PathFilter>();
+    public static Collection<PathFilter> getPathFilters (Collection<String> relativePaths) {
+        Collection<PathFilter> filters = new ArrayList<>(relativePaths.size());
         for (String path : relativePaths) {
             filters.add(PathFilter.create(path));
         }
@@ -200,6 +207,19 @@ public final class Utils {
 
     public static String getRelativePath (File repo, final File file) {
         return getRelativePath(repo, file, false);
+    }
+
+    public static Path getLinkPath (final Path p) throws IOException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Path>() {
+                @Override
+                public Path run () throws IOException {
+                    return Files.readSymbolicLink(p);
+                }
+            });
+        } catch (PrivilegedActionException e) {
+            throw (IOException) e.getException();
+        }
     }
 
     private static String getRelativePath (File repo, final File file, boolean canonicalized) {
@@ -431,5 +451,12 @@ public final class Utils {
         ListBranchCommand cmd = new ListBranchCommand(repository, fac, true, monitor);
         cmd.execute();
         return cmd.getBranches();
+    }
+
+    public static RawText getRawText (ObjectId id, ObjectDatabase db) throws IOException {
+        if (id.equals(ObjectId.zeroId())) {
+            return RawText.EMPTY_TEXT;
+        }
+        return new RawText(db.open(id, Constants.OBJ_BLOB).getCachedBytes());
     }
 }

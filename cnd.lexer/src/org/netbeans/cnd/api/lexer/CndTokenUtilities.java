@@ -128,14 +128,41 @@ public class CndTokenUtilities {
             }            
             return;
         }
-        int shift = cppTokenSequence.move(startOffset);
+        processTokens(tp, cppTokenSequence, startOffset, lastOffset);
+    }
+    
+    /**
+     * If startOffset is less than lastOffset,
+     * then process tokens in backward direction, otherwise in forward
+     * @param tp
+     * @param doc
+     * @param startOffset
+     * @param lastOffset
+     */
+    public static void processTokens(CndTokenProcessor<Token<TokenId>> tp, TokenSequence<TokenId> cppTokenSequence, int startOffset, int lastOffset) {
+        processTokens(tp, cppTokenSequence, startOffset, lastOffset, 0);
+    }    
+    
+    /**
+     * If startOffset is less than lastOffset,
+     * then process tokens in backward direction, otherwise in forward.
+     * Tokens could be shifted via offsetShift parameter.
+     * 
+     * @param tp
+     * @param doc
+     * @param startOffset
+     * @param lastOffset
+     * @param offsetShift - shift of expression offsets from token sequence offsets
+     */
+    public static void processTokens(CndTokenProcessor<Token<TokenId>> tp, TokenSequence<TokenId> cppTokenSequence, int startOffset, int lastOffset, int offsetShift) {
+        int shift = cppTokenSequence.move(shiftOffset(startOffset, -offsetShift));
         tp.start(startOffset, startOffset - shift, lastOffset);
-        if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset, shift != 0)) {
-            tp.end(lastOffset, cppTokenSequence.offset());
+        if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset, offsetShift, shift != 0)) {
+            tp.end(lastOffset, shiftOffset(cppTokenSequence.offset(), offsetShift));
         } else {
             tp.end(lastOffset, lastOffset);
         }
-    }
+    }    
 
     public static <T extends TokenId> TokenItem<T> createTokenItem(TokenSequence<T> ts) {
         return TokenItemImpl.create(ts);
@@ -329,7 +356,7 @@ public class CndTokenUtilities {
         return offsetToken;
     }
 
-    private static boolean processTokensImpl(CndTokenProcessor<Token<TokenId>> tp, TokenSequence<TokenId> cppTokenSequence, int startOffset, int lastOffset, boolean adjust) {
+    private static boolean processTokensImpl(CndTokenProcessor<Token<TokenId>> tp, TokenSequence<TokenId> cppTokenSequence, int startOffset, int lastOffset, int offsetShift, boolean adjust) {
         boolean processedToken = false;
         boolean bwd = (lastOffset < startOffset);
         boolean adjustOnFirstIteration = adjust;
@@ -349,30 +376,34 @@ public class CndTokenUtilities {
             Token<TokenId> token = cppTokenSequence.token();
             // check finish condition
             if (bwd) {
-                if (cppTokenSequence.offset() + token.length() < lastOffset) {
+                if (shiftOffset(cppTokenSequence.offset() + token.length(), offsetShift) < lastOffset) {
                     break;
                 }
             } else {
-                if (cppTokenSequence.offset() >= lastOffset) {
+                if (shiftOffset(cppTokenSequence.offset(), offsetShift) >= lastOffset) {
                     break;
                 }
             }
-            if (tp.token(token, cppTokenSequence.offset())) {
+            if (tp.token(token, shiftOffset(cppTokenSequence.offset(), offsetShift))) {
                 // process embedding
                 @SuppressWarnings("unchecked")
                 TokenSequence<TokenId> embedded = (TokenSequence<TokenId>) cppTokenSequence.embedded();
                 if (embedded != null) {
                     int shift = 0;
-                    if (cppTokenSequence.offset() < startOffset) {
-                        shift = embedded.move(startOffset);
+                    if (shiftOffset(cppTokenSequence.offset(), offsetShift) < startOffset) {
+                        shift = embedded.move(shiftOffset(startOffset, -offsetShift));
                     }
-                    processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset, shift != 0);
+                    processedToken |= processTokensImpl(tp, embedded, startOffset, lastOffset, offsetShift, shift != 0);
                 }
             } else {
                 processedToken = true;
             }
         }
         return processedToken;
+    }
+    
+    private static int shiftOffset(int offset, int shift) {
+        return offset + shift;
     }
 
     private static class SkipTokenProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {

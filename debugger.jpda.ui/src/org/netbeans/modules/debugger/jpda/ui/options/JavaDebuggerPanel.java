@@ -206,6 +206,15 @@ final class JavaDebuggerPanel extends StorablePanel {
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
     }
+    
+    @Override
+    public boolean isChanged() {
+        boolean isChanged = false;
+        for (StorablePanel p : categoryPanels) {
+            isChanged |= p.isChanged();
+        }
+        return isChanged;
+    }
 
     boolean valid() {
         // TODO check whether form is consistent and complete

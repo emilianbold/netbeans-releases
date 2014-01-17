@@ -201,9 +201,9 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
             writer.flush();
             writer.shutdown();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
         storage.shutdown();
     }
@@ -222,9 +222,9 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
         try {
             writer.flush(unitID);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            RepositoryExceptions.throwException(this, ex);
         }
         cache.clearSoftRefs();
         storage.close(unitID, cleanRepository, requiredUnits);

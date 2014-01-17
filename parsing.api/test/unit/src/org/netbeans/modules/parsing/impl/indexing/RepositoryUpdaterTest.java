@@ -1795,7 +1795,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNotNull(refreshedRoot);
         assertFalse (ru.getScannedRoots2Dependencies().containsKey(refreshedRoot.getURL()));
         IndexingManager.getDefault().refreshIndexAndWait(refreshedRoot.getURL(), Collections.<URL>emptyList());
-        assertSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        assertSame(RepositoryUpdater.UNKNOWN_ROOT, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
         //Register the root => EMPTY_DEPS changes to regular deps
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
@@ -1806,7 +1806,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         globalPathRegistry_register(SOURCES, new ClassPath[]{cp});
         handler.await();
         assertNotNull(ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
-        assertNotSame(RepositoryUpdater.EMPTY_DEPS, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
+        assertNotSame(RepositoryUpdater.UNKNOWN_ROOT, ru.getScannedRoots2Dependencies().get(refreshedRoot.getURL()));
         handler.reset(RepositoryUpdaterTest.TestHandler.Type.ROOTS_WORK_FINISHED);
         globalPathRegistry_unregister(SOURCES, new ClassPath[]{cp});
         handler.await();

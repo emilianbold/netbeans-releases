@@ -3415,7 +3415,7 @@
         <antcall target="jfx-build-native"/>
     </target>
     <target name="build-native-noscript">
-        <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>
+        <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>        
         <antcall target="jfx-build-native-noscript"/>
     </target>
     
@@ -3532,11 +3532,9 @@
         <echo message="exec-error:${exec-error}" level="verbose"/>
         <echo message="exec-result:${exec-result}" level="verbose"/>
         <condition property="missing.WiX">
-            <not><and>
-                <contains string="${exec-output}" substring="Windows Installer Xml Compiler version"/>
-                <not><contains string="${exec-output}" substring="Windows Installer Xml Compiler version 1"/></not>
-                <not><contains string="${exec-output}" substring="Windows Installer Xml Compiler version 2"/></not>
-            </and></not>
+            <not>
+                <matches string="${exec-output}" pattern="windows\s+installer\s+xml\s+(toolset\s+)?compiler\s+version\s+3.*" casesensitive="false"/>
+            </not>
         </condition>
     </target>
     <target name="-check-dpkg-presence" depends="-check-native-bundling-type" if="need.dpkg.presence">
@@ -3705,7 +3703,7 @@
     <target name="jfxsa-debug" depends="-mark-project-state-debugging,-clean-if-config-changed,jar,-check-jfx-runtime,-warn-of-preloader,jfx-project-debug"/>
     <target name="jfxsa-debug-noscript" depends="-set-fallback-no-javascript, jfxsa-debug"/>
     
-    <target name="jfxsa-profile" depends="-mark-project-state-profiling,-check-jfx-runtime,-warn-of-preloader,profile"/>
+    <target name="jfxsa-profile" depends="-mark-project-state-profiling,-check-jfx-runtime,-warn-of-preloader,jfx-project-profile"/>
     <target name="jfxsa-profile-noscript" depends="-set-fallback-no-javascript, jfxsa-profile"/>
 
     <target name="-check-clean-if-config-changed" depends="-init-project">
@@ -3726,7 +3724,11 @@
         <echo message="Config change detected. Invoking clean." level="verbose"/>
         <antcall target="clean"/>
     </target>
-
+    
+    <target depends="-profile-check-1,-profile-pre72" description="Profile a project in the IDE." if="profiler.configured" name="jfx-project-profile" unless="profiler.info.jvmargs.agent">
+        <startprofiler/>
+        <antcall target="jfxsa-run"/>
+    </target>
 
     <!-- Shared Debugging init -->
 
@@ -3962,7 +3964,7 @@
         <echo message="Executing ${jfx.deployment.html} in debug mode using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
-            <env key="_JPI_VM_OPTIONS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            <env key="_JPI_VM_OPTIONS" value="-agentlib:jdwp=transport=${debug-transport},address=${jpda.address}"/>
             <arg file="${jfx.deployment.html}"/>
         </exec>
     </target>

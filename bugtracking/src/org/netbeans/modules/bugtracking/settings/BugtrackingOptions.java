@@ -50,10 +50,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.settings.DashboardOptions;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -69,6 +69,7 @@ import org.openide.util.lookup.Lookups;
  * @author Tomas Stupka
  */
 @OptionsPanelController.SubRegistration(
+    id = BugtrackingOptions.OPTIONS_PATH,
     displayName="#LBL_IssueTracking",
     location="Team",
     keywords="#KW_IssueTracking",
@@ -78,6 +79,8 @@ public class BugtrackingOptions extends OptionsPanelController {
         private boolean initialized = false;
         private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
         private DashboardOptions tasksPanel;
+
+        public static final String OPTIONS_PATH = "Tasks"; // name of the layer file, may be used in JDev // NOI18N
 
         public BugtrackingOptions() {
             if (initialized) return;
@@ -103,8 +106,14 @@ public class BugtrackingOptions extends OptionsPanelController {
         
         @Override
         public JComponent getComponent(Lookup masterLookup) {
-            for(Entry<String, OptionsPanelController> entry : categoryToController.entrySet()) {                                
-                panel.addPanel(entry.getKey(), entry.getValue().getComponent(masterLookup));
+            final Set<Entry<String, OptionsPanelController>> controllerEntries = categoryToController.entrySet();
+            if(controllerEntries.isEmpty()) {
+                panel.setPluginListVisible(false);                
+            } else {
+                panel.setPluginListVisible(true);   
+                for(Entry<String, OptionsPanelController> controllerEntry : controllerEntries) {                                
+                    panel.addPanel(controllerEntry.getKey(), controllerEntry.getValue().getComponent(masterLookup));
+                }
             }
             return panel;
         }

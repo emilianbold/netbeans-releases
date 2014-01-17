@@ -51,6 +51,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -85,6 +86,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */ 
 public class UpdateAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N
+    private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
 
     public UpdateAction () {
         this(ICON_RESOURCE);
@@ -286,7 +288,7 @@ public class UpdateAction extends ContextAction {
                 break;
             }
             long rev = client.update(root, revision == null ? SVNRevision.HEAD : revision, recursive);
-            revisionUpdateWorkaround(recursive, root, client, rev);
+            revisionUpdateWorkaround(recursive, FileUtil.normalizeFile(root), client, rev);
         }
         return;
     }
@@ -294,23 +296,6 @@ public class UpdateAction extends ContextAction {
     private static void revisionUpdateWorkaround(final boolean recursive, final File root, final SvnClient client, final long revision) throws SVNClientException {
         Utils.post(new Runnable() {
             public void run() {
-                // this isn't clean - the client notifies only files which realy were updated.
-                // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change         
-                List<File> filesToRefresh;
-                if (recursive) {
-                    filesToRefresh = SvnUtils.listRecursively(root);
-                } else {
-                    filesToRefresh = new ArrayList<File>();
-                    filesToRefresh.add(root);
-                    File[] files = root.listFiles();
-                    if (files != null) {
-                        for (File file : files) {
-                            filesToRefresh.add(file);
-                        }
-                    }
-                }
-                File[] fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
-
                 SVNRevision.Number svnRevision = null;
                 if(revision < -1) {
                     ISVNInfo info = null;
@@ -328,10 +313,26 @@ public class UpdateAction extends ContextAction {
                     svnRevision = new SVNRevision.Number(revision);
                 }
 
-                for (int i = 0; i < fileArray.length; ++i) {
-                    fileArray[i] = FileUtil.normalizeFile(fileArray[i]);
+                // this isn't clean - the client notifies only files which realy were updated.
+                // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change         
+                List<File> filesToRefresh;
+                File[] fileArray;
+                if (recursive) {
+                    Subversion.getInstance().getStatusCache().patchRevision(new File[] { root }, svnRevision);
+                    int maxItems = 5;
+                    filesToRefresh = patchFilesRecursively(root, svnRevision, maxItems);
+                    // if >= 10000 rather refresh everything than just too large set of files
+                    fileArray = filesToRefresh.size() >= maxItems ? null : filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                } else {
+                    filesToRefresh = new ArrayList<>();
+                    filesToRefresh.add(root);
+                    File[] files = root.listFiles();
+                    if (files != null) {
+                        filesToRefresh.addAll(Arrays.asList(files));
+                    }
+                    fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                    Subversion.getInstance().getStatusCache().patchRevision(fileArray, svnRevision);
                 }
-                Subversion.getInstance().getStatusCache().patchRevision(fileArray, svnRevision);
 
                 // the cache fires status change events to trigger the annotation refresh.
                 // unfortunatelly, we have to call the refresh explicitly for each file from this place
@@ -397,6 +398,35 @@ public class UpdateAction extends ContextAction {
             }
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
+    }
+    
+    private static List<File> patchFilesRecursively (File root, SVNRevision.Number revision, int maxReturnFiles) {
+        List<File> ret = new ArrayList<>();
+        if (root == null) {
+            return ret;
+        }
+        if (maxReturnFiles > 0) {
+            // at this point it's useless to refresh a specific set of files in the IDE
+            // it's better to refresh everything to save memory and it might be faster anyway
+            ret.add(root);
+        }
+        File[] files = root.listFiles();
+        if (files != null) {
+            FileStatusCache cache = Subversion.getInstance().getStatusCache();
+            cache.patchRevision(files, revision);
+            for (File file : files) {
+                FileInformation info = cache.getCachedStatus(file);
+                if (!(SvnUtils.isPartOfSubversionMetadata(file) || SvnUtils.isAdministrative(file)
+                        || info != null && (info.getStatus() & STATUS_RECURSIVELY_TRAVERSIBLE) == 0)) {
+                    if (file.isDirectory()) {
+                        ret.addAll(patchFilesRecursively(file, revision, maxReturnFiles - ret.size()));
+                    } else if (maxReturnFiles - ret.size() > 0) {
+                        ret.add(file);
+                    }
+                }
+            }
+        }
+        return ret;
     }
     
     private static class UpdateOutputListener implements ISVNNotifyListener {

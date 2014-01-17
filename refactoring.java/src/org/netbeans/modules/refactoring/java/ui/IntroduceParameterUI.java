@@ -54,9 +54,11 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring;
@@ -178,6 +180,9 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
     }
 
     private static TreePath validateSelection(CompilationInfo ci, int start, int end, Set<TypeKind> ignoredTypes) {
+        int[] span = ignoreWhitespaces(ci, start, end);
+        start = span[0];
+        end = span[1];
         TreePath tp = ci.getTreeUtilities().pathFor((start + end) / 2 + 1);
 
         for ( ; tp != null; tp = tp.getParentPath()) {
@@ -191,7 +196,7 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
             long treeStart = ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), leaf);
             long treeEnd   = ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), leaf);
 
-            if (!(treeStart <= start) || !(treeEnd >= end)) {
+            if (treeStart != start || treeEnd != end) {
                 continue;
             }
 
@@ -262,4 +267,27 @@ public class IntroduceParameterUI implements RefactoringUI, JavaRefactoringUIFac
 
         return false;
     }    
+    
+    private static final Set<JavaTokenId> WHITESPACES = EnumSet.of(JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+    private static int[] ignoreWhitespaces(CompilationInfo ci, int start, int end) {
+        TokenSequence<JavaTokenId> ts = ci.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        if (ts == null) {
+            return new int[]{start, end};
+        }
+        ts.move(start);
+        if (ts.moveNext()) {
+            boolean wasMoveNext = true;
+            while (WHITESPACES.contains(ts.token().id()) && (wasMoveNext = ts.moveNext())) {
+                ;
+            }
+            if (wasMoveNext && ts.offset() > start) {
+                start = ts.offset();
+            }
+        }
+        ts.move(end);
+        while (ts.movePrevious() && WHITESPACES.contains(ts.token().id()) && ts.offset() < end) {
+            end = ts.offset();
+        }
+        return new int[]{start, end};
+    }
 }

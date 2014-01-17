@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +63,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         implements ChangeListener, RefreshableItemsContainer {
 
     private final RequestProcessor.Task refreshKeysTask;
+    private final KeyUpdater keyUpdater;
     static final int WAIT_DELAY = 50;
 
     private Folder folder;
@@ -70,13 +72,8 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         this.folder = folder;
         this.provider = provider;
-        this.refreshKeysTask = provider.getAnnotationRP().create(new Runnable() {
-            @Override
-            public void run() {
-//                System.err.println("resetKeys on " + getFolder());
-                resetKeys(getKeys());
-            }
-        }, true);
+        keyUpdater = new KeyUpdater();
+        this.refreshKeysTask = provider.getAnnotationRP().create(keyUpdater, true);
     }
 
     protected final MakeProject getProject() {
@@ -133,7 +130,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                 if (folder != null) { // normally it shouldn't happen, but might happen if the project metadata is broken
                     folder.addChangeListener(BaseMakeViewChildren.this);
                     if (getProject().getProjectDirectory() != null && getProject().getProjectDirectory().isValid()) {
-                        resetKeys(getKeys());
+                        resetKeys(getKeys(null));
                     }
                 }
             }
@@ -154,7 +151,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     @SuppressWarnings("unchecked")
     protected void removeNotify() {
         refreshKeysTask.cancel();
-        refreshKeysTask.waitFinished();
+        keyUpdater.cancel();
         resetKeys(Collections.EMPTY_SET);
         if (folder != null) {
             folder.removeChangeListener(this);
@@ -188,9 +185,32 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         }
     }
 
-    abstract protected Collection<Object> getKeys();
+    abstract protected Collection<Object> getKeys(AtomicBoolean canceled);
 
     public Folder getFolder() {
         return folder;
+    }
+
+    private class KeyUpdater implements Runnable {
+        private AtomicBoolean canceled = new AtomicBoolean(false);
+        
+        private KeyUpdater() {
+        }
+
+        private synchronized void cancel() {
+            canceled.set(true);
+        }
+        
+        @Override
+        public void run() {
+            synchronized(this) {
+                canceled = new AtomicBoolean(false);
+            }
+            //System.err.println("resetKeys on " + getFolder());
+            Collection<Object> keys = getKeys(canceled);
+            if (!canceled.get()) {
+                resetKeys(keys);
+            }
+        }
     }
 }

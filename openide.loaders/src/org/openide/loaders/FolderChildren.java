@@ -241,7 +241,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     protected Node[] createNodes(FolderChildrenPair pair) {
         boolean delayCreation = 
             DELAYED_CREATION_ENABLED && 
-            EventQueue.isDispatchThread() && 
+            EventQueue.isDispatchThread() &&
             !pair.primaryFile.isFolder();
         Node ret;
         if (delayCreation) {

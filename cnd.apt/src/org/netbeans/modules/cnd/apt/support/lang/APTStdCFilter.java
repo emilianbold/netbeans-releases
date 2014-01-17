@@ -79,7 +79,6 @@ class APTStdCFilter extends APTBaseLanguageFilter {
         filter("const_cast", APTTokenTypes.LITERAL_const_cast); // NOI18N
         filter("volatile", APTTokenTypes.LITERAL_volatile); // NOI18N
         filter("char", APTTokenTypes.LITERAL_char); // NOI18N
-        filter("bool", APTTokenTypes.LITERAL_bool); // NOI18N
         filter("short", APTTokenTypes.LITERAL_short); // NOI18N
         filter("int", APTTokenTypes.LITERAL_int); // NOI18N
         filter("long", APTTokenTypes.LITERAL_long); // NOI18N
@@ -125,6 +124,7 @@ class APTStdCFilter extends APTBaseLanguageFilter {
         filter("__builtin_va_list", APTTokenTypes.LITERAL___builtin_va_list); // NOI18N
         filter("__extension__", APTTokenTypes.LITERAL___extension__); // NOI18N
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N    
+        filter("_Bool", APTTokenTypes.LITERAL__Bool); // NOI18N
         filter("_Complex", APTTokenTypes.LITERAL__Complex); // NOI18N
         filter("_Imaginary", APTTokenTypes.LITERAL__Imaginary); // NOI18N
         filter("_Noreturn", APTTokenTypes.LITERAL__Noreturn); // NOI18N        

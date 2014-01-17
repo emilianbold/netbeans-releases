@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -103,6 +103,7 @@ public class Utilities {
     public static final String UPDATE_DIR = "update"; // NOI18N
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
+    public static final String RUNNING_DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download-in-progress"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
     public static final String JAR_EXTENSION = ".jar"; //OSGi bundle
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
@@ -272,7 +273,7 @@ public class Utilities {
                 module.setAttribute(ATTR_NAME, elementImpl.getDisplayName());
                 module.setAttribute(ATTR_SPEC_VERSION, elementImpl.getSpecificationVersion().toString());
                 module.setAttribute(ATTR_SIZE, Long.toString(elementImpl.getDownloadSize()));
-                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution()).getName());
+                module.setAttribute(ATTR_NBM_NAME, InstallSupportImpl.getDestination(cluster, elementImpl.getCodeName(), elementImpl.getInstallInfo().getDistribution(), false).getName());
 
                 root.appendChild( module );
                 isEmpty = false;
@@ -296,9 +297,7 @@ public class Utilities {
         try {
             try {
                 XMLUtil.write (doc, bos, "UTF-8"); // NOI18N
-                if (bos != null) {
-                    bos.close ();
-                }
+                bos.close ();
                 fos = new FileOutputStream (dest);
                 is = new ByteArrayInputStream (bos.toByteArray ());
                 FileUtil.copy (is, fos);
@@ -309,21 +308,17 @@ public class Utilities {
                 if (fos != null) {
                     fos.close ();
                 }
-                if (bos != null) {
-                    bos.close ();
-                }
+                bos.close ();
             }
         } catch (java.io.FileNotFoundException fnfe) {
             Exceptions.printStackTrace (fnfe);
         } catch (java.io.IOException ioe) {
             Exceptions.printStackTrace (ioe);
         } finally {
-            if (bos != null) {
-                try {
-                    bos.close ();
-                } catch (Exception x) {
-                    Exceptions.printStackTrace (x);
-                }
+            try {
+                bos.close ();
+            } catch (IOException x) {
+                Exceptions.printStackTrace (x);
             }
         }
     }
@@ -354,7 +349,7 @@ public class Utilities {
             content.append(UpdateTracking.PATH_SEPARATOR);
         }
         
-        if (content == null || content.length () == 0) {
+        if (content.length () == 0) {
             return ;
         }
         
@@ -628,8 +623,7 @@ public class Utilities {
             DependencyAggregator deco = DependencyAggregator.getAggregator(d);
             int type = d.getType();
             String name = d.getName();
-            for (Iterator<ModuleInfo> it = deco.getDependening().iterator(); it.hasNext();) {
-                ModuleInfo depMI = it.next();
+            for (ModuleInfo depMI : deco.getDependening()) {
                 Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                 if (depM == null) {
                     continue;
@@ -996,9 +990,7 @@ public class Utilities {
             is = new BufferedInputStream (new FileInputStream (moduleUpdateTracking));
             InputSource xmlInputSource = new InputSource (is);
             document = XMLUtil.parse (xmlInputSource, false, false, null, org.openide.xml.EntityCatalog.getDefault ());
-            if (is != null) {
-                is.close ();
-            }
+            is.close ();
         } catch (SAXException saxe) {
             getLogger ().log (Level.INFO, "SAXException when reading " + moduleUpdateTracking, saxe);
             return null;
@@ -1030,7 +1022,7 @@ public class Utilities {
     private static Node getModuleLastVersion (Node version) {
         Node attrLast = version.getAttributes ().getNamedItem (UpdateTracking.ATTR_LAST);
         assert attrLast != null : "ELEMENT_VERSION must contain ATTR_LAST attribute.";
-        if (Boolean.valueOf (attrLast.getNodeValue ()).booleanValue ()) {
+        if (Boolean.valueOf (attrLast.getNodeValue ())) {
             return version;
         } else {
             return null;
@@ -1058,7 +1050,7 @@ public class Utilities {
             if (cluster.equals (c)) {
                 Element module = document.createElement (UpdateTracking.ELEMENT_ADDITIONAL_MODULE);
                 module.setAttribute(ATTR_NBM_NAME,
-                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution()).getName ());
+                        InstallSupportImpl.getDestination (cluster, impl.getCodeName(), impl.getInstallInfo().getDistribution(), false).getName ());
                 module.setAttribute (UpdateTracking.ATTR_ADDITIONAL_SOURCE, impl.getSource ());
                 root.appendChild( module );
                 isEmpty = false;
@@ -1090,6 +1082,7 @@ public class Utilities {
         return m != null && !m.isEnabled () && ! m.isAutoload () && ! m.isEager ();
     }
     
+    @SuppressWarnings("null")
     public static boolean isElementInstalled (UpdateElement el) {
         assert el != null : "Invalid call isElementInstalled with null parameter.";
         if (el == null) {
@@ -1199,6 +1192,7 @@ public class Utilities {
         }
     }    
     
+    @SuppressWarnings("null")
     public static boolean canWriteInCluster (File cluster) {
         assert cluster != null : "dir cannot be null";
         if (cluster == null) {
@@ -1207,7 +1201,7 @@ public class Utilities {
         if (cluster.exists () && cluster.isDirectory ()) {
             File dir4test;
             File update = new File (cluster, UPDATE_DIR);
-            File download = new File (cluster, DOWNLOAD_DIR);
+            File download = new File (cluster, RUNNING_DOWNLOAD_DIR);
             if (download.exists ()) {
                 dir4test = download;
             } else if (update.exists ()) {

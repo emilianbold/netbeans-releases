@@ -183,6 +183,7 @@ public final class Watcher extends AnnotationProvider {
         private final Set<NotifierKeyRef> references = new HashSet<NotifierKeyRef>();
         private final Thread watcher;
         private volatile boolean shutdown;
+        private int loggedRegisterExceptions = 0;
 
         @SuppressWarnings("CallToThreadStartDuringObjectConstruction")
         public Ext(Notifier<KEY> impl) {
@@ -242,7 +243,7 @@ public final class Watcher extends AnnotationProvider {
                 try {
                     getReferences().add(new NotifierKeyRef<KEY>(fo, NotifierAccessor.getDefault().addWatch(impl, fo.getPath()), REF, impl));
                 } catch (IOException ex) {
-                    Level l = fo.isValid() ? Level.WARNING : Level.FINE;
+                    Level l = getLogLevelForRegisterException(fo);
                     // XXX: handle resource overflow gracefully
                     LOG.log(l, "Cannot add filesystem watch for {0}: {1}", new Object[] {fo.getPath(), ex});
                     LOG.log(Level.FINE, null, ex);
@@ -250,6 +251,30 @@ public final class Watcher extends AnnotationProvider {
             }
         }
         
+        /**
+         * Get proper log level for IOException thrown from Notifier.addWatch.
+         * See bug 239617.
+         */
+        private Level getLogLevelForRegisterException(FileObject fo) {
+            if (!fo.isValid()) {
+                return Level.FINE;
+            } else {
+                loggedRegisterExceptions++;
+                if (loggedRegisterExceptions < 3) {
+                    return Level.WARNING;
+                } else if (loggedRegisterExceptions < 13) {
+                    return Level.INFO;
+                } else {
+                    if (loggedRegisterExceptions == 13) {
+                        LOG.info("Following \"Cannot add filesystem" //NOI18N
+                                + " watch\" will be logged with log" //NOI18N
+                                + " level FINE.");                   //NOI18N
+                    }
+                    return Level.FINE;
+                }
+            }
+        }
+
         final void unregister(FileObject fo) {
             assert !fo.isValid() || fo.isFolder() : "If valid, it should be a folder: " + fo + " clazz: " + fo.getClass();
             synchronized (LOCK) {

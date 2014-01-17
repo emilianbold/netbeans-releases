@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemOffilneTestCase;
 import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
 
@@ -54,7 +53,7 @@ import org.netbeans.modules.remote.impl.fs.ScheduleRefreshParityTestCase;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApiMultipleTestSuite extends NativeExecutionBaseTestSuite {
+public class RemoteApiMultipleTestSuite extends RemoteTestSuiteBase {
 
     @SuppressWarnings("unchecked")
     public RemoteApiMultipleTestSuite() {

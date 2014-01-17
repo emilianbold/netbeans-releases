@@ -43,16 +43,16 @@ package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class InterceptorTest extends NativeExecutionBaseTestSuite {
+public class InterceptorTest extends RemoteTestSuiteBase {
     @SuppressWarnings("unchecked")
     public InterceptorTest() {
-        this("FileOperations API", getTestClasses());
+        this("FileOperations Interceptor API", getTestClasses());
     }
 
     @SuppressWarnings("unchecked")

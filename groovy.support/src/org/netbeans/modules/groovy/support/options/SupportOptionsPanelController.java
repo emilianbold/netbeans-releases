@@ -95,7 +95,7 @@ public final class SupportOptionsPanelController extends OptionsPanelController 
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().changed();
     }
 
     @Override

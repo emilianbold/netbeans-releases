@@ -72,7 +72,9 @@ final class InternalSampler extends Sampler {
     private static final String SAMPLER_NAME = "selfsampler";  // NOI18N
     private static final String FILE_NAME = SAMPLER_NAME+SamplesOutputStream.FILE_EXT;
     private static final String UNKNOW_MIME_TYPE = "content/unknown"; // NOI18N
-    private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
+    private static final String X_DEBUG_ARG = "-Xdebug"; // NOI18N
+    private static final String JDWP_DEBUG_ARG = "-agentlib:jdwp"; // NOI18N
+    private static final String JDWP_DEBUG_ARG_PREFIX = "-agentlib:jdwp="; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(InternalSampler.class.getName());
     private static Boolean debugMode;
     private static String lastReason;
@@ -93,8 +95,17 @@ final class InternalSampler extends Sampler {
             // check if we are debugged
             RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
             List<String> args = runtime.getInputArguments();
-            if (args.contains(DEBUG_ARG)) {
+            if (args.contains(X_DEBUG_ARG)) {
                 debugMode = Boolean.TRUE;
+            } else if (args.contains(JDWP_DEBUG_ARG)) {
+                debugMode = Boolean.TRUE;
+            } else {
+                for (String arg : args) {
+                    if (arg.startsWith(JDWP_DEBUG_ARG_PREFIX)) {
+                        debugMode = Boolean.TRUE;
+                        break;
+                    }
+                }
             }
         }
         return debugMode.booleanValue();

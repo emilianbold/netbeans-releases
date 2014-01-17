@@ -53,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -97,6 +99,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private PreviewPreferencesModel preferencesModel;
     private Filter filter;
     private PropertySheet holder;
+    private boolean propertyChanged = false;
+    private boolean stylesChanged = false;
 
     EditorPropertySheet(EditorOptionsPanelController topControler, CodeStyle.Language language, PreviewPreferencesModel preferencesModel, Filter filter) {
         this.topController = topControler;
@@ -205,11 +209,11 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
             if (overrideGlobalOptions.isSelected()) {
                 set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize));
-                    set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
+                set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
                 set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize));
             } else {
                 set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize, EditorOptions.getGlobalIndentSize()));
-                    set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs()));
+                set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs()));
                 set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize, EditorOptions.getGlobalTabSize()));
             }
             set.put(new IntNodeProp(language, preferences, EditorOptions.statementContinuationIndent));
@@ -390,6 +394,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
         initLanguageCategory();
         loaded = true;
         repaintPreview();
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     void store() {
@@ -441,6 +447,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
         EditorOptions.setAllStyles(language, buf.toString());
         preferencesModel.clear(language);
         holder.setNodes(null);
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     void cancel() {
@@ -449,6 +457,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
             return;
         }
         preferencesModel.clear(language);
+        propertyChanged = false;
+        stylesChanged = false;
     }
 
     // Change in the combo
@@ -490,11 +500,12 @@ public class EditorPropertySheet extends javax.swing.JPanel
         if ( !loaded ) {
             return;
         }
+        firePrefsChanged();
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 // Notify the main controler that the page has changed
-                topController.changed();
+                topController.changed(stylesChanged || propertyChanged);
                 // Repaint the preview
                 repaintPreview();
             }
@@ -504,6 +515,24 @@ public class EditorPropertySheet extends javax.swing.JPanel
         } else {
             SwingUtilities.invokeLater(run);
         }
+    }
+    
+    private void firePrefsChanged() {
+        boolean isChanged = false;
+        Map<String, PreviewPreferences> languagePreferences = preferencesModel.getLanguagePreferences(language);
+        Set<String> keys = EditorOptions.keys();
+        for (String style : languagePreferences.keySet()) {
+            for(String key : keys) {
+                String currentValue = languagePreferences.get(style).get(key, null);
+                String savedValue = EditorOptions.getPreferences(language, style).get(key, null);
+                if(currentValue == null) {
+                    isChanged |= savedValue != null;
+                } else {
+                    isChanged |= savedValue == null ? !EditorOptions.getDefault(language, style, key).toString().equals(currentValue) : !savedValue.equals(currentValue);
+                }
+            }
+        }
+        propertyChanged = isChanged;
     }
 
     public void repaintPreview() {
@@ -518,13 +547,13 @@ public class EditorPropertySheet extends javax.swing.JPanel
             p.makeAllKeys(category.preferences);
             p.putBoolean(EditorOptions.overrideTabIndents, overrideGlobalOptions.isSelected());
             if (!overrideGlobalOptions.isSelected()){
-                p.putInt(EditorOptions.indentSize, EditorOptions.getGlobalIndentSize());
                 p.putBoolean(EditorOptions.expandTabToSpaces, EditorOptions.getGlobalExpandTabs());
                 p.putInt(EditorOptions.tabSize, EditorOptions.getGlobalTabSize());
+                p.putInt(EditorOptions.indentSize, EditorOptions.getGlobalIndentSize());
            }
             p.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
             p.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
+            p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             previewPane.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
@@ -693,7 +722,10 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         preferencesModel.resetPreferences(language, clone);
         initLanguageCategory();
         //change();
-        topController.changed();
+        Set<String> saved = new HashSet<String>();
+        saved.addAll(EditorOptions.getAllStyles(language));
+        stylesChanged = !clone.keySet().equals(saved);
+        topController.changed(stylesChanged || propertyChanged);
     }
 }//GEN-LAST:event_manageStylesActionPerformed
 
@@ -707,7 +739,7 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     private static class EntryWrapper implements Comparable<EntryWrapper> {
         private final String name;
-        private String displayName;
+        private final String displayName;
         private final PreviewPreferences preferences;
         private EntryWrapper(Map.Entry<String, PreviewPreferences> enrty){
             this.name = enrty.getKey();

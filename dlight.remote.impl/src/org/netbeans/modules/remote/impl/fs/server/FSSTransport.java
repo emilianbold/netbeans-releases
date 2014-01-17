@@ -43,8 +43,10 @@ package org.netbeans.modules.remote.impl.fs.server;
  */
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -64,9 +66,8 @@ import org.netbeans.modules.remote.impl.fs.DirEntryList;
 import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
 import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
-import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
-import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -81,10 +82,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     public static final boolean VERBOSE_RESPONSE = Boolean.getBoolean("remote.fs_server.verbose.response");
 
     private final ExecutionEnvironment env;
-
-    private final Map<String, DirEntryList> cache = new HashMap<String, DirEntryList>();
-    private final Object cacheLock = new Object();
-    private final Object lock = new Object();
 
     private final FSSDispatcher dispatcher;
     
@@ -114,93 +111,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     @Override
     public boolean isValid() {
         return dispatcher.isValid();
-    }
-
-    public void warmap(String path) {
-        long time = System.currentTimeMillis();
-        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_warmup", path); // NOI18N            
-        try {
-            RemoteLogger.fine("Warming up fs_server for {0}", path);
-            warmapImpl(path);
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        } catch (InterruptedException ex) {
-            // don't report InterruptedException
-        } finally {
-            warmupCnt.incrementAndGet();
-            RemoteStatistics.stopChannelActivity(activityID, 0);
-            RemoteLogger.fine("Warming up fs_server for {0} took {1} ms", 
-                    path, System.currentTimeMillis() - time);            
-        }
-    }
-    
-    public void warmapImpl(String path) throws IOException, InterruptedException {
-        if (path.isEmpty()) {
-            path = "/"; // NOI18N
-        }
-        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_RECURSIVE_LS, path);
-        List<String> paths = new ArrayList<String>();
-        long time = System.currentTimeMillis();
-        AtomicInteger realCnt = new AtomicInteger(0);
-        FSSResponse response = null;
-        try {
-            RemoteLogger.finest("Sending recursive request #{0} for directry {1} to fs_server", 
-                    request.getId(), path);
-            synchronized (lock) { 
-                response = dispatcher.dispatch(request);
-                while (true) {
-                    FSSResponse.Package pkg = response.getNextPackage();
-                    if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
-                        break;
-                    }
-                    Buffer buf = pkg.getBuffer();
-                    char respKind = buf.getChar();
-                    assert respKind == FSSResponseKind.FS_RSP_RECURSIVE_LS.getChar();
-                    int respId = buf.getInt();
-                    assert respId == request.getId();
-                    String serverPath = buf.getString();
-                    DirEntryList entries = readEntries(response, serverPath, request.getId(), realCnt);
-                    cache.put(serverPath, entries);
-                    paths.add(serverPath);
-                }
-            }
-        } catch (CancellationException ex) {
-            // don't report CancellationException
-            synchronized (lock) { 
-                cache.clear();
-                return;
-            }
-        } catch (ConnectException ex) {
-            ex.printStackTrace(System.err);
-        } catch (ExecutionException ex) {
-            ex.printStackTrace(System.err);
-        } finally {
-            if (response != null) {
-                response.dispose();
-            }
-            RemoteLogger.finest("Communication #{0} with fs_server for directry {1}: ({2} entries) took {3} ms",
-                    request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);
-        }
-
-        time = System.currentTimeMillis();
-        for (String p : paths) {
-            RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(p);
-            if (fo != null) {
-                fo.getChildren();
-            }
-        }
-        RemoteLogger.finest("Instantiating #{0} {1} subdirectories with fs_server for directry {2} took {3} ms",
-                request.getId(), paths.size(), path, System.currentTimeMillis() - time);
-        
-        RemoteFileObject root = RemoteFileSystemManager.getInstance().getFileSystem(env).findResource(path);
-        time = System.currentTimeMillis();
-        root.refresh();
-        RemoteLogger.finest("Refreshing #{0} with fs_server for directry {1} took {2} ms",
-                request.getId(), path, System.currentTimeMillis() - time);
-
-        synchronized (lock) { 
-            cache.clear();
-        }
     }
 
     @Override
@@ -285,13 +195,6 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     protected DirEntryList readDirectory(String path) throws IOException, InterruptedException, CancellationException, ExecutionException {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
-        }
-        synchronized (cacheLock) {
-            DirEntryList entries = cache.get(path);
-            if (entries != null) {
-                RemoteLogger.fine("Got entries from fs_server cache for {0}", path);
-                return entries;
-            }
         }
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_LS, path);
         long time = System.currentTimeMillis();
@@ -392,6 +295,20 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);
     }
+    
+    public static final void testDumpInstances(PrintStream ps) {
+        Collection<FSSTransport> transports;
+        synchronized (instancesLock) {
+            transports = instances.values();
+        }
+        for (FSSTransport tr : transports) {
+            tr.testDump(ps);
+        }
+    }
+    
+    protected void testDump(PrintStream ps) {
+        this.dispatcher.testDump(ps);
+    }
 
     @Override
     protected boolean needsClientSidePollingRefresh() {
@@ -412,18 +329,188 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     @Override
     protected void onConnect() {
-        requestRefreshCycle("/"); //NOI18N
+        // nothing: see ConnectTask
     }
 
     @Override
     protected void onFocusGained() {
         requestRefreshCycle("/"); //NOI18N
     }
- 
+
+    @Override
+    protected void scheduleRefresh(Collection<String> paths) {
+        if (!dispatcher.isRefreshing()) {
+            for (String path : paths) {
+                dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
+            }
+        }
+    }
+    
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
             // file system root has empty path
             dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
         }
     }    
+    
+    @Override
+    protected Warmup createWarmup(String path) {
+        WarmupImpl warmup = new WarmupImpl(path);
+        warmup.start();
+        return warmup;
+    }            
+
+    private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
+
+        private final String path;
+        private final Map<String, DirEntryList> cache = new HashMap<String, DirEntryList>();
+        private final Object lock = new Object();
+        private FSSResponse response;
+
+        private final boolean useListener = RemoteFileSystemUtils.getBoolean("remote.warmup.listener", false);
+        private final RequestProcessor rp;
+
+        public WarmupImpl(String path) {
+            this.path = path.isEmpty() ? "/" : path; //NOI18N
+            rp = useListener ? null : new RequestProcessor("Warming Up " + env + ':' + this.path, 1); //NOI18N
+        }
+
+        public void start() {            
+            if (useListener) {
+                try {
+                    sendRequest();
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                } catch (ExecutionException ex) {
+                    ex.printStackTrace(System.err);
+                } catch (CancellationException ex) {
+                    // don't log CancellationException
+                } catch (InterruptedException ex) {
+                    // don't log InterruptedException
+                }
+            } else {
+                rp.post(this);                
+            }
+        }
+
+        @Override
+        public void packageAdded(FSSResponse.Package pkg) {
+            if (useListener) {
+                synchronized (lock) {
+                    lock.notifyAll();
+                }                
+            }
+        }
+
+        @Override
+        public DirEntryList getAndRemove(String path) throws InterruptedException {
+            while (true) {
+                DirEntryList l = tryGetAndRemove(path);
+                if (l != null) {
+                    return l;
+                }
+                synchronized (lock) {
+                    lock.wait(1000);
+                }
+            }
+        }
+        
+
+        @Override
+        public DirEntryList tryGetAndRemove(String path) {
+            synchronized (lock) {
+                DirEntryList entries = cache.remove(path);
+                if (entries != null) {
+                    RemoteLogger.fine("Warming up: got entries for {0}; {1} cached entry lists remain", path, cache.size());
+                    return entries;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void remove(String path){
+            synchronized (lock) {
+                cache.remove(path);
+            }
+        }
+
+        
+        @Override
+        public void run() {
+            long time = System.currentTimeMillis();
+            RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_warmup", path); // NOI18N            
+            try {
+                RemoteLogger.fine("Warming up fs_server for {0}", path);
+                warmapImpl();
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            } catch (InterruptedException ex) {
+                // don't report InterruptedException
+            } finally {
+                warmupCnt.incrementAndGet();
+                RemoteStatistics.stopChannelActivity(activityID, 0);
+                RemoteLogger.fine("Warming up fs_server for {0} took {1} ms",
+                        path, System.currentTimeMillis() - time);
+            }            
+        }
+
+        private FSSResponse sendRequest() 
+                throws IOException, ConnectException, ExecutionException,
+                CancellationException, InterruptedException {
+
+            FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_RECURSIVE_LS, path);
+                RemoteLogger.finest("Sending recursive request #{0} for directry {1} to fs_server",
+                        request.getId(), path);
+            return dispatcher.dispatch(request, this);
+        }
+
+        private void warmapImpl() throws IOException, InterruptedException {
+            long time = System.currentTimeMillis();
+            AtomicInteger realCnt = new AtomicInteger(0);
+            try {
+                synchronized (lock) {
+                    response = sendRequest();                    
+                }
+
+                while (true) {
+                    FSSResponse.Package pkg = response.getNextPackage();
+                    if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
+                        break;
+                    }
+                    Buffer buf = pkg.getBuffer();
+                    char respKind = buf.getChar();
+                    assert respKind == FSSResponseKind.FS_RSP_RECURSIVE_LS.getChar();
+                    int respId = buf.getInt();
+                    assert respId == response.getId();
+                    String serverPath = buf.getString();
+                    DirEntryList entries = readEntries(response, serverPath, response.getId(), realCnt);
+                    synchronized (lock) {
+                        cache.put(serverPath, entries);
+                        lock.notifyAll();
+                    }
+                }
+                
+            } catch (CancellationException ex) {
+                // don't report CancellationException
+                synchronized (lock) {
+                    cache.clear();
+                }
+            } catch (ConnectException ex) {
+                ex.printStackTrace(System.err);
+            } catch (ExecutionException ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                FSSResponse r;
+                synchronized (lock) {
+                    r = response;
+                }
+                if (r != null) {
+                    r.dispose();
+                }
+                RemoteLogger.finest("Warming up directry {1}:{2}: ({3} entries) took {4} ms",
+                        env, path, realCnt.get(), System.currentTimeMillis() - time);
+            }
+        }
+    }
 }

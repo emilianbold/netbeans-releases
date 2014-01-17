@@ -261,4 +261,95 @@ public class Analyzer2Test extends NbTestCase {
                 .preference(SCOPE_KEY, "private")
                 .run(JavadocHint.class);
     }
+    
+    public void testUnknownHTMLTag() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <ralph> </ralph>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:3-2:10:warning:Unknown HTML Tag: <ralph>");
+    }
+    
+    public void testWrongHTMLEndTag() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <b> </ralph>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:7-2:15:warning:Unknown HTML End Tag: </ralph>");
+    }
+    
+    public void testUnexpectedHTMLEndTag() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <br> </strong>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:8-2:17:warning:Unexpected End Tag: </strong>");
+    }
+    
+    public void testNoHTMLEndTag() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <br> </br>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:8-2:13:warning:Invalid End Tag: </br>");
+    }
+    
+    public void testUnmatchedHTMLStartTag() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <b> <strong> <br> </b> </strong>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:7-2:15:warning:End Tag Missing: </strong>")
+                .assertContainsWarnings("2:7-2:15:warning:End Tag Missing: </strong>");
+    }
+    
+    public void testUnmatchedHTMLStartTag2() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "/**\n" +
+                " * <strong>\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertContainsWarnings("2:3-2:11:warning:End Tag Missing: </strong>");
+    }
 }

@@ -63,6 +63,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -76,7 +77,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
         System.setProperty("remote.user.password.keep_in_memory", "true");        
-        System.setProperty("remote.fs_server.verbose", "1");
+        System.setProperty("remote.fs_server.verbose", "0");
         System.setProperty("remote.fs_server.log", "true");        
         TestLogHandler.attach(RemoteLogger.getInstance());
     }
@@ -93,17 +94,22 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         super(testName);
         fs = null;
         rootFO = null;
-        execEnv = null;
+        execEnv = null;        
     }
 
     public RemoteFileTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         this.execEnv = execEnv;
     }
+    
+    @Override
+    protected int timeOut() {
+        return super.timeOut();
+    }    
 
     @Override
     protected void setUp() throws Exception {
-        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
+        RemoteTestSuiteBase.registerTestSetup(this);
         if (FSSTransport.getInstance(execEnv) != null) {
             FSSTransport.getInstance(execEnv).testSetCleanupUponStart(true);
         }
@@ -133,7 +139,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         setLoggers(false);
-        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
+        RemoteTestSuiteBase.registerTestTearDown(this);
     }
    
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")

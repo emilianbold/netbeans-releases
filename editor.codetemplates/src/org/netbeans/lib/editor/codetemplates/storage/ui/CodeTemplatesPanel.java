@@ -45,6 +45,7 @@
 package org.netbeans.lib.editor.codetemplates.storage.ui;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -65,7 +66,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
@@ -114,7 +114,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     /** Language which related info the panel currently displays. */
     private String panelLanguage;
 
-    /** Points to modified template (its row index in templates table). */
+    /** Points to modified template (its row index in templates table model, NOT view index). */
     private int unsavedTemplateIndex = -1;
 
     /** Allows to remember last edited template when templates panel gets reopened. */
@@ -408,7 +408,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         }
                     }
                     if (i == rows) {
-                        int rowIdx = tableModel.addCodeTemplate(newAbbrev);
+                        //rowIdx must be recalculated to view index
+                        int rowIdx = tTemplates.convertRowIndexToView(tableModel.addCodeTemplate(newAbbrev));
                         tTemplates.getSelectionModel().setSelectionInterval(rowIdx, rowIdx);
                     }
                 }
@@ -427,7 +428,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             }
         } else if (e.getSource () == bRemove) {
             CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
-            int index = tTemplates.getSelectedRow ();
+            int index = tTemplates.convertRowIndexToModel(tTemplates.getSelectedRow());
             unsavedTemplateIndex = -1;
             tableModel.removeCodeTemplate(index);
 
@@ -491,19 +492,24 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             unsavedTemplateIndex = -1;
             return;
         }
-
+        
         // Show details of the newly selected code tenplate
         CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
+        // if the user sorted a column then the view-model mapping is not the same
+        int convertRowIndexToModel = tTemplates.convertRowIndexToModel(index);
         // Don't use JEditorPane.setText(), because it goes through EditorKit.read()
         // and performs conversion as if the text was read from a file (eg. EOL
         // translations). See #130095 for details.
-        setDocumentText(epDescription.getDocument(), tableModel.getDescription(index));
-        setDocumentText(epExpandedText.getDocument(), tableModel.getText(index));
-        selectedContexts = tableModel.getContexts(index);
+        setDocumentText(epDescription.getDocument(), tableModel.getDescription(convertRowIndexToModel));
+        setDocumentText(epExpandedText.getDocument(), tableModel.getText(convertRowIndexToModel));
+        selectedContexts = tableModel.getContexts(convertRowIndexToModel);
         lContexts.repaint();
         // Mark unmodified explicitly - setDocumentText() marked as modified
         unsavedTemplateIndex = -1;
         bRemove.setEnabled(true);
+        if(index != convertRowIndexToModel) { // probably user sorted a column, so make the selection visible
+            tTemplates.scrollRectToVisible(new Rectangle(tTemplates.getCellRect(index, 0, true)));
+        }
     }
     
     private static void setDocumentText(Document doc, String text) {
@@ -549,7 +555,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
     private void textModified() {
         if (unsavedTemplateIndex < 0) {
-            unsavedTemplateIndex = tTemplates.getSelectedRow();
+            int row = tTemplates.getSelectedRow();
+            unsavedTemplateIndex = row < 0 ? -1 : tTemplates.convertRowIndexToModel(row);
         }
     }
 
@@ -794,7 +801,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             }
             lContexts.repaint();
             if (unsavedTemplateIndex < 0) {
-                unsavedTemplateIndex = tTemplates.getSelectedRow();
+                int row = tTemplates.getSelectedRow();
+                unsavedTemplateIndex = row < 0 ? -1 : tTemplates.convertRowIndexToModel(row);
             }
         }
     }

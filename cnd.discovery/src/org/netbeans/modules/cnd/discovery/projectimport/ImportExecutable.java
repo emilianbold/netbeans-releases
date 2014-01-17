@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
-import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -202,7 +201,7 @@ public class ImportExecutable implements PropertyChangeListener {
                  .setMakefileName(""); //NOI18N
         Boolean trueSourceRoot = (Boolean) map.get(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);
         if (trueSourceRoot != null && trueSourceRoot.booleanValue()) {
-            List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
+            List<SourceFolderInfo> list = new ArrayList<>();
             list.add(new SourceFolderInfo() {
 
                 @Override
@@ -229,7 +228,6 @@ public class ImportExecutable implements PropertyChangeListener {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
             map.put(DiscoveryWizardDescriptor.BUILD_RESULT, binaryPath);
-            map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
             if (sourcesPath != null && sourcesPath.length()>1) {
                  map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, sourcesPath);
             } else {
@@ -322,7 +320,7 @@ public class ImportExecutable implements PropertyChangeListener {
                             if (!mainFilePath.startsWith(sourcesPath)) {
                                 String mainFileName = CndPathUtilities.getBaseName(mainFilePath);
                                 NativeProject np = lastSelectedProject.getLookup().lookup(NativeProject.class);
-                                List<NativeFileItem> items = new ArrayList<NativeFileItem>();
+                                List<NativeFileItem> items = new ArrayList<>();
                                 if (np != null) {
                                     for(NativeFileItem item : np.getAllFiles()) {
                                         String itemPath = item.getAbsolutePath();
@@ -513,21 +511,21 @@ public class ImportExecutable implements PropertyChangeListener {
             if (applicable.getDependencies() == null || applicable.getDependencies().isEmpty()) {
                 return null;
             }
-            Set<String> checkedDll = new HashSet<String>();
+            Set<String> checkedDll = new HashSet<>();
             checkedDll.add(binary);
-            Map<String,String> dllPaths = new HashMap<String, String>();
+            Map<String,String> dllPaths = new HashMap<>();
             String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
             ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, applicable.getSearchPaths(), binary);
             for(String dll : applicable.getDependencies()) {
                 dllPaths.put(dll, findLocation(dll, ldLibPath));
             }
             while(true) {
-                List<String> secondary = new ArrayList<String>();
+                List<String> secondary = new ArrayList<>();
                 for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
                     if (entry.getValue() != null) {
                         if (!checkedDll.contains(entry.getValue())) {
                             checkedDll.add(entry.getValue());
-                            final Map<String, Object> extMap = new HashMap<String, Object>();
+                            final Map<String, Object> extMap = new HashMap<>();
                             extMap.put("DW:buildResult", entry.getValue()); // NOI18N
                             if (extension != null) {
                                 extension.discoverArtifacts(extMap);
@@ -594,7 +592,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
+    private static final List<CsmProgressListener> listeners = new ArrayList<>(1);
 
     private void onProjectParsingFinished(final String functionName, final Project makeProject) {
         if (makeProject != null) {
@@ -734,10 +732,10 @@ public class ImportExecutable implements PropertyChangeListener {
         if (!DLL_FILE_SEARCH) {
             return;
         }
-        List<File> down = new ArrayList<File>();
+        List<File> down = new ArrayList<>();
         down.add(startFolder);
         while(!down.isEmpty()) {
-            ArrayList<File> next = new ArrayList<File>();
+            ArrayList<File> next = new ArrayList<>();
             for (File file : down) {
                 if (CndPathUtilities.isIgnoredFolder(file)){
                     continue;
@@ -807,7 +805,7 @@ public class ImportExecutable implements PropertyChangeListener {
             String AbsRootPath = CndPathUtilities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
-        List<String> candidates = new ArrayList<String>();
+        List<String> candidates = new ArrayList<>();
         for (Object o : root.getElements()) {
             if (o instanceof Folder) {
                 Folder f = (Folder) o;

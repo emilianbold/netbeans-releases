@@ -465,6 +465,14 @@ public final class FileSystemProvider {
         return '/';
     }
     
+    public static void warmup(FileObject fo) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fo)) {
+                provider.warmup(fo);
+            }
+        }        
+    }
+    
     private static void noProvidersWarning(Object object) {
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {        
             if (RemoteLogger.getInstance().isLoggable(Level.FINEST)) {

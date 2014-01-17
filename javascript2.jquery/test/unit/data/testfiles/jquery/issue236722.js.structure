@@ -10,7 +10,7 @@ pluginWithoutElementName:METHOD:[PUBLIC]:ESCAPED{pluginWithoutElementName}ESCAPE
     doHook:METHOD:[PUBLIC]:ESCAPED{doHook}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     registerPlugin:METHOD:[PUBLIC]:ESCAPED{registerPlugin}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
       plugin:CLASS:[PRIVATE]:ESCAPED{plugin}:
-        __hooks:FIELD:[PUBLIC]:ESCAPED{__hooks}:
+        __hooks:FIELD:[PUBLIC]:ESCAPED{__hooks}<font color="#999999">ESCAPED{ : }Object</font>:
   defaultSettings:CLASS:[PRIVATE]:ESCAPED{defaultSettings}:
   myFunction:METHOD:[PRIVATE]:ESCAPED{myFunction}ESCAPED{(}ESCAPED{myParam}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   publicObj:CLASS:[PRIVATE]:ESCAPED{publicObj}:

@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +80,7 @@ public final class ConfigurationFactory {
         }
         // remove empty root
         StringTokenizer st = new StringTokenizer(rootFolder,"/\\"); // NOI18N
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (st.hasMoreTokens()){
             list.add(st.nextToken());
         }
@@ -121,95 +120,6 @@ public final class ConfigurationFactory {
         return current;
     }
     
-    public static void consolidateProject(ProjectConfiguration project){
-        FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
-        Set<String> userIncludes = new LinkedHashSet<String>();
-        Map<String,String> userMacros = new HashMap<String,String>();
-        Set<String> undefinedMacros = new LinkedHashSet<String>();
-        consolidateProject(root, userIncludes, userMacros, undefinedMacros);
-        root.setOverrideIncludes(false);
-        root.setOverrideMacros(false);
-        root.setOverrideUndefinedMacros(false);
-        root.setUserInludePaths(null);
-        root.setUserMacros(null);
-        root.setUndefinedMacros(null);
-        ((ProjectConfigurationImpl)project).setUserInludePaths(userIncludes);
-        ((ProjectConfigurationImpl)project).setUserMacros(userMacros);
-        ((ProjectConfigurationImpl)project).setUndefinedMacros(undefinedMacros);
-    }
-    
-    private static void consolidateProject(FolderConfigurationImpl folder, Set<String> userIncludes, Map<String,String> userMacros, Set<String> undefinedMacros){
-        for(FolderConfiguration f : folder.getFolders()){
-            FolderConfigurationImpl sub = (FolderConfigurationImpl)f;
-            consolidateProject(sub, userIncludes, userMacros, undefinedMacros);
-            sub.setOverrideIncludes(false);
-            sub.setOverrideMacros(false);
-            sub.setOverrideUndefinedMacros(false);
-            sub.setUserInludePaths(null);
-            sub.setUserMacros(null);
-            sub.setUndefinedMacros(null);
-        }
-        for(FileConfiguration f : folder.getFiles()){
-            FileConfigurationImpl file =((FileConfigurationImpl)f);
-            userIncludes.addAll(file.getUserInludePaths());
-            userMacros.putAll(file.getUserMacros());
-            undefinedMacros.addAll(file.getUndefinedMacros());
-            file.setOverrideIncludes(false);
-            file.setOverrideMacros(false);
-            file.setOverrideUndefinedMacros(false);
-            file.setUserInludePaths(null);
-            file.setUserMacros(null);
-            file.setUndefinedMacros(null);
-        }
-    }
-    
-    public static void consolidateFolder(ProjectConfiguration project){
-        FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
-        consolidateFolder(root);
-        ((ProjectConfigurationImpl)project).setUserInludePaths(null);
-        ((ProjectConfigurationImpl)project).setUserMacros(null);
-        ((ProjectConfigurationImpl)project).setUndefinedMacros(null);
-    }
-    
-    private static void consolidateFolder(FolderConfigurationImpl folder){
-        for(FolderConfiguration f : folder.getFolders()){
-            FolderConfigurationImpl sub = (FolderConfigurationImpl)f;
-            consolidateFolder(sub);
-        }
-        Set<String> userIncludes = new LinkedHashSet<String>();
-        Map<String,String> userMacros = new HashMap<String,String>();
-        Set<String> undefinedMacros = new LinkedHashSet<String>();
-        boolean hasFiles = false;
-        for(FileConfiguration f : folder.getFiles()){
-            hasFiles = true;
-            FileConfigurationImpl file =((FileConfigurationImpl)f);
-            userIncludes.addAll(file.getUserInludePaths());
-            userMacros.putAll(file.getUserMacros());
-            undefinedMacros.addAll(file.getUndefinedMacros());
-            file.setOverrideIncludes(false);
-            file.setOverrideMacros(false);
-            file.setOverrideUndefinedMacros(false);
-            file.setUserInludePaths(null);
-            file.setUserMacros(null);
-            file.setUndefinedMacros(null);
-        }
-        if (hasFiles){
-            folder.setOverrideIncludes(true);
-            folder.setOverrideMacros(true);
-            folder.setOverrideUndefinedMacros(true);
-            folder.setUserInludePaths(userIncludes);
-            folder.setUserMacros(userMacros);
-            folder.setUndefinedMacros(undefinedMacros);
-        } else {
-            folder.setOverrideIncludes(false);
-            folder.setOverrideMacros(false);
-            folder.setOverrideUndefinedMacros(false);
-            folder.setUserInludePaths(null);
-            folder.setUserMacros(null);
-            folder.setUndefinedMacros(null);
-        }
-    }
-    
     public static void consolidateFile(ProjectConfiguration project){
         FolderConfigurationImpl root = (FolderConfigurationImpl)project.getRoot();
         consolidateFile(root);
@@ -219,9 +129,9 @@ public final class ConfigurationFactory {
     }
     
     private static void consolidateFile(FolderConfigurationImpl folder){
-        Set<String> commonFoldersIncludes = new HashSet<String>();
-        Map<String,String> commonFoldersMacros = new HashMap<String,String>();
-        Set<String> commonFoldersUndefinedMacros = new HashSet<String>();
+        Set<String> commonFoldersIncludes = new HashSet<>();
+        Map<String,String> commonFoldersMacros = new HashMap<>();
+        Set<String> commonFoldersUndefinedMacros = new HashSet<>();
         boolean haveSubFolders = false;
         for(FolderConfiguration f : folder.getFolders()){
             FolderConfigurationImpl subFolder = (FolderConfigurationImpl) f;
@@ -238,7 +148,7 @@ public final class ConfigurationFactory {
                 if (commonFoldersMacros.size() > 0) {
                     Set<String> intersection = commonFoldersMacros.keySet();
                     intersection.retainAll(subFolder.getUserMacros(false).keySet());
-                    Map<String,String> newcommonFoldersMacros = new HashMap<String,String>();
+                    Map<String,String> newcommonFoldersMacros = new HashMap<>();
                     for(String key : intersection){
                         String value1 = commonFoldersMacros.get(key);
                         String value2 = subFolder.getUserMacros(false).get(key);
@@ -253,14 +163,14 @@ public final class ConfigurationFactory {
                 }
             }
         }
-        Set<String> commonFilesIncludes = new HashSet<String>();
-        Map<String,String> commonFilesMacros = new HashMap<String,String>();
-        Set<String> commonFilesUndefinedMacros = new HashSet<String>();
+        Set<String> commonFilesIncludes = new HashSet<>();
+        Map<String,String> commonFilesMacros = new HashMap<>();
+        Set<String> commonFilesUndefinedMacros = new HashSet<>();
         boolean first = true;
         if (haveSubFolders) {
-            commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
-            commonFilesMacros = new HashMap<String,String>(commonFoldersMacros);
-            commonFilesUndefinedMacros = new HashSet<String>(commonFoldersUndefinedMacros);
+            commonFilesIncludes = new HashSet<>(commonFoldersIncludes);
+            commonFilesMacros = new HashMap<>(commonFoldersMacros);
+            commonFilesUndefinedMacros = new HashSet<>(commonFoldersUndefinedMacros);
             first = false;
         }
         for(FileConfiguration f : folder.getFiles()){
@@ -280,7 +190,7 @@ public final class ConfigurationFactory {
                 if (commonFilesMacros.size() > 0) {
                     Set<String> intersection = commonFilesMacros.keySet();
                     intersection.retainAll(file.getUserMacros().keySet());
-                    Map<String,String> newCommonMacros = new HashMap<String,String>();
+                    Map<String,String> newCommonMacros = new HashMap<>();
                     for(String key : intersection){
                         String value1 = commonFilesMacros.get(key);
                         String value2 = file.getUserMacros().get(key);

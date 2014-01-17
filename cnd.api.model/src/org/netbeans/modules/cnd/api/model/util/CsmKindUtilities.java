@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFunctional;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -396,6 +398,10 @@ public class CsmKindUtilities {
         }
     }
     
+    public static boolean isFunctional(CsmObject obj) {
+        return (obj instanceof CsmFunctional);
+    }    
+    
     /*
      * checks if object is function declaration or function definition
      * it's safe to cast to CsmFunction
@@ -412,6 +418,10 @@ public class CsmKindUtilities {
             return false;
         }
     }   
+    
+    public static boolean isFunctionPointerClassifier(CsmObject obj) {
+        return (obj instanceof CsmFunctionPointerClassifier);
+    }
 
     public static boolean isLambda(CsmObject obj) {
         if (isDeclaration(obj)) {

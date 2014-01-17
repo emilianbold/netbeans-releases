@@ -43,6 +43,7 @@
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.Dimension;
 import org.openide.explorer.*;
 import org.openide.explorer.ExplorerManager.Provider;
 import org.openide.nodes.Node;
@@ -103,7 +104,7 @@ public class PropertySheetView extends PropertySheet {
     transient private ExplorerManager explorerManager;
 
     public PropertySheetView() {
-        //        setPreferredSize(new Dimension (200, 300));
+        setPreferredSize(new Dimension (200, 300));
     }
 
     /** Initializes the GUI of the view */

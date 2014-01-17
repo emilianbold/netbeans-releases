@@ -104,7 +104,7 @@ public class AddJavaFXPropertyCodeGenerator implements CodeGenerator {
             }
             Project p = FileOwnerQuery.getOwner(javac.getFileObject());
             if (p != null) {
-                if (JavaFXProjectUtils.isJavaFxEnabled(p)) {
+                if (JavaFXProjectUtils.isJavaFxEnabled(p) || JavaFXProjectUtils.isMavenFxProject(p)) {
                     //list all fields to detect collisions
                     Element e = javac.getTrees().getElement(path);
                     

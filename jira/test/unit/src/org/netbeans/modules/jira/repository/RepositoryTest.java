@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.jira.repository;
 
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -63,6 +61,7 @@ import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
 import org.netbeans.modules.jira.LogHandler;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.openide.util.Lookup;
@@ -86,7 +85,7 @@ public class RepositoryTest extends NbTestCase {
         super.setUp();
         REPO_NAME = "Beautiful-" + System.currentTimeMillis();
         JiraTestUtil.initClient(getWorkDir());
-        JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
+        JiraTestUtil.cleanProject(JiraTestUtil.getProject());
     }
 
     public static Test suite () {
@@ -216,20 +215,17 @@ public class RepositoryTest extends NbTestCase {
 //        assertEquals("somari", i.getSummary());
 //    }
 
-    public void testSimpleSearch() throws MalformedURLException, CoreException, JiraException {
-        long ts = System.currentTimeMillis();
+    public void testSimpleSearch() throws MalformedURLException, CoreException {
         String summary1 = "somary";
         String summary2 = "somar";
         RepositoryInfo info = new RepositoryInfo(REPO_NAME, JiraConnector.ID, JiraTestUtil.REPO_URL, REPO_NAME, REPO_NAME, JiraTestUtil.REPO_USER, null, JiraTestUtil.REPO_PASSWD.toCharArray() , null);
         JiraRepository repo = new JiraRepository(info);
 
-        RepositoryResponse rr = JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), summary1, "Alles Kaputt!", "Bug");
-        assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-        String id1 = rr.getTaskId();
+        NbJiraIssue issue = JiraTestUtil.createIssue(summary1, "Alles Kaputt!", "Bug");
+        String id1 = issue.getID();
 
-        JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), summary2, "Alles Kaputt!", "Bug");
-        assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
-        String id2 = rr.getTaskId();
+        issue = JiraTestUtil.createIssue(summary2, "Alles Kaputt!", "Bug");
+        String id2 = issue.getID();
         
         Collection<NbJiraIssue> issues = repo.simpleSearch(summary1);
         assertEquals(1, issues.size());
@@ -243,9 +239,9 @@ public class RepositoryTest extends NbTestCase {
         // in another issues summary
         assertTrue(issues.size() > 0);
         NbJiraIssue i = null;
-        for(NbJiraIssue issue : issues) {
-            if(issue.getKey().equals(key1)) {
-                i = issue;
+        for(NbJiraIssue is : issues) {
+            if(is.getKey().equals(key1)) {
+                i = is;
                 break;
             }
         }
@@ -255,9 +251,9 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(2, issues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(NbJiraIssue issue : issues) {
-            summaries.add(issue.getSummary());
-            ids.add(issue.getKey());
+        for(NbJiraIssue is : issues) {
+            summaries.add(is.getSummary());
+            ids.add(is.getKey());
         }
         assertTrue(summaries.contains(summary1));
         assertTrue(summaries.contains(summary2));

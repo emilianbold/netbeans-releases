@@ -42,8 +42,9 @@
 package org.netbeans.modules.cnd.repository.api;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -68,17 +69,15 @@ public final class RepositoryExceptions {
         for (RepositoryExceptionListener listener : exceptionListeners) {
             listener.anExceptionHappened(unitID, name, new RepositoryException(ex));
         }
-//        Exceptions.printStackTrace(ex);
     }
 
     public static void throwException(Object source, Key key, Throwable ex) {
         for (RepositoryExceptionListener listener : exceptionListeners) {
             listener.anExceptionHappened(key.getUnitId(), key.getUnit(), new RepositoryException(ex));
         }
-  //      Exceptions.printStackTrace(ex);
     }
 
     public static void throwException(Object source, Throwable ex) {
-        Exceptions.printStackTrace(ex);
+        CndUtils.printStackTraceOnce(new RepositoryException(ex));
     }
 }

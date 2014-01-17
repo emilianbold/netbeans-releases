@@ -162,12 +162,14 @@ public class RefreshManager {
     }        
     
     public void scheduleRefreshOnFocusGained() {        
-        if (REFRESH_ON_FOCUS && RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
-            Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
-            RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
-            scheduleRefreshImpl(filterDirectories(fileObjects), false);
-        } else {
-            RemoteFileSystemTransport.onFocusGained(env);
+        if (REFRESH_ON_FOCUS) {
+            if (RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
+                Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
+                RemoteLogger.getInstance().log(Level.FINE, "Refresh on focus gained schedulled for {0} directories on {1}", new Object[]{fileObjects.size(), env});
+                scheduleRefreshImpl(filterDirectories(fileObjects), false);
+            } else {
+                RemoteFileSystemTransport.onFocusGained(env);
+            }
         }
     }
 
@@ -208,7 +210,7 @@ public class RefreshManager {
         }        
     }
     
-    public void scheduleRefreshExistent(Collection<String> paths) {
+    public void scheduleRefreshExistent(Collection<String> paths, boolean addExistingChildren) {
         Collection<RemoteFileObjectBase> fileObjects = new ArrayList<RemoteFileObjectBase>(paths.size());
         for (String path : paths) {
             RemoteFileObjectBase fo = factory.getCachedFileObject(path);
@@ -216,7 +218,7 @@ public class RefreshManager {
                 fileObjects.add(fo);
             }
         }
-        scheduleRefresh(fileObjects, true);
+        scheduleRefresh(fileObjects, addExistingChildren);
     }
        
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript2.editor.options.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
@@ -54,7 +55,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.awt.Mnemonics;
@@ -70,6 +74,7 @@ public class CodeCompletionPanel extends JPanel {
     private final Preferences preferences;
     private final ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
     private final ItemListener defaultRadioButtonListener = new DefaultRadioButtonListener();
+    private final ChangeListener defaultChangeListener = new DefaultChangeListener();
 
     public CodeCompletionPanel(Preferences preferences) {
         assert preferences != null;
@@ -142,6 +147,12 @@ public class CodeCompletionPanel extends JPanel {
                 OptionsUtils.AUTO_COMPLETION_AFTER_DOT_DEFAULT);
         autoCompletionAfterDotCheckBox.setSelected(autoCompletionVariables);
         autoCompletionAfterDotCheckBox.addItemListener(defaultCheckBoxListener);
+        
+        int codeCompletionItemSignatureWidth = preferences.getInt(
+                OptionsUtils.COMPETION_ITEM_SIGNATURE_WIDTH, 
+                OptionsUtils.COMPETION_ITEM_SIGNATURE_WIDTH_DEFAULT);
+        codeCompletionSignatureWidthSpinner.setValue(codeCompletionItemSignatureWidth);
+        codeCompletionSignatureWidthSpinner.addChangeListener(defaultChangeListener);
     }
 
     void setAutoCompletionState(boolean enabled) {
@@ -154,6 +165,7 @@ public class CodeCompletionPanel extends JPanel {
         preferences.putBoolean(OptionsUtils.AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
         preferences.putBoolean(OptionsUtils.AUTO_COMPLETION_FULL, autoCompletionFullRadioButton.isSelected());
         preferences.putBoolean(OptionsUtils.AUTO_COMPLETION_AFTER_DOT, autoCompletionAfterDotCheckBox.isSelected());
+        preferences.putInt(OptionsUtils.COMPETION_ITEM_SIGNATURE_WIDTH, (Integer)codeCompletionSignatureWidthSpinner.getValue());
     }
 
     /** This method is called from within the constructor to
@@ -175,6 +187,8 @@ public class CodeCompletionPanel extends JPanel {
         autoCompletionFullRadioButton = new JRadioButton();
         autoCompletionCustomizeRadioButton = new JRadioButton();
         autoCompletionAfterDotCheckBox = new JCheckBox();
+        codeCompletionSignatureWidthLabel = new JLabel();
+        codeCompletionSignatureWidthSpinner = new JSpinner();
 
         Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
@@ -195,6 +209,10 @@ public class CodeCompletionPanel extends JPanel {
         Mnemonics.setLocalizedText(autoCompletionCustomizeRadioButton, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionCustomizeRadioButton.text")); // NOI18N
 
         Mnemonics.setLocalizedText(autoCompletionAfterDotCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionAfterDotCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(codeCompletionSignatureWidthLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.codeCompletionSignatureWidthLabel.text")); // NOI18N
+
+        codeCompletionSignatureWidthSpinner.setMinimumSize(new Dimension(100, 28));
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -224,7 +242,12 @@ public class CodeCompletionPanel extends JPanel {
                         .addComponent(autoCompletionTypeResolutionLabel))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(32, 32, 32)
-                        .addComponent(autoCompletionAfterDotCheckBox, GroupLayout.PREFERRED_SIZE, 144, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(autoCompletionAfterDotCheckBox, GroupLayout.PREFERRED_SIZE, 144, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(codeCompletionSignatureWidthLabel)
+                        .addGap(4, 4, 4)
+                        .addComponent(codeCompletionSignatureWidthSpinner, GroupLayout.PREFERRED_SIZE, 61, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -246,7 +269,11 @@ public class CodeCompletionPanel extends JPanel {
                 .addComponent(autoCompletionSmartQuotesLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(autoCompletionSmartQuotesCheckBox)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(codeCompletionSignatureWidthLabel)
+                    .addComponent(codeCompletionSignatureWidthSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.AccessibleContext.accessibleName")); // NOI18N
@@ -262,6 +289,8 @@ public class CodeCompletionPanel extends JPanel {
     private JCheckBox autoCompletionTypeResolutionCheckBox;
     private JLabel autoCompletionTypeResolutionLabel;
     private JCheckBox autoStringConcatenationCheckBox;
+    private JLabel codeCompletionSignatureWidthLabel;
+    private JSpinner codeCompletionSignatureWidthSpinner;
     private JLabel enableAutocompletionLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -278,6 +307,13 @@ public class CodeCompletionPanel extends JPanel {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 validateData();
             }
+        }
+    }
+    
+    private final class DefaultChangeListener implements ChangeListener, Serializable {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            validateData();
         }
     }
     

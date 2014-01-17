@@ -291,9 +291,10 @@ public class GeneralAngular extends JellyTestCase {
 
     protected void checkCompletionMatchesPrefix(List list, String prefix) {
         StringBuilder sb = new StringBuilder();
+        prefix = prefix.toLowerCase();
         String item = "";
         for (int i = 0; i < list.size(); i++) {
-            item = list.get(i).toString();
+            item = list.get(i).toString().toLowerCase();
             if(!item.startsWith(prefix)){
                 sb.append(item).append("\n");
             }

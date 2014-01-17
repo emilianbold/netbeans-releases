@@ -464,7 +464,7 @@ public abstract class AbstractEditorAction extends TextAction implements
         }
 
         final JTextComponent component = getTextComponent(evt);
-        MacroRecording.get().recordAction(this, evt); // Possibly record action in a currently recorded macro
+        MacroRecording.get().recordAction(this, evt, component); // Possibly record action in a currently recorded macro
 
         if (UILOG.isLoggable(Level.FINE)) {
             // TODO [Mila] - Set action's property to disable UI logging

@@ -118,18 +118,14 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
 
         String options = ""; // NOI18N
         options += getFFlagsBasic(compiler) + " "; // NOI18N
-        FortranCompilerConfiguration master = this;
-        while (master != null) {
+        for(BasicCompilerConfiguration master : getMasters(true)){
             options += master.getCommandLineConfiguration().getValue() + " "; // NOI18N
-            master = (FortranCompilerConfiguration)master.getMaster();
         }
         options += getAllOptions2(compiler) + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 
     public String getAllOptions2(AbstractCompiler compiler) {
-        FortranCompilerConfiguration master = (FortranCompilerConfiguration) getMaster();
-
         String options = ""; // NOI18N
         if (getDevelopmentMode().getValue() != DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(getDevelopmentMode().getValue()) + " "; // NOI18N
@@ -153,7 +149,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
             set2.setName("OtherOptions"); // NOI18N
             set2.setDisplayName(getString("OtherOptionsTxt"));
             set2.setShortDescription(getString("OtherOptionsHint"));
-            set2.put(new IntNodeProp(getMTLevel(), getMaster() != null ? false : true, "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
+            set2.put(new IntNodeProp(getMTLevel(), (getMaster() == null), "MultithreadingLevel", getString("MultithreadingLevelTxt"), getString("MultithreadingLevelHint"))); // NOI18N
             sheet.put(set2);
         }
         Sheet.Set set4 = new Sheet.Set();

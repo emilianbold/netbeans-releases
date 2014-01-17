@@ -91,6 +91,7 @@ public class SymfonyOptionsPanel extends JPanel {
 
     public SymfonyOptionsPanel() {
         initComponents();
+        setDefaultValues();
 
         // not set in Design because of windows (panel too wide then)
         symfonyScriptUsageLabel.setText(NbBundle.getMessage(SymfonyOptionsPanel.class, "LBL_SymfonyUsage", SymfonyScript.SCRIPT_NAME));
@@ -113,6 +114,13 @@ public class SymfonyOptionsPanel extends JPanel {
                 fireChange();
             }
         });
+    }
+    
+    private void setDefaultValues() {
+        setSymfony(SymfonyOptions.getInstance().getSymfony());
+        setIgnoreCache(SymfonyOptions.getInstance().getIgnoreCache());
+        setDefaultParamsForProject(SymfonyOptions.getInstance().getDefaultParamsForProject());
+        setDefaultParamsForApps(SymfonyOptions.getInstance().getDefaultParamsForApps());
     }
 
     public String getSymfony() {

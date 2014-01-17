@@ -144,7 +144,7 @@ public class JiraConnector implements BugtrackingConnector, TeamBugtrackingConne
         String product = location.substring(idx + "/browse/".length()); // NOI18N
 
         KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
-        return JiraUtils.getRepository(repo);
+        return JiraUtils.createRepository(repo);
         
     }
 

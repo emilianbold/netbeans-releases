@@ -42,17 +42,23 @@
 
 package org.netbeans.modules.git.ui.checkout;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.AbstractMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -108,12 +114,33 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
         }
 
         @Override
+        @NbBundle.Messages({
+            "MSG_GitAction.savingFiles.progress=Preparing Git action"
+        })
         public void actionPerformed (ActionEvent e) {
             final AbstractMap.SimpleImmutableEntry<File, File[]> roots = GitUtils.getActionRoots(ctx);
             if (roots != null) {
                 final File root = roots.getKey();
-                SystemAction.get(SwitchBranchAction.class).checkoutRevision(root, branchName, null,
-                        Bundle.SwitchBranchAction_KnownBranchAction_progress(branchName));
+                final AtomicBoolean canceled = new AtomicBoolean(false);
+                Runnable run = new Runnable() {
+
+                    @Override
+                    public void run () {
+                        LifecycleManager.getDefault().saveAll();
+                        Utils.logVCSActionEvent("Git"); //NOI18N
+                        if (!canceled.get()) {
+                            EventQueue.invokeLater(new Runnable() {
+
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SwitchBranchAction.class).checkoutRevision(root, branchName, null,
+                                            Bundle.SwitchBranchAction_KnownBranchAction_progress(branchName));
+                                }
+                            });
+                        }
+                    }
+                };
+                ProgressUtils.runOffEventDispatchThread(run, Bundle.MSG_GitAction_savingFiles_progress(), canceled, false);
             }
         }
     }

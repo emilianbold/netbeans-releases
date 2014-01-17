@@ -44,14 +44,13 @@ package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.remote.impl.fs.*;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RemoteApi2Test extends NativeExecutionBaseTestSuite {
+public class RemoteApi2Test extends RemoteTestSuiteBase {
 
     @SuppressWarnings("unchecked")
     public RemoteApi2Test() {
@@ -66,7 +65,8 @@ public class RemoteApi2Test extends NativeExecutionBaseTestSuite {
            RemoteLinksChangeLinkTestCase2.class,
            ListenersTestCase.class,
            ListenersParityTestCase.class,
-           PlainFileWriteEventsTestCase.class
+           PlainFileWriteEventsTestCase.class,
+           FssDispatchedHangupTestCase.class           
         };
     }
     

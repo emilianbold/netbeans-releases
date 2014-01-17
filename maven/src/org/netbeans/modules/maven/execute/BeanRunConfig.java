@@ -125,6 +125,7 @@ public class BeanRunConfig implements RunConfig {
 
     @Override
     public final void setExecutionDirectory(File executionDirectory) {
+        assert executionDirectory != null : "Please reopen issue 239540 - https://netbeans.org/bugzilla/show_bug.cgi?id=239540";
         this.executionDirectory = executionDirectory;
     }
 

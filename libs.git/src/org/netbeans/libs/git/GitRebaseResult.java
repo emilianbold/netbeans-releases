@@ -209,6 +209,17 @@ public final class GitRebaseResult {
     }
 
     static RebaseStatus parseRebaseStatus (RebaseResult.Status rebaseStatus) {
+        switch (rebaseStatus) {
+            case EDIT:
+                return RebaseStatus.STOPPED;
+            case UNCOMMITTED_CHANGES:
+                return RebaseStatus.FAILED;
+            case INTERACTIVE_PREPARED:
+                return RebaseStatus.STOPPED;
+            case STASH_APPLY_CONFLICTS:
+                return RebaseStatus.CONFLICTS;
+                
+        }
         return GitRebaseResult.RebaseStatus.valueOf(rebaseStatus.name());
     }
 }

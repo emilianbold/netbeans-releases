@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -132,6 +134,9 @@ public final class ClipboardHistory implements ClipboardListener {
             if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                 clipboardContent = (String) transferable.getTransferData(DataFlavor.stringFlavor);
             }
+        } catch (OutOfMemoryError oom) {            
+            NotificationDisplayer.getDefault().notify( NbBundle.getBundle(ClipboardHistory.class).getString("clipboard-history-oom"),NotificationDisplayer.Priority.NORMAL.getIcon(), NbBundle.getBundle(ClipboardHistory.class).getString("clipboard-history-oom-details"), null);
+            return;
         } catch (IOException ioe) {
             //ignored for bug #218255
         } catch (UnsupportedFlavorException ufe) {

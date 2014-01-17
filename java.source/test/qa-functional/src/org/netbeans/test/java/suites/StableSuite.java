@@ -43,6 +43,13 @@ package org.netbeans.test.java.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.java.generating.ConstructorElem;
+import org.netbeans.test.java.generating.FieldElem;
+import org.netbeans.test.java.generating.InitializerElem;
+import org.netbeans.test.java.generating.InnerClasses;
+import org.netbeans.test.java.generating.MethodElem;
+import org.netbeans.test.java.generating.SourceElem;
+import org.netbeans.test.java.generating.SuperClassInterfaces;
 import org.netbeans.test.java.gui.copypaste.ClassNodeTest;
 import org.netbeans.test.java.gui.copypaste.PackageNodeTest;
 import org.netbeans.test.java.gui.errorannotations.ErrorAnnotations;
@@ -55,7 +62,7 @@ import org.netbeans.test.java.hints.HintsTest;
 import org.netbeans.test.java.hints.ImplAllAbstractTest;
 import org.netbeans.test.java.hints.IntroduceInlineTest;
 import org.netbeans.test.java.hints.SurroundTest;
-import org.netbeans.test.java.navigation.MembersViewTest;
+import org.netbeans.test.java.rename.InstantRename;
 
 /**
  *
@@ -72,14 +79,21 @@ public class StableSuite {
                 .addTest(ErrorAnnotations.class)
                 .addTest(FixImportsTest.class)
                 .addTest(NewFileWizardTest.class)
-                .addTest(AddElementHintTest.class)
-                .addTest(AddImportTest.class)
-                //.addTest(HintsTest.class)
-                .addTest(ImplAllAbstractTest.class)
-                //.addTest(IntroduceInlineTest.class)
-                //.addTest(SurroundTest.class)
-                .addTest(MembersViewTest.class)
+//                .addTest(AddElementHintTest.class)
+//                .addTest(AddImportTest.class)
+//                .addTest(HintsTest.class)
+//                .addTest(ImplAllAbstractTest.class)
+//                .addTest(IntroduceInlineTest.class)
+//                .addTest(SurroundTest.class)                
+                .addTest(ConstructorElem.class)
+                .addTest(FieldElem.class)
+                .addTest(InitializerElem.class)
+                .addTest(InnerClasses.class)
+                .addTest(MethodElem.class)
+                .addTest(SourceElem.class)
+                .addTest(SuperClassInterfaces.class)
                 .addTest(ParserTest.class)
+                .addTest(InstantRename.class)                        
                 .enableModules(".*")
                 .clusters(".*")
                 );

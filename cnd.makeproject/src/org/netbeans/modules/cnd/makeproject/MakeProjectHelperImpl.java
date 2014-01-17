@@ -64,10 +64,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -75,8 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectState;
@@ -178,11 +174,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     // and reload any modified files if the project is unmodified
     private MakeProjectHelperImpl(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         this.dir = dir;
-        try {
-            dir.setAttribute("warmup", Boolean.TRUE); // NOI18N
-        } catch (IOException ex) {
-           ex.printStackTrace(System.err);
-        }
+        FileSystemProvider.warmup(dir);
         try {
             this.fileSystem = dir.getFileSystem();
         } catch (FileStateInvalidException ex) {
@@ -403,6 +395,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         assert ProjectManager.mutex().isWriteAccess();
         assert Thread.holdsLock(modifiedMetadataPaths);
         final FileLock[] _lock = new FileLock[1];
+        _lock[0] = null;
         runSaveAA(new AtomicAction() {
 
             @Override
@@ -413,7 +406,12 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                 final byte[] data = convertLineSeparator(baos, path);
                 final FileObject xml = FileUtil.createData(dir, path);
                 try {
-                    _lock[0] = xml.lock(); // unlocked by {@link #save}
+                    try {
+                        _lock[0] = xml.lock(); // unlocked by {@link #save}
+                    } catch (IOException ex) {
+                         LOG.log(Level.INFO, "Cannot save project metadata "+dir.getPath()+"/"+path, ex); //NOI18N
+                         return;
+                    }
                     OutputStream os = SmartOutputStream.getSmartOutputStream(xml, _lock[0]);
                     try {
                         os.write(data);
@@ -656,10 +654,16 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                         try {
                             if (path.equals(PROJECT_XML_PATH)) {
                                 assert projectXml != null;
-                                locks.add(saveXml(projectXml, path));
+                                final FileLock lock = saveXml(projectXml, path);
+                                if (lock != null) {
+                                    locks.add(lock);
+                                }
                             } else if (path.equals(PRIVATE_XML_PATH)) {
                                 assert privateXml != null;
-                                locks.add(saveXml(privateXml, path));
+                                final FileLock lock = saveXml(privateXml, path);
+                                if (lock != null) {
+                                    locks.add(lock);
+                                }
                             }
                         } catch (FileAlreadyLockedException x) { // #155037
                             LOG.log(Level.INFO, null, x);
@@ -674,7 +678,6 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
             }
         } finally {
             // #57791: release locks outside synchronized block.
-            locks.remove(null);
             for (FileLock lock : locks) {
                 lock.releaseLock();
             }

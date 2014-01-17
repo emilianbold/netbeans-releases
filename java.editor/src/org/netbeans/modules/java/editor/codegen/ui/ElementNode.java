@@ -257,7 +257,9 @@ public class ElementNode extends AbstractNode {
             
             this.isSelected = selected;
             if ( node != null ) {       // notity the node                
-                node.fireDisplayNameChange(null, null);                
+                node.fireDisplayNameChange(null, null);
+                if (node.getParentNode() instanceof ElementNode)
+                    ((ElementNode)node.getParentNode()).fireDisplayNameChange(null, null);                
             }
         }
         

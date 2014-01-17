@@ -1195,7 +1195,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected CsmTypeAlias createTypeAlias(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            return MemberTypeAlias.create(getContainingFile(), ClassImpl.this, ast, type, name, curentVisibility, !isRenderingLocalContext());
+            return MemberTypeAliasImpl.create(getContainingFile(), ClassImpl.this, ast, type, name, curentVisibility, !isRenderingLocalContext());
         }
 
         @Override
@@ -1296,24 +1296,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
     
-    public static final class MemberTypeAlias extends TypeAliasImpl implements CsmMember {
+    public static final class MemberTypeAliasImpl extends TypeAliasImpl implements CsmMember {
 
         private final CsmVisibility visibility;
         
-        public static MemberTypeAlias create(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility, boolean global) {
-            MemberTypeAlias memberTypedef = new MemberTypeAlias(file, containingClass, ast, type, name, curentVisibility);
+        public static MemberTypeAliasImpl create(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility, boolean global) {
+            MemberTypeAliasImpl memberTypedef = new MemberTypeAliasImpl(file, containingClass, ast, type, name, curentVisibility);
             if (!global) {
                 Utils.setSelfUID(memberTypedef);
             }
             return memberTypedef;
         }        
 
-        private MemberTypeAlias(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
+        private MemberTypeAliasImpl(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
             super(ast, file, containingClass, type, name);
             visibility = curentVisibility;
         }
 
-        private MemberTypeAlias(CsmType type, CharSequence name, CsmVisibility visibility, CsmClass containingClass, CsmFile file, int startOffset, int endOffset) {
+        private MemberTypeAliasImpl(CsmType type, CharSequence name, CsmVisibility visibility, CsmClass containingClass, CsmFile file, int startOffset, int endOffset) {
             super(type, name, containingClass, file, startOffset, endOffset);
             this.visibility = visibility;
         }
@@ -1342,7 +1342,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             PersistentUtils.writeVisibility(this.visibility, output);
         }
 
-        public MemberTypeAlias(RepositoryDataInput input) throws IOException {
+        public MemberTypeAliasImpl(RepositoryDataInput input) throws IOException {
             super(input);
             this.visibility = PersistentUtils.readVisibility(input);
             assert this.visibility != null;

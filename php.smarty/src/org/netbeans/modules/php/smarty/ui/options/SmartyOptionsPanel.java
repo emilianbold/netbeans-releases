@@ -183,11 +183,12 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     protected void update() {
-        setSmartyVersion(getOptions().getSmartyVersion());
-        setOpenDelimiter(getOptions().getDefaultOpenDelimiter());
-        setCloseDelimiter(getOptions().getDefaultCloseDelimiter());
-        setToggleCommentOption(getOptions().getToggleCommentOption());
-
+        if(!changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            setSmartyVersion(getOptions().getSmartyVersion());
+            setOpenDelimiter(getOptions().getDefaultOpenDelimiter());
+            setCloseDelimiter(getOptions().getDefaultCloseDelimiter());
+            setToggleCommentOption(getOptions().getToggleCommentOption());
+        }
     }
 
     protected void applyChanges() {
@@ -195,6 +196,15 @@ public class SmartyOptionsPanel extends JPanel {
         getOptions().setDefaultOpenDelimiter(getOpenDelimiter());
         getOptions().setDefaultCloseDelimiter(getCloseDelimiter());
         getOptions().setToggleCommentOption(getToggleCommentOption());
+    }
+
+    protected void cancel() {
+        if(changed()) { // if panel is modified by the user and options window closes, discard any changes
+            setSmartyVersion(getOptions().getSmartyVersion());
+            setOpenDelimiter(getOptions().getDefaultOpenDelimiter());
+            setCloseDelimiter(getOptions().getDefaultCloseDelimiter());
+            setToggleCommentOption(getOptions().getToggleCommentOption());
+        }
     }
 
     protected boolean valid() {
@@ -207,6 +217,13 @@ public class SmartyOptionsPanel extends JPanel {
         // everything ok
         setWarning(" "); // NOI18N
         return true;
+    }
+
+    protected boolean changed() {
+        return !getOptions().getSmartyVersion().equals(getSmartyVersion())
+                || !getOptions().getDefaultOpenDelimiter().equals(getOpenDelimiter().trim())
+                || !getOptions().getDefaultCloseDelimiter().equals(getCloseDelimiter().trim())
+                || !getOptions().getToggleCommentOption().equals(getToggleCommentOption());
     }
 
     private SmartyOptions getOptions() {

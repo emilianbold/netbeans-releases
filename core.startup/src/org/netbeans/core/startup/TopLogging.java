@@ -80,6 +80,7 @@ import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.logging.NbLogging;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -181,11 +182,21 @@ public final class TopLogging {
         }
 
         if (System.getProperty("java.util.logging.config.file") != null) { // NOI18N
+            try {
+                LogManager.getLogManager().readConfiguration();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return;
         }
         String v = System.getProperty("java.util.logging.config.class"); // NOI18N
         String p = TopLogging.class.getName();
         if (v != null && !v.equals(p)) {
+            try {
+                LogManager.getLogManager().readConfiguration();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return;
         }
 

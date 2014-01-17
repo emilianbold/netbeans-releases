@@ -43,6 +43,15 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -67,13 +76,42 @@ public class ResourceHyperlinkProcessor extends HyperlinkProcessor {
         }
         FileObject parent = fo.getParent();
 
-        if (!openFile(parent.getFileObject(env.getValueString()))) {
-            String message = NbBundle.getMessage(ResourceHyperlinkProcessor.class, "LBL_ResourceNotFound", env.getValueString());
-            StatusDisplayer.getDefault().setStatusText(message);
+        String value = env.getValueString();
+        if (value.contains("classpath")) {          //NOI18N
+            if (openFromClasspath(fo, value)) {
+                return;
+            }
+        } else {
+            if (openFile(parent.getFileObject(env.getValueString()))) {
+                return;
+            }
         }
+
+        String message = NbBundle.getMessage(ResourceHyperlinkProcessor.class, "LBL_ResourceNotFound", env.getValueString()); //NOI18N
+        StatusDisplayer.getDefault().setStatusText(message);
     }
 
-    private boolean openFile(FileObject file) {
+    private static boolean openFromClasspath(FileObject fo, String value) {
+        int colonOffset = value.indexOf(":");   //NOI18N
+        String subPath = value.substring(colonOffset + 1);
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null) {
+            List<SourceGroup> groups = new ArrayList<>();
+            Sources sources = ProjectUtils.getSources(project);
+            groups.addAll(Arrays.asList(sources.getSourceGroups("doc_root"))); //NOI18N
+            groups.addAll(Arrays.asList(sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)));
+            for (SourceGroup sourceGroup : groups) {
+                FileObject fileObject = sourceGroup.getRootFolder().getFileObject(subPath);
+                if (fileObject != null) {
+                    openFile(fileObject);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean openFile(FileObject file) {
         if (file == null) {
             return false;
         }

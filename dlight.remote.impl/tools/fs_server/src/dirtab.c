@@ -216,8 +216,10 @@ static bool flush_impl() {
     int i;
     char* buf = malloc(PATH_MAX * 2); 
     for (i = 0; i < table.size; i++) {
-        escape_strcpy(buf, table.paths[i]->abspath);
-        fprintf(fp, "%d %s\n", table.paths[i]->index, buf);
+        if (table.paths[i]->state != DE_STATE_REMOVED) {
+            escape_strcpy(buf, table.paths[i]->abspath);
+            fprintf(fp, "%d %s\n", table.paths[i]->index, buf);
+        }
     }
     free(buf);
     if (fclose(fp) == 0) {

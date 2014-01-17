@@ -115,13 +115,16 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, false); //NOI18N
     public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, true); //NOI18N
 
+    public AnnotationColorProvider () {
+        initColors();
+    }
+    
     public static synchronized AnnotationColorProvider getInstance() {
         if (INSTANCE == null) {
             INSTANCE = Lookup.getDefault().lookup(AnnotationColorProvider.class);
             if (INSTANCE == null) {
                 INSTANCE = new AnnotationColorProvider();
             }
-            INSTANCE.initColors();
         }
         return INSTANCE;
     }

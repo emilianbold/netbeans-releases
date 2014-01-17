@@ -43,14 +43,6 @@
 package org.netbeans.modules.jira.repository;
 
 import org.netbeans.modules.team.spi.RepositoryUser;
-import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
-import com.atlassian.connector.eclipse.internal.jira.core.model.User;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.util.Map;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
@@ -81,6 +73,15 @@ import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.client.spi.ContentFilter;
+import org.netbeans.modules.jira.client.spi.FilterDefinition;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider.JiraClient;
+import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
+import org.netbeans.modules.jira.client.spi.NamedFilter;
+import org.netbeans.modules.jira.client.spi.Project;
+import org.netbeans.modules.jira.client.spi.ProjectFilter;
+import org.netbeans.modules.jira.client.spi.User;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -115,10 +116,6 @@ public class JiraRepository {
     private Cache cache;
     private Image icon;
 
-    private final Set<NbTask> issuesToRefresh = new HashSet<>(5);
-    private final Set<JiraQuery> queriesToRefresh = new HashSet<JiraQuery>(3);
-    private Task refreshIssuesTask;
-    private Task refreshQueryTask;
     private RequestProcessor refreshProcessor;
     private JiraExecutor executor;
     private JiraConfiguration configuration;
@@ -308,7 +305,6 @@ public class JiraRepository {
         synchronized(QUERIES_LOCK) {
             getQueriesIntern().remove(query);
         }
-        stopRefreshing(query);
         fireQueryListChanged();
     }
 
@@ -411,7 +407,8 @@ public class JiraRepository {
         // XXX escape special characters
         // + - && || ! ( ) { } [ ] ^ " ~ * ? \
 
-        FilterDefinition fd = new FilterDefinition();
+        final JiraConnectorProvider connectorProvider = JiraConnectorSupport.getInstance().getConnector();
+        FilterDefinition fd = connectorProvider.createFilterDefinition();
         StringBuilder sb = new StringBuilder();
         StringTokenizer st = new StringTokenizer(criteria, " \t");  // NOI18N
         while (st.hasMoreTokens()) {
@@ -423,14 +420,14 @@ public class JiraRepository {
             sb.append(' ');                                         // NOI18N
         }
 
-        final ContentFilter cf = new ContentFilter(sb.toString(), true, false, false, false);
+        final ContentFilter cf = connectorProvider.createContentFilter(sb.toString(), true, false, false, false);
         fd.setContentFilter(cf);
         fd.setProjectFilter(getProjectFilter());
         
         try {
             // XXX shouldn't be only a perfect match 
             IRepositoryQuery iquery = MylynSupport.getInstance().createNewQuery(taskRepository, "Jira simple task search"); //NOI18N
-            JiraUtil.setQuery(getTaskRepository(), iquery, fd);
+            JiraConnectorSupport.getInstance().getConnector().setQuery(getTaskRepository(), iquery, fd);
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd);
             for (NbTask task : cmd.getTasks()) {
@@ -565,7 +562,7 @@ public class JiraRepository {
             public void execute() throws CoreException {
                 final JiraClient client = Jira.getInstance().getClient(getTaskRepository());
 
-                boolean needRefresh = !client.getCache().hasDetails();
+                boolean needRefresh = !client.hasDetails();
                 Jira.LOG.log(Level.FINE, "configuration refresh {0} : needRefresh = {1} forceRefresh={2}", new Object[]{getUrl(), needRefresh, forceRefresh});
                 if(forceRefresh || needRefresh) {
                     Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(getTaskRepository(), new NullProgressMonitor());
@@ -580,105 +577,6 @@ public class JiraRepository {
             return cmd.configuration;
         }
         return null;
-    }
-
-    private void setupIssueRefreshTask() {
-        if(refreshIssuesTask == null) {
-            refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
-                @Override
-                public void run() {
-                    Set<NbTask> tasks;
-                    synchronized(issuesToRefresh) {
-                        tasks = new HashSet<>(issuesToRefresh);
-                    }
-                    if(tasks.isEmpty()) {
-                        Jira.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
-                        return;
-                    }
-                    Jira.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
-                    try {
-                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory()
-                                .createSynchronizeTasksCommand(taskRepository, tasks);
-                        getExecutor().execute(cmd, false);
-                    } catch (CoreException ex) {
-                        // should not happen
-                        Jira.LOG.log(Level.WARNING, null, ex);
-                    }
-                    scheduleIssueRefresh();
-                }
-            });
-            scheduleIssueRefresh();
-        }
-    }
-
-    private void setupQueryRefreshTask() {
-        if(refreshQueryTask == null) {
-            refreshQueryTask = getRefreshProcessor().create(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Set<JiraQuery> queries;
-                        synchronized(refreshQueryTask) {
-                            queries = new HashSet<JiraQuery>(queriesToRefresh);
-                        }
-                        if(queries.isEmpty()) {
-                            Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
-                            return;
-                        }
-                        for (JiraQuery q : queries) {
-                            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
-                            QueryController qc = q.getController();
-                            qc.autoRefresh();
-                        }
-                    } finally {
-                        scheduleQueryRefresh();
-                    }
-                }
-            });
-            scheduleQueryRefresh();
-        }
-    }
-
-    private void scheduleIssueRefresh() {
-        int delay = JiraConfig.getInstance().getIssueRefreshInterval();
-        Jira.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
-        refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
-    }
-
-    private void scheduleQueryRefresh() {
-        int delay = JiraConfig.getInstance().getQueryRefreshInterval();
-        Jira.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
-        refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
-    }
-
-    public void scheduleForRefresh (NbTask task) {
-        Jira.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {task.getTaskKey(), getDisplayName()}); // NOI18N
-        synchronized(issuesToRefresh) {
-            issuesToRefresh.add(task);
-        }
-        setupIssueRefreshTask();
-    }
-
-    public void stopRefreshing (NbTask task) {
-        Jira.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {task.getTaskKey(), getDisplayName()}); // NOI18N
-        synchronized(issuesToRefresh) {
-            issuesToRefresh.remove(task);
-        }
-    }
-
-    public void scheduleForRefresh(JiraQuery query) {
-        Jira.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
-        synchronized(queriesToRefresh) {
-            queriesToRefresh.add(query);
-        }
-        setupQueryRefreshTask();
-    }
-
-    public void stopRefreshing(JiraQuery query) {
-        Jira.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
-        synchronized(queriesToRefresh) {
-            queriesToRefresh.remove(query);
-        }
     }
 
     public void refreshAllQueries() {
@@ -696,13 +594,6 @@ public class JiraRepository {
     
     public boolean authenticate(String errroMsg) {
         return Jira.getInstance().getBugtrackingFactory().editRepository(this, errroMsg);
-    }
-
-    private RequestProcessor getRefreshProcessor() {
-        if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Jira refresh - " + getDisplayName()); // NOI18N
-        }
-        return refreshProcessor;
     }
 
     public Collection<RepositoryUser> getUsers() {

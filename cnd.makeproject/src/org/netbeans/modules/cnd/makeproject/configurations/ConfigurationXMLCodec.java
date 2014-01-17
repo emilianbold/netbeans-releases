@@ -680,6 +680,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 boolean ba = currentText.equals(TRUE_VALUE);
                 currentCodeAssistanceConfiguration.getBuildAnalyzer().setValue(ba);
             }
+        } else if (element.equals(CODE_ASSISTANCE_INCLUDE_ADDITIONAL)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                boolean ba = currentText.equals(TRUE_VALUE);
+                currentCodeAssistanceConfiguration.getIncludeInCA().setValue(ba);
+            }
         } else if (element.equals(BUILD_ANALAZYER_TOOLS_ELEMENT)) {
             if (currentCodeAssistanceConfiguration != null) {
                 currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));

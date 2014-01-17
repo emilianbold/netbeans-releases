@@ -51,8 +51,6 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.TreeScanner;
-import org.netbeans.lib.nbjavac.services.CancelAbort;
-import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
@@ -60,26 +58,29 @@ import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.lib.nbjavac.services.CancelAbort;
+import org.netbeans.lib.nbjavac.services.CancelService;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
-import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
@@ -206,6 +207,7 @@ final class OnePassCompileWorker extends CompileWorker {
         Iterable<? extends Processor> processors = jt != null ? jt.getProcessors() : null;
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
         try {
+            final Queue<Future<Void>> barriers = new ArrayDeque<>();
             while(!units.isEmpty()) {
                 if (context.isCancelled()) {
                     return null;
@@ -220,8 +222,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     mem.free();
                     return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
                 }
-                Iterable<? extends TypeElement> types;
-                types = jt.enterTrees(Collections.singletonList(unit.first()));
+                final Iterable<? extends TypeElement> types = jt.enterTrees(Collections.singletonList(unit.first()));
                 if (jfo2units.remove(active.jfo) != null) {
                     final Types ts = Types.instance(jt.getContext());
                     final Indexable activeIndexable = active.indexable;
@@ -283,18 +284,28 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
                 JavaCustomIndexer.setErrors(context, active, dc);
-                Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
-                if (!active.virtual) {
-                    for (JavaFileObject generated : generatedFiles) {
-                        if (generated instanceof FileObjects.FileBase) {
-                            createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                        } else {
-                            // presumably should not happen
+                final boolean virtual = active.virtual;
+                final JavacTaskImpl jtFin = jt;
+                barriers.offer(FileManagerTransaction.runConcurrent(new FileSystem.AtomicAction(){
+                    @Override
+                    public void run() throws IOException {
+                        Iterable<? extends JavaFileObject> generatedFiles = jtFin.generate(types);
+                        if (!virtual) {
+                            for (JavaFileObject generated : generatedFiles) {
+                                if (generated instanceof FileObjects.FileBase) {
+                                    createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                                } else {
+                                    // presumably should not happen
+                                }
+                            }
                         }
                     }
-                }
+                }));
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);
+            }
+            for (Future<Void> barrier : barriers) {
+                barrier.get();
             }
             return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {

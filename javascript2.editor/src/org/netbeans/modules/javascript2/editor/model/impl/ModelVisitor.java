@@ -845,16 +845,28 @@ public class ModelVisitor extends PathNodeVisitor {
                         lastVisited = getPath().get(getPath().size() - pathIndex - 1);
                     }
                     fqName = getName(binNode, parserResult);
-                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
+                    if ((binNode.lhs() instanceof IdentNode)
+                            || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
-                        isDeclaredInParent = true;
-                        if (!(binNode.lhs() instanceof IdentNode)) {
-                            parent = resolveThis(modelBuilder.getCurrentObject());
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) { //NOI18N
+                        if (lastVisited instanceof ExecuteNode && !fqName.get(0).getName().equals("this")) { //NOI18N
+                            // try to catch the case: pool = [];
+                            List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
+                            JsObject existingArray = ModelUtils.getJsObject(modelBuilder, objectName, false);
+                            if (existingArray != null) {
+                                existingArray.addOccurrence(fqName.get(fqName.size() - 1).getOffsetRange());
+                                return super.enter(lNode);
+                            }
+                        } else {
+                            isDeclaredInParent = true;
+                            if (!(binNode.lhs() instanceof IdentNode)) {
+                                parent = resolveThis(modelBuilder.getCurrentObject());
+                            }
                         }
                     }
                 }
-            } else if (lastVisited instanceof CallNode || lastVisited instanceof LiteralNode.ArrayLiteralNode) {
+            } else if (lastVisited instanceof CallNode || lastVisited instanceof LiteralNode.ArrayLiteralNode
+                    || lastVisited instanceof ReturnNode) {
                 // probably an anonymous array as a parameter of a function call
                 // or array in an array: var a = [['a', 10], ['b', 20]];
                 treatAsAnonymous = true;

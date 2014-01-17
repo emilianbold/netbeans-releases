@@ -488,7 +488,7 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), getCurrentPath().getLeaf());
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if ((start <= s && s <= end) || (start <= e && e <= end) && el != null) {
+                                    if (el != null && ((start <= s && s <= end) || (start <= e && e <= end))) {
                                         simple2ImportFQN.remove(el.getSimpleName().toString());
                                         declaredInCopiedText.add(el);
                                     }

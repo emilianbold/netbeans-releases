@@ -45,12 +45,16 @@
 package org.openide.explorer.view;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -61,7 +65,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -166,6 +169,151 @@ public class BeanTreeViewTest extends NbTestCase {
             }
 
             public void tryGc() {
+                WeakReference<Node> wref = new WeakReference<Node>(operateOn);
+                operateOn = null;
+                assertGC("Node should be released.", wref);    
+            }
+        }
+        AWTTst awt = new AWTTst();
+        holder = awt;
+        try {
+            SwingUtilities.invokeAndWait(awt);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+        awt.tryGc();
+        return awt.p.getExplorerManager();
+    }
+    
+    public void testOnlyChildDestroyedCausesSelectionOfParent () throws Throwable {
+        // node.destroy called on the last selected node of the root node
+        ExplorerManager em = doChildDestroyTest ("one", Collections.singleton("one"), "one");
+        final List<Node> arr = Arrays.asList(em.getSelectedNodes());
+        assertEquals("One selected: " + arr, 1, arr.size());
+        assertEquals("Root selected", em.getRootContext(), arr.get(0));
+    }
+    
+    public void testChildDestroyedMoreInSelection () throws Throwable {
+        // two children in selection, should not select parent
+        // the second child should be selected in the end
+        ExplorerManager em = doChildDestroyTest ("one", Arrays.asList("one", "two"), "one", "two");
+        final List<Node> arr = Arrays.asList(em.getSelectedNodes());
+        assertEquals("One node selected: " + arr, 1, arr.size());
+        assertEquals("second child selected", "two", arr.get(0).getName());
+    }
+    
+    public void testChildDestroyedCausesNextChildSelected () throws Throwable {
+        // first selected child is destroyed => selection should move to the next child
+        ExplorerManager em = doChildDestroyTest ("one", Collections.singleton("one"), "one", "two");
+        final List<Node> arr = Arrays.asList(em.getSelectedNodes());
+        assertEquals("One selected: " + arr, 1, arr.size());
+        assertEquals("second child selected", "two", arr.get(0).getName());
+    }
+    
+    private ExplorerManager doChildDestroyTest (final String name, final Collection<String> toSelect,
+            final String... childrenNames) throws Throwable {
+        
+        class AWTTst implements Runnable {
+            Node[] children;
+            {
+                List<Node> arr = new ArrayList<Node>();
+                for (String s : childrenNames) {
+                    arr.add(createLeaf(s));
+                }
+                children = arr.toArray(new Node[0]);
+            }
+            Panel p = new Panel();
+            BeanTreeView btv = new BeanTreeView();
+            JFrame f = new JFrame();
+            JTree tree = btv.tree;
+            Node operateOn;
+
+            // children must be Children.Keys(lazy)
+            class RefreshableChildren extends Children.Keys<String> {
+
+                public RefreshableChildren () {
+                    super(true);
+                }
+                
+                @Override
+                protected Node[] createNodes (String key) {
+                    Node n = null;
+                    for (Node cand : children) {
+                        if (cand.getName().equals(key)) {
+                            n = cand;
+                            break;
+                        }
+                    }
+                    return new Node[] { n };
+                }
+                
+                void refreshKeys (String[] keys) {
+                    super.setKeys(keys);
+                }
+            }
+            AbstractNode root = new AbstractNode(new RefreshableChildren());
+
+            {
+                ((RefreshableChildren) root.getChildren()).refreshKeys(childrenNames);
+                root.setName("test root");
+                p.getExplorerManager().setRootContext(root);
+                p.add(BorderLayout.CENTER, btv);
+                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                f.getContentPane().add(BorderLayout.CENTER, p);
+                f.setVisible(true);
+            }
+
+            @Override
+            public void run() {
+
+                List<Node> selection = new ArrayList<Node>();
+                
+                for (int i = 0; i < children.length; i++) {
+                    if (name.equals(children[i].getName())) {
+                        // this should select a sibling of the removed node
+                        operateOn = children[i];
+                    }
+                    if (toSelect.contains(children[i].getName())) {
+                        selection.add(children[i]);
+                    }
+                }
+
+                try {
+                    p.getExplorerManager().setSelectedNodes(selection.toArray(new Node[selection.size()]));
+                } catch (PropertyVetoException e) {
+                    fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
+                }
+
+                TreePath[] paths = tree.getSelectionPaths();
+                assertNotNull("Before removal: one node should be selected, but there are none.", paths);
+                assertEquals("Before removal: one node should be selected, but there are none.", selection.size(), paths.length);
+                if (selection.size() == 1) {
+                    assertEquals("Before removal: one node should be selected, but there are none.", operateOn, Visualizer.findNode(paths[0].getLastPathComponent()));
+                    assertEquals("Before removal: one node should be selected, but there are none.", operateOn, Visualizer.findNode(tree.getAnchorSelectionPath().getLastPathComponent()));
+                }
+
+                try {
+                    // destroy the node
+                    operateOn.destroy();
+                } catch (IOException ex) {
+                    fail(ex.getMessage());
+                }
+                
+                assertNotNull("After removal: one node should be selected, but there are none.", tree.getSelectionPath());
+            }
+
+            public void tryGc() {
+                // somewhere around here it's time to remove the destroyed node from children
+                // the same as DataObject and FolderChildren work
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        List<String> newKeys = new ArrayList<String>(Arrays.asList(childrenNames));
+                        newKeys.remove(name);
+                        ((RefreshableChildren) root.getChildren()).refreshKeys(newKeys.toArray(new String[newKeys.size()]));
+                        children = null;
+                    }
+                });
                 WeakReference<Node> wref = new WeakReference<Node>(operateOn);
                 operateOn = null;
                 assertGC("Node should be released.", wref);    

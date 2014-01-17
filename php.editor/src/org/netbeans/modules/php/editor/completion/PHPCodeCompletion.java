@@ -127,6 +127,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -932,11 +933,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private TypeElement getEnclosingType(CompletionRequest request, Collection<? extends TypeScope> types) {
-        final ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
-        final String enclosingClassName = (enclosingClass != null) ? CodeUtils.extractClassName(enclosingClass) : null;
+        final TypeDeclaration enclosingType = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
+        final String enclosingTypeName = (enclosingType != null) ? CodeUtils.extractTypeName(enclosingType) : null;
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
-        final String enclosingFQClassName = VariousUtils.qualifyTypeNames(enclosingClassName, request.anchor, namespaceScope);
-        final NameKind enclosingClassNameKind = (enclosingFQClassName != null && !enclosingFQClassName.trim().isEmpty()) ? NameKind.exact(enclosingFQClassName) : null;
+        final String enclosingFQTypeName = VariousUtils.qualifyTypeNames(enclosingTypeName, request.anchor, namespaceScope);
+        final NameKind enclosingTypeNameKind = (enclosingFQTypeName != null && !enclosingFQTypeName.trim().isEmpty()) ? NameKind.exact(enclosingFQTypeName) : null;
         Set<FileObject> preferedFileObjects = new HashSet<>();
         Set<TypeElement> enclosingTypes = null;
         FileObject currentFile = request.result.getSnapshot().getSource().getFileObject();
@@ -948,20 +949,30 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             if (fileObject != null) {
                 preferedFileObjects.add(fileObject);
             }
-            if (enclosingClassNameKind != null && enclosingTypes == null) {
-                if (enclosingClassNameKind.matchesName(typeScope)) {
+            if (enclosingTypeNameKind != null && enclosingTypes == null) {
+                if (enclosingTypeNameKind.matchesName(typeScope)) {
                     enclosingTypes = Collections.<TypeElement>singleton((TypeElement) typeScope);
                 }
             }
         }
-        if (enclosingClassNameKind != null && enclosingTypes == null) {
+        if (enclosingTypeNameKind != null && enclosingTypes == null) {
             final ElementFilter forFiles = ElementFilter.forFiles(preferedFileObjects.toArray(new FileObject[preferedFileObjects.size()]));
-            Set<ClassElement> classes = forFiles.prefer(request.index.getClasses(enclosingClassNameKind));
-            if (!classes.isEmpty()) {
-                enclosingTypes = new HashSet<TypeElement>(classes);
+            Set<TypeElement> indexTypes = forFiles.prefer(request.index.getTypes(enclosingTypeNameKind));
+            if (!indexTypes.isEmpty()) {
+                enclosingTypes = new HashSet<>(indexTypes);
             }
         }
         return (enclosingTypes == null || enclosingTypes.isEmpty()) ? null : enclosingTypes.iterator().next();
+    }
+
+    private static TypeDeclaration findEnclosingType(ParserResult info, int offset) {
+        List<ASTNode> nodes = NavUtils.underCaret(info, offset);
+        for (ASTNode node : nodes) {
+            if (node instanceof TypeDeclaration && node.getEndOffset() != offset) {
+                return (TypeDeclaration) node;
+            }
+        }
+        return null;
     }
 
     private static ClassDeclaration findEnclosingClass(ParserResult info, int offset) {

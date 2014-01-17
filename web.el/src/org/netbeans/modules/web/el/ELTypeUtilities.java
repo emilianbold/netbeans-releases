@@ -318,7 +318,8 @@ public final class ELTypeUtilities {
             if (method.isVarArgs()) {
                 return methodParams == 1 ? true : methodNodeParams >= methodParams;
             }
-            return method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method);
+            return (method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method))
+                    || methodNodeParams == 0 && hasActionEventArgument(method);
         }
 
         if (methodNode instanceof AstDotSuffix) {
@@ -517,6 +518,17 @@ public final class ELTypeUtilities {
             }
         }
         return true;
+    }
+
+    private static boolean hasActionEventArgument(ExecutableElement method) {
+        List<? extends VariableElement> parameters = method.getParameters();
+
+        // check one parameter ActionEvent method
+        if (parameters.size() != 1) {
+            return false;
+        }
+
+        return "javax.faces.event.ActionEvent".equals(parameters.get(0).asType().toString()); //NOI18N
     }
 
     private static boolean isSameType(CompilationContext info, final Node paramNode, final VariableElement param) {
@@ -894,7 +906,7 @@ public final class ELTypeUtilities {
                                 result = propertyType;
                             } else if (propertyType.getKind() == ElementKind.METHOD) {
                                 final ExecutableElement method = (ExecutableElement) propertyType;
-                                TypeMirror returnType = getReturnType(info, method);
+                                TypeMirror returnType = getReturnType(info, method, elem, NodeUtil.getRootToNode(elem, target));
                                 if (returnType.getKind() == TypeKind.ARRAY) {
                                     // for array try to look like Iterable (operators for array return type)
                                     enclosing = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
@@ -924,23 +936,27 @@ public final class ELTypeUtilities {
                     Node child = parent.jjtGetChild(i);
                     if (child instanceof AstDotSuffix) {
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(child.getImage())) {
-                            TypeElement stream = info.info().getElements().getTypeElement(STREAM_CLASS);
-                            if (target.getImage() != null && target.getImage().equals(child.getImage())) {
-                                result = stream;
-                                return;
-                            } else {
-                                enclosing = stream;
-                            }
+                            enclosing = info.info().getElements().getTypeElement(STREAM_CLASS);
                         } else {
                             if (enclosing != null) {
                                 Element propertyType = getElementForProperty(info, child, enclosing);
                                 if (target.getImage() != null && target.getImage().equals(child.getImage())) {
-                                    result = propertyType;
+                                    if (propertyType != null) {
+                                        result = propertyType;
+                                    }
                                     return;
                                 } else {
-                                    enclosing = propertyType;
+                                    if (propertyType instanceof ExecutableElement) {
+                                        enclosing = getTypeFor(info, ((ExecutableElement) propertyType).getReturnType().toString());
+                                    } else if (propertyType != null) {
+                                        result = enclosing = propertyType;
+                                    }
                                 }
                             }
+                        }
+                        // finish when the target matches property
+                        if (target.getImage() != null && target.getImage().equals(child.getImage())) {
+                            return;
                         }
                     }
                 }

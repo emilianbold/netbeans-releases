@@ -209,7 +209,6 @@ public class GridDesigner extends JPanel {
         toolBar.add(gapHeightSpinner);
         gapHeightSpinnerBox = Box.createRigidArea(new Dimension(15,10));
         toolBar.add(gapHeightSpinnerBox);
-        addFormModelListener();
         
         JToggleButton padButton = initPaddingButton();
         toolBar.add(padButton);
@@ -277,6 +276,8 @@ public class GridDesigner extends JPanel {
         boolean gapSupport = gridManager.getGridInfo().hasGaps();
         updateGapProperties(gapSupport);
         updateGapControls(gapSupport);
+
+        addFormModelListener();
 
         HelpCtx.setHelpIDString(this, "gui.layouts.griddesigner"); // NOI18N
     }
