@@ -81,8 +81,10 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void update() {
-        symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
-        symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
+        if (!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
+            symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
+        }
 
         changed = false;
     }
@@ -97,6 +99,10 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void cancel() {
+        if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
+            symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
+        }
     }
 
     @Override
@@ -129,7 +135,10 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getSandbox();
+        String current = symfony2OptionsPanel.getSandbox().trim();
+        return (saved == null ? !current.isEmpty() : !saved.equals(current))
+                || getOptions().getIgnoreCache() != symfony2OptionsPanel.getIgnoreCache();
     }
 
     @Override
