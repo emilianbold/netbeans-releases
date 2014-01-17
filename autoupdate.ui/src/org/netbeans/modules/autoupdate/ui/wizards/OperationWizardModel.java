@@ -136,10 +136,12 @@ public abstract class OperationWizardModel {
                 if (! broken.isEmpty()) {
                     for (String brokenDep : broken) {
                         // pay special attention to missing JDK
-                        if (brokenDep.toLowerCase ().startsWith ("package") && brokenDep.contains("VirtualMachineManager")) {
-                            brokenDep = "package";
-                        } else {
-                            continue;
+                        if (brokenDep.toLowerCase ().startsWith ("package")) {
+                            if (brokenDep.contains("VirtualMachineManager")) {
+                                brokenDep = "package";
+                            } else {
+                                continue;
+                            }
                         }
                         if (dep2plugins.get (brokenDep) == null) {
                             dep2plugins.put (brokenDep, new HashSet<UpdateElement> ());
