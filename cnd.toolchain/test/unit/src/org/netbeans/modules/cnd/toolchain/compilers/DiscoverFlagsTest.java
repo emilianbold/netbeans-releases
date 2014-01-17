@@ -79,8 +79,8 @@ public class DiscoverFlagsTest {
     public void testImprtantFlagsStudio() {
         String flags = "-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt;-mt=yes;-native;-std=c++03;-std=c++0x;-std=c++11;-xO1;-xO2;-xO3;-xO4;-xO5;"
                      + "-xautopar;-xchar=u;-xchar=unsigned;-xmaxopt=1;-xmaxopt=2;-xmaxopt=3;-xmaxopt=4;-xmaxopt=5;-xopenmp;-xopenmp=noopt;-xopenmp=parallel;";
-        String golden ="-O(\\W|$|-])|-O0|-O1|-O2|-O3|-O4|-O5|-compat=.*|-fast|-fopenmp|-m64|-mt(\\W|$|-])|-mt=.*|-native|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|"
-                + "-xautopar|-xchar=.*|-xmaxopt=.*|-xopenmp(\\W|$|-])|-xopenmp=.*";
+        String golden ="-O(\\W|$|-)|-O0|-O1|-O2|-O3|-O4|-O5|-compat=.*|-fast|-fopenmp|-m64|-mt(\\W|$|-)|-mt=.*|-native|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|"
+                + "-xautopar|-xchar=.*|-xmaxopt=.*|-xopenmp(\\W|$|-)|-xopenmp=.*";
         List<String> list = new ArrayList<String>();
         for(String flag : flags.split(";")) {
             if (!flag.isEmpty()) {
@@ -119,11 +119,11 @@ public class DiscoverFlagsTest {
                        "-std=iso9899:199409;-std=iso9899:1999;-std=iso9899:199x;-std=iso9899:2011;";
         String golden ="-O1|-O2|-O3|-O4|-O5|-Ofast|-Og|-Os|-ansi|-fPIC|-fPIE|-fasynchronous-unwind-tables|-fbuilding-libgcc|-fexceptions|"
                 + "-ffast-math|-ffinite-math-only|-ffreestanding|-fgnu-tm|-fhandle-exceptions|-fleading-underscore|-fnon-call-exceptions|-fopenmp|"
-                + "-fpic|-fpie|-fsanitize=.*|-fshort-double|-fshort-wchar|-fsignaling-nans|-fstack-protector(\\W|$|-])|-fstack-protector-all|"
-                + "-funsigned-char|-funwind-tables|-g(\\W|$|-])|-ggdb|-gsplit-dwarf|-gtoggle|-m128bit-long-double|-m3dnow|-m64|-mabm|-madx|-maes|"
-                + "-march=.*|-mavx(\\W|$|-])|-mavx2|-mbmi(\\W|$|-])|-mbmi2|-mf16c|-mfma(\\W|$|-])|-mfma4|-mfsgsbase|-mlong-double-64|-mlwp|"
-                + "-mlzcnt|-mpclmul|-mpopcnt|-mprfchw|-mrdrnd|-mrdseed|-mrtm|-msse3|-msse4(\\W|$|-])|-msse4.1|-msse4.2|-msse4a|-msse5|-mssse3|-mtbm|-mtune=.*|"
-                + "-mx32|-mxop|-mxsave(\\W|$|-])|-mxsaveopt|-pthreads|-std=.*";
+                + "-fpic|-fpie|-fsanitize=.*|-fshort-double|-fshort-wchar|-fsignaling-nans|-fstack-protector(\\W|$|-)|-fstack-protector-all|"
+                + "-funsigned-char|-funwind-tables|-g(\\W|$|-)|-ggdb|-gsplit-dwarf|-gtoggle|-m128bit-long-double|-m3dnow|-m64|-mabm|-madx|-maes|"
+                + "-march=.*|-mavx(\\W|$|-)|-mavx2|-mbmi(\\W|$|-)|-mbmi2|-mf16c|-mfma(\\W|$|-)|-mfma4|-mfsgsbase|-mlong-double-64|-mlwp|"
+                + "-mlzcnt|-mpclmul|-mpopcnt|-mprfchw|-mrdrnd|-mrdseed|-mrtm|-msse3|-msse4(\\W|$|-)|-msse4.1|-msse4.2|-msse4a|-msse5|-mssse3|-mtbm|-mtune=.*|"
+                + "-mx32|-mxop|-mxsave(\\W|$|-)|-mxsaveopt|-pthreads|-std=.*";
         List<String> list = new ArrayList<String>();
         for(String flag : flags.split(";")) {
             if (!flag.isEmpty()) {

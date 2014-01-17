@@ -111,6 +111,7 @@ import org.openide.util.NbBundle;
             public Pair call(String p) {
                 Pair tmp = new Pair();
                 try {
+                    getSystemIncludesAndDefines(getCompilerStderrCommand()+" "+p, false, tmp); // NOI18N
                     getSystemIncludesAndDefines(getCompilerStdoutCommand()+" "+p, true, tmp); // NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);

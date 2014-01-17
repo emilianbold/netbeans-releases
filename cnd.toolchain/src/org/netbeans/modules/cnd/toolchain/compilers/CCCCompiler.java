@@ -749,7 +749,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         LOG.log(Level.FINE, importantFlags.toString());
         importantFlags.setLength(0);
         importantFlags.append("Important flags pattern for compiler: ").append(getPath()).append("\n"); // NOI18N
-        importantFlags.append("        <important_flags flags=\"").append(convertToRegularExpression(importantFlagsList)).append("\"/>");
+        importantFlags.append("        <important_flags flags=\"").append(convertToRegularExpression(importantFlagsList)).append("\"/>"); // NOI18N
         LOG.log(Level.FINE, importantFlags.toString());
     }
 
@@ -768,7 +768,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     if (buf.length() > 0) {
                         buf.append('|');
                     }
-                    buf.append(lastGroup).append(".*");
+                    buf.append(lastGroup).append(".*"); // NOI18N
                     lastGroup = null;
                 }
                 if (buf.length() > 0) {
@@ -777,7 +777,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 if (i+1 < flags.size()) {
                     String next = flags.get(i+1);
                     if (next.startsWith(current)) {
-                        current = current+"(\\W|$|-])";
+                        current = current+"(\\W|$|-)"; // NOI18N
                         buf.append(current);
                         i++;
                         continue;
@@ -795,7 +795,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                         if (buf.length() > 0) {
                             buf.append('|');
                         }
-                        buf.append(lastGroup).append(".*");
+                        buf.append(lastGroup).append(".*"); // NOI18N
                     }
                 }
                 lastGroup = candidate;
@@ -806,7 +806,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
             if (buf.length() > 0) {
                 buf.append('|');
             }
-            buf.append(lastGroup).append(".*");
+            buf.append(lastGroup).append(".*"); // NOI18N
         }
         return buf.toString();
     }
