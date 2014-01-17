@@ -83,6 +83,15 @@ public class PhpOptionsPanelController extends BaseOptionsPanelController {
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
     }
+    
+    @Override
+    boolean areOptionsChanged() {
+        return phpOptionsPanel == null ? false : !getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())
+                || getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()
+                || getPhpOptions().isOpenResultInBrowser() != phpOptionsPanel.isOpenResultInBrowser()
+                || getPhpOptions().isOpenResultInEditor() != phpOptionsPanel.isOpenResultInEditor()
+                || !getPhpOptions().getPhpGlobalIncludePath().equals(phpOptionsPanel.getPhpGlobalIncludePath());
+    }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
