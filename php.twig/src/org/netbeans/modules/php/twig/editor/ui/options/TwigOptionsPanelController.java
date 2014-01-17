@@ -77,7 +77,7 @@ public final class TwigOptionsPanelController extends OptionsPanelController {
 
     @Override
     public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
+        getPanel().cancel();
     }
 
     @Override
@@ -87,7 +87,7 @@ public final class TwigOptionsPanelController extends OptionsPanelController {
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().changed();
     }
 
     @Override
