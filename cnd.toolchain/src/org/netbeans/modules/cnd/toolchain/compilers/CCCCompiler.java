@@ -623,6 +623,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         buf.append("Compiler: ").append(getPath()); // NOI18N
         StringBuilder toolChainPatch = new StringBuilder();
         toolChainPatch.append("Proposed patch for compiler: ").append(getPath()); // NOI18N
+        List<String> importantFlagsList = new ArrayList<String>();
         StringBuilder importantFlags = new StringBuilder();
         importantFlags.append("Important flags for compiler: ").append(getPath()).append("\n"); // NOI18N
         Set<String> checked = new HashSet<String>();
@@ -677,6 +678,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
             if (!flagModel.added.isEmpty() || !flagModel.changed.isEmpty() || !flagModel.removed.isEmpty()) {
                 importantFlags.append(flagModel.flag).append(";"); // NOI18N
+                importantFlagsList.add(flagModel.flag);
                 toolChainPatch.append("\n"); // NOI18N
                 if (!flagModel.added.isEmpty()) {
                     for (String t : flagModel.added) {
@@ -694,6 +696,16 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     for (String t : flagModel.removed) {
                         toolChainPatch.append("\n            <macro stringvalue=\"").append(t).append("\" flags=\"").append(flagModel.flag).append("\" hide=\"true\"/>"); // NOI18N
                     }
+                }
+            } else {
+                if (flagModel.changedPaths) {
+                    importantFlags.append(flagModel.flag).append(";"); // NOI18N
+                    importantFlagsList.add(flagModel.flag);
+                }
+            }
+            if (flagModel.changedPaths) {
+                if (LOG.isLoggable(Level.FINER)) {
+                    buf.append("\nThe flag ").append(flag).append(" changes predefined include paths"); // NOI18N
                 }
             }
             if (LOG.isLoggable(Level.FINER)) {
@@ -735,8 +747,70 @@ public abstract class CCCCompiler extends AbstractCompiler {
         LOG.log(Level.FINE, buf.toString());
         LOG.log(Level.FINE, toolChainPatch.toString());
         LOG.log(Level.FINE, importantFlags.toString());
+        importantFlags.setLength(0);
+        importantFlags.append("Important flags pattern for compiler: ").append(getPath()).append("\n"); // NOI18N
+        importantFlags.append("        <important_flags flags=\"").append(convertToRegularExpression(importantFlagsList)).append("\"/>");
+        LOG.log(Level.FINE, importantFlags.toString());
     }
 
+    protected static String convertToRegularExpression(List<String> flags) {
+        StringBuilder buf = new StringBuilder();
+        int i = 0;
+        String lastGroup = null;
+        while(true) {
+            if (i >= flags.size()) {
+                break;
+            }
+            String current = flags.get(i);
+            int eq = current.indexOf('=');
+            if (eq < 0) {
+                if (lastGroup != null) {
+                    if (buf.length() > 0) {
+                        buf.append('|');
+                    }
+                    buf.append(lastGroup).append(".*");
+                    lastGroup = null;
+                }
+                if (buf.length() > 0) {
+                    buf.append('|');
+                }
+                if (i+1 < flags.size()) {
+                    String next = flags.get(i+1);
+                    if (next.startsWith(current)) {
+                        current = current+"(\\W|$|-])";
+                        buf.append(current);
+                        i++;
+                        continue;
+                    }
+                }
+                buf.append(current);
+                i++;
+            } else {
+                String candidate = current.substring(0, eq+1);
+                if (lastGroup != null) {
+                    if (lastGroup.equals(candidate)) {
+                        i++;
+                        continue;
+                    } else {
+                        if (buf.length() > 0) {
+                            buf.append('|');
+                        }
+                        buf.append(lastGroup).append(".*");
+                    }
+                }
+                lastGroup = candidate;
+                i++;
+            }
+        }
+        if (lastGroup != null) {
+            if (buf.length() > 0) {
+                buf.append('|');
+            }
+            buf.append(lastGroup).append(".*");
+        }
+        return buf.toString();
+    }
+    
     //For testing. Run compiler to obtain flags help.
     private void getCompilerOutput(String arguments, List<String> options, boolean isGcc) {
         String compilerPath = getPath();
@@ -1025,6 +1099,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         private final List<String> added;
         private final List<String> changed;
         private final List<String> removed;
+        private boolean changedPaths;
         
         private FlagModel(String flag) {
             this.flag = flag;
@@ -1037,6 +1112,29 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 
         }
         private void diff(Pair golden, Pair particular) {
+            diffMacros(golden, particular);
+            diffPaths(golden, particular);
+        }
+        private void diffPaths(Pair golden, Pair particular) {
+            if (particular.systemIncludeDirectoriesList.size()==0) {
+                changedPaths = false;
+                return;
+            }
+            if (particular.systemIncludeDirectoriesList.size() != golden.systemIncludeDirectoriesList.size()) {
+                changedPaths = true;
+                return;
+            }
+            for(int i = 0; i < golden.systemIncludeDirectoriesList.size(); i++) {
+                String s1 = golden.systemIncludeDirectoriesList.get(i);
+                String s2 = particular.systemIncludeDirectoriesList.get(i);
+                if (!s1.equals(s2)) {
+                    changedPaths = true;
+                    return;
+                }
+            }
+            changedPaths = false;
+        }
+        private void diffMacros(Pair golden, Pair particular) {
             for (String t : particular.systemPreprocessorSymbolsList) {
                 String pattern = t;
                 int i = t.indexOf('='); // NOI18N

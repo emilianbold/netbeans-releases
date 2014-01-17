@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -70,6 +72,74 @@ public class DiscoverFlagsTest {
 
     @After
     public void tearDown() {
+    }
+
+    
+    @Test
+    public void testImprtantFlagsStudio() {
+        String flags = "-O;-O0;-O1;-O2;-O3;-O4;-O5;-compat=g;-fast;-fopenmp;-m64;-mt;-mt=yes;-native;-std=c++03;-std=c++0x;-std=c++11;-xO1;-xO2;-xO3;-xO4;-xO5;"
+                     + "-xautopar;-xchar=u;-xchar=unsigned;-xmaxopt=1;-xmaxopt=2;-xmaxopt=3;-xmaxopt=4;-xmaxopt=5;-xopenmp;-xopenmp=noopt;-xopenmp=parallel;";
+        String golden ="-O(\\W|$|-])|-O0|-O1|-O2|-O3|-O4|-O5|-compat=.*|-fast|-fopenmp|-m64|-mt(\\W|$|-])|-mt=.*|-native|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|"
+                + "-xautopar|-xchar=.*|-xmaxopt=.*|-xopenmp(\\W|$|-])|-xopenmp=.*";
+        List<String> list = new ArrayList<String>();
+        for(String flag : flags.split(";")) {
+            if (!flag.isEmpty()) {
+                list.add(flag);
+            }
+        }
+        String pattern = CCCCompiler.convertToRegularExpression(list);
+        Pattern compile = Pattern.compile(pattern);
+        for(String s : list) {
+            Matcher matcher = compile.matcher(s);
+            if (!matcher.find()) {
+                Assert.assertTrue(false);
+            }
+        }
+        //System.err.println(pattern);
+        Assert.assertEquals(golden, pattern);
+    }
+
+    @Test
+    public void testImprtantFlagsGnu() {
+        String flags = "-O1;-O2;-O3;-O4;-O5;-Ofast;-Og;-Os;-ansi;-fPIC;-fPIE;-fasynchronous-unwind-tables;-fbuilding-libgcc;-fexceptions;"+
+                       "-ffast-math;-ffinite-math-only;-ffreestanding;-fgnu-tm;-fhandle-exceptions;-fleading-underscore;-fnon-call-exceptions;-fopenmp;"+
+                       "-fpic;-fpie;-fsanitize=address;"
+                     + "-fshort-double;-fshort-wchar;-fsignaling-nans;-fstack-protector;-fstack-protector-all;"+
+                       "-funsigned-char;-funwind-tables;-g;-ggdb;-gsplit-dwarf;-gtoggle;-m128bit-long-double;-m3dnow;-m64;-mabm;-madx;-maes;"+
+                       "-march=amdfam10;-march=athlon;-march=bdver1;-march=bdver2;-march=bdver3;-march=btver1;-march=btver2;-march=core2;-march=corei7;"+
+                       "-march=i386;-march=i486;-march=i586;-march=i686;-march=k6;-march=k8;-march=nocona;-march=opteron;-march=pentium;-march=pentium4;"+
+                       "-march=pentiumpro;-march=prescott;"
+                     + "-mavx;-mavx2;-mbmi;-mbmi2;-mf16c;-mfma;-mfma4;-mfsgsbase;-mlong-double-64;-mlwp;"+
+                       "-mlzcnt;-mpclmul;-mpopcnt;-mprfchw;-mrdrnd;-mrdseed;-mrtm;-msse3;-msse4;-msse4.1;-msse4.2;-msse4a;-msse5;-mssse3;-mtbm;"+
+                       "-mtune=amdfam10;-mtune=athlon;-mtune=bdver1;-mtune=bdver2;-mtune=bdver3;-mtune=btver1;-mtune=btver2;-mtune=core2;-mtune=corei7;-mtune=i386;"+
+                       "-mtune=i486;-mtune=i586;-mtune=k6;-mtune=k8;-mtune=nocona;-mtune=opteron;-mtune=pentium;-mtune=pentium4;"+
+                       "-mtune=pentiumpro;-mtune=prescott;"
+                     + "-mx32;-mxop;-mxsave;-mxsaveopt;-pthreads;"+
+                       "-std=c11;-std=c1x;-std=c89;-std=c90;-std=c99;-std=c9x;-std=gnu11;-std=gnu1x;-std=gnu99;-std=gnu9x;-std=iso9899:1990;"+
+                       "-std=iso9899:199409;-std=iso9899:1999;-std=iso9899:199x;-std=iso9899:2011;";
+        String golden ="-O1|-O2|-O3|-O4|-O5|-Ofast|-Og|-Os|-ansi|-fPIC|-fPIE|-fasynchronous-unwind-tables|-fbuilding-libgcc|-fexceptions|"
+                + "-ffast-math|-ffinite-math-only|-ffreestanding|-fgnu-tm|-fhandle-exceptions|-fleading-underscore|-fnon-call-exceptions|-fopenmp|"
+                + "-fpic|-fpie|-fsanitize=.*|-fshort-double|-fshort-wchar|-fsignaling-nans|-fstack-protector(\\W|$|-])|-fstack-protector-all|"
+                + "-funsigned-char|-funwind-tables|-g(\\W|$|-])|-ggdb|-gsplit-dwarf|-gtoggle|-m128bit-long-double|-m3dnow|-m64|-mabm|-madx|-maes|"
+                + "-march=.*|-mavx(\\W|$|-])|-mavx2|-mbmi(\\W|$|-])|-mbmi2|-mf16c|-mfma(\\W|$|-])|-mfma4|-mfsgsbase|-mlong-double-64|-mlwp|"
+                + "-mlzcnt|-mpclmul|-mpopcnt|-mprfchw|-mrdrnd|-mrdseed|-mrtm|-msse3|-msse4(\\W|$|-])|-msse4.1|-msse4.2|-msse4a|-msse5|-mssse3|-mtbm|-mtune=.*|"
+                + "-mx32|-mxop|-mxsave(\\W|$|-])|-mxsaveopt|-pthreads|-std=.*";
+        List<String> list = new ArrayList<String>();
+        for(String flag : flags.split(";")) {
+            if (!flag.isEmpty()) {
+                list.add(flag);
+            }
+        }
+        String pattern = CCCCompiler.convertToRegularExpression(list);
+        Pattern compile = Pattern.compile(pattern);
+        for(String s : list) {
+            Matcher matcher = compile.matcher(s);
+            if (!matcher.find()) {
+                Assert.assertTrue(false);
+            }
+        }
+        //System.err.println(pattern);
+        Assert.assertEquals(golden, pattern);
     }
 
     @Test
