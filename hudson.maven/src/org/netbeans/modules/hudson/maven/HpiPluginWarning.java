@@ -90,17 +90,9 @@ public class HpiPluginWarning implements ProjectProblemsProvider, PropertyChange
                 }
             }
         }
-        return Collections.singleton(ProjectProblem.createWarning(HpiPluginWarning_problem_displayName(), HpiPluginWarning_problem_description(), new ProjectProblemResolver() {
-            @Override public Future<Result> resolve() {
-                return RequestProcessor.getDefault().submit(new Callable<Result>() {
-                    @Override public Result call() throws Exception {
-                        return Result.create(Status.UNRESOLVED, HpiPluginWarning_unresolved());
-                    }
-                });
-            }
-        }));
+        return Collections.singleton(ProjectProblem.createWarning(HpiPluginWarning_problem_displayName(), HpiPluginWarning_problem_description(), new ProjectProblemResolverImpl()));
     }
-
+    
     @Override public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
     }
@@ -115,6 +107,41 @@ public class HpiPluginWarning implements ProjectProblemsProvider, PropertyChange
 
     @Override public void resultChanged(LookupEvent ev) {
         pcs.firePropertyChange(PROP_PROBLEMS, null, null);
+    }
+
+    private static class ProjectProblemResolverImpl implements ProjectProblemResolver {
+
+        
+        public ProjectProblemResolverImpl() {
+        }
+
+        @Override public Future<Result> resolve() {
+            return RequestProcessor.getDefault().submit(new Callable<Result>() {
+                @Override public Result call() throws Exception {
+                    return Result.create(Status.UNRESOLVED, HpiPluginWarning_unresolved());
+                }
+            });
+        }
+        
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + 1234567;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 
 }
