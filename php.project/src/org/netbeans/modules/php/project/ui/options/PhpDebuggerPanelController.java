@@ -92,7 +92,7 @@ public class PhpDebuggerPanelController extends BaseOptionsPanelController {
     }
     
     @Override
-    boolean areOptionsChanged() {
+    protected boolean areOptionsChanged() {
         if(parseInteger(debuggerPanel.getPort()) == null || parseInteger(debuggerPanel.getMaxDataLength()) == null
                 || parseInteger(debuggerPanel.getMaxStructuresDepth()) == null || parseInteger(debuggerPanel.getMaxChildren()) == null) {
             return false;

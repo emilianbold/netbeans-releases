@@ -91,7 +91,7 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
     }
     
     @Override
-    boolean areOptionsChanged() {
+    protected boolean areOptionsChanged() {
         return PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements() != panel.isResolveDeprecatedElements()
                 || !UserAnnotations.getInstance().getAnnotations().equals(panel.getAnnotations());
     }
