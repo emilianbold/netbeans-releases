@@ -166,10 +166,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 WHITESPACE=[ \t\r\n]+
-D_STRING_START="\""([^"\r""\n""\r\n""\"""{"])*
-D_STRING_END=([^"\r""\n""\r\n""\"""$"] | "$}")*"\""
-D_STRING="\""([^"\r""\n""\r\n""\""])*"\""
-S_STRING="'"([^"\r""\n""\r\n""'"])*"'"
+D_STRING_START="\""([^"\"""{"])*
+D_STRING_END=([^"\"""$"] | "$}")*"\""
+D_STRING="\""([^"\""])*"\""
+S_STRING="'"([^"'"])*"'"
 KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"return"|"continue"|"break"
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
@@ -285,9 +285,9 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
    This rule must be the last in the section!!
    it should contain all the states.
    ============================================ */
-<YYINITIAL, ST_OTHER, ST_END_MACRO> {
+<YYINITIAL, ST_OTHER, ST_END_MACRO, ST_IN_D_STRING> {
     . {
-        yypushback(yylength());
+        yypushback(1);
         pushState(ST_HIGHLIGHTING_ERROR);
     }
 }

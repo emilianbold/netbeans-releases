@@ -329,7 +329,7 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_POSSIBLE_LATTE> {
-    {SYNTAX_LATTE_START}[^ \t\r\n{}] {
+    {SYNTAX_LATTE_START}[a-zA-Z0-9_/\!\?\$] {
         yypushback(1);
         if (syntax == Syntax.LATTE) {
             pushState(ST_LATTE);
@@ -487,13 +487,13 @@ SYNTAX_PYTHON_END="%}"
         popState();
         return LatteTopTokenId.T_LATTE_CLOSE_DELIMITER;
     }
-    [^"}"]+ "}" {
+    [^"}""\r""\n""\r\n"]+ "}" {
         if (curlyInBalance(yytext().substring(0, yylength() - 1))) {
             yypushback(1);
             return LatteTopTokenId.T_LATTE;
         }
     }
-    [^"}"]+ {
+    [^"}""\r""\n""\r\n"]+ {
         if (curlyInBalance(yytext())) {
             return LatteTopTokenId.T_LATTE;
         }
