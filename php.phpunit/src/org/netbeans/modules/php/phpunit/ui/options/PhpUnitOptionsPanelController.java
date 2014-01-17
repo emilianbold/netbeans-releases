@@ -79,8 +79,10 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getPhpUnitOptionsPanel().setPhpUnit(getPhpUnitOptions().getPhpUnitPath());
-        getPhpUnitOptionsPanel().setPhpUnitSkelGen(getPhpUnitOptions().getSkeletonGeneratorPath());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            getPhpUnitOptionsPanel().setPhpUnit(getPhpUnitOptions().getPhpUnitPath());
+            getPhpUnitOptionsPanel().setPhpUnitSkelGen(getPhpUnitOptions().getSkeletonGeneratorPath());
+        }
 
         changed = false;
     }
@@ -100,6 +102,10 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            getPhpUnitOptionsPanel().setPhpUnit(getPhpUnitOptions().getPhpUnitPath());
+            getPhpUnitOptionsPanel().setPhpUnitSkelGen(getPhpUnitOptions().getSkeletonGeneratorPath());
+        }
     }
 
     @Override
@@ -126,7 +132,14 @@ public class PhpUnitOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getPhpUnitOptions().getPhpUnitPath();
+        String current = getPhpUnitOptionsPanel().getPhpUnit().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getPhpUnitOptions().getSkeletonGeneratorPath();
+        current = getPhpUnitOptionsPanel().getPhpUnitSkelGen().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override
