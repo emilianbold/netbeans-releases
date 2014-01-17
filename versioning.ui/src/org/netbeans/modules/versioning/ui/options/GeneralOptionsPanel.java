@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -79,6 +80,8 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     private final GeneralOptionsPanelController controller;
     private String[] keywords;
     private boolean originalLabels;
+    private final HashMap<VersioningSystem, List<String>> savedDisconnectedFolders = new HashMap<VersioningSystem, List<String>>();
+    private int selectedIndex = 0;
     
     GeneralOptionsPanel (GeneralOptionsPanelController controller) {
         this.controller = controller;        
@@ -219,22 +222,54 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbShowLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbShowLabelsActionPerformed
-        controller.changed(originalLabels != cbShowLabels.isSelected());
+        fireChanged();
     }//GEN-LAST:event_cbShowLabelsActionPerformed
 
     void load () {
         fillVersioningSystems();
         originalLabels = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
         cbShowLabels.setSelected(originalLabels);
+        cmbVersioningSystems.setSelectedIndex(selectedIndex);
+        for (int i = 0; i < cmbVersioningSystems.getItemCount(); i++) {
+            VersioningSystem vs = (VersioningSystem) cmbVersioningSystems.getItemAt(i);
+            savedDisconnectedFolders.put(vs, Arrays.asList(Utils.getDisconnectedRoots(vs)));
+        }
     }
     
     void store() {
         originalLabels = cbShowLabels.isSelected();
         VersioningSupport.getPreferences().putBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, originalLabels);
+        savedDisconnectedFolders.clear();
     }
     
     boolean valid() {
         return true;
+    }
+    
+    void cancel() {
+        for(VersioningSystem vs : savedDisconnectedFolders.keySet()) {
+            List<String> saved = savedDisconnectedFolders.get(vs);
+            List<String> current = Arrays.asList(Utils.getDisconnectedRoots(vs));
+            for (String folder : saved) {
+                if (!current.contains(folder)) {
+                    Utils.disconnectRepository(vs, folder);
+                }
+            }
+            for (String folder : current) {
+                if (!saved.contains(folder)) {
+                    Utils.connectRepository(vs, folder);
+                }
+            }
+        }
+        savedDisconnectedFolders.clear();
+    }
+    
+    private void fireChanged() {
+        boolean isChanged = originalLabels != cbShowLabels.isSelected();
+        for(VersioningSystem vs : savedDisconnectedFolders.keySet()) {
+            isChanged |= !savedDisconnectedFolders.get(vs).equals(Arrays.asList(Utils.getDisconnectedRoots(vs)));
+        }
+        controller.changed(isChanged);
     }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -262,6 +297,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == cmbVersioningSystems) {
             fillDisconnectedFolders();
+            selectedIndex = cmbVersioningSystems.getSelectedIndex();
         } else if (e.getSource() == btnRemove) {
             if (cmbVersioningSystems.getSelectedItem() instanceof VersioningSystem && lstDisconnectedFolders.getSelectedValue() != null) {
                 String f = (String) lstDisconnectedFolders.getSelectedValue();
@@ -281,6 +317,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
                 }
             }
         }
+        fireChanged();
     }
 
     private void refreshSystems () {

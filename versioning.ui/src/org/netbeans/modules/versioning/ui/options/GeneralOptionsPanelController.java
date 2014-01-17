@@ -78,7 +78,8 @@ final class GeneralOptionsPanelController extends OptionsPanelController impleme
     
     @Override
     public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
+        getPanel().cancel();
+        changed = false;
     }
     
     @Override
