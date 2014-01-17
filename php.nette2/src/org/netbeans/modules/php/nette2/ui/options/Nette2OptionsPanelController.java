@@ -78,8 +78,10 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        nette2OptionsPanel.setSandbox(getOptions().getSandbox());
-        nette2OptionsPanel.setNetteDirectory(getOptions().getNetteDirectory());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            nette2OptionsPanel.setSandbox(getOptions().getSandbox());
+            nette2OptionsPanel.setNetteDirectory(getOptions().getNetteDirectory());
+        }
         changed = false;
     }
 
@@ -96,6 +98,10 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            nette2OptionsPanel.setSandbox(getOptions().getSandbox());
+            nette2OptionsPanel.setNetteDirectory(getOptions().getNetteDirectory());
+        }
     }
 
     @Override
@@ -137,7 +143,14 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getNetteDirectory();
+        String current = nette2OptionsPanel.getNetteDirectory().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getSandbox();
+        current = nette2OptionsPanel.getSandbox().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override
