@@ -185,6 +185,9 @@ class Detector implements Runnable {
         tids = threadMXBean.getAllThreadIds();
         ThreadInfo[] infos = threadMXBean.getThreadInfo(tids, true, true);
         for (ThreadInfo ti : infos) {
+            if (ti == null) {
+                continue; // as per getThreadInfo javadoc null can be returned in the array
+            }
             printThreadInfo(ti, out);
             printMonitorInfo(ti, out);
             printLockInfo(ti.getLockedSynchronizers(), out);
