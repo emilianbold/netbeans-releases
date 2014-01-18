@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -98,12 +98,10 @@ import javax.swing.tree.TreePath;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVSupport;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThreadGroup;
+import org.netbeans.spi.debugger.ui.DebuggingView.Deadlock;
 import org.netbeans.spi.debugger.ui.ViewFactory;
 import org.netbeans.spi.debugger.ui.ViewLifecycle;
 
@@ -126,13 +124,13 @@ import org.openide.windows.WindowManager;
  *
  * @author  Dan
  */
-public class DebuggingView extends TopComponent implements org.openide.util.HelpCtx.Provider,
+public class DebuggingViewComponent extends TopComponent implements org.openide.util.HelpCtx.Provider,
        ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener,
        AdjustmentListener, ChangeListener, MouseWheelListener, TreeSelectionListener,
        ViewLifecycle.ModelUpdateListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
-    private static final String ID = "debugging"; //NOI18N
+    private static final String ID = "debuggingView"; //NOI18N
     public static final int BAR_WIDTH = 8;
     
     static final Color hitsColor;
@@ -159,11 +157,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private DebugTreeView treeView;
     private TapPanel tapPanel;
     private InfoPanel infoPanel;
-    private JPDADebugger debugger;
+    private DVSupport debugger;
     private Session session;
-    private JPDADebugger previousDebugger;
-    private Reference<JPDAThread> threadMadeCurrentRef;
-    private Reference<JPDAThread> threadToScrollRef;
+    private DVSupport previousDebugger;
+    private Reference<DVThread> threadMadeCurrentRef;
+    private Reference<DVThread> threadToScrollRef;
 
     private ViewRefresher viewRefresher = new ViewRefresher();
     private BarsPanel leftPanel;
@@ -216,22 +214,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
      *
      * @see  #getInstance
      */
-    private static Reference<DebuggingView> instance = null;
+    private static Reference<DebuggingViewComponent> instance = null;
     
     /** Creates new form DebuggingView */
-    public DebuggingView() {
-        setIcon(ImageUtilities.loadImage ("org/netbeans/modules/debugger/jpda/resources/debugging.png")); // NOI18N
+    public DebuggingViewComponent() {
+        setIcon(ImageUtilities.loadImage ("org/netbeans/modules/debugger/resources/debuggingView/debugging_16.png")); // NOI18N
         // Remember the location of the component when closed.
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE);    // NOI18N
         
         initComponents();
     
-        resumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png", false);
-        focusedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png", false);
-        pressedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png", false);
-        suspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_16.png", false);
-        focusedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_focused_16.png", false);
-        pressedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/suspend_button_pressed_16.png", false);
+        resumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/resume_button_16.png", false);
+        focusedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/resume_button_focused_16.png", false);
+        pressedResumeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/resume_button_pressed_16.png", false);
+        suspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/suspend_button_16.png", false);
+        focusedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/suspend_button_focused_16.png", false);
+        pressedSuspendIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/suspend_button_pressed_16.png", false);
         
         setBackground(treeBackgroundColor);
         
@@ -296,8 +294,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(sessionComboBox, gridBagConstraints);
-        sessionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DebuggingView.class, "DebuggingView.sessionComboBox.AccessibleContext.accessibleName")); // NOI18N
-        sessionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebuggingView.class, "DebuggingView.sessionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        sessionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DebuggingViewComponent.class, "DebuggingViewComponent.sessionComboBox.AccessibleContext.accessibleName")); // NOI18N
+        sessionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebuggingViewComponent.class, "DebuggingViewComponent.sessionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         mainScrollPane.setBorder(null);
         mainScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -378,10 +376,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             threadsListener = ThreadsListener.getDefault();
         }
         if (engine != null) {
-            final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
+            final DVSupport deb = engine.lookupFirst(null, DVSupport.class);
             if (deb != null) {
                 if (threadsListener != null) {
-                    threadsListener.setDebuggingView(this);
+                    threadsListener.setDebuggingView(deb, this);
                 }
             }
             synchronized (lock) {
@@ -405,6 +403,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     }
                 });
             }
+            FiltersDescriptor.getInstance().setUpFilters(deb);
         } else {
             synchronized (lock) {
                 if (previousDebugger != null) {
@@ -422,6 +421,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     }
                 });
             }
+            FiltersDescriptor.getInstance().setUpFilters(null);
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -461,9 +461,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         return manager;
     }
 
-    public static DebuggingView getInstance() {
-        DebuggingView view;
-        view = (DebuggingView) WindowManager.getDefault().findTopComponent(ID);
+    public static DebuggingViewComponent getInstance() {
+        DebuggingViewComponent view;
+        view = (DebuggingViewComponent) WindowManager.getDefault().findTopComponent(ID);
         if (view == null) {
             view = getDefault();
         }
@@ -488,16 +488,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
      *
      * @return  singleton - instance of this class
      */
-    public static synchronized DebuggingView getDefault() {
-        DebuggingView view;
+    public static synchronized DebuggingViewComponent getDefault() {
+        DebuggingViewComponent view;
         if (instance == null) {
-            view = new DebuggingView();
-            instance = new WeakReference<DebuggingView>(view);
+            view = new DebuggingViewComponent();
+            instance = new WeakReference<DebuggingViewComponent>(view);
         } else {
             view = instance.get();
             if (view == null) {
-                view = new DebuggingView();
-                instance = new WeakReference<DebuggingView>(view);
+                view = new DebuggingViewComponent();
+                instance = new WeakReference<DebuggingViewComponent>(view);
             }
         }
         return view;
@@ -505,7 +505,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     @Override
     protected String preferredID() {
-        return this.getClass().getName();
+        return ID;
     }
 
     @Override
@@ -556,12 +556,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     
     @Override
     public String getName() {
-        return NbBundle.getMessage (DebuggingView.class, "CTL_Debugging_view"); // NOI18N
+        return NbBundle.getMessage (DebuggingViewComponent.class, "CTL_Debugging_view"); // NOI18N
     }
     
     @Override
     public String getToolTipText() {
-        return NbBundle.getMessage (DebuggingView.class, "CTL_Debugging_tooltip"); // NOI18N
+        return NbBundle.getMessage (DebuggingViewComponent.class, "CTL_Debugging_tooltip"); // NOI18N
     }
 
     @Override
@@ -570,13 +570,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         if (ExplorerManager.PROP_ROOT_CONTEXT.equals(propertyName) || 
                 ExplorerManager.PROP_NODE_CHANGE.equals(propertyName)) {
             refreshView();
-        } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-            JPDAThread currentThread;
+        } else if (DVSupport.PROP_CURRENT_THREAD.equals(propertyName)) {
+            DVThread currentThread;
             synchronized (lock) {
                 currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
             }
             if (currentThread != null) {
-                JPDAThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
+                DVThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
                 if (thread == currentThread) {
                     threadToScrollRef = new WeakReference(thread);
                 }
@@ -597,12 +597,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
     }
 
-    private static boolean isJPDASession(Session s) {
+    private static boolean isDebuggingSession(Session s) {
         DebuggerEngine engine = s.getCurrentEngine ();
         if (engine == null) {
             return false;
         }
-        return engine.lookupFirst(null, JPDADebugger.class) != null;
+        return engine.lookupFirst(null, DVSupport.class) != null;
     }
     
     void updateSessionsComboBox() {
@@ -616,7 +616,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 DebuggerManager dm = DebuggerManager.getDebuggerManager();
                 Session[] sessions = dm.getSessions();
                 for (int x = 0; x < sessions.length; x++) {
-                    if (isJPDASession(sessions[x])) {
+                    if (isDebuggingSession(sessions[x])) {
                         sessionComboBox.addItem(new SessionItem(sessions[x]));
                     }
                 }
@@ -631,7 +631,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         });
     }
 
-    void makeThreadCurrent(JPDAThread thread) {
+    void makeThreadCurrent(DVThread thread) {
         threadMadeCurrentRef = new WeakReference(thread);
         thread.makeCurrent();
     }
@@ -643,8 +643,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             treeView.setRootVisible(false);
             treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
             treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-            treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleName")); // NOI18N
-            treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
+            treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DebuggingViewComponent.class, "DebuggingViewComponent.treeView.AccessibleContext.accessibleName")); // NOI18N
+            treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingViewComponent.class, "DebuggingViewComponent.treeView.AccessibleContext.accessibleDescription")); // NOI18N
             treeView.getTree().addMouseWheelListener(this);
             treeView.addTreeExpansionListener(this);
             TreeModel model = treeView.getTree().getModel();
@@ -723,19 +723,22 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             @Override
             public void run() {
                 refreshScheduled.set(false);
-                JPDAThread currentThread;
-                ThreadsCollector tc;
-                synchronized (DebuggingView.this.lock) {
-                    currentThread = debugger != null ? debugger.getCurrentThread() : null;
-                    tc = debugger != null ? debugger.getThreadsCollector() : null;
+                DVThread currentThread = null;
+                Set<Deadlock> deadlocks = null;
+                DVSupport supp;
+                synchronized (DebuggingViewComponent.this.lock) {
+                    supp = debugger;
+                }
+                if (supp != null) {
+                    currentThread = supp.getCurrentThread();
+                    deadlocks = supp.getDeadlocks();
                 }
                 // collect all deadlocked threads
-                Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : null;
-                Set<JPDAThread> deadlockedThreads;
+                Set<DVThread> deadlockedThreads;
                 if (deadlocks == null) {
                     deadlockedThreads = Collections.EMPTY_SET;
                 } else {
-                    deadlockedThreads = new HashSet<JPDAThread>();
+                    deadlockedThreads = new HashSet<DVThread>();
                     for (Deadlock deadlock : deadlocks) {
                         deadlockedThreads.addAll(deadlock.getThreads());
                     }
@@ -870,10 +873,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
     private final class ViewRefresher implements Runnable {
         
-        private JPDAThread currentThread;
-        private Set<JPDAThread> deadlockedThreads;
+        private DVThread currentThread;
+        private Set<DVThread> deadlockedThreads;
         
-        void setup(JPDAThread currentThread, Set<JPDAThread> deadlockedThreads) {
+        void setup(DVThread currentThread, Set<DVThread> deadlockedThreads) {
             this.currentThread = currentThread;
             this.deadlockedThreads = deadlockedThreads;
         }
@@ -886,7 +889,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
             int sy = 0;
 
-            JPDAThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
+            DVThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
             threadToScrollRef = null;
             int scrollStart = -1, scrollEnd = -1;
             boolean pathToScrollSearching = false;
@@ -904,8 +907,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             if (tView != null) {
                 for (TreePath path : tView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
-                    JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
-                    JPDAThreadGroup jpdaThreadGroup = node.getLookup().lookup(JPDAThreadGroup.class);
+                    DVThread jpdaThread = node.getLookup().lookup(DVThread.class);
+                    DVThreadGroup jpdaThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
 
                     JTree tree = tView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
@@ -922,8 +925,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                         }
                         leftBarHeight = 0;
                         if (jpdaThread != null) {
-                            isCurrent = jpdaThread == currentThread && (jpdaThread.isSuspended() ||
-                                    DebuggingTreeModel.isMethodInvoking(jpdaThread));
+                            isCurrent = jpdaThread == currentThread;/* && (jpdaThread.isSuspended() ||
+                                    DebuggingTreeModel.isMethodInvoking(jpdaThread));*/
                             isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
                             isInDeadlock = deadlockedThreads.contains(jpdaThread);
                         } else {
@@ -975,13 +978,13 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         }
 
-        private void addPanels(Object jpdaObject, boolean current, boolean atBreakpoint,
+        private void addPanels(Object dvObject, boolean current, boolean atBreakpoint,
                 boolean inDeadlock, int height, int sx, int sy, int rowHeight) {
             if (current || atBreakpoint || inDeadlock) {
                 leftPanel.addBar(current, atBreakpoint, inDeadlock, height, sy);
             }
-            if (jpdaObject instanceof JPDAThread) {
-                rightPanel.addIcon(sx, sy, rowHeight, (JPDAThread)jpdaObject);
+            if (dvObject instanceof DVThread) {
+                rightPanel.addIcon(sx, sy, rowHeight, (DVThread) dvObject);
             }
         }
     }
@@ -1007,17 +1010,17 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             Color secondaryColor = null;
             if (inDeadlock) {
                 color = deadlockColor;
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_DEADLOCKED_THREAD_TIP");
+                toolTipText = NbBundle.getMessage(DebuggingViewComponent.class, "LBL_DEADLOCKED_THREAD_TIP");
             } else if (isCurrent) {
                 color = greenBarColor;
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_BAR_TIP");
+                toolTipText = NbBundle.getMessage(DebuggingViewComponent.class, "LBL_CURRENT_BAR_TIP");
             } else if (atBreakpoint) {
                 color = hitsBarColor;
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_BREAKPOINT_HIT_TIP");
+                toolTipText = NbBundle.getMessage(DebuggingViewComponent.class, "LBL_BREAKPOINT_HIT_TIP");
             }
             if (isCurrent && inDeadlock) {
                 secondaryColor = greenBarColor;
-                toolTipText = NbBundle.getMessage(DebuggingView.class, "LBL_CURRENT_DEADLOCKED_TIP");
+                toolTipText = NbBundle.getMessage(DebuggingViewComponent.class, "LBL_CURRENT_DEADLOCKED_TIP");
             }
             Bar bar = new Bar(sy, height, color, secondaryColor, toolTipText);
             bars.add(bar);
@@ -1123,12 +1126,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         }
         
-        public void addIcon(int sx, int sy, int rowHeight, JPDAThread jpdaThread) {
+        public void addIcon(int sx, int sy, int rowHeight, DVThread dvThread) {
             int height = sy - endSY + rowHeight;
             IconItem item;
             if (counter < icons.size()) {
                 item = icons.get(counter);
-                item.icon.changeThread(jpdaThread, DebuggingView.this, sx, sy,
+                item.icon.changeThread(dvThread, DebuggingViewComponent.this, sx, sy,
                         ClickableIcon.CLICKABLE_ICON_WIDTH, height);
                 item.panel.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, height));
                 item.height = height;
@@ -1139,7 +1142,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 panel.setPreferredSize(new Dimension(ClickableIcon.CLICKABLE_ICON_WIDTH, height));
             
                 ClickableIcon icon = new ClickableIcon(resumeIcon, focusedResumeIcon, pressedResumeIcon,
-                        suspendIcon, focusedSuspendIcon, pressedSuspendIcon, jpdaThread, treeView);
+                        suspendIcon, focusedSuspendIcon, pressedSuspendIcon, dvThread, treeView);
                 icon.setBackground(treeBackgroundColor);
                 
                 GridBagConstraints gridBagConstraints = new GridBagConstraints();
@@ -1154,7 +1157,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 gridBagConstraints.insets = new Insets(insetTop, 0, insetBottom, 0);
                 
                 panel.add(icon, gridBagConstraints);
-                icon.initializeState(DebuggingView.this, sx, sy, ClickableIcon.CLICKABLE_ICON_WIDTH, height);
+                icon.initializeState(DebuggingViewComponent.this, sx, sy, ClickableIcon.CLICKABLE_ICON_WIDTH, height);
                 
                 item = new IconItem(height, icon, panel);
                 icons.add(item);
@@ -1249,7 +1252,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             if (session != null) {
                 return session.getName();
             } else {
-                return '<' + NbBundle.getMessage(DebuggingView.class, "LBL_No_Session_Running") + '>';
+                return '<' + NbBundle.getMessage(DebuggingViewComponent.class, "LBL_No_Session_Running") + '>';
             }
         }
         

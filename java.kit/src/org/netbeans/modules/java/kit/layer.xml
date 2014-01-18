@@ -41,13 +41,13 @@
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-java-navigation-actions-ShowHierarchyAtCaretAction.instance"/>
             </file>
             <file name="D-8.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
             </file>
             <file name="S-F1.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-javadoc-search-SearchDocAction.instance"/>
             </file>
             <file name="SO-9.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-DebuggingViewAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.instance"/>
             </file>
         </folder>
         <folder name="Eclipse">

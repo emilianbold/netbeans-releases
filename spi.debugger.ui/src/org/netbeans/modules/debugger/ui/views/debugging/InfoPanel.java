@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -51,6 +51,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -71,12 +73,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVSupport;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -108,17 +109,17 @@ public class InfoPanel extends javax.swing.JPanel {
 
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
-    private Map<JPDAThread, JMenuItem> threadToMenuItem = new WeakHashMap<JPDAThread, JMenuItem>();
-    private JPDAThread debuggerDeadlockThread;
-    private WeakReference<JPDADebugger> stepBrkpDebuggerRef;
-    private DebuggingView debuggingView;
+    private Map<DVThread, JMenuItem> threadToMenuItem = new WeakHashMap<DVThread, JMenuItem>();
+    private DVThread debuggerDeadlockThread;
+    private WeakReference<DVSupport> stepBrkpDVSupportRef;
+    private DebuggingViewComponent debuggingView;
 
     /** Creates new form InfoPanel */
-    public InfoPanel(TapPanel tapPanel, DebuggingView debuggingView) {
+    public InfoPanel(TapPanel tapPanel, DebuggingViewComponent debuggingView) {
         this.tapPanel = tapPanel;
         this.debuggingView = debuggingView;
         filterPanelColor = tapPanel.getBackground();
-        hitsPanelColor = DebuggingView.hitsColor;
+        hitsPanelColor = DebuggingViewComponent.hitsColor;
         deadlockPanelColor = hitsPanelColor;
         stepBrkpColor = hitsPanelColor;
         tapPanelMinimumHeight = tapPanel.getMinimumHeight();
@@ -165,7 +166,7 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    void removeBreakpointHit(final JPDAThread thread, final int newHitsCount) {
+    void removeBreakpointHit(final DVThread thread, final int newHitsCount) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JMenuItem item = threadToMenuItem.remove(thread);
@@ -181,13 +182,13 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    void addBreakpointHit(final JPDAThread thread, final int newHitsCount) {
+    void addBreakpointHit(final DVThread thread, final int newHitsCount) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (threadToMenuItem.get(thread) != null) {
                     return;
                 }
-                JMenuItem item = createMenuItem(thread);
+                JMenuItem item = createMenuItem(thread.getDVSupport(), thread);
                 threadToMenuItem.put(thread, item);
                 arrowMenu.add(item);
                 setHitsText(newHitsCount);
@@ -198,13 +199,13 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    void setBreakpointHits(final List<JPDAThread> hits) {
+    void setBreakpointHits(final DVSupport dvs, final List<DVThread> hits) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 arrowMenu.removeAll();
                 threadToMenuItem.clear();
-                for (JPDAThread thread : hits) {
-                    JMenuItem item = createMenuItem(thread);
+                for (DVThread thread : hits) {
+                    JMenuItem item = createMenuItem(dvs, thread);
                     threadToMenuItem.put(thread, item);
                     arrowMenu.add(item);
                 }
@@ -218,13 +219,13 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    public void recomputeMenuItems(final List<JPDAThread> hits) {
+    public void recomputeMenuItems(final DVSupport dvs, final List<DVThread> hits) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 arrowMenu.removeAll();
                 threadToMenuItem.clear();
-                for (JPDAThread thread : hits) {
-                    JMenuItem item = createMenuItem(thread);
+                for (DVThread thread : hits) {
+                    JMenuItem item = createMenuItem(dvs, thread);
                     threadToMenuItem.put(thread, item);
                     arrowMenu.add(item);
                 }
@@ -232,24 +233,9 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    private JMenuItem createMenuItem(final JPDAThread thread) {
-        String displayName;
-        try {
-            displayName = DebuggingNodeModel.getDisplayName(thread, false);
-            Method method = thread.getClass().getMethod("getDebugger"); // [TODO]
-            JPDADebugger debugger = (JPDADebugger)method.invoke(thread);
-            method = debugger.getClass().getMethod("getSession");
-            Session session = (Session) method.invoke(debugger);
-            Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
-            if (session != currSession) {
-                String str = NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_Session", // [TODO] bundle
-                        session.getName());
-                displayName = displayName.charAt(0) + str + ", " + displayName.substring(1);
-            }
-        } catch (Exception e) { // [TODO]
-            displayName = thread.getName();
-        }
-        Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+    private JMenuItem createMenuItem(final DVSupport dvs, final DVThread thread) {
+        String displayName = dvs.getDisplayName(thread);
+        Image image = dvs.getIcon(thread);
         Icon icon = image != null ? new ImageIcon(image) : null;
         JMenuItem item = new JMenuItem(displayName, icon);
         item.addActionListener(new ActionListener() {
@@ -283,7 +269,7 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    void setShowThreadLocks(final JPDAThread thread, final List<JPDAThread> lockerThreads) {
+    void setShowThreadLocks(final DVThread thread, final List<DVThread> lockerThreads) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (lockerThreads != null) {
@@ -295,11 +281,11 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
-    void setShowStepBrkp(final JPDADebugger debugger, final JPDAThread thread, final JPDABreakpoint breakpoint) {
+    void setShowStepBrkp(final DVSupport dvSupport, final DVThread thread, final Breakpoint breakpoint) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (breakpoint != null) {
-                    showStepBrkpPanel(debugger, thread, breakpoint);
+                    showStepBrkpPanel(dvSupport, thread, breakpoint);
                 } else {
                     hideStepBrkpPanel();
                 }
@@ -376,18 +362,7 @@ public class InfoPanel extends javax.swing.JPanel {
         hidePanel(DEADLOCKS_BY_DEBUGGER);
     }
 
-    private boolean isInStep(JPDAThread t) {
-        // TODO: Make JPDAThread.isInStep()
-        try {
-            java.lang.reflect.Method isInStepMethod = t.getClass().getMethod("isInStep", new Class[] {});
-            return (Boolean) isInStepMethod.invoke(t, new Object[] {});
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
-    }
-
-    private void showDebuggerDeadlockPanel(JPDAThread thread, List<JPDAThread> lockerThreads) {
+    private void showDebuggerDeadlockPanel(DVThread thread, List<DVThread> lockerThreads) {
         //this.debuggerDeadlockThreads = lockerThreads;
         this.debuggerDeadlockThread = thread;
         String infoResource;
@@ -395,7 +370,7 @@ public class InfoPanel extends javax.swing.JPanel {
         String resumeTooltipResource;
         int numThreads = lockerThreads.size();
         if (numThreads == 1) {
-            if (isInStep(thread)) {
+            if (thread.isInStep()) {
                 infoResource = "InfoPanel.debuggerDeadlocksLabelThread.text"; // NOI18N
                 resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButtonThread.tooltip";
             } else {
@@ -407,7 +382,7 @@ public class InfoPanel extends javax.swing.JPanel {
             resumeDebuggerDeadlockButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                     resumeTooltipResource, lockerThreads.get(0).getName()));
         } else {
-            if (isInStep(thread)) {
+            if (thread.isInStep()) {
                 infoResource = "InfoPanel.debuggerDeadlocksLabel.text"; // NOI18N
                 resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButton.tooltip"; // NOI18N
             } else {
@@ -443,8 +418,8 @@ public class InfoPanel extends javax.swing.JPanel {
         hidePanel(STEP_BRKP);
     }
 
-    private void showStepBrkpPanel(JPDADebugger debugger, JPDAThread thread, JPDABreakpoint breakpoint) {
-        this.stepBrkpDebuggerRef = new WeakReference<JPDADebugger>(debugger);
+    private void showStepBrkpPanel(DVSupport dvSupport, DVThread thread, Breakpoint breakpoint) {
+        this.stepBrkpDVSupportRef = new WeakReference<DVSupport>(dvSupport);
         String text = org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.stepBrkpLabel.text", thread.getName()); // NOI18N
         stepBrkpLabel.setText(text);
         stepBrkpLabel.setToolTipText(text);
@@ -454,7 +429,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private JButton createArrowButton() {
         arrowMenu = new JPopupMenu();
         JButton button = DropDownButtonFactory.createDropDownButton(
-            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/jpda/resources/unvisited_bpkt_arrow_small_16.png", false), arrowMenu);
+            ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debuggingView/unvisited_bpkt_arrow_small_16.png", false), arrowMenu);
         button.setPreferredSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setMaximumSize(new Dimension(40, button.getPreferredSize().height)); // [TODO]
         button.setFocusable(false);
@@ -463,7 +438,7 @@ public class InfoPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 if (arrowMenu.getComponentCount() > 0) {
                     Object item = arrowMenu.getComponent(0);
-                    for (Map.Entry<JPDAThread, JMenuItem> entry : threadToMenuItem.entrySet()) {
+                    for (Map.Entry<DVThread, JMenuItem> entry : threadToMenuItem.entrySet()) {
                         if (entry.getValue() == item) {
                             debuggingView.makeThreadCurrent(entry.getKey());
                         } // if
@@ -477,7 +452,7 @@ public class InfoPanel extends javax.swing.JPanel {
     private JToolBar createFilterToolBar() {
         final FiltersDescriptor filtersDesc = FiltersDescriptor.getInstance();
         // configure toolbar
-        JToolBar toolbar = new NoBorderToolBar();
+        final JToolBar toolbar = new NoBorderToolBar();
         toolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         toolbar.setFloatable(false);
         //toolbar.setRollover(true);
@@ -486,6 +461,23 @@ public class InfoPanel extends javax.swing.JPanel {
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
+        createFilterToolBarUI(toolbar, filtersDesc);
+        filtersDesc.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        createFilterToolBarUI(toolbar, filtersDesc);
+                    }
+                });
+            }
+        });
+        return toolbar;
+    }
+    
+    private void createFilterToolBarUI(JToolBar toolbar, FiltersDescriptor filtersDesc) {
+        toolbar.removeAll();
         // create toggle buttons
         int filterCount = filtersDesc.getFilterCount();
         ArrayList<JToggleButton> toggles = new ArrayList<JToggleButton>(filterCount);
@@ -505,7 +497,6 @@ public class InfoPanel extends javax.swing.JPanel {
                 toolbar.addSeparator(new Dimension(3, 0));
             }
         }
-        return toolbar;
     }
 
     private static class ToggleButtonActionListener implements ActionListener {
@@ -536,7 +527,7 @@ public class InfoPanel extends javax.swing.JPanel {
         return toggleButton;
     }
 
-    private void resumeThreadToFreeMonitor(JPDAThread thread) {
+    private void resumeThreadToFreeMonitor(DVThread thread) {
         // Do not have monitor breakpoints in the API.
         // Have to do that in the implementation module.
         try {
@@ -581,7 +572,7 @@ public class InfoPanel extends javax.swing.JPanel {
         stepBrkpInnerPanel.setOpaque(false);
         stepBrkpInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        infoIcon3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/resources/debuggingView/info_big.png"))); // NOI18N
         infoIcon3.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon3.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -617,7 +608,7 @@ public class InfoPanel extends javax.swing.JPanel {
         debuggerDeadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
         debuggerDeadlocksInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        infoIcon2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/wrong_pass.png"))); // NOI18N
+        infoIcon2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/resources/wrong_pass.png"))); // NOI18N
         infoIcon2.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon2.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -676,7 +667,7 @@ public class InfoPanel extends javax.swing.JPanel {
         deadlocksInnerPanel.setPreferredSize(new java.awt.Dimension(0, 16));
         deadlocksInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/wrong_pass.png"))); // NOI18N
+        infoIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/resources/wrong_pass.png"))); // NOI18N
         infoIcon1.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -706,7 +697,7 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsInnerPanel.setOpaque(false);
         hitsInnerPanel.setLayout(new java.awt.GridBagLayout());
 
-        infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/jpda/resources/info_big.png"))); // NOI18N
+        infoIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/debugger/resources/debuggingView/info_big.png"))); // NOI18N
         infoIcon.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.infoIcon.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -732,11 +723,11 @@ public class InfoPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void resumeDebuggerDeadlockButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resumeDebuggerDeadlockButtonActionPerformed
-        //final List<JPDAThread> threadsToResume = debuggerDeadlockThreads;
-        final JPDAThread blockedThread = debuggerDeadlockThread;
+        //final List<DVThread> threadsToResume = debuggerDeadlockThreads;
+        final DVThread blockedThread = debuggerDeadlockThread;
         RequestProcessor rp;
         try {
-            JPDADebugger debugger = (JPDADebugger) blockedThread.getClass().getMethod("getDebugger").invoke(blockedThread);
+            DVSupport debugger = blockedThread.getDVSupport();
             rp = getRP(debugger);
             if (rp == null) {
                 return ;
@@ -747,29 +738,28 @@ public class InfoPanel extends javax.swing.JPanel {
         }
         rp.post(new Runnable() {
             public void run() {
-                resumeThreadToFreeMonitor(blockedThread);
+                blockedThread.resumeBlockingThreads();
+                //resumeThreadToFreeMonitor(blockedThread);
             }
         });
         hideDebuggerDeadlockPanel();
     }//GEN-LAST:event_resumeDebuggerDeadlockButtonActionPerformed
 
-    private static RequestProcessor getRP(JPDADebugger debugger) {
+    private static RequestProcessor getRP(DVSupport debugger) {
         RequestProcessor rp;
-        try {
-            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger); // NOI18N
-            rp = s.lookupFirst(null, RequestProcessor.class);
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-            return null;
+        Session s = debugger.getSession();
+        rp = s.lookupFirst(null, RequestProcessor.class);
+        if (rp == null) {
+            rp = new RequestProcessor(InfoPanel.class);
         }
         return rp;
     }
 
     private void stepBrkpIgnoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepBrkpIgnoreButtonActionPerformed
-        if (stepBrkpDebuggerRef != null) {
-            final JPDADebugger d = stepBrkpDebuggerRef.get();
-            if (d != null) {
-                RequestProcessor rp = getRP(d);
+        if (stepBrkpDVSupportRef != null) {
+            final DVSupport ds = stepBrkpDVSupportRef.get();
+            if (ds != null) {
+                RequestProcessor rp = getRP(ds);
                 if (rp == null) {
                     return ;
                 }
@@ -777,7 +767,7 @@ public class InfoPanel extends javax.swing.JPanel {
                     @Override
                     public void run() {
                         try {
-                            d.getClass().getMethod("resume").invoke(d); // NOI18N
+                            ds.resume();
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }

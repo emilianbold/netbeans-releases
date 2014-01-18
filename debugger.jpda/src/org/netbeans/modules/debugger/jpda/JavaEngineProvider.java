@@ -126,7 +126,7 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
             new ComponentProxy("localsView", true),
             new WatchesComponentProxy("watchesView", true),
             new ComponentProxy("breakpointsView", true),
-            new ComponentProxy("debugging", true),
+            new ComponentProxy("debuggingView", true),
             // Initially closed components
             new ComponentProxy("evaluator", false),
             new ComponentProxy("resultsView", false),

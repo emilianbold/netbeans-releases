@@ -43,7 +43,7 @@
  */
 
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -65,10 +65,9 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVSupport;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.Deadlock;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -83,7 +82,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent evt) {
-        List<JPDAThread> threads = getThreads();
+        List<DVThread> threads = getThreads();
         int threadsCount = threads.size();
         if (threadsCount < 1) {
             Toolkit.getDefaultToolkit().beep();
@@ -127,43 +126,28 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    public static SwitcherTableItem[] createSwitcherItems(List<JPDAThread> threads) {
+    public static SwitcherTableItem[] createSwitcherItems(List<DVThread> threads) {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
-        JPDADebugger debugger = threadsListener.getDebugger();
-        JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+        DVSupport debugger = threadsListener.getDVSupport();
+        DVThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
         // collect all deadlocked threads
-        Set<Deadlock> deadlocks = debugger != null ? debugger.getThreadsCollector().getDeadlockDetector().getDeadlocks()
+        Set<Deadlock> deadlocks = debugger != null ? debugger.getDeadlocks()
                 : Collections.EMPTY_SET;
         if (deadlocks == null) {
             deadlocks = Collections.EMPTY_SET;
         }
-        Set<JPDAThread> deadlockedThreads = new HashSet<JPDAThread>();
+        Set<DVThread> deadlockedThreads = new HashSet<DVThread>();
         for (Deadlock deadlock : deadlocks) {
             deadlockedThreads.addAll(deadlock.getThreads());
         }
         
         SwitcherTableItem[] items = new SwitcherTableItem[threads.size()];
         int i = 0;
-        for (JPDAThread thread : threads) {
-            String name;
-            try {
-                name = DebuggingNodeModel.getDisplayName(thread, false);
-                Method method = thread.getClass().getMethod("getDebugger"); // [TODO]
-                JPDADebugger deb = (JPDADebugger)method.invoke(thread);
-                method = deb.getClass().getMethod("getSession");
-                Session session = (Session) method.invoke(deb);
-                Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
-                if (session != currSession) {
-                    String str = NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_Session",
-                            session.getName());
-                    name = name.charAt(0) + str + ", " + name.substring(1);
-                }
-            } catch (Exception e) { // [TODO]
-                name = thread.getName();
-            }
+        for (DVThread thread : threads) {
+            String name = debugger.getDisplayName(thread);
             String htmlName = name;
             String description = ""; // tc.getToolTipText();
-            Image image = ImageUtilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+            Image image = debugger.getIcon(thread);//ImageUtilities.loadImage(DebuggingNodeModel.getIconBase(thread));
             Icon icon = null;
             if (image != null) {
                 boolean isCurrent = thread == currentThread;
@@ -186,9 +170,9 @@ public final class ThreadsHistoryAction extends AbstractAction {
     
     private static class ActivatableElement implements SwitcherTableItem.Activatable {
         
-        JPDAThread thread;
+        DVThread thread;
         
-        private ActivatableElement(JPDAThread thread) {
+        private ActivatableElement(DVThread thread) {
             this.thread = thread;
         }
         @Override
@@ -197,21 +181,21 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    public static List<JPDAThread> getThreads() {
+    public static List<DVThread> getThreads() {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
         if (threadsListener == null) {
             return Collections.emptyList();
         }
-        List<JPDAThread> history = threadsListener.getCurrentThreadsHistory();
-        List<JPDAThread> allThreads = threadsListener.getThreads();
-        Set<JPDAThread> hitsSet = new HashSet<JPDAThread>();
-        for (JPDAThread hit : threadsListener.getHits()) {
+        List<DVThread> history = threadsListener.getCurrentThreadsHistory();
+        List<DVThread> allThreads = threadsListener.getThreads();
+        Set<DVThread> hitsSet = new HashSet<DVThread>();
+        for (DVThread hit : threadsListener.getHits()) {
             hitsSet.add(hit);
         }
         Set set = new HashSet(history);
-        List<JPDAThread> result = new LinkedList<JPDAThread>();
+        List<DVThread> result = new LinkedList<DVThread>();
         result.addAll(history);
-        for (JPDAThread thread : allThreads) {
+        for (DVThread thread : allThreads) {
             if (!set.contains(thread) && thread.isSuspended()) {
                 result.add(thread);
             }
@@ -220,7 +204,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
             int index = 1;
             int size = result.size();
             for (int x = 1; x < size; x++) {
-                JPDAThread t = result.get(x);
+                DVThread t = result.get(x);
                 if (hitsSet.contains(t)) {
                     if (x > index) {
                         result.remove(x);
@@ -256,14 +240,14 @@ public final class ThreadsHistoryAction extends AbstractAction {
             Color primaryColor = null;
             Color secondaryColor = null;
             if (isInDeadlock) {
-                primaryColor = DebuggingView.deadlockColor;
+                primaryColor = DebuggingViewComponent.deadlockColor;
             } else if (isCurrent) {
-                primaryColor = DebuggingView.greenBarColor;
+                primaryColor = DebuggingViewComponent.greenBarColor;
             } else if (isAtBreakpoint) {
-                primaryColor = DebuggingView.hitsBarColor;
+                primaryColor = DebuggingViewComponent.hitsBarColor;
             }
             if (isCurrent && isInDeadlock) {
-                secondaryColor = DebuggingView.greenBarColor;
+                secondaryColor = DebuggingViewComponent.greenBarColor;
             }
             
             Color originalColor = g.getColor();
@@ -272,12 +256,12 @@ public final class ThreadsHistoryAction extends AbstractAction {
             g.drawImage(image, x + width, y, iconBase.getImageObserver());
             if (primaryColor != null) {
                 g.setColor(primaryColor);
-                g.fillRect(x, y, DebuggingView.BAR_WIDTH, height);
+                g.fillRect(x, y, DebuggingViewComponent.BAR_WIDTH, height);
             }
             if (secondaryColor != null) {
                 g.setColor(secondaryColor);
-                int w = DebuggingView.BAR_WIDTH / 2 + 1;
-                g.fillRect(x + DebuggingView.BAR_WIDTH - w, y, w, height);
+                int w = DebuggingViewComponent.BAR_WIDTH / 2 + 1;
+                g.fillRect(x + DebuggingViewComponent.BAR_WIDTH - w, y, w, height);
             }
             g.setColor(originalColor);
         }

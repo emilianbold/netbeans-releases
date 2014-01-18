@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -63,11 +63,12 @@ import javax.swing.tree.FixedHeightLayoutCache;
 import javax.swing.tree.RowMapper;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
 
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
+import org.netbeans.spi.debugger.ui.DebuggingView;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThreadGroup;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 
 import org.openide.explorer.view.BeanTreeView;
@@ -88,7 +89,7 @@ public class DebugTreeView extends BeanTreeView {
     private final Color highlightColor;
     private final Color currentThreadColor;
     
-    private JPDAThread focusedThread;
+    private DVThread focusedThread;
     
     DebugTreeView() {
         super();
@@ -96,7 +97,7 @@ public class DebugTreeView extends BeanTreeView {
         if (c == null) {
             c = new Color(233, 255, 230);
             Color tbc = tree.getBackground();
-            int dl = Math.abs(DebuggingView.luminance(c) - DebuggingView.luminance(tbc));
+            int dl = Math.abs(DebuggingViewComponent.luminance(c) - DebuggingViewComponent.luminance(tbc));
             if (dl > 125) {
                 c = new Color(30, 80, 28);
             }
@@ -106,7 +107,7 @@ public class DebugTreeView extends BeanTreeView {
         if (c == null) {
             c = new Color(233, 239, 248);
             Color tbc = tree.getBackground();
-            int dl = Math.abs(DebuggingView.luminance(c) - DebuggingView.luminance(tbc));
+            int dl = Math.abs(DebuggingViewComponent.luminance(c) - DebuggingViewComponent.luminance(tbc));
             if (dl > 125) {
                 c = new Color(40, 60, 38);
             }
@@ -191,13 +192,18 @@ public class DebugTreeView extends BeanTreeView {
         }
     }
 
-    public Object getJPDAObject(TreePath path) {
+    /**
+     * Get the DVThread or DVThreadGroup instance on the given path.
+     * @param path
+     * @return an instance of DVThread or DVThreadGroup
+     */
+    public Object getThreadObject(TreePath path) {
         Node node = Visualizer.findNode(path.getLastPathComponent());
-        JPDAThread jpdaThread = node.getLookup().lookup(JPDAThread.class);
+        DVThread jpdaThread = node.getLookup().lookup(DVThread.class);
         if (jpdaThread != null) {
             return jpdaThread;
         }
-        JPDAThreadGroup jpdaThreadGroup = node.getLookup().lookup(JPDAThreadGroup.class);
+        DVThreadGroup jpdaThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
         return jpdaThreadGroup;
     }
 
@@ -273,20 +279,14 @@ public class DebugTreeView extends BeanTreeView {
         }
 
         Color origColor = g.getColor();
-        ThreadsListener threadsListener = ThreadsListener.getDefault();
-        JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
-        JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
-        if (currentThread != null && !currentThread.isSuspended() &&
-                !DebuggingTreeModel.isMethodInvoking(currentThread)) {
-            currentThread = null;
-        }
+        DVThread currentThread = getCurrentThread();
         boolean isHighlighted = false;
         boolean isCurrent = false;
         Iterator<TreePath> iter = paths.iterator();
         int firstGroupNumber = clipY / rowHeight;
         for (int x = 0; x <= firstGroupNumber && iter.hasNext(); x++) {
             Node node = Visualizer.findNode(iter.next().getLastPathComponent());
-            JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
+            DVThread thread = node.getLookup().lookup(DVThread.class);
             isHighlighted = focusedThread != null && thread == focusedThread;
             if (thread != null) {
                 isCurrent = currentThread == thread;
@@ -306,7 +306,7 @@ public class DebugTreeView extends BeanTreeView {
             sy += rowHeight;
             if (iter.hasNext()) {
                 Node node = Visualizer.findNode(iter.next().getLastPathComponent());
-                JPDAThread thread = node.getLookup().lookup(JPDAThread.class);
+                DVThread thread = node.getLookup().lookup(DVThread.class);
                 isHighlighted = focusedThread != null && thread == focusedThread;
                 if (thread != null) {
                     isCurrent = currentThread == thread;
@@ -322,8 +322,20 @@ public class DebugTreeView extends BeanTreeView {
 //        }
         g.setColor(origColor);
     }
+    
+    private DVThread getCurrentThread() {
+        DVThread currentThread = null;
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine != null) {
+            DebuggingView.DVSupport dvSupport = currentEngine.lookupFirst(null, DebuggingView.DVSupport.class);
+            if (dvSupport != null) {
+                currentThread = dvSupport.getCurrentThread();
+            }
+        }
+        return currentThread;
+    }
 
-    boolean threadFocuseGained(JPDAThread jpdaThread) {
+    boolean threadFocuseGained(DVThread jpdaThread) {
         if (jpdaThread != null && focusedThread != jpdaThread) {
             focusedThread = jpdaThread;
             repaint();
@@ -332,7 +344,7 @@ public class DebugTreeView extends BeanTreeView {
         return false;
     }
 
-    boolean threadFocuseLost(JPDAThread jpdaThread) {
+    boolean threadFocuseLost(DVThread jpdaThread) {
         if (jpdaThread != null && focusedThread == jpdaThread) {
             focusedThread = null;
             repaint();
@@ -357,21 +369,15 @@ public class DebugTreeView extends BeanTreeView {
             }
             if (value instanceof Node) {
                 Node node = (Node) value;
-                JPDAThread thread;
+                DVThread thread;
                 do {
-                    thread = node.getLookup().lookup(JPDAThread.class);
+                    thread = node.getLookup().lookup(DVThread.class);
                     if (thread == null) {
                         node = node.getParentNode();
                     }
                 } while (thread == null && node != null);
                 if (thread != null) {
-                    ThreadsListener threadsListener = ThreadsListener.getDefault();
-                    JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
-                    JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
-                    if (currentThread != null && !currentThread.isSuspended() &&
-                            !DebuggingTreeModel.isMethodInvoking(currentThread)) {
-                        currentThread = null;
-                    }
+                    DVThread currentThread = getCurrentThread();
                     boolean isHighlighted = focusedThread != null && thread == focusedThread && node == value;
                     boolean isCurrent = currentThread == thread;
                     if (isHighlighted || isCurrent) {

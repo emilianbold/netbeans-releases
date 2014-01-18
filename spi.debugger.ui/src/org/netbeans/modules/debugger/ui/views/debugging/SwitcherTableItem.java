@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import javax.swing.Icon;
 

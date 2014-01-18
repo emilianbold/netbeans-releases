@@ -81,6 +81,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
@@ -134,11 +135,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
     
     public static final String THREAD_GROUP_MIXED =
-            "org/netbeans/modules/debugger/jpda/resources/thread_group_mixed_16.png";
+            "org/netbeans/modules/debugger/resources/debuggingView/thread_group_mixed_16.png";
     public static final String THREAD_GROUP_SUSPENDED =
-            "org/netbeans/modules/debugger/jpda/resources/thread_group_suspended_16.png";
+            "org/netbeans/modules/debugger/resources/debuggingView/thread_group_suspended_16.png";
     public static final String THREAD_GROUP_RESUMED =
-            "org/netbeans/modules/debugger/jpda/resources/thread_group_running_16.png";
+            "org/netbeans/modules/debugger/resources/debuggingView/thread_group_running_16.png";
     
     public static final String SHOW_PACKAGE_NAMES = "show.packageNames";
 
@@ -151,7 +152,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private final DeadlockDetector deadlockDetector;
     private final Set nodesInDeadlock = new HashSet();
     private static final Map<JPDADebugger, Set> nodesInDeadlockByDebugger = new WeakHashMap<JPDADebugger, Set>();
-    private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private final Preferences preferences = DebuggingViewSupportImpl.getFilterPreferences();
     private final PreferenceChangeListener prefListener;
     private final RequestProcessor rp;
     private final SourcePath sourcePath;

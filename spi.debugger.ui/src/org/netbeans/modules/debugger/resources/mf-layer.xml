@@ -91,6 +91,12 @@ made subject to such option by the copyright holder.
                     <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/sourcesView/sources_16.png"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_SourcesAction"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.instance">
+                    <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createDebuggingViewAction"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/debuggingView/debugging_16.png"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_DebuggingViewAction"/>
+                </file>
             </folder>
         </folder>
         <folder name="Debug">
@@ -188,6 +194,12 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.debugger.ui.actions.DebuggerAction.createPopTopmostCallAction"/>
                 <attr name="instanceOf" stringvalue="javax.swing.Action"/>
             </file>
+            <!--file name="org-netbeans-modules-debugger-ui-actions-GoToHitAction.instance"/-->
+            <file name="org-netbeans-modules-debugger-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <!--attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.debugger.ui.actions.SetCurrentThreadFromHistoryAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_SetCurrentThreadFromHistoryAction"/>
+            </file-->
         </folder>
     </folder>
     
@@ -248,6 +260,10 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-debugger-ui-actions-SourcesViewAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-SourcesViewAction.instance"/>
                     <attr name="position" intvalue="900"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.instance"/>
+                    <attr name="position" intvalue="920"/>
                 </file>
             </folder>
             </folder>
@@ -312,6 +328,15 @@ made subject to such option by the copyright holder.
         <file name="D-F9.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-EvaluateAction.instance"/>
         </file>
+        <!-- <file name="D-9.shadow">  TODO: Redefine, conflicts with Actions/View/org.netbeans.modules.cnd.classview-ClassViewAction.instance, defined in org.netbeans.modules.cnd.classview/1
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-GoToHitAction.instance"/>
+        </file> -->
+        <file name="SO-9.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.instance"/>
+        </file>
+        <file name="SO-T.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+        </file>
     </folder>
 
     <folder name="Windows2">
@@ -324,6 +349,7 @@ made subject to such option by the copyright holder.
             <file name="breakpointsView.settings" url="components/breakpoints.settings"/>
             <file name="sources.settings" url="components/sources.settings"/>
             <file name="resultsView.settings" url="components/results.settings"/>
+            <file name="debuggingView.settings" url="components/debugging.settings"/>
         </folder>
 
         <folder name="Modes">
@@ -351,6 +377,11 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="threadsView.wstcref" url="modes/output/threads.wstcref">
                     <attr name="position" intvalue="800"/>
+                </file>
+            </folder>
+            <folder name="explorer">
+                <file name="debuggingView.wstcref" url="modes/explorer/debugging.wstcref">
+                    <attr name="position" intvalue="700"/>
                 </file>
             </folder>
         </folder>

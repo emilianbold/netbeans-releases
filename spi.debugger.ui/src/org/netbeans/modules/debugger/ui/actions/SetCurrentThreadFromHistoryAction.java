@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -55,12 +55,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-
 import javax.swing.JMenuItem;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.ui.debugging.KeyboardPopupSwitcher;
-import org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction;
-import org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsListener;
+
+import org.netbeans.modules.debugger.ui.views.debugging.KeyboardPopupSwitcher;
+import org.netbeans.modules.debugger.ui.views.debugging.ThreadsHistoryAction;
+import org.netbeans.modules.debugger.ui.views.debugging.ThreadsListener;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
 
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -126,7 +126,7 @@ public class SetCurrentThreadFromHistoryAction extends AbstractAction implements
     }
 
     private void showWindow() {
-        List<JPDAThread> threads = ThreadsHistoryAction.getThreads();
+        List<DVThread> threads = ThreadsHistoryAction.getThreads();
         int threadsCount = threads.size();
         if (threadsCount < 1) {
             Toolkit.getDefaultToolkit().beep();

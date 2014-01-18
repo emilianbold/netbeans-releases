@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -119,7 +120,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private final PropertyChangeListener debuggerListener = new DebuggerFinishListener();
     private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
-    private final Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+    private final Preferences preferences = DebuggingViewSupportImpl.getFilterPreferences();
 
     private final DebuggingMonitorModel.Children monitorChildrenFilter;
     private final TreeModel childrenModelImpl;
@@ -429,7 +430,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         // there is at most one
         private RequestProcessor.Task task;
         private Set<Object> nodesToRefresh;
-        private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+        private Preferences preferences = DebuggingViewSupportImpl.getFilterPreferences();
         
         public Listener (
             DebuggingTreeModel tm,

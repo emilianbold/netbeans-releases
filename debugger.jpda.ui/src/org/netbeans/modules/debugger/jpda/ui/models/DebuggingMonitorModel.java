@@ -75,6 +75,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -136,7 +137,7 @@ NodeActionsProviderFilter, TableModel, Constants {
         private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
         private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
         private final DeadlockDetector deadlockDetector;
-        private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+        private Preferences preferences = DebuggingViewSupportImpl.getFilterPreferences();
         private PreferenceChangeListener prefListener;
         private RevertShowMonitorsListener revertShowMonitorsListener;
 

@@ -42,14 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsListener;
+import org.netbeans.modules.debugger.ui.views.debugging.ThreadsListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,8 +64,6 @@ public class GoToHitAction extends AbstractAction {
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return;
-        JPDADebugger debugger = de.lookupFirst(null, JPDADebugger.class);
-        if (debugger == null) return ;
         ThreadsListener tListener = ThreadsListener.getDefault();
         tListener.goToHit();
     }

@@ -62,6 +62,7 @@ import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
+import java.awt.Image;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -126,6 +127,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -134,7 +136,7 @@ import org.openide.util.NbBundle;
 /**
  * The implementation of JPDAThread.
  */
-public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContextChild {
+public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContextChild, DebuggingView.DVThread {
 
     private static final String PROP_LOCKER_THREADS = "lockerThreads"; // NOI18N
     private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
@@ -376,7 +378,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
 
     @Override
     public synchronized JPDABreakpoint getCurrentBreakpoint() {
-        return currentBreakpoint;
+        if (currentBreakpoint != null && currentBreakpoint.isHidden()) {
+            return null;
+        } else {
+            return currentBreakpoint;
+        }
     }
     
     public synchronized JPDABreakpointEvent getCurrentBreakpointEvent() {
@@ -390,7 +396,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             this.currentBreakpoint = currentBreakpoint;
             this.breakpointEvent = breakpointEvent;
         }
-        pch.firePropertyChange(PROP_BREAKPOINT, oldBreakpoint, currentBreakpoint);
+        pch.firePropertyChange(JPDAThread.PROP_BREAKPOINT, oldBreakpoint, currentBreakpoint);
     }
 
 
@@ -855,7 +861,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             debugger.setStoppedState(threadReference, false);
         }
         if (suspendedToFire != null) {
-            pch.firePropertyChange(PROP_SUSPENDED,
+            pch.firePropertyChange(JPDAThread.PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
         }
@@ -967,7 +973,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 stepSuspendedByBreakpoint = null;
             }
         }
-        PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED, true, false);
+        PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, JPDAThread.PROP_SUSPENDED, true, false);
         if (brkp != null) {
             PropertyChangeEvent brkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
                     brkp,
@@ -1003,7 +1009,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             if (!resumed) {
                 // Do not fire PROP_SUSPENDED when not resumed!
                 for (PropertyChangeEvent pchEvt : resumeChangeEvents) {
-                    if (PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
+                    if (JPDAThread.PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
                         resumeChangeEvents = new ArrayList<PropertyChangeEvent>(resumeChangeEvents);
                         resumeChangeEvents.remove(pchEvt);
                         break;
@@ -1031,7 +1037,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             if (!reduced) {
                 // Do not fire PROP_SUSPENDED when not resumed!
                 for (PropertyChangeEvent pchEvt : resumeChangeEvents) {
-                    if (PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
+                    if (JPDAThread.PROP_SUSPENDED.equals(pchEvt.getPropertyName())) {
                         resumeChangeEvents = new ArrayList<PropertyChangeEvent>(resumeChangeEvents);
                         resumeChangeEvents.remove(pchEvt);
                         break;
@@ -1152,7 +1158,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
         }
         if (suspendedToFire != null) {
-            PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED,
+            PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, JPDAThread.PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
             if (!resumed) suspEvt.setPropagationId("methodInvoke"); // NOI18N
@@ -1256,11 +1262,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             accessLock.writeLock().unlock();
         }
         if (doFire && suspendedToFire != null) {
-            pch.firePropertyChange(PROP_SUSPENDED,
+            pch.firePropertyChange(JPDAThread.PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
         } else if (suspendedToFire != null) {
-            return new PropertyChangeEvent(this, PROP_SUSPENDED,
+            return new PropertyChangeEvent(this, JPDAThread.PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
         }
@@ -1727,7 +1733,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     }
 
     private void fireSuspended(boolean suspended) {
-        pch.firePropertyChange(PROP_SUSPENDED,
+        pch.firePropertyChange(JPDAThread.PROP_SUSPENDED,
                 Boolean.valueOf(!suspended), Boolean.valueOf(suspended));
     }
     
@@ -1922,7 +1928,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
     }
 
-    public synchronized List<JPDAThread> getLockerThreads() {
+    public synchronized List getLockerThreads() {
         return lockerThreadsList;
     }
 
@@ -1939,11 +1945,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         threadReference.virtualMachine().eventRequestManager();
     }*/
 
-    public boolean resumeBlockingThreads() {
+    public void resumeBlockingThreads() {
         List<JPDAThread> blockingThreads;
         synchronized (lockerThreadsLock) {
             if (lockerThreadsList == null) {
-                return false;
+                return ;//false;
             }
             blockingThreads = new ArrayList(lockerThreadsList);
         }
@@ -1957,7 +1963,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         synchronized (lockerThreadsLock) {
             this.resumedBlockingThreads = resumedThreads;
         }
-        return true;
+        return ;//true;
     }
 
     private void submitMonitorEnteredRequest(EventRequest monitorEnteredRequest) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
@@ -2173,6 +2179,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
         }
         return var;
+    }
+
+    @Override
+    public DebuggingView.DVSupport getDVSupport() {
+        return getDebugger().getSession().lookupFirst(null, DebuggingView.DVSupport.class);
     }
 
     private static class ThreadListDelegate extends AbstractList<JPDAThread> {

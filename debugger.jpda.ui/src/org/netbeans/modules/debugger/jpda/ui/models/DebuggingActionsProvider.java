@@ -68,8 +68,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
-import org.netbeans.modules.debugger.jpda.ui.debugging.FiltersDescriptor;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -391,7 +391,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) {
             Action[] sa = getSessionActions();
-            Action[] fa = FiltersDescriptor.getInstance().getFilterActions();
+            Action[] fa = session.lookupFirst(null, DebuggingView.DVSupport.class).getFilterActions();
+            //Action[] fa = FiltersDescriptor.getInstance().getFilterActions();
             Action[] a = new Action[sa.length + 1 + fa.length];
             System.arraycopy(sa, 0, a, 0, sa.length);
             a[sa.length] = null;

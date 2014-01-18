@@ -67,6 +67,7 @@ import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistrations;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.openide.filesystems.annotations.LayerBuilder;
 
@@ -86,7 +87,9 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         return new HashSet<String>(Arrays.asList(
             AttachType.Registration.class.getCanonicalName(),
             BreakpointType.Registration.class.getCanonicalName(),
-            ColumnModelRegistration.class.getCanonicalName()
+            ColumnModelRegistration.class.getCanonicalName(),
+            ColumnModelRegistrations.class.getCanonicalName(),
+            DebuggingView.DVSupport.Registration.class.getCanonicalName()
         ));
     }
 
@@ -135,6 +138,13 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 final int position = reg.position();
                 handleProviderRegistration(e, ColumnModel.class, path, position);
             }
+            cnt++;
+        }
+        for (Element e : env.getElementsAnnotatedWith(DebuggingView.DVSupport.Registration.class)) {
+            DebuggingView.DVSupport.Registration reg = e.getAnnotation(DebuggingView.DVSupport.Registration.class);
+            final String path = reg.path();
+            final int position = reg.position();
+            handleProviderRegistration(e, DebuggingView.DVSupport.class, path, position);
             cnt++;
         }
         return cnt == annotations.size();

@@ -58,13 +58,14 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.openide.util.Exceptions;
 
 
 /**
  * The implementation of JPDAThreadGroup.
  */
-public class JPDAThreadGroupImpl implements JPDAThreadGroup {
+public class JPDAThreadGroupImpl implements JPDAThreadGroup, DebuggingView.DVThreadGroup {
 
     private ThreadGroupReference tgr;
     private JPDADebuggerImpl debugger;
@@ -88,7 +89,7 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     *
     * @return parent thread group.
     */
-    public JPDAThreadGroup getParentThreadGroup () {
+    public JPDAThreadGroupImpl getParentThreadGroup () {
         ThreadGroupReference ptgr = null;
         try {
             ptgr = ThreadGroupReferenceWrapper.parent(tgr);
@@ -98,33 +99,33 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
         } catch (VMDisconnectedExceptionWrapper e) {
         }
         if (ptgr == null) return null;
-        return debugger.getThreadGroup(ptgr);
+        return (JPDAThreadGroupImpl) debugger.getThreadGroup(ptgr);
     }
     
-    public JPDAThread[] getThreads () {
+    public JPDAThreadImpl[] getThreads () {
         ThreadsCache tc = debugger.getThreadsCache();
         if (tc == null) {
-            return new JPDAThread[0];
+            return new JPDAThreadImpl[0];
         }
         List<ThreadReference> l = tc.getThreads(tgr);
         int i, k = l.size ();
-        JPDAThread[] ts = new JPDAThread [k];
+        JPDAThreadImpl[] ts = new JPDAThreadImpl[k];
         for (i = 0; i < k; i++) {
             ts [i] = debugger.getThread(l.get (i));
         }
         return ts;
     }
     
-    public JPDAThreadGroup[] getThreadGroups () {
+    public JPDAThreadGroupImpl[] getThreadGroups () {
         ThreadsCache tc = debugger.getThreadsCache();
         if (tc == null) {
-            return new JPDAThreadGroup[0];
+            return new JPDAThreadGroupImpl[0];
         }
         List<ThreadGroupReference> l = tc.getGroups(tgr);
         int i, k = l.size ();
-        JPDAThreadGroup[] ts = new JPDAThreadGroup [k];
+        JPDAThreadGroupImpl[] ts = new JPDAThreadGroupImpl[k];
         for (i = 0; i < k; i++) {
-            ts [i] = debugger.getThreadGroup(l.get (i));
+            ts [i] = (JPDAThreadGroupImpl) debugger.getThreadGroup(l.get (i));
         }
         return ts;
     }

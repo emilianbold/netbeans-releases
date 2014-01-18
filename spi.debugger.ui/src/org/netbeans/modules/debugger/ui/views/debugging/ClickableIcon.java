@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.debugging;
+package org.netbeans.modules.debugger.ui.views.debugging;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -51,8 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -79,11 +78,11 @@ class ClickableIcon extends JLabel implements MouseListener {
     
     private int state;
     private boolean isThreadSupended;
-    private JPDAThread jpdaThread;
+    private DVThread dvThread;
     private DebugTreeView tree;
     
     ClickableIcon(ImageIcon normalR, ImageIcon focusedR, ImageIcon pressedR,
-            ImageIcon normalS, ImageIcon focusedS, ImageIcon pressedS, JPDAThread jpdaThread, DebugTreeView tree) {
+            ImageIcon normalS, ImageIcon focusedS, ImageIcon pressedS, DVThread dvThread, DebugTreeView tree) {
         this.tree = tree;
         this.resumeIcon = normalR;
         this.focusedResumeIcon = focusedR;
@@ -93,8 +92,8 @@ class ClickableIcon extends JLabel implements MouseListener {
         this.focusedSuspendIcon = focusedS;
         this.pressedSuspendIcon = pressedS;
         
-        isThreadSupended = jpdaThread.isSuspended();
-        this.jpdaThread = jpdaThread;
+        isThreadSupended = dvThread.isSuspended();
+        this.dvThread = dvThread;
         
         setHorizontalAlignment(SwingConstants.CENTER);
         setVerticalAlignment(SwingConstants.CENTER);
@@ -115,13 +114,13 @@ class ClickableIcon extends JLabel implements MouseListener {
         addMouseListener(this);
     }
     
-    void changeThread(JPDAThread newThread, Container container, int sx, int sy, int width, int height) {
+    void changeThread(DVThread newThread, Container container, int sx, int sy, int width, int height) {
         boolean suspended = newThread.isSuspended();
-        if (jpdaThread == newThread && suspended == isThreadSupended) {
+        if (dvThread == newThread && suspended == isThreadSupended) {
             return;
         }
         isThreadSupended = newThread.isSuspended();
-        this.jpdaThread = newThread;
+        this.dvThread = newThread;
         Point point = container.getMousePosition(true);
         state = point != null && sx <= point.x && point.x < sx + width && sy <= point.y && point.y < sy + height
                 ? STATE_FOCUSED : STATE_NORMAL;
@@ -131,11 +130,11 @@ class ClickableIcon extends JLabel implements MouseListener {
     
     private void setFocusedThread() {
         if (state != STATE_NORMAL) {
-            if (tree != null && tree.threadFocuseGained(jpdaThread)) {
+            if (tree != null && tree.threadFocuseGained(dvThread)) {
                 getParent().repaint();
             }
         } else {
-            if (tree != null && tree.threadFocuseLost(jpdaThread)) {
+            if (tree != null && tree.threadFocuseLost(dvThread)) {
                 getParent().repaint();
             }
         }
@@ -160,7 +159,7 @@ class ClickableIcon extends JLabel implements MouseListener {
     private void changeIcon() {
         setIcon(computeIcon());
         String key = isThreadSupended ? "LBL_RESUME_THREAD" : "LBL_SUSPEND_THREAD"; // NOI18N
-        String text = NbBundle.getMessage(ClickableIcon.class, key, jpdaThread.getName());
+        String text = NbBundle.getMessage(ClickableIcon.class, key, dvThread.getName());
         setToolTipText(text);
     }
     
@@ -168,8 +167,7 @@ class ClickableIcon extends JLabel implements MouseListener {
         final boolean suspended = isThreadSupended;
         RequestProcessor rp;
         try {
-            JPDADebugger debugger = (JPDADebugger) jpdaThread.getClass().getMethod("getDebugger").invoke(jpdaThread);
-            Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
+            Session s = dvThread.getDVSupport().getSession();
             rp = s.lookupFirst(null, RequestProcessor.class);
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
@@ -182,9 +180,9 @@ class ClickableIcon extends JLabel implements MouseListener {
         rp.post(new Runnable() {
             public void run() {
                 if (suspended) {
-                    jpdaThread.resume();
+                    dvThread.resume();
                 } else {
-                    jpdaThread.suspend();
+                    dvThread.suspend();
                 }
             }
         });

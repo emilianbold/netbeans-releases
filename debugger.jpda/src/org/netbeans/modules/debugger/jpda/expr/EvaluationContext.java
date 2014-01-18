@@ -68,6 +68,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -305,7 +306,7 @@ public class EvaluationContext {
                 threadPropertyChangeListener = new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if (thread.equals(evt.getSource()) && JPDAThreadImpl.PROP_SUSPENDED.equals(evt.getPropertyName())
+                        if (thread.equals(evt.getSource()) && JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName())
                             || thread.getDebugger().equals(evt.getSource()) && JPDADebuggerImpl.PROP_STATE.equals(evt.getPropertyName())) {
                             //System.err.println("SUSPENDED state of "+thread.getName()+" changed, isMethodInvoking = "+thread.isMethodInvoking()+", isRunning = "+(!thread.isSuspended()));
                             if (thread.getDebugger().getState() != JPDADebuggerImpl.STATE_DISCONNECTED) {

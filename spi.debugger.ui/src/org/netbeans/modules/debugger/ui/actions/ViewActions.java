@@ -184,6 +184,16 @@ public class ViewActions extends AbstractAction {
         );
         return action;
     }
+    
+    public static Action createDebuggingViewAction() {
+        ViewActions action = new ViewActions("debuggingView");
+        // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
+        action.putValue (Action.NAME, "CTL_DebuggingViewAction");
+        action.putValue ("iconbase",
+                "org/netbeans/modules/debugger/resources/debuggingView/debugging_16.png" // NOI18N
+        );
+        return action;
+    }
 
 }
 
