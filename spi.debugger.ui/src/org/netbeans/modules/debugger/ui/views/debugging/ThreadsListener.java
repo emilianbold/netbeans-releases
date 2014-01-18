@@ -285,20 +285,20 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             if (source instanceof DVSupport) {
                 if (DVSupport.PROP_THREAD_STARTED.equals(propName)) {
                     //System.out.println("STARTED: " + evt.getNewValue());
-                    final DVThread jpdaThread = (DVThread)evt.getNewValue();
-                    if (threads.add(jpdaThread)) {
-                        jpdaThread.addPropertyChangeListener(this);
-                        // System.out.println("WATCHED: " + jpdaThread.getName());
+                    final DVThread dvThread = (DVThread)evt.getNewValue();
+                    if (threads.add(dvThread)) {
+                        dvThread.addPropertyChangeListener(this);
+                        // System.out.println("WATCHED: " + dvThread.getName());
                     }
                 } else if (DVSupport.PROP_THREAD_DIED.equals(propName)) {
                     //System.out.println("DIED: " + evt.getOldValue());
-                    DVThread jpdaThread = (DVThread)evt.getOldValue();
-                    if (threads.remove(jpdaThread)) {
+                    DVThread dvThread = (DVThread)evt.getOldValue();
+                    if (threads.remove(dvThread)) {
                         synchronized(currentThreadsHistory) {
-                            currentThreadsHistory.remove(jpdaThread);
+                            currentThreadsHistory.remove(dvThread);
                         }
-                        jpdaThread.removePropertyChangeListener(this);
-                        // System.out.println("RELEASED: " + jpdaThread.getName());
+                        dvThread.removePropertyChangeListener(this);
+                        // System.out.println("RELEASED: " + dvThread.getName());
                     }
                 } else if (DVSupport.PROP_CURRENT_THREAD.equals(propName)) {
                     DVThread currentThread = debugger.getCurrentThread();

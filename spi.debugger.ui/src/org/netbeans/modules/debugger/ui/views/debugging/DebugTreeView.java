@@ -199,12 +199,12 @@ public class DebugTreeView extends BeanTreeView {
      */
     public Object getThreadObject(TreePath path) {
         Node node = Visualizer.findNode(path.getLastPathComponent());
-        DVThread jpdaThread = node.getLookup().lookup(DVThread.class);
-        if (jpdaThread != null) {
-            return jpdaThread;
+        DVThread dvThread = node.getLookup().lookup(DVThread.class);
+        if (dvThread != null) {
+            return dvThread;
         }
-        DVThreadGroup jpdaThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
-        return jpdaThreadGroup;
+        DVThreadGroup dvThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
+        return dvThreadGroup;
     }
 
     public int getUnitHeight() {
@@ -335,17 +335,17 @@ public class DebugTreeView extends BeanTreeView {
         return currentThread;
     }
 
-    boolean threadFocuseGained(DVThread jpdaThread) {
-        if (jpdaThread != null && focusedThread != jpdaThread) {
-            focusedThread = jpdaThread;
+    boolean threadFocuseGained(DVThread dvThread) {
+        if (dvThread != null && focusedThread != dvThread) {
+            focusedThread = dvThread;
             repaint();
             return true;
         }
         return false;
     }
 
-    boolean threadFocuseLost(DVThread jpdaThread) {
-        if (jpdaThread != null && focusedThread == jpdaThread) {
+    boolean threadFocuseLost(DVThread dvThread) {
+        if (dvThread != null && focusedThread == dvThread) {
             focusedThread = null;
             repaint();
             return true;

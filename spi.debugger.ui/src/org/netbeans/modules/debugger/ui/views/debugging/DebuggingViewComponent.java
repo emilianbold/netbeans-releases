@@ -907,15 +907,15 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
             if (tView != null) {
                 for (TreePath path : tView.getVisiblePaths()) {
                     Node node = Visualizer.findNode(path.getLastPathComponent());
-                    DVThread jpdaThread = node.getLookup().lookup(DVThread.class);
-                    DVThreadGroup jpdaThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
+                    DVThread dvThread = node.getLookup().lookup(DVThread.class);
+                    DVThreadGroup dvThreadGroup = node.getLookup().lookup(DVThreadGroup.class);
 
                     JTree tree = tView.getTree();
                     Rectangle rect = tree.getRowBounds(tree.getRowForPath(path));
                     height = rect != null ? (int) Math.round(rect.getHeight()) : 0;
 
-                    if (jpdaThread != null || jpdaThreadGroup != null) {
-                        pathToScrollSearching = jpdaThread == threadToScroll;
+                    if (dvThread != null || dvThreadGroup != null) {
+                        pathToScrollSearching = dvThread == threadToScroll;
                         if (pathToScrollSearching) {
                             scrollStart = mainPanelHeight;
                         }
@@ -924,17 +924,17 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                                     leftBarHeight, sx, currentSY, height);
                         }
                         leftBarHeight = 0;
-                        if (jpdaThread != null) {
-                            isCurrent = jpdaThread == currentThread;/* && (jpdaThread.isSuspended() ||
-                                    DebuggingTreeModel.isMethodInvoking(jpdaThread));*/
-                            isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
-                            isInDeadlock = deadlockedThreads.contains(jpdaThread);
+                        if (dvThread != null) {
+                            isCurrent = dvThread == currentThread;/* && (dvThread.isSuspended() ||
+                                    DebuggingTreeModel.isMethodInvoking(dvThread));*/
+                            isAtBreakpoint = threadsListener.isBreakpointHit(dvThread);
+                            isInDeadlock = deadlockedThreads.contains(dvThread);
                         } else {
                             isCurrent = false;
                             isAtBreakpoint = false;
                             isInDeadlock = false;
                         }
-                        currentObject = jpdaThread != null ? jpdaThread : jpdaThreadGroup;
+                        currentObject = dvThread != null ? dvThread : dvThreadGroup;
                         currentSY = sy;
                     }
 

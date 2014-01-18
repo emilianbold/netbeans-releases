@@ -638,10 +638,10 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
 
     static void closeDebuggerUI() {
         /*
-        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("CLOSING TopComponentGroup...");
+        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.ui").fine("CLOSING TopComponentGroup...");
         StringWriter sw = new StringWriter();
         new Exception("Stack Trace").fillInStackTrace().printStackTrace(new java.io.PrintWriter(sw));
-        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine(sw.toString());
+        java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.ui").fine(sw.toString());
          */
         // Close debugger TopComponentGroup.
         if (SwingUtilities.isEventDispatchThread()) {
@@ -654,7 +654,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 }
             });
         }
-        //java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("TopComponentGroup closed.");
+        //java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.ui").fine("TopComponentGroup closed.");
     }
 
     private static void doCloseDebuggerUI() {
