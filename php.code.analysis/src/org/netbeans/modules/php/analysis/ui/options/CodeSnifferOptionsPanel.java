@@ -185,6 +185,24 @@ public class CodeSnifferOptionsPanel extends AnalysisCategoryPanel {
         analysisOptions.setCodeSnifferPath(getCodeSnifferPath());
         analysisOptions.setCodeSnifferStandard(getCodeSnifferStandard());
     }
+    
+    @Override
+    public boolean isChanged() {
+        String saved = AnalysisOptions.getInstance().getCodeSnifferPath();
+        String current = getCodeSnifferPath().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = AnalysisOptions.getInstance().getCodeSnifferStandard();
+        current = getCodeSnifferStandard();
+        if(saved == null) {
+            if(current == null) {
+                return false;
+            }
+            return !current.trim().isEmpty();
+        }
+        return current == null ? !saved.trim().isEmpty() : !saved.equals(current);
+    }
 
     @Override
     public ValidationResult getValidationResult() {

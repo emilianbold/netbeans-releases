@@ -70,6 +70,28 @@ public class PullUpTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testPullUpOverridingMethod() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A extends B implements C { @Override public void i() { } }"),
+                new File("pullup/B.java", "package pullup; public class B { }"),
+                new File("pullup/C.java", "package pullup; public interface C { void i(); }"));
+        performPullUp(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A extends B implements C {}"),
+                new File("pullup/B.java", "package pullup; public class B { public void i() { } }"),
+                new File("pullup/C.java", "package pullup; public interface C { void i(); }"));
+        
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public class A extends B  { @Override public void i() { } }"),
+                new File("pullup/B.java", "package pullup; public class B extends C { }"),
+                new File("pullup/C.java", "package pullup; public class C { public void i() { } }"));
+        performPullUp(src.getFileObject("pullup/A.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public class A extends B {}"),
+                new File("pullup/B.java", "package pullup; public class B extends C { @Override public void i() { } }"),
+                new File("pullup/C.java", "package pullup; public class C { public void i() { } }"));
+    }
+    
     public void test230719() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/A.java", "package pullup; public interface A {\n"

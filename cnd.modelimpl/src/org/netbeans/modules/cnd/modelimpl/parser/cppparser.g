@@ -1758,7 +1758,7 @@ member_declaration
 			printf("member_declaration_10[%d]: Declaration(s)\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? 
+		(LITERAL___extension__!)? declaration_specifiers[true, false] (member_declarator_list)? (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON) //{end_of_stmt();}
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
@@ -2131,6 +2131,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_char16_t      {ts |= tsOTHER;}
         | LITERAL_char32_t      {ts |= tsOTHER;}
         | LITERAL_bool          {ts |= tsBOOL;}
+        | LITERAL__Bool         {ts |= tsBOOL;}
         | LITERAL_short         {ts |= tsSHORT;}
         | LITERAL_int           {ts |= tsINT;}
         | literal_int64         {ts |= tsLONG;}
@@ -2435,7 +2436,8 @@ initializer
     |   
         array_initializer
     | 
-        lazy_expression[false, false, 0]
+        (options {greedy=true;} : IDENT COLON)? // GCC designated initializer
+        lazy_expression[false, false, 0] 
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL

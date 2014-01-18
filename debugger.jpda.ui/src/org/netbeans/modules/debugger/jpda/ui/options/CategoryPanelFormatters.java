@@ -57,6 +57,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -734,7 +735,45 @@ class CategoryPanelFormatters extends StorablePanel {
         p.setArray("VariableFormatters", formatters);
     }
 
-
+    @Override
+    public boolean isChanged() {
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        ListModel formattersModel = formattersList.getModel();
+        VariablesFormatter[] formatters = new VariablesFormatter[formattersModel.getSize()];
+        for (int i = 0; i < formatters.length; i++) {
+            formatters[i] = (VariablesFormatter) formattersModel.getElementAt(i);
+        }
+        Object[] saved = p.getArray("VariableFormatters", null);
+        if(saved == null) {
+            return false;
+        }
+        if(saved.length != formatters.length) {
+            return true;
+        }
+        for (int i = 0; i < saved.length; i++) {
+            VariablesFormatter savedFormatter = (VariablesFormatter) saved[i];
+            VariablesFormatter currentFormatter = (VariablesFormatter) formattersModel.getElementAt(i);
+            if(!areVariablesFormattersEqual(savedFormatter, currentFormatter)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean areVariablesFormattersEqual(VariablesFormatter savedFormatter, VariablesFormatter currentFormatter) {
+        return savedFormatter.getName().equals(currentFormatter.getName())
+                && savedFormatter.getChildrenExpandTestCode().equals(currentFormatter.getChildrenExpandTestCode())
+                && savedFormatter.getChildrenFormatCode().equals(currentFormatter.getChildrenFormatCode())
+                && savedFormatter.getChildrenVariables().equals(currentFormatter.getChildrenVariables())
+                && Arrays.equals(savedFormatter.getClassTypes(), currentFormatter.getClassTypes())
+                && savedFormatter.getClassTypesCommaSeparated().equals(currentFormatter.getClassTypesCommaSeparated())
+                && savedFormatter.getValueFormatCode().equals(currentFormatter.getValueFormatCode())
+                && savedFormatter.isDefault() == currentFormatter.isDefault()
+                && savedFormatter.isEnabled() == currentFormatter.isEnabled()
+                && savedFormatter.isIncludeSubTypes() == currentFormatter.isIncludeSubTypes()
+                && savedFormatter.isUseChildrenVariables() == currentFormatter.isUseChildrenVariables();
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel childrenCodeLabel;
     private javax.swing.JLabel childrenVarsLabel;

@@ -145,20 +145,26 @@ public class Revision {
     }
     
     public static final class BranchReference extends Revision {
-        private final GitBranch branch;
+        private final String branchName;
+        private final String commitId;
 
         public BranchReference (GitBranch branch) {
-            super(branch.getId(), branch.getName());
-            this.branch = branch;
+            this(branch.getName(), branch.getId());
+        }
+
+        public BranchReference (String branchName, String commitId) {
+            super(commitId, branchName);
+            this.branchName = branchName;
+            this.commitId = commitId;
         }
 
         @Override
         public String toString (boolean shorten) {
             if (shorten) {
-                return branch.getName();
+                return branchName;
             } else {
-                return new StringBuilder(branch.getName()).append(" (") //NOI18N
-                        .append(branch.getId().substring(0, 7)).append(")").toString(); //NOI18N
+                return new StringBuilder(branchName).append(" (") //NOI18N
+                        .append(commitId.substring(0, 7)).append(")").toString(); //NOI18N
             }
         }
     }

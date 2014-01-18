@@ -44,6 +44,7 @@ package org.netbeans.modules.web.el;
 import com.sun.el.parser.AstBracketSuffix;
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.Node;
+import java.util.List;
 import org.openide.util.Parameters;
 
 
@@ -106,6 +107,11 @@ public class NodeUtil {
             return true;
         }
         return false;
+    }
+
+    public static List<Node> getRootToNode(ELElement element, Node target) {
+        AstPath path = new AstPath(element.getNode());
+        return path.rootToNode(target);
     }
 
 }

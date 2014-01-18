@@ -44,14 +44,10 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -74,7 +70,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 
 /**
@@ -89,12 +84,11 @@ public final class SemanticHighlighter extends HighlighterBase {
     private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
     
-    private InterrupterImpl interrupter;
+    private InterrupterImpl interrupter = new InterrupterImpl();
+    private CndParserResult lastParserResult;
 
-    public SemanticHighlighter(Document doc, InterrupterImpl interrupter) {
-        super(doc);
-        init(doc);
-        this.interrupter = interrupter;
+    public SemanticHighlighter(String mimeType) {
+        init(mimeType);
     }
 
     @Override
@@ -151,33 +145,12 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     private void update(Document doc, final InterrupterImpl interrupter) {
         if (doc != null) {
-            DocumentListener listener =  null;
-                listener = new DocumentListener(){
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        interrupter.cancel();
-                    }
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        interrupter.cancel();
-                    }
-                    @Override
-                    public void changedUpdate(DocumentEvent e) {
-                    }
-                };
-                doc.addDocumentListener(listener);
-            try {
-                updateImpl(doc, interrupter);
-            } finally {
-                if (listener != null) {
-                    doc.removeDocumentListener(listener);
-                }
-            }
+            updateImpl(doc, interrupter);
         }
     }
     
     public static PositionsBag getSemanticBagForTests(Document doc, InterrupterImpl interrupter, boolean fast) {
-        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(doc, interrupter);
+        final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(DocumentUtilities.getMimeType(doc));
         semanticHighlighter.update(doc, interrupter);
         return getHighlightsBag(doc, fast);
     }
@@ -207,7 +180,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(newBagFast, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(doc, newBagFast, se.getBlocks(csmFile), se);
                         i.remove();
                     }
                 } else {
@@ -216,31 +189,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            PositionsBag oldFast = getHighlightsBag(doc, true);
-            if (oldFast != null) {
-                // this is done to prevent loss of other highlightings during adding ones managed by this highlighter
-                // otherwise document will "blink" on editing
-                PositionsBag tempBag = new PositionsBag(doc);
-                tempBag.addAllHighlights(newBagFast);
-                HighlightsSequence seq = newBagFast.getHighlights(0, Integer.MAX_VALUE);
-                Set<AttributeSet> set = new HashSet<AttributeSet>();
-                while (seq.moveNext()) {
-                    set.add(seq.getAttributes());
-                }
-                seq = oldFast.getHighlights(0, Integer.MAX_VALUE);
-                while (seq.moveNext()) {
-                    if (!set.contains(seq.getAttributes())) {
-                        int startOffset = getDocumentOffset(doc, seq.getStartOffset());
-                        int endOffset = getDocumentOffset(doc, seq.getEndOffset());
-                        if (startOffset < doc.getLength() && endOffset > 0) {
-                            addHighlightsToBag(tempBag, startOffset, endOffset, seq.getAttributes(), "cached"); //NOI18N
-                        }
-                    }
-                }
-                getHighlightsBag(doc, true).setHighlights(tempBag);
-            } else {
-                getHighlightsBag(doc, true).setHighlights(newBagFast);
-            }
+            getHighlightsBag(doc, true).setHighlights(newBagFast);
             // here we invoke the collectors
             // but not for huge documents
             if (!entities.isEmpty() && !isVeryBigDocument(doc)) {
@@ -258,7 +207,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
                 // here we apply highlighting to discovered blocks
                 for (int i = 0; i < entities.size(); ++i) {
-                    addHighlightsToBag(newBagSlow, collectors.get(i).getReferences(), entities.get(i));
+                    addHighlightsToBag(doc, newBagSlow, collectors.get(i).getReferences(), entities.get(i));
                 }
             }
             if (LOG.isLoggable(Level.FINER)) {
@@ -270,8 +219,7 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    private void addHighlightsToBag(PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
-        Document doc = getDocument();
+    private void addHighlightsToBag(Document doc, PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
         if (doc != null) {
             String mimeType = DocumentUtilities.getMimeType(doc);
             if (mimeType == null) {
@@ -288,15 +236,14 @@ public final class SemanticHighlighter extends HighlighterBase {
                         assert false : "Color attributes set is not found for MIME "+mimeType+". Document "+doc;
                         return;
                     }
-                    addHighlightsToBag(bag, startOffset, endOffset, attributes, entity.getName());
+                    addHighlightsToBag(doc, bag, startOffset, endOffset, attributes, entity.getName());
                 }
             }
         }
     }
 
-    private void addHighlightsToBag(PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
+    private void addHighlightsToBag(Document doc, PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
         try {
-            Document doc = getDocument();
             if (doc != null) {
                 bag.addHighlight(doc.createPosition(start), doc.createPosition(end), attr);
             }
@@ -311,8 +258,21 @@ public final class SemanticHighlighter extends HighlighterBase {
 
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
-        interrupter.resume();
+        synchronized(this) {
+            if (lastParserResult == result) {
+                return;
+            }
+            interrupter.cancel();
+            lastParserResult = result;
+            interrupter = new InterrupterImpl();
+        }
         update(result.getSnapshot().getSource().getDocument(false), interrupter);
+    }
+
+    @Override
+    public synchronized void cancel() {
+        interrupter.cancel();
+        lastParserResult = null;
     }
 
     @Override

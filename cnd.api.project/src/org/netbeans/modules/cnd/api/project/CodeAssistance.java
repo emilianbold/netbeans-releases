@@ -49,7 +49,11 @@ import javax.swing.event.ChangeListener;
  * @author Alexander Simon
  */
 public interface CodeAssistance {
-    boolean hasCodeAssistance(NativeFileItem item);
+    enum State {
+        ParsedSource, ParsedOrphanHeader, ParsedIncludedHeader, NotParsed
+    }
+    boolean hasCodeAssistance(NativeFileItem item);    
+    State getCodeAssistanceState(NativeFileItem item);
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
 }

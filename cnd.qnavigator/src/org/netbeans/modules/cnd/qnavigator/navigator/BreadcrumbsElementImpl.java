@@ -85,9 +85,9 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
         if (name.indexOf('(') > 0) {
             name = name.substring(0, name.indexOf('('));
             if (node instanceof CppDeclarationNode) {
-                CsmObject csmObject = ((CppDeclarationNode) node).getCsmObject();
-                if (CsmKindUtilities.isMethodDefinition(csmObject)) {
-                    name = ((CppDeclarationNode) node).getScopeName()+"::"+name; //NOI18N
+                CharSequence methodDefinitionScopeName = ((CppDeclarationNode) node).getMethodDefinitionScopeName();
+                if (methodDefinitionScopeName != null && methodDefinitionScopeName.length() > 0) {
+                    name = methodDefinitionScopeName+"::"+name; //NOI18N
                 }
             }
         }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.navigation;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
@@ -85,6 +86,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.TokenSequence;
@@ -299,7 +301,10 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     sb.append("</font>"); //NOI18N
                     return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case BLOCK:
-                    if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
+                        sb = new StringBuilder(((BlockTree)leaf).isStatic() ? "&lt;static init&gt;" : "&lt;init&gt;"); //NOI18N
+                        return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    } else if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
                         sb = new StringBuilder("finally"); //NOI18N
                         return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                     }

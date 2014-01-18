@@ -83,6 +83,8 @@ public final class TeamView {
 
     private final PropertyChangeListener serverManagerListener;
     
+    private static final TeamView theInstance = new TeamView();
+    
     @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
         serverManagerListener = new PropertyChangeListener() {
@@ -133,8 +135,8 @@ public final class TeamView {
         }
     }    
 
-    public static synchronized TeamView getInstance() {
-        return Holder.theInstance;
+    public static TeamView getInstance() {
+        return theInstance;
     }
 
     public synchronized OneProjectDashboardPicker getProjectPicker() {
@@ -213,10 +215,6 @@ public final class TeamView {
         });
 
         return panel;
-    }
-    
-    private static class Holder {
-        private static final TeamView theInstance = new TeamView();
     }
 
     public void close() {

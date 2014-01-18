@@ -52,6 +52,7 @@ import org.netbeans.modules.refactoring.spi.impl.PreviewManager;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -102,7 +103,6 @@ public abstract class SimpleRefactoringElementImplementation implements Refactor
         PositionBounds bounds = getPosition();
         if (bounds == null)
             return;
-        
         PositionRef beginPos=bounds.getBegin();
         CloneableEditorSupport editSupp=beginPos.getCloneableEditorSupport();
         editSupp.edit();

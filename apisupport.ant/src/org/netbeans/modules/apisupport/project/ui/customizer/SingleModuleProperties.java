@@ -107,7 +107,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -834,7 +833,17 @@ public final class SingleModuleProperties extends ModuleProperties {
         for (String s : cpExt) {
             sb.append(s);
         }
-        return getClassPathSupport().itemsIterator(sb.toString(), CPEXT);
+        List<Item> items = getClassPathSupport().itemsList(sb.toString(), CPEXT);
+        for (Item item : items) {
+            if(item.getResolvedFile() != null) {
+                item.setReference("${file.reference." + item.getResolvedFile().getName() + "}");
+                if(getEvaluator().getProperty("source.reference." + item.getResolvedFile().getName()) != null) 
+                    item.setSourceFilePath(getEvaluator().getProperty("source.reference." + item.getResolvedFile().getName()));
+                if(getEvaluator().getProperty("javadoc.reference." + item.getResolvedFile().getName()) != null) 
+                    item.setJavadocFilePath(getEvaluator().getProperty("javadoc.reference." + item.getResolvedFile().getName()));
+            }
+        }
+        return items.iterator();
     }
 
     DefaultListModel getWrappedJarsListModel() {

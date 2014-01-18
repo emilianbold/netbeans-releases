@@ -72,6 +72,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.ColorComboBox;
@@ -248,7 +249,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             updateData ();
 	}
         updateData ();
-        changed = true;
+        fireChanged();
     }
     
     @Override
@@ -257,6 +258,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             return;
         if (!listen) return;
         updateData ();
+        fireChanged();
     }
     
     public void update (ColorModel colorModel) {
@@ -284,6 +286,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         }
         toBeSaved = new HashSet<String>();
         schemes = new HashMap<String, List<AttributeSet>>();
+        changed = false;
     }
     
     public boolean isChanged () {
@@ -305,6 +308,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         if (lCategories.getModel ().getSize () > 0)
             lCategories.setSelectedIndex (0);
         refreshUI ();
+        fireChanged();
     }
     
     public void deleteProfile (String scheme) {
@@ -318,6 +322,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             refreshUI ();
         }
         toBeSaved.add (scheme);
+        fireChanged();
     }
 
     public JComponent getComponent() {
@@ -374,7 +379,47 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         annotations.set(index, c);
         
         toBeSaved.add(currentScheme);
-        changed = true;
+    }
+    
+    private void fireChanged() {
+        boolean isChanged = false;
+        for (String profile : toBeSaved) {
+            List<AttributeSet> attributeSet = schemes.get(profile);
+            Map<String, AttributeSet> savedAnnotations = EditorSettings.getDefault().getAnnotations(profile);
+            Map<String, AttributeSet> currentAnnotations = toMap(attributeSet);
+            if (savedAnnotations != null && currentAnnotations != null) {
+                if (savedAnnotations.size() >= currentAnnotations.size()) {
+                    isChanged |= checkMaps(savedAnnotations, currentAnnotations);
+                } else {
+                    isChanged |= checkMaps(currentAnnotations, savedAnnotations);
+                }
+            }
+        }
+        changed = isChanged;
+    }
+    
+    private boolean checkMaps(Map<String, AttributeSet> savedMap, Map<String, AttributeSet> currentMap) {
+        boolean isChanged = false;
+        for (String name : savedMap.keySet()) {
+            if (currentMap.containsKey(name)) {
+                AttributeSet currentAS = currentMap.get(name);
+                AttributeSet savedAS = savedMap.get(name);
+                isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
+                        || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
+                        || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+
+            }
+        }
+        return isChanged;
+    }
+    
+    private Map<String, AttributeSet> toMap(Collection<AttributeSet> categories) {
+        if (categories == null) return null;
+        Map<String, AttributeSet> result = new HashMap<String, AttributeSet>();
+        for(AttributeSet as : categories) {
+            result.put((String) as.getAttribute(StyleConstants.NameAttribute), as);
+        }
+        return result;
     }
     
     private void refreshUI () {

@@ -1509,9 +1509,9 @@ public final class JFXProjectProperties {
                 lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
             }
         }
-        paths = PropertyUtils.tokenizePath(rcp);
+        paths = rcp != null ? PropertyUtils.tokenizePath(rcp) : new String[0];
         String mainJar = eval.getProperty(DIST_JAR);
-        final File mainFile = PropertyUtils.resolveFile(prjDir, mainJar);
+        final File mainFile = mainJar != null ? PropertyUtils.resolveFile(prjDir, mainJar) : null;
         List<FileObject> preloaders = new ArrayList<FileObject>();
         try {
             for(PreloaderArtifact pa : getPreloaderArtifactsFromConfigs(configs)) {
@@ -1531,7 +1531,7 @@ public final class JFXProjectProperties {
             if (!f.exists()) {
                 continue;
             }
-            if (f.equals(mainFile)) {
+            if (mainFile != null && f.equals(mainFile)) {
                 continue;
             }
             if(platfF != null) {

@@ -265,10 +265,15 @@ public abstract class RemoteFileObjectBase {
     
     
     public final void delete(FileLock lock) throws IOException {
-        deleteImpl(lock, this);
+        fileSystem.setBeingRemoved(this);
+        try {
+            deleteImpl(lock, this);
+        } finally {
+            fileSystem.setBeingRemoved(null);
+        }
     }
     
-    protected void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
+    private void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
             throw new IOException("Wrong lock"); //NOI18N
         }
@@ -642,7 +647,7 @@ public abstract class RemoteFileObjectBase {
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                throw new IOException("Can not rename to " + newNameExt);//NOI18N
+                throw new IOException("Can not rename to " + newNameExt + ": the file already exists");//NOI18N
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {

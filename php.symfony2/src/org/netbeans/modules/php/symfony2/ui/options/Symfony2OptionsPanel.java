@@ -65,6 +65,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
@@ -107,9 +108,15 @@ public class Symfony2OptionsPanel extends JPanel {
 
     public Symfony2OptionsPanel() {
         initComponents();
+        setDefaultValues();
         errorLabel.setText(" "); // NOI18N
 
         initListeners();
+    }
+    
+    private void setDefaultValues() {
+        setSandbox(Symfony2Options.getInstance().getSandbox());
+        setIgnoreCache(Symfony2Options.getInstance().getIgnoreCache());
     }
 
     private void initListeners() {

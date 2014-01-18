@@ -379,7 +379,7 @@ public class JiraTestUtil {
     }
     
     public static Query getQuery(JiraQuery jiraQuery) {
-        return getQuery(JiraUtils.getRepository(jiraQuery.getRepository()), jiraQuery);
+        return getQuery(JiraUtils.createRepository(jiraQuery.getRepository()), jiraQuery);
     }        
     
     private static Query getQuery(Repository repository, JiraQuery q) {

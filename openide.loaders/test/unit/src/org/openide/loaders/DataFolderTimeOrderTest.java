@@ -67,7 +67,7 @@ import org.openide.util.test.TestFileUtils;
 public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChangeListener {
 
     private DataFolder aa;
-    private ArrayList<String> events = new ArrayList<String>();
+    private final ArrayList<String> events = new ArrayList<String>();
     private static FileSystem lfs;
     
     public DataFolderTimeOrderTest (String name) {
@@ -92,6 +92,15 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         
         lfs = TestUtilHid.createLocalFileSystem (getWorkDir (), fsstruct);
 
+        final FileObject x = lfs.findResource("AA/X.txt");
+        assertNotNull("X.txt", x);
+        Thread.sleep(5);
+        final FileObject y = lfs.findResource("AA/Y.txt");
+        assertNotNull("Y.txt", y);
+        OutputStream os = y.getOutputStream();
+        os.write("Ahoj".getBytes());
+        os.close();
+
         aa = DataFolder.findFolder (lfs.findResource ("AA"));
         aa.addPropertyChangeListener (this);
     }
@@ -115,17 +124,16 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         assertEquals("Sort mode not changed and children not refreshed: " + events, 2, events.size());
         assertTrue(DataFolder.PROP_SORT_MODE + " change not fired", events.contains(DataFolder.PROP_SORT_MODE));
         assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
+        assertEquals("Y.txt", nodes[0].getName()); // Y is newer
+        assertEquals("X.txt", nodes[1].getName()); // X is older
         events.clear();
-        
-        final FileObject orig = lfs.findResource("AA/X.txt");
-        assertNotNull("X.txt", orig);
-        final FileObject touch = lfs.findResource("AA/Y.txt");
-        assertNotNull("Y.txt", touch);
-        OutputStream os = touch.getOutputStream();
-        os.write("Ahoj".getBytes());
-        os.close();
 
+        final FileObject orig = lfs.findResource("AA/Y.txt");
+        final FileObject touch = lfs.findResource("AA/X.txt");
+
+        // After touching, X.txt will be newer than Y.txt.
         TestFileUtils.touch(FileUtil.toFile(touch), FileUtil.toFile(orig));
+        touch.refresh();
 
         waitEvents();
         assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
@@ -145,6 +153,7 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         }
     }
 
+    @Override
     public synchronized void propertyChange (PropertyChangeEvent evt) {
         events.add (evt.getPropertyName ());
     }
@@ -152,6 +161,7 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
     
     public static final class Pool extends DataLoaderPool {
         
+        @Override
         protected Enumeration<? extends org.openide.loaders.DataLoader> loaders() {
             return Enumerations.singleton(DataLoader.getLoader(DataObjectInvalidationTest.SlowDataLoader.class));
         }

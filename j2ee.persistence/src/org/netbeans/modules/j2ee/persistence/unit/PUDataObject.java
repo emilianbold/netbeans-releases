@@ -190,7 +190,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                 LOG.log(Level.INFO, null, ex);
                 return false;
             }
-        } else {
+        } else if (isModified()){//if it's isn't modified and persistenc eexits (parsed) no need to reparse
             try{
                 String oldVersion = persistence.getVersion();
                 java.io.InputStream is = getEditorSupport().getInputStream();
@@ -229,7 +229,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     } catch (IllegalArgumentException iae) {
                         // see #104180
                         LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NOI18N
-                        if(!persistence.getVersion().equals(newPersistence.getVersion())){//version may be changed, just replace instead of merge then, see #173233 also
+                        if(!oldVersion.equals(newPersistence.getVersion())){//version may be changed, just replace instead of merge then, see #173233 also
                             persistence = null;
                             PersistenceMetadata.getDefault().refresh(getPrimaryFile());
                             return true;

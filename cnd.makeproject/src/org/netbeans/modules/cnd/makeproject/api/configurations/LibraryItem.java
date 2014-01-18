@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class LibraryItem implements Cloneable {
+public abstract class LibraryItem implements Cloneable {
     public static final int PROJECT_ITEM = 0;
     public static final int STD_LIB_ITEM = 1;
     public static final int LIB_ITEM = 2;
@@ -109,10 +109,8 @@ public class LibraryItem implements Cloneable {
 //	return ""; // NOI18N
 //    }
     
-    // Should be overridden
-    public String getOption(MakeConfiguration conf) {
-	return "" + getOption(conf); // NOI18N
-    }
+    // Must be overridden
+    public abstract String getOption(MakeConfiguration conf);
 
     // Should be overridden
     public boolean canEdit() {

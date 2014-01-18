@@ -134,7 +134,12 @@ public class VariableMirrorTranslator {
                 try {
                     Class clazz = Class.forName(typeStr);
                     if (String.class.equals(clazz)) {
-                        return StringReferenceWrapper.value((StringReference) value);
+                        String str = StringReferenceWrapper.value((StringReference) value);
+                        // Limit the String length because of memory consumption:
+                        if (str.length() > AbstractObjectVariable.MAX_STRING_LENGTH) {
+                            str = str.substring(0, AbstractObjectVariable.MAX_STRING_LENGTH) + "..."; // NOI18N
+                        }
+                        return str;
                     }
                     return createMirrorObject((ObjectReference) value, (ReferenceType) type, clazz, mirrorsMap);
                 } catch (ClassNotFoundException ex) {

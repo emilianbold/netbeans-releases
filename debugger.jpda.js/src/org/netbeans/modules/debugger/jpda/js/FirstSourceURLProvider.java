@@ -102,7 +102,7 @@ public class FirstSourceURLProvider extends SourcePathProvider {
     }
     
     public String getURL(JPDAClassType clazz, String stratum) {
-        if (!JSUtils.JS_STRATUM.equals(stratum) &&
+        if (!(stratum == null || JSUtils.JS_STRATUM.equals(stratum)) ||
             !clazz.getName().startsWith(JSUtils.NASHORN_SCRIPT)) {
             return null;
         }

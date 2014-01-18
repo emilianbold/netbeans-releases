@@ -77,10 +77,12 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void update() {
-        composerOptionsPanel.setComposerPath(getOptions().getComposerPath());
-        composerOptionsPanel.setVendor(getOptions().getVendor());
-        composerOptionsPanel.setAuthorName(getOptions().getAuthorName());
-        composerOptionsPanel.setAuthorEmail(getOptions().getAuthorEmail());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            composerOptionsPanel.setComposerPath(getOptions().getComposerPath());
+            composerOptionsPanel.setVendor(getOptions().getVendor());
+            composerOptionsPanel.setAuthorName(getOptions().getAuthorName());
+            composerOptionsPanel.setAuthorEmail(getOptions().getAuthorEmail());
+        }
 
         changed = false;
     }
@@ -97,6 +99,12 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            composerOptionsPanel.setComposerPath(getOptions().getComposerPath());
+            composerOptionsPanel.setVendor(getOptions().getVendor());
+            composerOptionsPanel.setAuthorName(getOptions().getAuthorName());
+            composerOptionsPanel.setAuthorEmail(getOptions().getAuthorEmail());
+        }
     }
 
     @Override
@@ -122,7 +130,24 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getComposerPath();
+        String current = composerOptionsPanel.getComposerPath().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getVendor();
+        current = composerOptionsPanel.getVendor().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getAuthorName();
+        current = composerOptionsPanel.getAuthorName().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getAuthorEmail();
+        current = composerOptionsPanel.getAuthorEmail().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

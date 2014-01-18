@@ -44,14 +44,16 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.antlr.ASTVisitor;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.PrintStream;
 import java.util.Collection;
+import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableFakeAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.openide.util.CharSequences;
 
@@ -335,13 +337,13 @@ public class AstUtil {
         }
     }    
 
-    public static CsmAST getFirstCsmAST(AST node) {
+    public static OffsetableAST getFirstOffsetableAST(AST node) {
         if( node != null ) {
-            if( node instanceof CsmAST ) {
-                return (CsmAST) node;
+            if( node instanceof OffsetableAST ) {
+                return (OffsetableAST) node;
             }
             else {
-                return getFirstCsmAST(node.getFirstChild());
+                return getFirstOffsetableAST(node.getFirstChild());
             }
         }
         return null;
@@ -433,7 +435,7 @@ public class AstUtil {
         if (ast == null) {
             return "<null>"; // NOI18N
         }
-        CsmAST startAst = getFirstCsmAST(ast);
+        OffsetableAST startAst = getFirstOffsetableAST(ast);
         AST endAst = getLastChildRecursively(ast);
         if (startAst != null && endAst != null) {
             StringBuilder sb = new StringBuilder();// NOI18N
@@ -458,7 +460,7 @@ public class AstUtil {
             return null;
         }
         
-        AST firstClonedNode = new FakeAST();
+        AST firstClonedNode = createFakeClone(source);
         AST currentClonedAST = firstClonedNode;
         AST prevClonedAST = null;
         
@@ -473,10 +475,14 @@ public class AstUtil {
             }
             source = source.getNextSibling();
             prevClonedAST = currentClonedAST;
-            currentClonedAST = new FakeAST();
+            currentClonedAST = createFakeClone(source);
         }
         
         return firstClonedNode;
+    }
+    
+    private static AST createFakeClone(AST ast) {
+        return ast instanceof OffsetableAST ? new OffsetableFakeAST() : new FakeAST();
     }
 }
 

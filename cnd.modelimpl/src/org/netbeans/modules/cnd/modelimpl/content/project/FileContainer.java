@@ -421,7 +421,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                         found = true;
                     }
                 }
-                assert found : " not found " + primaryKey + " in " + oldAr;
+                assert found : " not found " + primaryKey + " in " + Arrays.toString(oldAr);
                 newVal = newAr;
             }
         }

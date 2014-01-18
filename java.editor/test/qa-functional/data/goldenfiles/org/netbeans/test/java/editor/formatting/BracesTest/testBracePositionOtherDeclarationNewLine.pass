@@ -10,7 +10,6 @@ package general;
  */
 public class BracesPosition {
 
-    
     {
     }
 

@@ -77,7 +77,7 @@ public final class TwigOptionsPanelController extends OptionsPanelController {
 
     @Override
     public void cancel() {
-        // need not do anything special, if no changes have been persisted yet
+        getPanel().cancel();
     }
 
     @Override
@@ -87,12 +87,12 @@ public final class TwigOptionsPanelController extends OptionsPanelController {
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().changed();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("org.netbeans.modules.php.twig.editor.Options"); //NOI18N
     }
 
     @Override

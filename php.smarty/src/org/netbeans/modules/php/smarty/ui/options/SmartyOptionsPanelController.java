@@ -84,6 +84,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
+        getPanel().cancel();
     }
 
     @Override
@@ -93,7 +94,7 @@ public class SmartyOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isChanged() {
-        return changed;
+        return getPanel().changed();
     }
 
     @Override

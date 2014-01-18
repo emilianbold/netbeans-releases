@@ -77,7 +77,9 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -91,6 +93,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
@@ -997,8 +1000,20 @@ public final class AntProjectHelper {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<Boolean>() {
             public Boolean run() {
                 synchronized (modifiedMetadataPaths) {
-                    Element root = getConfigurationDataRoot(shared);
-                    Element data = XMLUtil.findElement(root, elementName, namespace);
+                    Element root = null;
+                    Element data = null;
+                    try {
+                        root = getConfigurationDataRoot(shared);
+                        data = XMLUtil.findElement(root, elementName, namespace);
+                    } catch (IllegalArgumentException iae) {
+                        //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                        LOG.log(Level.INFO, iae.getMessage(), iae);
+                    }
+                    if(shared) {
+                        findDuplicateElements(projectXml.getDocumentElement(), dir.getFileObject(PROJECT_XML_PATH), shared);
+                    } else {
+                        findDuplicateElements(privateXml.getDocumentElement(), dir.getFileObject(PRIVATE_XML_PATH), shared);
+                    }
                     if (data != null) {
                         root.removeChild(data);
                         modifying(shared ? PROJECT_XML_PATH : PRIVATE_XML_PATH);
@@ -1006,6 +1021,7 @@ public final class AntProjectHelper {
                     } else {
                         return false;
                     }
+                    
                 }
             }
         });
@@ -1337,6 +1353,39 @@ public final class AntProjectHelper {
     @Override
     public String toString() {
         return "AntProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - broken file", 
+        "DESC_Problem_Broken_Config=The {0} file contains some elements multiple times. "
+            + "That can happen when concurrent changes get merged by version control for example. The IDE however cannot decide which one to use. "
+            + "So until the problem is resolved manually, the affected configuration will be ignored."
+    })
+    static void findDuplicateElements(@NonNull Element parent, FileObject config, boolean shared) {
+        NodeList l = parent.getChildNodes();
+        int nodeCount = l.getLength();
+        Set<String> known = new HashSet<String>();
+        for (int i = 0; i < nodeCount; i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Node node = l.item(i);
+                String localName = node.getLocalName();
+                localName = localName == null ? node.getNodeName() : localName;
+                String id = localName + "|" + node.getNamespaceURI();
+                if (!known.add(id)) {
+                    //we have a duplicate;
+                    String message = "";
+                    if(shared) {
+                        message = Bundle.DESC_Problem_Broken_Config("$project_basedir/nbproject/project.xml");
+                    } else {
+                        message = Bundle.DESC_Problem_Broken_Config("$project_basedir/nbproject/private/private.xml");
+                    }
+                    NotifyDescriptor.Message msg = new NotifyDescriptor.Message(message,
+                        NotifyDescriptor.WARNING_MESSAGE);
+                                DialogDisplayer.getDefault().notify(msg);
+                    Logger.getLogger(AntProjectHelper.class.getName()).log(Level.WARNING, message);
+                }
+            }
+        }
     }
 
     private static class RunnableImpl implements Runnable {

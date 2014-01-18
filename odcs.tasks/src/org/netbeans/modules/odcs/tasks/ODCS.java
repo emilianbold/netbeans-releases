@@ -80,6 +80,7 @@ public class ODCS {
     private CloudDevRepositoryConnector rc;
     
     private RequestProcessor rp;
+    private RequestProcessor rpp;
     
     public static ODCS getInstance() {
         if(instance == null) {
@@ -237,6 +238,13 @@ public class ODCS {
             rp = new RequestProcessor("ODCS Tasks", 1, true); // NOI18N
         }
         return rp;
+    }
+
+    public RequestProcessor getParallelRequestProcessor() {
+        if(rpp == null) {
+            rpp = new RequestProcessor("ODCS Parallel Tasks", 20, true); // NOI18N
+        }
+        return rpp;
     }
 
     public CloudDevClient getCloudDevClient(TaskRepository taskRepository) {

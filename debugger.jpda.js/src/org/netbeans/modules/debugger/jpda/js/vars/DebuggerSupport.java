@@ -174,6 +174,9 @@ public final class DebuggerSupport {
                         thisVar = lv;
                         break;
                 }
+                if (name.equals(expression)) {
+                    return lv;
+                }
             }
         } catch (AbsentInformationException ex) {
         }

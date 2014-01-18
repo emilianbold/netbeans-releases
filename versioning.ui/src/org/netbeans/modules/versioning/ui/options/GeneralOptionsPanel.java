@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -59,6 +60,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileChooserBuilder;
@@ -77,6 +79,9 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     
     private final GeneralOptionsPanelController controller;
     private String[] keywords;
+    private boolean originalLabels;
+    private final HashMap<VersioningSystem, List<String>> savedDisconnectedFolders = new HashMap<VersioningSystem, List<String>>();
+    private int selectedIndex = 0;
     
     GeneralOptionsPanel (GeneralOptionsPanelController controller) {
         this.controller = controller;        
@@ -136,6 +141,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         btnAdd = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        cbShowLabels = new javax.swing.JCheckBox();
 
         jLabel1.setLabelFor(cmbVersioningSystems);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.jLabel1.text")); // NOI18N
@@ -153,6 +159,14 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_OptionsPanel.disconnectedFolders.title")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbShowLabels, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.cbShowLabels.text")); // NOI18N
+        cbShowLabels.setToolTipText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.cbShowLabels.TTtext")); // NOI18N
+        cbShowLabels.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbShowLabelsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,6 +174,9 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbShowLabels)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,6 +200,8 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(cbShowLabels)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -202,21 +221,61 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cbShowLabelsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbShowLabelsActionPerformed
+        fireChanged();
+    }//GEN-LAST:event_cbShowLabelsActionPerformed
+
     void load () {
         fillVersioningSystems();
+        originalLabels = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+        cbShowLabels.setSelected(originalLabels);
+        cmbVersioningSystems.setSelectedIndex(selectedIndex);
+        for (int i = 0; i < cmbVersioningSystems.getItemCount(); i++) {
+            VersioningSystem vs = (VersioningSystem) cmbVersioningSystems.getItemAt(i);
+            savedDisconnectedFolders.put(vs, Arrays.asList(Utils.getDisconnectedRoots(vs)));
+        }
     }
     
     void store() {
-        
+        originalLabels = cbShowLabels.isSelected();
+        VersioningSupport.getPreferences().putBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, originalLabels);
+        savedDisconnectedFolders.clear();
     }
     
     boolean valid() {
         return true;
     }
+    
+    void cancel() {
+        for(VersioningSystem vs : savedDisconnectedFolders.keySet()) {
+            List<String> saved = savedDisconnectedFolders.get(vs);
+            List<String> current = Arrays.asList(Utils.getDisconnectedRoots(vs));
+            for (String folder : saved) {
+                if (!current.contains(folder)) {
+                    Utils.disconnectRepository(vs, folder);
+                }
+            }
+            for (String folder : current) {
+                if (!saved.contains(folder)) {
+                    Utils.connectRepository(vs, folder);
+                }
+            }
+        }
+        savedDisconnectedFolders.clear();
+    }
+    
+    private void fireChanged() {
+        boolean isChanged = originalLabels != cbShowLabels.isSelected();
+        for(VersioningSystem vs : savedDisconnectedFolders.keySet()) {
+            isChanged |= !savedDisconnectedFolders.get(vs).equals(Arrays.asList(Utils.getDisconnectedRoots(vs)));
+        }
+        controller.changed(isChanged);
+    }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnRemove;
+    private javax.swing.JCheckBox cbShowLabels;
     private javax.swing.JComboBox cmbVersioningSystems;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -238,6 +297,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == cmbVersioningSystems) {
             fillDisconnectedFolders();
+            selectedIndex = cmbVersioningSystems.getSelectedIndex();
         } else if (e.getSource() == btnRemove) {
             if (cmbVersioningSystems.getSelectedItem() instanceof VersioningSystem && lstDisconnectedFolders.getSelectedValue() != null) {
                 String f = (String) lstDisconnectedFolders.getSelectedValue();
@@ -257,6 +317,7 @@ final class GeneralOptionsPanel extends javax.swing.JPanel implements ActionList
                 }
             }
         }
+        fireChanged();
     }
 
     private void refreshSystems () {

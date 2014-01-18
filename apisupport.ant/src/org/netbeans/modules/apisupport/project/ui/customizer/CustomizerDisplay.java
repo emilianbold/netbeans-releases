@@ -85,7 +85,8 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         }
         Boolean autoUpdateShowInClient = ((SingleModuleProperties) props).getAutoUpdateShowInClient();
         if (autoUpdateShowInClient == null) {
-            autoUpdateShowInClient = !getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD) && !getBooleanProperty(SingleModuleProperties.IS_EAGER);
+            autoUpdateShowInClient = !getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD) && !getBooleanProperty(SingleModuleProperties.IS_EAGER)
+                    && "modules".equals(getProperty("module.jar.dir"));
         }
         showInPluginManagerCheckbox.setSelected(autoUpdateShowInClient);
         showInPluginManagerCheckboxChanged = false;

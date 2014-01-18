@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.text.ParseException;
@@ -67,6 +68,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -100,6 +102,7 @@ import org.openide.util.RequestProcessor;
     private static final int REFRESH_INTERVAL = Integer.getInteger("remote.fs_server.refresh", 0); // NOI18N
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
+    private static final String SERVER_PERSISTENCE_ROOT = System.getProperty("remote.fs_server.remote.cache.root");
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -119,6 +122,8 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
+    private static final String MIN_SERVER_VERSION = "1.1.22"; // NOI18N
+    
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
@@ -130,7 +135,7 @@ import org.openide.util.RequestProcessor;
     
     private void addToRefresh(String path) {
         RefreshManager refreshManager = RemoteFileSystemManager.getInstance().getFileSystem(env).getRefreshManager();
-        refreshManager.scheduleRefreshExistent(Arrays.asList(path));
+        refreshManager.scheduleRefreshExistent(Arrays.asList(path), false);
     }
     
     public static FSSDispatcher getInstance(ExecutionEnvironment env) {
@@ -152,10 +157,16 @@ import org.openide.util.RequestProcessor;
         RP.post(new ConnectTask());
     }
 
-    void requestRefreshCycle(String path) {
+    /*package*/ void requestRefreshCycle(String path) {
+        RP.post(new RefreshTask(path));
+    }
+
+    private void sendRefreshRequest(String path) {
         FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_REFRESH, path, true);
         try {
             dispatch(req);
+        } catch (ConnectException ex) {
+            // nothing to report: no connection => no refresh
         } catch (IOException ex) {
             ex.printStackTrace(System.err);
         } catch (CancellationException ex) {
@@ -167,25 +178,27 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private class RefreshTask implements Runnable {
+        
+        private final String path;
+
+        public RefreshTask(String path) {
+            this.path = path;
+        }
+        
+        @Override
+        public void run() {
+            sendRefreshRequest(path);
+        }        
+    }
+
     private class ConnectTask implements Runnable {
         @Override
         public void run() {
             String oldThreadName = Thread.currentThread().getName();
             Thread.currentThread().setName("fs_server on-connect initialization for " + env); // NOI18N
-            try {
-                getOrCreateServer();
-            } catch (ConnectException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ConnectionManager.CancellationException ex) {
-                ex.printStackTrace(System.err);
-            } catch (IOException ioe) {
-                ioe.printStackTrace(System.err);
-                setInvalid(false);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
-            } catch (ExecutionException ex) {
-                ex.printStackTrace(System.err);
-                setInvalid(false);
+            try {                
+                sendRefreshRequest("/"); // in turn calls getOrCreateServer() //NOI18N
             } finally {
                 Thread.currentThread().setName(oldThreadName);
             }
@@ -336,6 +349,8 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             setInvalid(false);
             throw ex;
+        } catch (InitializationException ex) {
+            throw new ExecutionException(ex);
         }
         PrintWriter writer = srv.getWriter();
         sendRequest(writer, request);
@@ -377,6 +392,18 @@ import org.openide.util.RequestProcessor;
                 path, "org.netbeans.modules.remote.impl", false); // NOI18N
    }
     
+    void testDump(PrintStream ps) {
+        ps.printf("Dumping %s [%s]\n", this.traceName, this.valid ? "valid" : "invalid"); //NOI18N
+        ps.printf("\tlastErrorMessage=%s \n", this.lastErrorMessage); // NOI18N
+        FsServer srv;
+        synchronized (serverLock) {
+            srv = this.server; 
+        }
+        if (srv != null) {
+            srv.testDump(ps);
+        }
+    }
+
     private static String getOriginalFSServerPath(ExecutionEnvironment execEnv) 
             throws IOException, ConnectionManager.CancellationException {
 
@@ -464,7 +491,8 @@ import org.openide.util.RequestProcessor;
     }
 
     private FsServer getOrCreateServer() throws IOException, ConnectException, 
-            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+            ConnectionManager.CancellationException, InterruptedException, 
+            ExecutionException, InitializationException {
         synchronized (serverLock) {
             if (server != null) {
                 if (!ProcessUtils.isAlive(server.getProcess())) {
@@ -477,13 +505,73 @@ import org.openide.util.RequestProcessor;
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);
-                RP.post(new MainLoop());
                 RP.post(new ErrorReader(server.getProcess().getErrorStream()));
+                try {
+                    handShake();
+                } catch (InitializationException ex) {
+                    setInvalid(true);
+                    throw ex;
+                }
+                RP.post(new MainLoop());
             }
             return server;
         }
     }
     
+    private void handShake() throws IOException, InitializationException, InterruptedException {
+        FSSRequest infoReq = new FSSRequest(FSSRequestKind.FS_REQ_SERVER_INFO, "");
+        sendRequest(server.getWriter(), infoReq);
+        String line = server.getReader().readLine();
+        if (line == null) {
+            NativeProcess.State state = server.getProcess().getState();
+            if (state == NativeProcess.State.FINISHED) {
+                int rc = server.getProcess().waitFor();
+                if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
+                    throw new InitializationException(lastErrorMessage.get());
+                }
+            }
+        } else {
+            Buffer buf = new Buffer(line);
+            char respKind = buf.getChar();
+            RemoteLogger.assertTrue(respKind == FSSResponseKind.FS_RSP_SERVER_INFO.getChar());
+            int respId = buf.getInt();
+            RemoteLogger.assertTrue(respId == infoReq.getId());
+            String rest = buf.getRest().trim();
+            checkVersions(MIN_SERVER_VERSION, rest);
+        }
+    }
+    
+    /** 
+     * Checks versions in format N.N.N where N a number that has 1 or more digits 
+     */
+    private void checkVersions(String ref, String fact) throws InitializationException {
+        String[] refArr = ref.split("\\."); //NOI18N
+        String[] factArr = fact.split("\\."); //NOI18N
+        if (refArr.length != 3) {
+            Exceptions.printStackTrace(new IllegalArgumentException("wrong version format: " + ref)); //NOI18N
+        }
+        if (factArr.length != 3) {
+            throw new InitializationException("Wrong version format: " + fact); // NOI18N
+        }
+        for (int i = 0; i < 3; i++) {
+            int refValue;
+            int factValue;
+            try {
+                refValue = Integer.parseInt(refArr[i]);
+            } catch (NumberFormatException nfe) {
+                throw new InitializationException("Wrong version format: " + ref); // NOI18N
+            }
+            try {
+                factValue = Integer.parseInt(factArr[i]);
+            } catch (NumberFormatException nfe) {
+                throw new InitializationException("Wrong version format: " + fact); // NOI18N
+            }
+            if (factValue < refValue) {
+                throw new InitializationException("Wrong server version: " + fact + " should be more or equal to " + MIN_SERVER_VERSION); // NOI18N`
+            }
+        }        
+    }
+
     private class ErrorReader implements Runnable {
         
         private final InputStream inputStream;
@@ -527,41 +615,61 @@ import org.openide.util.RequestProcessor;
         private final BufferedReader reader;
         private final NativeProcess process;
         private final String path;
+        private final String[] args;
 
         public FsServer(String path) throws IOException {
             this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
-            processBuilder.setExecutable(this.path);
-            List<String> args = new ArrayList<String>();
-            args.add("-t"); // NOI18N
-            args.add("4"); // NOI18N
-            args.add("-p"); // NOI18N
-            args.add("-d"); // NOI18N
-            args.add(getSubdir());
+            processBuilder.setExecutable(this.path);            
+            List<String> argsList = new ArrayList<String>();
+            argsList.add("-t"); // NOI18N
+            argsList.add("4"); // NOI18N
+            argsList.add("-p"); // NOI18N
+            argsList.add("-d"); // NOI18N
+            argsList.add(getSubdir());
             if (REFRESH_INTERVAL > 0) {
-                args.add("-r"); // NOI18N
-                args.add("" + REFRESH_INTERVAL);
+                argsList.add("-r"); // NOI18N
+                argsList.add("" + REFRESH_INTERVAL);
             }
             if (VERBOSE > 0) {
-                args.add("-v"); // NOI18N
-                args.add("" + VERBOSE); // NOI18N
+                argsList.add("-v"); // NOI18N
+                argsList.add("" + VERBOSE); // NOI18N
             }
             if (LOG) {
-                args.add("-l"); // NOI18N
+                argsList.add("-l"); // NOI18N
             }
             if (cleanupUponStart) {
-                args.add("-c"); // NOI18N
+                argsList.add("-c"); // NOI18N
             }
-            processBuilder.setArguments(args.toArray(new String[args.size()]));
+            this.args = argsList.toArray(new String[argsList.size()]);
+            processBuilder.setArguments(this.args);
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            if (RemoteFileSystemUtils.isUnitTestMode()) {
+                StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
+                for (String p : args) {
+                    sb.append(p).append(' ');
+                }
+                try {
+                    int pid = process.getPID();
+                    sb.append(" [pid=").append(pid).append(" at ").append(env).append("] "); // NOI18N
+                } catch (IllegalStateException ex) {
+                    sb.append(" [no pid] "); // NOI18N
+                }
+                RemoteLogger.info(sb.toString());                
+            }
         }
         
         private String getSubdir() {
-            assert HostInfoUtils.isHostInfoAvailable(env);
             String tmp = env.toString() + '/' + Places.getUserDirectory().getAbsolutePath(); // NOI18N
-            return Integer.toString(tmp.hashCode()).replace('-', '0');
+            String subdir = Integer.toString(tmp.hashCode()).replace('-', '0');
+            if (SERVER_PERSISTENCE_ROOT == null) {
+                return subdir;
+            } else {
+                String root = SERVER_PERSISTENCE_ROOT.trim();                
+                return  root + (root.endsWith("/") ? "" : "/") + subdir; // NOI18N
+            }
         }
 
         public PrintWriter getWriter() {
@@ -575,5 +683,49 @@ import org.openide.util.RequestProcessor;
         public NativeProcess getProcess() {
             return process;
         }
+
+        private void testDump(PrintStream ps) {
+            int pid = -2;
+            try {
+                pid = process.getPID();
+            } catch (IOException ex) {
+            }            
+            ps.printf("\t[pid=%d] %s", pid, path); //NOI18N
+            for (String p : args) {
+                ps.print(p);
+                ps.print(' '); //NOI18N
+            }
+            ps.print('\n');
+            ps.printf("\t[pid=%d] state=%s ", pid,  process.getState()); //NOI18N
+            try {
+                ProcessStatusEx exitStatusEx = process.getExitStatusEx();
+                ps.printf("\trc=%d signalled=%b termSignal=%d ", //NOI18N
+                        exitStatusEx.getExitCode(),
+                        exitStatusEx.ifSignalled(),
+                        exitStatusEx.termSignal());
+            } catch (Throwable thr) {
+            }
+            ps.print('\n');
+            if (ProcessUtils.isAlive(process)) {
+                HostInfo hostInfo = null;
+                try {
+                    hostInfo = HostInfoUtils.getHostInfo(env);
+                } catch (IOException ex) {
+                } catch (ConnectionManager.CancellationException ex) {
+                }
+                if (hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
+                    ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid); // NOI18N
+                    if (res.isOK()) {
+                        System.err.println(res.output);
+                    }
+                }
+            }
+        }
     }
+    
+    public static class InitializationException extends Exception {
+        public InitializationException(String message) {
+            super(message);
+        }
+    }    
 }

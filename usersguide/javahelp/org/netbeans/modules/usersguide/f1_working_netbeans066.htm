@@ -2,19 +2,113 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Waiting for Tasks to Finish Dialog Box</title>
+<title>Options Window: General: Web Browsers Manager</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2013-12-05</p>
-<p><a id="org.netbeans.core.execution.Install.pending" name="org.netbeans.core.execution.Install.pending"></a></p>
+<p>Beta Draft: 2014-01-16</p>
+<p><a id="WebBrowsersManager" name="WebBrowsersManager"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref68" name="sthref68"></a>
-<h1>Waiting for Tasks to Finish Dialog Box</h1>
+<h1>Options Window: General: Web Browsers Manager</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This dialog box appears when the IDE cannot exit because a task is in process.</p>
-<p>If there is a process that has not yet completed, such as starting a server, click Cancel, wait for the process to complete, then exit the IDE.</p>
-<p>If you are running an application from the IDE, click Cancel, close the application, and exit the IDE. If there is a process that will not complete because of a problem, click End Tasks.</p>
+<p>You can use the Web Browsers Manager to specify options for the web browsers that are registered with the IDE. You can also use this window to add and remove browsers from the list of registered browsers. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1668">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>The Web Browsers Manager contains the following options for modifying web browser properties.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t71">Element</th>
+<th align="left" valign="bottom" id="r1c2-t71">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t71" headers="r1c1-t71">
+<p>Web Browsers</p>
+</td>
+<td align="left" headers="r2c1-t71 r1c2-t71">
+<p>This pane displays a list of web browsers on your local system and registered with the IDE. Select a browser from the list to edit the browser properties.</p>
+<p>In addition to the installed browsers, the list contains the following browsers by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t71" headers="r1c1-t71">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<code>&lt;Default System Browser&gt;</code></p>
+</td>
+<td align="left" headers="r3c1-t71 r1c2-t71">
+<p>This option represents the default browser of your local system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t71" headers="r1c1-t71">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Embedded WebKit Browser</p>
+</td>
+<td align="left" headers="r4c1-t71 r1c2-t71">
+<p>This option is a web browser that is based on the WebKit browser engine and bundled with the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t71" headers="r1c1-t71">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use Another Browser for Web Application Development</p>
+</td>
+<td align="left" headers="r5c1-t71 r1c2-t71">
+<p>When selected you can choose a web browser from the dropdown list to use as the default browser when you run web applications.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t71" headers="r1c1-t71">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JavaFX Runtime Location</p>
+</td>
+<td align="left" headers="r6c1-t71 r1c2-t71">
+<p>Click Browse to specify the location of the local JavaFX runtime. JavaFX is required to run the Embedded WebKit Browser. You might need to explicitly specify the JavaFX runtime location if your runtime is not installed in the default location or the Embedded WebKit Browser fails to run.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t71" headers="r1c1-t71">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;External Browser</p>
+</td>
+<td align="left" headers="r7c1-t71 r1c2-t71">
+<p>This option is a command-line browser.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t71" headers="r1c1-t71">
+<p>Name</p>
+</td>
+<td align="left" headers="r8c1-t71 r1c2-t71">
+<p>The display name for the browser that is used by the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t71" headers="r1c1-t71">
+<p>Process</p>
+</td>
+<td align="left" headers="r9c1-t71 r1c2-t71">
+<p>The full path to the browser executable. Click Browse to locate the executable on the local system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t71" headers="r1c1-t71">
+<p>Arguments</p>
+</td>
+<td align="left" headers="r10c1-t71 r1c2-t71">
+<p>Arguments to pass to the executable when the browser is run.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -32,7 +126,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

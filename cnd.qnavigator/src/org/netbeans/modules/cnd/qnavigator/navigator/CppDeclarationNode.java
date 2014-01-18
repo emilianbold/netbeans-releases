@@ -107,6 +107,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     private CharSequence name;
     private CharSequence htmlDisplayName;
     private CharSequence scopeName = CharSequences.empty();
+    private CharSequence definitionScopeName = CharSequences.empty();
     private byte weight;
     private final InstanceContent ic;
 
@@ -194,6 +195,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                     CsmClass cls = ((CsmMember) function).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
                         scopeName = getClassifierName(cls);
+                        definitionScopeName = scopeName;
                     } else if (CsmKindUtilities.isSpecialization(function)) {
                         isSpecialization = true;
                         scopeName = getFunctionSpecializationName(function);
@@ -289,6 +291,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
         }
         weight = node.weight;
         scopeName = node.scopeName;
+        definitionScopeName = node.definitionScopeName;
         isFriend = node.isFriend;
         isSpecialization = node.isSpecialization;
         needInitHTML = node.needInitHTML;
@@ -300,6 +303,10 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     
     CharSequence getScopeName() {
         return scopeName;
+    }
+
+    CharSequence getMethodDefinitionScopeName() {
+        return definitionScopeName;
     }
     
     @Override

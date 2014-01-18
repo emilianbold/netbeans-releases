@@ -86,8 +86,8 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 0
-#define FS_SERVER_MINOR_VERSION 22
+#define FS_SERVER_MID_VERSION 1
+#define FS_SERVER_MINOR_VERSION 24
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -103,6 +103,8 @@ typedef struct fs_entry {
 } fs_entry;
 
 static struct {
+    /** This mutex to be used ONLY to guard access to proceed field. 
+     * NO other activity should be done under this mutex except for getting/setting proceed field. */
     pthread_mutex_t mutex;
     bool proceed;
 } state;
@@ -162,15 +164,19 @@ static void err_set(int code, const char *format, ...) {
 static bool state_get_proceed() {    
     bool proceed;
     mutex_lock(&state.mutex);
-    proceed = state.proceed;
+    proceed = state.proceed; // don't even think of doing smth else under this mutex!
     mutex_unlock(&state.mutex);    
     return proceed;
 }
 
 static void state_set_proceed(bool proceed) {
     mutex_lock(&state.mutex);
-    state.proceed = proceed;
+    state.proceed = proceed; // don't even think of doing smth else under this mutex!
     mutex_unlock(&state.mutex);    
+}
+
+static bool need_to_proceed() {
+    return !is_broken_pipe() && state_get_proceed();
 }
 
 static void state_init() {
@@ -238,17 +244,22 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     } else {
         p = raw_request + 2;
         p = decode_int(p, &id);
-        if (p == NULL) {
-            return NULL;
-        }
-        //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
-        p = decode_int(p, &path_len);
-        if (p == NULL) {
-            return NULL;
-        }
-        if (!path_len && *raw_request != FS_REQ_QUIT) {
-            report_error("wrong (zero path) request: %s", raw_request);
-            return NULL;
+        if (*raw_request == FS_REQ_SERVER_INFO) {
+            path_len=0;
+            p = "";
+        } else {
+            if (p == NULL) {
+                return NULL;
+            }
+            //soft_assert(*p == ' ', "incorrect request format: '%s'", request);
+            p = decode_int(p, &path_len);
+            if (p == NULL) {
+                return NULL;
+            }
+            if (!path_len && *raw_request != FS_REQ_QUIT) {
+                report_error("wrong (zero path) request: %s", raw_request);
+                return NULL;
+            }
         }
     }
     //fs_request->kind = request->kind;
@@ -436,7 +447,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     } else {
         report_error("error creating entry for %s\n", abspath);
     }
-    return true;
+    return need_to_proceed();
 }
 
 static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {    
@@ -511,6 +522,10 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
+    
+    if (is_broken_pipe() || !state_get_proceed()) {
+        return;
+    }
 
     my_fprintf(STDOUT, "%c %d %li %s\n", (recursive ? FS_RSP_RECURSIVE_LS : FS_RSP_LS),
             request_id, (long) utf8_strlen(path), path);
@@ -560,6 +575,62 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     buffer_free(&work_buf);    
 }
 
+static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
+    my_fprintf(STDOUT, "%c %i %i %s: %s: %s\n", FS_RSP_ERROR, request_id, err_code, err_msg, (err_code) ? err_to_string(err_code) : "", path);
+    my_fflush(STDOUT);
+}
+
+static void response_info(int request_id) {
+    my_fprintf(STDOUT, "%c %i %i.%i.%i\n", FS_RSP_SERVER_INFO, request_id, FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION);
+    my_fflush(STDOUT);
+}
+
+static void response_delete(int request_id, const char* path) {
+    
+    const char* last_slash = strrchr(path, '/');
+    if (!last_slash) {
+        response_error(request_id, path, 0, "wrong path");
+        return;
+    }
+    if (last_slash == path) {
+        response_error(request_id, path, 0, "won't remove '/'");
+        return;
+    }
+    int parent_len = last_slash - path;
+    char parent[parent_len + 1];
+    strncpy(parent, path, parent_len);
+    parent[parent_len] = 0;
+    char canonical_parent[PATH_MAX];
+    if (!realpath(parent, canonical_parent)) {
+        response_error(request_id, path, errno, "can't resolve parent canonical path");
+        return;
+    }
+
+    struct stat stat_buf;
+    if (lstat(path, &stat_buf) == 0) {
+        if (S_ISDIR(stat_buf.st_mode)) {
+            if (!clean_dir(path)) {
+                response_error(request_id, path, errno, "can't remote directory content");
+                return;
+            }
+            if (rmdir(path)) {
+                response_error(request_id, path, errno, "can't remove directory");
+            }
+        } else {
+            if (unlink(path)) {
+                response_error(request_id, path, errno, "can't remove file");
+                return;
+            }
+        }
+    } else {
+        response_error(request_id, path, errno, "error getting stat");
+        return;
+    }
+    
+    // the file or directory successfully removed
+    response_ls(request_id, canonical_parent, false, false);
+}
+
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
     
     response_ls_data *data = p;
@@ -571,7 +642,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
     // for now just ignoring such entries
     if (strchr(name, '/')) {
         report_error("skipping entry %s\n", name);
-        return true;
+        return need_to_proceed();
     }
     if (response_entry_create(data->response_buf, child_abspath, name, data->work_buf)) {
         my_fprintf(STDOUT, "%c %d %s", FS_RSP_ENTRY, data->request_id, data->response_buf.data);
@@ -582,7 +653,7 @@ static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* l
         report_error("error formatting response for '%s'\n", child_abspath);
     }
     
-    return true;
+    return need_to_proceed();
 }
 
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
@@ -590,7 +661,7 @@ static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, cha
     if (S_ISDIR(stat_buf->st_mode)) {
         response_ls(data->request_id, child_abspath, true, true);
     }
-    return true;
+    return need_to_proceed();
 }
 
 
@@ -663,29 +734,40 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     fs_request *request = data;
     if (is_prohibited(path)) {
         trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     if (request) {
         if (!is_subdir(path, request->path)) {
             trace(TRACE_FINER, "refresh manager: skipping %s\n", path);
-            return true;
+            return need_to_proceed();
         }
     }
     dirtab_lock(el);
     if (!request && dirtab_get_watch_state(el) != DE_WSTATE_POLL) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh manager: not polling %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     trace(TRACE_FINER, "refresh manager: visiting %s\n", path);
     
     array/*<fs_entry>*/ old_entries;
     array/*<fs_entry>*/ new_entries;
     dirtab_state state = dirtab_get_state(el);
+    if (state == DE_STATE_REMOVED) {
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: already marked as removed %s\n", path);
+        return need_to_proceed();
+    }
+    if (!dir_exists(path)) {
+        dirtab_set_state(el, DE_STATE_REMOVED);
+        dirtab_unlock(el);
+        trace(TRACE_FINER, "refresh manager: does not exist, marking as removed %s\n", path);
+        return need_to_proceed();
+    }
     if (!request && state == DE_STATE_REFRESH_SENT) {
         dirtab_unlock(el);
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
-        return true;
+        return need_to_proceed();
     }
     bool success = read_entries_from_cache(&old_entries, el, path);
     bool differs;
@@ -773,7 +855,7 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
     dirtab_unlock(el);
     array_free(&old_entries);
     array_free(&new_entries);
-    return true;        
+    return need_to_proceed();
 }
 
 static void thread_init() {
@@ -810,7 +892,7 @@ static void *refresh_loop(void *data) {
     while (!is_broken_pipe() && dirtab_is_empty() && state_get_proceed()) { //TODO: replace with notification?
         sleep(refresh_sleep ? refresh_sleep : 2);
     }
-    while (!is_broken_pipe() && state_get_proceed()) {
+    while (need_to_proceed()) {
         pass++;
         trace(TRACE_FINE, "refresh manager, pass %d\n", pass);
         refresh_cycle(NULL);
@@ -829,6 +911,12 @@ static void response_refresh(fs_request* request) {
 
 static void process_request(fs_request* request) {
     switch (request->kind) {
+        case FS_REQ_DELETE:
+            response_delete(request->id, request->path);
+            break;
+        case FS_REQ_SERVER_INFO:
+            response_info(request->id);
+            break;
         case FS_REQ_LS:
             response_ls(request->id, request->path, false, false);
             break;

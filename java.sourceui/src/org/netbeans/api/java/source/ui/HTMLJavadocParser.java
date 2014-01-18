@@ -51,6 +51,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,8 +105,18 @@ class HTMLJavadocParser {
                     offsets = parsePackage(reader, parser, charset != null);
                 }else if (urlStr.indexOf('#')>0){
                     // member javadoc info
-                    String memberName = urlStr.substring(urlStr.indexOf('#')+1);
-                    if (memberName.length()>0) offsets = parseMember(reader, memberName, parser, charset != null);
+                    final Collection<? extends URL> urls = page.getLocations();
+                    final Collection<String> possibleNames = new HashSet<>(urls.size());
+                    for (URL nameUrl : urls) {
+                        urlStr = URLDecoder.decode(nameUrl.toString(), "UTF-8"); //NOI18N
+                        final String memberName = urlStr.substring(urlStr.indexOf('#')+1);
+                        if (!memberName.isEmpty()) {
+                            possibleNames.add(memberName);
+                        }
+                    }
+                    if (!possibleNames.isEmpty()) {
+                        offsets = parseMember(reader, possibleNames, parser, charset != null);
+                    }
                 }else{
                     // class javadoc info
                     offsets = parseClass(reader, parser, charset != null);
@@ -353,7 +365,7 @@ class HTMLJavadocParser {
 
     /** Retrieves the position (start offset and end offset) of member javadoc info
       * in the raw html file */
-    private static int[] parseMember(Reader reader, final String name, final HTMLEditorKit.Parser parser, boolean ignoreCharset) throws IOException {
+    private static int[] parseMember(Reader reader, final Collection<? extends String> names, final HTMLEditorKit.Parser parser, boolean ignoreCharset) throws IOException {
         final int INIT = 0;
         // 'A' tag with the name we are looking for.
         final int A_OPEN = 1;
@@ -390,7 +402,7 @@ class HTMLJavadocParser {
             public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
                 if (t == HTML.Tag.A) {
                     String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
-                    if (name.equals(attrName)){
+                    if (names.contains(attrName)){
                         // we have found desired javadoc member info anchor
                         state[0] = A_OPEN;
                     } else {

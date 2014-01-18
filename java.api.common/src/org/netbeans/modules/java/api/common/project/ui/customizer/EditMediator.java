@@ -68,6 +68,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -412,8 +414,16 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                             ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  helper);
                             if (list instanceof JListListComponent) {
                                 ((JListListComponent)list).list.repaint();
+                                for(ListDataListener listener: ((JListListComponent)list).getModel().getListDataListeners())
+                                    listener.contentsChanged(new ListDataEvent(source, ListDataEvent.CONTENTS_CHANGED, 
+                                            list.getSelectedIndices().length > 0 ?list.getSelectedIndices()[0]: null, 
+                                            list.getSelectedIndices().length > 0 ?list.getSelectedIndices()[list.getSelectedIndices().length-1]:null));
                             } else if (list instanceof JTableListComponent) {
                                 ((JTableListComponent)list).table.repaint();
+                                for(ListDataListener listener: ((JTableListComponent)list).getModel().getListDataListeners())
+                                    listener.contentsChanged(new ListDataEvent(source, ListDataEvent.CONTENTS_CHANGED, 
+                                            list.getSelectedIndices().length > 0 ?list.getSelectedIndices()[0]: null, 
+                                            list.getSelectedIndices().length > 0 ?list.getSelectedIndices()[list.getSelectedIndices().length-1]:null));
                             } else {
                                 assert false : "do not know how to handle " + list.getClass().getName();
                             }

@@ -82,6 +82,12 @@ public final class GrailsProjectConfig {
 
     public static final String GRAILS_GLOBAL_PLUGINS_DIR_PROPERTY = "grails.global.plugins.dir"; // NOI18N
 
+    public static final String GRAILS_PROJECT_WORK_DIR_PROPERTY = "grails.project.work.dir"; // NOI18N
+
+    public static final String GRAILS_WORK_DIR_PROPERTY = "grails.work.dir"; // NOI18N
+
+    public static final String GRAILS_IVY_CACHE_DIR_PROPERTY = "grails.dependency.cache.dir"; // NOI18N
+
     public static final String GRAILS_LOCAL_PLUGINS_PROPERTY = "grails.local.plugins"; // NOI18N
 
     public static final String GRAILS_VM_OPTIONS_PROPERTY = "grails.vm.options"; // NOI18N
@@ -409,6 +415,7 @@ public final class GrailsProjectConfig {
             this.propertyChangeSupport = propertyChangeSupport;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             propertyChangeSupport.firePropertyChange(GRAILS_PLATFORM_PROPERTY, null, null);
         }

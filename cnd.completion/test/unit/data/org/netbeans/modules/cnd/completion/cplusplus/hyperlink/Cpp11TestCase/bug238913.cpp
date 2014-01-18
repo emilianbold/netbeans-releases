@@ -28,4 +28,8 @@ namespace bug238913 {
       Alias_238913<AAA_238913> d;
       d(0).foo();
     }   
+    
+    struct XXX_238913 {
+      auto (*fun)(int a) -> decltype(a + a);
+    };
 }

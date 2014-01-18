@@ -201,6 +201,13 @@ public class RebaseCommand extends GitCommand {
                     files.add(new File(workDir, failure.getKey()));
                 }
             }
+        } else if (result.getStatus() == RebaseResult.Status.UNCOMMITTED_CHANGES) {
+            List<String> failures = result.getUncommittedChanges();
+            if (failures != null) {
+                for (String conflict : failures) {
+                    files.add(new File(workDir, conflict));
+                }
+            }
         }
         return Collections.unmodifiableList(files);
     }

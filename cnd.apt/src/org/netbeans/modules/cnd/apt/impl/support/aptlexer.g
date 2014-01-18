@@ -299,6 +299,7 @@ tokens {
     LITERAL___imag="__imag__"; // NOI18N
     LITERAL___real="__real__"; // NOI18N
     LITERAL___global="__global"; // NOI18N
+    LITERAL__Bool="_Bool"; // NOI18N
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
@@ -813,7 +814,9 @@ tokens {
         // it should be impossible to have preprocessor directive 
         // after valid token. preprocessor directive valid only
         // at start of line @see newline()
-        setPreprocPossible(t == END_PREPROC_DIRECTIVE);
+        if (t != COMMENT) { // block comment is valid anywhere
+            setPreprocPossible(t == END_PREPROC_DIRECTIVE);
+        }
         return k;
     }
 

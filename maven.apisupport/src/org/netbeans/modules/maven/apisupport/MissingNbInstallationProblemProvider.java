@@ -128,44 +128,76 @@ public class MissingNbInstallationProblemProvider implements ProjectProblemsProv
         if (parent == null) {
             File install = MavenNbModuleImpl.findIDEInstallation(project);
             if (install == null || !install.exists()) {
-                return Collections.singleton(ProjectProblem.createWarning(Bundle.TIT_Missing_platform(), Bundle.DESC_Missing_platform(), new ProjectProblemResolver() {
-
-                    @Override
-                    public Future<Result> resolve() {
-                        FutureTask<Result> toRet = new FutureTask<Result>(new Callable<Result>() {
-                       
-                            @Override
-                            public Result call() throws Exception {
-                                NotifyDescriptor.Confirmation action = new NotifyDescriptor.Confirmation("You can either define netbeans.installation property in .m2/settings.xml file to point to currently running IDE or open the associated nbm-application project.", "Resolve missing NetBeans platform");
-                                String prop = "Define property";
-                                String open = "Open Application project";
-                                action.setOptions(new Object[] { prop, open, NotifyDescriptor.CANCEL_OPTION});
-                                Object result = DialogDisplayer.getDefault().notify(action);
-                                if (prop.equals(result)) {
-                                    RunIDEInstallationChecker.setRunningIDEAsInstallation();
-                                    return Result.create(Status.RESOLVED);
-                                }
-                                if (open.equals(result)) {
-                                    final Action act = FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance", Action.class);
-                                    if (act != null) {
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                act.actionPerformed(null);
-                                            }
-                                        });                                      
-                                    }
-                                }
-                                return Result.create(Status.UNRESOLVED);
-                            }
-                        });
-                        toRet.run();
-                        return toRet;
-                    }
-                }));
+                return Collections.singleton(ProjectProblem.createWarning(Bundle.TIT_Missing_platform(), Bundle.DESC_Missing_platform(), new ProjectProblemResolverImpl(project)));
             }
         }
         return Collections.emptySet();     
+    }
+
+    private static class ProjectProblemResolverImpl implements ProjectProblemResolver {
+        private final Project project;
+
+        public ProjectProblemResolverImpl(Project p) {
+            this.project = p;
+        }
+
+        @Override
+        public Future<Result> resolve() {
+            FutureTask<Result> toRet = new FutureTask<Result>(new Callable<Result>() {
+                
+                @Override
+                public Result call() throws Exception {
+                    NotifyDescriptor.Confirmation action = new NotifyDescriptor.Confirmation("You can either define netbeans.installation property in .m2/settings.xml file to point to currently running IDE or open the associated nbm-application project.", "Resolve missing NetBeans platform");
+                    String prop = "Define property";
+                    String open = "Open Application project";
+                    action.setOptions(new Object[] { prop, open, NotifyDescriptor.CANCEL_OPTION});
+                    Object result = DialogDisplayer.getDefault().notify(action);
+                    if (prop.equals(result)) {
+                        RunIDEInstallationChecker.setRunningIDEAsInstallation();
+                        return Result.create(Status.RESOLVED);
+                    }
+                    if (open.equals(result)) {
+                        final Action act = FileUtil.getConfigObject("Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance", Action.class);
+                        if (act != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    act.actionPerformed(null);
+                                }
+                            });
+                        }
+                    }
+                    return Result.create(Status.UNRESOLVED);
+                }
+            });
+            toRet.run();
+            return toRet;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = MissingNbInstallationProblemProvider.class.hashCode();
+            hash = 73 * hash + (this.project != null ? this.project.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ProjectProblemResolverImpl other = (ProjectProblemResolverImpl) obj;
+            if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+                return false;
+            }
+            return true;
+        }
+
+        
+        
     }
     
 }

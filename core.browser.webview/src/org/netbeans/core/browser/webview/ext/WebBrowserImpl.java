@@ -208,7 +208,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                     + "    false, false, false, false,\n" // NOI18N
                     + "    0, null);\n" // NOI18N
                     + "window.dispatchEvent(event);"; // NOI18N
-                view.getEngine().executeScript(script);
+                try {
+                    view.getEngine().executeScript(script);
+                } catch( netscape.javascript.JSException ex ) {
+                    Logger logger = Logger.getLogger(WebBrowserImpl.class.getName());
+                    logger.log(Level.INFO, "Error while executing JavaScript for hack #217410", ex); // NOI18N
+                }
             }
         });
     }

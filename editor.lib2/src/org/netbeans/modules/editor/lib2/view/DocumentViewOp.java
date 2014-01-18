@@ -915,8 +915,8 @@ public final class DocumentViewOp
         boolean updateMetrics = (rowHeightCorrection != lineHeightCorrectionOrig);
         boolean releaseChildren = nonInitialUpdate && 
                 ((nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig) ||
-                 (rowHeightCorrection != lineHeightCorrectionOrig)); 
-        indentLevelSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+                 (rowHeightCorrection != lineHeightCorrectionOrig));  
+        indentLevelSize = getIndentSize();
         tabSize = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
         if (updateMetrics) {
             updateCharMetrics();
@@ -1116,6 +1116,40 @@ public final class DocumentViewOp
         JTextComponent textComponent = docView.getTextComponent();
         return textComponent != null && fontRenderContext != null && fontInfos.size() > 0 &&
                 (lengthyAtomicEdit <= 0) && !isAnyStatusBit(INCOMING_MODIFICATION);
+    }
+    
+    // from org.netbeans.api.java.source.CodeStyle
+    private int getIndentSize() {
+        Integer indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.INDENT_SHIFT_WIDTH);
+        if (indentLevelInteger != null && indentLevelInteger > 0) {
+            return indentLevelInteger;
+        }
+        int indentLevel = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 0);
+        if (indentLevel > 0) {
+            return indentLevel;
+        }
+        Boolean expandTabsBoolean = (Boolean) docView.getDocument().getProperty(SimpleValueNames.EXPAND_TABS);
+        if (expandTabsBoolean != null) {
+            if (Boolean.TRUE.equals(expandTabsBoolean)) {
+                indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.SPACES_PER_TAB);
+                if (indentLevelInteger == null) {
+                    return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+                }
+            } else {
+                indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
+                if (indentLevelInteger == null) {
+                    return prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
+                }
+            }
+            return indentLevelInteger;
+        }
+        boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
+        if (expandTabs) {
+            indentLevel = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+        } else {
+            indentLevel = prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize);
+        }
+        return indentLevel;
     }
     
     public boolean isGuideLinesEnable() {
@@ -1359,10 +1393,9 @@ public final class DocumentViewOp
                 Integer tabSizeInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.TAB_SIZE);
                 tabSize = (tabSizeInteger != null) ? tabSizeInteger : tabSize;
             }
-            if (propName == null || SimpleValueNames.SPACES_PER_TAB.equals(propName)) {
+            if (propName == null || SimpleValueNames.SPACES_PER_TAB.equals(propName) || SimpleValueNames.TAB_SIZE.equals(propName) || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(propName)) {
                 releaseChildren = true;
-                Integer indentLevelInteger = (Integer) docView.getDocument().getProperty(SimpleValueNames.SPACES_PER_TAB);
-                indentLevelSize = (indentLevelInteger != null) ? indentLevelInteger : indentLevelSize;
+                indentLevelSize = getIndentSize();
             }
             if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
                 updateTextLimitLine(docView.getDocument());

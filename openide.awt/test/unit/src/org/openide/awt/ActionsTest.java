@@ -412,12 +412,11 @@ public class ActionsTest extends NbTestCase {
         
         action.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
 
-        String ctrlMod = Utilities.isMac() ? "\u2303" : "Ctrl";
-        assertTrue(button.getToolTipText().indexOf(ctrlMod + "+C") != (-1));
+        assertTrue(button.getToolTipText().contains("Ctrl+C"));
         
         action.putValue(Action.SHORT_DESCRIPTION, null);
         
-        assertTrue(button.getToolTipText().indexOf(ctrlMod + "+C") != (-1));
+        assertTrue(button.getToolTipText().contains("Ctrl+C"));
         
         f.setVisible(false);
     }

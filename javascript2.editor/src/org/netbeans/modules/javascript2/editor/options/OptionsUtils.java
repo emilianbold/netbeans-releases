@@ -67,6 +67,7 @@ public final class OptionsUtils {
     public static final String AUTO_STRING_CONCATINATION = "codeCompletionStringAutoConcatination"; //NOI18N
     public static final String AUTO_COMPLETION_FULL = "autoCompletionFull"; // NOI18N
     public static final String AUTO_COMPLETION_AFTER_DOT = "autoCompletionAfterDot"; // NOI18N
+    public static final String COMPETION_ITEM_SIGNATURE_WIDTH = "codeComletionItemDescriptionWith"; //NOI18N
     
     // default values
     public static final boolean AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT = false;
@@ -74,6 +75,7 @@ public final class OptionsUtils {
     public static final boolean AUTO_STRING_CONCATINATION_DEFAULT = true;
     public static final boolean AUTO_COMPLETION_FULL_DEFAULT = false;
     public static final boolean AUTO_COMPLETION_AFTER_DOT_DEFAULT = true;
+    public static final int COMPETION_ITEM_SIGNATURE_WIDTH_DEFAULT = 40;
 
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
@@ -110,6 +112,11 @@ public final class OptionsUtils {
                         AUTO_COMPLETION_AFTER_DOT,
                         AUTO_COMPLETION_AFTER_DOT_DEFAULT);
             }
+            if (settingName == null || COMPETION_ITEM_SIGNATURE_WIDTH.equals(settingName)) {
+                codeCompletionItemSignatureWidth = preferences.getInt(
+                        COMPETION_ITEM_SIGNATURE_WIDTH,
+                        COMPETION_ITEM_SIGNATURE_WIDTH_DEFAULT);
+            }
         }
     };
 
@@ -122,6 +129,7 @@ public final class OptionsUtils {
     private Boolean autoStringConcatination = null;
     private Boolean autoCompletionFull = null;
     private Boolean autoCompletionAfterDot = null;
+    private Integer codeCompletionItemSignatureWidth = null;
     
     private OptionsUtils(Language<JsTokenId> language) {
         this.mimeType = language.mimeType();
@@ -167,6 +175,16 @@ public final class OptionsUtils {
     }
 
     /**
+     * Code Completion items signature width.
+     * @return number of chars 
+     */
+    public int getCodeCompletionItemSignatureWidth() {
+        lazyInit();
+        assert codeCompletionItemSignatureWidth != null;
+        return codeCompletionItemSignatureWidth;
+    }
+    
+    /**
      * Variables after "$".
      */
     public boolean autoCompletionAfterDot() {
@@ -189,5 +207,13 @@ public final class OptionsUtils {
     
     public void setTestTypeResolution(boolean value) {
         autoCompletionTypeResolution = value;
+    }
+    
+    /**
+     * 
+     * @param width number of chars of max width of signature
+     */
+    public void setCodeCompletionItemSignatureWidth(int width) {
+        codeCompletionItemSignatureWidth = width;
     }
 }

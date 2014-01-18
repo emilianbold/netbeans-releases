@@ -151,7 +151,11 @@ public class IncludePathSupport extends BaseProjectPathSupport {
             if (phpProject == null) {
                 return false;
             }
-            return ProjectPropertiesSupport.getSourcesDirectory(phpProject).equals(file);
+            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+            if (sourcesDirectory == null) {
+                return false;
+            }
+            return sourcesDirectory.equals(file);
         }
 
     }

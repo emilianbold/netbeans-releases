@@ -161,6 +161,7 @@ public final class SyncController implements Cancellable {
         try {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+            assert sources != null;
             Set<TransferFile> remoteFiles = getRemoteFiles(sources);
             Set<TransferFile> localFiles = getLocalFiles(sources);
             items = pairItems(remoteFiles, localFiles);
@@ -490,6 +491,7 @@ public final class SyncController implements Cancellable {
             if (sourceFiles == SourceFiles.PROJECT) {
                 // set timestamp for project source dir itself
                 File sources = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject));
+                assert sources != null;
                 TransferFile transferFile = TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sources.getAbsolutePath()),
                         null, sources);
                 setTimeStamp(transferFile);

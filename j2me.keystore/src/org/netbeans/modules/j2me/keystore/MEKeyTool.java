@@ -235,7 +235,6 @@ public class MEKeyTool {
             final BufferedReader br = execute(new String[]{toolString, "-list", "-Xdevice:" + device.getName()}); // NOI18N
             final ArrayList<KeyDetail> list = new ArrayList<>();
             KeyDetail key = null;
-            int keyNumber = 0;
             for (;;) {
                 final String line = br.readLine();
                 if (line == null) {
@@ -244,9 +243,11 @@ public class MEKeyTool {
                 if ("".equals(line)) { // NOI18N
                     continue;
                 }
-                if (line.startsWith("Owner")) { // NOI18N
-                    keyNumber++;
+                if (line.startsWith("[")) { //NOI18N
+                    int keyNumber = Integer.parseInt(line.substring(1, line.indexOf("]"))); //NOI18N
                     key = new KeyDetail(keyNumber);
+                    list.add(key);
+                } else if (line.startsWith("Owner") && key != null) { // NOI18N                    
                     if (line.contains("valid")) { //NOI18N
                         int splitIndex = line.indexOf("valid"); //NOI18N
                         key.addLine(line.substring(0, splitIndex));
@@ -254,7 +255,6 @@ public class MEKeyTool {
                     } else {
                         key.addLine(line);
                     }
-                    list.add(key);
                 } else if (key != null) {
                     key.addLine(line);
                 }

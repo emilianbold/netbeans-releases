@@ -85,6 +85,8 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -117,6 +119,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private Map<String, Set<String>>
                                 toBeSaved = new HashMap<String, Set<String>>();
     private boolean             listen = false;
+    private boolean changed = false;
 
 
     /** Creates new form SyntaxColoringPanel1 */
@@ -417,6 +420,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if (evt.getSource () instanceof JComboBox) {
             updateData ();
         }
+        fireChanged();
     }
     
     @Override
@@ -494,12 +498,14 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
         updatecbLanguage.schedule(20);
+        changed = false;
     }
     
     @Override
     public void cancel () {
         toBeSaved = new HashMap<String, Set<String>>();
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+        changed = false;
     }
     
     @Override
@@ -518,11 +524,12 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         }
         toBeSaved = new HashMap<String, Set<String>>();
         profiles = new HashMap<String, Map<String, Vector<AttributeSet>>>();
+        changed = false;
     }
     
     @Override
     public boolean isChanged () {
-        return !toBeSaved.isEmpty ();
+        return changed;
     }
     
     @Override
@@ -539,6 +546,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         lCategories.setSelectedIndex (0);
         blink = true;
         refreshUI ();
+        fireChanged();
     }
 
     @Override
@@ -557,6 +565,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if (!custom) {
             refreshUI ();
         }
+        fireChanged();
     }
     
     @Override
@@ -829,6 +838,131 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         s.add(currentLanguage);
     }
     
+    private void fireChanged() {
+        boolean isChanged = false;
+        for(String profile : toBeSaved.keySet()) {
+            Set<String> toBeSavedLanguages = toBeSaved.get(profile);
+            Map<String, Vector<AttributeSet>> schemeMap = profiles.get(profile);
+            for(String languageName : toBeSavedLanguages) {
+                String[] mimePath = getMimePath(languageName);
+                FontColorSettingsFactory fcs = EditorSettings.getDefault().getFontColorSettings(mimePath);
+                Collection<AttributeSet> allFontColors = fcs.getAllFontColors(profile);
+                Map<String, AttributeSet> savedSyntax = toMap(allFontColors);
+                Vector<AttributeSet> attributeSet = schemeMap.get(languageName);
+                Map<String, AttributeSet> currentSyntax = toMap(attributeSet);
+                if (savedSyntax != null && currentSyntax != null) {
+                    if (savedSyntax.size() >= currentSyntax.size()) {
+                        isChanged |= checkMaps(languageName, savedSyntax, currentSyntax);
+                    } else {
+                        isChanged |= checkMaps(languageName, currentSyntax, savedSyntax);
+                    }
+                }
+                
+            }
+        }
+        changed = isChanged;
+    }
+    
+    private boolean checkMaps(String languageName, Map<String, AttributeSet> savedMap, Map<String, AttributeSet> currentMap) {
+        boolean isChanged = false;
+        for (String name : savedMap.keySet()) {
+            if (currentMap.containsKey(name)) {
+                AttributeSet currentAS = currentMap.get(name);
+                AttributeSet savedAS = savedMap.get(name);
+                isChanged |= isFontChanged(languageName, currentAS, savedAS)
+                        || (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
+                        || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
+                        || (Color) currentAS.getAttribute(StyleConstants.Underline) != (Color) savedAS.getAttribute(StyleConstants.Underline)
+                        || (Color) currentAS.getAttribute(StyleConstants.StrikeThrough) != (Color) savedAS.getAttribute(StyleConstants.StrikeThrough)
+                        || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+
+            }
+        }
+        return isChanged;
+    }
+    
+    private boolean isFontChanged(String language, AttributeSet currentAS, AttributeSet savedAS) {
+        String name = (String) getValue(language, currentAS, StyleConstants.FontFamily);
+        assert (name != null);
+        Integer size = (Integer) getValue(language, currentAS, StyleConstants.FontSize);
+        assert (size != null);
+        Boolean bold = (Boolean) getValue(language, currentAS, StyleConstants.Bold);
+        if (bold == null) {
+            bold = Boolean.FALSE;
+        }
+        Boolean italic = (Boolean) getValue(language, currentAS, StyleConstants.Italic);
+        if (italic == null) {
+            italic = Boolean.FALSE;
+        }
+        int style = bold.booleanValue() ? Font.BOLD : Font.PLAIN;
+        if (italic.booleanValue()) {
+            style += Font.ITALIC;
+        }
+        Font currentFont = new Font(name, style, size.intValue());
+        
+        name = (String) getValue(language, savedAS, StyleConstants.FontFamily);
+        assert (name != null);
+        size = (Integer) getValue(language, savedAS, StyleConstants.FontSize);
+        assert (size != null);
+        bold = (Boolean) getValue(language, savedAS, StyleConstants.Bold);
+        if (bold == null) {
+            bold = Boolean.FALSE;
+        }
+        italic = (Boolean) getValue(language, savedAS, StyleConstants.Italic);
+        if (italic == null) {
+            italic = Boolean.FALSE;
+        }
+        style = bold.booleanValue() ? Font.BOLD : Font.PLAIN;
+        if (italic.booleanValue()) {
+            style += Font.ITALIC;
+        }
+        Font savedFont = new Font(name, style, size.intValue());
+        return !currentFont.equals(savedFont);
+    }
+    
+    // start copied from ColorModel
+    private String [] getMimePath(String language) {
+        if (language.equals(ColorModel.ALL_LANGUAGES)) {
+            return new String[0];
+        } else {
+            String mimeType = getLanguageToMimeTypeMap().get(language);
+            assert mimeType != null : "Invalid language '" + language + "'"; //NOI18N
+            return new String [] { mimeType };
+        }
+    }
+    
+    private Map<String, String> languageToMimeType;
+    private Map<String, String> getLanguageToMimeTypeMap() {
+        if (languageToMimeType == null) {
+            languageToMimeType = new HashMap<String, String>();
+            Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
+            for(String mimeType : mimeTypes) {
+                String name = EditorSettings.getDefault().getLanguageName (mimeType);
+                if (name.equals (mimeType))
+                    continue;
+                languageToMimeType.put (
+                    name,
+                    mimeType
+                );
+            }
+            languageToMimeType.put(
+                    ColorModel.ALL_LANGUAGES,
+                    "Defaults" //NOI18N
+                    );
+        }
+        return languageToMimeType;
+    }
+    
+    private Map<String, AttributeSet> toMap(Collection<AttributeSet> categories) {
+        if (categories == null) return null;
+        Map<String, AttributeSet> result = new HashMap<String, AttributeSet>();
+        for(AttributeSet as : categories) {
+            result.put((String) as.getAttribute(StyleConstants.NameAttribute), as);
+        }
+        return result;
+    }
+    // end copied from ColorModel
+    
     private Vector<AttributeSet> getCategories(String profile, String language) {
         if (colorModel == null) return null;
         Map<String, Vector<AttributeSet>> m = profiles.get(profile);
@@ -1070,6 +1204,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         if( e.getStateChange() == ItemEvent.DESELECTED || !listen )
             return;
         updateData();
+        fireChanged();
     }
     
     private static final class LanguagesComparator implements Comparator<String> {

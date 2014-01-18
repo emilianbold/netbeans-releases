@@ -56,8 +56,7 @@ public class ReadConfigTask extends CordovaTask {
     @Override
     public void execute() throws BuildException {
         try {
-            File configFile = new File(getProject().getBaseDir().getAbsolutePath() 
-                    + "/" + getProperty("site.root") + "/config.xml");
+            File configFile = getConfigFile();
             SourceConfig config = new SourceConfig(configFile);
             final String id = config.getId();
             String pkg = id.substring(0, id.lastIndexOf(".")); // NOI18N

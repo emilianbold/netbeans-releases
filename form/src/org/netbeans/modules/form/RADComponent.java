@@ -416,6 +416,26 @@ public class RADComponent {
             // which was not good for the replicated design view).
             Logger.getLogger(RADComponent.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
+
+        if (clone == null && beanClass.getName().startsWith("org.jdesktop.swingx.")) { // NOI18N
+            // Hack for bug 127881 - SwingX components may fail to instantiate if project
+            // classloader has changed and so UIDefaults for the previous classloader were
+            // removed. A possible workaround is to load the class again with the new classloader.
+            // A drawback is we return an instance of a different class, increasing a risk
+            // of ClassCastException (but with changing classloaders it is generally
+            // unavoidable anyway, we'd have to reload the whole form to be quite correct).
+            try {
+                Class newBeanClass = FormUtils.loadClass(beanClass.getName(), formModel);
+                if (newBeanClass != beanClass) {
+                    clone = CreationFactory.createDefaultInstance(newBeanClass);
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(RADComponent.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+            } catch (LinkageError ex) {
+                Logger.getLogger(RADComponent.class.getName()).log(Level.WARNING, ex.getMessage(), ex);
+            }
+        }
+
         if (clone == null) {
             try {
                 clone = createBeanInstance();
@@ -424,9 +444,11 @@ public class RADComponent {
             }
         }
 
-        FormUtils.copyPropertiesToBean(getKnownBeanProperties(),
-                                       clone,
-                                       relativeProperties);
+        if (clone != null) {
+            FormUtils.copyPropertiesToBean(getKnownBeanProperties(),
+                                           clone,
+                                           relativeProperties);
+        }
         return clone;
     }
 

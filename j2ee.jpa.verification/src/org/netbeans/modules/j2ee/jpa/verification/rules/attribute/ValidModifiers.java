@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
+import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
@@ -81,6 +82,7 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         
+        
         if (fieldModifiers != null){
             if (fieldModifiers.contains(Modifier.PUBLIC)){
                 errors.addAll(getErr(ctx, hc, attrib, "MSG_PublicVariable"));//TODO: error by default
@@ -88,7 +90,7 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         }
         
         if (accesorModifiers != null){
-            if (!accesorModifiers.contains(Modifier.PUBLIC)
+            if (ctx.getAccessType() == AccessType.PROPERTY && !accesorModifiers.contains(Modifier.PUBLIC)
                     && !accesorModifiers.contains(Modifier.PROTECTED)){
                 errors.addAll(getErr(ctx, hc, attrib, "MSG_NonPublicAccesor"));//TODO: error by default
             }

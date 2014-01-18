@@ -78,7 +78,9 @@ public class AtoumOptionsPanelController extends OptionsPanelController implemen
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        getPanel().setAtoumPath(getAtoumOptions().getAtoumPath());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            getPanel().setAtoumPath(getAtoumOptions().getAtoumPath());
+        }
 
         changed = false;
     }
@@ -97,6 +99,9 @@ public class AtoumOptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            getPanel().setAtoumPath(getAtoumOptions().getAtoumPath());
+        }
     }
 
     @Override
@@ -123,7 +128,9 @@ public class AtoumOptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getAtoumOptions().getAtoumPath();
+        String current = getPanel().getAtoumPath().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

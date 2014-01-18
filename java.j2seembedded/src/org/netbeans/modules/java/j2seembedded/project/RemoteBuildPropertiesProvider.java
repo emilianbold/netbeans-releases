@@ -67,6 +67,7 @@ public class RemoteBuildPropertiesProvider implements J2SEBuildPropertiesProvide
     private static final String PROP_PASSPHRASE = "remote.platform.passphrase"; //NOI18N
     private static final String PROP_OS_ARCH_RP = "remote.platform.rp.target"; //NOI18N
     private static final String PROP_FILENAME_RP = "remote.platform.rp.filename"; //NOI18N
+    private static final String PROP_JAVA_SPEC_VER = "remote.platform.java.spec.ver"; //NOI18N
     
     private final Project prj;
 
@@ -92,7 +93,8 @@ public class RemoteBuildPropertiesProvider implements J2SEBuildPropertiesProvide
                     final ConnectionMethod.Authentification auth = rp.getConnectionMethod().getAuthentification();                    
                     Map<String,String> res = new HashMap<>();
                     String target = Utilities.getTargetOSForRP(rp.getSystemProperties().get("os.name"), rp.getSystemProperties().get("os.arch"), rp.getSystemProperties().get("sun.arch.abi"), rp.getSystemProperties().get(("java.vm.name"))); //NOI18N
-                    res.put(PROP_OS_ARCH_RP, target); //NOI18N
+                    res.put(PROP_JAVA_SPEC_VER, rp.getSystemProperties().get("java.specification.version").replace(".","")); //NOI18N
+                    res.put(PROP_OS_ARCH_RP, target);
                     res.put(PROP_FILENAME_RP, target.replace("-", "").replace("15","")); //NOI18N
                     switch (auth.getKind()) {
                         case PASSWORD:

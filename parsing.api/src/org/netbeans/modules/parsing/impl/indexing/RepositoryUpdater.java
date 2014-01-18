@@ -1250,6 +1250,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     private static final String PROP_OWNING_SOURCE_UNKNOWN_IN = RepositoryUpdater.class.getName() + "-owning-source-root-unknown-in"; //NOI18N
     private static final String INDEX_DOWNLOAD_FOLDER = "index-download";   //NOI18N
+    private static final boolean[] FD_NEW_SFB_ROOT = new boolean[1];
 
     /* test */ static final List<URL> UNKNOWN_ROOT = Collections.unmodifiableList(new LinkedList<URL>());
     /* test */ static final List<URL> NONEXISTENT_ROOT = Collections.unmodifiableList(new LinkedList<URL>());
@@ -1876,13 +1877,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             }
 
                             final URL binaryRoot = entry.getURL();
-                            final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false);
-                            if (sourceRoots != null) {
+                            final URL[] sourceRoots = PathRegistry.getDefault().sourceForBinaryQuery(binaryRoot, cp, false, FD_NEW_SFB_ROOT);
+                            final boolean newSFBRoot = FD_NEW_SFB_ROOT[0];
+                            if (sourceRoots != null) {                                
                                 for (URL sourceRoot : sourceRoots) {
                                     if (cancelRequest.isRaised()) {
                                         return false;
                                     }
-
+                                    if (newSFBRoot) {
+                                        ctx.newlySFBTranslated.add(sourceRoot);
+                                    }
                                     if (sourceRoot.equals(rootURL)) {
                                         ctx.sourcesForBinaryRoots.add(rootURL);
                                     } else if (!ctx.cycleDetector.contains(sourceRoot)) {
@@ -4699,6 +4703,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
             }
 
+
+            if (!finished) {
+                final Queue<URL> toUnregister = new ArrayDeque<URL>();
+                for (URL translatedRoot : depCtx.newlySFBTranslated) {
+                    if (depCtx.newRootsToScan.contains(translatedRoot) &&
+                        !depCtx.scannedRoots.contains(translatedRoot)) {
+                        toUnregister.offer(translatedRoot);
+                    }
+                }
+                PathRegistry.getDefault().unregisterUnknownSourceRoots(toUnregister);
+            }
+
             final List<URL> missingRoots = new LinkedList<URL>();
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
             scannedRoots2Peers.keySet().removeAll(depCtx.oldRoots);            
@@ -5171,7 +5187,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return true;
         }
 
-        private static void delete (@NonNull final File... toDelete) {
+        private static void delete (@NullAllowed final File... toDelete) {
             if (toDelete != null) {
                 for (File td : toDelete) {
                     if (td.isDirectory()) {
@@ -5886,8 +5902,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         private final Set<URL> sourcesForBinaryRoots;
         private final Set<URL> unknownRoots;
+        private final Set<URL> newlySFBTranslated;
         private Map<URL,Collection<URL>> preInversedDeps;
-        private Set<URL> fullRescanSourceRoots;        
+        private Set<URL> fullRescanSourceRoots;
 
         private final Stack<URL> cycleDetector;
         private final boolean useInitialState;
@@ -5929,6 +5946,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             this.refreshNonExistentDeps = refreshNonExistentDeps;
             this.cycleDetector = new Stack<URL>();
             this.unknownRoots = new HashSet<URL>();
+            this.newlySFBTranslated = new HashSet<URL>();
         }
 
         public @Override String toString() {

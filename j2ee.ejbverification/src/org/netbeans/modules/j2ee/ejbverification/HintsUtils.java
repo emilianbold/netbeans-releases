@@ -296,29 +296,35 @@ public class HintsUtils {
                     if (!HintsUtils.isEjb30Plus(ejbVersion)) {
                         return null; // Only EJB 3.0+ are supported
                     }
-                    TypeElement javaClass = (TypeElement) info.getTrees().getElement(context.getPath());
-                    Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
 
-                    // precompute EJB information
-                    String[] businessLocal = new String[0];
-                    String[] businessRemote = new String[0];
-                    String sessionType = "";
-                    try {
-                        if (ejb instanceof Session) {
-                            Session session = ((Session) ejb);
-                            businessLocal = session.getBusinessLocal();
-                            businessRemote = session.getBusinessRemote();
-                            sessionType = session.getSessionType();
+                    Element element = info.getTrees().getElement(context.getPath());
+                    if (element instanceof TypeElement) {
+                        TypeElement javaClass = (TypeElement) element;
+                        Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
+
+                        // precompute EJB information
+                        String[] businessLocal = new String[0];
+                        String[] businessRemote = new String[0];
+                        String sessionType = "";
+                        try {
+                            if (ejb instanceof Session) {
+                                Session session = ((Session) ejb);
+                                businessLocal = session.getBusinessLocal();
+                                businessRemote = session.getBusinessRemote();
+                                sessionType = session.getSessionType();
+                            }
+                        } catch (VersionNotSupportedException ex) {
+                            LOG.log(Level.INFO, ex.getMessage(), ex);
                         }
-                    } catch (VersionNotSupportedException ex) {
-                        LOG.log(Level.INFO, ex.getMessage(), ex);
-                    }
 
-                    if (LOG.isLoggable(Level.FINE)) {
-                        long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
-                        LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
+                        if (LOG.isLoggable(Level.FINE)) {
+                            long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+                            LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
+                        }
+                        return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
+                    } else {
+                        return null;
                     }
-                    return new EJBProblemContext(info, project, ejbModule, file, javaClass, ejb, new SessionData(businessLocal, businessRemote, sessionType));
                 }
             });
         } catch (MetadataModelException ex) {

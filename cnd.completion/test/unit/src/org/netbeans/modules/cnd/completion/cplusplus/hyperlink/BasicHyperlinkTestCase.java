@@ -56,6 +56,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test239814() throws Exception {
+        // #239814 - When clicks "Find usages" shows error alert "Cannot refactor here".
+        performTest("iz239814.cpp", 11, 10, "iz239814.cpp", 8, 1);
+        performTest("iz239814.cpp", 11, 20, "iz239814.cpp", 3, 5);
+    }
+    
     public void test229003() throws Exception {
         // #229003 - inaccuracy tests: Perl project has unresolved identifiers
         
@@ -1048,6 +1054,23 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug238041.c", 7, 15, "bug238041.c", 2, 1);
         performTest("bug238041.c", 10, 14, "bug238041.c", 5, 5);
     }
+    
+    public void testBug240446() throws Exception {
+        // Bug 240446 - Wrong priority of local variable. 
+        performTest("bug240446.cpp", 20, 22, "bug240446.cpp", 10, 9);
+        performTest("bug240446.cpp", 24, 22, "bug240446.cpp", 4, 9);
+    }
+    
+    public void testBug239739() throws Exception {
+        // Bug 239739 - regression in inaccuracy tests
+        performTest("bug239739.cpp", 12, 12, "bug239739.cpp", 6, 9);
+        performTest("bug239739.cpp", 13, 14, "bug239739.cpp", 6, 9);
+    }
+    
+    public void testBug240482() throws Exception {
+        // Bug 240482 - parser errors appears if file has 'bool' variable 
+        performTest("bug240482.c", 3, 25, "bug240482.c", 3, 16);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

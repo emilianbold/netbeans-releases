@@ -183,6 +183,9 @@
           </Properties>
         </Component>
         <Component class="javax.swing.JComboBox" name="provisioningCombo">
+          <Events>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="provisioningComboItemStateChanged"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

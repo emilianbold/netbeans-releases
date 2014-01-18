@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test215640() throws Exception {
+        // #215640 - Code model parser is failed if preprocessor directive is started after comment
+        performTest("iz215640.cpp"); // NOI18N
+    }
+    
     public void test229003() throws Exception {
         // #229003 - inaccuracy tests: Perl project has unresolved identifiers
         performTest("iz229003.cpp"); // NOI18N

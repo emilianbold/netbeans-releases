@@ -619,7 +619,7 @@ public abstract class ConfigurationDescriptorProvider {
         }
         
         public void printStatistic(Logger logger) {
-            if (logger.isLoggable(Level.INFO)) {
+            if (logger.isLoggable(CndUtils.isUnitTestMode()? Level.FINE : Level.INFO)) {
                 logger.log(Level.INFO, "Configuration updated:\n\t{0} deleted items\n\t{1} added items\n\t{2} changed items",
                         new Object[]{deleted.size()+excluded.size(), added.size()+included.size(), changed.size()});
             }

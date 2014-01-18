@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.js.breakpoints;
 
 import com.sun.jdi.request.EventRequest;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,25 +67,28 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
-import org.netbeans.modules.debugger.jpda.js.source.SourceURLMapper;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  * Manages creation/removal of Java breakpoints corresponding to JS breakpoints.
  * 
  * @author Martin
  */
+// Description of JS breakpoint submission:
+// Initially, submit ClassLoadUnloadBreakpoint for JSUtils.NASHORN_SCRIPT+"*" (scriptBP)
+// when scriptBP is hit (ScriptsHandler.breakpointReached()), we have JPDAClassType scriptType,
+// but we do not know the script name yet.
+// Submit a MethodBreakpoint for scriptType class name that hits any method.
+// As soon as the method breakpoint is hit, we retrieve the source and submit JS breakpoints.
+
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
     
     private final Map<JPDADebugger, ScriptsHandler> scriptHandlers = new HashMap<>();
-    //private final Map<JSLineBreakpoint, LineBreakpoint> breakpoints = new HashMap<>();
     private final Map<URLEquality, Set<JSLineBreakpoint>> breakpointsByURL = new HashMap<>();
-    private final Map<String, Set<JSLineBreakpoint>> breakpointsByScriptNames = new HashMap<>();
     private ClassLoadUnloadBreakpoint scriptBP;
-    //private ScriptsHandler sh;
     
     public JSJavaBreakpointsManager() {
     }
@@ -122,18 +126,9 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             }
             bpts.add(jslb);
         }
-        String scriptName = getScriptName(jslb);
-        synchronized (breakpointsByScriptNames) {
-            Set<JSLineBreakpoint> bpts = breakpointsByScriptNames.get(scriptName);
-            if (bpts == null) {
-                bpts = new HashSet<>();
-                breakpointsByScriptNames.put(scriptName, bpts);
-            }
-            bpts.add(jslb);
-        }
         synchronized (scriptHandlers) {
             for (ScriptsHandler sh : scriptHandlers.values()) {
-                sh.addScriptName(scriptName, jslb);
+                sh.addBreakpoint(jslb);
             }
         }
     }
@@ -155,21 +150,9 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 }
             }
         }
-        String scriptName = getScriptName(jslb);
-        boolean removeScript = false;
-        synchronized (breakpointsByScriptNames) {
-            Set<JSLineBreakpoint> bpts = breakpointsByScriptNames.get(scriptName);
-            if (bpts != null) {
-                bpts.remove(jslb);
-                if (bpts.isEmpty()) {
-                    breakpointsByScriptNames.remove(scriptName);
-                    removeScript = true;
-                }
-            }
-        }
         synchronized (scriptHandlers) {
             for (ScriptsHandler sh : scriptHandlers.values()) {
-                sh.removeBreakpoint(scriptName, jslb, removeScript);
+                sh.removeBreakpoint(jslb);
             }
         }
     }
@@ -190,11 +173,6 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         synchronized (scriptHandlers) {
             scriptHandlers.put(debugger, sh);
         }
-        synchronized (breakpointsByScriptNames) {
-            for (String scriptName : breakpointsByScriptNames.keySet()) {
-                sh.addScriptName(scriptName, null);
-            }
-        }
     }
 
     @Override
@@ -213,250 +191,131 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         }
     }
     
-    private static String getScriptName(JSLineBreakpoint jslb) {
-        String name;
-        FileObject fo = jslb.getFileObject();
-        if (fo != null) {
-            name = fo.getName();
-        } else {
-            String url = jslb.getURL().toExternalForm();
-            int i1 = url.lastIndexOf('/');
-            if (i1 < 0) {
-                i1 = 0;
-            } else {
-                i1++;
-            }
-            int i2 = url.lastIndexOf('.');
-            if (i2 < i1) {
-                i2 = url.length();
-            }
-            name = url.substring(i1, i2);
-            name = SourceURLMapper.percentDecode(name);
-        }
-        if ("<eval>".equals(name)) {        // NOI18N
-            name = "\\^eval\\_";            // NOI18N
-        }
-        return name;
-    }
-    
     private final class ScriptsHandler implements JPDABreakpointListener {
         
         private final JPDADebugger debugger;
-        private final Map<String, JPDAClassType> loadedScripts = new HashMap<>();
-        private final Map<String, ScriptBreakpointsHandler> scriptHandlers = new HashMap<>();
+        private final Map<MethodBreakpoint, JPDAClassType> scriptAccessBreakpoints = new HashMap<>();
+        private final Map<URLEquality, Source> sourcesByURL = new HashMap<>();
+        private final Map<JSLineBreakpoint, LineBreakpointHandler> lineBreakpointHandlers = new HashMap<>();
         
         ScriptsHandler(JPDADebugger debugger) {
             this.debugger = debugger;
         }
         
-        /**
-         * 
-         * @param scriptName
-         * @param jslb the added breakpoint, or <code>null</code> to consider all available breakpoints
-         */
-        void addScriptName(String scriptName, JSLineBreakpoint jslb) {
-            JPDAClassType clazz;
-            synchronized (loadedScripts) {
-                clazz = loadedScripts.get(scriptName);
+        void addBreakpoint(JSLineBreakpoint jslb) {
+            URLEquality urleq = new URLEquality(jslb.getURL());
+            Source source;
+            synchronized (sourcesByURL) {
+                source = sourcesByURL.get(urleq);
             }
-            ScriptBreakpointsHandler sbh;
-            synchronized (scriptHandlers) {
-                sbh = scriptHandlers.get(scriptName);
-                if (sbh == null) {
-                    sbh = new ScriptBreakpointsHandler(scriptName, debugger, clazz);
-                    scriptHandlers.put(scriptName, sbh);
-                }
+            if (source != null) {
+                createSourceLineBreakpoints(jslb, source);
             }
-            sbh.addBreakpoints(jslb);
         }
 
+        /** A new script class is loaded/initialized. */
         @Override
         public void breakpointReached(JPDABreakpointEvent event) {
             if (debugger != event.getDebugger()) {
                 return ;
             }
-            Variable scriptClass = event.getVariable();
-            if (!(scriptClass instanceof ClassVariable)) {
-                return ;
-            }
-            //JPDAClassType scriptType = ((ClassVariable) scriptClass).getReflectedType();
-            JPDAClassType scriptType;
-            try {
-                scriptType = (JPDAClassType) scriptClass.getClass().getMethod("getReflectedType").invoke(scriptClass);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                scriptType = null;
-            }
-            if (scriptType != null) {
-                String scriptName = scriptType.getName();
-                if (scriptName.startsWith(JSUtils.NASHORN_SCRIPT)) {
-                    scriptName = scriptName.substring(JSUtils.NASHORN_SCRIPT.length());
-                }
-                synchronized (loadedScripts) {
-                    loadedScripts.put(scriptName, scriptType);
-                }
-            }
-        }
-        
-        private void removeBreakpoint(String scriptName, JSLineBreakpoint jslb, boolean removeScript) {
-            ScriptBreakpointsHandler sbh;
-            synchronized (scriptHandlers) {
-                if (removeScript) {
-                    sbh = scriptHandlers.remove(scriptName);
-                } else {
-                    sbh = scriptHandlers.get(scriptName);
-                }
-            }
-            if (removeScript) {
-                sbh.destroy();
-            } else {
-                sbh.removeLineBreakpoint(jslb);
-            }
-        }
-        
-        void destroy() {
-            synchronized (loadedScripts) {
-                loadedScripts.clear();
-            }
-            synchronized (scriptHandlers) {
-                for (ScriptBreakpointsHandler sbh : scriptHandlers.values()) {
-                    sbh.destroy();
-                }
-                scriptHandlers.clear();
-            }
-        }
-
-    }
-    
-    private final class ScriptBreakpointsHandler implements JPDABreakpointListener {
-        
-        private final String scriptName;
-        private final JPDADebugger debugger;
-        private JPDAClassType clazz;
-        private ClassLoadUnloadBreakpoint scriptClassBP;
-        private MethodBreakpoint scriptMethodBP;
-        private Source source;
-        private final Map<JSLineBreakpoint, LineBreakpointHandler> lineBreakpointHandlers = new HashMap<>();
-        //private final Set<JSLineBreakpoint> breakpoints = new HashSet<>();
-        
-        ScriptBreakpointsHandler(String scriptName, JPDADebugger debugger, JPDAClassType clazz) {
-            this.scriptName = scriptName;
-            this.debugger = debugger;
-            this.clazz = clazz;
-            if (clazz == null) {
-                initScriptClassBP();
-            } else {
-                createSource();
-            }
-        }
-        
-        void initScriptClassBP() {
-            // script class load breakpoint so that we know when the script class appears
-            scriptClassBP = ClassLoadUnloadBreakpoint.create(JSUtils.NASHORN_SCRIPT+scriptName,
-                                                             false,
-                                                             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
-            scriptClassBP.setHidden(true);
-            scriptClassBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
-            scriptClassBP.setSession(debugger);
-            scriptClassBP.addJPDABreakpointListener(this);
-            DebuggerManager.getDebuggerManager().addBreakpoint(scriptClassBP);
-        }
-        
-        void initScriptMethodBP() {
-            // script class method breakpoint so that we know when the script class is actually accessed
-            // we can load the source object only after the script class is initialized
-            scriptMethodBP = MethodBreakpoint.create(JSUtils.NASHORN_SCRIPT+scriptName, "");
-            scriptMethodBP.setHidden(true);
-            scriptMethodBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
-            scriptMethodBP.setSession(debugger);
-            scriptMethodBP.addJPDABreakpointListener(this);
-            DebuggerManager.getDebuggerManager().addBreakpoint(scriptMethodBP);
-        }
-        
-        @Override
-        public void breakpointReached(JPDABreakpointEvent event) {
-            if (scriptClassBP == event.getSource()) {
+            if (scriptBP == event.getSource()) {
+                // A new script class is loaded.
                 Variable scriptClass = event.getVariable();
-                if (scriptClass instanceof ClassVariable) {
-                    //JPDAClassType scriptType = ((ClassVariable) scriptClass).getReflectedType();
-                    JPDAClassType scriptType;
-                    try {
-                        scriptType = (JPDAClassType) scriptClass.getClass().getMethod("getReflectedType").invoke(scriptClass);
-                    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-                        scriptType = null;
-                    }
-                    this.clazz = scriptType;
-                    initScriptMethodBP();
+                if (!(scriptClass instanceof ClassVariable)) {
+                    return ;
                 }
-            } else if (scriptMethodBP == event.getSource()) {
+                //JPDAClassType scriptType = ((ClassVariable) scriptClass).getReflectedType();
+                JPDAClassType scriptType;
+                try {
+                    scriptType = (JPDAClassType) scriptClass.getClass().getMethod("getReflectedType").invoke(scriptClass);
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+                    scriptType = null;
+                }
+                if (scriptType != null) {
+                    // script class method breakpoint so that we know when the script class is actually accessed
+                    // we can load the source object only after the script class is initialized
+                    MethodBreakpoint scriptMethodBP = MethodBreakpoint.create(scriptType.getName(), "");
+                    scriptMethodBP.setHidden(true);
+                    scriptMethodBP.setSuspend(EventRequest.SUSPEND_EVENT_THREAD);
+                    scriptMethodBP.setSession(debugger);
+                    scriptMethodBP.addJPDABreakpointListener(this);
+                    DebuggerManager.getDebuggerManager().addBreakpoint(scriptMethodBP);
+                    synchronized (scriptAccessBreakpoints) {
+                        scriptAccessBreakpoints.put(scriptMethodBP, scriptType);
+                    }
+                }
+            } else {
+                // script class is fully set up, let's retrieve the source:
+                MethodBreakpoint scriptMethodBP = (MethodBreakpoint) event.getSource();
                 DebuggerManager.getDebuggerManager().removeBreakpoint(scriptMethodBP);
-                scriptMethodBP = null;
-                createSource();
+                JPDAClassType scriptType;
+                synchronized (scriptAccessBreakpoints) {
+                    scriptType = scriptAccessBreakpoints.remove(scriptMethodBP);
+                }
+                Source source = Source.getSource(scriptType);
+                if (source != null) {
+                    URL url = source.getUrl();
+                    if (url != null) {
+                        URLEquality urleq = new URLEquality(url);
+                        synchronized (sourcesByURL) {
+                            sourcesByURL.put(urleq, source);
+                            //classTypesBySource.put(source, scriptType);
+                        }
+                        createSourceLineBreakpoints(urleq, source);
+                    }
+                }
             }
             event.resume();
         }
         
-        private void createSource() {
-            this.source = Source.getSource(this.clazz);
-            if (source != null) {
-                /*Collection<JSLineBreakpoint> bpts;
-                synchronized (breakpoints) {
-                    bpts = new ArrayList<>(breakpoints);
-                }
-                createSourceLineBreakpoints(bpts);*/
-                createSourceLineBreakpoints(null);
-            }
-            
-        }
-        
-        void addBreakpoints(JSLineBreakpoint jslb) {
-            /*synchronized (breakpoints) {
-                breakpoints.addAll(jslbs);
-            }*/
-            if (source != null) {
-                createSourceLineBreakpoints(jslb);
-            }
-        }
-        
         /**
-         * @param jslb the added breakpoint, or <code>null</code> to consider all available breakpoints
+         * @param jslb the added breakpoint
          */
-        private void createSourceLineBreakpoints(JSLineBreakpoint jslb) {
+        private void createSourceLineBreakpoints(JSLineBreakpoint jslb, Source source) {
             URL url = source.getUrl();
             if (url == null) {
                 return ;
             }
             URLEquality urle = new URLEquality(url);
-            if (jslb == null) {
-                Set<JSLineBreakpoint> bpts;
-                synchronized (breakpointsByURL) {
-                    bpts = breakpointsByURL.get(urle);
-                    if (bpts != null) {
-                        bpts = new HashSet<>(bpts);
-                    }
+            URLEquality bpurle = new URLEquality(jslb.getURL());
+            if (urle.equals(bpurle)) {
+                LineBreakpointHandler lbh = new LineBreakpointHandler(debugger, jslb, source);
+                synchronized (lineBreakpointHandlers) {
+                    lineBreakpointHandlers.put(jslb, lbh);
                 }
+            }
+        }
+        
+        /**
+         * @param urle consider all available breakpoints at this location
+         */
+        private void createSourceLineBreakpoints(URLEquality urle, Source source) {
+            URL url = source.getUrl();
+            if (url == null) {
+                return ;
+            }
+            Set<JSLineBreakpoint> bpts;
+            synchronized (breakpointsByURL) {
+                bpts = breakpointsByURL.get(urle);
                 if (bpts != null) {
-                    for (JSLineBreakpoint bp : bpts) {
-                        URLEquality bpurle = new URLEquality(bp.getURL());
-                        if (urle.equals(bpurle)) {
-                            LineBreakpointHandler lbh = new LineBreakpointHandler(debugger, bp, source);
-                            synchronized (lineBreakpointHandlers) {
-                                lineBreakpointHandlers.put(bp, lbh);
-                            }
-                        }
-                    }
+                    bpts = new HashSet<>(bpts);
                 }
-            } else {
-                URLEquality bpurle = new URLEquality(jslb.getURL());
-                if (urle.equals(bpurle)) {
-                    LineBreakpointHandler lbh = new LineBreakpointHandler(debugger, jslb, source);
-                    synchronized (lineBreakpointHandlers) {
-                        lineBreakpointHandlers.put(jslb, lbh);
+            }
+            if (bpts != null) {
+                for (JSLineBreakpoint bp : bpts) {
+                    URLEquality bpurle = new URLEquality(bp.getURL());
+                    if (urle.equals(bpurle)) {
+                        LineBreakpointHandler lbh = new LineBreakpointHandler(debugger, bp, source);
+                        synchronized (lineBreakpointHandlers) {
+                            lineBreakpointHandlers.put(bp, lbh);
+                        }
                     }
                 }
             }
         }
         
-        void removeLineBreakpoint(JSLineBreakpoint jslb) {
+        void removeBreakpoint(JSLineBreakpoint jslb) {
             LineBreakpointHandler lbh;
             synchronized (lineBreakpointHandlers) {
                 lbh = lineBreakpointHandlers.remove(jslb);
@@ -467,11 +326,16 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         }
         
         void destroy() {
-            if (scriptClassBP != null) {
-                DebuggerManager.getDebuggerManager().removeBreakpoint(scriptClassBP);
+            Set<MethodBreakpoint> mbs;
+            synchronized (scriptAccessBreakpoints) {
+                mbs = new HashSet<>(scriptAccessBreakpoints.keySet());
+                scriptAccessBreakpoints.clear();
             }
-            if (scriptMethodBP != null) {
-                DebuggerManager.getDebuggerManager().removeBreakpoint(scriptMethodBP);
+            for (MethodBreakpoint mb : mbs) {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(mb);
+            }
+            synchronized (sourcesByURL) {
+                sourcesByURL.clear();
             }
             synchronized (lineBreakpointHandlers) {
                 for (LineBreakpointHandler lbh : lineBreakpointHandlers.values()) {
@@ -480,6 +344,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 lineBreakpointHandlers.clear();
             }
         }
+
     }
     
     private static final class LineBreakpointHandler {
@@ -502,7 +367,8 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             lineNo += source.getContentLineShift();
             LineBreakpoint lb = LineBreakpoint.create("", lineNo);
             lb.setHidden(true);
-            lb.setPreferredClassName(source.getClassName());
+            //lb.setPreferredClassType(source.getClassType());
+            setPreferredClassType(lb, source.getClassType());
             lb.setSuspend(JPDABreakpoint.SUSPEND_EVENT_THREAD);
             lb.setSession(debugger);
             return lb;
@@ -510,6 +376,18 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
         
         void destroy() {
             DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+        }
+        
+        private void setPreferredClassType(LineBreakpoint lb, JPDAClassType classType) {
+            try {
+                Method setPreferredClassTypeMethod = lb.getClass().getMethod("setPreferredClassType", JPDAClassType.class);
+                setPreferredClassTypeMethod.setAccessible(true);
+                setPreferredClassTypeMethod.invoke(lb, classType);
+            } catch (NoSuchMethodException | SecurityException |
+                     IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+                lb.setPreferredClassName(source.getClassType().getName());
+            }
         }
     }
     

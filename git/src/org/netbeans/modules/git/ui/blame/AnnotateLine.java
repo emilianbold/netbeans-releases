@@ -169,7 +169,7 @@ public class AnnotateLine {
                 shortened = author.toString();
                 if (shortened.length() > 10) {
                     pos = shortened.indexOf(' ', 7);
-                    if (pos <= 10) {
+                    if (pos > 0 && pos <= 10) {
                         shortened = shortened.substring(0, pos);
                     }
                 }

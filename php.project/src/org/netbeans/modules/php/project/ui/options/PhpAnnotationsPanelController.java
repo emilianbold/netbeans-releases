@@ -89,6 +89,12 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
         LOGGER.log(Level.INFO, "Resolving of deprecated PHP elements: {0}", resolveDeprecatedElements);
         PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(resolveDeprecatedElements);
     }
+    
+    @Override
+    protected boolean areOptionsChanged() {
+        return PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements() != panel.isResolveDeprecatedElements()
+                || !UserAnnotations.getInstance().getAnnotations().equals(panel.getAnnotations());
+    }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {

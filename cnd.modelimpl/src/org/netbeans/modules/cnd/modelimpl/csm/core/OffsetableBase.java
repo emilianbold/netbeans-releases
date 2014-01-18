@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
+import org.netbeans.modules.cnd.modelimpl.parser.OffsetableFakeAST;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -114,7 +116,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     
     public static int getStartOffset(AST node) {
         if( node != null ) {
-            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
+            OffsetableAST csmAst = AstUtil.getFirstOffsetableAST(node);
             if( csmAst != null ) {
                 return csmAst.getOffset();
             }
@@ -125,14 +127,14 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     public static int getEndOffset(AST node) {
         if( node != null ) {
             AST lastChild = AstUtil.getLastChildRecursively(node);
-            if(lastChild.getType() != Token.EOF_TYPE && lastChild instanceof CsmAST) {
-                return ((CsmAST) lastChild).getEndOffset();
+            if(lastChild.getType() != Token.EOF_TYPE && lastChild instanceof OffsetableAST) {
+                return ((OffsetableAST) lastChild).getEndOffset();
             } else {
                 // #error directive broke parsing
                 // end offset should not be < start one
                 lastChild = AstUtil.getLastNonEOFChildRecursively(node);
-                if( lastChild instanceof CsmAST ) {
-                    return ((CsmAST) lastChild).getEndOffset();
+                if( lastChild instanceof OffsetableAST ) {
+                    return ((OffsetableAST) lastChild).getEndOffset();
                 }
             }
         }

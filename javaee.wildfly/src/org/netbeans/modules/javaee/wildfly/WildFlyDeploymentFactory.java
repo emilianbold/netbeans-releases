@@ -143,7 +143,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
         WildFlyClassLoader cl = classLoaderCache.get(ip);
         if (cl == null) {
             DeploymentFactory factory = factoryCache.get(ip);
-            if (factory != null) {
+            if (factory != null && factory.getClass().getClassLoader() instanceof WildFlyClassLoader) {
                 cl = (WildFlyClassLoader) factory.getClass().getClassLoader();
             }
             if (cl == null) {

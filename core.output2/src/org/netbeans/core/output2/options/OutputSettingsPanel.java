@@ -611,7 +611,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!evt.getPropertyName().equals(OutputOptions.PROP_INITIALIZED)
                         && outputOptions.isInitialized()) {
-                    controller.changed();
+                    controller.changed(outputOptions.isChanged());
                 }
                 updateControlsByModel();
             }

@@ -19,18 +19,20 @@ import org.openide.util.NbBundle;
 class InnerTabsPanel extends javax.swing.JPanel {
 
     private final SettingsImpl settings = new SettingsImpl();
+    private final MultiTabsOptionsPanelController controller;
 
     /**
      * Creates new form InnerTabsPanel
      */
     public InnerTabsPanel(final MultiTabsOptionsPanelController controller) {
+        this.controller = controller;
         initComponents();
 
         ItemListener listener = new ItemListener() {
 
             @Override
             public void itemStateChanged( ItemEvent e ) {
-                controller.changed();
+                fireChanged();
                 enableControls();
             }
         };
@@ -50,7 +52,7 @@ class InnerTabsPanel extends javax.swing.JPanel {
 
             @Override
             public void stateChanged( ChangeEvent e ) {
-                controller.changed();
+                fireChanged();
             }
         });
     }
@@ -204,6 +206,38 @@ class InnerTabsPanel extends javax.swing.JPanel {
     javax.swing.JSpinner spinRowCount;
     // End of variables declaration//GEN-END:variables
 
+    private void fireChanged() {
+        boolean isChanged = false;
+        if (checkShowFolderName.isSelected() != settings.isShowFolderName()
+                || checkShowFullPath.isSelected() != settings.isShowFullPath()
+                || checkProjectColors.isSelected() != settings.isSameProjectSameColor()
+                || checkSortDocumentList.isSelected() != settings.isSortDocumentListByProject()) {
+            isChanged = true;
+        }
+        
+        int rowCount = settings.getRowCount();
+        if (checkMultiRow.isSelected() && radioRowCount.isSelected()) {
+            rowCount = ((Number) spinRowCount.getValue()).intValue();
+        }
+        if (checkMultiRow.isSelected() != (rowCount > 1 || settings.isTabRowPerProject())) {
+            isChanged = true;
+        }
+        if (rowCount != settings.getRowCount()) {
+            isChanged = true;
+        }
+        if (radioRowPerProject.isSelected() != settings.isTabRowPerProject()) {
+            isChanged = true;
+        }
+        
+        if(radioPlacementBottom.isSelected() && settings.getTabsLocation() != JTabbedPane.BOTTOM
+                || radioPlacementLeft.isSelected() && settings.getTabsLocation() != JTabbedPane.LEFT
+                || radioPlacementRight.isSelected() && settings.getTabsLocation() != JTabbedPane.RIGHT
+                || radioPlacementTop.isSelected() && settings.getTabsLocation() != JTabbedPane.TOP) {
+            isChanged = true;
+        }
+        controller.changed(null, isChanged);
+    }
+    
     void load() {
         ProjectSupport projectSupport = ProjectSupport.getDefault();
         switch( settings.getTabsLocation() ) {

@@ -1107,7 +1107,7 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ELLIPSIS, "...");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOLLAR, "$");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "$");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.AT, "@");
 

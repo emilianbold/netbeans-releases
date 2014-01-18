@@ -58,10 +58,7 @@ public class AndroidUpdateTask extends CordovaTask {
                 getProject().getBaseDir().getAbsolutePath() + 
                 "/" + getProperty("cordova.platforms") + 
                 "/android/AndroidManifest.xml"); // NOI18N
-        File configFile = new File(
-                getProject().getBaseDir().getAbsolutePath() + 
-                "/" + getProperty("site.root") + 
-                "/config.xml"); // NOI18N
+        File configFile = getConfigFile();
         File androidConfigFile = new File(
                 getProject().getBaseDir().getAbsolutePath() + 
                 "/" + getProperty("cordova.platforms") + 

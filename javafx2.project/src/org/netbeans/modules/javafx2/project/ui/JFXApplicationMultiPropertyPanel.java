@@ -47,6 +47,7 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
+import java.awt.FontMetrics;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -79,6 +80,8 @@ public class JFXApplicationMultiPropertyPanel extends javax.swing.JPanel impleme
         updateRemoveButton();
         updateDefaultButtonLabel();
         updateDefaultButtonState();
+        FontMetrics fm = tableMultiProperties.getFontMetrics(tableMultiProperties.getFont());
+        tableMultiProperties.setRowHeight(fm.getHeight() + 5);
     }
     
     public void setTableTitle(String label) {

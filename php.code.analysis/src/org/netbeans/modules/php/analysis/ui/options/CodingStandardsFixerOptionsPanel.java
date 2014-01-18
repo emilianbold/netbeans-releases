@@ -43,6 +43,8 @@
 package org.netbeans.modules.php.analysis.ui.options;
 
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -91,6 +93,15 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
 
         // listeners
         codingStandardsFixerTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        codingStandardsFixerOptionsTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        ActionListener defaultAL = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fireChange();
+            }
+        };
+        codingStandardsFixerLevelComboBox.addActionListener(defaultAL);
+        codingStandardsFixerConfigComboBox.addActionListener(defaultAL);
     }
 
     public String getCodingStandardsFixerPath() {
@@ -156,6 +167,28 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         analysisOptions.setCodingStandardsFixerLevel(getCodingStandardsFixerLevel());
         analysisOptions.setCodingStandardsFixerConfig(getCodingStandardsFixerConfig());
         analysisOptions.setCodingStandardsFixerOptions(getCodingStandardsFixerOptions());
+    }
+    
+    @Override
+    public boolean isChanged() {
+        String saved = AnalysisOptions.getInstance().getCodingStandardsFixerPath();
+        String current = getCodingStandardsFixerPath().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = AnalysisOptions.getInstance().getCodingStandardsFixerLevel();
+        current = getCodingStandardsFixerLevel();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = AnalysisOptions.getInstance().getCodingStandardsFixerConfig();
+        current = getCodingStandardsFixerConfig();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = AnalysisOptions.getInstance().getCodingStandardsFixerOptions();
+        current = getCodingStandardsFixerOptions();
+        return !saved.equals(current);
     }
 
     @Override

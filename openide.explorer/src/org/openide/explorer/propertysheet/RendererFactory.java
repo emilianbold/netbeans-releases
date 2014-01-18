@@ -111,6 +111,12 @@ import org.openide.util.WeakListeners;
  * @author  Tim Boudreau
  */
 final class RendererFactory {
+    
+    /**
+     * Do not try to support huge strings (longer than this constant) as HTML.
+     * Unfortunately, this is a hidden constant from the client's point of view.
+     */
+    private static final int MAX_HTML_LENGTH = 1048576;
 
     private StringRenderer stringRenderer;
     private CheckboxRenderer checkboxRenderer;
@@ -787,8 +793,8 @@ final class RendererFactory {
                 }
 
                 if (htmlValueUsed) {
-                    // > 1024 = huge strings - don't try to support this as html
-                    ((HtmlRenderer.Renderer) lbl).setHtml(text.length() < 1024);
+                    // > MAX_HTML_LENGTH = huge strings - don't try to support this as html
+                    ((HtmlRenderer.Renderer) lbl).setHtml(text.length() <= MAX_HTML_LENGTH);
                 }
 
                 lbl.setFont(getFont());

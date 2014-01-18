@@ -310,7 +310,7 @@ public class JBPluginUtils {
             Version version = getServerVersion(serverDirectory);            
             File file;
             String[] files;
-            if("7".equals(version.getMajorNumber())) {
+            if(version != null && "7".equals(version.getMajorNumber())) {
                 files = new String[]{"standalone", "domain"};
                 file = serverDirectory;
             } else {

@@ -87,6 +87,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 
 
 /**
@@ -380,8 +381,6 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
     }
 
     void update() {
-        getMutableModel().refreshActions();
-
         //do not remember search state
         getModel().setSearchText(""); //NOI18N
         searchSCField.setText("");
@@ -390,18 +389,29 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
         //setup profiles
         refreshProfileCombo ();
+        
+        class I implements Runnable, TaskListener {
+            int stage;
+            
+            public void run() {
+                if (stage > 0) {
+                    ((CardLayout)actionsView.getLayout()).show(actionsView, "actions"); // NOI18N
+                } else {
+                    getMutableModel().refreshActions();
+                    Task t = getModel().postUpdate();
+                    t.addTaskListener(this);
+                }
+            }
+            
+            @Override
+            public void taskFinished(Task t) {
+                stage++;
+                SwingUtilities.invokeLater(this);
+            } 
+        }
 
         //update model
-        Task t = getModel().postUpdate();
-        t.addTaskListener(new TaskListener() {
-           public void taskFinished(Task t) {
-               SwingUtilities.invokeLater(new Runnable() {
-                   public void run() {
-                       ((CardLayout)actionsView.getLayout()).show(actionsView, "actions"); // NOI18N
-                   }
-               });
-           } 
-        });
+        KeymapModel.RP.post(new I());
     }
 
     //controller method end
@@ -662,6 +672,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         JComponent tf = (JComponent) evt.getSource();
         Point p = new Point(tf.getX(), tf.getY());
         SwingUtilities.convertPointToScreen(p, this);
+        Rectangle usableScreenBounds = Utilities.getUsableScreenBounds();
+        if (p.x + specialkeyList.getWidth() > usableScreenBounds.width) {
+            p.x = usableScreenBounds.width - specialkeyList.getWidth();
+        }
+        if (p.y + specialkeyList.getHeight() > usableScreenBounds.height) {
+            p.y = usableScreenBounds.height - specialkeyList.getHeight();
+        }
         //show special key popup
         searchPopup = PopupFactory.getSharedInstance().getPopup(this, specialkeyList, p.x, p.y);
         searchPopup.show();

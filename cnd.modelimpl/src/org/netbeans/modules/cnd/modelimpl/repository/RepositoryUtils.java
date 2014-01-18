@@ -78,7 +78,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static final int CURRENT_VERSION_OF_PERSISTENCY = 158;
+    private static final int CURRENT_VERSION_OF_PERSISTENCY = 160;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
@@ -257,9 +257,9 @@ public final class RepositoryUtils {
     }
 
     public static void startup() {
-        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
         Repository.addRepositoryExceptionListener(getRepositoryListenerProxy());
-        Repository.registerRepositoryListener(getRepositoryListenerProxy());
+        Repository.registerRepositoryListener(getRepositoryListenerProxy());        
+        Repository.startup(CURRENT_VERSION_OF_PERSISTENCY);
     }
 
     private static RepositoryListenerProxy myRepositoryListenerProxy;
