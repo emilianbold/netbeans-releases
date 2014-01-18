@@ -2308,7 +2308,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             public void actionPerformed(ActionEvent e) {
                 MiCommandImpl cmd = new DeleteMIVarCommand(watch);
                 cmd.dontReportError();
-                sendCommandInt(cmd);
+                if (session() != null) {
+                    sendCommandInt(cmd);
+                }
             }
         };
         
