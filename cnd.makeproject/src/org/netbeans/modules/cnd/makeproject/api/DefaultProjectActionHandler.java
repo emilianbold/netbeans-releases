@@ -325,7 +325,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         }
         
         if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
-            actionType == ProjectActionEvent.PredefinedType.BUILD ||
             actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }

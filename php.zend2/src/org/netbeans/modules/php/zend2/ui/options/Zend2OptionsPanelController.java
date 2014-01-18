@@ -80,7 +80,9 @@ public class Zend2OptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public void update() {
-        zend2OptionsPanel.setSkeleton(getOptions().getSkeleton());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            zend2OptionsPanel.setSkeleton(getOptions().getSkeleton());
+        }
 
         changed = false;
     }
@@ -94,6 +96,9 @@ public class Zend2OptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            zend2OptionsPanel.setSkeleton(getOptions().getSkeleton());
+        }
     }
 
     @Override
@@ -126,7 +131,9 @@ public class Zend2OptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getSkeleton();
+        String current = zend2OptionsPanel.getSkeleton().trim();
+        return (saved == null ? !current.isEmpty() : !saved.equals(current));
     }
 
     @Override

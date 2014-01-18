@@ -827,15 +827,16 @@ public class Reformatter implements ReformatTask {
                                     semiRead = false;
                                     continue;
                                 }
-                                if (!first)
-                                   blankLines(cs.getBlankLinesBeforeMethods());
-                                int index = tokens.index();
-                                int c = col;
-                                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                                if (accept(SEMICOLON) == SEMICOLON) {
-                                    continue;
-                                } else {
-                                    rollback(index, c, d);
+                                if (!first) {
+                                    blankLines(cs.getBlankLinesBeforeMethods());
+                                    int index = tokens.index();
+                                    int c = col;
+                                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                                    if (accept(SEMICOLON) == SEMICOLON) {
+                                        continue;
+                                    } else {
+                                        rollback(index, c, d);
+                                    }
                                 }
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
@@ -847,9 +848,9 @@ public class Reformatter implements ReformatTask {
                                 if (!first)
                                     blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
-                                index = tokens.index();
-                                c = col;
-                                d = diffs.isEmpty() ? null : diffs.getFirst();
+                                int index = tokens.index();
+                                int c = col;
+                                Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                                 if (accept(SEMICOLON) == SEMICOLON) {
                                     semiRead = true;
                                 } else {

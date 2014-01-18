@@ -48,6 +48,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -67,6 +77,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ResolverContext;
@@ -74,12 +85,14 @@ import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
+import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -106,10 +119,10 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     private static final VariableInfo VARIABLE_INFO__RENDERED = VariableInfo.createResolvedVariable(ATTR_NAME__RENDERED, Object.class.getName());
     
     @Override
-    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+    public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
         for (FacesManagedBean bean : getJsfManagedBeans(target, context)) {
             if (beanName.equals(bean.getManagedBeanName())) {
-                return bean.getManagedBeanClass();
+                return new FieldInfo(bean.getManagedBeanClass());
             }
         }
         return null;
@@ -167,6 +180,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
             variables.add(VARIABLE_INFO__ID);
             variables.add(VARIABLE_INFO__RENDERED);
             variables.add(VARIABLE_INFO__ATTRS);
+            proposeFromComponentType(snapshot, context, variables);
         } else if (ATTR_NAME__ATTRS.equals(objectName)) { //NOI18N
             variables.add(VARIABLE_INFO__ID);
             variables.add(VARIABLE_INFO__RENDERED);
@@ -311,6 +325,112 @@ public final class JsfELVariableResolver implements ELVariableResolver {
             Exceptions.printStackTrace(ex);
         }
         return result;
+    }
+
+    private static void proposeFromComponentType(final Snapshot snapshot, ResolverContext context, final List<VariableInfo> variables) {
+        try {
+            ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result parseResult = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    if (parseResult instanceof HtmlParserResult) {
+                        HtmlParserResult result = (HtmlParserResult) parseResult;
+                        Node root = result.root(DefaultLibraryInfo.COMPOSITE.getNamespace());
+                        if (root.children().isEmpty()) root = result.root(DefaultLibraryInfo.COMPOSITE.getLegacyNamespace());
+                        Collection<Element> children = root.children(ElementType.OPEN_TAG);
+                        for (Element child : children) {
+                            OpenTag ot = (OpenTag) child;
+                            if ("interface".equals(ot.unqualifiedName())) { //NOI18N
+                                final Attribute attribute = ot.getAttribute("componentType"); //NOI18N
+                                if (attribute != null) {
+                                    JavaSource js = JavaSource.create(ClasspathInfo.create(snapshot.getSource().getFileObject()));
+                                    if (js != null) {
+                                        js.runUserActionTask(new Task<CompilationController>() {
+                                            @Override
+                                            public void run(CompilationController parameter) throws Exception {
+                                                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                                                TypeElement element = parameter.getElements().getTypeElement(attribute.unquotedValue());
+                                                if (element != null) {
+                                                    proposeJavaMethodsForElements(parameter, element, variables);
+                                                }
+                                            }
+                                        }, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (ParseException e) {
+            Exceptions.printStackTrace(e);
+        }
+    }
+
+    private static void proposeJavaMethodsForElements(CompilationController info, javax.lang.model.element.Element element, List<VariableInfo> variables) {
+        for (ExecutableElement enclosed : ElementFilter.methodsIn(element.getEnclosedElements())) {
+            //do not propose Object's members
+            if(element.getSimpleName().contentEquals("Object")) { //NOI18N
+                //XXX not an ideal non-fqn check
+                continue;
+            }
+
+            if (!enclosed.getModifiers().contains(Modifier.PUBLIC) ||
+                    enclosed.getModifiers().contains(Modifier.STATIC)) {
+                continue;
+            }
+            boolean hasParameters = !enclosed.getParameters().isEmpty();
+
+            String methodName = enclosed.getSimpleName().toString();
+            String propertyName = getPropertyName(methodName, enclosed.getReturnType(), true);
+            if (hasParameters) {
+                propertyName = methodName;
+            }
+            variables.add(VariableInfo.createResolvedVariable(propertyName, enclosed.getReturnType().toString()));
+        }
+    }
+
+    public static String getPropertyName(String accessor, TypeMirror returnType, boolean includeSetter) {
+        Parameters.notEmpty("accessor", accessor); //NO18N
+        int prefixLength = getPrefixLength(accessor, includeSetter);
+        String withoutPrefix = accessor.substring(prefixLength);
+        if (withoutPrefix.isEmpty()) { // method name is simply is/get/set
+            return accessor;
+        }
+        char firstChar = withoutPrefix.charAt(0);
+
+        if (!Character.isUpperCase(firstChar)) {
+            return accessor;
+        }
+
+        //method property which is prefixed by 'is' but doesn't return boolean
+        if (returnType != null && accessor.startsWith("is") && returnType.getKind() != TypeKind.BOOLEAN) { //NOI18N
+            return accessor;
+        }
+
+        //check the second char, if its also uppercase, the property name must be preserved
+        if(withoutPrefix.length() > 1 && Character.isUpperCase(withoutPrefix.charAt(1))) {
+            return withoutPrefix;
+        }
+
+        return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
+    }
+
+    private static int getPrefixLength(String accessor, boolean includeSetter) {
+        List<String> accessorPrefixes = new ArrayList<>();
+        accessorPrefixes.add("get");
+        if (includeSetter) {
+            accessorPrefixes.add("set");
+        }
+        accessorPrefixes.add("is");
+
+        for (String prefix : accessorPrefixes) {
+            if (accessor.startsWith(prefix)) {
+                return prefix.length();
+            }
+        }
+        return 0;
     }
 
     private static class ParamDefinedManagedBean implements FacesManagedBean {

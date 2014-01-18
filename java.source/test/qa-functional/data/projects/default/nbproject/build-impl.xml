@@ -80,9 +80,12 @@ is divided into following sections:
             </and>
         </condition>
         <condition property="do.archive">
-            <not>
-                <istrue value="${jar.archive.disabled}"/>
-            </not>
+            <or>
+                <not>
+                    <istrue value="${jar.archive.disabled}"/>
+                </not>
+                <istrue value="${not.archive.disabled}"/>
+            </or>
         </condition>
         <condition property="do.mkdist">
             <and>

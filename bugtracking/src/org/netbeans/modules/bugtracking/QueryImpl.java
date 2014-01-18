@@ -92,13 +92,6 @@ public final class QueryImpl<Q, I>  {
         return issueContainer.getIssues();
     }
 
-    /**
-     * @param query
-     */
-    public static void openNew(RepositoryImpl repository) {
-        QueryAction.createNewQuery(repository);
-    }
-    
     public void open(QueryController.QueryMode mode) {
         QueryAction.openQuery(this, repository, mode);
     }

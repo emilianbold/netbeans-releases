@@ -170,6 +170,7 @@ public final class AddModulePanel extends JPanel {
 
     private AddModulePanel(final SingleModuleProperties props, String initialString) {
         this.props = props;
+        this.selectedDeps = new HashSet<ModuleDependency>();
         initComponents();
         initAccessibility();
         filterValue.setText(initialString);
@@ -234,7 +235,9 @@ public final class AddModulePanel extends JPanel {
                     public void run() {
                         EventQueue.invokeLater(new Runnable() {
                             public void run() {
-                                moduleList.setModel(CustomizerComponentFactory.createSortedDependencyListModel(selectedDeps));
+                                synchronized (IMPL_LOCK) {
+                                    moduleList.setModel(CustomizerComponentFactory.createSortedDependencyListModel(selectedDeps));
+                                }
                                 moduleList.setEnabled(true);
                                 filterValue.setEnabled(true);
                                 showNonAPIModules.setEnabled(true);

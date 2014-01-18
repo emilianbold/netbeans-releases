@@ -279,7 +279,8 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         }
         final JPanel expanded = new Expanded(new BorderLayout());
         expanded.setBorder(new LineBorder(Color.BLACK, 1));
-        expanded.add(new ListView() {
+        
+        final ListView listView = new ListView() {
             {
                 int nodesCount = what.getChildren().getNodesCount();
                 
@@ -302,7 +303,9 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
                     }
                 }
             }
-        }, BorderLayout.CENTER);
+        };
+        listView.setPopupAllowed(false);
+        expanded.add(listView, BorderLayout.CENTER);
         expandManager.setRootContext(what);
         
         Point place = new Point(startX, 0);

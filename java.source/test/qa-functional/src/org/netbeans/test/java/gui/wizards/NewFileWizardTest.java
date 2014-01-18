@@ -362,9 +362,8 @@ public class NewFileWizardTest extends JavaTestCase {
     }
     
     public void testExistingName() {
-        String expected = "";
-        createAndVerify("MyMain" , "Java Class",
-                Common.unify(expected),false);
+        createFile("TestExisting", "Java Class", true);
+        createAndVerify("TestExisting" , "Java Class", "",false);
     }
     
     private void createIfNotOpened(String projName,String packName) {
@@ -401,34 +400,7 @@ public class NewFileWizardTest extends JavaTestCase {
      * @param shouldPass Indicated it there is expected error in the wizard
      */
     private void createAndVerify(String name, String type, String expectedContent, boolean shouldPass) {
-        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
-        // select project node
-        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
-        pn.select();
-        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString(
-                "org.netbeans.modules.java.j2seproject.Bundle",
-                "NAME_src.dir")+"|"+TEST_PACKAGE_NAME);
-        n.select();
-        // create test class
-        NewFileWizardOperator op = NewFileWizardOperator.invoke();
-        
-        op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes"));
-        op.selectFileType(type);
-        op.next();
-        JTextFieldOperator tf = new JTextFieldOperator(op);
-        tf.setText(name);
-        if(!shouldPass) {
-            Utilities.takeANap(1000);
-            JButtonOperator jbo = new JButtonOperator(op,"Finish");
-            assertFalse("Finish button should be disabled", jbo.isEnabled());
-            // closing wizard
-            new NbDialogOperator(Bundle.getString(
-                    "org.netbeans.modules.project.ui.Bundle",
-                    "LBL_NewProjectWizard_Subtitle")+" "
-                    +type).cancel();
-            return;
-        }
-        op.finish();
+        if(createFile(type, name, shouldPass)) return;
         // check generated source
         EditorOperator editor = null;
         try {
@@ -442,6 +414,44 @@ public class NewFileWizardTest extends JavaTestCase {
         }
         
         
+    }
+
+    /**
+     * Creates new file
+     * @param type Type of new file
+     * @param name Name of new file
+     * @param shouldPass Indicated it there is expected error in the wizard
+     * @return True is file was created successfully 
+     */
+    private boolean createFile(String type, String name, boolean shouldPass) {
+        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
+        // select project node
+        Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
+        pn.select();
+        Node n = new Node(pn, org.netbeans.jellytools.Bundle.getString(
+                "org.netbeans.modules.java.j2seproject.Bundle",
+                "NAME_src.dir")+"|"+TEST_PACKAGE_NAME);
+        n.select();
+        // create test class
+        NewFileWizardOperator op = NewFileWizardOperator.invoke();
+        op.selectCategory(Bundle.getString(JAVA_BUNDLE_PATH,"Templates/Classes"));
+        op.selectFileType(type);
+        op.next();
+        JTextFieldOperator tf = new JTextFieldOperator(op);
+        tf.setText(name);
+        if (!shouldPass) {
+            Utilities.takeANap(1000);
+            JButtonOperator jbo = new JButtonOperator(op,"Finish");
+            assertFalse("Finish button should be disabled", jbo.isEnabled());
+            // closing wizard
+            new NbDialogOperator(Bundle.getString(
+                    "org.netbeans.modules.project.ui.Bundle",
+                    "LBL_NewProjectWizard_Subtitle")+" "
+                    +type).cancel();
+            return true;
+        }
+        op.finish();
+        return false;
     }
     
     /**

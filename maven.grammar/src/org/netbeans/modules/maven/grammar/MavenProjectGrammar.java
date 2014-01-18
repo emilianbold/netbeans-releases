@@ -310,6 +310,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
 
     private List<GrammarResult> collectPluginParams(ArtifactInfoHolder info, HintContext hintCtx) {
         Set<PluginIndexManager.ParameterDetail> params;
+        if (info.getGroupId() == null || info.getArtifactId() == null || info.getVersion() == null) {
+            return null; //PluginIndexManager.getPluginParameters() asserts all coordinates are set
+        }
         try {
             params = PluginIndexManager.getPluginParameters(info.getGroupId(), info.getArtifactId(), info.getVersion(), null);
             if (params == null) {

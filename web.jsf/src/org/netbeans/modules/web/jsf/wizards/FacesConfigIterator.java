@@ -89,6 +89,8 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
@@ -107,7 +109,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     private static final String defaultName = "faces-config";   //NOI18N
     private static final String FACES_CONFIG_PARAM = "javax.faces.CONFIG_FILES";    //NOI18N
     private static final String INIT_PARAM = "InitParam";  //NOI18N
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static String RESOURCE_FOLDER = "/org/netbeans/modules/web/jsf/resources/"; //NOI18N
 
     private int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -143,10 +145,9 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             }
 
             final String facesConfigTemplate = findFacesConfigTemplate(wm);
-            final String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
-
-            result = FileUtil.createData(targetDir, targetName + ".xml"); //NOI18N
-            JSFFrameworkProvider.createFile(result, content, "UTF-8"); //NOI18N
+            FileObject fcTemplate = URLMapper.findFileObject(FacesConfigIterator.class.getResource(RESOURCE_FOLDER + facesConfigTemplate));
+            DataObject fc = DataObject.find(fcTemplate);
+            result = fc.createFromTemplate(DataFolder.findFolder(targetDir), targetName).getPrimaryFile(); //NOI18N
 
             FileObject dd = wm.getDeploymentDescriptor();
 //            assert dd != null;

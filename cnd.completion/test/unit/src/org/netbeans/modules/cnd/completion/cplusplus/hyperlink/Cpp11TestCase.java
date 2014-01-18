@@ -296,5 +296,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug238913.cpp", 23, 17, "bug238913.cpp", 4, 9);
         performTest("bug238913.cpp", 26, 13, "bug238913.cpp", 4, 9);
         performTest("bug238913.cpp", 29, 13, "bug238913.cpp", 4, 9);
+        performTest("bug238913.cpp", 33, 15, "bug238913.cpp", 33, 7);
     }
+    
+    public void testBug238847_2() throws Exception {
+        // Bug 238913 - Unable to deduce type through uniqe_ptr and decltype
+        performTest("bug238847_2.cpp", 16, 15, "bug238847_2.cpp", 4, 9);
+    }    
 }

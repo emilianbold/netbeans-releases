@@ -197,7 +197,8 @@ public class RevertModificationsAction extends ContextAction {
                 public Void call () throws HgException {
                     HgCommand.doRevert(repository, revertFiles, revStr, doBackup, logger);
                     if (removeNewFiles) {
-                        HgCommand.doPurge(repository, revertFiles, logger);
+                        // must exclude nonsharable files/folders purge deletes them because they appear new to hg
+                        HgCommand.doPurge(repository, revertFiles, HgUtils.getNotSharablePaths(repository, revertFiles), logger);
                     }
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);

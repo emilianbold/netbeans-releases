@@ -2038,6 +2038,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public boolean okToChange() {
         int previousVersion = getVersion();
+        if (previousVersion == -1) {
+            return true;
+        }
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
         if (previousVersion < currentVersion) {
             String txt = getString("UPGRADE_TXT"); //NOI18N

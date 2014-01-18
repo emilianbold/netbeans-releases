@@ -296,6 +296,10 @@ public final class CustomizerSelector {
         public void cancel() {
             controller.cancel();
         }
+
+        boolean isChanged() {
+            return controller.isChanged();
+        }
     } // End of WrapperCustomizer class
 
     private static final class WrapperCustomizerWithPreview extends WrapperCustomizer implements PreviewProvider {

@@ -184,13 +184,14 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 documentName = baseName;
             }
             if (preselectedFolder != null) {
+                String documentNameBase = documentName;
                 int index = 0;
                 while (true) {
                     FileObject _tmp = preselectedFolder.getFileObject(documentName, template.getExt());
                     if (_tmp == null) {
                         break;
                     }
-                    documentName = baseName + ++index;
+                    documentName = documentNameBase + ++index;
                 }
             }
                 

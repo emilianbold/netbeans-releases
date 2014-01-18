@@ -81,7 +81,7 @@ public class BrowserCustomizer implements ProjectConfigurationCustomizer {
 
     @Override
     public EnumSet<HiddenProperties> getHiddenProperties() {
-        return EnumSet.of(HiddenProperties.WEB_SERVER);
+        return EnumSet.noneOf(HiddenProperties.class);
     }
 
 }

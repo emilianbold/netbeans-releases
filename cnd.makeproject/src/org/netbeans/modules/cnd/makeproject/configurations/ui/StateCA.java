@@ -46,8 +46,6 @@ import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -56,33 +54,35 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public enum StateCA {
-    CompilationUnit, ExtraSource, Header, Excluded;
+    ParsedSource, ExtraParsedSource, ParsedOrphanHeader, IncludedHeader, ExcludedSource, ExcludedHeader, NotYetParsed;
 
     public static StateCA getState(Configuration configuration, Item item, ItemConfiguration itemConfiguration) {
-        if (itemConfiguration.getExcluded().getValue()) {
-            if (configuration instanceof MakeConfiguration) {
-                MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
-                if (makeConfiguration.getCodeAssistanceConfiguration().getIncludeInCA().getValue()) {
-                    if (MIMENames.isFortranOrHeaderOrCppOrC(item.getMIMEType())) {
-                        return ExtraSource;
-                    }
-                }
-            }
-            if (isIncluded(item)) {
-                return Header;
-            }
-            return Excluded;
-        } else {
-            return CompilationUnit;
+        boolean source = itemConfiguration.isCompilerToolConfiguration();
+        CodeAssistance.State caState = getCodeAssistanceState(item);
+        switch (caState) {
+            case ParsedSource:
+                return itemConfiguration.getExcluded().getValue() ? ExtraParsedSource : ParsedSource;                    
+            case ParsedOrphanHeader:
+                return ParsedOrphanHeader;
+            case ParsedIncludedHeader:
+                return IncludedHeader;
+            case NotParsed:
+                // check if NativeFileItem would be parsed
+                if (!item.isExcluded()) {
+                    return NotYetParsed;
+                } 
+                return source ? ExcludedSource : ExcludedHeader;
+            default:
+                throw new IllegalStateException("unexpected CodeAssistance.State " + caState); // NOI18N
         }
     }
     
-    private static boolean isIncluded(Item item) {
+    private static CodeAssistance.State getCodeAssistanceState(Item item) {
         CodeAssistance CAProvider = Lookup.getDefault().lookup(CodeAssistance.class);
         if (CAProvider != null) {
-            return CAProvider.hasCodeAssistance(item);
+            return CAProvider.getCodeAssistanceState(item);
         }
-        return false;
+        return CodeAssistance.State.NotParsed;
     }
 
     @Override

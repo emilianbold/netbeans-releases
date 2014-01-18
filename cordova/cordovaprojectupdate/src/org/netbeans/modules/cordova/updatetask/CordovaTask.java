@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.cordova.updatetask;
 
+import java.io.File;
 import org.apache.tools.ant.Task;
 
 /**
@@ -58,5 +59,18 @@ public abstract class CordovaTask extends Task {
         getProject().setProperty(property, value);
     }
     
+    protected File getConfigFile() {
+        File file = new File(
+                getProject().getBaseDir().getAbsolutePath()
+                        + "/" + getProperty("site.root")
+                        + "/config.xml"); // NOI18N    
+        if (file.exists()) {
+            return file;
+        }
+
+        file = new File(getProject().getBaseDir().getAbsolutePath() + "/config.xml"); // NOI18N    
+        
+        return file;
+    }
 
 }

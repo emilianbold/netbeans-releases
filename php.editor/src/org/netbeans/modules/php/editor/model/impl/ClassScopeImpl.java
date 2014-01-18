@@ -85,12 +85,11 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFactory {
-
+    private final Collection<QualifiedName> possibleFQSuperClassNames;
+    private final Collection<QualifiedName> usedTraits;
+    private final Set<? super TypeScope> superRecursionDetection = new HashSet<>();
+    private final Set<? super TypeScope> subRecursionDetection = new HashSet<>();
     private Union2<String, List<ClassScopeImpl>> superClass;
-    private Collection<QualifiedName> possibleFQSuperClassNames;
-    private Collection<QualifiedName> usedTraits;
-    private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
-    private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     @Override
     void addElement(ModelElementImpl element) {

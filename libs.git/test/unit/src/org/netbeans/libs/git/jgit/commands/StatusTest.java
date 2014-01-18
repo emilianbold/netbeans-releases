@@ -43,6 +43,8 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import static junit.framework.Assert.assertFalse;
@@ -648,6 +650,55 @@ public class StatusTest extends AbstractGitTestCase {
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+    }
+    
+    public void testSymlinkedFolder () throws Exception {
+        File folder1 = new File(workDir, "boo");
+        File file1 = new File(workDir, "old_file");
+        File folder2 = new File(workDir, "some_dir");
+        File file2_1 = new File(folder2, "some_file");
+        
+        folder1.mkdirs();
+        folder2.mkdirs();
+        file1.createNewFile();
+        file2_1.createNewFile();
+        add(workDir);
+        commit(workDir);
+        
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file2_1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+     
+        // create a symlink, not added to index
+        String relPath = "../some_dir";
+        File link = new File(folder1, folder2.getName());
+        Files.createSymbolicLink(Paths.get(link.getAbsolutePath()), Paths.get(relPath));
+        assertTrue(Files.isSymbolicLink(Paths.get(link.getAbsolutePath())));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+        
+        // symlink is added to index, not yet committed
+        client.add(new File[] { link }, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false);
+        
+        // symlink is committed
+        client.commit(new File[] { link }, "commit symlink", null, null, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        // symlink is deleted on disk
+        Files.delete(Paths.get(link.getAbsolutePath()));
+        assertFalse(Files.isSymbolicLink(Paths.get(link.getAbsolutePath())));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
+        
+        // symlink is also deleted from index
+        client.remove(new File[] { link }, true, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false);
     }
     
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {

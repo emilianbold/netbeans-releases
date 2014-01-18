@@ -43,9 +43,11 @@ package org.netbeans.modules.uihandler;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -67,6 +69,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -102,8 +106,14 @@ public class AutoSubmitTest extends NbTestCase {
         
         installer = Installer.findObject(Installer.class, true);
         assertNotNull(installer);
+        //checkHandlers("After Installer find object", Logger.getLogger(Installer.UI_LOGGER_NAME));
         MockServices.setServices(A.class, D.class);
+        //checkHandlers("After mock services set up", Logger.getLogger(Installer.UI_LOGGER_NAME));
+        // Initialize the module system:
+        Lookup.getDefault().lookupAll(ModuleInfo.class);
+        //checkHandlers("After initialization of module system", Logger.getLogger(Installer.UI_LOGGER_NAME));
         MemoryURL.initialize();
+        //checkHandlers("After all set up", Logger.getLogger(Installer.UI_LOGGER_NAME));
     }
     
     /**
@@ -111,9 +121,11 @@ public class AutoSubmitTest extends NbTestCase {
      * 
      * @throws Exception 
      */
+    @RandomlyFails
     public void testAutoSubmitUILogs() throws Exception {
         // Needs to be call in the thread's context class loader, due to mockup services
         Installer.logDeactivated();
+        //checkHandlers("After log deactivate", Logger.getLogger(Installer.UI_LOGGER_NAME));
         // setup the listing
         //installer.restored();
         File logs = File.createTempFile("autoSubmitLogs", ".xml");
@@ -128,9 +140,11 @@ public class AutoSubmitTest extends NbTestCase {
             "</form>" +
             "</body></html>";
         //ByteArrayInputStream is = new ByteArrayInputStream(utf8.getBytes("UTF-8"));
-        
+        MemoryURL.registerURL("memory://auto.html", utf8);
+        //checkHandlers("After memory registry", Logger.getLogger(Installer.UI_LOGGER_NAME));
         
         Preferences prefs = NbPreferences.forModule(Installer.class);
+        //checkHandlers("After Installer preferences loaded", Logger.getLogger(Installer.UI_LOGGER_NAME));
         prefs.putBoolean("autoSubmitWhenFull", true);
         //LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING");
         //r.setLoggerName("org.netbeans.ui.anything");
@@ -147,14 +161,22 @@ public class AutoSubmitTest extends NbTestCase {
             }
         }
         */
+        //checkHandlers("Before getLogsSizeTest()", Logger.getLogger(Installer.UI_LOGGER_NAME));
         int n1 = Installer.getLogsSizeTest();
+        //checkHandlers("After getLogsSizeTest()", Logger.getLogger(Installer.UI_LOGGER_NAME));
         int n = UIHandler.MAX_LOGS + 1 - n1;
+        //checkHandlers("Before logging loop", Logger.getLogger(Installer.UI_LOGGER_NAME));
         for (int i = 0; i < n; i++) {
             //Installer.writeOut(r);
-            MemoryURL.registerURL("memory://auto.html", utf8);
             LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING"+i);
             r.setLoggerName(Installer.UI_LOGGER_NAME + ".anything");
-            Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").log(r);
+            Logger logger = Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything");
+            //System.err.println("handlers = "+Arrays.toString(handlers));
+            //if (i == 0) {
+            //    checkHandlers("Right before log", logger.getParent());
+            //    checkHandlers("Begore log with main UI logger", Logger.getLogger(Installer.UI_LOGGER_NAME));
+            //}
+            logger.log(r);
         }
         UIHandler.waitFlushed();
         
@@ -184,6 +206,18 @@ public class AutoSubmitTest extends NbTestCase {
         } while (true);
     }
     
+    private static boolean checkHandlers(String msg, Logger logger) {
+        Handler[] handlers = logger.getHandlers();
+        int n = 0;
+        for (Handler h : handlers) {
+            if (h instanceof UIHandler && !((UIHandler) h).isExceptionOnly()) {
+                n++;
+            }
+        }
+        System.err.println(msg+" Handlers with not exception only = "+n+", logger = "+logger);
+        return n == 1;
+    }
+    
     private static void checkMessagesIn(File logs, int n) throws Exception {
         InputStream in = new FileInputStream(logs);
         byte[] bytes = new byte[(int) logs.length()];
@@ -211,7 +245,13 @@ public class AutoSubmitTest extends NbTestCase {
         
         //System.err.println("Begin = "+begin);
         
-        GZIPInputStream gin = new GZIPInputStream(new ByteArrayInputStream(bytes, begin, l - begin));
+        GZIPInputStream gin;
+        try {
+            gin = new GZIPInputStream(new ByteArrayInputStream(bytes, begin, l - begin));
+        } catch (EOFException eofex) {
+            IOException ioex = new IOException("checkMessagesIn("+n+"), bytes.length = "+bytes.length+", begin = "+begin+", l = "+l, eofex);
+            throw ioex;
+        }
         BufferedReader br = new BufferedReader(new InputStreamReader(gin));
         //StringBuilder sb = new StringBuilder();
         String line;

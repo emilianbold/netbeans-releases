@@ -43,8 +43,10 @@ package org.netbeans.modules.remote.impl.fs.server;
  */
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -293,6 +295,20 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     public final void testSetCleanupUponStart(boolean cleanup) {
         dispatcher.setCleanupUponStart(cleanup);
     }
+    
+    public static final void testDumpInstances(PrintStream ps) {
+        Collection<FSSTransport> transports;
+        synchronized (instancesLock) {
+            transports = instances.values();
+        }
+        for (FSSTransport tr : transports) {
+            tr.testDump(ps);
+        }
+    }
+    
+    protected void testDump(PrintStream ps) {
+        this.dispatcher.testDump(ps);
+    }
 
     @Override
     protected boolean needsClientSidePollingRefresh() {
@@ -313,14 +329,23 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     
     @Override
     protected void onConnect() {
-        requestRefreshCycle("/"); //NOI18N
+        // nothing: see ConnectTask
     }
 
     @Override
     protected void onFocusGained() {
         requestRefreshCycle("/"); //NOI18N
     }
- 
+
+    @Override
+    protected void scheduleRefresh(Collection<String> paths) {
+        if (!dispatcher.isRefreshing()) {
+            for (String path : paths) {
+                dispatcher.requestRefreshCycle(path.isEmpty() ? "/" : path); // NOI18N
+            }
+        }
+    }
+    
     private void requestRefreshCycle(String path) {
         if (!dispatcher.isRefreshing()) {
             // file system root has empty path
@@ -378,9 +403,9 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
 
         @Override
-        public DirEntryList get(String path) throws InterruptedException {
+        public DirEntryList getAndRemove(String path) throws InterruptedException {
             while (true) {
-                DirEntryList l = tryGet(path);
+                DirEntryList l = tryGetAndRemove(path);
                 if (l != null) {
                     return l;
                 }
@@ -389,19 +414,28 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 }
             }
         }
+        
 
         @Override
-        public DirEntryList tryGet(String path) {
+        public DirEntryList tryGetAndRemove(String path) {
             synchronized (lock) {
-                DirEntryList entries = cache.get(path);
+                DirEntryList entries = cache.remove(path);
                 if (entries != null) {
-                    RemoteLogger.fine("Got entries from fs_server cache for {0}", path);
+                    RemoteLogger.fine("Warming up: got entries for {0}; {1} cached entry lists remain", path, cache.size());
                     return entries;
                 }
             }
             return null;
         }
 
+        @Override
+        public void remove(String path){
+            synchronized (lock) {
+                cache.remove(path);
+            }
+        }
+
+        
         @Override
         public void run() {
             long time = System.currentTimeMillis();

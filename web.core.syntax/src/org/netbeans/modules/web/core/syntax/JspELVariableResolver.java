@@ -44,7 +44,6 @@ package org.netbeans.modules.web.core.syntax;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ResolverContext;
@@ -60,10 +59,10 @@ public final class JspELVariableResolver implements ELVariableResolver {
     private static final String CONTENT_NAME = "JspBeans"; //NOI18N
 
     @Override
-    public String getBeanClass(String beanName, FileObject target, ResolverContext context) {
+    public FieldInfo getInjectableField(String beanName, FileObject target, ResolverContext context) {
         for (VariableInfo bean : getManagedBeans(target, context)) {
             if (beanName.equals(bean.name)) {
-                return bean.clazz;
+                return new FieldInfo(bean.clazz);
             }
         }
         return null;

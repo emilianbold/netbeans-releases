@@ -191,12 +191,17 @@ class ProjectClassLoader extends ClassLoader {
 
     @Override
     protected URL findResource(String name) {
-        FileObject fo = sources.findResource(name);
-        if (fo != null) {
-            try {
-                return fo.getURL();
-            } catch (FileStateInvalidException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        // In design time some resources added/changed by the user might not be propagated
+        // to execution classpath yet (until the project is rebuilt), so not found by
+        // custom components. That's why we prefer to look for them on sources classpath
+        // first (bug 69377). An exception is use of @NbBundle.Messages annotations which
+        // fills the properties file only in built results. If the same file is also
+        // present in sources then it is incomplete and we should not use it (bug 238094).
+        if ((!name.equals("Bundle.properties") && !name.endsWith("/Bundle.properties")) // NOI18N
+                || !isProjectWithNbBundle()) {
+            FileObject fo = sources.findResource(name);
+            if (fo != null) {
+                return fo.toURL();
             }
         }
         return projectClassLoaderDelegate.getResource(name);
@@ -218,6 +223,10 @@ class ProjectClassLoader extends ClassLoader {
             urls.add(e.nextElement());
         }
         return Collections.enumeration(urls);
+    }
+
+    private boolean isProjectWithNbBundle() {
+        return projectClassLoaderDelegate.getResource("org/openide/util/NbBundle.class") != null; // NOI18N
     }
 
     private ClassLoader commonsLoggingClassLoader;

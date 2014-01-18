@@ -270,7 +270,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                wholeWords.setSelected(!wholeWords.isSelected());
+                wholeWords.doClick();
             }
         } );
 
@@ -280,7 +280,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                regexp.setSelected(!regexp.isSelected());
+                regexp.doClick();
             }
         } );
 
@@ -290,7 +290,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                highlight.setSelected(!highlight.isSelected());
+                highlight.doClick();
             }
         } );
 
@@ -300,7 +300,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                wrapAround.setSelected(!wrapAround.isSelected());
+                wrapAround.doClick();
             }
         } );
     }

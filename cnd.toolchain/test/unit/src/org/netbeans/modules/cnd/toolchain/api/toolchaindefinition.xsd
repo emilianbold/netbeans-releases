@@ -120,6 +120,7 @@
                 <xs:element ref="tns:recognizer"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:version"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_include_paths"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:important_flags"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_macros"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_include"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_macro"  minOccurs="0" maxOccurs="1"/>
@@ -202,6 +203,7 @@
                 <xs:element ref="tns:recognizer"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:version"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_include_paths"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:important_flags"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_macros"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_include"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_macro"  minOccurs="0" maxOccurs="1"/>
@@ -724,6 +726,12 @@
             <xs:attribute name="flags" type="xs:string" use="optional" />
             <xs:attribute name="remove_in_path" type="xs:string" use="optional" />
             <xs:attribute name="parser" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="important_flags">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

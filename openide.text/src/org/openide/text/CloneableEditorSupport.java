@@ -1713,12 +1713,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 reloadDialogOpened = false;
             }
         }
-        
-        openClose.reload(openedPanes);
 
-        // Call just for compatibility but this has no effect since the code will not wait
-        // for the returned task anyway
-        reloadDocument();
+        if (doReload) {
+            openClose.reload(openedPanes);
+
+            // Call just for compatibility but this has no effect since the code will not wait
+            // for the returned task anyway
+            reloadDocument();
+        }
     }
     
     /** Creates netbeans document for a given document.

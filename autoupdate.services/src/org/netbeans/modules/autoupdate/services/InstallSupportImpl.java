@@ -232,7 +232,9 @@ public class InstallSupportImpl {
                             nbmTarget.delete();
                         }
                     boolean res = nbmSource.renameTo(nbmTarget);
-                    LOG.info(nbmSource + " move to " + nbmTarget + " with result: " + res);
+                    if (! res) {
+                        LOG.log(Level.WARNING, "{0} didn''t move to {1}", new Object[]{nbmSource, nbmTarget});
+                    }
                 }
                 runningDownloadDir.delete();
             }

@@ -169,6 +169,9 @@ public final class CommandUtils {
         assert project != null;
         assert fileObj != null;
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+        if (sources == null) {
+            return false;
+        }
         return sources.equals(fileObj) || FileUtil.isParentOf(sources, fileObj);
     }
 

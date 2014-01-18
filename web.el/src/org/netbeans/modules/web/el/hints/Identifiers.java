@@ -95,7 +95,8 @@ public final class Identifiers extends ELRule {
     @Override
     protected void run(final CompilationContext info, RuleContext ruleContext, final List<Hint> result) {
         final ELParserResult elResult = (ELParserResult)ruleContext.parserResult;
-        final List<ELVariableResolver.VariableInfo> variables = ELVariableResolvers.getRawObjectProperties(info, "attrs", elResult.getSnapshot());
+        final List<ELVariableResolver.VariableInfo> attrsVariables = ELVariableResolvers.getRawObjectProperties(info, "attrs", elResult.getSnapshot()); //NOI18N
+        final List<ELVariableResolver.VariableInfo> ccVariables = ELVariableResolvers.getRawObjectProperties(info, "cc", elResult.getSnapshot());       //NOI18N
         for (final ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip
@@ -106,6 +107,7 @@ public final class Identifiers extends ELRule {
 
                 private Node parent;
                 private boolean finished;
+                private boolean inRawObject;
 
                 @Override
                 public void visit(final Node node) {
@@ -123,7 +125,18 @@ public final class Identifiers extends ELRule {
                         parent = node;
                     }
                     if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
-                        if (!isValidNode(info, each, parent, node, variables)) {
+                        String image = parent.getImage();
+                        boolean valid;
+                        if (image != null && "cc".equals(image)) { //NOI18N
+                            valid = isValidNode(info, each, parent, node, ccVariables);
+                            inRawObject = true;
+                        } else {
+                            if (image != null && "attrs".equals(image)) { //NOI18N
+                                inRawObject = false;
+                            }
+                            valid = isValidNode(info, each, parent, node, attrsVariables);
+                        }
+                        if (!valid && !inRawObject) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),
                                     elResult.getFileObject(),

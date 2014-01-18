@@ -215,6 +215,11 @@ public final class IssueImpl<R, I> {
         return data == obj;
     }
 
+    public boolean hasStatus() {
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        return sp != null;
+    }
+    
     public IssueStatusProvider.Status getStatus() {
         IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {

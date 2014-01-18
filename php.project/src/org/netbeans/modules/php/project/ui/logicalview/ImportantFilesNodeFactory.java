@@ -228,8 +228,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
 
         @Override
         protected Node createNodeForKey(Pair<PhpFrameworkProvider, FileObject> key) {
+            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
+            if (sourcesDirectory == null) {
+                // broken project
+                return null;
+            }
             try {
-                return new ImportantFileNode(key, ProjectPropertiesSupport.getSourcesDirectory(project));
+                return new ImportantFileNode(key, sourcesDirectory);
             } catch (DataObjectNotFoundException ex) {
                 LOGGER.log(Level.WARNING, ex.getMessage(), ex);
             }
@@ -274,8 +279,13 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
 
         private void attachListener() {
+            FileObject sourcesDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
+            if (sourcesDirectory == null) {
+                // broken project
+                return;
+            }
             try {
-                FileSystem fileSystem = ProjectPropertiesSupport.getSourcesDirectory(project).getFileSystem();
+                FileSystem fileSystem = sourcesDirectory.getFileSystem();
                 fileSystem.addFileChangeListener(FileUtil.weakFileChangeListener(fileChangeListener, fileSystem));
             } catch (FileStateInvalidException exc) {
                 LOGGER.log(Level.WARNING, exc.getMessage(), exc);

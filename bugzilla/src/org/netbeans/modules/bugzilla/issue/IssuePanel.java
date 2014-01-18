@@ -574,7 +574,7 @@ public class IssuePanel extends javax.swing.JPanel {
         timetrackingLabel.setVisible(hasTimeTracking);
         timetrackingPanel.setVisible(hasTimeTracking);
         dummyTimetrackingLabel.setVisible(hasTimeTracking);
-        commentsPanel.setVisible(!isNew);
+        commentsSection.setVisible(!isNew);
         attachmentsSection.setVisible(!isNew);
         dummyLabel3.setVisible(!isNew);
         refreshButton.setVisible(!isNew);

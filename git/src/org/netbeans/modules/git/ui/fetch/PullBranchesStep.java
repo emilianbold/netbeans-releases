@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -151,6 +152,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     public void fillRemoteBranches (final Map<String, GitBranch> branches) {
+        fillRemoteBranches(Collections.<String,GitBranch>emptyMap(), Collections.<String,GitBranch>emptyMap());
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
@@ -176,13 +178,16 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
                 currentBranch = branch;
             }
         }
+        // current branch may still be null - remote branches are fetched but
+        // the local repository is freshly initialized - no HEAD yet
         for (GitBranch branch : branches.values()) {
             String branchName = remote.getRemoteName() + "/" + branch.getName();
             displayedBranches.add(branchName);
             GitBranch localBranch = localBranches.get(branchName);
             boolean preselected = localBranch != null && (!localBranch.getId().equals(branch.getId()) // is a modification
                     // or is the tracked branch - should be offered primarily
-                    || currentBranch.getTrackedBranch() != null 
+                    || currentBranch != null 
+                    && currentBranch.getTrackedBranch() != null 
                     && currentBranch.getTrackedBranch().getName().equals(localBranch.getName()));
             l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
         }

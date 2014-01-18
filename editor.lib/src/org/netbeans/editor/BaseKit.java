@@ -1596,7 +1596,8 @@ public class BaseKit extends DefaultEditorKit {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
                                         // use the same pos
-                                        LOG.log(Level.WARNING, null, e);
+                                        target.getToolkit().beep();
+                                        LOG.log(Level.FINE, null, e);
                                     }
                                 }
                             } finally {

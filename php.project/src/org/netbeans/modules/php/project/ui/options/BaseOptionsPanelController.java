@@ -73,6 +73,13 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
      * @see OptionsPanelController#applyChanges()
      */
     protected abstract void applyChangesInternal();
+    
+    /**
+     * Determine if the panel is modified by the user. This will help the infrastructure
+     * to enable or disable the Apply button in options window.
+     * @return {@code true} if the panel is modified by the user through the UI, {@code false} otherwise
+     */
+    protected abstract boolean areOptionsChanged();
 
     @Override
     public final void update() {
@@ -93,6 +100,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final void cancel() {
+        changed = false;
     }
 
     @Override
@@ -102,7 +110,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final boolean isChanged() {
-        return changed;
+        return areOptionsChanged();
     }
 
     @Override
@@ -118,7 +126,6 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
     @Override
     public final void stateChanged(ChangeEvent e) {
         if (!changed) {
-            changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

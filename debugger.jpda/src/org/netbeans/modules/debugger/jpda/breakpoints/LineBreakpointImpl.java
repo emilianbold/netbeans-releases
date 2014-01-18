@@ -66,6 +66,8 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -82,6 +84,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.java.source.CancellableTask;
@@ -106,6 +109,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.ErrorManager;
@@ -223,6 +227,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 setInvalid(reason);
                 return ;
             }
+        }
+        //JPDAClassType classType = breakpoint.getPreferredClassType();
+        JPDAClassType classType = getPreferredClassType(breakpoint);
+        if (classType != null) {
+            classLoaded(Collections.singletonList(((JPDAClassTypeImpl) classType).getType()));
+            return ;
         }
         String className = breakpoint.getPreferredClassName();
         if (className == null || className.isEmpty()) {
@@ -772,6 +782,30 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         }
         return null;
+    }
+
+    private JPDAClassType getPreferredClassType(LineBreakpoint breakpoint) {
+        try {
+            Method getPreferredClassTypeMethod = breakpoint.getClass().getMethod("getPreferredClassType");
+            getPreferredClassTypeMethod.setAccessible(true);
+            return (JPDAClassType) getPreferredClassTypeMethod.invoke(breakpoint);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+        
     }
 
 }

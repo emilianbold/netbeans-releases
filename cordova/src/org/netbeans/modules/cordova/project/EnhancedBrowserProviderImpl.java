@@ -72,7 +72,7 @@ public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowser
             return null;
         }
         if (BrowserFamilyId.PHONEGAP == webBrowser.getBrowserFamily()) {
-            return new EnhancedBrowserImpl(p, webBrowser);
+            return new CordovaBrowserImpl(p, webBrowser);
         }
         return null;
     }

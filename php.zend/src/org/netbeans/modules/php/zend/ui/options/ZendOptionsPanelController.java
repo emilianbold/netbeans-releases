@@ -70,8 +70,10 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public void update() {
-        zendOptionsPanel.setZend(getOptions().getZend());
-        zendOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
+        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            zendOptionsPanel.setZend(getOptions().getZend());
+            zendOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
+        }
 
         changed = false;
     }
@@ -86,6 +88,10 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public void cancel() {
+        if(isChanged()) { // if panel is modified by the user and options window closes, discard any changes
+            zendOptionsPanel.setZend(getOptions().getZend());
+            zendOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());
+        }
     }
 
     @Override
@@ -104,7 +110,10 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getZend();
+        String current = zendOptionsPanel.getZend().trim();
+        return (saved == null ? !current.isEmpty() : !saved.equals(current))
+                || !getOptions().getDefaultParamsForProject().equals(zendOptionsPanel.getDefaultParamsForProject().trim());
     }
 
     @Override

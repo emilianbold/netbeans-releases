@@ -170,7 +170,7 @@ class ConfigActionTest extends ConfigAction {
         run(testRunInfo);
     }
 
-    private void runJsTests() {
+    protected void runJsTests() {
         final JsTestingProvider jsTestingProvider = JsTestingProviders.getDefault().getJsTestingProvider(project, false);
         if (jsTestingProvider != null) {
             RP.post(new Runnable() {
@@ -290,7 +290,7 @@ class ConfigActionTest extends ConfigAction {
 
     //~ Inner classes
 
-    private final class RerunUnitTestHandler implements ControllableRerunHandler {
+    protected final class RerunUnitTestHandler implements ControllableRerunHandler {
 
         final TestRunInfo info;
         private final ChangeSupport changeSupport = new ChangeSupport(this);

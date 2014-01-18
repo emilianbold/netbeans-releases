@@ -164,6 +164,8 @@ public final class ToolchainManager {
 
         String getRemoveIncludeOutputPrefix();
 
+        String getImportantFlags();
+
         String getMacroFlags();
 
         String getMacroParser();

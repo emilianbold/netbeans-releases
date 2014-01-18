@@ -53,7 +53,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
-import org.netbeans.modules.javaee.wildfly.config.JBossDatasource;
+import org.netbeans.modules.javaee.wildfly.config.WildflyDatasource;
 import org.netbeans.modules.javaee.wildfly.config.ResourceConfigurationHelper;
 import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
@@ -106,11 +106,13 @@ public class DatasourceSupport {
      */
     private class DatasourceFileListener extends FileChangeAdapter {
 
+        @Override
         public void fileChanged(FileEvent fe) {
             assert (fe.getSource() == datasourcesFO) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             assert ((FileObject) fe.getSource()).getPath().equals(datasourcesFO.getPath()) : fe.getSource() + ":" + datasourcesFO;
             datasources = null;
@@ -145,7 +147,7 @@ public class DatasourceSupport {
             DatasourceType ltxds[] = datasources.getDatasource();
             for (int i = 0; i < ltxds.length; i++) {
                 if (ltxds[i].getJndiName().length() > 0) {
-                    projectDS.add(new JBossDatasource(
+                    projectDS.add(new WildflyDatasource(
                             ltxds[i].getJndiName(),
                             ltxds[i].getConnectionUrl(),
                             ltxds[i].getSecurity().getUserName(),
@@ -204,27 +206,27 @@ public class DatasourceSupport {
         String driver;
 
         DSResourceModifier(String jndiName, String url, String username, String password, String driver) {
-            this.rawName = JBossDatasource.getRawName(jndiName);
+            this.rawName = WildflyDatasource.getRawName(jndiName);
             this.url = url;
             this.username = username;
             this.password = password;
             this.driver = driver;
         }
 
-        abstract JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
+        abstract WildflyDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException;
     }
 
-    public JBossDatasource createDatasource(String jndiName, String url, String username, String password, String driver)
+    public WildflyDatasource createDatasource(String jndiName, String url, String username, String password, String driver)
             throws UnsupportedOperationException, ConfigurationException, DatasourceAlreadyExistsException {
-        JBossDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
-            JBossDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
+        WildflyDatasource ds = modifyDSResource(new DSResourceModifier(jndiName, url, username, password, driver) {
+            WildflyDatasource modify(Datasources datasources) throws DatasourceAlreadyExistsException {
 
                 DatasourceType ltxds[] = datasources.getDatasource();
                 for (int i = 0; i < ltxds.length; i++) {
                     String jndiName = ltxds[i].getJndiName();
-                    if (rawName.equals(JBossDatasource.getRawName(jndiName))) {
+                    if (rawName.equals(WildflyDatasource.getRawName(jndiName))) {
                         //already exists
-                        JBossDatasource ds = new JBossDatasource(
+                        WildflyDatasource ds = new WildflyDatasource(
                                 jndiName,
                                 ltxds[i].getConnectionUrl(),
                                 ltxds[i].getSecurity().getUserName(),
@@ -250,7 +252,7 @@ public class DatasourceSupport {
 
                 datasources.addDatasource(lds);
 
-                return new JBossDatasource(rawName, url, username, password, driver);
+                return new WildflyDatasource(rawName, url, username, password, driver);
             }
         });
 
@@ -263,10 +265,10 @@ public class DatasourceSupport {
      *
      * @param modifier
      */
-    private JBossDatasource modifyDSResource(DSResourceModifier modifier)
+    private WildflyDatasource modifyDSResource(DSResourceModifier modifier)
             throws ConfigurationException, DatasourceAlreadyExistsException {
 
-        JBossDatasource ds = null;
+        WildflyDatasource ds = null;
 
         try {
             ensureResourceDirExists();

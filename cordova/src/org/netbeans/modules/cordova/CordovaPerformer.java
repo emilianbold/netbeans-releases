@@ -73,6 +73,7 @@ import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
 import org.netbeans.modules.cordova.project.CordovaBrowserFactory;
+import org.netbeans.modules.cordova.updatetask.AndroidManifest;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -173,7 +174,7 @@ public class CordovaPerformer implements BuildPerformer {
         
 
         if (!CordovaPlatform.getDefault().isReady()) {
-            throw new IllegalStateException(Bundle.ERR_NO_Cordova());
+            throw new UnsupportedOperationException(Bundle.ERR_NO_Cordova());
         }
         
         ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
@@ -217,13 +218,16 @@ public class CordovaPerformer implements BuildPerformer {
                         siteRootDOB.rename(WWW);
                     }
 
-                    if (target.equals(BuildPerformer.RUN_IOS)) {
+                    if (target.equals(BuildPerformer.RUN_IOS) || (target.equals(BuildPerformer.RUN_ANDROID)) && isAndroidDebugSupported(project)) {
                         if (result == 0) {
                             ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
                             if (provider != null) {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
+                                if (!device.isWebViewDebugSupported()) {
+                                    return;
+                                }
                                 final FileObject startFile = ClientProjectUtilities.getStartFile(project);
                                 
                                 //#231037
@@ -231,7 +235,7 @@ public class CordovaPerformer implements BuildPerformer {
                                 activeConfiguration.toBrowserURL(project, startFile, u);
                                 
                                 BrowserURLMapperImplementation.BrowserURLMapper mapper = ((CordovaBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
-                                if (!device.isEmulator()) {
+                                if (!device.isEmulator() && target.equals(BuildPerformer.RUN_IOS)) {
                                     DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_InstallThroughItunes(), Bundle.CTL_InstallAndRun());
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
@@ -252,12 +256,41 @@ public class CordovaPerformer implements BuildPerformer {
                                         false);
                             }
                         }
-                    }
+                   }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+            }
+
+            private boolean isAndroidDebugSupported(Project project) {
+                if (CordovaPlatform.getDefault().getVersion().compareTo(new CordovaPlatform.Version("3.3.0")) >= 0) {
+                    try {
+                        FileObject manifestFile = project.getProjectDirectory().getFileObject("platforms/android/AndroidManifest.xml");
+                        if (manifestFile == null) {
+                            return false;
+                        }
+                        FileObject propertiesFile = project.getProjectDirectory().getFileObject("platforms/android/project.properties");
+                        if (propertiesFile == null) {
+                            return false;
+                        }
+                        
+                        AndroidManifest manifest = new AndroidManifest(FileUtil.toFile(manifestFile));
+                        try (InputStream s=propertiesFile.getInputStream()) {
+                            Properties props = new Properties();
+                            props.load(s);
+                            String target = props.getProperty("target"); //NOI18N
+                            if (target == null || target.trim().compareTo("android-19") < 0) { //NOI18N
+                                return false;
+                            }
+                        }
+                        return manifest.isDebuggable();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return false;
             }
         };
         

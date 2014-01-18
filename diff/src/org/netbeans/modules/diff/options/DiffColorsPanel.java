@@ -113,8 +113,8 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
             refreshUI();
         } else {
             updateData ();
-            changed = true;
         }
+        fireChanged();
     }
     
     public void update(ColorModel colorModel) {
@@ -176,6 +176,44 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
         return NbBundle.getMessage (DiffColorsPanel.class, key);
     }
     
+    private void fireChanged() {
+        List<AttributeSet> colors = getCategories();
+        boolean isChanged = false;
+        for (AttributeSet color : colors) {
+            isChanged |= fireChanged(color);
+        }
+        changed = isChanged;
+    }
+    
+    private boolean fireChanged(AttributeSet color) {
+        Color c = (Color) color.getAttribute(StyleConstants.Background);
+        if (ATTR_NAME_ADDED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getAddedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultAddedColor());
+        }
+        if (ATTR_NAME_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getChangedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultChangedColor());
+        }
+        if (ATTR_NAME_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getDeletedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultDeletedColor());
+        }
+        if (ATTR_NAME_MERGE_APPLIED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getAppliedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultAppliedColor());
+        }
+        if (ATTR_NAME_MERGE_NOTAPPLIED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getNotAppliedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultNotAppliedColor());
+        }
+        if (ATTR_NAME_MERGE_UNRESOLVED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getUnresolvedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultUnresolvedColor());
+        }
+        if (ATTR_NAME_SIDEBAR_DELETED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getSidebarDeletedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultSidebarDeletedColor());
+        }
+        if (ATTR_NAME_SIDEBAR_CHANGED.equals(color.getAttribute(StyleConstants.NameAttribute))) {
+            return !DiffModuleConfig.getDefault().getSidebarChangedColor().equals(c != null ? c : DiffModuleConfig.getDefault().getDefaultSidebarChangedColor());
+        }
+        return false;
+    }
+    
     private void updateData () {
         int index = lCategories.getSelectedIndex();
         if (index < 0) return;
@@ -219,7 +257,6 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
             if (!category.getAttribute(DEFAULT_BACKGROUND).equals(c.getAttribute(StyleConstants.Background))) {
                 c.addAttribute(StyleConstants.Background, category.getAttribute(DEFAULT_BACKGROUND));
                 it.set(c);
-                changed = true;
             }
         }
     }

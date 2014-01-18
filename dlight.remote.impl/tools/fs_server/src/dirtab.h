@@ -53,12 +53,13 @@ extern "C" {
 
 /**
  * dirtab_* maintains a list of all known directories
- */    
+ */
 
 typedef enum {
     DE_STATE_INITIAL = 0,
     DE_STATE_LS_SENT = 1,
-    DE_STATE_REFRESH_SENT = 2
+    DE_STATE_REFRESH_SENT = 2,
+    DE_STATE_REMOVED = 3
 } dirtab_state;
 
 typedef enum {

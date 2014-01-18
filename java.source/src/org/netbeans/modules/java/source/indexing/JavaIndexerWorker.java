@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -67,7 +68,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-final class JavaIndexerWorker {
+public final class JavaIndexerWorker {
 
     private static final Logger LOG = Logger.getLogger(JavaIndexerWorker.class.getName());
     private static final int DEFAULT_PROC_COUNT = 2;
@@ -90,7 +91,24 @@ final class JavaIndexerWorker {
 
     private JavaIndexerWorker() {
         throw new IllegalStateException("No instance allowed"); //NOI18N
-    }        
+    }
+
+    public static boolean supportsConcurrent() {
+        final int procCount = Runtime.getRuntime().availableProcessors();
+        LOG.log(
+            Level.FINER,
+            "Proc Count: {0}, Prefetch disabled: {1}",  //NOI18N
+            new Object[]{
+                procCount,
+                PREFETCH_DISABLED
+            });
+        return procCount >= MIN_PROC && !PREFETCH_DISABLED;
+    }
+
+    @NonNull
+    public static Executor getExecutor() {
+        return RP;
+    }
 
     @CheckForNull
     static <T> T reduce(
@@ -150,19 +168,7 @@ final class JavaIndexerWorker {
     @NonNull
     private static <T> CompletionService<T> newCompletionService() {
         return new ExecutorCompletionService<>(RP);
-    }
-
-    private static boolean supportsConcurrent() {
-        final int procCount = Runtime.getRuntime().availableProcessors();
-        LOG.log(
-            Level.FINER,
-            "Proc Count: {0}, Prefetch disabled: {1}",  //NOI18N
-            new Object[]{
-                procCount,
-                PREFETCH_DISABLED
-            });
-        return procCount >= MIN_PROC && !PREFETCH_DISABLED;
-    }
+    }    
 
     interface BinaryOperator<T> {
         T apply(T left, T right);

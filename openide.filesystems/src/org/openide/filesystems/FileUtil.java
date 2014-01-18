@@ -1720,7 +1720,7 @@ public final class FileUtil extends Object {
                 path = path.substring(0, path.length() - 1);
                 retVal = new File(path);
             }
-            if (path.endsWith("\\")) {
+            if (path.length() > 3 && path.endsWith("\\")) {
                 path = path.substring(0, path.length() - 1);
                 retVal = new File(path);
             }

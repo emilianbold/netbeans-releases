@@ -7,9 +7,9 @@
 </head>
 
 <body>
-<p>Beta Draft: 2013-12-05</p>
+<p>Beta Draft: 2014-01-16</p>
 <p><a id="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" name="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref709" name="sthref709"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref706" name="sthref706"></a>
 <h1>New Entity Classes from Database Wizard: Entity Classes</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to generate a set of entity classes from an existing database connection or schema. The IDE generates an entity class for each related table with persistent fields. The wizard takes you through the steps of choosing the database connection or schema, and then selecting the tables in the database that will be used to generate the entity classes. You can also use the optional mapping page to configure annotation elements that are generated in the entity class. 
@@ -82,6 +82,23 @@
 <p>When selected, the IDE generates annotations in the entity class for mapping the class to an XML element that can then be used by a JAXB web service.</p>
 </td>
 </tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t3" headers="r1c1-t3">
+<p>Generate MappedSuperclasses instead of Entities</p>
+</td>
+<td align="left" headers="r8c1-t3 r1c2-t3">
+<p>When selected, the IDE generates a mapped superclass instead of an entity class for each table that you selected. Each class is decorated with the <code>@MappedSuperclass</code> annotation.</p>
+<p>When this option is selected the Generate Named Query option is disabled.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t3" headers="r1c1-t3">
+<p>Create Persistence Unit</p>
+</td>
+<td align="left" headers="r9c1-t3 r1c2-t3">
+<p>When selected, the IDE generates a persistence unit based upon the selected datasource. This option is not visible if a persistence unit already exists.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <br />
@@ -105,7 +122,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

@@ -1059,17 +1059,35 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         ObjectReference or, 
         String parentID
     ) {
-        if (f.signature().length() == 1) {
+        String signature = f.signature();
+        if (signature.length() == 1) {
             // Must be a primitive type or the void type
             return new FieldVariable(debugger, f, parentID, or);
         } else {
-            return new ObjectFieldVariable (
-                debugger,
-                f,
-                parentID,
-                JPDADebuggerImpl.getGenericSignature(f),
-                or
-            );
+            boolean isClassRef = "Ljava/lang/Class;".equals(signature);     // NOI18N
+            /*
+                try {
+                    isClassRef = TypeComponentWrapper.declaringType(f) instanceof ClassType;
+                } catch (InternalExceptionWrapper iex) {
+                } catch (VMDisconnectedExceptionWrapper vex) {}
+            }*/
+            if (isClassRef) {
+                return new ClassFieldVariable (
+                    debugger,
+                    f,
+                    parentID,
+                    JPDADebuggerImpl.getGenericSignature(f),
+                    or
+                );
+            } else {
+                return new ObjectFieldVariable (
+                    debugger,
+                    f,
+                    parentID,
+                    JPDADebuggerImpl.getGenericSignature(f),
+                    or
+                );
+            }
         }
     }
     

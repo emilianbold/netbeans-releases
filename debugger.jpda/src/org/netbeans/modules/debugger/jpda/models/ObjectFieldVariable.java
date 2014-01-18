@@ -86,15 +86,15 @@ public class ObjectFieldVariable extends AbstractObjectVariable
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
 
     protected Field field;
-    private ObjectReference objectReference;    // ObjectReference to retrieve value of an instance field from.
-    private ReferenceType classType;            // ReferenceType to retrieve value of a static field from.
-    private String genericSignature;
+    protected ObjectReference objectReference;    // ObjectReference to retrieve value of an instance field from.
+    protected ReferenceType classType;            // ReferenceType to retrieve value of a static field from.
+    protected String genericSignature;
     private boolean valueSet = true;
     private final Object valueLock = new Object();
     private boolean valueRetrieved = false;
     private ObjectReference value;
     
-    public ObjectFieldVariable (
+    private ObjectFieldVariable (
         JPDADebuggerImpl debugger,
         ObjectReference value,
         //String className,
@@ -122,7 +122,7 @@ public class ObjectFieldVariable extends AbstractObjectVariable
         }
     }
 
-    public ObjectFieldVariable (
+    protected ObjectFieldVariable (
         JPDADebuggerImpl debugger, 
         ObjectReference value, 
         //String className,

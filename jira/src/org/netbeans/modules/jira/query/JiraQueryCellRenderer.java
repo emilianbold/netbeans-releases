@@ -235,44 +235,6 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         QueryTableCellRenderer.setRowColors(style, panel);
     }
 
-    private void addParentAction(int row, int column, JLabel label, final NbJiraIssue issue) {
-        issueTable.addCellAction(row, column, label.getBounds(), new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String id = issue.getParentID();
-                NbJiraIssue parent = (NbJiraIssue) issue.getRepository().getIssueCache().getIssue(id);
-                if(parent != null) {
-                    JiraUtils.openIssue(parent);
-                } else {
-                    Util.openIssue(JiraUtils.getRepository(issue.getRepository()), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
-                }
-            }
-        });
-    }
-
-    /**
-     * DO NOT call if query not saved yet.
-     * 
-     * @return 
-     */
-    private Query getQuery() {
-        if(query == null)  {
-            assert jiraQuery.isSaved();
-            Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
-            Collection<Query> queries = repository.getQueries();
-            Query aQuery = null;
-            for (Query q : queries) {
-                if(q.getDisplayName().equals(jiraQuery.getDisplayName())) {
-                    aQuery = q;
-                    break;
-                }
-            }
-            this.query = aQuery;
-            assert query != null;        
-        }
-        return query;
-    }
-
     private class TwoLabelPanel extends JPanel {
         RendererLabel north = new RendererLabel();
         RendererLabel south = new RendererLabel();

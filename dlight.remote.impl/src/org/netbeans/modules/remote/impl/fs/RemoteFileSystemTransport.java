@@ -43,6 +43,7 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -56,8 +57,9 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 public abstract class RemoteFileSystemTransport {
 
     public abstract interface Warmup {
-        DirEntryList get(String path) throws InterruptedException;
-        DirEntryList tryGet(String path);
+        DirEntryList getAndRemove(String path) throws InterruptedException;
+        void remove(String path);
+        DirEntryList tryGetAndRemove(String path);
     }
     
     public static Warmup createWarmup(ExecutionEnvironment execEnv, String path) {
@@ -66,6 +68,10 @@ public abstract class RemoteFileSystemTransport {
 
     public static boolean needsClientSidePollingRefresh(ExecutionEnvironment execEnv) {
         return getInstance(execEnv).needsClientSidePollingRefresh();
+    }
+    
+    public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
+        getInstance(env).scheduleRefresh(paths);
     }
 
     static void onFocusGained(ExecutionEnvironment execEnv) {
@@ -153,6 +159,8 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract void unregisterDirectoryImpl(String path);
 
+    protected abstract void scheduleRefresh(Collection<String> paths);
+
     protected void onConnect() {
     }
 
@@ -161,5 +169,5 @@ public abstract class RemoteFileSystemTransport {
     
     protected Warmup createWarmup(String path) {
         return null;
-    }        
+    }            
 }

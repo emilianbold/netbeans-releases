@@ -72,7 +72,12 @@ public class ListBranchCommand extends GitCommand {
     @Override
     protected void run () throws GitException {
         Repository repository = getRepository();
-        Map<String, Ref> refs = repository.getAllRefs();
+        Map<String, Ref> refs;
+        try {
+            refs = repository.getAllRefs();
+        } catch (IllegalArgumentException ex) {
+            throw new GitException("Corrupted repository metadata at " + repository.getWorkTree().getAbsolutePath(), ex); //NOI18N
+        }
         Ref head = refs.get(Constants.HEAD);
         branches = new LinkedHashMap<String, GitBranch>();
         Config cfg = repository.getConfig();

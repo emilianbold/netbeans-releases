@@ -898,6 +898,9 @@ public class FormDesigner {
     }
 
     private void setupDesignerSize() {
+        if (formModel == null) { // the form can be closed just after opened, before this gets called (#70439, #240027)
+            return;
+        }
         Dimension size = null;
         RADVisualFormContainer formCont = topDesignComponent instanceof RADVisualFormContainer ?
                                           (RADVisualFormContainer) topDesignComponent : null;

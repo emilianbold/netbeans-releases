@@ -526,6 +526,7 @@ public final class GrailsPlatform {
         }
 
         public static Version valueOf(String version) {
+            // Until version 1.3 the Grails versioning pattern was something like 1.1.1-RC1
             String[] stringParts = version.split("-"); // NOI18N
 
             String qualifier = null;
@@ -541,15 +542,23 @@ public final class GrailsPlatform {
             if (numberParts.length < 1 || numberParts.length > 4) {
                 throw new IllegalArgumentException(version);
             }
-            try {
-                Integer[] parsed = new Integer[4];
-                for (int i = 0; i < numberParts.length; i++) {
+
+            Integer[] parsed = new Integer[4];
+            // Since version 1.4 format is always either of type 2.2.0 or 2.2.0.RC1
+            // Which means the fourth part is either empty or some qualifier and thats
+            // why we want to parse number 3times at maximum
+            for (int i = 0; i < Math.min(numberParts.length, 3); i++) {
+                try {
                     parsed[i] = Integer.valueOf(numberParts[i]);
+                } catch (NumberFormatException ex) {
+                    throw new IllegalArgumentException(version, ex);
                 }
-                return new Version(parsed[0], parsed[1], parsed[2], parsed[3], qualifier);
-            } catch (NumberFormatException ex) {
-                throw new IllegalArgumentException(version, ex);
             }
+            if (numberParts.length == 4) {
+                qualifier = numberParts[3];
+            }
+
+            return new Version(parsed[0], parsed[1], parsed[2], parsed[3], qualifier);
         }
 
         public int getMajor() {
@@ -658,7 +667,14 @@ public final class GrailsPlatform {
                     builder.append(update == null ? 0 : update);
                 }
                 if (qualifier != null) {
-                    builder.append('-'); // NOI18N
+                    // If we have first three numbers and no "update" version, we are
+                    // probably in situation of Grails version 1.4 and higher because since
+                    // then format is always either of type 2.2.0 or 2.2.0.RC1
+                    if (minor != null && micro != null && update == null) {
+                        builder.append('.'); // NOI18N
+                    } else {
+                        builder.append('-'); // NOI18N
+                    }
                     builder.append(qualifier);
                 }
 

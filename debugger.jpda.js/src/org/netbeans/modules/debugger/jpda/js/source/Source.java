@@ -74,19 +74,19 @@ public final class Source {
     private static final String SOURCE_VAR_HASH = "hash";   // NOI18N
     private static final String SOURCE_VAR_URL = "url";     // NOI18N
     
-    private static final Map<JPDADebugger, Map<String, Source>> knownSources = new WeakHashMap<>();
+    private static final Map<JPDADebugger, Map<Long, Source>> knownSources = new WeakHashMap<>();
 
     private final String name;
-    private final String className;
+    private final JPDAClassType classType;
     private final URL url;          // The original file source
     private final URL runtimeURL;   // The current content in runtime, or null when equal to 'url'
     private final int contentLineShift; // Line shift of 'url' content in 'runtimeURL'. Can not be negative.
     private final int hash;
     private final String content;
     
-    private Source(String name, String className, URL url, boolean compareContent, int hash, String content) {
+    private Source(String name, JPDAClassType classType, URL url, boolean compareContent, int hash, String content) {
         this.name = name;
-        this.className = className;
+        this.classType = classType;
         URL rURL = null;
         int lineShift = 0;
         if (url == null || !"file".equalsIgnoreCase(url.getProtocol())) {
@@ -130,7 +130,8 @@ public final class Source {
     }
     
     public static Source getSource(JPDAClassType classType) {
-        String className = classType.getName();
+        long uniqueClassID = classType.classObject().getUniqueID();
+        //System.err.println("getSource("+classType+" = "+className+"): classType object's ID = "+uniqueClassID);
         JPDADebugger debugger;
         try {
             java.lang.reflect.Field debuggerField = classType.getClass().getDeclaredField("debugger");
@@ -141,9 +142,9 @@ public final class Source {
             return null;
         }
         synchronized (knownSources) {
-            Map<String, Source> dbgSources = knownSources.get(debugger);
+            Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources != null) {
-                Source src = dbgSources.get(className);
+                Source src = dbgSources.get(uniqueClassID);
                 if (src != null) {
                     return src;
                 }
@@ -189,14 +190,14 @@ public final class Source {
         if (!name.endsWith(".js") && !name.endsWith(".JS")) {
             name = name + ".js";
         }
-        Source src = new Source(name, className, url, compareContent, hash, content);
+        Source src = new Source(name, classType, url, compareContent, hash, content);
         synchronized (knownSources) {
-            Map<String, Source> dbgSources = knownSources.get(debugger);
+            Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
                 dbgSources = new HashMap<>();
                 knownSources.put(debugger, dbgSources);
             }
-            dbgSources.put(className, src);
+            dbgSources.put(uniqueClassID, src);
         }
         return src;
     }
@@ -218,8 +219,8 @@ public final class Source {
         return name;
     }
     
-    public String getClassName() {
-        return className;
+    public JPDAClassType getClassType() {
+        return classType;
     }
 
     public URL getUrl() {

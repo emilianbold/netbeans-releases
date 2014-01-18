@@ -28,6 +28,7 @@ public class Class_A_L implements Runnable{
     class Sub extends Super {
         public void m1() {
             int x = 3;
+            System.out.println(3 + 3);
         }
     }
     

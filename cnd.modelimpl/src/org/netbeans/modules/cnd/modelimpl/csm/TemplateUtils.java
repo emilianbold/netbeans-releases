@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -65,9 +65,9 @@ import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosest
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
-import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 
@@ -406,11 +406,12 @@ public class TemplateUtils {
         if (type.isInstantiation()) {
             TypeImpl typeImpl = (TypeImpl) type;
             List<CsmSpecializationParameter> params = typeImpl.getInstantiationParams();
-            for (CsmSpecializationParameter instParam : params) {
+            for (int i = 0; i < params.size(); i++) {
+                CsmSpecializationParameter instParam = params.get(i);
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
                     CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope, additionalParams);
                     if (newType != instParam) {
-                        params.set(params.indexOf(instParam), new TypeBasedSpecializationParameterImpl(newType));
+                        params.set(i, new TypeBasedSpecializationParameterImpl(newType));
                     }
                 }
             }
@@ -453,6 +454,16 @@ public class TemplateUtils {
             
             return mapHierarchy;
     }
+    
+    public static MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(List<CsmInstantiation> instantiations) {
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapHierarchy = new MapHierarchy<>();
+            
+            for (CsmInstantiation instantiation : instantiations) {
+                mapHierarchy.push(instantiation.getMapping());
+            }
+            
+            return mapHierarchy;
+    }    
 
     public static boolean isTemplateQualifiedName(String name) {
         return name.contains("<"); // NOI18N

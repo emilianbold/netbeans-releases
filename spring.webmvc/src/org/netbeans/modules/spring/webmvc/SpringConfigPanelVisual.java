@@ -74,20 +74,23 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     private static final Logger LOG = Logger.getLogger(SpringConfigPanelVisual.class.getName());
     private static final long serialVersionUID = 1L;
     private boolean libsInitialized = false;
-    private List<SpringLibrary> springLibs = new ArrayList<SpringLibrary>();
+    private List<SpringLibrary> springLibs = new ArrayList<>();
     private SpringLibrary springLibrary;
     private final SpringWebModuleExtender extender;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DocumentListener docListener = new DocumentListener() {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             fireChange();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             fireChange();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             fireChange();
         }
@@ -117,23 +120,23 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         cbSpringVersion.setEnabled(enabled);
         super.setEnabled(enabled);
     }
-    
+
     public String getDispatcherName() {
         return dispatcherNameText.getText();
     }
-    
+
     public String getDispatcherMapping() {
         return dispatcherMappingText.getText();
     }
-    
+
     public boolean getIncludeJstl() {
         return includeJstlCheckBox.isSelected();
     }               
-    
+
     private void fireChange() {
         changeSupport.fireChange();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -301,7 +304,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             @Override
             public void run() {
                 long startTime = System.currentTimeMillis();
-                final Set<String> items = new HashSet<>();
+                final List<String> items = new ArrayList<>();
                 for (Library library : LibraryManager.getDefault().getLibraries()) {
                     if (SpringUtilities.isSpringLibrary(library)) {
                         items.add(library.getDisplayName());

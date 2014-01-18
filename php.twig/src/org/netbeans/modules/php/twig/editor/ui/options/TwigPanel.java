@@ -61,7 +61,17 @@ final class TwigPanel extends javax.swing.JPanel {
     TwigPanel(TwigOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
+        setDefaultValues();
         // TODO listen to changes in form fields and call controller.changed()
+    }
+    
+    private void setDefaultValues() {
+        ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
+        if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
+            asTwigEverywhereRadioButton.setSelected(true);
+        } else {
+            languageSensitiveRadioButton.setSelected(true);
+        }
     }
 
     /**
@@ -122,11 +132,13 @@ final class TwigPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_asTwigEverywhereRadioButtonActionPerformed
 
     void load() {
-        ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
-        if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
-            asTwigEverywhereRadioButton.setSelected(true);
-        } else {
-            languageSensitiveRadioButton.setSelected(true);
+        if (!changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
+            if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
+                asTwigEverywhereRadioButton.setSelected(true);
+            } else {
+                languageSensitiveRadioButton.setSelected(true);
+            }
         }
     }
 
@@ -144,6 +156,25 @@ final class TwigPanel extends javax.swing.JPanel {
         // TODO check whether form is consistent and complete
         return true;
     }
+    
+    void cancel() {
+        if (changed()) { // if panel is modified by the user and options window closes, discard any changes
+            ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
+            if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
+                asTwigEverywhereRadioButton.setSelected(true);
+            } else {
+                languageSensitiveRadioButton.setSelected(true);
+            }
+        }
+    }
+
+    boolean changed() {
+        if (TwigOptions.getInstance().getToggleCommentType() == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
+            return !asTwigEverywhereRadioButton.isSelected();
+        } 
+        return !languageSensitiveRadioButton.isSelected();
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton asTwigEverywhereRadioButton;
     private javax.swing.JLabel jLabel1;

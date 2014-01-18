@@ -415,7 +415,7 @@ class FilesystemHandler extends VCSInterceptor {
                     // store all from-s children -> they also have to be refreshed in after copy
                     List<File> srcChildren = null;
                     try {
-                        srcChildren = SvnUtils.listRecursively(from);
+                        srcChildren = SvnUtils.listManagedRecursively(from);
                         if (parentIgnored) {
                             // do not svn copy into ignored folders
                             if(!copyFile(from, to)) {
@@ -812,7 +812,7 @@ class FilesystemHandler extends VCSInterceptor {
                     SVNUrl url = status != null && status.isCopied() ? getCopiedUrl(client, from) : null;
                     SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                     try {
-                        srcChildren = SvnUtils.listRecursively(from);
+                        srcChildren = SvnUtils.listManagedRecursively(from);
                         boolean moved = true;
                         if (status != null 
                                 && (status.getTextStatus().equals(SVNStatusKind.ADDED) || status.getTextStatus().equals(SVNStatusKind.REPLACED)) 

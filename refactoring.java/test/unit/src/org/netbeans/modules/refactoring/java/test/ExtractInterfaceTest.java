@@ -73,6 +73,51 @@ public class ExtractInterfaceTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testExtractInterfaceException() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                        + "import java.io.BufferedReader;\n"
+                        + "import java.io.FileNotFoundException;\n"
+                        + "import java.io.FileReader;\n"
+                        + "import java.io.IOException;\n"
+                        + "public class ExtractBaseClass {\n"
+                        + "    public void m3() throws FileNotFoundException, IOException {\n"
+                        + "        BufferedReader br = new BufferedReader(new FileReader(\"C:\\\\test.txt\"));\n"
+                        + "        String s;\n"
+                        + "        while ((s = br.readLine()) != null) {\n"
+                        + "            System.out.println(s);\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}"));
+        performExtractInterface(src.getFileObject("extract/ExtractBaseClass.java"), 0, "ExtractInterface", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                        + "import java.io.BufferedReader;\n"
+                        + "import java.io.FileNotFoundException;\n"
+                        + "import java.io.FileReader;\n"
+                        + "import java.io.IOException;\n"
+                        + "public class ExtractBaseClass implements ExtractInterface {\n"
+                        + "    @Override\n"
+                        + "    public void m3() throws FileNotFoundException, IOException {\n"
+                        + "        BufferedReader br = new BufferedReader(new FileReader(\"C:\\\\test.txt\"));\n"
+                        + "        String s;\n"
+                        + "        while ((s = br.readLine()) != null) {\n"
+                        + "            System.out.println(s);\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}"),
+                new File("extract/ExtractInterface.java", "/* * Refactoring License */ package extract;\n"
+                        + "import java.io.FileNotFoundException;\n"
+                        + "import java.io.IOException;\n"
+                        + "/**\n"
+                        + " *\n"
+                        + " * @author junit\n"
+                        + " */\n"
+                        + "public interface ExtractInterface {\n"
+                        + "    void m3() throws FileNotFoundException, IOException;\n"
+                        + "}\n"));
+    }
+    
     public void test231147() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"

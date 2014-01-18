@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.javaee.wildfly.config.mdb;
 
-import org.netbeans.modules.javaee.wildfly.config.JBossMessageDestination;
+import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestination;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.ResourceConfigurationHelper;
 import org.netbeans.modules.javaee.wildfly.config.gen.Depends;
 import org.netbeans.modules.javaee.wildfly.config.gen.Mbean;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,120 +80,120 @@ import org.openide.util.NbBundle;
  * @author Libor Kotouc
  */
 public class MessageDestinationSupport {
-    
-    public static final String MSG_DEST_RESOURCE_NAME_JB4 = "jboss4-netbeans-destinations-service.xml"; // NOI18N
-    // TODO JBoss 5 format support
-    public static final String MSG_DEST_RESOURCE_NAME_JB5 = "jboss5-netbeans-destinations-service.xml"; // NOI18N
-    
+
+    public static final String MSG_DEST_RESOURCE_NAME_WILDFLY = "-jms.xml"; // NOI18N
+
     public static final String CONN_FACTORY_JNDI_NAME_JB4 = "ConnectionFactory"; // NOI18N
 
-    // the directory with resources - supplied by the configuration support in the construction time
+// the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
 
     //model of the destination service file
     private Server destinationServiceModel;
-    
+
     //destination service file (placed in the resourceDir)
     private File destinationsFile;
-    
+
     //destination service file object
     private FileObject destinationsFO;
     
-    public MessageDestinationSupport(File resourceDir) {
+    private WildFlyDeploymentManager dm;
+
+    public MessageDestinationSupport(File resourceDir, String moduleName) throws IOException {
         this.resourceDir = resourceDir;
-        this.destinationsFile = new File(resourceDir, MSG_DEST_RESOURCE_NAME_JB4);
+        this.destinationsFile = new File(resourceDir, moduleName + MSG_DEST_RESOURCE_NAME_WILDFLY);
         ensureDestinationsFOExists();
+        dm = Lookup.getDefault().lookup(WildFlyDeploymentManager.class);
     }
-    
+
     /**
      * Listener of netbeans-destinations-service.xml document changes.
      */
     private class MessageDestinationFileListener extends FileChangeAdapter {
-        
+
         public void fileChanged(FileEvent fe) {
-            assert(fe.getSource() == destinationsFO);
+            assert (fe.getSource() == destinationsFO);
             destinationServiceModel = null;
         }
 
         public void fileDeleted(FileEvent fe) {
-            assert(fe.getSource() == destinationsFO);
+            assert (fe.getSource() == destinationsFO);
             destinationServiceModel = null;
         }
-    } 
-    
-    private void ensureDestinationsFOExists() {
+    }
+
+    private void ensureDestinationsFOExists() throws IOException {
         if (!destinationsFile.exists()) {
             return;
         }
         if (destinationsFO == null || !destinationsFO.isValid()) {
             destinationsFO = FileUtil.toFileObject(destinationsFile);
-            assert(destinationsFO != null);
+            assert (destinationsFO != null);
             destinationsFO.addFileChangeListener(new MessageDestinationFileListener());
         }
     }
-    
-//---------------------------------------- READING --------------------------------------
 
+//---------------------------------------- READING --------------------------------------
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         return getMessageDestinations(getMessageDestinationModel(false));
     }
-    
+
     private static Set<MessageDestination> getMessageDestinations(Server model) throws ConfigurationException {
-        
+
         if (model == null) {
             return Collections.<MessageDestination>emptySet();
         }
-        
+
         HashSet<MessageDestination> destinations = new HashSet<MessageDestination>();
-        
+
         for (Mbean mbean : model.getMbean()) {
             String mbeanNameAttribute = mbean.getName();
             if (mbeanNameAttribute == null) {
                 continue;
             }
-            
+
             MessageDestination.Type type = null;
             if (mbeanNameAttribute.indexOf("service=Queue") > -1) { // NOI18N
                 type = MessageDestination.Type.QUEUE;
-            }
-            else
-            if (mbeanNameAttribute.indexOf("service=Topic") > -1) { // NOI18N
+            } else if (mbeanNameAttribute.indexOf("service=Topic") > -1) { // NOI18N
                 type = MessageDestination.Type.TOPIC;
             }
             if (type == null) {
                 continue;
             }
-            
+
             int nameIndex = mbeanNameAttribute.indexOf("name="); // NOI18N
             if (nameIndex == -1) {
                 continue;
             }
-            
+
             String name = mbeanNameAttribute.substring(nameIndex + 5); // "name=".length() == 5
             if (name.indexOf(",") > -1) {
                 name = name.substring(0, name.indexOf(",")); // NOI18N
             }
-                
-            destinations.add(new JBossMessageDestination(name, type));
+
+            destinations.add(new WildflyMessageDestination(name, type));
         }
-        
+
         return destinations;
     }
 
     /**
-     * Return destination service graph. If it was not created yet, load it from the file
-     * and cache it. If the file does not exist, generate it.
+     * Return destination service graph. If it was not created yet, load it from
+     * the file and cache it. If the file does not exist, generate it.
      *
-     * @return Destination service graph or null if the jboss#-netbeans-destinations-service.xml file is not parseable.
+     * @return Destination service graph or null if the
+     * jboss#-netbeans-destinations-service.xml file is not parseable.
      */
     private synchronized Server getMessageDestinationModel(boolean create) {
-        
+
         try {
             if (destinationsFile.exists()) {
                 // load configuration if already exists
                 try {
-                    if (destinationServiceModel == null)
+                    if (destinationServiceModel == null) {
                         destinationServiceModel = Server.createGraph(destinationsFile);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 } catch (RuntimeException re) {
@@ -206,18 +208,19 @@ public class MessageDestinationSupport {
         } catch (ConfigurationException ce) {
             Exceptions.printStackTrace(ce);
             destinationServiceModel = null;
+        } catch (IOException ce) {
+            Exceptions.printStackTrace(ce);
+            destinationServiceModel = null;
         }
 
         return destinationServiceModel;
     }
-    
-//---------------------------------------- WRITING --------------------------------------
-    
-    public MessageDestination createMessageDestination(String name, MessageDestination.Type type) 
-    throws UnsupportedOperationException, ConfigurationException {
 
-//        return new JBossMessageDestination(name, type);
-        
+//---------------------------------------- WRITING --------------------------------------
+    public MessageDestination createMessageDestination(String name, MessageDestination.Type type)
+            throws UnsupportedOperationException, ConfigurationException {
+
+//        return new WildflyMessageDestination(name, type);
         if (!resourceDir.exists()) {
             resourceDir.mkdir();
         }
@@ -225,7 +228,7 @@ public class MessageDestinationSupport {
         if (!destinationsFile.exists()) {
             getMessageDestinationModel(true);
         }
-        
+
         DataObject destinationsDO = null;
         try {
             destinationsDO = DataObject.find(destinationsFO);
@@ -250,7 +253,7 @@ public class MessageDestinationSupport {
             byte[] docString = doc.getText(0, doc.getLength()).getBytes();
             newDestinationServiceModel = Server.createGraph(new ByteArrayInputStream(docString));
         } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(MessageDestinationSupport.class, 
+            String msg = NbBundle.getMessage(MessageDestinationSupport.class,
                     "MSG_CannotUpdateFile", destinationsFile.getAbsolutePath());    // NOI18N
             throw new ConfigurationException(msg, ioe);
         } catch (BadLocationException ble) {
@@ -262,12 +265,12 @@ public class MessageDestinationSupport {
                 // neither the old graph is parseable, there is not much we can do here
                 // TODO: should we notify the user?
                 throw new ConfigurationException(
-                        NbBundle.getMessage(MessageDestinationSupport.class, 
-                        "MSG_msgdestXmlCannotParse", destinationsFile.getAbsolutePath())); // NOI18N
+                        NbBundle.getMessage(MessageDestinationSupport.class,
+                                "MSG_msgdestXmlCannotParse", destinationsFile.getAbsolutePath())); // NOI18N
             }
             // current editor content is not parseable, ask whether to override or not
             NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(MessageDestinationSupport.class, 
+                    NbBundle.getMessage(MessageDestinationSupport.class,
                     "MSG_msgdestXmlNotValid", destinationsFile.getAbsolutePath()),       // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION);
             Object result = DialogDisplayer.getDefault().notify(notDesc);
@@ -278,8 +281,8 @@ public class MessageDestinationSupport {
             // use the old graph
             newDestinationServiceModel = oldDestinationServiceModel;
         }
-        
-        JBossMessageDestination dest = modifyMessageDestinationModel(
+
+        WildflyMessageDestination dest = modifyMessageDestinationModel(
                 newDestinationServiceModel, name, type);
 
         // save if needed
@@ -290,25 +293,25 @@ public class MessageDestinationSupport {
             try {
                 cookie.save();
             } catch (IOException ioe) {
-                String msg = NbBundle.getMessage(MessageDestinationSupport.class, 
+                String msg = NbBundle.getMessage(MessageDestinationSupport.class,
                         "MSG_CannotSaveFile", destinationsFile.getAbsolutePath());    // NOI18N
                 throw new ConfigurationException(msg, ioe);
             }
         }
 
         destinationServiceModel = newDestinationServiceModel;
-        
+
         return dest;
-        
+
     }
 
-    private JBossMessageDestination modifyMessageDestinationModel(
+    private WildflyMessageDestination modifyMessageDestinationModel(
             Server model, String name, MessageDestination.Type type) throws ConfigurationException {
 
         if (model == null) {
             return null;
         }
-        
+
         // check whether the destination doesn't exist yet
         for (MessageDestination destination : getMessageDestinations(model)) {
             if (name.equals(destination.getName()) && type == destination.getType()) {
@@ -328,19 +331,17 @@ public class MessageDestinationSupport {
             // <mbean code="org.jboss.mq.server.jmx.Queue" name="jboss.mq.destination:service=Queue,name={name}">
             mbean.setCode("org.jboss.mq.server.jmx.Queue");                     // NOI18N
             mbean.setName("jboss.mq.destination:service=Queue,name=" + name);   // NOI18N
-        }
-        else 
-        if (type == MessageDestination.Type.TOPIC) {
+        } else if (type == MessageDestination.Type.TOPIC) {
             // <mbean code="org.jboss.mq.server.jmx.Topic" name="jboss.mq.destination:service=Queue,name={name}">
             mbean.setCode("org.jboss.mq.server.jmx.Topic");                     // NOI18N
             mbean.setName("jboss.mq.destination:service=Topic,name=" + name);   // NOI18N
         }
 
         mbean.addDepends(depends);
-        
+
         model.addMbean(mbean);
 
-        return new JBossMessageDestination(name, type);
+        return new WildflyMessageDestination(name, type);
     }
-        
+
 }

@@ -79,6 +79,7 @@ final class FileAssociationsModel extends MIMEResolver.UIHelpers {
     private TreeSet<String> mimeTypes = new TreeSet<String>();
     /** Maps MIME type to MimeItem object which holds display name. */
     private HashMap<String, MimeItem> mimeToItem = new HashMap<String, MimeItem>();
+    private HashMap<String, String> modifiedExtensionToMimeAll = new HashMap<>();
     private boolean initialized = false;
     private final FileChangeListener mimeResolversListener = new FileChangeAdapter() {
         public @Override void fileDeleted(FileEvent fe) {
@@ -209,7 +210,24 @@ final class FileAssociationsModel extends MIMEResolver.UIHelpers {
             LOGGER.fine("setMimeType - " + extension + "=" + newMimeType);
             extensionToMimeUser.put(extension, newMimeType);
             extensionToMimeAll.put(extension, newMimeType);
+            if(!modifiedExtensionToMimeAll.containsKey(extension)) {
+                // the mapping is modified for the first time
+                modifiedExtensionToMimeAll.put(extension, oldMmimeType);
+            }
             return true;
+        }
+        return false;
+    }
+    
+    /** Returns true if all mappings of extension to MIME type that were changed are restored. */
+    boolean isInitialExtensionToMimeMapping(String extension, String mimeType) {
+        String initialMimeType = modifiedExtensionToMimeAll.get(extension);
+        if(initialMimeType != null) {
+            if(initialMimeType.equals(mimeType)) {
+                // the mapping is restored to the default/initial value
+                modifiedExtensionToMimeAll.remove(extension);
+                return modifiedExtensionToMimeAll.isEmpty();
+            }
         }
         return false;
     }
@@ -258,6 +276,7 @@ final class FileAssociationsModel extends MIMEResolver.UIHelpers {
     /** Stores current state of model. It deletes user-defined mime resolver
      * and writes a new one. */
     void store() {
+        modifiedExtensionToMimeAll.clear();
         Map<String, Set<String>> mimeToExtensions = new HashMap<String, Set<String>>();
         for (Map.Entry<String, String> entry : extensionToMimeUser.entrySet()) {
             String extension = entry.getKey();

@@ -206,6 +206,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
     
     private void fetchActiveTokenList() {
         activeTokenList = tokenList(activeTokenListIndex);
+        activeTokenList.updateModCount();
         realTokenStartOffset = activeTokenList.startOffset();
         activeTokenListEndOffset = activeTokenList.endOffset();
     }
@@ -331,6 +332,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         TokenListText(int tokenListIndex) {
             this.tokenListIndex = tokenListIndex;
             EmbeddedTokenList<?,T> etl = tokenList(tokenListIndex);
+            etl.updateModCount();
             tokenListStartOffset = etl.startOffset();
             tokenListEndOffset = etl.endOffset();
             readOffsetShift = 0;
@@ -415,6 +417,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         private int movePreviousTokenList() {
             tokenListIndex--;
             EmbeddedTokenList etl = tokenList(tokenListIndex);
+            etl.updateModCount();
             tokenListEndOffset = etl.endOffset();
             // Decrease offset shift by the size of gap between ETLs
             int shift = tokenListStartOffset - tokenListEndOffset;
@@ -427,6 +430,7 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         private int moveNextTokenList() {
             tokenListIndex++;
             EmbeddedTokenList etl = tokenList(tokenListIndex);
+            etl.updateModCount();
             tokenListStartOffset = etl.startOffset();
             // Increase offset shift by the size of gap between ETLs
             int shift = tokenListStartOffset - tokenListEndOffset;

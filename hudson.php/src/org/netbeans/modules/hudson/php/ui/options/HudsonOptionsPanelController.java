@@ -120,7 +120,14 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public boolean isChanged() {
-        return changed;
+        String saved = getOptions().getPpw();
+        String current = hudsonOptionsPanel.getPpw().trim();
+        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getJobConfig();
+        current = hudsonOptionsPanel.getJobConfig().trim();
+        return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
     @Override

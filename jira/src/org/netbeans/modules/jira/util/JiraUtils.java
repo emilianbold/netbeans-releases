@@ -346,14 +346,6 @@ public class JiraUtils {
         return null;
     }
 
-    public static Repository getRepository(JiraRepository jiraRepository) {
-        Repository repository = RepositoryManager.getInstance().getRepository(JiraConnector.ID, jiraRepository.getID());
-        if(repository == null) {
-            repository = createRepository(jiraRepository);
-        }
-        return repository;
-    }
-
     public static Repository createRepository(JiraRepository jiraRepository) {
         return Jira.getInstance().getBugtrackingFactory().createRepository(
                 jiraRepository,

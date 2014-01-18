@@ -104,6 +104,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
+                        shared = null;
+                        nonshared = null;
                     }
                     RP.post(new Runnable() {
                         public @Override void run() {

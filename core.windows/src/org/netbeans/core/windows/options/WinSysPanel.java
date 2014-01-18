@@ -129,6 +129,11 @@ public class WinSysPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(isDragImageAlpha, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_TransparentDragWindow")); // NOI18N
         isDragImageAlpha.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsAlphaDragTooltip")); // NOI18N
+        isDragImageAlpha.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isDragImageAlphaActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -137,6 +142,11 @@ public class WinSysPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(isSnapScreenEdges, org.openide.util.NbBundle.getMessage(WinSysPanel.class, "LBL_SnapToScreenEdges")); // NOI18N
         isSnapScreenEdges.setToolTipText(org.openide.util.NbBundle.getMessage(WinSysPanel.class, "IsSnapScreenEdgesTooltip")); // NOI18N
+        isSnapScreenEdges.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isSnapScreenEdgesActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -148,17 +158,39 @@ public class WinSysPanel extends javax.swing.JPanel {
 
     private void isDragImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageActionPerformed
         updateDragSection();
-        controller.changed();
+        fireChanged();
 }//GEN-LAST:event_isDragImageActionPerformed
 
 private void isAlphaFloatingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isAlphaFloatingActionPerformed
-    controller.changed();
+    fireChanged();
 }//GEN-LAST:event_isAlphaFloatingActionPerformed
 
 private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isSnappingActionPerformed
     updateSnapSection();
-    controller.changed();
+    fireChanged();
 }//GEN-LAST:event_isSnappingActionPerformed
+
+    private void isDragImageAlphaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isDragImageAlphaActionPerformed
+        fireChanged();
+    }//GEN-LAST:event_isDragImageAlphaActionPerformed
+
+    private void isSnapScreenEdgesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_isSnapScreenEdgesActionPerformed
+        fireChanged();
+    }//GEN-LAST:event_isSnapScreenEdgesActionPerformed
+
+    private void fireChanged() {
+        boolean isChanged = false;
+        boolean isNotSolaris = Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;
+        boolean isMacJDK17 = isMacJDK7();
+        if (isDragImage.isSelected() != prefs.getBoolean(WinSysPrefs.DND_DRAGIMAGE, isNotSolaris && !isMacJDK17)
+                || isDragImageAlpha.isSelected() != prefs.getBoolean(WinSysPrefs.TRANSPARENCY_DRAGIMAGE, isNotSolaris && !isMacJDK17)
+                || isAlphaFloating.isSelected() != prefs.getBoolean(WinSysPrefs.TRANSPARENCY_FLOATING, false)
+                || isSnapping.isSelected() != prefs.getBoolean(WinSysPrefs.SNAPPING, true)
+                || isSnapScreenEdges.isSelected() != prefs.getBoolean(WinSysPrefs.SNAPPING_SCREENEDGES, true)) {
+            isChanged = true;
+        }
+        controller.changed(isChanged);
+    }
 
     protected void load() {
         boolean isNotSolaris = Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;

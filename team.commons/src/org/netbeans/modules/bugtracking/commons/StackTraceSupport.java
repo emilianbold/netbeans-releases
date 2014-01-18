@@ -65,6 +65,7 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Finds stacktraces in texts.
@@ -327,29 +328,41 @@ class StackTraceSupport {
         if(!isAvailable()) {
             return;
         }
-        final StyledDocument doc = textPane.getStyledDocument();
-        String text = "";
-        try {
-            text = doc.getText(0, doc.getLength());
-        } catch (BadLocationException ex) {
-            Support.LOG.log(Level.SEVERE, null, ex);
-        }
-        final String comment = text;
-        final List<StackTracePosition> stacktraces = find(comment);
-        if (!stacktraces.isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    underlineStacktraces(doc, textPane, stacktraces, comment);
-                    
-                    textPane.removeMouseListener(getHyperlinkListener());
-                    textPane.addMouseListener(getHyperlinkListener());
-                    
-                    textPane.removeMouseMotionListener(getHyperlinkListener());
-                    textPane.addMouseMotionListener(getHyperlinkListener());
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                final StyledDocument doc = textPane.getStyledDocument();
+                String text = "";
+                try {
+                    text = doc.getText(0, doc.getLength());
+                } catch (BadLocationException ex) {
+                    Support.LOG.log(Level.SEVERE, null, ex);
                 }
-            });
-        }
+                final String comment = text;
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        final List<StackTracePosition> stacktraces = find(comment);
+                        if (!stacktraces.isEmpty()) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    underlineStacktraces(doc, textPane, stacktraces, comment);
+
+                                    textPane.removeMouseListener(getHyperlinkListener());
+                                    textPane.addMouseListener(getHyperlinkListener());
+
+                                    textPane.removeMouseMotionListener(getHyperlinkListener());
+                                    textPane.addMouseMotionListener(getHyperlinkListener());
+                                }
+                            });
+                        }
+                    }
+                };
+                Support.getInstance().getParallelRP().post(r);
+            }
+        });
+        
     }
 
     private static void underlineStacktraces(StyledDocument doc, JTextPane textPane, List<StackTracePosition> stacktraces, String comment) {

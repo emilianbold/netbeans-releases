@@ -68,6 +68,8 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
     private NewExtensionPanel newExtensionPanel;
     private FileAssociationsModel model;
     private DocumentListener patternListener;
+    // extensions added via the New button
+    ArrayList<String> newlyAddedExtensions = new ArrayList<>();
     
     FileAssociationsPanel(FileAssociationsOptionsPanelController controller) {
         this.controller = controller;
@@ -320,7 +322,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         String extension = cbExtension.getSelectedItem().toString();
         String newMimeType = ((MimeItem)cbType.getSelectedItem()).getMimeType();
         if(model.setMimeType(extension, newMimeType)) {
-            controller.changed();
+            fireChanged(extension, newMimeType);
         }
         btnDefault.setEnabled(model.canBeRestored(extension));
         lblAssociatedAlsoExt.setText(model.getAssociatedAlso(extension, newMimeType));
@@ -331,7 +333,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         model.setDefault(extension);
         btnDefault.setEnabled(false);
         cbType.setSelectedItem(model.getMimeItem(extension));
-        controller.changed();
+        fireChanged(extension, model.getMimeType(extension));
     }//GEN-LAST:event_btnDefaultActionPerformed
 
 private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNewActionPerformed
@@ -344,6 +346,8 @@ private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     
     DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
     if (DialogDescriptor.OK_OPTION.equals (dd.getValue())) {
+        newlyAddedExtensions.add(newExtensionPanel.getExtension());
+        fireChanged(null, null);
         // add new extension to combo box and re-create
         ArrayList<String> newItems = new ArrayList<String>();
         for (int i = 0; i < cbExtension.getItemCount(); i++) {
@@ -371,7 +375,8 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (cbExtension.getItemCount() > 0) {
         cbExtension.setSelectedIndex(Math.max(0, --selectedIndex));
     }
-    controller.changed();
+    newlyAddedExtensions.remove(extension);
+    fireChanged(null, null);
 }//GEN-LAST:event_btnRemoveActionPerformed
 
 private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDefaultIgnoredActionPerformed
@@ -379,7 +384,7 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_btnDefaultIgnoredActionPerformed
 
 private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoScanActionPerformed
-    controller.changed();
+    fireChanged(null, null);
 }//GEN-LAST:event_autoScanActionPerformed
 
     void load() {
@@ -412,6 +417,7 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
     
     void store() {
+        newlyAddedExtensions.clear();
         // store file associations
         model.store();
         // store ignored files pattern
@@ -468,7 +474,7 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         /** Notify controller that property was changed and update status of components
          * handling ignored files pattern. */
         private void patternChanged() {
-            controller.changed();
+            fireChanged(null, null);
             btnDefaultIgnored.setEnabled(!IgnoredFilesPreferences.DEFAULT_IGNORED_FILES.equals(txtPattern.getText()));
             if(IgnoredFilesPreferences.getSyntaxError() != null) {
                 txtPatternError.setText("<html><pre>" + IgnoredFilesPreferences.getSyntaxError() + "</pre></html>");  //NOI18N
@@ -476,5 +482,20 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                 txtPatternError.setText(null);
             }
         }
+    }
+    
+    private void fireChanged(String extension, String mimeType) {
+        boolean isChanged = false;
+        if (extension == null) {
+            isChanged |= !txtPattern.getText().equals(IgnoredFilesPreferences.getIgnoredFiles());
+
+            boolean manual = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
+            isChanged |= autoScan.isSelected() == manual;
+
+            isChanged |= !newlyAddedExtensions.isEmpty();
+        } else {
+            isChanged |= !model.isInitialExtensionToMimeMapping(extension, mimeType);
+        }
+        controller.changed(isChanged);
     }
 }

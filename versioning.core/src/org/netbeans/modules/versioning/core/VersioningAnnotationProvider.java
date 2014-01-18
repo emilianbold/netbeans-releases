@@ -366,12 +366,12 @@ public class VersioningAnnotationProvider {
     /**
      * Stores all files which have to be refreshed 
      */
-    private Map<FileSystem, Set<FileObject>> filesToRefresh = new HashMap<FileSystem, Set<FileObject>>();
+    private final Map<FileSystem, Set<FileObject>> filesToRefresh = new HashMap<FileSystem, Set<FileObject>>();
     
     /**
      * Stores all parents from files which have to be refreshed 
      */
-    private Map<FileSystem, Set<FileObject>> parentsToRefresh = new HashMap<FileSystem, Set<FileObject>>();        
+    private final Map<FileSystem, Set<FileObject>> parentsToRefresh = new HashMap<FileSystem, Set<FileObject>>();        
     
     private RequestProcessor rp = new RequestProcessor("Versioning fire FileStatusChanged", 1, true);
     
@@ -402,14 +402,13 @@ public class VersioningAnnotationProvider {
             List<VCSAnnotationEvent> folderEvents = new ArrayList<VCSAnnotationEvent>(); 
 
             synchronized(filesToRefresh) {
-                Set<FileSystem> fileSystems = filesToRefresh.keySet();                
-                if(fileSystems == null || fileSystems.isEmpty()) {
+                if (filesToRefresh.isEmpty()) {
                     return;
                 }
-                for (FileSystem fs : fileSystems) {
+                for (Map.Entry<FileSystem, Set<FileObject>> e : filesToRefresh.entrySet()) {
                     Set<FileObject> files = new HashSet<FileObject>();
                     Set<FileObject> folders = new HashSet<FileObject>();
-                    Set<FileObject> set = filesToRefresh.get(fs);
+                    Set<FileObject> set = e.getValue();
                     for(FileObject fo : set) {
                         if(fo.isFolder()) {
                             folders.add(fo);
@@ -418,6 +417,7 @@ public class VersioningAnnotationProvider {
                         }
                     }        
                     set.clear();
+                    e.setValue(new HashSet<FileObject>());
                     if(files.size() > 0) {
                         fileEvents.add(new VCSAnnotationEvent(files, true, true));
                     }
@@ -433,11 +433,11 @@ public class VersioningAnnotationProvider {
             // createInitializingMenu and fire events for all parent from each file which has to be refreshed
             List<VCSAnnotationEvent> parentEvents = new ArrayList<VCSAnnotationEvent>(); 
             synchronized(parentsToRefresh) {
-                Set<FileSystem> fileSystems = parentsToRefresh.keySet();
-                for (FileSystem fs : fileSystems) {            
-                    Set<FileObject> set = parentsToRefresh.get(fs);
+                for (Map.Entry<FileSystem, Set<FileObject>> e : parentsToRefresh.entrySet()) {
+                    Set<FileObject> set = e.getValue();
                     Set<FileObject> files = new HashSet<FileObject>(set);
                     parentEvents.add(new VCSAnnotationEvent(files, true, false));                                        
+                    e.setValue(new HashSet<FileObject>()); 
                     set.clear();                    
                 }                                
             }       
@@ -520,7 +520,7 @@ public class VersioningAnnotationProvider {
         private final LinkedHashSet<ItemKey<T, KEY>> filesToAnnotate;
         private final RequestProcessor.Task annotationRefreshTask;
         private final String type;
-        private final HashSet<FileObject> refreshedFiles = new HashSet<FileObject>();
+        private HashSet<FileObject> refreshedFiles = new HashSet<FileObject>();
         private boolean allCleared;
 
         Cache(String type) {
@@ -815,7 +815,7 @@ public class VersioningAnnotationProvider {
 
         private void clearEvents() {
             synchronized (writeLock) {
-                refreshedFiles.clear();
+                refreshedFiles = new HashSet<FileObject>();
                 allCleared = false;
             }
         }

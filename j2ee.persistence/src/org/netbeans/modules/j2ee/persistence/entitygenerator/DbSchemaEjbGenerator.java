@@ -303,9 +303,16 @@ public class DbSchemaEjbGenerator {
     
     private void addJoinTable(TableElement table) {
         ForeignKeyElement[] foreignKeys = table.getForeignKeys();
+        //different db may return keys in different orders, see discussion in #237965
+        if(foreignKeys[0].getKeyName() != null && foreignKeys[1].getKeyName()!= null){
+            if(foreignKeys[0].getKeyName().compareTo(foreignKeys[1].getKeyName()) > 0) {//reorder apphabetically
+                ForeignKeyElement tmp = foreignKeys[0];
+                foreignKeys[0] = foreignKeys[1];
+                foreignKeys[1] = tmp;
+            }
+        }
         String tableAName = foreignKeys[0].getReferencedTable().getName().getName();
         String tableBName = foreignKeys[1].getReferencedTable().getName().getName();
-        
         // create role A
         EntityClass roleAHelper = getBean(tableAName);
         EntityClass roleBHelper = getBean(tableBName);
