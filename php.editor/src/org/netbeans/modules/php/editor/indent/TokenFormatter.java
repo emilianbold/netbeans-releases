@@ -711,10 +711,12 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_USE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesBeforeUse + 1 > newLines ? docOptions.blankLinesBeforeUse + 1 : newLines;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_BETWEEN_USE:
                                         indentRule = true;
                                         newLines = 1;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_AFTER_USE:
                                         indentRule = true;
