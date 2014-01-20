@@ -86,7 +86,8 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
     @NbBundle.Messages({
         "# {0} - short script name",
         "# {1} - long script name",
-        "CodingStandardsFixerOptionsPanel.hint=Full path of Coding Standards Fixer script (typically {0} or {1}).",})
+        "CodingStandardsFixerOptionsPanel.hint=Full path of Coding Standards Fixer script (typically {0} or {1}).",
+    })
     private void initCodingStandardsFixer(DocumentListener defaultDocumentListener) {
         codingStandardsFixerHintLabel.setText(Bundle.CodingStandardsFixerOptionsPanel_hint(CodingStandardsFixer.NAME, CodingStandardsFixer.LONG_NAME));
         codingStandardsFixerLevelComboBox.setModel(new DefaultComboBoxModel());
@@ -168,22 +169,22 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         analysisOptions.setCodingStandardsFixerConfig(getCodingStandardsFixerConfig());
         analysisOptions.setCodingStandardsFixerOptions(getCodingStandardsFixerOptions());
     }
-    
+
     @Override
     public boolean isChanged() {
         String saved = AnalysisOptions.getInstance().getCodingStandardsFixerPath();
         String current = getCodingStandardsFixerPath().trim();
-        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerLevel();
         current = getCodingStandardsFixerLevel();
-        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerConfig();
         current = getCodingStandardsFixerConfig();
-        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerOptions();
