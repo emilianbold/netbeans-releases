@@ -19,9 +19,12 @@ PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
+PACKAGE    More                            [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Name                            [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
+PACKAGE    Other                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Second                          [PUBLIC]   null
@@ -72,7 +75,12 @@ PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Name                            [PUBLIC]   More
+PACKAGE    Name                            [PUBLIC]   Other
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Space                           [PUBLIC]   More\Name
+PACKAGE    Space                           [PUBLIC]   Name
+PACKAGE    Space                           [PUBLIC]   Other\Name
 PACKAGE    Space                           [PUBLIC]   Test
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
@@ -266,6 +274,7 @@ CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
 CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
+CLASS      OtherClass                      [PUBLIC]   issue240522.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      Parent7                         [PUBLIC]   useCase2.php
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
@@ -285,6 +294,8 @@ CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      SomeClass                       [PUBLIC]   Name\Space
+CLASS      SomeClass                       [PUBLIC]   issue240522.php
 CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
