@@ -113,7 +113,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 40;
+    private final int BUILD_SCRIPT_VERSION = 41;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -265,7 +265,7 @@ public class CordovaPerformer implements BuildPerformer {
             }
 
             private boolean isAndroidDebugSupported(Project project) {
-                if (CordovaPlatform.getDefault().getVersion().compareTo(new CordovaPlatform.Version("3.3.0")) >= 0) {
+                if (CordovaPlatform.getDefault().getVersion().getApiVersion().compareTo(new CordovaPlatform.Version.SubVersion("3.3.0")) >= 0) {
                     try {
                         FileObject manifestFile = project.getProjectDirectory().getFileObject("platforms/android/AndroidManifest.xml");
                         if (manifestFile == null) {
@@ -402,6 +402,9 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private static String getConfigPath(Project project) {
+        if (CordovaPlatform.getDefault().getVersion().getCliVersion().compareTo(new CordovaPlatform.Version.SubVersion("0.2.0")) >= 0) {
+            return "/" + NAME_CONFIG_XML;
+        }
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
         return (siteRoot==null?WWW_NB_TEMP:siteRoot.getNameExt()) + "/" + NAME_CONFIG_XML; // NOI18N
     }

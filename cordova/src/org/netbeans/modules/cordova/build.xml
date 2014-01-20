@@ -70,7 +70,12 @@ made subject to such option by the copyright holder.
     </scriptdef>
 
     <target name="check-cordova-project">
-        <available file=".cordova" property="cordova.project"/>
+        <condition property="cordova.project">
+            <or>
+                <available file=".cordova"/>
+                <available file="hooks"/>
+            </or>
+        </condition>
     </target>
     
     <target name="upgrade-to-cordova-project" depends="check-cordova-project,check-cordova-version" unless="cordova.project">

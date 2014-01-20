@@ -60,16 +60,16 @@ public abstract class CordovaTask extends Task {
     }
     
     protected File getConfigFile() {
-        File file = new File(
-                getProject().getBaseDir().getAbsolutePath()
-                        + "/" + getProperty("site.root")
-                        + "/config.xml"); // NOI18N    
+        File file = new File(getProject().getBaseDir().getAbsolutePath() + "/config.xml"); // NOI18N    
         if (file.exists()) {
             return file;
         }
 
-        file = new File(getProject().getBaseDir().getAbsolutePath() + "/config.xml"); // NOI18N    
-        
+        file = new File(
+                getProject().getBaseDir().getAbsolutePath()
+                + "/" + getProperty("site.root")
+                + "/config.xml"); // NOI18N    
+
         return file;
     }
 
