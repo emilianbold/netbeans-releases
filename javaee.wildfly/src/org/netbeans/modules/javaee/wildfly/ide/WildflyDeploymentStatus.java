@@ -25,6 +25,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -40,56 +41,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans;
+package org.netbeans.modules.javaee.wildfly.ide;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
- * @author ads
+ * An implementation of the DeploymentStatus interface used to track the
+ * server start/stop progress.
  *
+ * @author Kirill Sorokin
  */
-@ProjectServiceProvider(service={CdiUtil.class}, projectType = {
-    "org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"})
-public class WebCdiUtil extends CdiUtil {
+public class WildflyDeploymentStatus implements DeploymentStatus {
+
+    private final ActionType action;
+    private final CommandType command;
+    private final StateType state;
+    private final String message;
     
-    public WebCdiUtil( Project project ) {
-        super(project);
+    /** Creates a new instance of JBDeploymentStatus */
+    public WildflyDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
+        this.action = action;
+        this.command = command;
+        this.state = state;
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public StateType getState() {
+        return state;
+    }
+
+    public CommandType getCommand() {
+        return command;
+    }
+
+    public ActionType getAction() {
+        return action;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.CdiUtil#getBeansTargetFolder(boolean)
-     */
-    @Override
-    public Collection<FileObject> getBeansTargetFolder( boolean create ) {
-        Project project = getProject();
-        if ( project == null ){
-            return Collections.emptyList();
-        }
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm != null && wm.getDocumentBase() != null) {
-            FileObject webInf = wm.getWebInf();
-            if (webInf == null && create ) {
-                try {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
-                } catch (IOException ex) {
-                    Logger.getLogger( WebCdiUtil.class.getName() ).log( 
-                            Level.WARNING, null, ex );
-                }
-            }
-            return Collections.singleton(webInf);
-        } 
-        return super.getBeansTargetFolder(create);
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
     }
-    
+
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
+    }
+
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
+    }
+
 }
