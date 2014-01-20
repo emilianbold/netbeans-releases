@@ -150,6 +150,28 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
         return compilerDefinitions.systemPreprocessorSymbolsList;
     }
+    
+    private final Map<String,Pair> particularModel = new HashMap<String,Pair>();
+    
+    @Override
+    public List<String> getSystemPreprocessorSymbols(String flags) {
+        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return particular.systemPreprocessorSymbolsList;
+            }
+        }
+        return systemPreprocessorSymbols;
+    }
 
     @Override
     public List<String> getSystemIncludeDirectories() {
@@ -157,6 +179,26 @@ public abstract class CCCCompiler extends AbstractCompiler {
             resetSystemProperties();
         }
         return compilerDefinitions.systemIncludeDirectoriesList;
+    }
+
+    @Override
+    public List<String> getSystemIncludeDirectories(String flags) {
+        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode != 0) {
+                return particular.systemIncludeDirectoriesList;
+            }
+        }
+        return systemIncludeDirectories;
     }
 
     @Override
@@ -1026,6 +1068,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
     }
+   
+    protected abstract MyCallable<Pair> getCallable();
     
     protected static final class Pair {
         public CompilerDefinition systemIncludeDirectoriesList;

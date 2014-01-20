@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -793,7 +794,7 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item) {
+    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item, String importantFlags) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -817,6 +818,7 @@ public class ProjectBridge {
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
             cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().setValue(undefs);
             cccCompilerConfiguration.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
+            cccCompilerConfiguration.getImportantFlags().setValue(getString(importantFlags));
         }
     }
 
@@ -906,6 +908,51 @@ public class ProjectBridge {
             return getCompilerSet().getDirectory();
         }
         return null;
+    }
+    
+    private Pattern cPattern;
+    private boolean cPatternInited;
+    private Pattern cppPattern;
+    private boolean cppPatternInited;
+    public boolean isImportantFlag(String flag, boolean isCPP) {
+        if (isCPP) {
+            if (!cppPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cppPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cppPatternInited = true;
+            }
+            if (cppPattern != null) {
+                return cppPattern.matcher(flag).find();
+            }
+        } else {
+            if (!cPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cPatternInited = true;
+            }
+            if (cPattern != null) {
+                return cPattern.matcher(flag).find();
+            }
+        }
+        return false;
     }
     
     private List<String> systemIncludePathsC;

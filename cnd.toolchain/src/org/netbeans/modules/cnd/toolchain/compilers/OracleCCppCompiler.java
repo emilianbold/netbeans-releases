@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,7 +94,14 @@ import org.openide.util.NbBundle;
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
-        checkModel(res, new MyCallable<Pair>() {
+        checkModel(res, getCallable());
+        
+        return res;
+    }
+    
+    @Override
+    protected MyCallable<Pair> getCallable(){
+        return new MyCallable<Pair>() {
 
             @Override
             public Pair call(String p) {
@@ -103,13 +109,11 @@ import org.openide.util.NbBundle;
                 try {
                     getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ex.printStackTrace(System.err);
                 }
                 return tmp;
             }
-        });
-        
-        return res;
+        };
     }
 
     protected Collection<String> getSystemPaths(String line) {

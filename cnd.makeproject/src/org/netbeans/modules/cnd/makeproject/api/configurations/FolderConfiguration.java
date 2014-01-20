@@ -51,7 +51,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class FolderConfiguration implements ConfigurationAuxObject {
+public class FolderConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary  {
 
     private boolean needSave = false;
     private Configuration configuration;
@@ -211,6 +211,11 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     public XMLEncoder getXMLEncoder() {
         return new FolderXMLCodec(this);
     }
+    
+    @Override
+    public XMLEncoder getXMLEncoder(Dictionaries dictionaries) {
+        return new FolderXMLCodec(this, dictionaries);
+    }
 
     @Override
     public void initialize() {
@@ -232,7 +237,7 @@ public class FolderConfiguration implements ConfigurationAuxObject {
 
     private static class StringRONodeProp extends PropertySupport<String> {
 
-        private String value;
+        private final String value;
 
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);

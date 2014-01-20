@@ -105,7 +105,14 @@ import org.openide.util.NbBundle;
             }
         }
         
-        checkModel(res, new MyCallable<Pair>() {
+        checkModel(res, getCallable());
+        
+        return res;
+    }
+    
+    @Override
+    protected MyCallable<Pair> getCallable(){
+        return new MyCallable<Pair>() {
 
             @Override
             public Pair call(String p) {
@@ -117,15 +124,13 @@ import org.openide.util.NbBundle;
                     }
                     addUnique(tmp.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ex.printStackTrace(System.err);
                 }
                 return tmp;
             }
-        });
-        
-        return res;
+        };
     }
-
+    
     protected Collection<String> getSystemPaths(String line) {
         List<String> res =getIncludePaths(line, "-include"); // NOI18N
         res.addAll(getIncludePaths(line, "-I")); // NOI18N
