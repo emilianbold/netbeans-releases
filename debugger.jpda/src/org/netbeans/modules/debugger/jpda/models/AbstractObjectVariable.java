@@ -106,7 +106,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
-    static int MAX_STRING_LENGTH = 1000000; // Limit retrieved String length to 1M characters to limit memory consumption.
+    static int MAX_STRING_LENGTH = 100000; // Limit retrieved String length to 100K characters to limit memory consumption.
 
     private String          genericType;
     private Field[]         fields;
