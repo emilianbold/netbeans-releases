@@ -45,7 +45,7 @@ package org.netbeans.modules.javaee.wildfly.nodes;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.javaee.wildfly.customizer.CustomizerDataSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.OpenServerLogAction;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.ShowAdminToolAction;
 import org.openide.util.ImageUtilities;
@@ -57,9 +57,9 @@ import org.netbeans.modules.javaee.wildfly.customizer.Customizer;
 import org.netbeans.modules.javaee.wildfly.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
 import javax.swing.Action;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -104,9 +104,9 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     
     public String  getAdminURL() {
         Version version = getDeploymentManager().getServerVersion();
-        if (version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
+        if (version != null && WildflyPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
             return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_70;
-        } else if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
+        } else if (version != null && WildflyPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
             return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_60;
         } 
         return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL;
@@ -138,11 +138,11 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
                 String.class,
                 NbBundle.getMessage(WildflyManagerNode.class, "LBL_DISPLAY_NAME"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_DISPLAY_NAME")                   ) {
             public Object getValue() {
-                return ip.getProperty(JBPluginProperties.PROPERTY_DISPLAY_NAME);
+                return ip.getProperty(WildflyPluginProperties.PROPERTY_DISPLAY_NAME);
             }
             
             public void setValue(Object val) {
-                ip.setProperty(JBPluginProperties.PROPERTY_DISPLAY_NAME, (String)val);
+                ip.setProperty(WildflyPluginProperties.PROPERTY_DISPLAY_NAME, (String)val);
             }
         };
         
@@ -154,7 +154,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
                 String.class,
                 NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_NAME"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_SERVER_NAME")                   ) {
             public Object getValue() {
-                return ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
+                return ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER);
             }
         };
         properties.put(property);
@@ -165,7 +165,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
                 String.class,
                 NbBundle.getMessage(WildflyManagerNode.class, "LBL_SERVER_PATH"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_SERVER_PATH")                   ) {
             public Object getValue() {
-                return ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                return ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
             }
         };
         properties.put(property);
@@ -176,7 +176,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
                 String.class,
                 NbBundle.getMessage(WildflyManagerNode.class, "LBL_HOST"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_HOST")                   ) {
             public Object getValue() {
-                return ip.getProperty(JBPluginProperties.PROPERTY_HOST);
+                return ip.getProperty(WildflyPluginProperties.PROPERTY_HOST);
             }
         };
         properties.put(property);
@@ -187,7 +187,7 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
                 Integer.TYPE,
                 NbBundle.getMessage(WildflyManagerNode.class, "LBL_PORT"),   NbBundle.getMessage(WildflyManagerNode.class, "HINT_PORT")                   ) {
             public Object getValue() {
-                return new Integer(ip.getProperty(JBPluginProperties.PROPERTY_PORT));
+                return new Integer(ip.getProperty(WildflyPluginProperties.PROPERTY_PORT));
             }
         };
         properties.put(property);
@@ -210,12 +210,12 @@ public class WildflyManagerNode extends AbstractNode implements Node.Cookie {
     
     public String getShortDescription() {
         InstanceProperties ip = InstanceProperties.getInstanceProperties(getDeploymentManager().getUrl());
-        String host = ip.getProperty(JBPluginProperties.PROPERTY_HOST);
-        String port = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+        String host = ip.getProperty(WildflyPluginProperties.PROPERTY_HOST);
+        String port = ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
         return  HTTP_HEADER + host + ":" + port + "/"; // NOI18N
     }
     
-    public WildFlyDeploymentManager getDeploymentManager() {
-        return ((WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class));
+    public WildflyDeploymentManager getDeploymentManager() {
+        return ((WildflyDeploymentManager) lookup.lookup(WildflyDeploymentManager.class));
     }
 }

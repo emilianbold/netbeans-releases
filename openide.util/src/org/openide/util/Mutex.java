@@ -289,7 +289,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        readEnter(t);
+        readEnter(t, 0);
 
         try {
             return action.run();
@@ -331,7 +331,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        readEnter(t);
+        readEnter(t, 0);
 
         try {
             return action.run();
@@ -366,7 +366,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        readEnter(t);
+        readEnter(t, 0);
 
         try {
             action.run();
@@ -398,7 +398,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        writeEnter(t);
+        writeEnter(t, 0);
 
         try {
             return action.run();
@@ -437,7 +437,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        writeEnter(t);
+        writeEnter(t, 0);
 
         try {
             return action.run();
@@ -473,7 +473,7 @@ public final class Mutex extends Object {
         }
 
         Thread t = Thread.currentThread();
-        writeEnter(t);
+        writeEnter(t, 0);
 
         try {
             action.run();
@@ -614,14 +614,18 @@ public final class Mutex extends Object {
 
     // priv methods  -----------------------------------------
 
-    /** enters this mutex for writing */
-    final void writeEnter(Thread t) {
-        enter(X, t, true);
+    /** enters this mutex for writing
+     * @param t the value of t
+     * @param timeout the value of timeout */
+    final boolean writeEnter(Thread t, long timeout) {
+        return enter(X, t, timeout);
     }
 
-    /** enters this mutex for reading */
-    final void readEnter(Thread t) {
-        enter(S, t, true);
+    /** enters this mutex for reading
+     * @param t the value of t
+     * @param timeout the value of timeout */
+    final boolean readEnter(Thread t, long timeout) {
+        return enter(S, t, timeout);
     }
 
     private void doLog(String action, Object ... params) {
@@ -633,19 +637,19 @@ public final class Mutex extends Object {
     * @param requested one of S, X
     * @param t
     */
-    private boolean enter(int requested, Thread t, boolean block) {
+    private boolean enter(int requested, Thread t, long timeout) {
         boolean log = LOG.isLoggable(Level.FINER);
 
-        if (log) doLog("Entering {0}, {1}", requested, block); // NOI18N
+        if (log) doLog("Entering {0}, {1}", requested, timeout); // NOI18N
 
-        boolean ret = enterImpl(requested, t, block);
+        boolean ret = enterImpl(requested, t, timeout);
 
         if (log) doLog("Entering exit: {0}", ret); // NOI18N
 
         return ret;
     }
 
-    private boolean enterImpl(int requested, Thread t, boolean block) {
+    private boolean enterImpl(int requested, Thread t, long timeout) {
         QueueCell cell = null;
         int loopc = 0;
 
@@ -724,14 +728,18 @@ public final class Mutex extends Object {
                         return true;
                     }
                 }
-                if (!block) {
+                if (timeout == -1) {
                     return false;
                 }
                 setGrantedMode(CHAIN);
                 cell = chain(requested, t, 0);
             }
             // sync
-            cell.sleep();
+            cell.sleep(timeout);
+            if (timeout > 0) {
+                // exit immediately next round
+                timeout = -1;
+            }
         }
          // for
     }
@@ -757,7 +765,7 @@ public final class Mutex extends Object {
                 throw new IllegalStateException(this.toString());
             }
 
-            enter(mode, t, true);
+            enter(mode, t, 0);
 
             return false;
         }
@@ -768,7 +776,7 @@ public final class Mutex extends Object {
 
         // process grantedMode == X or CHAIN from leaveX OR grantedMode == NONE from leaveS
         if ((getGrantedMode(false) == X) || (getGrantedMode(false) == NONE) || chainFromLeaveX) {
-            enter(mode, t, true);
+            enter(mode, t, 0);
 
             return false;
         } else { // remains grantedMode == CHAIN or S from leaveS, so it will be CHAIN
@@ -1231,7 +1239,7 @@ public final class Mutex extends Object {
                 // the same mode and mutex is not entered in the other mode
                 // assert (mutexMode == S || mutexMode == X)
                 if ((mutexMode == info.mode) && (info.counts[(S + X) - mutexMode] == 0)) {
-                    enter(mutexMode, t, true);
+                    enter(mutexMode, t, 0);
                 } else { // the mutex is held but can not be entered in X mode
                     info.enqueue(mutexMode, run);
 
@@ -1246,7 +1254,7 @@ public final class Mutex extends Object {
                 class Exec implements Runnable {
                     @Override
                     public void run() {
-                        enter(mutexMode, t, true);
+                        enter(mutexMode, t, 0);
                         try {
                             run.run();
                         } finally {
@@ -1258,7 +1266,7 @@ public final class Mutex extends Object {
                 return;
             }
             
-            enter(mutexMode, t, true);
+            enter(mutexMode, t, 0);
             try {
                 run.run();
             } finally {
@@ -1619,13 +1627,16 @@ public final class Mutex extends Object {
         /** current thread will sleep until wakeMeUp is called
         * if wakeMeUp was already called then the thread will not sleep
         */
-        public synchronized void sleep() {
+        public void sleep() {
+            sleep(0);
+        }
+        synchronized void sleep(long timeout) {
             boolean wasInterrupted = false;
             try {
                 while (!signal) {
                     try {
                         long start = System.currentTimeMillis();
-                        wait();
+                        wait(timeout);
                         if (LOG.isLoggable(Level.FINE) && EventQueue.isDispatchThread() && (System.currentTimeMillis() - start) > 1000) {
                             LOG.log(Level.WARNING, toString(), new IllegalStateException("blocking on a mutex from EQ"));
                         }
@@ -1677,11 +1688,41 @@ public final class Mutex extends Object {
         }
 
         public void enterReadAccess() {
-            parent.readEnter(Thread.currentThread());
+            parent.readEnter(Thread.currentThread(), 0);
+        }
+        
+        /** Tries to obtain read access. If the access cannot by
+         * gained by given milliseconds, the method returns without gaining
+         * it.
+         * 
+         * @param timeout amount of milliseconds to wait before giving up.
+         *   <code>0</code> means to wait indefinitely.
+         *   <code>-1</code> means to not wait at all and immediately exit
+         * @return <code>true</code> if the access has been granted, 
+         *   <code>false</code> otherwise
+         * @since 8.37
+         */
+        public boolean tryReadAccess(long timeout) {
+            return parent.readEnter(Thread.currentThread(), timeout);
         }
 
         public void enterWriteAccess() {
-            parent.writeEnter(Thread.currentThread());
+            parent.writeEnter(Thread.currentThread(), 0);
+        }
+        
+        /**
+         * Tries to obtain write access. If the access cannot by gained by given
+         * milliseconds, the method returns without gaining it.
+         *
+         * @param timeout amount of milliseconds to wait before giving up.
+         *   <code>0</code> means to wait indefinitely.
+         *   <code>-1</code> means to not wait at all and immediately exit
+         * @return <code>true</code> if the access has been granted,
+         * <code>false</code> otherwise
+         * @since 8.37
+         */
+        public boolean tryWriteAccess(long timeout) {
+            return parent.writeEnter(Thread.currentThread(), timeout);
         }
 
         public void exitReadAccess() {

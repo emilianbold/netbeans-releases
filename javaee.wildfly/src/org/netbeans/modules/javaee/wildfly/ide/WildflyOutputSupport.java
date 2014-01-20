@@ -73,15 +73,15 @@ import org.openide.windows.InputOutput;
  *
  * @author Petr Hejl
  */
-public final class WildlfyOutputSupport {
+public final class WildflyOutputSupport {
 
-    private static final Logger LOGGER = Logger.getLogger(WildlfyOutputSupport.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyOutputSupport.class.getName());
 
     private static final ExecutionDescriptor DESCRIPTOR = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
 
     // TODO what will happen on server remove actually
-    private static final Map<InstanceProperties, WildlfyOutputSupport> INSTANCE_CACHE
-            = new HashMap<InstanceProperties, WildlfyOutputSupport>();
+    private static final Map<InstanceProperties, WildflyOutputSupport> INSTANCE_CACHE
+            = new HashMap<InstanceProperties, WildflyOutputSupport>();
 
     private static final ExecutorService PROFILER_SERVICE = Executors.newCachedThreadPool();
 
@@ -108,14 +108,14 @@ public final class WildlfyOutputSupport {
     /** GuardedBy("this") */
     private InputReaderTask fileTask;
 
-    private WildlfyOutputSupport(InstanceProperties props) {
+    private WildflyOutputSupport(InstanceProperties props) {
         this.props = props;
     }
 
-    public synchronized static WildlfyOutputSupport getInstance(InstanceProperties props, boolean create) {
-        WildlfyOutputSupport instance = INSTANCE_CACHE.get(props);
+    public synchronized static WildflyOutputSupport getInstance(InstanceProperties props, boolean create) {
+        WildflyOutputSupport instance = INSTANCE_CACHE.get(props);
         if (instance == null && create) {
-            instance = new WildlfyOutputSupport(props);
+            instance = new WildflyOutputSupport(props);
             INSTANCE_CACHE.put(props, instance);
         }
         return instance;
@@ -144,8 +144,8 @@ public final class WildlfyOutputSupport {
 
             @Override
             public void run() {
-                synchronized (WildlfyOutputSupport.class) {
-                    INSTANCE_CACHE.remove(WildlfyOutputSupport.this.props);
+                synchronized (WildflyOutputSupport.class) {
+                    INSTANCE_CACHE.remove(WildflyOutputSupport.this.props);
                 }
 
             }
@@ -200,8 +200,8 @@ public final class WildlfyOutputSupport {
                 fileTask = null;
             }
         } finally {
-            synchronized (WildlfyOutputSupport.class) {
-                INSTANCE_CACHE.remove(WildlfyOutputSupport.this.props);
+            synchronized (WildflyOutputSupport.class) {
+                INSTANCE_CACHE.remove(WildflyOutputSupport.this.props);
             }
         }
     }
@@ -287,7 +287,7 @@ public final class WildlfyOutputSupport {
             if (!check) {
                 return;
             }
-            synchronized (WildlfyOutputSupport.this) {
+            synchronized (WildflyOutputSupport.this) {
                 if (started) {
                    check = false;
                    return;
@@ -296,15 +296,15 @@ public final class WildlfyOutputSupport {
 
             if (profiler) {
                 if (isProfilerReady()) {
-                    synchronized (WildlfyOutputSupport.this) {
+                    synchronized (WildflyOutputSupport.this) {
                         started = true;
-                        WildlfyOutputSupport.this.notifyAll();
+                        WildflyOutputSupport.this.notifyAll();
                     }
                     check = false;
                 } else if (isProfilerInactive()) {
-                    synchronized (WildlfyOutputSupport.this) {
+                    synchronized (WildflyOutputSupport.this) {
                         failed = true;
-                        WildlfyOutputSupport.this.notifyAll();
+                        WildflyOutputSupport.this.notifyAll();
                     }
                     check = false;
                 }
@@ -327,15 +327,15 @@ public final class WildlfyOutputSupport {
                         || WILDFLY_STARTED_ML.matcher(line).matches()) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
-                synchronized (WildlfyOutputSupport.this) {
+                synchronized (WildflyOutputSupport.this) {
                     started = true;
-                    WildlfyOutputSupport.this.notifyAll();
+                    WildflyOutputSupport.this.notifyAll();
                 }
                 check = false;
             } else if (line.indexOf("Shutdown complete") > -1) { // NOI18N
-                synchronized (WildlfyOutputSupport.this) {
+                synchronized (WildflyOutputSupport.this) {
                     failed = true;
-                    WildlfyOutputSupport.this.notifyAll();
+                    WildflyOutputSupport.this.notifyAll();
                 }
                 check = false;
             }
@@ -358,15 +358,15 @@ public final class WildlfyOutputSupport {
         public void run() {
             for (;;) {
                 if (isProfilerReady()) {
-                    synchronized (WildlfyOutputSupport.this) {
+                    synchronized (WildflyOutputSupport.this) {
                         started = true;
-                        WildlfyOutputSupport.this.notifyAll();
+                        WildflyOutputSupport.this.notifyAll();
                     }
                     break;
                 } else if (isProfilerInactive()) {
-                    synchronized (WildlfyOutputSupport.this) {
+                    synchronized (WildflyOutputSupport.this) {
                         failed = true;
-                        WildlfyOutputSupport.this.notifyAll();
+                        WildflyOutputSupport.this.notifyAll();
                     }
                     break;
                 }

@@ -44,7 +44,7 @@
 package org.netbeans.modules.javaee.wildfly;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -64,52 +64,52 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 
 /**
  *
  * @author Petr Hejl
  */
-public class WildFlyDeploymentFactory implements DeploymentFactory {
+public class WildflyDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "wildfly-deployer:"; // NOI18N
     
     private static final String DISCONNECTED_URI = URI_PREFIX + "http://localhost:8080&"; // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(WildFlyDeploymentFactory.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyDeploymentFactory.class.getName());
 
     /**
      * Mapping of a instance properties to a deployment factory.
-     * <i>GuardedBy(WildFlyDeploymentFactory.class)</i>
+     * <i>GuardedBy(WildflyDeploymentFactory.class)</i>
      */
     private final Map<InstanceProperties, DeploymentFactory> factoryCache =
             new WeakHashMap<InstanceProperties, DeploymentFactory>();
 
     /**
      * Mapping of a instance properties to a deployment manager.
-     * <i>GuardedBy(WildFlyDeploymentFactory.class)</i>
+     * <i>GuardedBy(WildflyDeploymentFactory.class)</i>
      */
-    private final Map<InstanceProperties, WildFlyDeploymentManager> managerCache =
-            new WeakHashMap<InstanceProperties, WildFlyDeploymentManager>();
+    private final Map<InstanceProperties, WildflyDeploymentManager> managerCache =
+            new WeakHashMap<InstanceProperties, WildflyDeploymentManager>();
 
-    private final Map<InstanceProperties, WildFlyDeploymentFactory.WildFlyClassLoader> classLoaderCache =
-            new WeakHashMap<InstanceProperties, WildFlyDeploymentFactory.WildFlyClassLoader>();
+    private final Map<InstanceProperties, WildflyDeploymentFactory.WildFlyClassLoader> classLoaderCache =
+            new WeakHashMap<InstanceProperties, WildflyDeploymentFactory.WildFlyClassLoader>();
 
-    private static WildFlyDeploymentFactory instance;
+    private static WildflyDeploymentFactory instance;
 
-    private WildFlyDeploymentFactory() {
+    private WildflyDeploymentFactory() {
         super();
     }
 
-    public static synchronized WildFlyDeploymentFactory getInstance() {
+    public static synchronized WildflyDeploymentFactory getInstance() {
         if (instance == null) {
-            instance = new WildFlyDeploymentFactory();
+            instance = new WildflyDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
 
         }
@@ -147,8 +147,8 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
                 cl = (WildFlyClassLoader) factory.getClass().getClassLoader();
             }
             if (cl == null) {
-                cl = createWildFlyClassLoader(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),
-                            ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+                cl = createWildFlyClassLoader(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),
+                            ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR));
             }
             classLoaderCache.put(ip, cl);
         }
@@ -158,11 +158,11 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
     public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot, String domainRoot) {
         try {
 
-            Version jbossVersion = JBPluginUtils.getServerVersion(new File (serverRoot));
+            Version jbossVersion = WildflyPluginUtils.getServerVersion(new File (serverRoot));
 
             String sep = File.separator;
 
-            File domFile = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot)
+            File domFile = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot)
                     + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
 
             if (!domFile.exists()) {
@@ -176,7 +176,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            File org = new File(serverRoot, JBPluginUtils.getModulesBase(serverRoot) + "org");
+            File org = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot) + "org");
 
             File jboss = new File(org, "jboss");
             File as = new File(jboss, "as");
@@ -201,7 +201,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
 
-            WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildFlyDeploymentFactory.class.getClassLoader());
+            WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildflyDeploymentFactory.class.getClassLoader());
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);
@@ -241,13 +241,13 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildflyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
 
-        synchronized (WildFlyDeploymentFactory.class) {
+        synchronized (WildflyDeploymentFactory.class) {
             InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
             if (ip != null) {
-                WildFlyDeploymentManager dm = managerCache.get(ip);
+                WildflyDeploymentManager dm = managerCache.get(ip);
                 if (dm != null) {
                     return dm;
                 }
@@ -256,7 +256,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
             try {
                 DeploymentFactory df = getFactory(uri);
                 if (df == null) {
-                    throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
+                    throw new DeploymentManagerCreationException(NbBundle.getMessage(WildflyDeploymentFactory.class, "MSG_ERROR_CREATING_DM", uri)); // NOI18N
                 }
 
                 String jbURI = uri;
@@ -277,9 +277,9 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
                 // an excpetion
                 if (jbURI.endsWith("as7")) { // NOI18N
                     jbURI = jbURI + "&serverHost=" // NOI18N
-                            + (ip != null ? ip.getProperty(JBPluginProperties.PROPERTY_HOST) : "localhost"); // NOI18N
+                            + (ip != null ? ip.getProperty(WildflyPluginProperties.PROPERTY_HOST) : "localhost"); // NOI18N
                 }
-                WildFlyDeploymentManager dm = new WildFlyDeploymentManager(df, uri, jbURI, uname, passwd);
+                WildflyDeploymentManager dm = new WildflyDeploymentManager(df, uri, jbURI, uname, passwd);
                 if (ip != null) {
                     managerCache.put(ip, dm);
                 }
@@ -295,7 +295,7 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
-            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildFlyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
+            throw new DeploymentManagerCreationException(NbBundle.getMessage(WildflyDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
 
         try {
@@ -308,17 +308,17 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
             }
 
             if (ip != null) {
-                String root = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+                String root = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
                 if (root == null || !new File(root).isDirectory()) {
                     throw new DeploymentManagerCreationException("Non existent server root " + root); // NOI18N
                 }
-                String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                String server = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
                 if (server == null || !new File(server).isDirectory()) {
                     throw new DeploymentManagerCreationException("Non existent domain root " + server); // NOI18N
                 }
             }
             
-            return new WildFlyDeploymentManager(null, uri, null, null, null);
+            return new WildflyDeploymentManager(null, uri, null, null, null);
         } catch (NoClassDefFoundError e) {
             DeploymentManagerCreationException dmce = new DeploymentManagerCreationException("Classpath is incomplete"); // NOI18N
             dmce.initCause(e);
@@ -327,43 +327,43 @@ public class WildFlyDeploymentFactory implements DeploymentFactory {
     }
 
     public String getProductVersion() {
-        return NbBundle.getMessage (WildFlyDeploymentFactory.class, "LBL_JBossFactoryVersion");
+        return NbBundle.getMessage (WildflyDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(WildFlyDeploymentFactory.class, "SERVER_NAME"); // NOI18N
+        return NbBundle.getMessage(WildflyDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
 
     private DeploymentFactory getFactory(String instanceURL) {
         DeploymentFactory jbossFactory = null;
         try {
             String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
-                                    getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+                                    getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
 
             String domainRoot = InstanceProperties.getInstanceProperties(instanceURL).
-                                    getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                                    getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
 
             // if jbossRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> JBPluginProperties singleton contains
+            // is made from InstanceProperties creation -> WildflyPluginProperties singleton contains
             // install location of the instance being registered
             if (jbossRoot == null) {
-                jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
+                jbossRoot = WildflyPluginProperties.getInstance().getInstallLocation();
             }
 
             // if domainRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> JBPluginProperties singleton contains
+            // is made from InstanceProperties creation -> WildflyPluginProperties singleton contains
             // install location of the instance being registered
             if (domainRoot == null) {
-                domainRoot = JBPluginProperties.getInstance().getDomainLocation();
+                domainRoot = WildflyPluginProperties.getInstance().getDomainLocation();
             }
 
             InstanceProperties ip = InstanceProperties.getInstanceProperties(instanceURL);
-            synchronized (WildFlyDeploymentFactory.class) {
+            synchronized (WildflyDeploymentFactory.class) {
                 if (ip != null) {
                     jbossFactory = (DeploymentFactory) factoryCache.get(ip);
                 }
                if (jbossFactory == null) {
-                    /*Version version = JBPluginUtils.getServerVersion(new File(jbossRoot));
+                    /*Version version = WildflyPluginUtils.getServerVersion(new File(jbossRoot));
                     URLClassLoader loader = (ip != null) ? getWildFlyClassLoader(ip) : createWildFlyClassLoader(jbossRoot, domainRoot);
                     if(version!= null && "7".equals(version.getMajorNumber())) {
                         Class<?> c = loader.loadClass("org.jboss.as.ee.deployment.spi.factories.DeploymentFactoryImpl");
