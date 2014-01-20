@@ -64,7 +64,6 @@ import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
-import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.modules.web.beans.xml.BeansAttributes;
 import org.netbeans.modules.web.beans.xml.WebBeansModel;
 import org.netbeans.modules.web.beans.xml.WebBeansModelFactory;
@@ -340,7 +339,7 @@ public class CdiUtil {
                         sourceGroups[0].getRootFolder(), META_INF);
                 }
                 catch( IOException e ){
-                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
+                    Logger.getLogger( CdiUtil.class.getName() ).log( 
                             Level.WARNING, null, e );
                 }
             }

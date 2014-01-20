@@ -232,7 +232,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
     }
 
     private void handleVarComment() {
-    	commentStartPosition = zzStartRead;
+    	commentStartPosition = getTokenStartPosition();
     	addComment(Comment.Type.TYPE_VARTYPE);
     }
 

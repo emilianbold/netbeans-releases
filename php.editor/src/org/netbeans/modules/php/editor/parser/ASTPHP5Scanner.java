@@ -1511,7 +1511,7 @@ public class ASTPHP5Scanner implements Scanner {
     }
 
     private void handleVarComment() {
-    	commentStartPosition = zzStartRead;
+    	commentStartPosition = getTokenStartPosition();
     	addComment(Comment.Type.TYPE_VARTYPE);
     }
 
