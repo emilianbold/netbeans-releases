@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.javaee.wildfly.config;
 
 import java.beans.PropertyChangeEvent;
@@ -64,7 +63,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.JbossWeb;
 import org.netbeans.modules.javaee.wildfly.config.gen.MessageDestinationRef;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.schema2beans.Common;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -79,15 +78,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Web module deployment configuration handles creation and updating of the 
+ * Web module deployment configuration handles creation and updating of the
  * jboss-web.xml configuration file.
  *
  * @author Stepan Herold, Libor Kotouc
  */
-public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration 
-implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration, 
+public class WarDeploymentConfiguration extends WildflyDeploymentConfiguration
+        implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguration,
         DeploymentPlanConfiguration, PropertyChangeListener {
-    
+
     private File jbossWebFile;
     private JbossWeb jbossWeb;
 
@@ -96,27 +95,28 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
     }
 
     /**
-     * Creates a new instance of WarDeploymentConfiguration 
+     * Creates a new instance of WarDeploymentConfiguration
      */
-    public WarDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public WarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
         super(j2eeModule, version);
         jbossWebFile = j2eeModule.getDeploymentConfigurationFile("WEB-INF/jboss-web.xml"); // NOI18N
         getJbossWeb();
         if (deploymentDescriptorDO == null) {
             try {
-                deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossWebFile));
-                deploymentDescriptorDO.addPropertyChangeListener(this);
-            } catch(DataObjectNotFoundException donfe) {
+                if(FileUtil.toFileObject(jbossWebFile) != null) {
+                    deploymentDescriptorDO = deploymentDescriptorDO.find(FileUtil.toFileObject(jbossWebFile));
+                    deploymentDescriptorDO.addPropertyChangeListener(this);
+                }
+            } catch (DataObjectNotFoundException donfe) {
                 Exceptions.printStackTrace(donfe);
             }
         }
     }
-    
+
     @Override
     public Lookup getLookup() {
         return Lookups.fixed(this);
     }
-    
 
     @Override
     public void dispose() {
@@ -124,7 +124,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
 
     /**
      * Return context path.
-     * 
+     *
      * @return context path or null, if the file is not parseable.
      */
     @Override
@@ -136,7 +136,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         }
         return jbossWeb.getContextRoot();
     }
-    
+
     /**
      * Set context path.
      */
@@ -146,14 +146,14 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         // be moved to the web project
         if (!isCorrectCP(contextPath)) {
             String ctxRoot = contextPath;
-            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath,"/"); //NOI18N
-            StringBuilder buf = new StringBuilder(); 
+            java.util.StringTokenizer tok = new java.util.StringTokenizer(contextPath, "/"); //NOI18N
+            StringBuilder buf = new StringBuilder();
             while (tok.hasMoreTokens()) {
-                buf.append("/"+tok.nextToken()); //NOI18N
+                buf.append("/" + tok.nextToken()); //NOI18N
             }
             ctxRoot = buf.toString();
             NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage (WarDeploymentConfiguration.class, "MSG_invalidCP", contextPath),
+                    NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_invalidCP", contextPath),
                     NotifyDescriptor.Message.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             contextPath = ctxRoot;
@@ -166,7 +166,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
+
     /**
      * Listen to jboss-web.xml document changes.
      */
@@ -212,23 +212,23 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 try {
                     String messageDestinationType = messageDestinationRef.getMessageDestinationType();
                     String destPrefix = "javax.jms.Queue".equals(messageDestinationType) // NOI18N
-                                            ? WildflyMessageDestination.QUEUE_PREFIX : WildflyMessageDestination.TOPIC_PREFIX;
+                            ? WildflyMessageDestination.QUEUE_PREFIX : WildflyMessageDestination.TOPIC_PREFIX;
                     addMsgDestReference(messageDestinationRef.getMessageDestinationRefName(), destPrefix);
                 } catch (ConfigurationException ce) {
                     Exceptions.printStackTrace(ce);
-                }                 
-            }       
+                }
+            }
         }
     }
-    
+
     @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
         addResReference(referenceName, jndiName);
     }
-    
+
     @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
-        
+
         ResourceRef resourceRefs[] = getJbossWeb().getResourceRef();
         for (ResourceRef resourceRef : resourceRefs) {
             String rrn = resourceRef.getResRefName();
@@ -239,13 +239,13 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 }
             }
         }
-        
+
         return null;
     }
 
     /**
      * Add a new resource reference.
-     * 
+     *
      * @param name resource reference name
      */
     private void addResReference(final String name, final String jndiName) throws ConfigurationException {
@@ -270,10 +270,10 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
+
     /**
      * Add a new mail service reference.
-     * 
+     *
      * @param name mail service name
      */
     private void addMailReference(final String name) throws ConfigurationException {
@@ -298,27 +298,25 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
-    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName, 
+
+    public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
 
         addConnectionFactoryReference(connectionFactoryName);
-        
+
         String jndiName = null;
         if (MessageDestination.Type.QUEUE.equals(type)) {
             jndiName = WildflyMessageDestination.QUEUE_PREFIX + destName;
-        }
-        else
-        if (MessageDestination.Type.TOPIC.equals(type)) {
+        } else if (MessageDestination.Type.TOPIC.equals(type)) {
             jndiName = WildflyMessageDestination.TOPIC_PREFIX + destName;
         }
 
         addMsgDestReference(referenceName, jndiName);
     }
-    
+
     /**
      * Add a new connection factory reference.
-     * 
+     *
      * @param name connection factory name
      */
     private void addConnectionFactoryReference(final String name) throws ConfigurationException {
@@ -343,21 +341,22 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
+
     /**
      * Add a new message destination reference.
-     * 
+     *
      * @param name message destination name
      * @param destPrefix MDB destination prefix
      */
     private void addMsgDestReference(final String name, final String jndiName) throws ConfigurationException {
         modifyJbossWeb(new JbossWebModifier() {
+            @Override
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether message destination not already defined
                 MessageDestinationRef mdRefs[] = modifiedJbossWeb.getMessageDestinationRef();
-                for (int i = 0; i < mdRefs.length; i++) {
-                    String mdrn = mdRefs[i].getMessageDestinationRefName();
+                for (MessageDestinationRef mdRef : mdRefs) {
+                    String mdrn = mdRef.getMessageDestinationRefName();
                     if (name.equals(mdrn)) {
                         // already exists
                         return;
@@ -372,29 +371,31 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
+
+    @Override
     public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {
-        
+
         if (Double.parseDouble(j2eeModule.getModuleVersion()) > 2.4) {
             return;
         }
-        
+
         addEjbReference(referenceName, ejbName);
     }
-    
+
     /**
      * Add a new ejb reference.
-     * 
+     *
      * @param name ejb reference name
      */
     private void addEjbReference(final String referenceName, final String ejbName) throws ConfigurationException {
         modifyJbossWeb(new JbossWebModifier() {
+            @Override
             public void modify(JbossWeb modifiedJbossWeb) {
 
                 // check whether resource not already defined
                 EjbRef ejbRefs[] = modifiedJbossWeb.getEjbRef();
-                for (int i = 0; i < ejbRefs.length; i++) {
-                    String ern = ejbRefs[i].getEjbRefName();
+                for (EjbRef ejbRef : ejbRefs) {
+                    String ern = ejbRef.getEjbRefName();
                     if (referenceName.equals(ern)) {
                         // already exists
                         return;
@@ -409,37 +410,33 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             }
         });
     }
-    
+
     /**
      * Return JbossWeb graph. If it was not created yet, load it from the file
      * and cache it. If the file does not exist, generate it.
      *
-     * @return JbossWeb graph or null if the jboss-web.xml file is not parseable.
+     * @return JbossWeb graph or null if the jboss-web.xml file is not
+     * parseable.
      */
     public synchronized JbossWeb getJbossWeb() {
         if (jbossWeb == null) {
-            try {
-                if (jbossWebFile.exists()) {
-                    // load configuration if already exists
-                    try {
-                        jbossWeb = JbossWeb.createGraph(jbossWebFile);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    } catch (RuntimeException re) {
-                        // jboss-web.xml is not parseable, do nothing
-                    }
-                } else {
-                    // create jboss-web.xml if it does not exist yet
-                    jbossWeb = generateJbossWeb();
-                    ResourceConfigurationHelper.writeFile(jbossWebFile, jbossWeb);
+            if (jbossWebFile.exists()) {
+                // load configuration if already exists
+                try {
+                    jbossWeb = JbossWeb.createGraph(jbossWebFile);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                } catch (RuntimeException re) {
+                    // jboss-web.xml is not parseable, do nothing
                 }
-            } catch (ConfigurationException ce) {
-                Exceptions.printStackTrace(ce);
+            } else {
+                jbossWeb = generateJbossWeb();
             }
         }
         return jbossWeb;
     }
-    
+
+    @Override
     public void save(OutputStream os) throws ConfigurationException {
         JbossWeb jbossWeb = getJbossWeb();
         if (jbossWeb == null) {
@@ -453,9 +450,8 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             throw new ConfigurationException(msg, ioe);
         }
     }
-    
+
     // private helper methods -------------------------------------------------
-    
     /**
      * Perform jbossWeb changes defined by the jbossWeb modifier. Update editor
      * content and save changes, if appropriate.
@@ -463,15 +459,18 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
      * @param modifier
      */
     private void modifyJbossWeb(JbossWebModifier modifier) throws ConfigurationException {
+        if(deploymentDescriptorDO == null) {
+            return;
+        }
         assert deploymentDescriptorDO != null : "DataObject has not been initialized yet"; // NIO18N
         try {
             // get the document
-            EditorCookie editor = (EditorCookie)deploymentDescriptorDO.getCookie(EditorCookie.class);
+            EditorCookie editor = (EditorCookie) deploymentDescriptorDO.getCookie(EditorCookie.class);
             StyledDocument doc = editor.getDocument();
             if (doc == null) {
                 doc = editor.openDocument();
             }
-            
+
             // get the up-to-date model
             JbossWeb newJbossWeb = null;
             try {
@@ -498,15 +497,15 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
                 // use the old graph
                 newJbossWeb = oldJbossWeb;
             }
-            
+
             // perform changes
             modifier.modify(newJbossWeb);
-            
+
             // save, if appropriate
             boolean modified = deploymentDescriptorDO.isModified();
             ResourceConfigurationHelper.replaceDocument(doc, newJbossWeb);
             if (!modified) {
-                SaveCookie cookie = (SaveCookie)deploymentDescriptorDO.getCookie(SaveCookie.class);
+                SaveCookie cookie = (SaveCookie) deploymentDescriptorDO.getCookie(SaveCookie.class);
                 if (cookie != null) {
                     cookie.save();
                 }
@@ -522,7 +521,7 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
             throw new ConfigurationException(msg, ioe);
         }
     }
-    
+
     /**
      * Generate JbossWeb graph.
      */
@@ -531,21 +530,24 @@ implements ModuleConfiguration, ContextRootConfiguration, DatasourceConfiguratio
         jbossWeb.setContextRoot(""); // NOI18N
         return jbossWeb;
     }
-    
+
     // TODO: this contextPath fix code will be removed, as soon as it will 
     // be moved to the web project
     private boolean isCorrectCP(String contextPath) {
-        boolean correct=true;
-        if (!contextPath.equals("") && !contextPath.startsWith("/")) correct=false; //NOI18N
-        else if (contextPath.endsWith("/")) correct=false; //NOI18N
-        else if (contextPath.indexOf("//")>=0) correct=false; //NOI18N
+        boolean correct = true;
+        if (!contextPath.equals("") && !contextPath.startsWith("/")) {
+            correct = false; //NOI18N
+        } else if (contextPath.endsWith("/")) {
+            correct = false; //NOI18N
+        } else if (contextPath.indexOf("//") >= 0) {
+            correct = false; //NOI18N
+        }
         return correct;
     }
-    
-    
+
     // private helper interface -----------------------------------------------
-     
     private interface JbossWebModifier {
+
         void modify(JbossWeb modifiedJbossWeb);
     }
 }

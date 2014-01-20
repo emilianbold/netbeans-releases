@@ -56,7 +56,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.ResourceConfigurationHelper;
 import org.netbeans.modules.javaee.wildfly.config.gen.Depends;
 import org.netbeans.modules.javaee.wildfly.config.gen.Mbean;
@@ -97,13 +97,13 @@ public class MessageDestinationSupport {
     //destination service file object
     private FileObject destinationsFO;
     
-    private WildFlyDeploymentManager dm;
+    private WildflyDeploymentManager dm;
 
     public MessageDestinationSupport(File resourceDir, String moduleName) throws IOException {
         this.resourceDir = resourceDir;
         this.destinationsFile = new File(resourceDir, moduleName + MSG_DEST_RESOURCE_NAME_WILDFLY);
         ensureDestinationsFOExists();
-        dm = Lookup.getDefault().lookup(WildFlyDeploymentManager.class);
+        dm = Lookup.getDefault().lookup(WildflyDeploymentManager.class);
     }
 
     /**

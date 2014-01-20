@@ -43,7 +43,7 @@
 package org.netbeans.modules.javaee.wildfly.ide;
 
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 
 /**
  *
@@ -51,9 +51,9 @@ import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
  */
 public class WildFlyInstanceDescriptor implements ServerInstanceDescriptor {
 
-    private final WildFlyDeploymentManager manager;
+    private final WildflyDeploymentManager manager;
 
-    public WildFlyInstanceDescriptor(WildFlyDeploymentManager manager) {
+    public WildFlyInstanceDescriptor(WildflyDeploymentManager manager) {
         this.manager = manager;
     }
 

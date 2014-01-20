@@ -47,7 +47,7 @@ import java.io.IOException;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -84,7 +84,7 @@ public class StopModuleCookieImpl implements StopModuleCookie {
 
     @Override
     public Task stop() {
-        final WildFlyDeploymentManager dm = (WildFlyDeploymentManager) lookup.lookup(WildFlyDeploymentManager.class);
+        final WildflyDeploymentManager dm = (WildflyDeploymentManager) lookup.lookup(WildflyDeploymentManager.class);
         final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(StopModuleCookieImpl.class,
                 "LBL_StopProgress", nameWoExt));

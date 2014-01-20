@@ -59,7 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ivan Sidorkin
  */
-public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
+public class WildflyInstantiatingIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     private static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
 
@@ -155,8 +155,8 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
         Set result = new HashSet();
         
         String displayName =  (String)wizard.getProperty(PROP_DISPLAY_NAME);
-        JBPluginUtils.Version version = JBPluginUtils.getServerVersion(new File(installLocation));
-        String url = WildFlyDeploymentFactory.URI_PREFIX;
+        WildflyPluginUtils.Version version = WildflyPluginUtils.getServerVersion(new File(installLocation));
+        String url = WildflyDeploymentFactory.URI_PREFIX;
         if(version != null && "7".equals(version.getMajorNumber())){
             url += "//"+host + ":" + port+"?targetType=as7";    // NOI18N
         } else {
@@ -168,18 +168,18 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
       
         try {
             Map<String, String> initialProperties = new HashMap<String, String>();
-            initialProperties.put(JBPluginProperties.PROPERTY_SERVER, server);
-            initialProperties.put(JBPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
-            initialProperties.put(JBPluginProperties.PROPERTY_SERVER_DIR, serverPath);
-            initialProperties.put(JBPluginProperties.PROPERTY_ROOT_DIR, installLocation);
-            initialProperties.put(JBPluginProperties.PROPERTY_HOST, host);
-            initialProperties.put(JBPluginProperties.PROPERTY_PORT, port);
-            initialProperties.put(JBPluginProperties.PROPERTY_CONFIG_FILE, configFile);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_SERVER, server);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_DEPLOY_DIR, deployDir);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_SERVER_DIR, serverPath);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_ROOT_DIR, installLocation);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_HOST, host);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_PORT, port);
+            initialProperties.put(WildflyPluginProperties.PROPERTY_CONFIG_FILE, configFile);
 
-            if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
-                initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
-            } else if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0) {
-                initialProperties.put(JBPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_5_JAVA_OPTS);
+            if (version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_6_0_0) >= 0) {
+                initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_6_JAVA_OPTS);
+            } else if (version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_5_0_0) >= 0) {
+                initialProperties.put(WildflyPluginProperties.PROPERTY_JAVA_OPTS, JBOSS_5_JAVA_OPTS);
             }
 
             InstanceProperties ip = InstanceProperties.createInstanceProperties(url,
@@ -206,14 +206,12 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     protected String[] createSteps() {
         if(!skipServerLocationStep){
-            return new String[] { NbBundle.getMessage(JBInstantiatingIterator.class, "STEP_ServerLocation"),  // NOI18N
-                    NbBundle.getMessage(JBInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
-        }else{
-            if (!JBPluginProperties.getInstance().isCurrentServerLocationValid()){
-                return new String[] { NbBundle.getMessage(JBInstantiatingIterator.class, "STEP_ServerLocation"),  // NOI18N
-                        NbBundle.getMessage(JBInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
+            return new String[] { NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_ServerLocation"),  NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
+        } else {
+            if (!WildflyPluginProperties.getInstance().isCurrentServerLocationValid()){
+                return new String[] { NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_ServerLocation"),  NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
             } else {
-                return new String[] { NbBundle.getMessage(JBInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
+                return new String[] { NbBundle.getMessage(WildflyInstantiatingIterator.class, "STEP_Properties") };    // NOI18N
             }
         }
     }
@@ -234,18 +232,16 @@ public class JBInstantiatingIterator implements WizardDescriptor.InstantiatingIt
     
     protected WizardDescriptor.Panel[] createPanels() {
         if (locationPanel == null) {
-            locationPanel = new AddServerLocationPanel(this);
-            
+            locationPanel = new AddServerLocationPanel(this);            
             locationPanel.addChangeListener(this);
         }
         if (propertiesPanel == null) {
-            propertiesPanel = new AddServerPropertiesPanel(this);
-            
+            propertiesPanel = new AddServerPropertiesPanel(this);            
             propertiesPanel.addChangeListener(this);
         }
         
         if (skipServerLocationStep){
-            if (!JBPluginProperties.getInstance().isCurrentServerLocationValid()){
+            if (!WildflyPluginProperties.getInstance().isCurrentServerLocationValid()){
                 return new WizardDescriptor.Panel[] {
                     (WizardDescriptor.Panel)locationPanel,
                             (WizardDescriptor.Panel)propertiesPanel

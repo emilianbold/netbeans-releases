@@ -65,10 +65,10 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
 
     private WizardDescriptor wizard;
     private AddServerPropertiesVisualPanel component;
-    private JBInstantiatingIterator instantiatingIterator;
+    private WildflyInstantiatingIterator instantiatingIterator;
     
     /** Creates a new instance of AddServerPropertiesPanel */
-    public AddServerPropertiesPanel(JBInstantiatingIterator instantiatingIterator) {
+    public AddServerPropertiesPanel(WildflyInstantiatingIterator instantiatingIterator) {
         this.instantiatingIterator = instantiatingIterator;
     }
     
@@ -82,14 +82,14 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         if(panel.isLocalServer()){
             // wrong domain path
             String path = panel.getDomainPath();
-            File serverDirectory = new File(JBPluginProperties.getInstance().getInstallLocation());
+            File serverDirectory = new File(WildflyPluginProperties.getInstance().getInstallLocation());
             
             if (path.length() < 1) {
                 wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_SpecifyDomainPath"));  //NOI18N
                 return false;
             }
-            if (!JBPluginUtils.isGoodJBInstanceLocation(serverDirectory, new File(path))) {
+            if (!WildflyPluginUtils.isGoodJBInstanceLocation(serverDirectory, new File(path))) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_WrongDomainPath"));  //NOI18N
                 return false;
@@ -104,7 +104,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
 
                 String property = null;
                 try {
-                    property = props.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                    property = props.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
                 } catch (IllegalStateException ex) {
                     // instance removed
                 }
@@ -156,7 +156,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         instantiatingIterator.setPort(port);
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());
-        instantiatingIterator.setDeployDir(JBPluginUtils.getDeployDir( panel.getDomainPath()));        
+        instantiatingIterator.setDeployDir(WildflyPluginUtils.getDeployDir( panel.getDomainPath()));        
         
         return true;
     } 

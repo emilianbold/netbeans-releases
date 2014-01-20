@@ -55,7 +55,7 @@ import org.openide.filesystems.FileUtil;
  * Plugin Properties Singleton class
  * @author Ivan Sidorkin
  */
-public class JBPluginProperties {
+public class WildflyPluginProperties {
     
     public static final String PROPERTY_DISPLAY_NAME ="displayName";//NOI18N
     public static final String PROPERTY_SERVER = "server";//NOI18N
@@ -67,15 +67,15 @@ public class JBPluginProperties {
     public static final String PROPERTY_JAVA_OPTS = "java_opts"; // NOI18N
     public static final String PROPERTY_CONFIG_FILE = "config_file"; // NOI18N
     
-    private static JBPluginProperties pluginProperties = null;
+    private static WildflyPluginProperties pluginProperties = null;
     private String installLocation;
     private String domainLocation;
     private String configLocation;
     
     
-    public static JBPluginProperties getInstance(){
+    public static WildflyPluginProperties getInstance(){
         if(pluginProperties==null){
-            pluginProperties = new JBPluginProperties();
+            pluginProperties = new WildflyPluginProperties();
         }
         return pluginProperties;
     }
@@ -83,7 +83,7 @@ public class JBPluginProperties {
     
     
     /** Creates a new instance of */
-    private JBPluginProperties() {
+    private WildflyPluginProperties() {
         java.io.InputStream inStream = null;
         try {
             try {
@@ -169,7 +169,7 @@ public class JBPluginProperties {
 
     public boolean isCurrentServerLocationValid() {
         if (getInstallLocation() != null) {
-            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()));
+            return WildflyPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()));
         }
 
         return false;
