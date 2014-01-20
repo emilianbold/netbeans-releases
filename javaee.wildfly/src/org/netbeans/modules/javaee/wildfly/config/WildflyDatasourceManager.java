@@ -59,13 +59,13 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.gen.DatasourceType;
 import org.netbeans.modules.javaee.wildfly.config.gen.Datasources;
 import org.netbeans.modules.javaee.wildfly.config.gen.DsSecurityType;
 import org.netbeans.modules.javaee.wildfly.config.gen.PoolType;
 import org.netbeans.modules.javaee.wildfly.config.xml.ConfigurationParser;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -90,14 +90,14 @@ public final class WildflyDatasourceManager implements DatasourceManager {
     private final FileObject deployDir;
     private final FileObject configFile;
 
-    private final WildFlyDeploymentManager dm;
+    private final WildflyDeploymentManager dm;
 
-    public WildflyDatasourceManager(WildFlyDeploymentManager dm) {
+    public WildflyDatasourceManager(WildflyDeploymentManager dm) {
         this.dm = dm;
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
-        String deployDirPath = ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
+        String deployDirPath = ip.getProperty(WildflyPluginProperties.PROPERTY_DEPLOY_DIR);
         deployDir = FileUtil.toFileObject(new File(deployDirPath));
-        configFile = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
+        configFile = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE)));
     }
 
     @Override
@@ -108,7 +108,6 @@ public final class WildflyDatasourceManager implements DatasourceManager {
     @Override
     public void deployDatasources(Set<Datasource> datasources)
             throws ConfigurationException, DatasourceAlreadyExistsException {
-//        return;
         Set<Datasource> deployedDS = getDatasources();
         Map<String, Datasource> ddsMap = transform(deployedDS); // for faster searching
 
@@ -174,6 +173,13 @@ public final class WildflyDatasourceManager implements DatasourceManager {
             PoolType pool = new PoolType();
             pool.setMinPoolSize(Long.parseLong(ds.getMinPoolSize()));
             pool.setMaxPoolSize(Long.parseLong(ds.getMaxPoolSize()));
+            lds.setPool(pool);
+            String poolName = ds.getJndiName();
+            int index = ds.getJndiName().lastIndexOf('/');
+            if(index > 0) {
+                poolName = ds.getJndiName().substring(index);
+            }
+            lds.setPoolName(poolName);
             deployedDSGraph.addDatasource(lds);
         }
 
@@ -193,7 +199,6 @@ public final class WildflyDatasourceManager implements DatasourceManager {
 
             writeFile(dsXMLFile, deployedDSGraph);
         }
-
     }
 
     private Map<String, Datasource> transform(Set<Datasource> datasources) {

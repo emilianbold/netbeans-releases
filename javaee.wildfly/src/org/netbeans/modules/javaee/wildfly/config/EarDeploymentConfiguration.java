@@ -52,7 +52,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.javaee.wildfly.config.gen.JbossApp;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -80,7 +80,7 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public EarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
         super(j2eeModule, version);
         jbossAppFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-app.xml"); // NOI18N
         getJbossApp();

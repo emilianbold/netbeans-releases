@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import java.util.Set;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 
 /**
- * An implementation of the DeploymentStatus interface used to track the
- * server start/stop progress.
  *
- * @author Kirill Sorokin
+ * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
-public class JBDeploymentStatus implements DeploymentStatus {
+public class WildflyJdbcDriverDeployer implements JDBCDriverDeployer {
 
-    private final ActionType action;
-    private final CommandType command;
-    private final StateType state;
-    private final String message;
-    
-    /** Creates a new instance of JBDeploymentStatus */
-    public JBDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-        this.action = action;
-        this.command = command;
-        this.state = state;
-        this.message = message;
+    private final WildflyDeploymentManager dm;
+
+    public WildflyJdbcDriverDeployer(DeploymentManager dm) {
+        this.dm = (WildflyDeploymentManager) dm;
     }
 
-    public String getMessage() {
-        return message;
+    @Override
+    public boolean supportsDeployJDBCDrivers(Target target) {
+        return true;
     }
 
-    public StateType getState() {
-        return state;
-    }
-
-    public CommandType getCommand() {
-        return command;
-    }
-
-    public ActionType getAction() {
-        return action;
-    }
-    
-    public boolean isRunning() {
-        return StateType.RUNNING.equals(state);
-    }
-
-    public boolean isFailed() {
-        return StateType.FAILED.equals(state);
-    }
-
-    public boolean isCompleted() {
-        return StateType.COMPLETED.equals(state);
+    @Override
+    public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
