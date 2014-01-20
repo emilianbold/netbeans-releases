@@ -241,6 +241,7 @@ CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
 CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
+CLASS      OtherClass                      [PUBLIC]   issue240522.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      Parent7                         [PUBLIC]   useCase2.php
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
@@ -258,6 +259,7 @@ CLASS      SecondClass                     [PUBLIC]   test226632.php
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      SomeClass                       [PUBLIC]   issue240522.php
 CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
