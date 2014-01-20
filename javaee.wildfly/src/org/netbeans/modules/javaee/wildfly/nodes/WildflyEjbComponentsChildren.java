@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -83,7 +83,7 @@ public class WildflyEjbComponentsChildren extends WildflyAsyncChildren implement
         @Override
         public void run() {
             try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
                 keys.addAll(dm.getClient().listDestinationForDeployment(lookup, deployment));
                 keys.addAll(ejbsComponents);
             } catch (Exception ex) {

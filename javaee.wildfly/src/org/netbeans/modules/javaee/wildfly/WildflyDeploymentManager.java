@@ -73,8 +73,8 @@ import org.netbeans.modules.javaee.wildfly.deploy.WildflyDeploymentStatus;
 import org.netbeans.modules.javaee.wildfly.deploy.WildflyProgressObject;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyModule;
 import org.netbeans.modules.javaee.wildfly.ide.commands.WildflyClient;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.util.Exceptions;
 
@@ -82,21 +82,19 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Hejl
  */
-public class WildFlyDeploymentManager implements DeploymentManager2 {
+public class WildflyDeploymentManager implements DeploymentManager2 {
 
     private static final Version JBOSS_8_0_0 = new Version("8.0.0"); // NOI18N
 
     private static final int DEBUGGING_PORT = 8787;
-    private static final int CONTROLLER_PORT = 9999;
+    private static final int CONTROLLER_PORT = 9990;
 
     private final WildflyClient client;
 
     /**
-     * Stores information about running instances. instance is represented by
-     * its InstanceProperties, running state by Boolean.TRUE, stopped state
-     * Boolean.FALSE. WeakHashMap should guarantee erasing of an unregistered
-     * server instance bcs instance properties are also removed along with
-     * instance.
+     * Stores information about running instances. instance is represented by its InstanceProperties, running state by
+     * Boolean.TRUE, stopped state Boolean.FALSE. WeakHashMap should guarantee erasing of an unregistered server instance bcs
+     * instance properties are also removed along with instance.
      */
     private static final Map<InstanceProperties, Boolean> PROPERTIES_TO_IS_RUNNING
             = Collections.synchronizedMap(new WeakHashMap());
@@ -112,7 +110,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
      */
     private boolean needsRestart;
 
-    public WildFlyDeploymentManager(DeploymentFactory df, String realUri,
+    public WildflyDeploymentManager(DeploymentFactory df, String realUri,
             String jbUri, String username, String password) {
         this.df = df;
         this.realUri = realUri;
@@ -125,8 +123,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Returns true if the given instance properties are present in the map and
-     * value equals true. Otherwise return false.
+     * Returns true if the given instance properties are present in the map and value equals true. Otherwise return false.
      */
     public static boolean isRunningLastCheck(InstanceProperties ip) {
         return PROPERTIES_TO_IS_RUNNING.containsKey(ip) && PROPERTIES_TO_IS_RUNNING.get(ip).equals(Boolean.TRUE);
@@ -148,7 +145,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.REDEPLOY, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                for(TargetModuleID tmid : tmids) {
+                for (TargetModuleID tmid : tmids) {
                     ((WildflyTargetModuleID) tmid).setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
                     progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
                 }
@@ -176,7 +173,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, ""));
         try {
             if (this.getClient().deploy(deployment)) {
-                for(WildflyTargetModuleID tmid : tmids) {
+                for (WildflyTargetModuleID tmid : tmids) {
                     tmid.setContextURL(this.getClient().getWebModuleURL(tmid.getModuleID()));
                     progress.fireProgressEvent(tmid, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, ""));
                 }
@@ -192,7 +189,6 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
 
     @Override
     public Target[] getTargets() throws IllegalStateException {
-        // XXX WILDFLY IMPLEMENT
         return new Target[]{new Target() {
 
             @Override
@@ -361,13 +357,13 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
 
     public String getHost() {
         String host = InstanceProperties.getInstanceProperties(realUri).
-                getProperty(JBPluginProperties.PROPERTY_HOST);
+                getProperty(WildflyPluginProperties.PROPERTY_HOST);
         return host;
     }
 
     public int getPort() {
         String port = InstanceProperties.getInstanceProperties(realUri).
-                getProperty(JBPluginProperties.PROPERTY_PORT);
+                getProperty(WildflyPluginProperties.PROPERTY_PORT);
         return new Integer(port).intValue();
     }
 
@@ -392,16 +388,16 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Mark the server with a needs restart flag. This may be needed for
-     * instance when JDBC driver is deployed to a running server.
+     * Mark the server with a needs restart flag. This may be needed for instance when JDBC driver is deployed to a running
+     * server.
      */
     public synchronized void setNeedsRestart(boolean needsRestart) {
         this.needsRestart = needsRestart;
     }
 
     /**
-     * Returns true if the server needs to be restarted. This may occur for
-     * instance when JDBC driver was deployed to a running server
+     * Returns true if the server needs to be restarted. This may occur for instance when JDBC driver was deployed to a running
+     * server
      */
     public synchronized boolean getNeedsRestart() {
         return needsRestart;
@@ -471,7 +467,7 @@ public class WildFlyDeploymentManager implements DeploymentManager2 {
         progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING, null));
         try {
-            if (client.addMessageDestinations(destinations))  {
+            if (client.addMessageDestinations(destinations)) {
                 progress.fireProgressEvent(null, new WildflyDeploymentStatus(
                         ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.COMPLETED, null));
             }
