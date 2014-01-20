@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
+package org.netbeans.modules.remote.test;
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 
 /**
- * Detect additional include paths and macros from compiler options.
- * For example:
- * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
- * Convert -xopenmp to _OPENMP macro
- * 
- * @author Alexander Simon
+ *
+ * @author vkvashin
  */
-public interface UserOptionsProvider {
-    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserUndefinedMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(ExecutionEnvironment env);
+public class RemoteFSTCKTestSuite extends RemoteFSTCKTestCase {
+
+    public RemoteFSTCKTestSuite(Test test) {
+        super(test);
+    }
+    
+    public static Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTestSuite(RemoteFSTCKFileSystemTest.FileSystemTestHidEx.class);
+        suite.addTestSuite(RemoteFSTCKFileObjectTest.FileObjectTestHidEx.class);
+        suite.addTestSuite(RemoteFSTCKUrlMapperTest.URLMapperTestHiddenEx.class);
+        suite.addTestSuite(RemoteFSTCKFileUtilTest.FileUtilTestHiddenEx.class);        
+        suite.addTestSuite(RemoteFSTCKTempFileObjectTest.TempFileObjectTestHidEx.class);
+        return new RemoteFSTCKTempFileObjectTest(suite);
+    }        
 }

@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
  * @author Alexander Simon
  */
 public class FileConfigurationImpl extends NodeConfigurationImpl implements FileConfiguration {
-    private SourceFileProperties sourceFile;
+    private final SourceFileProperties sourceFile;
     
     public FileConfigurationImpl(SourceFileProperties source) {
         sourceFile = source;
@@ -99,5 +99,10 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
     @Override
     public LanguageStandard getLanguageStandard() {
         return sourceFile.getLanguageStandard();
+    }
+
+    @Override
+    public String getImportantFlags() {
+        return sourceFile.getImportantFlags();
     }
 }

@@ -73,6 +73,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -1208,7 +1209,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
                 }
                 for (RemoteFileObject deleted : filesToFireDeleted) {
-                    fireDeletedEvent(this.getOwnerFileObject(), deleted, interceptor, expected);
+                    fireDeletedEvent(this.getOwnerFileObject(), deleted, interceptor, expected, true);
                 }
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObject fo = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
@@ -1250,7 +1251,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected) {
+    private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, 
+            FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected, boolean recursive) {
+        if (recursive) {
+            RemoteFileObjectBase[] children = fo.getImplementor().getExistentChildren(true);
+            for (RemoteFileObjectBase c : children) {
+                Enumeration<FileChangeListener> listeners = c.getListeners();
+                RemoteFileObject childFO = c.getOwnerFileObject();
+                if (interceptor != null) {
+                    interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(childFO));
+                }
+                c.fireFileDeletedEvent(listeners, new FileEvent(childFO, childFO, expected));
+                RemoteFileObjectBase p = c.getParent();
+                p.fireFileDeletedEvent(p.getListeners(), new FileEvent(p.getOwnerFileObject(), childFO, expected));
+            }
+        }
         if (interceptor != null) {
             interceptor.deletedExternally(FilesystemInterceptorProvider.toFileProxy(fo));
         }

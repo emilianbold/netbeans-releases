@@ -79,16 +79,16 @@ public class ModelSource implements SourceFileProperties {
         if (TRACE_AMBIGUOUS){logger.setLevel(Level.ALL);}
     }
 
-    private Item item;
-    private CsmFile file;
-    private Map<String,List<String>> searchBase;
-    private Map<String,Item> projectSearchBase;
-    private PkgConfig pkgConfig;
+    private final Item item;
+    private final CsmFile file;
+    private final Map<String,List<String>> searchBase;
+    private final Map<String,Item> projectSearchBase;
+    private final PkgConfig pkgConfig;
     private String itemPath;
     private List<String> userIncludePaths;
-    private Set<String> includedFiles = new HashSet<String>();
+    private final Set<String> includedFiles = new HashSet<String>();
     private Map<String,String> userMacros;
-    private boolean preferLocal;
+    private final boolean preferLocal;
     
     public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, Map<String,Item> projectSearchBase, PkgConfig pkgConfig, boolean preferLocal){
         this.item = item;
@@ -390,6 +390,11 @@ public class ModelSource implements SourceFileProperties {
     @Override
     public String getCompileLine() {
         return null;
+    }
+
+    @Override
+    public String getImportantFlags() {
+        return item.getImportantFlags();
     }
 }
 
