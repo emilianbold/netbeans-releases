@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,7 +83,7 @@ public class WebCdiUtil extends CdiUtil {
                 try {
                     webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
                 } catch (IOException ex) {
-                    Logger.getLogger( CdiAnalysisResult.class.getName() ).log( 
+                    Logger.getLogger( WebCdiUtil.class.getName() ).log( 
                             Level.WARNING, null, ex );
                 }
             }
