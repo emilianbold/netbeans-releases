@@ -144,6 +144,8 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     protected void paintDisplayerBackground( Graphics g, JComponent c ) {
         
         int tabCount = getDataModel().size();
+        if( 0 == tabCount )
+            return;
         int x = getLayoutModel().getX( tabCount-1 );
         x += getLayoutModel().getW( tabCount-1 )-5;
         int y = 0;
