@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
 import org.eclipse.core.runtime.CoreException;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
@@ -55,6 +58,8 @@ import org.netbeans.modules.jira.client.spi.JiraVersion;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -76,6 +81,7 @@ public class JiraAutoupdate {
     private final Set<JiraRepository> repos = new WeakSet<>();
     
     private final AutoupdateSupport support = new AutoupdateSupport(new AutoupdateCallback(), JIRA_MODULE_CODE_NAME, NbBundle.getMessage(Jira.class, "LBL_ConnectorName"));
+    private boolean connectorNotified;
 
     private JiraAutoupdate() { }
 
@@ -95,6 +101,12 @@ public class JiraAutoupdate {
     public void checkAndNotify(JiraRepository repository) {
         repos.add(repository);
         support.checkAndNotify(repository.getUrl());
+        
+        JiraVersion serverVersion = getSupportedServerVersion(repository);
+        JiraVersion version50 = JiraConnectorSupport.getInstance().getConnector().createJiraVersion("5.0.0");
+        if(serverVersion.compareTo(version50) >= 0) {
+            askToChangeConnector();
+        } 
     }
 
     public JiraVersion getSupportedServerVersion(final JiraRepository repository) {
@@ -154,4 +166,24 @@ public class JiraAutoupdate {
             return JiraAutoupdate.this.isSupportedVersion(JiraConnectorSupport.getInstance().getConnector().createJiraVersion(version));
         }
     };    
+    
+    @NbBundle.Messages({"CTL_Restart=Change Connector",
+                        "CTL_RestartClickHere=You are accessing a JIRA server with a version higher than 5.0. "
+                                + "Click here to change your connector settings."})
+    private void askToChangeConnector() {
+        if( connectorNotified ) {
+            return;
+        }
+        connectorNotified = true;
+        NotificationDisplayer.getDefault().notify(
+            Bundle.CTL_Restart(),
+            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/restart.png", true ), //NOI18N
+            Bundle.CTL_RestartClickHere(), new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    OptionsDisplayer.getDefault().open("Team/Tasks"); // NOI18N
+                }
+            },
+            NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
+    }  
 }
