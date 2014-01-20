@@ -53,10 +53,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.analysis.commands.CodingStandardsFixer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.awt.HtmlBrowser;
@@ -113,6 +115,7 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         codingStandardsFixerTextField.setText(path);
     }
 
+    @CheckForNull
     public String getCodingStandardsFixerLevel() {
         return (String) codingStandardsFixerLevelComboBox.getSelectedItem();
     }
@@ -179,7 +182,7 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerLevel();
         current = getCodingStandardsFixerLevel();
-        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? StringUtils.hasText(current) : !saved.equals(current)) {
             return true;
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerConfig();
