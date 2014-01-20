@@ -194,7 +194,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     particularModel.put(flags, particular);
                 }
             }
-            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode != 0) {
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
                 return particular.systemIncludeDirectoriesList;
             }
         }
