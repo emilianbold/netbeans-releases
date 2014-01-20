@@ -439,12 +439,11 @@ public class StatusCommand extends GitCommand {
             GitStatus.Status statusHeadWC;
             GitStatus.Status statusHeadIndex;
             if (symLinks.size() == 1) {
+                statusIndexWC = status.getStatusIndexWC();
                 if (status.isTracked()) {
-                    statusIndexWC = status.getStatusIndexWC();
                     statusHeadIndex = status.getStatusHeadIndex();
                     statusHeadWC = status.getStatusHeadWC();
                 } else {
-                    statusIndexWC = GitStatus.Status.STATUS_ADDED;
                     statusHeadIndex = GitStatus.Status.STATUS_NORMAL;
                     statusHeadWC = GitStatus.Status.STATUS_ADDED;
                 }
