@@ -1330,9 +1330,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
             if (Utilities.isMac()) {
                 String browserArgs = jfxProps.getBrowserPaths().get(sel + "-args"); //NOI18N
-                if (browserArgs != null && !browserArgs.isEmpty()) {
-                    configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS, browserArgs);
-                }
+                configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS, browserArgs);
             } else {
                 configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS, null);
             }
@@ -1726,7 +1724,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                                 String browserArgs = args.substring(0, args.indexOf("{")).trim(); //NOI18N
                                 jfxProps.getBrowserPaths().put(browser.getDisplayName() + "-args", browserArgs); //NOI8N
                             } else {
-                                jfxProps.getBrowserPaths().put(browser.getDisplayName() + "-args", ""); //NOI8N
+                                jfxProps.getBrowserPaths().put(browser.getDisplayName() + "-args", null); //NOI8N
                             }
                         }
                         jfxProps.getBrowserPaths().put(browser.getDisplayName(), path.toString());

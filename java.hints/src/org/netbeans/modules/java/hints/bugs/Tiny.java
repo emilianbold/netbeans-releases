@@ -310,7 +310,15 @@ public class Tiny {
     private static int indent(HintContext ctx, Tree t) {
         long start = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), t);
         LineMap lm = ctx.getInfo().getCompilationUnit().getLineMap();
-        long lineStart = lm.getStartPosition(lm.getLineNumber(start));
+        // see defect #240493; incorrect data may be provided by Lombok processing.
+        if (start == -1) {
+            return -1;
+        }
+        long lno = lm.getLineNumber(start);
+        if (lno < 1) {
+            return -1;
+        }
+        long lineStart = lm.getStartPosition(lno);
         String text = ctx.getInfo().getText();
         CodeStyle cs = CodeStyle.getDefault(ctx.getInfo().getFileObject());
         int indent = 0;

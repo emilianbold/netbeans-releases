@@ -234,6 +234,9 @@ public class InstanceRefFinder extends TreePathScanner {
      */
     private void addInstanceForConstructor(Element el) {
         TypeElement pt = findEnclosingType(el);
+        if (pt == null) {
+            return;
+        }
         switch (pt.getNestingKind()) {
             case ANONYMOUS:
                 // anonymous class can be moved, but they contain an implicit instance of this
