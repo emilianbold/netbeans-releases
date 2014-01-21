@@ -198,8 +198,12 @@ public class RemoteLinksChangeLinkTestCase2 extends RemoteFileTestBase {
             System.err.printf("testClassCast_iz209461 links count:     %d\n", childLinkCount.get());
             System.err.printf("testClassCast_iz209461 null count:      %d\n", nullCount.get());
 
-            assertTrue("Exceptions", exceptions.isEmpty());
-
+            if (!exceptions.isEmpty()) {
+                System.err.printf("There were %d exceptions; throwing first one.\n", exceptions.size());
+                exceptions.iterator().next().printStackTrace(System.err);
+                assertTrue("Exceptions", exceptions.isEmpty());
+            }
+            
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
