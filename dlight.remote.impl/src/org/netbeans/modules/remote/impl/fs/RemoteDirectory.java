@@ -168,21 +168,48 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(FileObject child) {
-        try {
-            DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt(), false); // it will fire events itself
-        } catch (ConnectException ex) {
-            RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
-        } catch (IOException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (ExecutionException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
-            // too late
-        }
+    protected void postDeleteChild(RemoteFileObject child) {
+        // leave old implementation for a while (under a flag, by default use new impl.)
+        if (RemoteFileSystemUtils.getBoolean("remote.fast.delete", true)) {
+            Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+            writeLock.lock();
+            try {
+                DirectoryStorage storage = getExistingDirectoryStorage();
+                if (storage == DirectoryStorage.EMPTY) {
+                    Exceptions.printStackTrace(new IllegalStateException("Update stat is called but remote directory cache does not exist")); // NOI18N
+                } else {
+                    List<DirEntry> entries = storage.listValid(child.getNameExt());
+                    DirectoryStorage newStorage = new DirectoryStorage(getStorageFile(), entries);
+                    try {
+                        newStorage.store();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex); // what else can we do?..
+                    }
+                    synchronized (refLock) {
+                        storageRef = new SoftReference<DirectoryStorage>(newStorage);
+                    }
+                }
+            } finally {
+                writeLock.unlock();
+            }
+            fireDeletedEvent(this.getOwnerFileObject(), child, false, true);
+            //RemoteFileSystemTransport.scheduleRefresh(getExecutionEnvironment(), Arrays.asList(getPath()));
+        } else {
+            try {
+                DirectoryStorage ds = refreshDirectoryStorage(child.getNameExt(), false); // it will fire events itself
+            } catch (ConnectException ex) {
+                RemoteLogger.getInstance().log(Level.INFO, "Error post removing child " + child, ex);
+            } catch (IOException ex) {
+                RemoteLogger.finest(ex, this);
+            } catch (ExecutionException ex) {
+                RemoteLogger.finest(ex, this);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                RemoteLogger.finest(ex, this);
+            } catch (CancellationException ex) {
+                // too late
+            }
+        }        
     }
     
     @Override
@@ -1204,13 +1231,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             // fire all event under lockImpl
             if (changed) {
                 dropMagic();
-                FilesystemInterceptorProvider.FilesystemInterceptor interceptor = null;
-                if (USE_VCS) {
-                    interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
-                }
                 for (RemoteFileObject deleted : filesToFireDeleted) {
-                    fireDeletedEvent(this.getOwnerFileObject(), deleted, interceptor, expected, true);
+                    fireDeletedEvent(this.getOwnerFileObject(), deleted, expected, true);
                 }
+
+                FilesystemInterceptorProvider.FilesystemInterceptor interceptor = 
+                        USE_VCS ? FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem()) : null;
+
                 for (DirEntry entry : entriesToFireCreated) {
                     RemoteFileObject fo = getFileSystem().getFactory().createFileObject(this, entry).getOwnerFileObject();
                     if (interceptor != null && expectedCreated != null && !expectedCreated.equals(entry)) {
@@ -1251,8 +1278,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
     
-    private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, 
-            FilesystemInterceptorProvider.FilesystemInterceptor interceptor, boolean expected, boolean recursive) {
+    private void fireDeletedEvent(RemoteFileObject parent, RemoteFileObject fo, boolean expected, boolean recursive) {
+
+        FilesystemInterceptorProvider.FilesystemInterceptor interceptor = 
+                USE_VCS ? FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem()) : null;
+
         if (recursive) {
             RemoteFileObjectBase[] children = fo.getImplementor().getExistentChildren(true);
             for (RemoteFileObjectBase c : children) {

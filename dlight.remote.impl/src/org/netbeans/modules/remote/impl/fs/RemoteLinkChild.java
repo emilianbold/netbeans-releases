@@ -89,7 +89,7 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
     
     @Override
-    protected void postDeleteChild(FileObject child) {
+    protected void postDeleteChild(RemoteFileObject child) {
         getCanonicalDelegate().postDeleteChild(child);
     }
 

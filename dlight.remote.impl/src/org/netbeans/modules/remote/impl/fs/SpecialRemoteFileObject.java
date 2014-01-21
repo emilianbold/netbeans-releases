@@ -117,7 +117,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(FileObject child) {
+    protected void postDeleteChild(RemoteFileObject child) {
         RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
     }
     

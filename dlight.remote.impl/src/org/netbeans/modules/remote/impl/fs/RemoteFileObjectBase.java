@@ -261,7 +261,7 @@ public abstract class RemoteFileObjectBase {
 
     protected abstract boolean deleteImpl(FileLock lock) throws IOException;
 
-    protected abstract void postDeleteChild(FileObject child);
+    protected abstract void postDeleteChild(RemoteFileObject child);
     
     
     public final void delete(FileLock lock) throws IOException {
