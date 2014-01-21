@@ -613,7 +613,6 @@ public class DiscoveryUtils {
         if (bridge != null) {
             for(String candidate : importantCandidates) {
                 if (bridge.isImportantFlag(candidate, isCpp)) {
-                    addMacrosByFlags(candidate, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
                     artifacts.importantFlags.add(candidate);
                 }
             }
@@ -632,28 +631,6 @@ public class DiscoveryUtils {
         } else {
             if (!undefinedMacros.contains(macro)) {
                 undefinedMacros.add(macro);
-            }
-        }
-    }
-    
-    private static void addMacrosByFlags(String option, Map<String, String> userMacros, List<String> undefinedMacros, ProjectBridge bridge, boolean isCpp) {
-        if (bridge != null) {
-            List<String> optionToMacros = bridge.getOptionToMacros(option, isCpp);
-            if (optionToMacros != null) {
-                for(String macro : optionToMacros) {
-                    int i = macro.indexOf('=');
-                    if (i > 0) {
-                        addDef(macro.substring(0, i), macro.substring(i+1), userMacros, undefinedMacros);
-                    } else {
-                        addDef(macro, null, userMacros, undefinedMacros);
-                    }
-                }
-            }
-            optionToMacros = bridge.getOptionToUndefinedMacros(option, isCpp);
-            if (optionToMacros != null) {
-                for(String macro : optionToMacros) {
-                    addUndef(macro, userMacros, undefinedMacros);
-                }
             }
         }
     }

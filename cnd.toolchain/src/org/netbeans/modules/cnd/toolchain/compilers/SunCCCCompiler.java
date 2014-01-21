@@ -90,6 +90,7 @@ import org.openide.util.NbBundle;
                 getSystemIncludesAndDefines(getCompilerStderrCommand2(), false, res);
             }
             addUnique(res.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
+            completePredefinedMacros(res);
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
@@ -123,6 +124,7 @@ import org.openide.util.NbBundle;
                         getSystemIncludesAndDefines(getCompilerStderrCommand2()+" "+p, false, tmp); // NOI18N
                     }
                     addUnique(tmp.systemIncludeDirectoriesList, applyPathPrefix("/usr/include")); // NOI18N
+                    completePredefinedMacros(tmp);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
