@@ -103,6 +103,9 @@ public class JiraAutoupdate {
         support.checkAndNotify(repository.getUrl());
         
         JiraVersion serverVersion = getSupportedServerVersion(repository);
+        if(serverVersion == null) {
+            return;
+        }
         JiraVersion version50 = JiraConnectorSupport.getInstance().getConnector().createJiraVersion("5.0.0");
         if(serverVersion.compareTo(version50) >= 0) {
             askToChangeConnector();
