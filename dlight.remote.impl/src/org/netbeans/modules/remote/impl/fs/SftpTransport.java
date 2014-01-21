@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +53,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
@@ -144,5 +148,26 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected void scheduleRefresh(Collection<String> paths) {
         RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getRefreshManager().scheduleRefreshExistent(paths, true);
+    }
+
+    @Override
+    protected void delete(String path, boolean directory) throws IOException {
+        StringWriter writer = new StringWriter();
+        Future<Integer> task;
+        if (directory) {
+            task = CommonTasksSupport.rmDir(execEnv, path, true, writer);
+        } else {
+            task = CommonTasksSupport.rmFile(execEnv, path, writer);
+        }
+        try {
+            if (task.get().intValue() != 0) {
+                throw new IOException("Cannot delete " + path); // NOI18N
+            }
+        } catch (InterruptedException ex) {
+            throw new InterruptedIOException();
+        } catch (ExecutionException ex) {
+            final String errorText = writer.getBuffer().toString();
+            throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
+        }
     }
 }
