@@ -226,6 +226,9 @@ public class Lambda {
         boolean hasSyntheticParameterName = false;
         
         for (VariableTree var : let.getParameters()) {
+            if (var.getType() == null) {
+                return null;
+            }
             hasSyntheticParameterName |= ctx.getInfo().getTreeUtilities().isSynthetic(TreePath.getPath(ctx.getPath(), var.getType()));
         }
         

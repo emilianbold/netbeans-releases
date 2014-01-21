@@ -769,15 +769,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             addToMap(res, cccCompilerConfiguration.getPreprocessorConfiguration().getValue(), true);
             addToList(res, vec);
             vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
-            if (cccCompilerConfiguration instanceof CCompilerConfiguration) {
-                switch (this.getLanguageFlavor()) {
-                    case C99:
-                        vec.add("__STDC_VERSION__=199901L"); // NOI18N
-                        break;
-                    default:
-                        break;
-                }
-            }
         }
         return vec;
     }

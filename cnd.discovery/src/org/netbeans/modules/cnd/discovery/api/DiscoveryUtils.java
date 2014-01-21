@@ -521,13 +521,16 @@ public class DiscoveryUtils {
                     } else if (lang.equals("c++")) {// NOI18N
                         isCpp = true;
                     } 
+                    importantCandidates.add(option+lang);
                 }
             } else if (option.equals("-xc")){ // NOI18N
                 artifacts.languageArtifacts.add("c"); // NOI18N	
                 isCpp = false;
+                importantCandidates.add(option);
             } else if (option.equals("-xc++")){ // NOI18N
                 artifacts.languageArtifacts.add("c++"); // NOI18N
                 isCpp = true;
+                importantCandidates.add(option);
             } else if (option.equals("-std=c89") || // NOI18N
                        option.equals("-std=iso9899:1990") || // NOI18N
                        option.equals("-std=iso9899:1990") || // NOI18N

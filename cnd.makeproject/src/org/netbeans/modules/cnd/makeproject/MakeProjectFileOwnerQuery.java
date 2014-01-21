@@ -71,7 +71,7 @@ import org.openide.util.Lookup.Provider;
  *
  * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=102)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=98)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     private static final String PATH_SEPARATOR = "/"; //NOI18N
     private static final class Cache {

@@ -155,7 +155,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
     
     @Override
     public List<String> getSystemPreprocessorSymbols(String flags) {
-        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
         if (flags != null && !flags.isEmpty()) {
             Pair particular;
             synchronized (particularModel) {
@@ -164,15 +163,33 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     MyCallable<Pair> callable = getCallable();
                     particular = callable.call(flags);
                     particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
                 }
             }
             if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
                 return particular.systemPreprocessorSymbolsList;
             }
         }
-        return systemPreprocessorSymbols;
+        return getSystemPreprocessorSymbols();
     }
 
+    private void applyUserAddedDefinitions(Pair particular) {
+        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
+        if (systemPreprocessorSymbols instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
+                addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
+            }
+        }
+        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
+        if (systemIncludeDirectories instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
+            }
+        }
+    }
+    
     @Override
     public List<String> getSystemIncludeDirectories() {
         if (compilerDefinitions == null) {
@@ -183,7 +200,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
 
     @Override
     public List<String> getSystemIncludeDirectories(String flags) {
-        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
         if (flags != null && !flags.isEmpty()) {
             Pair particular;
             synchronized (particularModel) {
@@ -192,13 +208,16 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     MyCallable<Pair> callable = getCallable();
                     particular = callable.call(flags);
                     particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
                 }
             }
             if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
                 return particular.systemIncludeDirectoriesList;
             }
         }
-        return systemIncludeDirectories;
+        return getSystemIncludeDirectories();
     }
 
     @Override
@@ -608,6 +627,28 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
             } else {
                 if (pattern.equals(s)) {
+                    return;
+                }
+            }
+        }
+        list.add(element);
+    }
+
+    protected static void addUniqueOrReplace(List<String> list, String element) {
+        String pattern = element;
+        if (element.indexOf('=') > 0) {
+            pattern = pattern.substring(0, element.indexOf('='));
+        }
+        for(int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
+            if (s.indexOf('=') > 0) {
+                if (pattern.equals(s.substring(0, s.indexOf('=')))) {
+                    list.set(i, element);
+                    return;
+                }
+            } else {
+                if (pattern.equals(s)) {
+                    list.set(i, element);
                     return;
                 }
             }

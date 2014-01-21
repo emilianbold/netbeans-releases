@@ -482,6 +482,12 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             if (cu instanceof CompilationUnit) {
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
+                switch(standard) {
+                    case C89:
+                        importantFlags = "-std=c89";// NOI18N
+                    case C99:
+                        importantFlags = "-std=c99";// NOI18N
+                }
             }
         }
     }
