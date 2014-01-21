@@ -631,7 +631,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             // Get include paths from compiler
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 FileSystem fs = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
-                vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories()));
+                if (makeConfiguration.isMakefileConfiguration()) {
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories(getImportantFlags())));
+                } else {
+                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories(importantFlags)));
+                }
             }
         }
         return SPI_ACCESSOR.expandIncludePaths(vec, compilerConfiguration, compiler, makeConfiguration);
@@ -706,8 +711,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
-                // Get macro definitions from compiler
-                vec.addAll(compiler.getSystemPreprocessorSymbols());
+                if (makeConfiguration.isMakefileConfiguration()) {
+                     vec.addAll(compiler.getSystemPreprocessorSymbols(getImportantFlags()));
+                } else {
+                    String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
+                    vec.addAll(compiler.getSystemPreprocessorSymbols(importantFlags));
+                }
             }
         }
         List<String> undefinedMacros = getUndefinedMacros();
@@ -798,7 +807,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         return vec;
     }
-
+    
+    public String getImportantFlags() {
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
+        if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: itemConfiguration should never be null
+            return "";
+        }
+        CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return "";
+        }
+        BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+        if (compilerConfiguration instanceof CCCCompilerConfiguration) {
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+            return cccCompilerConfiguration.getImportantFlags().getValue();
+        }
+        return "";
+    }
+    
     private void addToMap(Map<String, String> res, List<String> list, boolean override) {
         for(String macro : list){
             int i = macro.indexOf('=');
@@ -1050,6 +1077,18 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
 
+        private String getImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+            if(!getUserOptionsProviders().isEmpty()) {
+                for (UserOptionsProvider provider : getUserOptionsProviders()) {
+                    String itemImportantFlags = provider.getItemImportantFlags(compilerOptions, compiler, makeConfiguration);
+                    if (itemImportantFlags != null) {
+                        return itemImportantFlags;
+                    }
+                }
+            }
+            return null;
+        }
+        
         private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {

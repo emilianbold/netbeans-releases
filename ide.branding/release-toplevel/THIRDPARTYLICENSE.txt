@@ -37,7 +37,6 @@ enterprise/modules/ext/jsf-2_2                                        CDDL-1.0 (
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/primefaces/primefaces-4.0.jar                  Apache-2.0
-enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
 enterprise/modules/ext/struts/commons-beanutils-1.8.0.jar             Apache-2.0

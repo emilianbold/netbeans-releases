@@ -85,8 +85,8 @@ import org.openide.util.Utilities;
 public class DwarfSource extends RelocatableImpl implements SourceFileProperties {
     public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());
     private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
-    private static boolean ourGatherMacros = true;
-    private static boolean ourGatherIncludes = true;
+    private static final boolean ourGatherMacros = true;
+    private static final boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
     private static final String CYG_DRIVE_WIN = "\\cygdrive\\"; // NOI18N
     private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
@@ -107,6 +107,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private final CompileLineStorage storage;
     private int handler = -1;
     private final CompilerSettings compilerSettings;
+    private String importantFlags;
     
     DwarfSource(CompilationUnitInterface cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
@@ -256,6 +257,11 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         return compilerName;
     }
     
+    @Override
+    public String getImportantFlags() {
+        return importantFlags;
+    }
+
     private String fixFileName(String fileName) {
         if (fileName == null){
             return fileName;
@@ -503,6 +509,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         for(Map.Entry<String, String> entry : artifacts.userMacros.entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
+        importantFlags = artifacts.getImportantFlags();
     }
     
     private String fixCygwinPath(String path){

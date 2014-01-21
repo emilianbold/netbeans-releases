@@ -73,7 +73,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.MessageDriven;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
 import org.netbeans.modules.javaee.wildfly.config.gen.Session;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -131,7 +131,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
         super(j2eeModule, version);
         this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();

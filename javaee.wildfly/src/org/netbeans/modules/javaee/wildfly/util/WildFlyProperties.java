@@ -65,11 +65,11 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.customizer.CustomizerSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
@@ -103,7 +103,7 @@ public class WildFlyProperties {
     private static final boolean DEF_VALUE_PROXY_ENABLED = true;
 
     private final InstanceProperties ip;
-    private final WildFlyDeploymentManager manager;
+    private final WildflyDeploymentManager manager;
 
     // credentials initialized with default values
     private String username = "admin"; // NOI18N
@@ -117,14 +117,14 @@ public class WildFlyProperties {
     private final Version version;
 
     /** Creates a new instance of JBProperties */
-    public WildFlyProperties(WildFlyDeploymentManager manager) {
+    public WildFlyProperties(WildflyDeploymentManager manager) {
         this.manager = manager;
         ip = manager.getInstanceProperties();
-        version = JBPluginUtils.getServerVersion(new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR)));
+        version = WildflyPluginUtils.getServerVersion(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)));
     }
     
     public String getServerProfile() {
-        return this.ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE);
+        return this.ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
     }
 
     public Version getServerVersion() {
@@ -136,15 +136,15 @@ public class WildFlyProperties {
     }
 
     public File getServerDir() {
-        return new File(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+        return new File(ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR));
     }
 
     public File getRootDir() {
-        return new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
+        return new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
     }
 
     public File getDeployDir() {
-        return new File(ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR));
+        return new File(ip.getProperty(WildflyPluginProperties.PROPERTY_DEPLOY_DIR));
     }
 
     public File getLibsDir() {
@@ -180,12 +180,12 @@ public class WildFlyProperties {
     }
 
     public String getJavaOpts() {
-        String val = ip.getProperty(JBPluginProperties.PROPERTY_JAVA_OPTS);
+        String val = ip.getProperty(WildflyPluginProperties.PROPERTY_JAVA_OPTS);
         return val != null ? val : DEF_VALUE_JAVA_OPTS;
     }
 
     public void setJavaOpts(String javaOpts) {
-        ip.setProperty(JBPluginProperties.PROPERTY_JAVA_OPTS, javaOpts);
+        ip.setProperty(WildflyPluginProperties.PROPERTY_JAVA_OPTS, javaOpts);
     }
 
     private static void addFileToList(List<URL> list, File f) {
@@ -209,7 +209,7 @@ public class WildFlyProperties {
                     javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
                 }
             } else {
-                assert version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0;
+                assert version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_5_0_0) >= 0;
             }
 
             if (javaEE.exists()) {
@@ -230,17 +230,17 @@ public class WildFlyProperties {
             addFiles(new File(serverDir, "lib"), list); // NOI18N
 
             if (version != null
-                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
-                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                    && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_7_0_0) >= 0) {
+                addFiles(new File(new File(rootDir, WildflyPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
                         "javax"), list); // NOI18N
-                addFiles(new File(new File(rootDir, JBPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
+                addFiles(new File(new File(rootDir, WildflyPluginUtils.getModulesBase(rootDir.getAbsolutePath())), // NOI18N
                         "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
             }
             
             Set<String> commonLibs = new HashSet<String>();
     
             if (version != null
-                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0) {
+                    && version.compareToIgnoreUpdate(WildflyPluginUtils.JBOSS_6_0_0) >= 0) {
                 // Needed for JBoss 6
                 Collections.addAll(commonLibs, "jboss-servlet-api_3.0_spec.jar", // NOI18N
                     "jboss-jsp-api_2.2_spec.jar", "jboss-el-api_2.2_spec.jar", // NOI18N

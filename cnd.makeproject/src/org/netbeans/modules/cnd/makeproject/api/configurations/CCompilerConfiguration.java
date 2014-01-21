@@ -169,6 +169,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         clone.setUndefinedPreprocessorConfiguration(getUndefinedPreprocessorConfiguration().clone());
         clone.setInheritUndefinedPreprocessor(getInheritUndefinedPreprocessor().clone());
         clone.setUseLinkerLibraries(getUseLinkerLibraries().clone());
+        clone.setImportantFlags(getImportantFlags().clone());
         // From CCompiler
         clone.setCStandard(getCStandard().clone());
         return clone;

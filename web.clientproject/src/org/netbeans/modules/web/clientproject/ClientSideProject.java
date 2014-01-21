@@ -594,6 +594,9 @@ public class ClientSideProject implements Project {
             }
             // usage logging
             FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
+            if (cordova == null) {
+                cordova = project.getProjectDirectory().getFileObject("hooks"); // NOI18N 
+            }
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,

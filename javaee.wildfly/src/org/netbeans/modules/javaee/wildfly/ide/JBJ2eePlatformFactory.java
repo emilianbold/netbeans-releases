@@ -75,7 +75,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
@@ -100,7 +100,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
     private static final WeakHashMap<InstanceProperties,J2eePlatformImplImpl> instanceCache = new WeakHashMap<InstanceProperties,J2eePlatformImplImpl>();
     
     public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        WildFlyDeploymentManager manager  = (WildFlyDeploymentManager) dm;
+        WildflyDeploymentManager manager  = (WildflyDeploymentManager) dm;
         InstanceProperties ip = manager.getInstanceProperties();
         if (ip == null) {
             throw new RuntimeException("Cannot create J2eePlatformImpl instance for " + manager.getUrl()); // NOI18N
@@ -253,6 +253,9 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                 return true;
             }
             if("jpa2.0".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa2.1".equals(toolName)) { // NOI18N
                 return true;
             }
 

@@ -49,28 +49,29 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectWithDictionary.Dictionaries;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
 import org.xml.sax.Attributes;
 
 public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private FolderConfiguration folder;
-
     public final static String FOLDER_ELEMENT = "folder"; // NOI18N
     public final static String PATH_ATTR = "path"; // NOI18N
-//    public final static String EXCLUDED_ELEMENT = "excluded"; // FIXUP: < 7 // NOI18N
-//    public final static String TOOL_ELEMENT = "tool"; // FIXUP: < 7 // NOI18N
-//    public final static String ITEM_EXCLUDED_ELEMENT = "itemExcluded"; // NOI18N
-//    public final static String ITEM_TOOL_ELEMENT = "itemTool"; // NOI18N
-//    public final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
-//
-//    public final static String TRUE_VALUE = "true"; // NOI18N
-//    public final static String FALSE_VALUE = "false"; // NOI18N
+    private final FolderConfiguration folder;
+    private final Dictionaries dictionaries;
+
 
     public FolderXMLCodec(FolderConfiguration folder) {
 	this.folder = folder;
+        this.dictionaries = null;
     }
+    
+    public FolderXMLCodec(FolderConfiguration folder, Dictionaries dictionaries) {
+        this.folder = folder;
+        this.dictionaries = dictionaries;
+    }
+
 
     // interface XMLDecoder
     @Override
@@ -112,10 +113,10 @@ public class FolderXMLCodec extends XMLDecoder implements XMLEncoder {
         if (cCompilerConfigurationModified || ccCompilerConfigurationModified || linkerConfigurationModified) {
             xes.elementOpen(FOLDER_ELEMENT, new AttrValuePair[]{new AttrValuePair(PATH_ATTR, folder.getFolder().getPath())});
             if (cCompilerConfigurationModified) {
-                CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL);
+                CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, folder.getCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL, dictionaries);
             }
             if (ccCompilerConfigurationModified) {
-                CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, folder.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL);
+                CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, folder.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.FOLDER_LEVEL, dictionaries);
             }
             if (linkerConfigurationModified) {
                 CommonConfigurationXMLCodec.writeLinkerConfiguration(xes, folder.getLinkerConfiguration());

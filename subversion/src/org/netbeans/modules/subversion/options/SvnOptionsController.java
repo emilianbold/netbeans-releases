@@ -227,7 +227,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
                panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault().isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
                annotationSettings.isChanged()
-               || isClientChanged();
+                || isClientChanged()
+                || SvnModuleConfig.getDefault().getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
+                || SvnModuleConfig.getDefault().isAutoLock() != panel.cbAutoLockFiles.isSelected()
+                || SvnModuleConfig.getDefault().getExludeNewFiles() != panel.excludeNewFiles.isSelected()
+                || SvnModuleConfig.getDefault().isRepositoryPathPrefixed() != panel.prefixRepositoryPath.isSelected();
     }
 
     private boolean isClientChanged () {

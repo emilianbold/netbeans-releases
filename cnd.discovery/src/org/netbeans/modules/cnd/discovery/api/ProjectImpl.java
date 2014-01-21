@@ -322,12 +322,14 @@ public final class ProjectImpl implements ProjectProperties {
         private final List<String> userIncludePaths;
         private final Map<String, String> userMacroDefinitions;
         private final List<String> userUndefinesMacros;
+        private final String importantFlags;
         
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
             userUndefinesMacros =  new ArrayList<String>(item.getUndefinedMacros());
+            importantFlags = item.getImportantFlags();
         }
 
         private List<String> convertFSPaths(List<FSPath> list) {
@@ -364,6 +366,11 @@ public final class ProjectImpl implements ProjectProperties {
         @Override
         public String getCompileLine() {
             return null;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return importantFlags;
         }
 
         @Override

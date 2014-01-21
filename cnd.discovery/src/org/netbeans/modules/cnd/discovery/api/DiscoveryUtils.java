@@ -48,8 +48,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -302,7 +302,7 @@ public class DiscoveryUtils {
             }
             list = newList;
         }
-        Iterator<String> st = list.iterator();
+        ListIterator<String> st = list.listIterator();
         if (st.hasNext()) {
             String option = st.next();
             if (option.equals("+") && st.hasNext()) { // NOI18N
@@ -314,10 +314,11 @@ public class DiscoveryUtils {
     /**
      * parse compile line
      */
-    public static List<String> gatherCompilerLine( Iterator<String> st, LogOrigin isScriptOutput, Artifacts artifacts, ProjectBridge bridge, boolean isCpp){
+    public static List<String> gatherCompilerLine(ListIterator<String> st, LogOrigin isScriptOutput, Artifacts artifacts, ProjectBridge bridge, boolean isCpp){
         boolean TRACE = false;
         String option; 
         List<String> what = new ArrayList<String>(1);
+        List<String> importantCandidates = new ArrayList<String>();
         while(st.hasNext()){
             option = st.next();
             boolean isQuote = false;
@@ -463,7 +464,12 @@ public class DiscoveryUtils {
             } else if (option.equals("-K")){ // NOI18N
                 // Skip pic
                 if (st.hasNext()){
-                    st.next();
+                    String next = st.next();
+                    if (next.equals("PIC") || next.equals("pic")) { // NOI18N
+                        // options = "-K"+next;
+                    } else {
+                        st.previous();
+                    }
                 }
             } else if (option.equals("-R")){ // NOI18N
                 // Skip runtime search path 
@@ -501,7 +507,7 @@ public class DiscoveryUtils {
                 }
             // generation 2 of params
             } else if (option.equals("-z")){ // NOI18N
-                // XXXX: what's this? All I know it has param
+                // ld params of gcc
                 if (st.hasNext()){
                     st.next();
                 }
@@ -528,7 +534,7 @@ public class DiscoveryUtils {
                        option.equals("-std=c90")){ // NOI18N
                 artifacts.languageArtifacts.add("c89"); // NOI18N
                 isCpp = false;
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.equals("-xc99") || // NOI18N
                        option.equals("-std=c9x") || // NOI18N
                        option.equals("-std=iso9899:199409") || // NOI18N
@@ -539,7 +545,7 @@ public class DiscoveryUtils {
                        option.equals("-std=c99")){ // NOI18N
                 artifacts.languageArtifacts.add("c99"); // NOI18N
                 isCpp = false;
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.equals("-std=c11") || // NOI18N
                        option.equals("-std=gnu1x") || // NOI18N
                        option.equals("-std=gnu11") || // NOI18N
@@ -548,7 +554,7 @@ public class DiscoveryUtils {
                        option.equals("-std=c11")){ // NOI18N
                 artifacts.languageArtifacts.add("c11"); // NOI18N
                 isCpp = false;
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.equals("-std=c++0x") || // NOI18N
                        option.equals("-std=c++11") || // NOI18N
                        option.equals("-std=gnu++0x") || // NOI18N
@@ -557,12 +563,12 @@ public class DiscoveryUtils {
                        option.equals("-std=c++1y")){ // NOI18N
                 artifacts.languageArtifacts.add("c++11"); // NOI18N
                 isCpp = true;
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.equals("-std=c++98") ||  // NOI18N
                        option.equals("-std=c++03")){ // NOI18N
                 artifacts.languageArtifacts.add("c++98"); // NOI18N
                 isCpp = true;
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.equals("-xMF")){ // NOI18N
                 // ignore dependency output file
                 if (st.hasNext()){
@@ -589,7 +595,7 @@ public class DiscoveryUtils {
                     st.next();
                 }
             } else if (option.startsWith("-")){ // NOI18N
-                addMacrosByFlags(option, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                importantCandidates.add(option);
             } else if (option.startsWith("ccfe")){ // NOI18N
                 // Skip option
             } else if (option.startsWith(">")){ // NOI18N
@@ -599,27 +605,14 @@ public class DiscoveryUtils {
                 if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
                     what.add(option);
                 }
-//                if (SourcesVisibilityQuery.getDefault().isIgnored(option)) {
-//                    continue;
-//                }
-//                if (what.isEmpty()) {
-//                    what.add(option);
-//                } else {
-//                    if (TRACE) {
-//                        System.out.println("**** What is this ["+option + "] if previous was ["+ what.get(0) + "]?"); //NOI18N
-//                    }
-//                    if (SourcesVisibilityQuery.getDefault().isVisible(option)) {
-//                        if (what.size() == 1) {
-//                            if (!SourcesVisibilityQuery.getDefault().isVisible(what.get(0))) {
-//                                what.set(0, option);
-//                            } else {
-//                                what.add(option);
-//                            }
-//                        } else {
-//                            what.add(option);
-//                        }
-//                    }
-//                }
+            }
+        }
+        if (bridge != null) {
+            for(String candidate : importantCandidates) {
+                if (bridge.isImportantFlag(candidate, isCpp)) {
+                    addMacrosByFlags(candidate, artifacts.userMacros, artifacts.undefinedMacros, bridge, isCpp);
+                    artifacts.importantFlags.add(candidate);
+                }
             }
         }
         return what;
@@ -707,8 +700,19 @@ public class DiscoveryUtils {
         public final List<String> undefinedMacros = new ArrayList<String>();
         public final Set<String> libraries = new HashSet<String>();
         public final List<String> languageArtifacts = new ArrayList<String>();
+        public final List<String> importantFlags = new ArrayList<String>();
         public String output;
         public Artifacts() {
+        }
+        public String getImportantFlags() {
+            StringBuilder buf = new StringBuilder();
+            for(String flag : importantFlags) {
+                if (buf.length() > 0) {
+                    buf.append(' ');
+                }
+                buf.append(flag);
+            }
+            return buf.toString();
         }
     }
 }

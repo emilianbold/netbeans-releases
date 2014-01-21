@@ -61,6 +61,11 @@ public interface SourceFileProperties extends ItemProperties {
     String getItemPath();
     
     /**
+     * Important Flags
+     */
+    String getImportantFlags();
+
+    /**
      * Compile line
      */
     String getCompileLine();
