@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
 
 /**
  *

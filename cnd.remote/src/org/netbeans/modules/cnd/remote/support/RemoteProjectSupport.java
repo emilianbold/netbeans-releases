@@ -96,6 +96,9 @@ public class RemoteProjectSupport {
     }
 
     public static FileObject getPrivateStorage(Project project) {
+        if (project == null) {
+            return null;
+        }
         FileObject baseDir = project.getProjectDirectory();
         if (baseDir == null) {
             return null;

@@ -61,7 +61,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,7 +72,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Ivan Sidorkin
  */
-public class JBPluginUtils {
+public class WildflyPluginUtils {
 
     public static final String SERVER_4_XML = File.separator + "deploy" + File.separator + // NOI18N
             "jbossweb-tomcat55.sar" + File.separator + "server.xml"; // NOI18N
@@ -93,7 +93,7 @@ public class JBPluginUtils {
 
     public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
     public static final String LIB = "lib" + File.separator;
 
@@ -174,9 +174,9 @@ public class JBPluginUtils {
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate) {
         Version version = getServerVersion(serverDir);
         if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
-            return JBPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate);
+            return WildflyPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate);
         }
-        return ("8".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate)); // NOI18N
+        return ("8".equals(version.getMajorNumber()) && WildflyPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate)); // NOI18N
     }
 
     private static boolean isGoodJBServerLocation(File candidate, List<String> requirements) {
@@ -197,10 +197,10 @@ public class JBPluginUtils {
     public static boolean isGoodJBServerLocation(File candidate) {
         Version version = getServerVersion(candidate);
         if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
-            return JBPluginUtils.isGoodJBServerLocation8x(candidate);
+            return WildflyPluginUtils.isGoodJBServerLocation8x(candidate);
         }
 
-        return ("8".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
+        return ("8".equals(version.getMajorNumber()) && WildflyPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
     }
 
     /**

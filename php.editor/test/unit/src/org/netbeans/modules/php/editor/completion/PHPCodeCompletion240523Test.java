@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.wildfly.ide;
 
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
+package org.netbeans.modules.php.editor.completion;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * An implementation of the DeploymentStatus interface used to track the
- * server start/stop progress.
  *
- * @author Kirill Sorokin
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class JBDeploymentStatus implements DeploymentStatus {
+public class PHPCodeCompletion240523Test extends PHPCodeCompletionTestBase {
 
-    private final ActionType action;
-    private final CommandType command;
-    private final StateType state;
-    private final String message;
-    
-    /** Creates a new instance of JBDeploymentStatus */
-    public JBDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-        this.action = action;
-        this.command = command;
-        this.state = state;
-        this.message = message;
+    public PHPCodeCompletion240523Test() {
+        super(null);
     }
 
-    public String getMessage() {
-        return message;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests240523/issue240523.php", "$object->auto^complete(); // 1", false);
     }
 
-    public StateType getState() {
-        return state;
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests240523/issue240523.php", "$object->auto^complete(); // 2", false);
     }
 
-    public CommandType getCommand() {
-        return command;
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests240523/issue240523.php", "$object1->auto^complete(); // 3", false);
     }
 
-    public ActionType getAction() {
-        return action;
-    }
-    
-    public boolean isRunning() {
-        return StateType.RUNNING.equals(state);
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests240523/issue240523.php", "$object2->auto^complete(); // 4", false);
     }
 
-    public boolean isFailed() {
-        return StateType.FAILED.equals(state);
-    }
-
-    public boolean isCompleted() {
-        return StateType.COMPLETED.equals(state);
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests240523/"))
+            })
+        );
     }
 
 }

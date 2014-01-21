@@ -80,6 +80,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.commons.SaveQueryPanel.QueryNameValidator;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -708,9 +709,14 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         changed(true);
     }
 
-    public void changed(boolean b) {
+    public void changed(final boolean b) {
         isChanged = b;
-        panel.saveChangesButton.setEnabled(b || !query.isSaved());
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                panel.saveChangesButton.setEnabled(b || !query.isSaved());
+            }
+        });
         fireChanged();
     }
 
@@ -874,46 +880,54 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void onCancelChanges() {
-        if(query.getDisplayName() != null) { // XXX need a better semantic - isSaved?
-            
-            panel.projectList.setSelectedIndex(-1);
-            panel.componentsList.setSelectedIndex(-1);
-            panel.fixForList.setSelectedIndex(-1);
-            panel.affectsVersionList.setSelectedIndex(-1);
-            panel.typeList.setSelectedIndex(-1);
-            panel.statusList.setSelectedIndex(-1);
-            panel.resolutionList.setSelectedIndex(-1);
-            panel.priorityList.setSelectedIndex(-1);
-
-            // find by text
-            panel.queryTextField.setText("");
-            panel.summaryCheckBox.setSelected(false);
-            panel.descriptionCheckBox.setSelected(false);
-            panel.commentsCheckBox.setSelected(false);
-            panel.environmentCheckBox.setSelected(false);
-            
-            // user filters
-            panel.reporterComboBox.setSelectedIndex(-1);
-            panel.assigneeComboBox.setSelectedIndex(-1);
-            panel.reporterTextField.setText("");
-            panel.assigneeTextField.setText("");
-
-            panel.ratioMinTextField.setText("");
-            panel.ratioMaxTextField.setText("");
-
-            panel.createdFromTextField.setText("");
-            panel.createdToTextField.setText("");
-            panel.updatedFromTextField.setText("");
-            panel.updatedToTextField.setText("");
-            panel.dueFromTextField.setText("");
-            panel.dueToTextField.setText("");
-
+        if(query.getDisplayName() != null) {             
+            resetFields();
             if(jiraFilter != null) {
                 postPopulate((FilterDefinition) jiraFilter, false);
             }
             changed(false);
         }
         setAsSaved();
+    }
+
+    public void resetFields() {
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                // XXX need a better semantic - isSaved?
+                panel.projectList.setSelectedIndex(-1);
+                panel.componentsList.setSelectedIndex(-1);
+                panel.fixForList.setSelectedIndex(-1);
+                panel.affectsVersionList.setSelectedIndex(-1);
+                panel.typeList.setSelectedIndex(-1);
+                panel.statusList.setSelectedIndex(-1);
+                panel.resolutionList.setSelectedIndex(-1);
+                panel.priorityList.setSelectedIndex(-1);
+
+                // find by text
+                panel.queryTextField.setText("");
+                panel.summaryCheckBox.setSelected(false);
+                panel.descriptionCheckBox.setSelected(false);
+                panel.commentsCheckBox.setSelected(false);
+                panel.environmentCheckBox.setSelected(false);
+
+                // user filters
+                panel.reporterComboBox.setSelectedIndex(-1);
+                panel.assigneeComboBox.setSelectedIndex(-1);
+                panel.reporterTextField.setText("");
+                panel.assigneeTextField.setText("");
+
+                panel.ratioMinTextField.setText("");
+                panel.ratioMaxTextField.setText("");
+
+                panel.createdFromTextField.setText("");
+                panel.createdToTextField.setText("");
+                panel.updatedFromTextField.setText("");
+                panel.updatedToTextField.setText("");
+                panel.dueFromTextField.setText("");
+                panel.dueToTextField.setText("");
+            }
+        });
     }
 
     public void selectFilter(final Filter filter) {
@@ -960,8 +974,13 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void setAsSaved() {
-        panel.setSaved(query.getDisplayName(), getLastRefresh());
-        panel.setModifyVisible(false);
+        UIUtils.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                panel.setSaved(query.getDisplayName(), getLastRefresh());
+                panel.setModifyVisible(false);
+            }
+        });
     }
 
     protected String getLastRefresh() throws MissingResourceException {

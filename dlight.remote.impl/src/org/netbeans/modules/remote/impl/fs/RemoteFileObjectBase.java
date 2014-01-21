@@ -308,10 +308,10 @@ public abstract class RemoteFileObjectBase {
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
             fo.fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(fo, fo, entry.getKey(), entry.getValue(), null));
         }
-        FileEvent fe = new FileEvent(fo, fo, true);
-        for(RemoteFileObjectBase child: getExistentChildren(true)) {
-            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
-        }        
+//        FileEvent fe = new FileEvent(fo, fo, true);
+//        for(RemoteFileObjectBase child: getExistentChildren(true)) {
+//            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
+//        }        
         invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {

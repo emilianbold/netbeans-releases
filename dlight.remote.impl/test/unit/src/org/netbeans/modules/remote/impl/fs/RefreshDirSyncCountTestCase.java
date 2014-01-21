@@ -98,8 +98,9 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             int cacheSize = cachedFileObjects.size();
 
             RefreshManager refreshManager = fs.getRefreshManager();
+            long time = System.currentTimeMillis();
             refreshManager.scheduleRefresh(filterDirectories(cachedFileObjects), false);
-            refreshManager.testWaitLastRefreshFinished();
+            refreshManager.testWaitLastRefreshFinished(time);
             
             int dirSyncCount_2 = fs.getDirSyncCount();
 

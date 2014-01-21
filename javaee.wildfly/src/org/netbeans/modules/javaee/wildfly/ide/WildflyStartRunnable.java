@@ -66,9 +66,9 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
@@ -125,16 +125,17 @@ class WildflyStartRunnable implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(WildflyStartRunnable.class.getName());
 
-    private WildFlyDeploymentManager dm;
+    private WildflyDeploymentManager dm;
     private String instanceName;
     private WildflyStartServer startServer;
 
-    WildflyStartRunnable(WildFlyDeploymentManager dm, WildflyStartServer startServer) {
+    WildflyStartRunnable(WildflyDeploymentManager dm, WildflyStartServer startServer) {
         this.dm = dm;
         this.instanceName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         this.startServer = startServer;
     }
 
+    @Override
     public void run() {
 
         InstanceProperties ip = dm.getInstanceProperties();
@@ -149,8 +150,9 @@ class WildflyStartRunnable implements Runnable {
             return;
         }
 
-        WildlfyOutputSupport outputSupport = WildlfyOutputSupport.getInstance(ip, true);
-        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == WildflyStartServer.MODE.PROFILE);
+        WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, true);
+        outputSupport.start(openConsole(), serverProcess, startServer.getMode() == WildflyStartServer.MODE.PROFILE);        
+        startServer.setConsoleConfigured(true);
         
         waitForServerToStart(outputSupport);
     }
@@ -163,7 +165,7 @@ class WildflyStartRunnable implements Runnable {
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
 
-        boolean version5 = properties.isVersion(JBPluginUtils.JBOSS_5_0_0);
+        boolean version5 = properties.isVersion(WildflyPluginUtils.JBOSS_5_0_0);
 
         if (!version5) {   // if  JB version 4.x
             // use the IDE proxy settings if the 'use proxy' checkbox is selected
@@ -223,9 +225,9 @@ class WildflyStartRunnable implements Runnable {
                             append(",server=y,suspend=n"); // NOI18N
 
         } else if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
-            if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+            if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
                 javaOptsBuilder.append(" ").append("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
-            } else if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+            } else if (properties.isVersion(WildflyPluginUtils.JBOSS_6_0_0)) {
                 javaOptsBuilder.append(" ").append("-Djboss.platform.mbeanserver")
                         .append(" ").append("-Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl");
             }
@@ -245,7 +247,7 @@ class WildflyStartRunnable implements Runnable {
         String envp[] = new String[] {
             "JAVA=" + javaHome + File.separator +"bin" + File.separator + "java",   // NOI18N
             "JAVA_HOME=" + javaHome,            // NOI18N
-            JBOSS_HOME+"="+ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR),    // NOI18N
+            JBOSS_HOME+"="+ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR),    // NOI18N
             JAVA_OPTS+"=" + javaOpts,            // NOI18N
         };
         return envp;
@@ -263,13 +265,13 @@ class WildflyStartRunnable implements Runnable {
 
     private boolean checkPorts(final InstanceProperties ip) {
         try {
-            String strHTTPConnectorPort = ip.getProperty(JBPluginProperties.PROPERTY_PORT);
+            String strHTTPConnectorPort = ip.getProperty(WildflyPluginProperties.PROPERTY_PORT);
             int httpConnectorPort = Integer.parseInt(strHTTPConnectorPort);
             if (httpConnectorPort <= 0) {
                 // server will complain hopefully
                 return true;
             }
-            if (!JBPluginUtils.isPortFree(httpConnectorPort)) {
+            if (!WildflyPluginUtils.isPortFree(httpConnectorPort)) {
                 fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_HTTP_PORT_IN_USE", strHTTPConnectorPort));
                 return false;
             }
@@ -290,8 +292,8 @@ class WildflyStartRunnable implements Runnable {
             return null;
         }
         String args = "";
-        if(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE) != null && ! "".equals(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE))) {
-            String configFile = ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE);
+        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null && ! "".equals(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE))) {
+            String configFile = ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
             args = "-c " + configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1);
         }
         return new NbProcessDescriptor(serverRunFileName, args);
@@ -325,7 +327,7 @@ class WildflyStartRunnable implements Runnable {
 
         try {
             File rootFile = null;
-            String rootDir = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            String rootDir = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
             if (rootDir != null) {
                 rootFile = new File(rootDir, "bin"); // NOI18N
             }
@@ -336,7 +338,7 @@ class WildflyStartRunnable implements Runnable {
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
 
-            final String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            final String serverLocation = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
             final String serverRunFileName = serverLocation + (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_PD", serverRunFileName));
 
@@ -357,15 +359,15 @@ class WildflyStartRunnable implements Runnable {
             // no op
         }
         io.select();
-        
+        startServer.setConsoleConfigured(true);
         return io;
     }            
 
     private void fireStartProgressEvent(StateType stateType, String msg) {
-        startServer.fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, stateType, msg));
+        startServer.fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.START, stateType, msg));
     }
     
-    private void waitForServerToStart(WildlfyOutputSupport outputSupport) {
+    private void waitForServerToStart(WildflyOutputSupport outputSupport) {
         fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS"));
 
         try {
@@ -398,7 +400,7 @@ class WildflyStartRunnable implements Runnable {
         
         String getRunFileName(){
             String serverLocation = getProperties().getProperty(
-                    JBPluginProperties.PROPERTY_ROOT_DIR);
+                    WildflyPluginProperties.PROPERTY_ROOT_DIR);
             String serverRunFileName = serverLocation + 
                     (Utilities.isWindows() ? STANDALONE_BAT : STANDALONE_SH);
             if ( needChange ){
@@ -524,10 +526,10 @@ class WildflyStartRunnable implements Runnable {
         
         private boolean runFileNeedChange( String[] envp ){
             WildFlyProperties properties = dm.getProperties();
-            if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+            if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
                 return false;
             }
-            if ( properties.isVersion(JBPluginUtils.JBOSS_5_0_1) && 
+            if ( properties.isVersion(WildflyPluginUtils.JBOSS_5_0_1) && 
                     Utilities.isWindows()) {
                 for( String env : envp ){
                     if ( env.startsWith(JAVA_OPTS+"=")){

@@ -45,6 +45,8 @@
 package org.netbeans.modules.mercurial.options;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +72,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     
     private final MercurialOptionsPanelController controller;
     private final DocumentListener listener;
+    private final ActionListener actionListener;
     private String initialUserName;
     private String[] keywords;
     
@@ -80,6 +83,12 @@ final class MercurialPanel extends javax.swing.JPanel {
             public void removeUpdate(DocumentEvent e) { nameChange(); }
             public void changedUpdate(DocumentEvent e) { nameChange(); }
         };
+        actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nameChange();
+            }
+        };
         initComponents();
     }
     
@@ -87,6 +96,13 @@ final class MercurialPanel extends javax.swing.JPanel {
     public void addNotify() {
         super.addNotify();
         userNameTextField.getDocument().addDocumentListener(listener);
+        executablePathTextField.getDocument().addDocumentListener(listener);
+        exportFilenameTextField.getDocument().addDocumentListener(listener);
+        annotationTextField.getDocument().addDocumentListener(listener);
+        cbOpenOutputWindow.addActionListener(actionListener);
+        cbAskBeforeCommitAfterMerge.addActionListener(actionListener);
+        cbInternalMergeToolEnabled.addActionListener(actionListener);
+        excludeNewFiles.addActionListener(actionListener);
     }
 
     @Override
@@ -298,9 +314,15 @@ final class MercurialPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_excludeNewFilesActionPerformed
     
     private void nameChange() {
-        if (userNameTextField.isEnabled()) {
-            controller.changed();
-        }
+        boolean isChanged = (userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText()))
+                || !HgModuleConfig.getDefault().getExecutableBinaryPath().equals(executablePathTextField.getText())
+                || !HgModuleConfig.getDefault().getExportFilename().equals(exportFilenameTextField.getText())
+                || !HgModuleConfig.getDefault().getAnnotationFormat().equals(annotationTextField.getText())
+                || HgModuleConfig.getDefault().getAutoOpenOutput() != cbOpenOutputWindow.isSelected()
+                || HgModuleConfig.getDefault().getConfirmCommitAfterMerge() != cbAskBeforeCommitAfterMerge.isSelected()
+                || HgModuleConfig.getDefault().isInternalMergeToolEnabled() != cbInternalMergeToolEnabled.isSelected()
+                || HgModuleConfig.getDefault().getExludeNewFiles() != excludeNewFiles.isSelected();
+        controller.changed(isChanged);
     }
 
     @NbBundle.Messages("CTL_UsernameLoading=Loading...")

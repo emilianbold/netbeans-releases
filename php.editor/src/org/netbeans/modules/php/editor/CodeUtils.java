@@ -258,7 +258,7 @@ public final class CodeUtils {
             }
         }
         if (name instanceof NamespaceName) {
-            return extractUnqualifiedName((NamespaceName) name);
+            return extractQualifiedName((NamespaceName) name);
         }
         return (name instanceof Identifier) ? ((Identifier) name).getName() : ""; //NOI18N
     }
