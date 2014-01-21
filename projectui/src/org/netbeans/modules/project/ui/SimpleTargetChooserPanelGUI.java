@@ -119,7 +119,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     }
     
     @Messages({
-        "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix=new",
+        "# 0 - original template name",
+        "LBL_SimpleTargetChooserPanelGUI_NewFileName=new{0}",
         "LBL_TargetChooser_FolderName_Label=Folder &Name:",
         "LBL_TargetChooser_ParentFolder_Label=Pa&rent Folder:",
         "LBL_TargetChooser_CreatedFolder_Label=&Created Folder:",
@@ -179,7 +180,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         if (template != null) {
-            final String baseName = isFolder ? LBL_folder_name() : LBL_SimpleTargetChooserPanelGUI_NewFilePrefix() + template.getName ();
+            final String baseName = isFolder ? LBL_folder_name() : LBL_SimpleTargetChooserPanelGUI_NewFileName(template.getName());
             if (documentName == null) {
                 documentName = baseName;
             }
