@@ -451,10 +451,12 @@ public class InstanceRefFinder extends TreePathScanner {
         r = scanAndReduce(node.getArguments(), p, r);
         
         // switch context to the anonymous class
-        TypeElement saveType = enclosingType;
-        enclosingType = ci.getElementUtilities().enclosingTypeElement(e);
-        r = scanAndReduce(node.getClassBody(), p, r);
-        this.enclosingType = saveType;
+        if (e != null) {
+            TypeElement saveType = enclosingType;
+            enclosingType = ci.getElementUtilities().enclosingTypeElement(e);
+            r = scanAndReduce(node.getClassBody(), p, r);
+            this.enclosingType = saveType;
+        }
         return r;
     }
 
