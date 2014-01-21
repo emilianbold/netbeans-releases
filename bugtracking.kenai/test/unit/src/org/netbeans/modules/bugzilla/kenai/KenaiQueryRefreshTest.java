@@ -49,6 +49,7 @@ import org.netbeans.modules.bugzilla.query.*;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
@@ -111,7 +112,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
 
     public void testKenaiQueryNoAutoRefresh() throws Throwable {
         final String summary = "summary" + System.currentTimeMillis();
-        BugzillaConfig.getInstance().setQueryRefreshInterval(0); // would mean refresh imediately
+        DashboardSettings.getInstance().setAutoSyncValue(1, true);
 //        BugzillaConfig.getInstance().setQueryAutoRefresh(QUERY_NAME, false);
 
         LogHandler schedulingHandler = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH);
