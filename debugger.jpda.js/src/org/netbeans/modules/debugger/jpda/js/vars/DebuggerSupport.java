@@ -97,9 +97,9 @@ public final class DebuggerSupport {
             args[1] = value;
             args[2] = debugger.createMirrorVar(all, true);
             return supportClass.invokeMethod(METHOD_VALUE_INFO, SIGNAT_VALUE_INFO, args);
-        } catch (InvalidObjectException ioex) {
+        } catch (InvalidObjectException | InvalidExpressionException iex) {
             return null;
-        } catch (NoSuchMethodException | InvalidExpressionException nsmex) {
+        } catch (NoSuchMethodException nsmex) {
             Exceptions.printStackTrace(nsmex);
             return null;
         }
