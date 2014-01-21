@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
         <compiler name="cc"/>
         <version flags="-V" fingerprint_flags="-Wd,-xide" fingerprint_pattern="#\s*__tool_build_number\s*(\w*)"/>
         <system_include_paths parser="Fingerprint"/>
-        <important_flags flags="-O(\W|$|-)|-O0|-O1|-O2|-O3|-O4|-O5|-Xa|-Xc|-Xs|-Xt|-ansi|-fast|-fnonstd|-fns(\W|$|-)|-fns=.*|-fopenmp|-fprecision=.*|-m64|-mt(\W|$|-)|-mt=.*|-native|-pedantic(\W|$|-)|-pedantic=.*|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|-xautopar|-xc99|-xchar=.*|-xlang=.*|-xmaxopt=.*|-xopenmp(\W|$|-)|-xopenmp=.*"/>
+        <important_flags flags="-O(\W|$|-)|-O0|-O1|-O2|-O3|-O4|-O5|-Xa|-Xc|-Xs|-Xt|-ansi|-fast|-fnonstd|-fns(\W|$|-)|-fns=.*|-fopenmp|-fprecision=.*|-m64|-mt(\W|$|-)|-mt=.*|-native|-pedantic(\W|$|-)|-pedantic=.*|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|-xautopar|-xc($|\+\+$)|-xc99|-xchar=.*|-xlang=.*|-xmaxopt=.*|-xopenmp(\W|$|-)|-xopenmp=.*"/>
         <system_macros parser="Fingerprint">
             <macro hide="true" stringvalue="__LINE__"/>
             <macro hide="true" stringvalue="__FILE__"/>
