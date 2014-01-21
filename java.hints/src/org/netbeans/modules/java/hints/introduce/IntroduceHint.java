@@ -275,7 +275,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
         IntroduceFieldFix field = null;
-        Fix methodFix = null;
+        IntroduceFixBase methodFix = null;
 
         TreePath pathToClass = TreeUtils.findClass(resolved);
         if (method != null && !TreeUtils.isInAnnotationType(info, method)) {
@@ -356,9 +356,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     typeVars.retainAll(scanner.usedTypeVariables);
 
-                    List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), Collections.singleton(resolved.getLeaf()), duplicates, cancel);
+                    AtomicBoolean allIfaces = new AtomicBoolean();
+                    List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
+                            Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces);
 
                     methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
+                    methodFix.setTargetIsInterface(allIfaces.get());
                 }
             }
         }
