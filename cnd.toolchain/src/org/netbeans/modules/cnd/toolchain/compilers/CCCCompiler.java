@@ -169,10 +169,10 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
             }
             if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
-                return particular.systemPreprocessorSymbolsList;
+                return predefinedMacrosByFlags(particular.systemPreprocessorSymbolsList, flags);
             }
         }
-        return getSystemPreprocessorSymbols();
+        return predefinedMacrosByFlags(getSystemPreprocessorSymbols(), flags);
     }
 
     private void applyUserAddedDefinitions(Pair particular) {
@@ -185,6 +185,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         List<String> systemIncludeDirectories = getSystemIncludeDirectories();
         if (systemIncludeDirectories instanceof CompilerDefinition) {
             for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                // TODO implement "merge" which inserts user's path in best place
                 addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
             }
         }
@@ -669,6 +670,38 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
     }
     
+    private List<String> predefinedMacrosByFlags(List<String> macrosList, String flags) {
+        final CompilerDescriptor descriptor = getDescriptor();
+        if (descriptor != null && flags != null && !flags.isEmpty()) {
+            final List<PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
+            if (predefinedMacros != null) {
+                List<String> res = null;
+                for(String flag : flags.split(" ")) { // NOI18N
+                    if (flag.startsWith("-")) { // NOI18N
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros) {
+                            if (flag.equals(macro.getFlags())) {
+                                if (res == null) {
+                                    res = new ArrayList<String>(macrosList);
+                                }
+                                if (macro.isHidden()) {
+                                    // remove macro
+                                    removeUnique(res, macro.getMacro());
+                                } else {
+                                    // add macro
+                                    addUnique(res, macro.getMacro());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return macrosList;
+    }
+    
     protected void completePredefinedMacros(Pair pair) {
         final CompilerDescriptor descriptor = getDescriptor();
         if (descriptor != null) {
@@ -745,7 +778,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
                 continue;
             }
-            completePredefinedMacros(tmp);
             FlagModel flagModel = new FlagModel(flag);
             flagModel.diff(res, tmp);
             List<String> expectedDiff = new ArrayList<String>();

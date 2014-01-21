@@ -80,6 +80,7 @@ import org.openide.util.NbBundle;
         CCCCompiler.Pair res = new CCCCompiler.Pair();
         try {
             getSystemIncludesAndDefines(getCompilerFingerPrintCommand(), true, res);
+            completePredefinedMacros(res);
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
@@ -108,6 +109,7 @@ import org.openide.util.NbBundle;
                 Pair tmp = new Pair();
                 try {
                     getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
+                    completePredefinedMacros(tmp);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -169,6 +171,5 @@ import org.openide.util.NbBundle;
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
-        completePredefinedMacros(pair);
     }   
 }

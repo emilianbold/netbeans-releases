@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
         <recognizer pattern=".*(SUNWspro|/prod/bin)" or_exist_folder="../prod"/>
         <version flags="-V"/>
         <system_include_paths flags="-xdryrun -E" parser="Sun"/>
+        <important_flags flags="-O(\W|$|-])|-O0|-O1|-O2|-O3|-O4|-O5|-compat=.*|-fast|-fopenmp|-m64|-mt(\W|$|-])|-mt=.*|-native|-std=.*|-xO1|-xO2|-xO3|-xO4|-xO5|-xautopar|-xc($|\+\+$)|-xchar=.*|-xmaxopt=.*|-xopenmp(\W|$|-])|-xopenmp=.*"/>
         <system_macros flags="-xdumpmacros=defs,sys -E" parser="Sun">
             <macro stringvalue="__LINE__" hide="true"/>
             <macro stringvalue="__FILE__" hide="true"/>

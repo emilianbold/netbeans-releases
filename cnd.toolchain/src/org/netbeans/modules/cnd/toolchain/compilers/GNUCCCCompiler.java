@@ -88,6 +88,7 @@ import org.openide.util.NbBundle;
         try {
             getSystemIncludesAndDefines(getCompilerStderrCommand(), false, res);
             getSystemIncludesAndDefines(getCompilerStdoutCommand(), true, res);
+            completePredefinedMacros(res);
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
             System.err.println("IOException " + ioe);
@@ -103,7 +104,6 @@ import org.openide.util.NbBundle;
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
-        completePredefinedMacros(res);
         checkModel(res, getCallable());
         return res;
     }

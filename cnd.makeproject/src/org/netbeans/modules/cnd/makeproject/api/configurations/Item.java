@@ -794,7 +794,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     break;
                 }
             }
-            vec = SPI_ACCESSOR.getItemUndefinedUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
         }
         return vec;
     }
@@ -1034,7 +1033,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
         private List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>();
+                List<String> res = new ArrayList<>(includes);
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
                 }
@@ -1046,21 +1045,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
         private List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>();
+                List<String> res = new ArrayList<>(macros);
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration));
-                }
-                return res;
-            } else {
-                return macros;
-            }
-        }
-
-        private List<String> getItemUndefinedUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-            if(!getUserOptionsProviders().isEmpty()) {
-                List<String> res = new ArrayList<>();
-                for (UserOptionsProvider provider : getUserOptionsProviders()) {
-                    res.addAll(provider.getItemUserUndefinedMacros(macros, compilerOptions, compiler, makeConfiguration));
                 }
                 return res;
             } else {

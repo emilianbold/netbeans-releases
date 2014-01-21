@@ -88,7 +88,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
 
     @Override
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<String>(includes);
+        List<String> res =new ArrayList<String>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
@@ -109,73 +109,17 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     
     @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res = new ArrayList<String>(macros);
+        List<String> res = new ArrayList<String>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
                 res.addAll(pc.getMacros());
             }
-            convertOptionsToMacros(compiler, options, res);
         }
         if (makeConfiguration.isQmakeConfiguration()) {
             res.addAll(QtInfoProvider.getDefault().getQtAdditionalMacros(makeConfiguration));
         }
         return res;
-    }
-
-    private void convertOptionsToMacros(AbstractCompiler compiler, String options, List<String> res) {
-        if (compiler == null || compiler.getDescriptor() == null) {
-            return;
-        }
-        final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
-            return;
-        }
-        String[] split = options.split(" "); //NOI18N
-        for(String s : split) {
-            if (s.startsWith("-")) { //NOI18N
-                for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                    if (macro.getFlags() != null && macro.getFlags().equals(s)) {
-                        if (!macro.isHidden()) {
-                            // add macro
-                            res.add(macro.getMacro());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public List<String> getItemUserUndefinedMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<String>(macros);
-        if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
-            String options = compilerOptions.getAllOptions(compiler);
-            convertOptionsToUndefinedMacros(compiler, options, res);
-        }
-        return res;
-    }
-
-    private void convertOptionsToUndefinedMacros(AbstractCompiler compiler, String options, List<String> res) {
-        if (compiler == null || compiler.getDescriptor() == null) {
-            return;
-        }
-        final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-        if (predefinedMacros == null || predefinedMacros.isEmpty()) {
-            return;
-        }
-        String[] split = options.split(" "); //NOI18N
-        for(String s : split) {
-            if (s.startsWith("-")) { //NOI18N
-                for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                    if (macro.getFlags() != null && macro.getFlags().equals(s)) {
-                        if (macro.isHidden()) {
-                            res.add(macro.getMacro());
-                        }
-                    }
-                }
-            }
-        }
     }
 
     @Override
