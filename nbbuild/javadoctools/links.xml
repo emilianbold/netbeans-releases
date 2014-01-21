@@ -221,3 +221,4 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-javaee-project}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-javaee-project"/>
 <link href="${javadoc.docs.org-netbeans-modules-maven-util}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-maven-util"/>
 <link href="${javadoc.docs.org-netbeans-modules-bugtracking}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-bugtracking"/>
+<link href="${javadoc.docs.org-netbeans-core-multitabs}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-core-multitabs"/>
