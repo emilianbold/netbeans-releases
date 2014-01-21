@@ -67,6 +67,7 @@ import org.netbeans.modules.remote.impl.fs.DirEntrySftp;
 import org.netbeans.modules.remote.impl.fs.RemoteDirectory;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -359,6 +360,43 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         warmup.start();
         return warmup;
     }            
+    
+    @Override
+    protected void delete(String path, boolean directory) throws IOException {
+        FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_DELETE, path);
+        FSSResponse response = null;
+        try {
+            response = dispatcher.dispatch(request);
+            while (true) {
+                FSSResponse.Package pkg = response.getNextPackage();
+                if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                    Buffer buf = pkg.getBuffer();
+                    buf.getChar(); // skip kind                
+                    int id = buf.getInt();
+                    assert id == request.getId();
+                    int errno = buf.getInt();
+                    String emsg = buf.getRest();
+                    IOException ioe = FSSUtil.createIOException(errno, emsg);                    
+                    throw ioe;
+                }
+                if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
+                    break;
+                }
+            }
+        } catch (ConnectException ex) {
+            throw new IOException(ex);
+        } catch (CancellationException ex) {
+            throw new IOException(ex);
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        } catch (ExecutionException ex) {
+            throw new IOException(ex);
+        } finally {
+            if (response != null) {
+                response.dispose();
+            }
+        }
+    }
 
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 
@@ -512,5 +550,5 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                         env, path, realCnt.get(), System.currentTimeMillis() - time);
             }
         }
-    }
+    }    
 }

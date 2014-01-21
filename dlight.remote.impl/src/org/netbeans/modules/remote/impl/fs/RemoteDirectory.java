@@ -213,8 +213,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
     
     @Override
-    protected boolean deleteImpl(FileLock lock) throws IOException {
-        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), true);
+    protected void deleteImpl(FileLock lock) throws IOException {
+        RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), true);
     }
 
     private RemoteFileObject create(String name, boolean directory, RemoteFileObjectBase orig) throws IOException {

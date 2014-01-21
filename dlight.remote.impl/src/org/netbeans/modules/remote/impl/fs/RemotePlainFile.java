@@ -410,8 +410,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected boolean deleteImpl(FileLock lock) throws IOException {
-        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected void deleteImpl(FileLock lock) throws IOException {
+        RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override
