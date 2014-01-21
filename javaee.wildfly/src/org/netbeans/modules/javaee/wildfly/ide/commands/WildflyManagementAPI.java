@@ -67,10 +67,8 @@ public class WildflyManagementAPI {
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class
-        );
-        return method.invoke(
-                null, serverAddress, serverPort, handler);
+        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class);
+        return method.invoke(null, serverAddress, serverPort, handler);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,

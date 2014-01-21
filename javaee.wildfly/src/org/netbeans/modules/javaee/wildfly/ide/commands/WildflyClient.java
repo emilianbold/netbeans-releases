@@ -155,7 +155,7 @@ public class WildflyClient {
         if (client == null) {
             try {
                 this.client = createClient(cl, serverAddress, serverPort, handler);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING, null, ex);
                 return null;
             }
@@ -220,6 +220,9 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Object clientLocal = getClient(cl);
+        if(clientLocal == null) {
+            throw new IOException("Not connected to WildFly server");
+        }
         Method method = clientLocal.getClass().getMethod("execute", modelClazz);
         return method.invoke(clientLocal, modelNode);
     }
@@ -229,6 +232,9 @@ public class WildflyClient {
             InvocationTargetException, IllegalAccessException {
         Class operationClazz = cl.loadClass("org.jboss.as.controller.client.Operation"); // NOI18N
         Object clientLocal = getClient(cl);
+        if(clientLocal == null) {
+            throw new IOException("Not connected to WildFly server");
+        }
         Method method = clientLocal.getClass().getMethod("execute", operationClazz);
         return method.invoke(clientLocal, operation);
     }
@@ -238,6 +244,9 @@ public class WildflyClient {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Class handlerClazz = cl.loadClass("org.jboss.as.controller.client.OperationMessageHandler"); // NOI18N
         Object clientLocal = getClient(cl);
+        if(clientLocal == null) {
+            throw new IOException("Not connected to WildFly server");
+        }
         Method method = clientLocal.getClass().getMethod("executeAsync", modelClazz, handlerClazz);
         return (Future) method.invoke(clientLocal, modelNode, operationMessageHandler);
     }
