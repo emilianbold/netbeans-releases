@@ -73,7 +73,7 @@ public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentM
         if(serverCache.containsKey(ip)) {
            return serverCache.get(ip);
         }
-        StartServer  startServer =  new WildflyStartServer(dm);
+        StartServer startServer =  new WildflyStartServer(dm);
         serverCache.put(ip, startServer);
         return startServer;
     }
