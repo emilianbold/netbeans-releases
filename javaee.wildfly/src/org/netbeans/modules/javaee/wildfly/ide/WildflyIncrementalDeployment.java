@@ -115,7 +115,15 @@ public class WildflyIncrementalDeployment extends IncrementalDeployment implemen
 
     @Override
     public File getDirectoryForModule(TargetModuleID module) {
-        return new File(this.deploymentDir, module.getModuleID());
+        return new File(this.deploymentDir, appendModuleToPath("", module));
+    }
+    
+    private String appendModuleToPath(String path, TargetModuleID module) {
+        String relPath = module.getModuleID() + File.separatorChar + path;
+        if(module.getParentTargetModuleID() == null) {
+            return relPath;
+        }
+        return appendModuleToPath(path, module.getParentTargetModuleID());
     }
 
     @Override
