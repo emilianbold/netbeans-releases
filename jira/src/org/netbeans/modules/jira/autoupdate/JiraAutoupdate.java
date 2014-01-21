@@ -184,7 +184,7 @@ public class JiraAutoupdate {
         connectorNotified = true;
         NotificationDisplayer.getDefault().notify(
             Bundle.CTL_Restart(),
-            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.png", true ), //NOI18N
+            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.gif", true ), //NOI18N
             Bundle.CTL_RestartClickHere(), new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
