@@ -100,9 +100,6 @@ public final class DebuggerSupport {
         } catch (InvalidObjectException ioex) {
             return null;
         } catch (NoSuchMethodException | InvalidExpressionException nsmex) {
-            System.err.println("\n\nThrowing exception:");
-            nsmex.printStackTrace();
-            System.err.println("\n\n");
             Exceptions.printStackTrace(nsmex);
             return null;
         }
