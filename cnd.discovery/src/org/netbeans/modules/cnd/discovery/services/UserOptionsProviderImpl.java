@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -175,6 +176,39 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 }
             }
         }
+    }
+
+    @Override
+    public String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+            if (compiler != null) {
+                String importantFlags = compiler.getDescriptor().getImportantFlags();
+                if (importantFlags != null && importantFlags.length() > 0) {
+                    StringBuilder buf = new StringBuilder();
+                    Pattern pattern = Pattern.compile(importantFlags);
+                    String options = compilerOptions.getAllOptions(compiler);
+                    String[] split = options.split(" "); //NOI18N
+                    for (int i = 0; i < split.length; i++) {
+                        String s = split[i];
+                        if (s.startsWith("-")) { //NOI18N
+                            // handle user specified language "x c" & "x c++"
+                            if (s.equals("-x") && (i+1 < split.length)) { //NOI18N
+                                i++;
+                                s += split[i];
+                            }
+                            if (pattern.matcher(s).find()) {
+                                if (buf.length() > 0) {
+                                    buf.append(' ');
+                                }
+                                buf.append(s);
+                            }
+                        }
+                    }
+                    return buf.toString();
+                }
+            }
+        }
+        return null;
     }
     
     @Override

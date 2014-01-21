@@ -134,12 +134,7 @@ public class VariableMirrorTranslator {
                 try {
                     Class clazz = Class.forName(typeStr);
                     if (String.class.equals(clazz)) {
-                        String str = StringReferenceWrapper.value((StringReference) value);
-                        // Limit the String length because of memory consumption:
-                        if (str.length() > AbstractObjectVariable.MAX_STRING_LENGTH) {
-                            str = str.substring(0, AbstractObjectVariable.MAX_STRING_LENGTH) + "..."; // NOI18N
-                        }
-                        return str;
+                        return getStringWithLengthControl((StringReference) value);
                     }
                     return createMirrorObject((ObjectReference) value, (ReferenceType) type, clazz, mirrorsMap);
                 } catch (ClassNotFoundException ex) {
@@ -171,6 +166,65 @@ public class VariableMirrorTranslator {
         } catch (ObjectCollectedExceptionWrapper ex) {
         }
         return null;
+    }
+    
+    private static String getStringWithLengthControl(StringReference sr) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        boolean isShort;
+        ReferenceType st = ObjectReferenceWrapper.referenceType(sr);
+        ArrayReference sa = null;
+        try {
+            Field valuesField = ReferenceTypeWrapper.fieldByName(st, "value");
+            if (valuesField == null) {
+                List<Field> allFields = ReferenceTypeWrapper.allFields(st);
+                for (Field f : allFields) {
+                    if (f.isStatic()) {
+                        continue;
+                    }
+                    Type type = f.type();
+                    if (type instanceof ArrayType &&
+                        "char".equals(((ArrayType) type).componentTypeName())) {
+                        valuesField = f;
+                        break;
+                    }
+                }
+            }
+            if (valuesField == null) {
+                isShort = true; // We did not find the values field.
+            } else {
+                Value values = ObjectReferenceWrapper.getValue(sr, valuesField);
+                if (values instanceof ArrayReference) {
+                    sa = (ArrayReference) values;
+                    int l = ArrayReferenceWrapper.length(sa);
+                    isShort = l <= AbstractObjectVariable.MAX_STRING_LENGTH;
+                } else {
+                    isShort = true;
+                }
+            }
+        } catch (ClassNotPreparedExceptionWrapper cnpex) {
+            isShort = true;
+        } catch (ClassNotLoadedException cnlex) {
+            isShort = true;
+        }
+        if (isShort) {
+            return StringReferenceWrapper.value(sr);
+        } else {
+            assert sa != null;
+            int l = AbstractObjectVariable.MAX_STRING_LENGTH;
+            List<Value> values = ArrayReferenceWrapper.getValues(sa, 0, l);
+            char[] characters = new char[l + 3];
+            for (int i = 0; i < l; i++) {
+                Value v = values.get(i);
+                if (!(v instanceof CharValue)) {
+                    return "<Unreadable>";
+                }
+                characters[i] = ((CharValue) v).charValue();
+            }
+            // Add 3 dots:
+            for (int i = l; i < (l + 3); i++) {
+                characters[i] = '.';
+            }
+            return new String(characters);
+        }
     }
     
     static private Object createPristineInstanceOf(Class clazz) {

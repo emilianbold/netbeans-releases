@@ -561,6 +561,11 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             @Override
             public void run() {
                 ODCS.LOG.fine("on save start");
+                
+                if(!validate()) {
+                    return;
+                }
+                
                 String name = newName != null ? newName : query.getDisplayName();
                 if(name == null) {
                     name = getSaveName();
@@ -727,6 +732,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         try {
             URL url;
             if(!query.isSaved()) {
+                if(!validate()) {
+                    return;
+                }    
                 String queryString = getQueryString();
                 if(queryString == null) {
                     return;
@@ -874,6 +882,9 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
     }
 
     private void onCloneQuery() {
+        if(!validate()) {
+            return;
+        }
         String queryString = getQueryString();
         Criteria c = queryString != null ? CriteriaParser.parse(queryString) : null;
         ODCSQuery q = ODCSQuery.createNew(repository, c);

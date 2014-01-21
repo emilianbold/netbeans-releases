@@ -1520,7 +1520,12 @@ itor tabs #66700).
     public static List<String> getNotSharablePaths (File repository, List<File> roots) {
         List<String> ignored;
         synchronized (notSharable) {
-            ignored = new ArrayList<String>(notSharable.get(repository));
+            Set<String> set = notSharable.get(repository);
+            if (set == null) {
+                ignored = Collections.<String>emptyList();
+            } else {
+                ignored = new ArrayList<String>(set);
+            }
         }
         if (ignored.size() > 10 && !roots.contains(repository)) {
             // we could optimize and return only a subset of ignored files/folders

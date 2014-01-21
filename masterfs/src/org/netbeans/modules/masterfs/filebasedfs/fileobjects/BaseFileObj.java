@@ -430,6 +430,8 @@ public abstract class BaseFileObj extends FileObject {
         //TODO: no lock used
         FileObjectFactory fs = getFactory();
 
+        fs.allIBaseLock.writeLock().lock(); // #239302
+        try {
         synchronized (FileObjectFactory.AllFactories) {
             FileNaming oldFileName = getFileName();
             assert oldFileName != null;
@@ -472,6 +474,9 @@ public abstract class BaseFileObj extends FileObject {
                 }
             }
             fs.rename(toRename);
+        }
+        } finally {
+            fs.allIBaseLock.writeLock().unlock();
         }
         //TODO: RELOCK
         LockForFile.relock(file, file2Rename);

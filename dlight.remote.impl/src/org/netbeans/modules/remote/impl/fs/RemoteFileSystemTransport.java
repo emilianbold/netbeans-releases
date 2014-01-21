@@ -134,6 +134,10 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).lstat(path);
      }
 
+    public static void delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+        getInstance(execEnv).delete(path, directory);
+    }
+    
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
         if (transport == null || ! transport.isValid()) {
@@ -160,6 +164,8 @@ public abstract class RemoteFileSystemTransport {
     protected abstract void unregisterDirectoryImpl(String path);
 
     protected abstract void scheduleRefresh(Collection<String> paths);
+    
+    protected abstract void delete(String path, boolean directory) throws IOException;
 
     protected void onConnect() {
     }
@@ -169,5 +175,5 @@ public abstract class RemoteFileSystemTransport {
     
     protected Warmup createWarmup(String path) {
         return null;
-    }            
+    }                
 }

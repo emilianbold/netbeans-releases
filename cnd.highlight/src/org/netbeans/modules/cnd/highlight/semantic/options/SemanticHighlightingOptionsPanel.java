@@ -67,6 +67,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         initComponents();
         initGeneratedComponents();
         initMnemonics();
+        cbMarkOccurrences.addActionListener(this);
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
     }
@@ -94,6 +95,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         }
         
         updateValidation();
+        isChanged = false;
     }
 
     void cancel() {
@@ -106,7 +108,13 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        isChanged = true;
+        boolean changed = cbMarkOccurrences.isSelected() != SemanticHighlightingOptions.instance().getEnableMarkOccurrences()
+                || cbKeepMarks.isSelected() != SemanticHighlightingOptions.instance().getKeepMarks();
+
+        for (Entity entity : entities) {
+            changed |= entity.cb.isSelected() != NamedOption.getAccessor().getBoolean(entity.se.getName());
+        }
+        isChanged = changed;
     }
 
     private void updateValidation() {
@@ -144,6 +152,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             cb.setToolTipText(ne.getDescription());
         }
         cb.setOpaque(false);
+        cb.addActionListener(this);
         entities.add(new Entity(ne, cb));
     }
 

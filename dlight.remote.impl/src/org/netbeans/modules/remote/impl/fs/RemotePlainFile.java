@@ -405,13 +405,13 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(FileObject child) {
+    protected void postDeleteChild(RemoteFileObject child) {
         RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
     }
 
     @Override
-    protected boolean deleteImpl(FileLock lock) throws IOException {
-        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected void deleteImpl(FileLock lock) throws IOException {
+        RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override

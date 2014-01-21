@@ -150,13 +150,74 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
         return compilerDefinitions.systemPreprocessorSymbolsList;
     }
+    
+    private final Map<String,Pair> particularModel = new HashMap<String,Pair>();
+    
+    @Override
+    public List<String> getSystemPreprocessorSymbols(String flags) {
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return particular.systemPreprocessorSymbolsList;
+            }
+        }
+        return getSystemPreprocessorSymbols();
+    }
 
+    private void applyUserAddedDefinitions(Pair particular) {
+        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
+        if (systemPreprocessorSymbols instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
+                addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
+            }
+        }
+        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
+        if (systemIncludeDirectories instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
+            }
+        }
+    }
+    
     @Override
     public List<String> getSystemIncludeDirectories() {
         if (compilerDefinitions == null) {
             resetSystemProperties();
         }
         return compilerDefinitions.systemIncludeDirectoriesList;
+    }
+
+    @Override
+    public List<String> getSystemIncludeDirectories(String flags) {
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return particular.systemIncludeDirectoriesList;
+            }
+        }
+        return getSystemIncludeDirectories();
     }
 
     @Override
@@ -566,6 +627,28 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
             } else {
                 if (pattern.equals(s)) {
+                    return;
+                }
+            }
+        }
+        list.add(element);
+    }
+
+    protected static void addUniqueOrReplace(List<String> list, String element) {
+        String pattern = element;
+        if (element.indexOf('=') > 0) {
+            pattern = pattern.substring(0, element.indexOf('='));
+        }
+        for(int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
+            if (s.indexOf('=') > 0) {
+                if (pattern.equals(s.substring(0, s.indexOf('=')))) {
+                    list.set(i, element);
+                    return;
+                }
+            } else {
+                if (pattern.equals(s)) {
+                    list.set(i, element);
                     return;
                 }
             }
@@ -1026,6 +1109,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
     }
+   
+    protected abstract MyCallable<Pair> getCallable();
     
     protected static final class Pair {
         public CompilerDefinition systemIncludeDirectoriesList;
