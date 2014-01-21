@@ -188,8 +188,14 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     Pattern pattern = Pattern.compile(importantFlags);
                     String options = compilerOptions.getAllOptions(compiler);
                     String[] split = options.split(" "); //NOI18N
-                    for (String s : split) {
+                    for (int i = 0; i < split.length; i++) {
+                        String s = split[i];
                         if (s.startsWith("-")) { //NOI18N
+                            // handle user specified language "x c" & "x c++"
+                            if (s.equals("-x") && (i+1 < split.length)) { //NOI18N
+                                i++;
+                                s += split[i];
+                            }
                             if (pattern.matcher(s).find()) {
                                 if (buf.length() > 0) {
                                     buf.append(' ');
