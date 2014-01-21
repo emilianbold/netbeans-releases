@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.api.java.source.matching.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
@@ -51,6 +50,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -64,6 +64,7 @@ import com.sun.source.util.TreeScanner;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -104,10 +105,14 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
+import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -117,9 +122,6 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
-import org.netbeans.api.java.source.matching.Occurrence;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -272,9 +274,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
 
         Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
-        Fix field = null;
+        IntroduceFieldFix field = null;
         Fix methodFix = null;
 
+        TreePath pathToClass = TreeUtils.findClass(resolved);
         if (method != null && !TreeUtils.isInAnnotationType(info, method)) {
             int[] initilizeIn = computeInitializeIn(info, resolved, duplicatesForConstant);
 
@@ -294,12 +297,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 //the variable name would incorrectly clash with itself:
                 guessedName = Utilities.guessName(info, resolved, resolved.getParentPath(), cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
             } else if (!variableRewrite) {
-                TreePath pathToClass = resolved;
-
-                while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
-                    pathToClass = pathToClass.getParentPath();
-                }
-
                 if (pathToClass != null) { //XXX: should actually produce two different names: one when replacing duplicates, one when not replacing them
                     guessedName = Utilities.makeNameUnique(info,
                                                            info.getTrees().getScope(pathToClass),
@@ -309,7 +306,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
 
-            field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end, !variableRewrite);
+            if (pathToClass == null || pathToClass.getLeaf().getKind() == Tree.Kind.CLASS) {
+                field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end, !variableRewrite);
+            }
 
             if (!variableRewrite) {
                 //introduce method based on expression:
@@ -721,6 +720,21 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
             insertLocation = i - 1;
             break;
+        }
+        
+        // fallback; the individual hinds should have sent correct modifiers.
+        if (clazz.getKind() == Tree.Kind.INTERFACE) {
+            Set<Modifier> mod = fieldToAdd.getModifiers().getFlags();
+            if (!mod.isEmpty()) {
+                mod = EnumSet.copyOf(mod);
+                EnumSet<Modifier> mods = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED);
+                if (mod.removeAll(EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED))) {
+                    // offending modifier, plan further rewrite
+                    mod.add(Modifier.PUBLIC);
+                    ModifiersTree mtt = parameter.getTreeMaker().Modifiers(mod, fieldToAdd.getModifiers().getAnnotations());
+                    parameter.rewrite(fieldToAdd.getModifiers(), mtt);
+                }
+            }
         }
         
         TreePath clazzPath = TreePath.getPath(parameter.getCompilationUnit(), clazz); //TODO: efficiency
