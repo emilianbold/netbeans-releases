@@ -106,11 +106,9 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
         // Default web resource directory is usually webapp
         // See also maven-war-plugin documentation for more details
-        if (webRootsFO.isEmpty()) {
-            FileObject defaultWebRoot = getDefaultWebRoot();
-            if (defaultWebRoot != null) {
-                webRootsFO.add(defaultWebRoot);
-            }
+        FileObject defaultWebRoot = getDefaultWebRoot();
+        if (defaultWebRoot != null) {
+            webRootsFO.add(defaultWebRoot);
         }
 
         return webRootsFO;
