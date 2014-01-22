@@ -155,7 +155,8 @@ public class InstanceRefFinder extends TreePathScanner {
             switch (t.getKind()) {
                 case METHOD:
                 case VARIABLE:
-                case CLASS: 
+                case CLASS:
+                case ENUM:
                 case INTERFACE:
                 case NEW_CLASS:
                     enclosingElementPath = path;
@@ -209,7 +210,7 @@ public class InstanceRefFinder extends TreePathScanner {
         
         for (TypeElement enclType = enclosingType; enclType != null; enclType = ci.getElementUtilities().enclosingTypeElement(enclType)) {
             if (ci.getTypes().isSubtype(enclType.asType(), declType)) {
-                if (k == ElementKind.CLASS) {
+                if (k.isClass()) {
                     return enclType;
                 } else if (k == ElementKind.INTERFACE) {
                     if (t.getModifiers().contains(Modifier.DEFAULT)) {
@@ -372,6 +373,8 @@ public class InstanceRefFinder extends TreePathScanner {
                 addInstanceForMemberOf(el);
                 break;
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 if (node.getName().contentEquals("this") || node.getName().contentEquals("super")) {
                     addInstanceForType(enclosingType);
                 }

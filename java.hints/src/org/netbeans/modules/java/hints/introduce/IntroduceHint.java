@@ -306,7 +306,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
 
-            if (pathToClass == null || pathToClass.getLeaf().getKind() == Tree.Kind.CLASS) {
+            if (pathToClass == null || (pathToClass.getLeaf().getKind() == Tree.Kind.CLASS || pathToClass.getLeaf().getKind() == Tree.Kind.ENUM)) {
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end, !variableRewrite);
             }
 
@@ -618,6 +618,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 newParent = make.removeCaseStatement((CaseTree) parentTree, (StatementTree) original);
                 break;
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 newParent = make.removeClassMember((ClassTree)parentTree, original);
                 break;
             default:
