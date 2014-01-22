@@ -586,6 +586,9 @@ public final class J2MEProjectProperties {
         //Compute Bootclasspath
         for (Map.Entry<String, Map<String, String>> configEntry : RUN_CONFIGS.entrySet()) {
             Map<String, String> config = configEntry.getValue();
+            if (config == null) {
+                continue;
+            }
             String platformConfiguration = config.get(PROP_PLATFORM_CONFIGURATION) != null ? config.get(PROP_PLATFORM_CONFIGURATION) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_CONFIGURATION);
             String platformProfile = config.get(PROP_PLATFORM_PROFILE) != null ? config.get(PROP_PLATFORM_PROFILE) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_PROFILE);
             String platformApis = config.get(PROP_PLATFORM_APIS) != null ? config.get(PROP_PLATFORM_APIS) : RUN_CONFIGS.get(null).get(PROP_PLATFORM_APIS);
