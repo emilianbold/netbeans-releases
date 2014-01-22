@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.HyperlinkBaseTestCase;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.openide.util.Lookup;
@@ -63,9 +64,14 @@ public class DocumentationTextGenerationBaseTestCase extends HyperlinkBaseTestCa
         CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
         assertNotNull(docProvider);
         
-        CsmOffsetable targetObject = findTargetObject(source, lineIndex, colIndex, new AtomicReference<TokenItem<TokenId>>(null));
-        CharSequence documentation = docProvider.getDocumentation(targetObject, targetObject.getContainingFile());
+        CsmCacheManager.enter();
+        try {
+            CsmOffsetable targetObject = findTargetObject(source, lineIndex, colIndex, new AtomicReference<TokenItem<TokenId>>(null));
+            CharSequence documentation = docProvider.getDocumentation(targetObject, targetObject.getContainingFile());
         
-        assertEquals(expectedDoc, documentation.toString());
+            assertEquals(expectedDoc, documentation.toString());
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 }

@@ -50,6 +50,7 @@ import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
@@ -225,9 +226,14 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     }
 
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
-        File testFile = getDataFile(source);
-        assertTrue("no test file " + testFile.getAbsolutePath(), testFile.exists());
-        performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
+        CsmCacheManager.enter();
+        try {
+            File testFile = getDataFile(source);
+            assertTrue("no test file " + testFile.getAbsolutePath(), testFile.exists());
+            performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     protected void performTest(String[] args, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {

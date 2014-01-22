@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -95,13 +96,18 @@ public abstract class SelectTestBase extends ModelImplBaseTestCase {
 
 
     public void doTestGetFunctions() throws Exception {
-        CsmProject project = traceModel.getProject();
-        project.waitParse();
-        _testGetFunctions(project.getGlobalNamespace());
-        for (CsmProject lib : project.getLibraries()) {
-            _testGetFunctions(lib.getGlobalNamespace());
+        CsmCacheManager.enter();
+        try {
+            CsmProject project = traceModel.getProject();
+            project.waitParse();
+            _testGetFunctions(project.getGlobalNamespace());
+            for (CsmProject lib : project.getLibraries()) {
+                _testGetFunctions(lib.getGlobalNamespace());
+            }
+            assertNoExceptions();
+        } finally {
+            CsmCacheManager.leave();
         }
-        assertNoExceptions();
     }
 
     protected void _testGetFunctions(CsmNamespace nsp) throws Exception {
