@@ -416,7 +416,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        UIUtils.decorateProfilerPanel(bottomPanel);
+        bottomPanel.setOpaque(false);
         bottomPanel.add(UIUtils.createHorizontalLine(bottomPanel.getBackground()), BorderLayout.NORTH);
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
