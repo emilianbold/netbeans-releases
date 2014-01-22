@@ -96,6 +96,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.Lookup;
 
@@ -140,8 +141,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        proxyConfigButton.setVisible(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY));
         
         Kenai kenai = panel.getKenai();
         assert kenai != null;
@@ -554,9 +555,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        if(ide != null && ide.providesProxyConfiguration()) {
-            ide.openProxyConfiguration();
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        if(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY)) {
+            settings.openSection(SettingsServices.Section.PROXY);
         }
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
