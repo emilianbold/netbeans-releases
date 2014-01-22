@@ -174,7 +174,7 @@ public final class DiscoveryProjectGenerator {
                                         logger.log(Level.FINE, "#fix excluded as header for file {0}", impl.getAbsolutePath()); // NOI18N
                                     }
                                     isChanged |= ProjectBridge.setHeaderTool((Item) item);
-                                    ProjectBridge.setExclude((Item) item, true);
+                                    isChanged |= ProjectBridge.setExclude((Item) item, true);
                                     needCheck.add(item.getAbsolutePath());
                                 }
                             }
@@ -246,8 +246,8 @@ public final class DiscoveryProjectGenerator {
                                             if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                                 needCheck.add(path);
                                             }
-                                            ProjectBridge.setExclude((Item) item, prefferedFolder.isDiskFolder());
-                                            ProjectBridge.excludeItemFromOtherConfigurations(item);
+                                            isChanged |= ProjectBridge.setExclude((Item) item, prefferedFolder.isDiskFolder());
+                                            isChanged |= ProjectBridge.excludeItemFromOtherConfigurations(item);
                                         }
                                     }
                                 }
