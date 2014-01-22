@@ -429,7 +429,7 @@ class TabsComponent extends JPanel {
 			}
 			int min = topMinSize;
 			int max = splitSize - bottomMinSize - dividerSize;
-                        removeSplit = current <= min || current >= max;
+                        removeSplit = splitSize > 0 && (current <= min || current >= max);
 		    }
 		}
 	    };
