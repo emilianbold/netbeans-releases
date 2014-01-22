@@ -343,6 +343,9 @@ public final class FileImpl implements CsmFile,
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
         this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
+        if (fileType == FileType.UNDEFINED_FILE && nativeFileItem != null) {
+            fileType = Utils.getFileType(nativeFileItem);
+        }
         this.fileType = fileType;
         if (nativeFileItem != null) {
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -428,6 +431,9 @@ public final class FileImpl implements CsmFile,
 
 
     /*package local*/ void setHeaderFile() {
+        if (fileBuffer.getFileObject().getPath().endsWith("/main.c")) {
+            System.err.println("");
+        }
         if (fileType == FileType.UNDEFINED_FILE) {
             fileType = FileType.HEADER_FILE;
         }
