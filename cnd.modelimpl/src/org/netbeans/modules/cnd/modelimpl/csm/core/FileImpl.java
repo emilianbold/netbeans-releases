@@ -431,9 +431,6 @@ public final class FileImpl implements CsmFile,
 
 
     /*package local*/ void setHeaderFile() {
-        if (fileBuffer.getFileObject().getPath().endsWith("/main.c")) {
-            System.err.println("");
-        }
         if (fileType == FileType.UNDEFINED_FILE) {
             fileType = FileType.HEADER_FILE;
         }
