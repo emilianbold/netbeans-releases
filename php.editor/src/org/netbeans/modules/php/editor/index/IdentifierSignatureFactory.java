@@ -262,14 +262,14 @@ public final class IdentifierSignatureFactory {
 
         private String getSignature() {
             StringBuilder sb = new StringBuilder();
-            sb.append(name).append(";"); //NOI18N
+            sb.append(Signature.encodeItem(name)).append(";"); //NOI18N
             if (mask != 0) {
                 sb.append(mask).append(";"); //NOI18N
             } else {
                 assert !isDeclaration();
             }
             if (isDeclaration()) {
-                sb.append(typeName).append(";"); //NOI18N
+                sb.append(Signature.encodeItem(typeName)).append(";"); //NOI18N
             }
             return sb.toString();
         }
