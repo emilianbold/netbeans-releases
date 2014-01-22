@@ -55,6 +55,7 @@ public abstract class IntroduceFixBase implements Fix {
     protected final TreePathHandle  handle; 
     protected final int duplicatesCount;
     protected final int offset;
+    protected boolean targetIsInterface;
 
     public IntroduceFixBase(JavaSource js, TreePathHandle handle, int duplicateCount, int offset) {
         this.js = js;
@@ -62,4 +63,9 @@ public abstract class IntroduceFixBase implements Fix {
         this.duplicatesCount = duplicateCount;
         this.offset = offset;
     }
+
+    public void setTargetIsInterface(boolean f) {
+        this.targetIsInterface = f;
+    }
+
 }
