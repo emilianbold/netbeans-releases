@@ -290,9 +290,12 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         for (TypeMirror tm : exceptions) {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
-        List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel);
-        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
+        AtomicBoolean allIfaces = new AtomicBoolean();
+        List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel, allIfaces);
+        IntroduceMethodFix imf = new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
                 duplicatesCount, scanner.getUsedTypeVars(), end, targets);
+        imf.setTargetIsInterface(allIfaces.get());
+        return imf;
     }
 
     static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -430,7 +433,7 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
     public ChangeInfo implement() throws Exception {
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
-        IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets); //NOI18N
+        IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets, targetIsInterface); //NOI18N
         panel.setOkButton(btnOk);
         String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -552,7 +555,10 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
             
             Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
             modifiers.addAll(access);
-            if (mustStatic) {
+            
+            if (target.iface) {
+                modifiers.add(Modifier.DEFAULT);
+            } else if (mustStatic) {
                 modifiers.add(Modifier.STATIC);
             }
             ModifiersTree mods = make.Modifiers(modifiers);
