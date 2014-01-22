@@ -258,30 +258,32 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             JarFile file = new JarFile(jarFile);
             try {
                 Manifest manifest = file.getManifest();
-                Attributes attrs = manifest.getMainAttributes();
-                String value = attrs.getValue("Class-Path"); //NOI18N
-                if (value != null) {
-                    String[] values = value.split("\\s+"); // NOI18N
-                    File parent = FileUtil.normalizeFile(jarFile).getParentFile();
-                    if (parent != null) {
-                        for (String cpElement : values) {
-                            if (!"".equals(cpElement.trim())) { // NOI18N
-                                File f = new File(cpElement);
-                                if (!f.isAbsolute()) {
-                                    f = new File(parent, cpElement);
-                                }
-                                f = FileUtil.normalizeFile(f);
-                                if (!f.exists()) {
-                                    // fix the possibly wrong path in the jar #206528
-                                    if (mwHome != null && cpElement.startsWith("../../../modules")) { // NOI18N
-                                        f = FileUtil.normalizeFile(
-                                                new File(mwHome, cpElement.substring(9)));
-                                        if (f.exists()) {
-                                            addFileToList(urls, f);
-                                        }
+                if (manifest != null) {
+                    Attributes attrs = manifest.getMainAttributes();
+                    String value = attrs.getValue("Class-Path"); //NOI18N
+                    if (value != null) {
+                        String[] values = value.split("\\s+"); // NOI18N
+                        File parent = FileUtil.normalizeFile(jarFile).getParentFile();
+                        if (parent != null) {
+                            for (String cpElement : values) {
+                                if (!"".equals(cpElement.trim())) { // NOI18N
+                                    File f = new File(cpElement);
+                                    if (!f.isAbsolute()) {
+                                        f = new File(parent, cpElement);
                                     }
-                                } else {
-                                    addFileToList(urls, f);
+                                    f = FileUtil.normalizeFile(f);
+                                    if (!f.exists()) {
+                                        // fix the possibly wrong path in the jar #206528
+                                        if (mwHome != null && cpElement.startsWith("../../../modules")) { // NOI18N
+                                            f = FileUtil.normalizeFile(
+                                                    new File(mwHome, cpElement.substring(9)));
+                                            if (f.exists()) {
+                                                addFileToList(urls, f);
+                                            }
+                                        }
+                                    } else {
+                                        addFileToList(urls, f);
+                                    }
                                 }
                             }
                         }

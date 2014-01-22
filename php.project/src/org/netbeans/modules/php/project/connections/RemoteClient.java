@@ -57,7 +57,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -876,131 +875,113 @@ public final class RemoteClient implements Cancellable {
         "RemoteClient.file.replaceUnsavedContent.question=Replace unsaved file \"{0}\" with the content from the server?"
     })
     private boolean copyTmpLocalFile(final TmpLocalFile source, final File target) throws DownloadSkipException {
-        final AtomicBoolean moved = new AtomicBoolean();
-        final AtomicBoolean downloadSkipped = new AtomicBoolean();
-        FileUtil.runAtomicAction(new Runnable() {
-            @Override
-            public void run() {
-                FileObject foTarget = ensureTargetExists(FileUtil.normalizeFile(target));
-                if (foTarget == null) {
-                    moved.set(false);
-                    return;
-                }
-
-                // replace content of the target file with the source file
-                FileLock lock;
-                InputStream in;
-                OutputStream out;
-                try {
-                    // lock the target file
-                    lock = lockFile(foTarget);
-                    if (lock == null) {
-                        moved.set(false);
-                        return;
-                    }
-                    try {
-                        in = source.getInputStream();
-                        if (in == null) {
-                            // definitely should not happen
-                            moved.set(false);
-                            return;
-                        }
-                        try {
-                            // TODO the doewnload action shoudln't save all file before
-                            // executing, then the ide will ask, whether user wants
-                            // to replace currently editted file.
-                            out = foTarget.getOutputStream(lock);
-                            try {
-                                FileUtil.copy(in, out);
-                                moved.set(true);
-                            } finally {
-                                out.close();
-                            }
-                        } finally {
-                            in.close();
-                        }
-                    } finally {
-                        lock.releaseLock();
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Error while moving local file", ex);
-                    moved.set(false);
-                } catch (DownloadSkipException ex) {
-                    downloadSkipped.set(true);
-                }
-            }
-
-            private FileObject ensureTargetExists(File target) {
-                if (target.exists()) {
-                    // exists
-                    FileObject targetFo = FileUtil.toFileObject(target);
-                    if (targetFo == null) {
-                        LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", target);
-                        return null;
-                    }
-                    return targetFo;
-                }
-                // does not exist -> create it
-                LOGGER.log(Level.FINE, "Local file {0} does not exists so it will be created", target.getName());
-
-                File parent = target.getParentFile();
-                boolean parentExists = parent.isDirectory();
-                if (!parentExists) {
-                    parentExists = parent.mkdirs();
-                }
-                if (!parentExists) {
-                    LOGGER.log(Level.INFO, "Cannot create parent directory {0}", parent);
-                    return null;
-                }
-                FileObject parentFo = FileUtil.toFileObject(parent);
-                if (parentFo == null) {
-                    LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", parent);
-                    return null;
-                }
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine(String.format("Data file %s created.", target.getName()));
-                }
-                try {
-                    return parentFo.createData(target.getName());
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Error while creating local file '" + target + "'", ex);
-                    return null;
-                }
-            }
-
-            private FileLock lockFile(FileObject fo) throws IOException, DownloadSkipException {
-                try {
-                    return fo.lock();
-                } catch (FileAlreadyLockedException lockedException) {
-                    if (warnChangedFile(fo)) {
-                        PhpProjectUtils.saveFile(fo);
-                        // XXX remove once #213141 is fixed
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
-                        }
-                        return fo.lock();
-                    } else {
-                        throw new DownloadSkipException();
-                    }
-                }
-            }
-
-            private boolean warnChangedFile(FileObject file) {
-                NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(Bundle.RemoteClient_file_replaceUnsavedContent_question(file.getNameExt()),
-                        Bundle.RemoteClient_file_replaceUnsavedContent_title(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
-                return DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
-            }
-
-        });
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine(String.format("Content of tmp local file copied into %s: %s", target.getName(), moved.get()));
+        boolean moved = false;
+        boolean downloadSkipped = false;
+        FileObject foTarget = ensureTargetExists(FileUtil.normalizeFile(target));
+        if (foTarget == null) {
+            return false;
         }
-        if (downloadSkipped.get()) {
+
+        // replace content of the target file with the source file
+        FileLock lock;
+        try {
+            // lock the target file
+            lock = lockFile(foTarget);
+            if (lock == null) {
+                return false;
+            }
+            try (InputStream in = source.getInputStream()) {
+                if (in == null) {
+                    // definitely should not happen
+                    return false;
+                }
+                try (OutputStream out = foTarget.getOutputStream(lock)) {
+                    // TODO the doewnload action shoudln't save all file before
+                    // executing, then the ide will ask, whether user wants
+                    // to replace currently editted file.
+                    FileUtil.copy(in, out);
+                    moved = true;
+                }
+            } finally {
+                lock.releaseLock();
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Error while moving local file", ex);
+            moved = false;
+        } catch (DownloadSkipException ex) {
+            downloadSkipped = true;
+        }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Content of tmp local file copied into %s: %s", target.getName(), moved));
+        }
+        if (downloadSkipped) {
             throw new DownloadSkipException();
         }
-        return moved.get();
+        return moved;
     }
+
+    private FileObject ensureTargetExists(File target) {
+        if (target.exists()) {
+            // exists
+            FileObject targetFo = FileUtil.toFileObject(target);
+            if (targetFo == null) {
+                LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", target);
+                return null;
+            }
+            return targetFo;
+        }
+        // does not exist -> create it
+        LOGGER.log(Level.FINE, "Local file {0} does not exists so it will be created", target.getName());
+
+        File parent = target.getParentFile();
+        boolean parentExists = parent.isDirectory();
+        if (!parentExists) {
+            parentExists = parent.mkdirs();
+        }
+        if (!parentExists) {
+            LOGGER.log(Level.INFO, "Cannot create parent directory {0}", parent);
+            return null;
+        }
+        FileObject parentFo = FileUtil.toFileObject(parent);
+        if (parentFo == null) {
+            LOGGER.log(Level.WARNING, "Cannot get file object for existing file {0}", parent);
+            return null;
+        }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine(String.format("Data file %s created.", target.getName()));
+        }
+        try {
+            return parentFo.createData(target.getName());
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Error while creating local file '" + target + "'", ex);
+            return null;
+        }
+    }
+
+    private FileLock lockFile(FileObject fo) throws IOException, DownloadSkipException {
+        try {
+            return fo.lock();
+        } catch (FileAlreadyLockedException lockedException) {
+            if (warnChangedFile(fo)) {
+                PhpProjectUtils.saveFile(fo);
+                // XXX remove once #213141 is fixed
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                }
+                return fo.lock();
+            } else {
+                throw new DownloadSkipException();
+            }
+        }
+    }
+
+    private boolean warnChangedFile(FileObject file) {
+        NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(Bundle.RemoteClient_file_replaceUnsavedContent_question(file.getNameExt()),
+                Bundle.RemoteClient_file_replaceUnsavedContent_title(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION);
+    }
+
 
     private File getLocalFile(File localFile, TransferFile transferFile) {
         File newFile = transferFile.resolveLocalFile(localFile);

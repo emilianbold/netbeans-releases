@@ -485,8 +485,10 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                 switch(standard) {
                     case C89:
                         importantFlags = "-std=c89";// NOI18N
+                        break;
                     case C99:
                         importantFlags = "-std=c99";// NOI18N
+                        break;
                 }
             }
         }

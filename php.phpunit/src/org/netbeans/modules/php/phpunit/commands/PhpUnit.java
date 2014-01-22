@@ -616,7 +616,7 @@ public final class PhpUnit {
                         // comment about %INCLUDE_PATH%, let's skip it
                         continue;
                     }
-                    List<String> includePath = phpModule.getLookup().lookup(PhpModuleProperties.class).getIncludePath();
+                    List<String> includePath = phpModule.getLookup().lookup(PhpModuleProperties.Factory.class).getProperties().getIncludePath();
                     assert includePath != null : "Include path should be always present";
                     line = processIncludePath(
                             finalBootstrap,

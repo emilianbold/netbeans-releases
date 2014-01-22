@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FriendResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -122,6 +123,15 @@ public class FriendTestCase extends TraceModelTestBase {
     }
 
     private void checkFriend() {
+        CsmCacheManager.enter();
+        try {
+            checkFriendImpl();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private void checkFriendImpl() {
         ProjectBase project = getProject();
         assertNotNull("Project must be valid", project); // NOI18N
         CsmClass clsB = (CsmClass) project.findClassifier("B"); // NOI18N

@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -144,7 +143,7 @@ public class EAWizardIterator extends BaseWizardIterator {
     }
 
     private void generateApplicationXML(Set<FileObject> projects) throws IOException {
-        Set<Project> childProjects = new HashSet<Project>();
+        Set<Project> childProjects = new HashSet<>();
         Project earProject = null;
 
         for (FileObject projectFile : projects) {
@@ -192,7 +191,7 @@ public class EAWizardIterator extends BaseWizardIterator {
         if (earDirFO == null) {
             return;
         }
-        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
+        List<ModelOperation<POMModel>> operations = new ArrayList<>();
         if (ejbInfo != null) {
             operations.add(ArchetypeWizards.addDependencyOperation(ejbInfo, "ejb")); // NOI18N
         }
