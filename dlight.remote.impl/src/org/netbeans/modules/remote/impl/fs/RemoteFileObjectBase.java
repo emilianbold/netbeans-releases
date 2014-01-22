@@ -259,9 +259,9 @@ public abstract class RemoteFileObjectBase {
 
     abstract protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
 
-    protected abstract boolean deleteImpl(FileLock lock) throws IOException;
+    protected abstract void deleteImpl(FileLock lock) throws IOException;
 
-    protected abstract void postDeleteChild(FileObject child);
+    protected abstract void postDeleteChild(RemoteFileObject child);
     
     
     public final void delete(FileLock lock) throws IOException {
@@ -281,37 +281,29 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
         }
-        boolean result;
         if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             if (deleteHandler != null) {
                 deleteHandler.handle();
-                result = true;
             } else {
-                result = deleteImpl(lock);
-            }
-            if (!result) {
-                throw new IOException("Cannot delete "+getPath()); // NOI18N
+                deleteImpl(lock);
             }
             // TODO remove attributes
             // TODO clear cache?
             // TODO fireFileDeletedEvent()?
             interceptor.deleteSuccess(fileProxy);
         } else {
-            result = deleteImpl(lock);
-            if (!result) {
-                throw new IOException("Cannot delete "+getPath()); // NOI18N
-            }
+            deleteImpl(lock);
         }
         RemoteFileObject fo = getOwnerFileObject();
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
             fo.fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(fo, fo, entry.getKey(), entry.getValue(), null));
         }
-        FileEvent fe = new FileEvent(fo, fo, true);
-        for(RemoteFileObjectBase child: getExistentChildren(true)) {
-            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
-        }        
+//        FileEvent fe = new FileEvent(fo, fo, true);
+//        for(RemoteFileObjectBase child: getExistentChildren(true)) {
+//            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
+//        }        
         invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {

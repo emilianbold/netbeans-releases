@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,6 +80,7 @@ import org.openide.util.NbBundle;
         CCCCompiler.Pair res = new CCCCompiler.Pair();
         try {
             getSystemIncludesAndDefines(getCompilerFingerPrintCommand(), true, res);
+            completePredefinedMacros(res);
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
             String errormsg;
@@ -95,21 +95,27 @@ import org.openide.util.NbBundle;
                 DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
-        checkModel(res, new MyCallable<Pair>() {
+        checkModel(res, getCallable());
+        
+        return res;
+    }
+    
+    @Override
+    protected MyCallable<Pair> getCallable(){
+        return new MyCallable<Pair>() {
 
             @Override
             public Pair call(String p) {
                 Pair tmp = new Pair();
                 try {
                     getSystemIncludesAndDefines(getCompilerFingerPrintCommand()+" "+p, true, tmp); // NOI18N
+                    completePredefinedMacros(tmp);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    ex.printStackTrace(System.err);
                 }
                 return tmp;
             }
-        });
-        
-        return res;
+        };
     }
 
     protected Collection<String> getSystemPaths(String line) {
@@ -165,6 +171,5 @@ import org.openide.util.NbBundle;
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
-        completePredefinedMacros(pair);
     }   
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.ui.settings;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -54,13 +55,13 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     id = OdcsOptionsController.OPTIONS_PATH,
     displayName = "#LBL_Options", // NOI18N
-    location="Team", // NOI18N
+    location=SettingsServices.TEAM_SETTINGS_LOCATION,
     keywords = "#KW_Odcs", // NOI18N
     keywordsCategory = "Team/Odcs" // NOI18N
 )
 public class OdcsOptionsController extends OptionsPanelController {
 
-    public static final String OPTIONS_PATH = "Odcs"; // NOI18N
+    public static final String OPTIONS_PATH = SettingsServices.ODCS_SETTINGS_ID; 
     private OdcsOptions dashboardOptions;
 
     @Override

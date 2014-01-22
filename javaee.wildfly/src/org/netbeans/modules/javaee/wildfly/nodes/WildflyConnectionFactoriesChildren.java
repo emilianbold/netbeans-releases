@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.WildflyConnectionFactory;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Node;
@@ -83,7 +83,7 @@ public class WildflyConnectionFactoriesChildren extends WildflyAsyncChildren imp
         @Override
         public void run() {
             try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
                 for(WildflyConnectionFactory connectionFactory : dm.getClient().listConnectionFactories()) {
                     keys.add(new WildflyConnectionFactoryNode(connectionFactory, lookup));
                 }

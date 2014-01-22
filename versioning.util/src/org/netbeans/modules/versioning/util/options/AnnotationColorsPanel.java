@@ -148,8 +148,12 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             refreshUI();
         } else {
             updateData();
-            changed = true;
         }
+        boolean isChanged = false;
+        for (VersioningSystemColors vsc : vcsColors.values()) {
+            isChanged |= vsc.changed;
+        }
+        changed = isChanged;
     }
     
     public void update(ColorModel colorModel) {
@@ -170,6 +174,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             e.getValue().saveColors();
         }
         vcsColors.clear();
+        changed = false;
     }
     
     public boolean isChanged () {
@@ -393,7 +398,6 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         VersioningSystemColors colors = vcsColors.get(provider);
         if (colors != null) {
             colors.resetToDefaults();
-            changed = true;
         }
     }
 
@@ -401,6 +405,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
         private final Map<String, Color[]> colors;
         private boolean changed;
         private ArrayList<AttributeSet> colorAttributes;
+        private ArrayList<AttributeSet> savedColorAttributes;
         private final OptionsPanelColorProvider provider;
 
         public VersioningSystemColors(OptionsPanelColorProvider provider) {
@@ -409,6 +414,15 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
                 throw new NullPointerException("Null colors for " + provider); // NOI18N
             }
             this.provider = provider;
+            // initialize saved colors list
+            savedColorAttributes = new ArrayList<AttributeSet>(colors.size());
+            for (Map.Entry<String, Color[]> e : colors.entrySet()) {
+                SimpleAttributeSet sas = new SimpleAttributeSet();
+                StyleConstants.setBackground(sas, e.getValue()[0]);
+                sas.addAttribute(StyleConstants.NameAttribute, e.getKey());
+                sas.addAttribute(EditorStyleConstants.DisplayName, e.getKey());
+                savedColorAttributes.add(sas);
+            }
         }
 
         public void saveColors () {
@@ -449,7 +463,7 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             colorAttributes.set(index, c);
             Color[] savedColor = colors.get((String)c.getAttribute(StyleConstants.NameAttribute));
             savedColor[0] = color;
-            changed = true;
+            fireChanged();
         }
 
         /**
@@ -459,8 +473,20 @@ public class AnnotationColorsPanel extends javax.swing.JPanel implements ActionL
             for (Map.Entry<String, Color[]> e : colors.entrySet()) {
                 e.getValue()[0] = e.getValue()[1];
             }
+            fireChanged();
             colorAttributes = null;
-            changed = true;
+        }
+        
+        private void fireChanged() {
+            for (int i = 0; i < savedColorAttributes.size(); i++) {
+                Color current = colors.get((String) colorAttributes.get(i).getAttribute(StyleConstants.NameAttribute))[0];
+                Color saved = (Color) savedColorAttributes.get(i).getAttribute(StyleConstants.Background);
+                if (!current.equals(saved)) {
+                    changed = true;
+                    return;
+                }
+            }
+            changed = false;
         }
         
     }

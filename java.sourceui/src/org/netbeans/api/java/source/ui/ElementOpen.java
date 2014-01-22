@@ -32,30 +32,31 @@ package org.netbeans.api.java.source.ui;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePathScanner;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.BinaryElementOpen;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-
-import javax.lang.model.element.Element;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -105,8 +106,7 @@ public final class ElementOpen {
         if (cancel.get()) return false;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
-            assert openInfo[1] instanceof Integer;
-            return doOpen((FileObject) openInfo[0], (Integer) openInfo[1]);
+            return doOpen((FileObject) openInfo[0], (int)openInfo[1], (int)openInfo[2]);
         }
 
         BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
@@ -169,8 +169,7 @@ public final class ElementOpen {
         if (cancel.get()) return false;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
-            assert openInfo[1] instanceof Integer;
-            return doOpen((FileObject)openInfo[0],(Integer)openInfo[1]);
+            return doOpen((FileObject)openInfo[0],(int)openInfo[1], (int)openInfo[2]);
         }
         
         BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
@@ -189,8 +188,8 @@ public final class ElementOpen {
         assert fo != null;
         
         try {
-            int offset = getOffset(fo, handle, cancel);
-            return new Object[] {fo, offset};
+            int[] offset = getOffset(fo, handle, cancel);
+            return new Object[] {fo, offset[0], offset[1]};
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return null;
@@ -199,20 +198,47 @@ public final class ElementOpen {
 
 
     @SuppressWarnings("deprecation")
-    private static boolean doOpen(FileObject fo, int offset) {
-        if (offset == -1) {
+    private static boolean doOpen(FileObject fo, final int offsetA, final int offsetB) {
+        if (offsetA == -1) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(ElementOpen.class, "WARN_ElementNotFound"), 
                     StatusDisplayer.IMPORTANCE_ANNOTATION);
         }
-        return UiUtils.open(fo, offset);
+        boolean success = UiUtils.open(fo, offsetA);
+        if (!success) {
+            return false;
+        }
+        final DataObject od;
+        try {
+            od = DataObject.find(fo);
+        } catch (DataObjectNotFoundException ex) {
+            return success;
+        }
+        final EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+        if (ec != null && offsetA != -1 && offsetB != -1) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JEditorPane[] panes = ec.getOpenedPanes();
+                    if (offsetB >= 0 && panes.length > 0) {
+                        JEditorPane pane = panes[0];
+                        FoldHierarchy fh = FoldHierarchy.get(pane);
+                        Fold f = FoldUtilities.findNearestFold(fh, offsetA);
+                        // in case a fold already exists ...
+                        if (f != null && f.getStartOffset() >= offsetA && f.getEndOffset() <= offsetB) {
+                            fh.expand(f);
+                        }
+                    }
+                }
+            });
+        }
+        return success;
     }
 
     private static final int AWT_TIMEOUT = 1000;
     private static final int NON_AWT_TIMEOUT = 2000;
 
-    private static int getOffset(final FileObject fo, final ElementHandle<? extends Element> handle, final AtomicBoolean cancel) throws IOException {
-        final int[]  result = new int[] {-1};
+    private static int[] getOffset(final FileObject fo, final ElementHandle<? extends Element> handle, final AtomicBoolean cancel) throws IOException {
+        final int[]  result = new int[] {-1, -1};
         
         final JavaSource js = JavaSource.forFileObject(fo);
         if (js != null) {
@@ -257,12 +283,13 @@ public final class ElementOpen {
 
                     if (elTree != null)
                         result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
+                        result[1] = (int)info.getTrees().getSourcePositions().getEndPosition(cu, elTree);
                     }
             };
 
             js.runUserActionTask(t, true);
         }
-        return result[0];
+        return result;
     }
     
     // Private innerclasses ----------------------------------------------------

@@ -175,7 +175,15 @@ public abstract class AbstractCompiler extends Tool {
         return Collections.<String>emptyList();
     }
 
+    public List<String> getSystemPreprocessorSymbols(String flags) {
+        return Collections.<String>emptyList();
+    }
+
     public List<String> getSystemIncludeDirectories() {
+        return Collections.<String>emptyList();
+    }
+
+    public List<String> getSystemIncludeDirectories(String flags) {
         return Collections.<String>emptyList();
     }
 

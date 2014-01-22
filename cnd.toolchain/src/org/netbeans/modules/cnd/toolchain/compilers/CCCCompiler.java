@@ -150,13 +150,75 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
         return compilerDefinitions.systemPreprocessorSymbolsList;
     }
+    
+    private final Map<String,Pair> particularModel = new HashMap<String,Pair>();
+    
+    @Override
+    public List<String> getSystemPreprocessorSymbols(String flags) {
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return predefinedMacrosByFlags(particular.systemPreprocessorSymbolsList, flags);
+            }
+        }
+        return predefinedMacrosByFlags(getSystemPreprocessorSymbols(), flags);
+    }
 
+    private void applyUserAddedDefinitions(Pair particular) {
+        List<String> systemPreprocessorSymbols = getSystemPreprocessorSymbols();
+        if (systemPreprocessorSymbols instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemPreprocessorSymbols).userAddedDefinitions) {
+                addUniqueOrReplace(particular.systemPreprocessorSymbolsList, systemPreprocessorSymbols.get(i));
+            }
+        }
+        List<String> systemIncludeDirectories = getSystemIncludeDirectories();
+        if (systemIncludeDirectories instanceof CompilerDefinition) {
+            for (int i : ((CompilerDefinition) systemIncludeDirectories).userAddedDefinitions) {
+                // TODO implement "merge" which inserts user's path in best place
+                addUnique(particular.systemIncludeDirectoriesList, systemIncludeDirectories.get(i));
+            }
+        }
+    }
+    
     @Override
     public List<String> getSystemIncludeDirectories() {
         if (compilerDefinitions == null) {
             resetSystemProperties();
         }
         return compilerDefinitions.systemIncludeDirectoriesList;
+    }
+
+    @Override
+    public List<String> getSystemIncludeDirectories(String flags) {
+        if (flags != null && !flags.isEmpty()) {
+            Pair particular;
+            synchronized (particularModel) {
+                particular = particularModel.get(flags);
+                if (particular == null) {
+                    MyCallable<Pair> callable = getCallable();
+                    particular = callable.call(flags);
+                    particularModel.put(flags, particular);
+                    if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                        applyUserAddedDefinitions(particular);
+                    }
+                }
+            }
+            if (particular.systemPreprocessorSymbolsList.size() > 6 && particular.exitCode == 0) {
+                return particular.systemIncludeDirectoriesList;
+            }
+        }
+        return getSystemIncludeDirectories();
     }
 
     @Override
@@ -572,6 +634,28 @@ public abstract class CCCCompiler extends AbstractCompiler {
         }
         list.add(element);
     }
+
+    protected static void addUniqueOrReplace(List<String> list, String element) {
+        String pattern = element;
+        if (element.indexOf('=') > 0) {
+            pattern = pattern.substring(0, element.indexOf('='));
+        }
+        for(int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
+            if (s.indexOf('=') > 0) {
+                if (pattern.equals(s.substring(0, s.indexOf('=')))) {
+                    list.set(i, element);
+                    return;
+                }
+            } else {
+                if (pattern.equals(s)) {
+                    list.set(i, element);
+                    return;
+                }
+            }
+        }
+        list.add(element);
+    }
     
     protected static void removeUnique(List<String> list, String element) {
         for(int i = 0; i < list.size(); i++) {
@@ -584,6 +668,38 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
             }
         }
+    }
+    
+    private List<String> predefinedMacrosByFlags(List<String> macrosList, String flags) {
+        final CompilerDescriptor descriptor = getDescriptor();
+        if (descriptor != null && flags != null && !flags.isEmpty()) {
+            final List<PredefinedMacro> predefinedMacros = descriptor.getPredefinedMacros();
+            if (predefinedMacros != null) {
+                List<String> res = null;
+                for(String flag : flags.split(" ")) { // NOI18N
+                    if (flag.startsWith("-")) { // NOI18N
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros) {
+                            if (flag.equals(macro.getFlags())) {
+                                if (res == null) {
+                                    res = new ArrayList<String>(macrosList);
+                                }
+                                if (macro.isHidden()) {
+                                    // remove macro
+                                    removeUnique(res, macro.getMacro());
+                                } else {
+                                    // add macro
+                                    addUnique(res, macro.getMacro());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return macrosList;
     }
     
     protected void completePredefinedMacros(Pair pair) {
@@ -662,7 +778,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
                 }
                 continue;
             }
-            completePredefinedMacros(tmp);
             FlagModel flagModel = new FlagModel(flag);
             flagModel.diff(res, tmp);
             List<String> expectedDiff = new ArrayList<String>();
@@ -1026,6 +1141,8 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
     }
+   
+    protected abstract MyCallable<Pair> getCallable();
     
     protected static final class Pair {
         public CompilerDefinition systemIncludeDirectoriesList;

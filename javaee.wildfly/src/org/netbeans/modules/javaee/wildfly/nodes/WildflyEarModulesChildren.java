@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -88,7 +88,7 @@ public class WildflyEarModulesChildren extends WildflyAsyncChildren implements R
         @Override
         public void run() {
             try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
                 keys.addAll(dm.getClient().listEarSubModules(lookup, j2eeAppName));
             } catch (Exception ex) {
                 LOGGER.log(Level.INFO, null, ex);

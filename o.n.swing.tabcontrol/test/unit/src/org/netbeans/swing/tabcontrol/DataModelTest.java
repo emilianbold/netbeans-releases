@@ -227,7 +227,7 @@ public class DataModelTest extends TestCase implements ComplexListDataListener {
     public void doTestRemoveContiguous() {
         System.err.println("testRemoveContiguous");
         int formerSize = mdl.size();
-        mdl.removeTabs (10, 19);
+        mdl.removeTabs (10, 20);
         int expectedSize=formerSize - 10;
         assertPravda (mdl.size() == expectedSize, "Model size should be " + expectedSize + " after removing 10 items, but is " + mdl.size());
         try {

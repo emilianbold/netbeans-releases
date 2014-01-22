@@ -2,70 +2,35 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Delete Dialog Box</title>
+<title>Rename Refactoring</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" name="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref455" name="sthref455"></a>
-<h1>Delete Dialog Box</h1>
+<p>Beta Draft: 2014-01-21</p>
+<p><a id="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" name="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref448" name="sthref448"></a>
+<h1>Rename Refactoring</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Before you delete a file, you have the option to search your project for all uses of the file.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t21">Element</th>
-<th align="left" valign="bottom" id="r1c2-t21">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Safely delete (with usage search)</p>
-</td>
-<td align="left" headers="r2c1-t21 r1c2-t21">
-<p>Select this option to search your project for all uses of the file before you delete it.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>OK</p>
-</td>
-<td align="left" headers="r3c1-t21 r1c2-t21">
-<p>Delete file without usage search. This button is enabled only if you do not select Safely delete.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t21" headers="r1c1-t21">
-<p>Preview and Refactor</p>
-</td>
-<td align="left" headers="r4c1-t21 r1c2-t21">
-<p>These buttons appear if you select Safely delete. Both buttons open a list of Warnings and Errors.</p>
-<p>This panel is inherited from Java safe delete, which behaves differently. This is why there are two buttons, Preview and Refactor, that do the same thing.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<!-- infolevel="all" infotype="General" --><a id="sthref456" name="sthref456"></a>
-<h2>Warnings and Errors</h2>
-<p>A list of warnings and errors appears before you can safely delete a file. If the IDE finds any errors, you cannot delete the file until the errors are solved. You can delete the file if there are only warnings.</p>
+<p>Rename Refactoring allows you to safely rename a PHP element across all files in an application. For safety, rename refactoring requires you to preview and approve your changes.</p>
+<p>Rename Refactoring involves two user interfaces:</p>
 <ul>
-<li><b>Show Usages</b>. Opens the Usages window, which shows all usages of the file.</li>
-<li><b>Refactor</b>. Delete the file. Enabled only if no errors are found.</li>
+<li><b>Rename dialog</b>. You opened this Help topic from the Help button in this dialog.</li>
+<li><b>Refactoring window.</b> After you complete the Rename dialog, you preview your changes in the Refactoring window.</li>
+</ul>
+<!-- infolevel="all" infotype="General" --><a id="sthref449" name="sthref449"></a>
+<h2>Rename Dialog</h2>
+<p>The Rename dialog has two controls:</p>
+<ul>
+<li><b>New name</b>: Type the new name in this field.</li>
+<li><b>Preview</b>. You must click Preview to rename the element. Clicking Preview opens the Refactoring window.</li>
 </ul>
 
 <!-- -->
-<!-- infolevel="all" infotype="General" --><a id="sthref457" name="sthref457"></a>
-<h2>Usages Window</h2>
-<p>If you select Show Usages in the Delete dialog, that dialog closes and the Usages window opens. The Usages window shows all usages of the file you want to delete.</p>
-<p><b>Navigation buttons</b>. On the left side of the Usages window are a series of buttons for navigating through the usages. Hover your cursor over a button to see a tooltip describing its function.</p>
+<!-- infolevel="all" infotype="General" --><a id="sthref450" name="sthref450"></a>
+<h2>Refactoring Window</h2>
+<p>The Refactoring window opens below the Editor window. The Refactoring window shows every place in your application that could be affected by refactoring, and lets you exclude files or individual instances from refactoring. The Refactoring window contains the following sections:</p>
+<p><b>Navigation buttons</b>. On the left side of the Refactoring window are a series of buttons for navigating through the tree of instances. Hover your cursor over a button to see a tooltip describing its function.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -117,7 +82,9 @@
 </table>
 <br />
 <!-- -->
-<p><b>Usages</b>. A tree view of all usages of the file that you want to delete. Using the navigation buttons you can view either a logical tree, organized by syntax, or a physical view, organized by location. Double-click a usage in the tree, and the editor focuses on that line in the code. (If the file containing that usage is not open, the IDE opens it.)</p>
+<p><b>Tree of instances</b>. A tree view of all instances of the element that you want to rename. Using the navigation buttons you can view either a logical tree, organized by syntax, or a physical view, organized by location. By default, all instances are ticked. Untick an instance if you do not want to rename that instance. Select an instance to preview the current/refactored form in the preview.</p>
+<p><b>Preview</b>. In the preview, compare the original and refactored versions of the code line you selected in the tree of instances.</p>
+<p><b>Do refactoring/Cancel</b>. After you have previewed the refactoring and excluded any instances that you do not want to rename, click <b>Do refactoring</b>. If you do not want to rename any instances, click <b>Cancel</b>.</p>
 
 <!-- -->
 <hr><p><b>Related Topics</b></p>

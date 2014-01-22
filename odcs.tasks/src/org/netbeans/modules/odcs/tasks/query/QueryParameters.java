@@ -955,14 +955,14 @@ public class QueryParameters {
                 try {
                     dateFrom = getDateFrom();
                 } catch (ParseException ex) {
-                    ODCS.LOG.log(Level.WARNING, fromField.getText(), ex);
+                    // should not happen
                 }
 
                 Date dateTo = null;
                 try {
                     dateTo = getDateTo();
                 } catch (ParseException ex) {
-                    ODCS.LOG.log(Level.WARNING, toField.getText(), ex);
+                    // should not happen
                 }
 
                 List<Criteria> criteria = new LinkedList<Criteria>();

@@ -139,7 +139,7 @@ final class CodeTemplatesModel {
             Collections.sort(supportedContexts);
 
             // Create the code templates table model for this language
-            TM tableModel = new TM(abbreviationsMap, columns, table, supportedContexts);
+            TM tableModel = new TM(mimeType, abbreviationsMap, columns, table, supportedContexts);
             
             modelToLanguage.put(tableModel, language);
             languageToModel.put(language, tableModel);
@@ -270,18 +270,21 @@ final class CodeTemplatesModel {
     
     /* package */ static class TM extends DefaultTableModel {
 
+        private final String mimeType;
         private final Map<String, CodeTemplateDescription> codeTemplatesMap;
         private final Map<String, Set<String>> contexts;
         private final DefaultListModel<String> supportedContexts;
         private boolean modified = false;
         
         public TM(
+            String mimeType,
             Map<String, CodeTemplateDescription> codeTemplatesMap, 
             Vector<String> headers,
             List<Vector<String>> data,
             List<String> supportedContexts
         ) {
             super(new Vector<Object>(data), headers);
+            this.mimeType = mimeType;
             this.codeTemplatesMap = codeTemplatesMap;
             this.contexts = new HashMap<>(codeTemplatesMap.size());
             this.supportedContexts = new DefaultListModel<>();
@@ -307,8 +310,8 @@ final class CodeTemplatesModel {
                 return;
             }
             
-            setValueAt(description, row, 2);
-            this.modified = true;
+            setValueAt(description.isEmpty() ? null : description, row, 2);
+            fireChanged();
         }
 
         public String getText(int row) {
@@ -321,7 +324,7 @@ final class CodeTemplatesModel {
             }
             
             setValueAt(text, row, 1);
-            this.modified = true;
+            fireChanged();
         }
 
         public Set<String> getContexts(int row) {
@@ -335,7 +338,7 @@ final class CodeTemplatesModel {
                     public boolean add(Object e) {
                         boolean b = super.add(e);
                         if (b && afterInit[0]) {
-                            TM.this.modified = true;
+                            TM.this.fireChanged();
                         }
                         return b;
                     }
@@ -343,7 +346,7 @@ final class CodeTemplatesModel {
                     public boolean remove(Object o) {
                         boolean b = super.remove(o);
                         if (b && afterInit[0]) {
-                            TM.this.modified = true;
+                            TM.this.fireChanged();
                         }
                         return b;
                     }                    
@@ -368,17 +371,37 @@ final class CodeTemplatesModel {
         
         public int addCodeTemplate(String abbreviation) {
             addRow(new Object [] { abbreviation, "", null }); //NOI18N
-            this.modified = true;
+            fireChanged();
             return getRowCount() - 1;
         }
         
         public void removeCodeTemplate(int row) {
             removeRow(row);
-            this.modified = true;
+            fireChanged();
         }
         
         public boolean isModified() {
             return modified;
+        }
+        
+        private void fireChanged() {
+            Map<String, CodeTemplateDescription> current = new HashMap<>();
+            for (int idx = 0; idx < getRowCount(); idx++) {
+                String abbreviation = getAbbreviation(idx);
+                CodeTemplateDescription ctd = new CodeTemplateDescription(
+                        abbreviation,
+                        getDescription(idx),
+                        getText(idx),
+                        new ArrayList(getContexts(idx)),
+                        getUniqueId(idx),
+                        mimeType
+                );
+
+                current.put(abbreviation, ctd);
+            }
+            MimePath mimePath = MimePath.parse(mimeType);
+            Map<String, CodeTemplateDescription> saved = CodeTemplateSettingsImpl.get(mimePath).getCodeTemplates();
+            modified = !current.equals(saved);
         }
         
         private static boolean compareTexts(String t1, String t2) {

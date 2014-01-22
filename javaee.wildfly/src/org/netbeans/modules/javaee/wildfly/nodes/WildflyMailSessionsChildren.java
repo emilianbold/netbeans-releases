@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMailSessionResource;
 import org.netbeans.modules.javaee.wildfly.nodes.actions.Refreshable;
 import org.openide.nodes.Children;
@@ -81,7 +81,7 @@ class WildflyMailSessionsChildren extends WildflyAsyncChildren implements Refres
         @Override
         public void run() {
             try {
-                WildFlyDeploymentManager dm = lookup.lookup(WildFlyDeploymentManager.class);
+                WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
                 for(WildflyMailSessionResource mailSession : dm.getClient().listMailSessions()) {
                     keys.add(new WildflyMailSessionNode(mailSession.getName(), mailSession, lookup));
                 }

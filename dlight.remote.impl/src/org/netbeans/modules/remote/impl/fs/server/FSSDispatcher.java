@@ -645,7 +645,7 @@ import org.openide.util.RequestProcessor;
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
             writer = new PrintWriter(process.getOutputStream());
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")); //NOI18N
             if (RemoteFileSystemUtils.isUnitTestMode()) {
                 StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
                 for (String p : args) {

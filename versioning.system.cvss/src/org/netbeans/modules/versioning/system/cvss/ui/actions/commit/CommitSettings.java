@@ -61,15 +61,12 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.util.prefs.PreferenceChangeListener;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 
 /**
@@ -109,8 +106,6 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     }
     
     public CommitSettings() {
-        Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
-        setPreferredSize(new Dimension(ss.width / 2, ss.height / 5 * 2));
         init();
     }
 

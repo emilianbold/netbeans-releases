@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -117,13 +116,13 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void postDeleteChild(FileObject child) {
+    protected void postDeleteChild(RemoteFileObject child) {
         RemoteLogger.getInstance().log(Level.WARNING, "postDeleteChild is called on {0}", getClass().getSimpleName());
     }
     
     @Override
-    protected boolean deleteImpl(FileLock lock) throws IOException {
-        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected void deleteImpl(FileLock lock) throws IOException {
+        RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override

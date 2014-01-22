@@ -43,17 +43,20 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.javaee.wildfly.config.WildflyDatasourceManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBInstantiatingIterator;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyInstantiatingIterator;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.config.WildflyMessageDestinationManager;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -61,51 +64,60 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  *
  * @author Martin Adamek
  */
-public class WildFlyOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
-
+public class WildflyOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
+    private final Map<InstanceProperties, StartServer> serverCache =
+            new WeakHashMap<InstanceProperties, StartServer>();
     @Override
-    public StartServer getStartServer(DeploymentManager dm) {
-        return new WildflyStartServer(dm);
+    public synchronized StartServer getStartServer(DeploymentManager dm) {
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(((WildflyDeploymentManager)dm).getUrl());
+        if(serverCache.containsKey(ip)) {
+           return serverCache.get(ip);
+        }
+        StartServer startServer =  new WildflyStartServer(dm);
+        serverCache.put(ip, startServer);
+        return startServer;
     }
 
     @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
-        return null;
+        return new WildflyIncrementalDeployment((WildflyDeploymentManager) dm);
     }
 
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return new WildFlyFindJSPServlet((WildFlyDeploymentManager) dm);
+        return new WildFlyFindJSPServlet((WildflyDeploymentManager) dm);
     }
 
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
-        return new JBInstantiatingIterator();
+        return new WildflyInstantiatingIterator();
     }
 
     @Override
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
-        if (!(dm instanceof WildFlyDeploymentManager)) {
+        if (!(dm instanceof WildflyDeploymentManager)) {
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
-        WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
+        WildflyDeploymentManager jbdm = ((WildflyDeploymentManager) dm);
         return new WildflyDatasourceManager(jbdm);
     }
 
     @Override
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
-        if (!(dm instanceof WildFlyDeploymentManager)) {
+        if (!(dm instanceof WildflyDeploymentManager)) {
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
-        WildFlyDeploymentManager jbdm = ((WildFlyDeploymentManager) dm);
+        WildflyDeploymentManager jbdm = ((WildflyDeploymentManager) dm);
         return new WildflyMessageDestinationManager(jbdm, true);
     }
 
     @Override
     public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
-        return new WildFlyInstanceDescriptor((WildFlyDeploymentManager) dm);
+        return new WildFlyInstanceDescriptor((WildflyDeploymentManager) dm);
     }
+
+    
 
 }

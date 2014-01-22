@@ -360,6 +360,7 @@ import org.openide.util.lookup.Lookups;
         }
         return LayerKey.create(key, layerUnitID);
     }
+    
 
     void openUnit(int clientUnitID) {
         // unitID == 100001
@@ -550,7 +551,12 @@ import org.openide.util.lookup.Lookups;
             }
         }
         if (clientFileSystemID == -1) {
-            throw new InternalError();
+            //need to register file system here, when we are here when reading one peristent object which contains 
+            //new unit id for which getUnitId() was not invoked yet the file system is not registered in fileSystemsTranslationMap yet
+            //need to registe
+            clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(unitFileSystemInLayer);
+            map.put(clientFileSystemID, fileSystemIndexInLayer);
+            //throw new InternalError();
         }
         FileSystem clientFileSystem = clientFileSystemsDictionary.getFileSystem(clientFileSystemID);
         return RepositoryMapper.map(clientFileSystem, layerUnitDescriptor);

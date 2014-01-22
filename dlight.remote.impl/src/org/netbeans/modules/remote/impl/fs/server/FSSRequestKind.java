@@ -56,6 +56,7 @@ package org.netbeans.modules.remote.impl.fs.server;
     FS_REQ_ADD_WATCH('W'),
     FS_REQ_REMOVE_WATCH('w'),
     FS_REQ_REFRESH('R'),
+    FS_REQ_DELETE('d'),
     FS_REQ_SERVER_INFO('i');
 
     private final char letter;

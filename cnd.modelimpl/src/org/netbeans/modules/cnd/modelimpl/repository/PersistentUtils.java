@@ -92,8 +92,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
@@ -104,15 +102,17 @@ import org.openide.util.CharSequences;
 public class PersistentUtils {
 
     public static FileSystem readFileSystem(RepositoryDataInput input) throws IOException {
-        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        FileSystem fs = CndFileUtils.urlToFileSystem(rootUrl);
-        assert (fs != null) : "Restored null file system for URL " + rootUrl;
+        FileSystem fs = input.readFileSystem();
+//        CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
+//        FileSystem fs = CndFileUtils.urlToFileSystem(rootUrl);
+        //assert (fs != null) : "Restored null file system for URL " + rootUrl;
         return fs;
     }
     
     public static void writeFileSystem(FileSystem fs, RepositoryDataOutput output) throws IOException {
-        CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
-        PersistentUtils.writeUTF(rootUrl, output);        
+        output.writeFileSystem(fs);
+        //CharSequence rootUrl = CharSequences.create(CndFileUtils.fileObjectToUrl(fs.getRoot()));
+        //PersistentUtils.writeUTF(rootUrl, output);        
     }
 
     public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
@@ -339,7 +339,7 @@ public class PersistentUtils {
         }
     }
 
-    public static CharSequence readUTF(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
+    public static CharSequence readUTF(RepositoryDataInput aStream, APTStringManager manager) throws IOException {        
         CharSequence s = aStream.readCharSequenceUTF();
         if (s.length()==1 && s.charAt(0)==0) {
             return null;

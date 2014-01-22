@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -61,8 +62,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -793,7 +792,7 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item) {
+    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item, String importantFlags) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -817,6 +816,7 @@ public class ProjectBridge {
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
             cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().setValue(undefs);
             cccCompilerConfiguration.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
+            cccCompilerConfiguration.getImportantFlags().setValue(getString(importantFlags));
         }
     }
 
@@ -908,6 +908,51 @@ public class ProjectBridge {
         return null;
     }
     
+    private Pattern cPattern;
+    private boolean cPatternInited;
+    private Pattern cppPattern;
+    private boolean cppPatternInited;
+    public boolean isImportantFlag(String flag, boolean isCPP) {
+        if (isCPP) {
+            if (!cppPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cppPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cppPatternInited = true;
+            }
+            if (cppPattern != null) {
+                return cppPattern.matcher(flag).find();
+            }
+        } else {
+            if (!cPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cPatternInited = true;
+            }
+            if (cPattern != null) {
+                return cPattern.matcher(flag).find();
+            }
+        }
+        return false;
+    }
+    
     private List<String> systemIncludePathsC;
     private List<String> systemIncludePathsCpp;
     public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -940,99 +985,6 @@ public class ProjectBridge {
             }
         }
         return systemIncludePaths;
-    }
-
-    private Map<String, List<String>> optionToMacrosC;
-    private Map<String, List<String>> optionToMacrosCpp;
-    public List<String> getOptionToMacros(String option, boolean isCPP) {
-        Map<String, List<String>> macros;
-        if (isCPP) {
-            macros = optionToMacrosCpp;
-        } else {
-            macros = optionToMacrosC;
-        }
-        if (macros == null) {
-            macros = new HashMap<>();
-            CompilerSet compilerSet = getCompilerSet();
-            if (compilerSet != null) {
-            AbstractCompiler compiler;
-                if (isCPP) {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                } else {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                }
-                if (compiler != null && compiler.getDescriptor() != null) {
-                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                    if (predefinedMacros != null) {
-                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                            if (macro.getFlags() != null) {
-                                if (!macro.isHidden()) {
-                                    List<String> list = macros.get(macro.getFlags());
-                                    if (list == null) {
-                                        list = new ArrayList<>();
-                                        macros.put(macro.getFlags(), list);
-                                    }
-                                    list.add(macro.getMacro());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (isCPP) {
-                optionToMacrosCpp = macros;
-            } else {
-                optionToMacrosC = macros;
-            }
-        }
-        return macros.get(option);
-    }
-
-    
-    private Map<String, List<String>> optionToUndefinedMacrosC;
-    private Map<String, List<String>> optionToUndefinedMacrosCpp;
-    public List<String> getOptionToUndefinedMacros(String option, boolean isCPP) {
-        Map<String, List<String>> macros;
-        if (isCPP) {
-            macros = optionToUndefinedMacrosCpp;
-        } else {
-            macros = optionToUndefinedMacrosC;
-        }
-        if (macros == null) {
-            macros = new HashMap<>();
-            CompilerSet compilerSet = getCompilerSet();
-            if (compilerSet != null) {
-                AbstractCompiler compiler;
-                if (isCPP) {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                } else {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                }
-                if (compiler != null && compiler.getDescriptor() != null) {
-                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                    if (predefinedMacros != null) {
-                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                            if (macro.getFlags() != null) {
-                                if (macro.isHidden()) {
-                                    List<String> list = macros.get(macro.getFlags());
-                                    if (list == null) {
-                                        list = new ArrayList<>();
-                                        macros.put(macro.getFlags(), list);
-                                    }
-                                    list.add(macro.getMacro());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (isCPP) {
-                optionToUndefinedMacrosCpp = macros;
-            } else {
-                optionToUndefinedMacrosC = macros;
-            }
-        }
-        return macros.get(option);
     }
     
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N

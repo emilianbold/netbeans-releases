@@ -137,9 +137,10 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             
             worker.delete();
             
-            FileSystemProvider.scheduleRefresh(baseDirFO);
+            long time = System.currentTimeMillis();
+            FileSystemProvider.scheduleRefresh(baseDirFO);            
             if (baseDirFO instanceof RemoteFileObject) {
-                ((RemoteFileObject) baseDirFO).getFileSystem().getRefreshManager().testWaitLastRefreshFinished();
+                ((RemoteFileObject) baseDirFO).getFileSystem().getRefreshManager().testWaitLastRefreshFinished(time);
             } else {
                 Class<?> localProvider = Class.forName("org.netbeans.modules.remote.support.LocalFileSystemProvider");
                 if (localProvider != null) {

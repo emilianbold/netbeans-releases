@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
+<p>Beta Draft: 2014-01-21</p>
 <p><a id="maven_settings" name="maven_settings"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref280" name="sthref280"></a>
 <h1>Project Properties: Maven Project</h1>
@@ -317,17 +317,25 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r33c1-t6" headers="r1c1-t6">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Deploy on Save</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Copy Static Resources on Save</p>
 </td>
 <td align="left" headers="r33c1-t6 r1c2-t6">
-<p>(Web only) When selected, when you save files the Java files are automatically compiled, non-Java files are copied to the build directory and the files are redeployed to the server. Enabling Deploy on Save automatically enables the Copy Static Resources on Save and Compile on Save options. The Deploy on Save option saves you time when you run or debug your application in the IDE and ensures that all new and modified files in the build directory are automatically redeployed to the server.</p>
+<p>(Web only) This option enables you to choose how the IDE handles non-Java files when the files are modified and saved. When selected, the files are automatically copied to the build directory of the project when the files are saved. When not selected the non-Java files are not copied when you save the files. You can invoke the Build command to copy the files to the build directory. This option is automatically enabled when you enable Deploy on Save..</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r34c1-t6" headers="r1c1-t6">
-<p>Actions</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Deploy on Save</p>
 </td>
 <td align="left" headers="r34c1-t6 r1c2-t6">
+<p>(Web only) When selected, when you save files the Java files are automatically compiled, non-Java files are copied to the build directory and the files are redeployed to the server. Enabling Deploy on Save automatically enables the Copy Static Resources on Save and Compile on Save options. The Deploy on Save option saves you time when you run or debug your application in the IDE and ensures that all new and modified files in the build directory are automatically redeployed to the server.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r35c1-t6" headers="r1c1-t6">
+<p>Actions</p>
+</td>
+<td align="left" headers="r35c1-t6 r1c2-t6">
 <p>The Actions category enables you to bind IDE actions to Maven goals and save the binding in custom configurations. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG632">
@@ -339,75 +347,75 @@
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r35c1-t6" headers="r1c1-t6">
+<td align="left" id="r36c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Configuration</p>
 </td>
-<td align="left" headers="r35c1-t6 r1c2-t6">
+<td align="left" headers="r36c1-t6 r1c2-t6">
 <p>Select a configuration from the drop down list to save the binding as part of that configuration. You can create new configurations in the Configurations category.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r36c1-t6" headers="r1c1-t6">
+<td align="left" id="r37c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Actions</p>
 </td>
-<td align="left" headers="r36c1-t6 r1c2-t6">
+<td align="left" headers="r37c1-t6 r1c2-t6">
 <p>Select an IDE action from the list to view the Maven goals that are currently mapped to that action. You can click Add Custom to create a custom action.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r37c1-t6" headers="r1c1-t6">
+<td align="left" id="r38c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Execute Goals</p>
 </td>
-<td align="left" headers="r37c1-t6 r1c2-t6">
+<td align="left" headers="r38c1-t6 r1c2-t6">
 <p>Add or modify the Maven goals that you want to bind to the item that is selected in the list of Actions.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r38c1-t6" headers="r1c1-t6">
+<td align="left" id="r39c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Activate Profiles</p>
 </td>
-<td align="left" headers="r38c1-t6 r1c2-t6">
+<td align="left" headers="r39c1-t6 r1c2-t6">
 <p>Enter the profile or profiles that you want to activate when the selected action is invoked.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r39c1-t6" headers="r1c1-t6">
+<td align="left" id="r40c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Set Propertiess</p>
 </td>
-<td align="left" headers="r39c1-t6 r1c2-t6">
+<td align="left" headers="r40c1-t6 r1c2-t6">
 <p>Enter any properties that you want to set during execution of the action.</p>
 <p>Click Add to open a popup menu with common properties.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r40c1-t6" headers="r1c1-t6">
+<td align="left" id="r41c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Build Recursively (with modules)</p>
 </td>
-<td align="left" headers="r40c1-t6 r1c2-t6">
+<td align="left" headers="r41c1-t6 r1c2-t6">
 <p>When selected, modules are built recursively(in multi-module applications).</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r41c1-t6" headers="r1c1-t6">
+<td align="left" id="r42c1-t6" headers="r1c1-t6">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Build With Dependencies</p>
 </td>
-<td align="left" headers="r41c1-t6 r1c2-t6">
+<td align="left" headers="r42c1-t6 r1c2-t6">
 <p>Project dependencies are built when the action is invoked.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r42c1-t6" headers="r1c1-t6">
+<td align="left" id="r43c1-t6" headers="r1c1-t6">
 <p>CheckStyle Formatting</p>
 </td>
-<td align="left" headers="r42c1-t6 r1c2-t6">
+<td align="left" headers="r43c1-t6 r1c2-t6">
 <p>Enables you to configure POM to add CheckStyle formatting rules.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r43c1-t6" headers="r1c1-t6">
+<td align="left" id="r44c1-t6" headers="r1c1-t6">
 <p>Hints</p>
 </td>
-<td align="left" headers="r43c1-t6 r1c2-t6">
+<td align="left" headers="r44c1-t6 r1c2-t6">
 <p>The Hints category enables you to configure hints for the project. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG613">
@@ -423,6 +431,14 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1111">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG382">
