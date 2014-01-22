@@ -53,6 +53,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.client.spi.JiraVersion;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -102,7 +103,13 @@ public class JiraAutoupdate {
         repos.add(repository);
         support.checkAndNotify(repository.getUrl());
         
+        if(JiraConnectorSupport.getActiveConnector() != JiraConnectorProvider.Type.XMLRPC) {
+            return;
+        }
         JiraVersion serverVersion = getSupportedServerVersion(repository);
+        if(serverVersion == null) {
+            return;
+        }
         JiraVersion version50 = JiraConnectorSupport.getInstance().getConnector().createJiraVersion("5.0.0");
         if(serverVersion.compareTo(version50) >= 0) {
             askToChangeConnector();
@@ -177,7 +184,7 @@ public class JiraAutoupdate {
         connectorNotified = true;
         NotificationDisplayer.getDefault().notify(
             Bundle.CTL_Restart(),
-            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.png", true ), //NOI18N
+            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.gif", true ), //NOI18N
             Bundle.CTL_RestartClickHere(), new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
