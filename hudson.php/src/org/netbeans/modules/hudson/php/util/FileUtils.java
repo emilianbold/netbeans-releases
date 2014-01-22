@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hudson.php.support;
 
-import org.openide.util.NbBundle;
+package org.netbeans.modules.hudson.php.util;
 
-/**
- * Ant target for <tt>phpdoc</tt>.
- */
-class PhpdocTarget extends Target {
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-    @Override
-    public String getName() {
-        return "phpdoc"; // NOI18N
+public final class FileUtils {
+
+    private FileUtils() {
     }
 
-    @NbBundle.Messages("Target.Phpdoc.title=&API Documentation")
-    @Override
-    public String getTitleWithMnemonic() {
-        return Bundle.Target_Phpdoc_title();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        // XXX see https://github.com/sebastianbergmann/php-jenkins-template/issues/30
-        return false;
+    public static String relativizePath(FileObject parent, FileObject child) {
+        if (parent.equals(child)) {
+            return "."; // NOI18N
+        }
+        String relativePath = FileUtil.getRelativePath(parent, child);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        return FileUtil.toFile(child).getAbsolutePath();
     }
 
 }

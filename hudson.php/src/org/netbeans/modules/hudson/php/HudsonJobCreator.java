@@ -41,42 +41,32 @@
  */
 package org.netbeans.modules.hudson.php;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory;
 import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory.Helper;
 import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
-import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
 import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
-import org.netbeans.modules.hudson.php.support.Target;
 import org.netbeans.modules.hudson.php.ui.options.HudsonOptionsPanelController;
-import org.netbeans.modules.hudson.php.xml.XmlUtils;
+import org.netbeans.modules.hudson.php.util.BuildXmlUtils;
+import org.netbeans.modules.hudson.php.util.PhpUnitUtils;
+import org.netbeans.modules.hudson.php.util.XmlUtils;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.DialogDisplayer;
@@ -94,11 +84,9 @@ import org.xml.sax.SAXException;
 
 public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCreator, ChangeListener {
 
-    private static final long serialVersionUID = -668435132135465L;
+    private static final long serialVersionUID = 1657613213547587L;
 
     private static final Logger LOGGER = Logger.getLogger(HudsonJobCreator.class.getName());
-
-    final List<Target> targets;
 
     private final PhpModule phpModule;
     private final HudsonSCM.Configuration scm;
@@ -106,9 +94,9 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
 
 
     private HudsonJobCreator(PhpModule phpModule) {
+        assert phpModule != null;
         this.phpModule = phpModule;
         scm = Helper.prepareSCM(FileUtil.toFile(phpModule.getProjectDirectory()));
-        targets = initComponents();
     }
 
     private static HudsonJobCreator forPhpModule(PhpModule phpModule) {
@@ -132,36 +120,20 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     @NbBundle.Messages({
         "HudsonJobCreator.error.noTests=The project does not have any tests.",
         "HudsonJobCreator.error.invalidHudsonOptions=PHP Hudson options are invalid.",
-        "HudsonJobCreator.error.buildXmlExists=The project already has build.xml file.",
-        "HudsonJobCreator.error.phpUnitConfigExists=The project already has phpunit.xml.dist file."
+        "# {0} - file name",
+        "HudsonJobCreator.warning.fileExists=Existing project file {0} will be used.",
     })
     @Override
     public ConfigurationStatus status() {
-        if (phpModule.getTestDirectory() == null) {
+        if (phpModule.getTestDirectories().isEmpty()) {
             return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_noTests());
         }
         if (scm == null) {
             return Helper.noSCMError();
         }
-        // ppw script
-        try {
-            PpwScript.getDefault();
-        } catch (InvalidPhpExecutableException ex) {
+        // ide options
+        if (HudsonOptionsValidator.validate(getDefaultBuildXml(), getDefaultJobConfig(), getDefaultPhpUnitConfig()) != null) {
             return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
-        }
-        // job config
-        if (HudsonOptionsValidator.validateJobConfig(getJobConfig()) != null) {
-            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_invalidHudsonOptions()).withExtraButton(getOpenHudsonOptionsButton());
-        }
-        // build.xml
-        FileObject buildXml = phpModule.getProjectDirectory().getFileObject(PpwScript.BUILD_XML);
-        if (buildXml != null && buildXml.isData()) {
-            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_buildXmlExists());
-        }
-        // phpunit.xml
-        FileObject phpUnitConfig = phpModule.getProjectDirectory().getFileObject(PpwScript.PHPUNIT_XML);
-        if (phpUnitConfig != null && phpUnitConfig.isData()) {
-            return ConfigurationStatus.withError(Bundle.HudsonJobCreator_error_phpUnitConfigExists());
         }
         // scm
         ConfigurationStatus scmStatus = scm.problems();
@@ -183,12 +155,43 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
 
     @Override
     public Document configure() throws IOException {
-        setupProject();
+        try {
+            createBuildXml();
+            createPhpUnitConfig();
+        } catch (IOException ex) {
+            throw new SilentIOException(ex);
+        }
         return createJobXml();
     }
 
-    private String getJobConfig() {
+    @CheckForNull
+    private String getDefaultBuildXml() {
+        return HudsonOptions.getInstance().getBuildXml();
+    }
+
+    @CheckForNull
+    private String getDefaultJobConfig() {
         return HudsonOptions.getInstance().getJobConfig();
+    }
+
+    @CheckForNull
+    private String getDefaultPhpUnitConfig() {
+        return HudsonOptions.getInstance().getPhpUnitConfig();
+    }
+
+    @CheckForNull
+    private FileObject getProjectBuildXml() {
+        return phpModule.getProjectDirectory().getFileObject(HudsonOptionsValidator.BUILD_XML_NAME);
+    }
+
+    @CheckForNull
+    private FileObject getProjectPhpUnitConfig() {
+        FileObject projectDirectory = phpModule.getProjectDirectory();
+        FileObject phpUnitConfig = projectDirectory.getFileObject(HudsonOptionsValidator.PHP_UNIT_CONFIG_NAME);
+        if (phpUnitConfig != null) {
+            return phpUnitConfig;
+        }
+        return projectDirectory.getFileObject(HudsonOptionsValidator.PHP_UNIT_CONFIG_DIST_NAME);
     }
 
     @NbBundle.Messages({
@@ -208,33 +211,15 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         return button;
     }
 
-    @NbBundle.Messages("HudsonJobCreator.error.ppw=The project files were not generated by PPW script.")
-    private void setupProject() throws IOException {
-        try {
-            Map<String, String> targetParams = new LinkedHashMap<String, String>();
-            for (Target target : targets) {
-                target.apply(targetParams);
-            }
-            if (PpwScript.getDefault().createProjectFiles(phpModule, targetParams)) {
-                processBuildXml();
-            } else {
-                errorOccured(Bundle.HudsonJobCreator_error_ppw(), "The project files were not generated by PPW script", getOpenHudsonOptionsButton());
-            }
-        } catch (InvalidPhpExecutableException ex) {
-            // cannot happen here since we just validated it
-            LOGGER.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
-        }
-    }
-
     private Document createJobXml() throws IOException {
         Document document;
         try {
-            document = XmlUtils.parse(new File(getJobConfig()));
+            document = XmlUtils.parse(new File(getDefaultJobConfig()));
         } catch (SAXException ex) {
             throw new IOException(ex);
         }
         // remove scm, triggers & logRotator if present
-        removeNodes(document, "/project/scm", "/project/triggers", "/project/logRotator"); // NOI18N
+        removeNodes(document, "/project/scm", "/project/logRotator"); // NOI18N
         // configure
         scm.configure(document);
         Helper.addLogRotator(document);
@@ -255,120 +240,35 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
         }
     }
 
-    @NbBundle.Messages("HudsonJobCreator.error.config=Job configuration failed.")
-    private void processBuildXml() throws IOException {
-        boolean success = true;
-        final File buildXml = new File(FileUtil.toFile(phpModule.getProjectDirectory()), PpwScript.BUILD_XML);
-        try {
-            Document document = XmlUtils.parse(buildXml);
-            for (Target target : targets) {
-                if (!target.apply(document)) {
-                    success = false;
-                }
-            }
-            if (success) {
-                XmlUtils.save(document, buildXml);
-            }
-        } catch (SAXException ex) {
-            throw new IOException(ex);
+    @NbBundle.Messages("HudsonJobCreator.buildXml.exist=Build script found in project, verify its content.")
+    private void createBuildXml() throws IOException {
+        FileObject buildXml = getProjectBuildXml();
+        if (buildXml != null) {
+            // existing build script will be used
+            informUser(Bundle.HudsonJobCreator_buildXml_exist(), NotifyDescriptor.INFORMATION_MESSAGE);
+            return;
         }
-        if (!success) {
-            warningOccured(Bundle.HudsonJobCreator_error_config());
-        }
+        Path projectBuildXml = new File(FileUtil.toFile(phpModule.getProjectDirectory()), HudsonOptionsValidator.BUILD_XML_NAME).toPath();
+        Files.copy(Paths.get(getDefaultBuildXml()), projectBuildXml);
+        BuildXmlUtils.processBuildXml(phpModule, projectBuildXml);
     }
 
-    private void warningOccured(String warning) {
-        informUser(warning, false, null);
-    }
-
-    private void errorOccured(String error, String logMessage, JButton extraButton) throws IOException {
-        informUser(error, true, extraButton);
-        throw new SilentIOException(logMessage);
-    }
-
-    private void informUser(String message, boolean error, JButton extraButton) {
-        NotifyDescriptor descriptor = new NotifyDescriptor.Message(message, error ? NotifyDescriptor.ERROR_MESSAGE : NotifyDescriptor.WARNING_MESSAGE);
-        if (extraButton != null) {
-            descriptor.setAdditionalOptions(new Object[] {extraButton});
+    @NbBundle.Messages("HudsonJobCreator.phpUnitConfig.exist=PHPUnit configuration file found in project, verify its content.")
+    private void createPhpUnitConfig() throws IOException {
+        FileObject phpUnitConfig = getProjectPhpUnitConfig();
+        if (phpUnitConfig != null) {
+            // existing phpunit config will be used
+            informUser(Bundle.HudsonJobCreator_phpUnitConfig_exist(), NotifyDescriptor.INFORMATION_MESSAGE);
+            return;
         }
+        Path projectPhpUnitConfig = new File(FileUtil.toFile(phpModule.getProjectDirectory()), HudsonOptionsValidator.PHP_UNIT_CONFIG_DIST_NAME).toPath();
+        Files.copy(Paths.get(getDefaultPhpUnitConfig()), projectPhpUnitConfig);
+        PhpUnitUtils.processPhpUnitConfig(phpModule, projectPhpUnitConfig);
+    }
+
+    private void informUser(String message, int messageType) {
+        NotifyDescriptor descriptor = new NotifyDescriptor.Message(message, messageType);
         DialogDisplayer.getDefault().notify(descriptor);
-    }
-
-    private List<Target> initComponents() {
-        setLayout(new GridBagLayout());
-
-        List<Target> allTargets = Target.all();
-        int i = 0;
-        for (final Target target : allTargets) {
-            initTargetComponent(i++, target);
-        }
-        finishLayout(i);
-        return allTargets;
-    }
-
-    @NbBundle.Messages({
-        "# {0} - Ant target name",
-        "HudsonJobCreator.checkbox.a11y=Run Ant target: {0}"
-    })
-    private void initTargetComponent(final int row, final Target target) {
-        // checkbox
-        JCheckBox checkBox = new JCheckBox();
-        checkBox.setSelected(target.isSelected());
-        checkBox.setEnabled(target.isEnabled());
-        Mnemonics.setLocalizedText(checkBox, target.getTitleWithMnemonic());
-        checkBox.getAccessibleContext().setAccessibleDescription(Bundle.HudsonJobCreator_checkbox_a11y(target.getName()));
-        checkBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                target.setSelected(e.getStateChange() == ItemEvent.SELECTED);
-            }
-        });
-        // combo?
-        List<String> options = target.getOptions();
-        final JComboBox combo = options != null ? new JComboBox() : null;
-        if (combo != null) {
-            combo.setModel(new DefaultComboBoxModel(options.toArray(new String[options.size()])));
-            checkBox.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    combo.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
-                }
-            });
-            combo.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    target.setSelectedOption((String) combo.getSelectedItem());
-                }
-            });
-            // preselect the 1st option
-            combo.setSelectedIndex(0);
-        }
-        // placement
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = row;
-        gridBagConstraints.anchor = GridBagConstraints.LINE_START;
-        if (combo != null) {
-            gridBagConstraints.insets = new Insets(3, 0, 0, 0);
-        }
-        add(checkBox, gridBagConstraints);
-        if (combo != null) {
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = row;
-            gridBagConstraints.insets = new Insets(2, 2, 0, 5);
-            add(combo, gridBagConstraints);
-        }
-    }
-
-    private void finishLayout(int lastRow) {
-        JLabel spaceHolder = new JLabel();
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = lastRow + 1;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(spaceHolder, gridBagConstraints);
     }
 
     @Override
