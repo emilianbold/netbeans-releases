@@ -134,13 +134,13 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         String parentFolder  = null;
         if ( type == J2eeProjectType.WAR){
             sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-            if ( targetFolder.getFileObject(defaultName+".xml")!=null){
+            if ( targetFolder!=null && targetFolder.getFileObject(defaultName+".xml")!=null){
                 parentFolder = WEB_INF;
             }
         }
         else {
             if ( type != null && 
-                    targetFolder.getFileObject(defaultName+".xml")!=null )
+                    targetFolder!=null && targetFolder.getFileObject(defaultName+".xml")!=null )
             {
                 parentFolder = targetFolder.getName();
             }
@@ -180,7 +180,7 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
             FileObject webInf = wm.getWebInf();
-            if (webInf == null) {
+            if (webInf == null && wm.getDocumentBase() != null) {
                 try {
                     webInf = FileUtil.createFolder(wm.getDocumentBase(), WEB_INF); 
                 } catch (IOException ex) {
