@@ -92,25 +92,20 @@ public class FriendTestCase extends TraceModelTestBase {
 
     @Override
     protected void performTest(String source) throws Exception {
-        CsmCacheManager.enter();
-        try {
-            File testFile = getDataFile(source);
-            assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
-            performModelTest(testFile, System.out, System.err);
-            checkFriend();
-            ProjectBase project = getProject();
-            for (FileImpl file : project.getAllFileImpls()) {
-                file.markReparseNeeded(true);
-                file.scheduleParsing(true);
-            }
-            checkFriend();
-            FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
-            assertNotNull(fileImpl);
-            project.onFileImplRemoved(Collections.<FileImpl>emptyList(), Collections.singleton(fileImpl));
-            checkEmpty();
-        } finally {
-            CsmCacheManager.leave();
+        File testFile = getDataFile(source);
+        assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
+        performModelTest(testFile, System.out, System.err);
+        checkFriend();
+        ProjectBase project = getProject();
+        for (FileImpl file : project.getAllFileImpls()) {
+            file.markReparseNeeded(true);
+            file.scheduleParsing(true);
         }
+        checkFriend();
+        FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
+        assertNotNull(fileImpl);
+        project.onFileImplRemoved(Collections.<FileImpl>emptyList(), Collections.singleton(fileImpl));
+        checkEmpty();
     }
 
     private void checkEmpty() {
@@ -128,6 +123,15 @@ public class FriendTestCase extends TraceModelTestBase {
     }
 
     private void checkFriend() {
+        CsmCacheManager.enter();
+        try {
+            checkFriendImpl();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private void checkFriendImpl() {
         ProjectBase project = getProject();
         assertNotNull("Project must be valid", project); // NOI18N
         CsmClass clsB = (CsmClass) project.findClassifier("B"); // NOI18N
