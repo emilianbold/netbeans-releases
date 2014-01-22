@@ -52,6 +52,8 @@ import org.w3c.dom.Node;
  *
  */
 public class PropertyGetResponse extends DbgpResponse {
+    private static final String REASON = "reason"; //NOI18N
+    private static final String STATUS = "status"; //NOI18N
 
     PropertyGetResponse(Node node) {
         super(node);
@@ -63,6 +65,16 @@ public class PropertyGetResponse extends DbgpResponse {
             return new Property(node);
         }
         return null;
+    }
+
+    public Status getStatus() {
+        String status = getAttribute(getNode(), STATUS);
+        return Status.forString(status);
+    }
+
+    public Reason getReason() {
+        String reason = getAttribute(getNode(), REASON);
+        return Reason.forString(reason);
     }
 
     @Override
@@ -79,6 +91,11 @@ public class PropertyGetResponse extends DbgpResponse {
             if (property != null) {
                 session.getBridge().getVariablesModel().updateProperty(getProperty());
                 propertyCommand.firePropertyChangeEvent(property.getName(), property);
+            }
+            Status status = getStatus();
+            Reason reason = getReason();
+            if (status != null && reason != null) {
+                session.processStatus(status, reason, command);
             }
         }
     }
