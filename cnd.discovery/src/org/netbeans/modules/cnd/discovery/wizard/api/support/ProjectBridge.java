@@ -167,16 +167,23 @@ public class ProjectBridge {
         return Item.createInFileSystem(baseFolderFileSystem, getRelativepath(path));
     }
     
-    public static void excludeItemFromOtherConfigurations(Item item) {
+    // return true if state was changed
+    public static boolean excludeItemFromOtherConfigurations(Item item) {
+        boolean changed = false;
         for(Configuration c : item.getFolder().getConfigurationDescriptor().getConfs().getConfigurations()) {
             if (!c.isDefault()) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) c;
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
                 if (itemConfiguration != null) {
-                    itemConfiguration.getExcluded().setValue(true);
+                    BooleanConfiguration excl =itemConfiguration.getExcluded();
+                    if (!excl.getValue()){
+                        excl.setValue(true);
+                        changed = true;
+                    }
                 }
             }
         }
+        return changed;
     }
     
     /**
@@ -585,17 +592,19 @@ public class ProjectBridge {
         cccc.getUndefinedPreprocessorConfiguration().setValue(undefs);
         cccc.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
     }
-    
-    public static void setExclude(Item item, boolean exclude){
+
+    // return true if state was changed
+    public static boolean setExclude(Item item, boolean exclude){
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
-            return;
+            return false;
         }
         BooleanConfiguration excl =itemConfiguration.getExcluded();
         if (excl.getValue() ^ exclude){
             excl.setValue(exclude);
+            return true;
         }
-        //itemConfiguration.setTool(Tool.CustomTool);
+        return false;
     }
 
     public static boolean getExclude(Item item){
