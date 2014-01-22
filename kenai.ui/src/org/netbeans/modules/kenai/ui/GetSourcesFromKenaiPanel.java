@@ -66,9 +66,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -85,7 +83,6 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDescriptor;
@@ -95,11 +92,9 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ide.spi.IDEServices;
-import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.Lookup;
 
@@ -138,8 +133,8 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             serverLabel.setIcon(this.kenai.getIcon());
         }
         
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        proxyConfigButton.setVisible(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY));
         
         refreshUsername();
 
@@ -425,9 +420,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        if(ide != null && ide.providesProxyConfiguration()) {
-            ide.openProxyConfiguration();
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        if(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY)) {
+            settings.openSection(SettingsServices.Section.PROXY);
         }
 }//GEN-LAST:event_proxyConfigButtonActionPerformed
 

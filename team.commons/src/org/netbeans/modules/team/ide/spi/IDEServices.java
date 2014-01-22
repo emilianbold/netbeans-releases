@@ -191,19 +191,6 @@ public interface IDEServices {
     public void openInFavorites(File workingDir);
 
     /**
-     * Determines whether the capability of opening a http proxy configuration UI
-     * is available.
-     * 
-     * @return <code>true</code> if there is a http proxy configuration UI available, otherwise <code>false</code>
-     */
-    public boolean providesProxyConfiguration();
-    
-    /**
-     * Opens the http proxy configuration UI
-     */
-    public void openProxyConfiguration();
-    
-    /**
      * Creates a date picker component that can be used in task editor UI.
      * May return null.
      * 
