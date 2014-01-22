@@ -52,18 +52,53 @@ package org.netbeans.modules.team.ide.spi;
  */
 public interface SettingsServices {
     
+    /**
+     * The location for all team settings. To be used in team settings 
+     * registrations or when accessing the particular settings section.
+     * 
+     * @see org.netbeans.spi.options.OptionsPanelController.SubRegistration
+     */
     public static final String TEAM_SETTINGS_LOCATION = "Team";
+    
+    /**
+     * Id for Tasks settings. To be used in team settings 
+     * registrations or when accessing the particular settings section.
+     * 
+     * @see org.netbeans.spi.options.OptionsPanelController.SubRegistration
+     */
     public static final String TASKS_SETTINGS_ID = "Tasks";
+    
+    /**
+     * Id for ODCS settings. To be used in team settings 
+     * registrations or when accessing the particular settings section.
+     * 
+     * @see org.netbeans.spi.options.OptionsPanelController.SubRegistration
+     */
     public static final String ODCS_SETTINGS_ID = "Odcs";
     
+    /**
+     * Represents a particular settings section (page).
+     */
     enum Section {
+        /**
+         * Proxy settings. Used in {@link #openSection(org.netbeans.modules.team.ide.spi.SettingsServices.Section)}
+         * to open a UI to change the Proxy settings page.
+         */
         PROXY,
+        /**
+         * Tasks settings. Used in {@link #openSection(org.netbeans.modules.team.ide.spi.SettingsServices.Section)}
+         * to open a UI to change the Tasks settings page.
+         */
         TASKS,
+        /**
+         * ODCS settings. Used in {@link #openSection(org.netbeans.modules.team.ide.spi.SettingsServices.Section)}
+         * to open a UI to change the ODCS settings page.
+         */
         ODCS
     }
     
     /**
-     * Determines whether the capability of opening a settings UI is available or not.
+     * Determines whether the capability of opening a particular settings UI is available or not.
      * 
      * @param section the particular settings UI
      * @return <code>true</code> if there is a way to open a settings section, otherwise <code>false</code>
@@ -71,9 +106,9 @@ public interface SettingsServices {
     public boolean providesOpenSection(Section section);
     
     /**
-     * Opens the settings UI for the given section - e.g. proxy or tasks settings
+     * Opens a particular settings UI - e.g. proxy or tasks settings
      * 
-     * @param section a settings section to be opened
+     * @param section a particular settings section to be opened
      */
     public void openSection(Section section);
 }
