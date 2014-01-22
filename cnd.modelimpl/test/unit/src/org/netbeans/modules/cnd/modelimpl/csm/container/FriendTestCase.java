@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FriendResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -91,20 +92,25 @@ public class FriendTestCase extends TraceModelTestBase {
 
     @Override
     protected void performTest(String source) throws Exception {
-        File testFile = getDataFile(source);
-        assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
-        performModelTest(testFile, System.out, System.err);
-        checkFriend();
-        ProjectBase project = getProject();
-        for (FileImpl file : project.getAllFileImpls()) {
-            file.markReparseNeeded(true);
-            file.scheduleParsing(true);
+        CsmCacheManager.enter();
+        try {
+            File testFile = getDataFile(source);
+            assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
+            performModelTest(testFile, System.out, System.err);
+            checkFriend();
+            ProjectBase project = getProject();
+            for (FileImpl file : project.getAllFileImpls()) {
+                file.markReparseNeeded(true);
+                file.scheduleParsing(true);
+            }
+            checkFriend();
+            FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
+            assertNotNull(fileImpl);
+            project.onFileImplRemoved(Collections.<FileImpl>emptyList(), Collections.singleton(fileImpl));
+            checkEmpty();
+        } finally {
+            CsmCacheManager.leave();
         }
-        checkFriend();
-        FileImpl fileImpl = project.getFile(testFile.getAbsolutePath(), false);
-        assertNotNull(fileImpl);
-        project.onFileImplRemoved(Collections.<FileImpl>emptyList(), Collections.singleton(fileImpl));
-        checkEmpty();
     }
 
     private void checkEmpty() {
