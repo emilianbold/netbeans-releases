@@ -117,7 +117,7 @@ public final class GruntfileExecutor implements Runnable {
                 } else if (Utilities.isMac()) {
                     pb = new ExternalProcessBuilder("/bin/bash");
                     pb = pb.addArgument("-lc");
-                    pb = pb.addArgument("grunt --no-color" + targetNames.get(0));
+                    pb = pb.addArgument("grunt --no-color " + targetNames.get(0));
                 } else {
                     pb = new ExternalProcessBuilder("grunt");
                     pb = pb.addArgument("--no-color");

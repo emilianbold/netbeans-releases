@@ -74,12 +74,13 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * Panel (form) for user annotation.
  */
-public class UserAnnotationPanel extends JPanel {
+public class UserAnnotationPanel extends JPanel implements HelpCtx.Provider {
 
     private static final long serialVersionUID = -135764354564L;
 
@@ -268,6 +269,11 @@ public class UserAnnotationPanel extends JPanel {
             }
         }
         return types;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.php.project.annotations.UserAnnotationPanel"); // NOI18N
     }
 
     /**

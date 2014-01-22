@@ -41,33 +41,137 @@ Contributor(s):
 Portions Copyrighted 2013 Sun Microsystems, Inc.
 -->
 
-
 <DataCenters>
-    <DataCenter>
-       <ShortName>us1</ShortName>
-       <LongName>US Commercial 1</LongName>
-      <Service type="Portal" version="13.2"/>
-       <Service type="JCS" version="13.2"/>
-       <Service type="DBCS" version="13.2"/>
-   </DataCenter>
-   <DataCenter>
-       <ShortName>us2</ShortName>
-       <LongName>US Commercial 2</LongName>
-       <Service type="Portal" version="13.2"/>
-       <Service type="JCS" version="13.2"/>
-       <Service type="DBCS" version="13.2"/>
-   </DataCenter>
-   <DataCenter>
-       <ShortName>em1</ShortName>
-       <LongName>EMEA Commercial 1 (LLG)</LongName>
-       <Service type="Portal" version="13.1"/>
-       <Service type="JCS" version="13.1"/>
-   </DataCenter>
-   <DataCenter>
-       <ShortName>em2</ShortName>
-       <LongName>EMEA Commercial 2 (Amsterdam)</LongName>
-       <Service type="Portal" version="13.2"/>
-       <Service type="JCS" version="13.2"/>
-<Service type="DBCS" version="13.2"/>
-    </DataCenter>
+	<DataCenter>
+		<ShortName>us1</ShortName>
+		<LongName>US Commercial 1</LongName>
+		<Services>
+			<Portal version="13.2"/>
+			<JCS version="13.2"/>
+			<DBCS version="13.2"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>us2</ShortName>
+		<LongName>US Commercial 2</LongName>
+		<Services>
+			<Portal version="13.2"/>
+			<JCS version="13.2"/>
+			<DBCS version="13.2"/>
+			<DCS version="13.2"/>
+			<Messaging version="13.2"/>
+			<Storage version="13.2"/>
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>us3</ShortName>
+		<LongName>US Commercial 3</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>us4</ShortName>
+		<LongName>US Commercial 4</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>us5</ShortName>
+		<LongName>US Commercial 5</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>em1</ShortName>
+		<LongName>EMEA Commercial 1</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>em2</ShortName>
+		<LongName>EMEA Commercial 2</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>em3</ShortName>
+		<LongName>EMEA Commercial 3</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>ap1</ShortName>
+		<LongName>APAC Commercial 1</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>ap2</ShortName>
+		<LongName>APAC Commercial 2</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
+	<DataCenter>
+		<ShortName>ap3</ShortName>
+		<LongName>APAC Commercial 3</LongName>
+		<Services>
+			<Portal version="13.1"/>
+			<JCS version="13.1"/>
+			<DBCS version="13.1"/>
+			<!--DCS is absent -->
+			<!--Messaging is absent -->
+			<!--Storage is absent -->
+		</Services>
+	</DataCenter>
 </DataCenters>
