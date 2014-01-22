@@ -622,10 +622,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         if (mavenPath == null) {
             mavenPath = "";
         } else {
-            mavenPath = mavenPath + (Utilities.isWindows() ? ";" : ":");
+            mavenPath = (Utilities.isWindows() ? ";" : ":") + mavenPath;
         }
         File jar = InstalledFileLocator.getDefault().locate("maven-nblib/netbeans-eventspy.jar", "org.netbeans.modules.maven", false);
-        mavenPath = mavenPath + jar.getAbsolutePath();
+        //netbeans-eventspy.jar comes first on classpath
+        mavenPath = jar.getAbsolutePath() + mavenPath;
         clonedConfig.setProperty(CosChecker.MAVENEXTCLASSPATH, mavenPath);
     }
 

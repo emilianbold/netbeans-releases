@@ -2,25 +2,82 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Project Properties: Include Path and Ignored Folders</title>
+<title>Advanced Web Configuration Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" name="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref437" name="sthref437"></a>
-<h1>Project Properties: Include Path and Ignored Folders</h1>
+<p>Beta Draft: 2014-01-21</p>
+<p><a id="org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced" name="org.netbeans.modules.php.project.ui.customizer.RunAsWebAdvanced"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref434" name="sthref434"></a>
+<h1>Advanced Web Configuration Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Include Path property refers to project-specific files, such as libraries, that are not source files but that are included in the project.</p>
-<p>The Ignored Files property is the opposite of the Include Path. These are files inside the PHP project that you want the IDE to ignore for FTP upload, scanning, etc.</p>
-<p>Include Path and Ignored Files properties contain the following elements:</p>
-<ul>
-<li>A table listing the included or ignored files</li>
-<li>Add Folder. Press this button to open a dialog where you browse for files to add to the include path or ignored folders list.</li>
-<li>Remove. Select a file or folder and press this button to remove it from the Include or Ignore list.</li>
-<li>Move Up and Move Down. (Include Path only!) Select a file and press one of these buttons to change the file's ranking in the list. A higher-ranked file takes precedence over a lower-ranked file.</li>
-</ul>
+<p>The Advanced Web Configuration dialog box enables you to specify advanced debugging options for the Run configuration of your PHP project. You can set the following properties for the selected Run configuration.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t10">Element</th>
+<th align="left" valign="bottom" id="r1c2-t10">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t10" headers="r1c1-t10">
+<p>Debug URL</p>
+</td>
+<td align="left" headers="r2c1-t10 r1c2-t10">
+<p>Specify the behavior of the IDE when debugging the application.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p>Default</p>
+</td>
+<td align="left" headers="r3c1-t10 r1c2-t10">
+<p>When selected, the IDE uses the default project URL when debugging the application. This option is selected by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t10" headers="r1c1-t10">
+<p>Ask Every Time</p>
+</td>
+<td align="left" headers="r4c1-t10 r1c2-t10">
+<p>When selected, you are prompted to supply the URL.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t10" headers="r1c1-t10">
+<p>Do Not Open Browser</p>
+</td>
+<td align="left" headers="r5c1-t10 r1c2-t10">
+<p>When selected, no URL is opened in the browser.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t10" headers="r1c1-t10">
+<p>Path Mapping</p>
+</td>
+<td align="left" headers="r6c1-t10 r1c2-t10">
+<p>Specify any required mappings between the server path and the project path.</p>
+<p>To create or edit a mapping, double-click in the text field in the Server Path column of the table and type the server path. Click the ellipsis (...) on the right side of the Project Path column and select the project folder that you want to map to the specified server path.</p>
+<p>Click New to create a new row in the table.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t10" headers="r1c1-t10">
+<p>Debugger Proxy</p>
+</td>
+<td align="left" headers="r7c1-t10 r1c2-t10">
+<p>Specify the name of the proxy host and port number if required for debugging.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

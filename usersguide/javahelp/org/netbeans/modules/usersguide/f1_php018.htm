@@ -2,35 +2,22 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Rename Refactoring</title>
+<title>Find Usages Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" name="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref452" name="sthref452"></a>
-<h1>Rename Refactoring</h1>
+<p>Beta Draft: 2014-01-21</p>
+<p><a id="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" name="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref447" name="sthref447"></a>
+<h1>Find Usages Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Rename Refactoring allows you to safely rename a PHP element across all files in an application. For safety, rename refactoring requires you to preview and approve your changes.</p>
-<p>Rename Refactoring involves two user interfaces:</p>
+<p>Use this dialog box to specify search options for the Find Usages command. You can use the Find Usages command to determine all of the places a class, function, or variable is used in your project's source code.</p>
+<p>The Find Usages dialog box displays the following option for all types of identifiers:</p>
 <ul>
-<li><b>Rename dialog</b>. You opened this Help topic from the Help button in this dialog.</li>
-<li><b>Refactoring window.</b> After you complete the Rename dialog, you preview your changes in the Refactoring window.</li>
+<li><b>Search in Comments</b>. If selected, occurrences of the identifier that appear in code comments are also displayed.</li>
 </ul>
-<!-- infolevel="all" infotype="General" --><a id="sthref453" name="sthref453"></a>
-<h2>Rename Dialog</h2>
-<p>The Rename dialog has two controls:</p>
-<ul>
-<li><b>New name</b>: Type the new name in this field.</li>
-<li><b>Preview</b>. You must click Preview to rename the element. Clicking Preview opens the Refactoring window.</li>
-</ul>
-
-<!-- -->
-<!-- infolevel="all" infotype="General" --><a id="sthref454" name="sthref454"></a>
-<h2>Refactoring Window</h2>
-<p>The Refactoring window opens below the Editor window. The Refactoring window shows every place in your application that could be affected by refactoring, and lets you exclude files or individual instances from refactoring. The Refactoring window contains the following sections:</p>
-<p><b>Navigation buttons</b>. On the left side of the Refactoring window are a series of buttons for navigating through the tree of instances. Hover your cursor over a button to see a tooltip describing its function.</p>
+<p>For classes and interfaces, the Find Usages dialog box displays the following additional options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -43,50 +30,74 @@
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t20" headers="r1c1-t20"></td>
+<td align="left" id="r2c1-t20" headers="r1c1-t20">
+<p>Find Usages</p>
+</td>
 <td align="left" headers="r2c1-t20 r1c2-t20">
-<p>Refresh</p>
+<p>If selected, all usages of the class are displayed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t20" headers="r1c1-t20"></td>
+<td align="left" id="r3c1-t20" headers="r1c1-t20">
+<p>Find All Subtypes</p>
+</td>
 <td align="left" headers="r3c1-t20 r1c2-t20">
-<p>Collapse/expand all nodes in tree</p>
+<p>If selected, usages of all subtypes of the class, including subtypes of subtypes, are displayed. Usages of the class itself are not displayed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t20" headers="r1c1-t20"></td>
+<td align="left" id="r4c1-t20" headers="r1c1-t20">
+<p>Find Direct Subtypes Only</p>
+</td>
 <td align="left" headers="r4c1-t20 r1c2-t20">
-<p>Show logical view (organized by syntax)</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t20" headers="r1c1-t20"></td>
-<td align="left" headers="r5c1-t20 r1c2-t20">
-<p>Show physical view (organized by location)</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t20" headers="r1c1-t20"></td>
-<td align="left" headers="r6c1-t20 r1c2-t20">
-<p>Previous occurrance</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t20" headers="r1c1-t20"></td>
-<td align="left" headers="r7c1-t20 r1c2-t20">
-<p>Next occurance</p>
+<p>If selected, only usages of direct subtypes are displayed. Subtypes of those subtypes are ignored.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Tree of instances</b>. A tree view of all instances of the element that you want to rename. Using the navigation buttons you can view either a logical tree, organized by syntax, or a physical view, organized by location. By default, all instances are ticked. Untick an instance if you do not want to rename that instance. Select an instance to preview the current/refactored form in the preview.</p>
-<p><b>Preview</b>. In the preview, compare the original and refactored versions of the code line you selected in the tree of instances.</p>
-<p><b>Do refactoring/Cancel</b>. After you have previewed the refactoring and excluded any instances that you do not want to rename, click <b>Do refactoring</b>. If you do not want to rename any instances, click <b>Cancel</b>.</p>
+<p>For functions, the Find Usages dialog box sometimes displays the following additional options:</p>
 
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t21">Element</th>
+<th align="left" valign="bottom" id="r1c2-t21">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t21" headers="r1c1-t21">
+<p>Find Usages</p>
+</td>
+<td align="left" headers="r2c1-t21 r1c2-t21">
+<p>If selected, all usages of that specific function in your project are displayed.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t21" headers="r1c1-t21">
+<p>Find Overriding Functions</p>
+</td>
+<td align="left" headers="r3c1-t21 r1c2-t21">
+<p>If selected, the output will show every usage of a function that overrides this function in your project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t21" headers="r1c1-t21">
+<p>Search from Base Class</p>
+</td>
+<td align="left" headers="r4c1-t21 r1c2-t21">
+<p>This option is only relevant if the function for which you are finding usages overrides another function. If selected, the output will show every usage of that base function.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
 <!-- -->
+<p>The Find Usages command is distinct from the Find command, because Find Usages returns only occurrences of the specified identifier in PHP source code. The Find command returns any matching string that you specify in any type of file.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

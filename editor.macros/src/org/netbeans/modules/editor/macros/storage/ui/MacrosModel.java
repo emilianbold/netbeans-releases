@@ -73,6 +73,7 @@ import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
 import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -223,7 +224,7 @@ public final class MacrosModel {
         allMacrosList.add(macro);
         
         tableModel.fireTableRowsInserted(allMacrosList.size() - 1, allMacrosList.size() - 1);
-        setChanged(true);
+        fireChanged();
         
         return macro;
     }
@@ -236,7 +237,7 @@ public final class MacrosModel {
         map.remove(macro.getName());
         
         tableModel.fireTableRowsDeleted(tableRow, tableRow);
-        setChanged(true);
+        fireChanged();
     }
 
     public List<Macro> getAllMacros() {
@@ -271,7 +272,7 @@ public final class MacrosModel {
             this.code = code;
 
             pcs.firePropertyChange(PROP_CODE, oldCode, code);
-            model.setChanged(true);
+            model.fireChanged();
         }
 
         public List<? extends MultiKeyBinding> getShortcuts() {
@@ -305,7 +306,7 @@ public final class MacrosModel {
             
             pcs.firePropertyChange(PROP_SHORTCUTS, oldShortcuts, shortcuts);
             model.fireTableModelChange(this, SHORTCUTS_COLUMN_IDX);
-            model.setChanged(true);
+            model.fireChanged();
         }
 
         // shortcuts are in M-A form, delimited by SPACE
@@ -332,7 +333,7 @@ public final class MacrosModel {
             
             pcs.firePropertyChange(PROP_SHORTCUTS, oldShortcuts, shortcuts);
             model.fireTableModelChange(this, SHORTCUTS_COLUMN_IDX);
-            model.setChanged(true);
+            model.fireChanged();
         }
         
         // -----------------------------------------------------------------
@@ -445,6 +446,27 @@ public final class MacrosModel {
         
 //        tableModel.fireTableCellUpdated(rowIndex, columnIndex);
 	tableModel.fireTableDataChanged();
+    }
+    
+    private void fireChanged() {
+        EditorSettingsStorage<String, MacroDescription> ess = EditorSettingsStorage.<String, MacroDescription>get(MacrosStorage.ID);
+
+        for (MimePath mimeType : mimeType2Macros.keySet()) {
+            Map<String, Macro> map = mimeType2Macros.get(mimeType);
+            Map<String, MacroDescription> current = new HashMap<>(map.size());
+            for (String macroName : map.keySet()) {
+                current.put(macroName, map.get(macroName).getMacroDescription());
+            }
+            try {
+                if (!ess.load(mimeType, null, false).equals(current)) {
+                    setChanged(true);
+                    return;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        setChanged(false);
     }
 
     private void setChanged(boolean changed) {

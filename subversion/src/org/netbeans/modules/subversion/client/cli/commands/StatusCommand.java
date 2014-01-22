@@ -46,7 +46,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -73,8 +72,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class StatusCommand extends SvnCommand {
 
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss Z");
-
+    private static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss Z"; //NOI18N
     private byte[] output;
     
     private final File files[];
@@ -378,7 +376,7 @@ public class StatusCommand extends SvnCommand {
             Date date = null;
             if (dateValue != null) {
                 try {
-                    date = dateFormat.parse(dateValue);
+                    date = new SimpleDateFormat(DATE_FORMAT).parse(dateValue);
                 } catch (ParseException ex) {
                     // ignore
                 } catch (NumberFormatException ex) {
