@@ -75,11 +75,10 @@ import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"php", "annotations", "#KW_AnnotationsOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions")
-public class PhpAnnotationsPanel extends JPanel implements HelpCtx.Provider {
+public class PhpAnnotationsPanel extends JPanel {
 
     private static final long serialVersionUID = 89732416546545L;
 
@@ -355,11 +354,6 @@ public class PhpAnnotationsPanel extends JPanel implements HelpCtx.Provider {
     private JLabel warningLabel;
     private JLabel warningText;
     // End of variables declaration//GEN-END:variables
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanel"); // NOI18N
-    }
 
     //~ Inner classes
 
