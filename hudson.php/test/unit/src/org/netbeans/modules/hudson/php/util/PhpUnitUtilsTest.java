@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hudson.php.support;
 
-import org.openide.util.NbBundle;
+package org.netbeans.modules.hudson.php.util;
 
-/**
- * Ant target for <tt>phploc</tt>.
- */
-class PhplocTarget extends Target {
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-    @Override
-    public String getName() {
-        return "phploc"; // NOI18N
+public class PhpUnitUtilsTest extends NbTestCase {
+
+    private static final String PROJECT_NAME = "MyProject1";
+    private FileObject projectDir;
+    private FileObject srcDir;
+    private List<FileObject> testDirs;
+
+
+    public PhpUnitUtilsTest(String name) {
+        super(name);
     }
 
-    @NbBundle.Messages("Target.Phploc.title=So&urce Code Statistics")
     @Override
-    public String getTitleWithMnemonic() {
-        return Bundle.Target_Phploc_title();
+    protected void setUp() throws Exception {
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(workDir);
+        projectDir = FileUtil.createFolder(workDir, PROJECT_NAME);
+        srcDir = FileUtil.createFolder(projectDir, "mysrc");
+        testDirs = Arrays.asList(
+                FileUtil.createFolder(srcDir, "mytest1"),
+                FileUtil.createFolder(projectDir, "mytest2")
+        );
+    }
+
+    public void testProcessPhpUnitConfigLines() throws Exception {
+        List<String> currentLines = Files.readAllLines(new File(getDataDir(), "phpunit.xml").toPath(), PhpUnitUtils.XML_CHARSET);
+        List<String> goldenLines = Files.readAllLines(new File(getDataDir(), "phpunit.golden.xml").toPath(), PhpUnitUtils.XML_CHARSET);
+        List<String> newLines = PhpUnitUtils.processPhpUnitConfigLines(PROJECT_NAME, projectDir, srcDir, testDirs, currentLines);
+        for (int i = 0; i < newLines.size(); i++) {
+            assertEquals(goldenLines.get(i), newLines.get(i));
+        }
+        assertEquals(goldenLines.size(), newLines.size());
     }
 
 }
