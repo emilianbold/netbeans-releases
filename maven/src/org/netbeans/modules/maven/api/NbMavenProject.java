@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -65,9 +66,11 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import static org.netbeans.modules.maven.api.Bundle.*;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.options.MavenSettings.DownloadStrategy;
 import org.netbeans.modules.maven.spi.PackagingProvider;
@@ -79,10 +82,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
-import static org.netbeans.modules.maven.api.Bundle.*;
-import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -106,7 +107,11 @@ public final class NbMavenProject {
     private final NbMavenProjectImpl project;
     private final PropertyChangeSupport support;
     private final FCHSL listener = new FCHSL();
-    private final List<File> files = new ArrayList<File>();
+    //#216001 addWatchedPath appeared to accumulate files forever on each project reload.
+    //that's because source roots get added repeatedly but never get removed and listening to changed happens elsewhere.
+    //the imagined fix for 216001 is to keep each item just once. That would break once multiple sources add a given file and one of them removes it
+    //as a hotfix this solution is ok, if we don't get some data updated, we should remove the watchedPath pattern altogether.
+    private final Set<File> files = new HashSet<File>();
     
     static {
         AccessorImpl impl = new AccessorImpl();
@@ -372,10 +377,13 @@ public final class NbMavenProject {
         boolean addListener = false;
         File fil = Utilities.toFile(uri);
         synchronized (files) {
-            if (!files.contains(fil)) {
+    //#216001 addWatchedPath appeared to accumulate files forever on each project reload.
+    //that's because source roots get added repeatedly but never get removed and listening to changed happens elsewhere.
+    //the imagined fix for 216001 is to keep each item just once. That would break once multiple sources add a given file and one of them removes it
+    //as a hotfix this solution is ok, if we don't get some data updated, we should remove the watchedPath pattern altogether.
+            if (files.add(fil)) {
                 addListener = true;
             }
-            files.add(fil);
         }
         if (addListener) {
             FileUtil.addFileChangeListener(listener, fil);
@@ -523,13 +531,14 @@ public final class NbMavenProject {
     
     public void removeWatchedPath(URI uri) {
         //#110599
-        boolean removeListener = false;
+        boolean removeListener;
         File fil = Utilities.toFile(uri);
         synchronized (files) {
-            boolean rem = files.remove(fil);
-            if (rem && !files.contains(fil)) {
-                removeListener = true;
-            }
+    //#216001 addWatchedPath appeared to accumulate files forever on each project reload.
+    //that's because source roots get added repeatedly but never get removed and listening to changed happens elsewhere.
+    //the imagined fix for 216001 is to keep each item just once. That would break once multiple sources add a given file and one of them removes it
+    //as a hotfix this solution is ok, if we don't get some data updated, we should remove the watchedPath pattern altogether.
+            removeListener = files.remove(fil);
         }
         if (removeListener) {
             FileUtil.removeFileChangeListener(listener, fil);
