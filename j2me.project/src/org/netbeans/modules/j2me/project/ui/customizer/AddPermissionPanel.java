@@ -20,6 +20,7 @@ import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.Permi
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionError;
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionsFactory;
 import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 
 public class AddPermissionPanel extends JPanel {
 
@@ -283,6 +284,7 @@ public class AddPermissionPanel extends JPanel {
 
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel")); //NOI18N
         updateOKAction();
     }
 
