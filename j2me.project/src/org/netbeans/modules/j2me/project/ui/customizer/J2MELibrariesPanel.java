@@ -294,7 +294,7 @@ public class J2MELibrariesPanel extends JPanel implements HelpCtx.Provider, List
     
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx( "org.netbeans.modules.j2me.project.ui.customizer.J2MELibrarisPanel");
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MELibrariesPanel"); //NOI18N
     }        
 
     

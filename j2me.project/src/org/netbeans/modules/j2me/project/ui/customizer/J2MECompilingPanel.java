@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
 
 public class J2MECompilingPanel extends JPanel implements HelpCtx.Provider {
 
-    private static final String HELP_ID = "org.netbeans.modules.j2me.project.ui.customizer.J2MECompilingPanel";
+    private static final String HELP_ID = "org.netbeans.modules.j2me.project.ui.customizer.J2MECompilingPanel"; //NOI18N
 
     public J2MECompilingPanel(J2MEProjectProperties uiProperties) {
         initComponents();
