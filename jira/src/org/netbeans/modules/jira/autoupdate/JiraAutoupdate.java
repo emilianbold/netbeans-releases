@@ -59,8 +59,10 @@ import org.netbeans.modules.jira.client.spi.JiraVersion;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -182,15 +184,23 @@ public class JiraAutoupdate {
             return;
         }
         connectorNotified = true;
+        
+        final SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        
+        AbstractAction a = null;
+        if(settings != null && settings.providesOpenSection(SettingsServices.Section.TASKS)) {
+            a = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    settings.openSection(SettingsServices.Section.TASKS);
+                }
+            };
+        }
         NotificationDisplayer.getDefault().notify(
             Bundle.CTL_Restart(),
             ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.gif", true ), //NOI18N
-            Bundle.CTL_RestartClickHere(), new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    OptionsDisplayer.getDefault().open("Team/Tasks"); // NOI18N
-                }
-            },
+            Bundle.CTL_RestartClickHere(), 
+            a,
             NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
     }  
 }

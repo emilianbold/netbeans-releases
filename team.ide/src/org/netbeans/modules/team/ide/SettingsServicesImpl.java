@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,84 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.ui.settings;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
+package org.netbeans.modules.team.ide;
+
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.team.ide.spi.SettingsServices;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 
 /**
  *
- * @author jpeska
+ * @author tomas
  */
-@OptionsPanelController.SubRegistration(
-    id = OdcsOptionsController.OPTIONS_PATH,
-    displayName = "#LBL_Options", // NOI18N
-    location=SettingsServices.TEAM_SETTINGS_LOCATION,
-    keywords = "#KW_Odcs", // NOI18N
-    keywordsCategory = "Team/Odcs" // NOI18N
-)
-public class OdcsOptionsController extends OptionsPanelController {
-
-    public static final String OPTIONS_PATH = SettingsServices.ODCS_SETTINGS_ID; 
-    private OdcsOptions dashboardOptions;
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ide.spi.SettingsServices.class)
+public class SettingsServicesImpl implements SettingsServices {
 
     @Override
-    public void update() {
-        getOptions().update();
+    public boolean providesOpenSection(Section section) {
+        return true;
     }
 
     @Override
-    public void applyChanges() {
-        if (isChanged()) {
-            getOptions().applyChanges();
+    public void openSection(Section section) {
+        switch(section) {
+            case PROXY:
+                OptionsDisplayer.getDefault().open("General"); // NOI18N
+                break;
+            case TASKS:
+                OptionsDisplayer.getDefault().open(SettingsServices.TEAM_SETTINGS_LOCATION + "/" + SettingsServices.TASKS_SETTINGS_ID); // NOI18N
+                break;
+            case ODCS:
+                OptionsDisplayer.getDefault().open(SettingsServices.TEAM_SETTINGS_LOCATION + "/" + SettingsServices.ODCS_SETTINGS_ID); // NOI18N
+                break;
         }
-    }
-
-    @Override
-    public void cancel() {
-        //do nothing
-    }
-
-    @Override
-    public boolean isValid() {
-        return getOptions().isDataValid();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return getOptions().isChanged();
-    }
-
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return getOptions();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.odcs"); // NOI18N
-    }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getOptions().support.addPropertyChangeListener(l);
-    }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        getOptions().support.removePropertyChangeListener(l);
-    }
-
-    private OdcsOptions getOptions() {
-        if( null == dashboardOptions ) {
-            dashboardOptions = new OdcsOptions();
-        }
-        return dashboardOptions;
     }
 }
