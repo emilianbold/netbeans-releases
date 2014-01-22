@@ -134,8 +134,8 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).lstat(path);
      }
 
-    public static void delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
-        getInstance(execEnv).delete(path, directory);
+    public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+        return getInstance(execEnv).delete(path, directory);
     }
     
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
@@ -165,7 +165,15 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract void scheduleRefresh(Collection<String> paths);
     
-    protected abstract void delete(String path, boolean directory) throws IOException;
+    /** 
+     * Deletes the file, returns parent directory content.
+     * Returning parent directory content is for the sake of optimization.
+     * For example, fs_server, can do remove and return refreshed content in one call.
+     * It can return null if there is no way of doing that more effective than
+     * just calling RemoteFileSystemTransport.readDirectory
+     * @return parent directory content (can be null - see above)
+     */
+    protected abstract DirEntryList delete(String path, boolean directory) throws IOException;
 
     protected void onConnect() {
     }
