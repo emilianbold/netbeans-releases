@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -326,7 +327,7 @@ public final class CndFileUtils {
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
             if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
+                path = path.replace('\\', '/');
             }
         }
         String normalized;
@@ -377,16 +378,24 @@ public final class CndFileUtils {
     }
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
-   private static final boolean isWindows;
-   private static final String windowsDrive;
-   static {
-       isWindows = Utilities.isWindows();
-       if (isWindows) {
-           windowsDrive = new File("\\").getAbsolutePath().toLowerCase();
-       } else {
-           windowsDrive = "";
-       }
-   }
+    private static final boolean isWindows;
+    private static final String  windowsDrive;
+    private static final Pattern windowsNoDiskDrivePattern;
+    private static final String  windowsPathSeparator = "\\"; // NOI18N
+    static {
+        isWindows = Utilities.isWindows();
+        windowsNoDiskDrivePattern = Pattern.compile("$(\\\\)*"); //NOI18N
+        if (isWindows) {
+            String disk = new File(windowsPathSeparator).getAbsolutePath().toLowerCase(); 
+            if (!disk.endsWith(windowsPathSeparator)) { 
+                assert disk.endsWith(":") : "unexpected disk name " + disk;
+                disk += windowsPathSeparator;
+            }
+            windowsDrive = disk;
+        } else {
+            windowsDrive = "";// NOI18N
+        }
+    }
    
    // expensive check
    private static final boolean ASSERT_INDEXED_NOTFOUND = Boolean.getBoolean("cnd.modelimpl.assert.notfound"); // NOI18N
@@ -399,6 +408,8 @@ public final class CndFileUtils {
         }
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
+            // append disk drive on windows for files like "/ws/full/path"
+            absolutePath = windowsNoDiskDrivePattern.matcher(absolutePath).replaceFirst(windowsDrive);
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
         Flags exists;
@@ -481,30 +492,16 @@ public final class CndFileUtils {
                 CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
                 for (CndFileSystemProvider.FileInfo curFile : listFiles) {
                     String absPath = changeStringCaseIfNeeded(fs, curFile.absolutePath);
-                    String absPathNoDir = null;
                     if (isWindows) { //  isLocalFS(fs) checked above
                         absPath = absPath.replace('/', '\\');
-                        // for windows we keep path with and without drive letter
-                        if (absPath.startsWith(windowsDrive)) {
-                            absPathNoDir = absPath.substring(windowsDrive.length()-1);
-                        }
                     }
                     if (curFile.directory) {
                         files.putIfAbsent(absPath, Flags.DIRECTORY);
-                        if (absPathNoDir != null) {
-                            files.putIfAbsent(absPathNoDir, Flags.DIRECTORY);
-                        }
                     } else if (curFile.file) {
                         files.put(absPath, Flags.FILE);
-                        if (absPathNoDir != null) {
-                            files.putIfAbsent(absPathNoDir, Flags.FILE);
-                        }                        
                     } else {
                         // broken link
                         files.put(absPath, Flags.BROKEN_LINK);
-                        if (absPathNoDir != null) {
-                            files.putIfAbsent(absPathNoDir, Flags.BROKEN_LINK);
-                        }
                     }
                 }
             }        
@@ -536,7 +533,7 @@ public final class CndFileUtils {
             if (CndFileUtils.isSystemCaseSensitive()) {
                 return path;
             } else {
-                return path.toString().toLowerCase();
+                return path.toLowerCase();
             }
         } else {
             return path; // remote is always case sensitive
