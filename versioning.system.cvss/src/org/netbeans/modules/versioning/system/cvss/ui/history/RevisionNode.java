@@ -340,11 +340,7 @@ class RevisionNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent ex) {
-            try {
-                ViewRevisionAction.view(revision.getRevision().getLogInfoHeader().getFile(), revision.getRevision().getNumber(), null);
-            } catch (Exception e) {
-                Logger.getLogger(RevisionNode.class.getName()).log(Level.INFO, e.getMessage(), e);
-            }
+            ViewRevisionAction.view(revision.getRevision().getLogInfoHeader().getFile(), revision.getRevision().getNumber(), null);
         }
     }
     

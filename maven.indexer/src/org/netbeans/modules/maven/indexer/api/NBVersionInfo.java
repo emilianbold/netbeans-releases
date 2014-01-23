@@ -241,10 +241,10 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         }
         c = comparableVersion.compareTo(o.comparableVersion);
         if (c != 0) {
-            return -c; // show newest versions first!
+            return c; //#226100 cannot have minus here, on 1.7 breaks contract
         }
         return extrakey().compareTo(o.extrakey());// show e.g. jar vs. nbm artifacts in some predictable order
-    }
+        }
     
     private String extrakey() {
         return "" + classifier + type + repoId;

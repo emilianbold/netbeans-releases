@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CommentExtractorTest extends PHPCodeCompletionTestBase {
+public class CommentExtractorTest extends PHPTestBase {
 
     public CommentExtractorTest(String testName) {
         super(testName);
