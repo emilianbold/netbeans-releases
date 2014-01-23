@@ -380,13 +380,11 @@ public final class CndFileUtils {
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
     private static final boolean isWindows;
     private static final String  windowsDrive;
-    private static final Pattern windowsNoDiskDrivePattern;
     private static final String  windowsPathSeparator = "\\"; // NOI18N
     static {
         isWindows = Utilities.isWindows();
-        windowsNoDiskDrivePattern = Pattern.compile("$(\\\\)*"); //NOI18N
         if (isWindows) {
-            String disk = new File(windowsPathSeparator).getAbsolutePath().toLowerCase(); 
+            String disk = new File(windowsPathSeparator).getAbsolutePath(); 
             if (!disk.endsWith(windowsPathSeparator)) { 
                 assert disk.endsWith(":") : "unexpected disk name " + disk;
                 disk += windowsPathSeparator;
@@ -409,7 +407,9 @@ public final class CndFileUtils {
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
             // append disk drive on windows for files like "/ws/full/path"
-            absolutePath = windowsNoDiskDrivePattern.matcher(absolutePath).replaceFirst(windowsDrive);
+            if (absolutePath.startsWith("\\")) {
+                absolutePath = windowsDrive + absolutePath.substring(1);
+            }
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
         Flags exists;
