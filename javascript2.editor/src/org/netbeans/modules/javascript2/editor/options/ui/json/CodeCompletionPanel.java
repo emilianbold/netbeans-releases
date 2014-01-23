@@ -45,6 +45,8 @@ package org.netbeans.modules.javascript2.editor.options.ui.json;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -67,6 +69,7 @@ public class CodeCompletionPanel extends JPanel {
 
     private final Preferences preferences;
     private final ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     public CodeCompletionPanel(Preferences preferences) {
         assert preferences != null;
@@ -94,6 +97,7 @@ public class CodeCompletionPanel extends JPanel {
                 OptionsUtils.AUTO_COMPLETION_SMART_QUOTES_DEFAULT);
         autoCompletionSmartQuotesCheckBox.setSelected(codeCompletionSmartQuotes);
         autoCompletionSmartQuotesCheckBox.addItemListener(defaultCheckBoxListener);
+        id2Saved.put(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
     }
 
     void validateData() {
@@ -155,6 +159,7 @@ public class CodeCompletionPanel extends JPanel {
     static final class CodeCompletionPreferencesCustomizer implements PreferencesCustomizer {
 
         private final Preferences preferences;
+        private CodeCompletionPanel component;
 
         private CodeCompletionPreferencesCustomizer(Preferences preferences) {
             this.preferences = preferences;
@@ -177,7 +182,25 @@ public class CodeCompletionPanel extends JPanel {
 
         @Override
         public JComponent getComponent() {
-            return new CodeCompletionPanel(preferences);
+            if (component == null) {
+                component = new CodeCompletionPanel(preferences);
+            }
+            return component;
+        }
+    }
+
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
+    }
+
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof CodeCompletionPreferencesCustomizer) {
+                return ((CodeCompletionPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
         }
     }
 }
