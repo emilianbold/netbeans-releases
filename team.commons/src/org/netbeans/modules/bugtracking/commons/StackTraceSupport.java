@@ -244,10 +244,16 @@ class StackTraceSupport {
        if ( lastDot == -1 ) {
            return null;
        }
+       Integer lineNr;
+       try {
+           lineNr = line == null ? -1 : Integer.parseInt(line);
+       } catch (NumberFormatException e) { 
+           return null;
+       }
        return new StackTraceElement( method.substring(0, lastDot),
                                      method.substring(lastDot + 1),
                                      file,
-                                     line == null ? -1 : Integer.parseInt(line) );
+                                     lineNr );
 
    }
 
