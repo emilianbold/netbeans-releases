@@ -107,13 +107,13 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     @Override
-    protected void postDeleteChild(RemoteFileObject child) {
-        getCanonicalDelegate().postDeleteChild(child);
+    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+        getCanonicalDelegate().postDeleteChild(child, entryList);
     }
 
     @Override
-    protected void deleteImpl(FileLock lock) throws IOException {
-        RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
+    protected DirEntryList deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override

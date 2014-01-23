@@ -151,7 +151,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected void delete(String path, boolean directory) throws IOException {
+    protected DirEntryList delete(String path, boolean directory) throws IOException {
         StringWriter writer = new StringWriter();
         Future<Integer> task;
         if (directory) {
@@ -169,5 +169,6 @@ public class SftpTransport extends RemoteFileSystemTransport {
             final String errorText = writer.getBuffer().toString();
             throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
         }
+        return null;
     }
 }
