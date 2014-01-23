@@ -390,11 +390,15 @@ import org.openide.util.lookup.Lookups;
                 // There is no this Unit in this layer
                 continue;
             }
-            
-            layer_to_read_files_from = layer;
-            unit_id_layer_to_read_files_from = unitIDInLayer;
+            //here we can be in a situation when we have 2 layers already but 
+            //file tables is not listed in one of them?
             layer.openUnit(unitIDInLayer);
-
+            //read files from the layers where file tables exists
+            if (layer_to_read_files_from == null || !layer.getFileNameTable(unitIDInLayer).isEmpty()) {
+                layer_to_read_files_from = layer;
+                unit_id_layer_to_read_files_from = unitIDInLayer;                
+            }
+           
             Map<Integer, Integer> map = fileSystemsTranslationMap.get(layer.getLayerDescriptor());
             // map: clientFileSystemID => fileSystemIndexInLayer
             Integer requiredFileSystem = map.get(clientFileSystemID);
@@ -424,6 +428,9 @@ import org.openide.util.lookup.Lookups;
                     }
                 } else {
                     convertedTable = new ArrayList<CharSequence>();
+                }
+                if (convertedTable.isEmpty()) {
+                    //should read from another layer
                 }
                 filePathDictionaries.put(clientShortUnitID, new FilePathsDictionary(convertedTable));
             }
@@ -465,13 +472,13 @@ import org.openide.util.lookup.Lookups;
      */
     CharSequence getFileName(int unitID, int fileIdx) {
         // 1
-        Integer unmaskedID = storageMask.clientToLayer(unitID);
+        Integer clientShortUnitID = storageMask.clientToLayer(unitID);
         FilePathsDictionary fsDict;
         synchronized (filePathDictionaries) {
-            fsDict = filePathDictionaries.get(unmaskedID);
+            fsDict = filePathDictionaries.get(clientShortUnitID);
             if (fsDict == null) {
-                openUnit(unmaskedID);
-                fsDict = filePathDictionaries.get(unmaskedID);
+                openUnit(unitID);
+                fsDict = filePathDictionaries.get(clientShortUnitID);
             }            
         }
         return fsDict.getFilePath(fileIdx);

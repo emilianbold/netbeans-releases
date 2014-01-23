@@ -312,8 +312,8 @@ public final class DeploymentHelper {
         FileObject projectDir = config.getProject().getProjectDirectory();
         if (projectDir != null) {
             String browser = (String) projectDir.getAttribute(CustomizerRunWeb.PROP_SHOW_IN_BROWSER);
-            if (browser != null && Boolean.parseBoolean(browser)) {
-                return false;
+            if (browser != null) {
+                return Boolean.parseBoolean(browser);
             }
         }
         return true;

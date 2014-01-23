@@ -126,7 +126,7 @@ public class PhpModuleImpl implements PhpModule {
 
     @Override
     public PhpModuleProperties getProperties() {
-        return getLookup().lookup(PhpModuleProperties.class);
+        return getLookup().lookup(PhpModuleProperties.Factory.class).getProperties();
     }
 
     @Override

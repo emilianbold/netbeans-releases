@@ -214,7 +214,9 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
     private Document createJobXml() throws IOException {
         Document document;
         try {
-            document = XmlUtils.parse(new File(getDefaultJobConfig()));
+            String defaultJobConfig = getDefaultJobConfig();
+            assert defaultJobConfig != null;
+            document = XmlUtils.parse(new File(defaultJobConfig));
         } catch (SAXException ex) {
             throw new IOException(ex);
         }
