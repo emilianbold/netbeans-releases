@@ -314,14 +314,14 @@ public class ImportRemoteProject implements PropertyChangeListener {
         MakeConfiguration extConf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default", aHostUID, toolchain, defaultToolchain); // NOI18N
         int platform = CompilerSetManager.get(executionEnvironment).getPlatform();
         extConf.getDevelopmentHost().setBuildPlatform(platform);
-        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
+        String workingDirRel = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
         workingDirRel = CndPathUtilities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+            buildResult = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
             buildResult = CndPathUtilities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
@@ -356,13 +356,13 @@ public class ImportRemoteProject implements PropertyChangeListener {
         if (makefilePath != null && makefilePath.length() > 0) {
                 // see comment above
                 // makeFileObject = CndFileUtils.toFileObject(CndPathUtilities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
-                makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
+                makefilePath = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
                 makefilePath = CndPathUtilities.normalizeSlashes(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
             configureFileObject = RemoteFileUtil.getFileObject(normPath, fileSystemExecutionEnvironment);
-            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(configurePath), pathMode);
+            configurePath = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(configurePath), pathMode);
             configurePath = CndPathUtilities.normalizeSlashes(configurePath);
             importantItems.add(configurePath);
         }
