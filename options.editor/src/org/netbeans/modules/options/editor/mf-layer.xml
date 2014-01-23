@@ -52,6 +52,10 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="CodeCompletion">
                 <attr name="position" intvalue="0"/>
+                <file name="GeneralCodeCompletionCustomCustomizer.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.editor.completion.GeneralCompletionOptionsPanelController$CustomCustomizerImpl"/>
+                    <attr name="position" intvalue="10"/>
+                </file>
             </folder>
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>

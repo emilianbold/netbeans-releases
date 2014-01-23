@@ -104,6 +104,18 @@ public final class CodeCompletionOptionsSelector {
         pcs.removePropertyChangeListener(l);
     }
 
+    String getSavedValue(String mimeType, String key) {
+        PreferencesCustomizer prefsCustomizer = getCustomizer(mimeType);
+        if (prefsCustomizer != null) {
+            Lookup l = Lookups.forPath(CODE_COMPLETION_CUSTOMIZERS_FOLDER + mimeType);
+            PreferencesCustomizer.CustomCustomizer customizer = l.lookup(PreferencesCustomizer.CustomCustomizer.class);
+            if (customizer != null) {
+                return customizer.getSavedValue(prefsCustomizer, key);
+            }
+        }
+        return null;
+    }
+
     private PreferencesCustomizer getCustomizer(String mimeType) {
         PreferencesCustomizer customizer = allCustomizers.get(mimeType);
         if (customizer == null) {
