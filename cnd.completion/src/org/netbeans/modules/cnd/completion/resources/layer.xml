@@ -252,11 +252,16 @@ made subject to such option by the copyright holder.
         <folder name="Editor">
             <folder name="CodeCompletion">
                 <folder name="text">
+                    <attr name="position" intvalue="20"/>
                     <folder name="x-cnd+sourcefile">
                         <file name="CppSpecific.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.completion.options.CodeCompletionPanel.getCustomizerFactory"/>
                             <attr name="position" intvalue="100"/>
+                        </file>
+                        <file name="CppSpecificCustomCustomizer.instance">
+                            <attr name="instanceCreate" newvalue="org.netbeans.modules.cnd.completion.options.CodeCompletionPanel$CustomCustomizerImpl"/>
+                            <attr name="position" intvalue="110"/>
                         </file>
                     </folder>
                 </folder>
