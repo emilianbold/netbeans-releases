@@ -408,7 +408,7 @@ public final class CndFileUtils {
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
             // append disk drive on windows for files like "/ws/full/path"
-            if (absolutePath.startsWith("\\")) {
+            if (absolutePath.startsWith("\\")) { //NOI18N
                 absolutePath = windowsDrive + absolutePath.substring(1);
             }
         }
