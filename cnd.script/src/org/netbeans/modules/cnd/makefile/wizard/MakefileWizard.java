@@ -1024,7 +1024,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         try {
             DataFolder targetFolder = getTemplateWizard().getTargetFolder();
             FileObject fo = targetFolder.getPrimaryFile();
-            fullFolderName = CndFileUtils.toFile(fo).getPath();
+            fullFolderName = fo.getPath();
         } catch (IOException ioe) {
             // FIXUP
         }
