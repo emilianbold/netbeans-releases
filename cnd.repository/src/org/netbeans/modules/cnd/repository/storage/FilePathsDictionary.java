@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author akrasny
  */
 /* package */ final class FilePathsDictionary {
-    private static final boolean PRINT_STACK = Boolean.getBoolean("cnd.repository.print.stack.wrong.file");
+    private static final boolean PRINT_STACK = Boolean.getBoolean("cnd.repository.print.stack.wrong.file");// NOI18N
 
     private static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
     private final List<CharSequence> paths;
