@@ -45,14 +45,13 @@
 package org.netbeans.modules.php.editor;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 
 /**
  * Test for PHPBracesMatcher
  *
  * @author Marek Slama
  */
-public class PHPBracesMatcherTest extends PHPCodeCompletionTestBase {
+public class PHPBracesMatcherTest extends PHPTestBase {
 
     public PHPBracesMatcherTest(String testName) {
         super(testName);
