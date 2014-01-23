@@ -23,6 +23,9 @@
                           <!--<attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>-->
                           <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.onsave.OnSavePreferencesCustomizer$FactoryImpl"/>
                       </file>
+                      <file name="JavaCustomCustomizer.instance">
+                          <attr name="instanceCreate" newvalue="org.netbeans.modules.java.hints.onsave.OnSavePreferencesCustomizer$CustomCustomizerImpl"/>
+                      </file>
                   </folder>
               </folder>
           </folder>

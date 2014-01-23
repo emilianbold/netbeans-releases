@@ -2,41 +2,106 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Doctrine2</title>
+<title>Options Window: PHP: Annotations</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-21</p>
-<p><a id="org.netbeans.modules.php.doctrine2.Options" name="org.netbeans.modules.php.doctrine2.Options"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref477" name="sthref477"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Doctrine2</h1>
+<p>Beta Draft: 2014-01-23</p>
+<p><a id="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" name="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref466" name="sthref466"></a>
+<h1>Options Window: PHP: Annotations</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>Use this panel to create and manage custom PHP annotations in code completion.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t37">Element</th>
-<th align="left" valign="bottom" id="r1c2-t37">Description</th>
+<th align="left" valign="bottom" id="r1c1-t31">Element</th>
+<th align="left" valign="bottom" id="r1c2-t31">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t37" headers="r1c1-t37">
-<p>Doctrine2 script</p>
+<td align="left" id="r2c1-t31" headers="r1c1-t31">
+<p>Resolve Deprecated Elements</p>
 </td>
-<td align="left" headers="r2c1-t37 r1c2-t37">
-<p>The path to the Doctrine2 run script. Use the Browse and Search buttons to locate Doctrine2 scripts on your local file system.</p>
+<td align="left" headers="r2c1-t31 r1c2-t31">
+<p>Select this option to resolve deprecated elements.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t31" headers="r1c1-t31">
+<p>Custom Annotations</p>
+</td>
+<td align="left" headers="r3c1-t31 r1c2-t31">
+<p>This table lists all custom annotations that you define. The table has two columns: one for the annotation name, and one for the annotation context ('For'). The possible contexts are function, class/interface (type), method, and field.</p>
+<p>Use the Add, Click and Delete buttons to create, modify and remove custom annotations.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note</b>: Doctrine2 is not installed with NetBeans IDE. Click the first Learn More link to open a browser window with Doctrine2's installation instructions.</p>
-<p>You can specify configuration options in the Doctrine2 script field. The contents of this field are run on the command line when you launch Doctrine2 from the IDE.</p>
+<!-- infolevel="all" infotype="General" --><a id="sthref467" name="sthref467"></a>
+<h2>Custom Annotation Dialog</h2>
+<p>Use the Custom Annotation dialog to add or edit a custom annotation.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t32">Element</th>
+<th align="left" valign="bottom" id="r1c2-t32">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t32" headers="r1c1-t32">
+<p>Name</p>
+</td>
+<td align="left" headers="r2c1-t32 r1c2-t32">
+<p>Name of the custom annotation.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t32" headers="r1c1-t32">
+<p>For</p>
+</td>
+<td align="left" headers="r3c1-t32 r1c2-t32">
+<p>The context associated with the annotation. Choose one from the following:</p>
+<ul>
+<li>function</li>
+<li>class/interface (type)</li>
+<li>method</li>
+<li>field</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t32" headers="r1c1-t32">
+<p>Template</p>
+</td>
+<td align="left" headers="r4c1-t32 r1c2-t32">
+<p>The template for the annotation. By default, the field contains a sample annotation template is provided, which you can edit. The template for the annotation uses the same syntax as code templates.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t32" headers="r1c1-t32">
+<p>Documentation</p>
+</td>
+<td align="left" headers="r5c1-t32 r1c2-t32">
+<p>The HTML documentation for the annotation. By default, the Source tab contains sample annotation documentation, which you can edit. The Preview tab renders the HTML that is in the Source tab, showing you how the documentation appears when a user invokes code completion and selects this annotation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

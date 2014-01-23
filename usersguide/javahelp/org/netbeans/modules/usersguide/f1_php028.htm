@@ -2,42 +2,51 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Zend</title>
+<title>Options Window: PHP: Frameworks &amp; Tools: Symfony</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-21</p>
-<p><a id="org.netbeans.modules.php.zend.ui.options.ZendOptions" name="org.netbeans.modules.php.zend.ui.options.ZendOptions"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref472" name="sthref472"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Zend</h1>
+<p>Beta Draft: 2014-01-23</p>
+<p><a id="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" name="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref462" name="sthref462"></a>
+<h1>Options Window: PHP: Frameworks &amp; Tools: Symfony</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this panel you can set global options for projects that use the Zend framework.</p>
+<p>Symfony projects contain a Symfony run script. The run script you specify in this page is only used for new projects or in case the project's run script is not valid.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t32">Element</th>
-<th align="left" valign="bottom" id="r1c2-t32">Description</th>
+<th align="left" valign="bottom" id="r1c1-t27">Element</th>
+<th align="left" valign="bottom" id="r1c2-t27">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t32" headers="r1c1-t32">
-<p>Zend Script</p>
+<td align="left" id="r2c1-t27" headers="r1c1-t27">
+<p>Symfony Script</p>
 </td>
-<td align="left" headers="r2c1-t32 r1c2-t32">
-<p>Specify the path to the Zend Framework run script and default parameters. Use the Browse and Search buttons to locate Zend run scripts on your local file system.</p>
+<td align="left" headers="r2c1-t27 r1c2-t27">
+<p>The path to the Symfony run script and default parameters. Use the Browse and Search buttons to locate Symfony run scripts on your local file system.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t32" headers="r1c1-t32">
-<p>Register Provider</p>
+<td align="left" id="r3c1-t27" headers="r1c1-t27">
+<p>Ignore cache Directory by Default</p>
 </td>
-<td align="left" headers="r3c1-t32 r1c2-t32">
-<p>If you are using Zend Framework 1.10 or newer, register the provider. Look at the output window after you click Register Provider. The IDE displays the result of registering the provider in the Output windows. If registration failed, you may have a problem in your zf.php or Zend Framework run script.</p>
+<td align="left" headers="r3c1-t27 r1c2-t27">
+<p>When selected the IDE does not include the <code>/cache</code> directory when scanning for Symfony functions. This option is selected by default. You might want to deselect his option if you cache actions.</p>
+<p>This box sets globally whether cache directories are ignored. You can set whether the cache directory is ignored for an individual project in the project's Properties, under <b>Frameworks &gt; Symfony</b>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t27" headers="r1c1-t27">
+<p>Default Parameters</p>
+</td>
+<td align="left" headers="r4c1-t27 r1c2-t27">
+<p>Specify default command line options for running Symfony projects or applications.</p>
 </td>
 </tr>
 </tbody>

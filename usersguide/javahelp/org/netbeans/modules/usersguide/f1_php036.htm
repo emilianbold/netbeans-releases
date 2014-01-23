@@ -2,58 +2,51 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Composer</title>
+<title>Options Window: PHP: Frameworks &amp; Tools: Twig</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-21</p>
-<p><a id="org.netbeans.modules.php.composer.ui.options.Options" name="org.netbeans.modules.php.composer.ui.options.Options"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref481" name="sthref481"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Composer</h1>
+<p>Beta Draft: 2014-01-23</p>
+<p><a id="org.netbeans.modules.php.twig.editor.Options" name="org.netbeans.modules.php.twig.editor.Options"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref471" name="sthref471"></a>
+<h1>Options Window: PHP: Frameworks &amp; Tools: Twig</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this panel you can set global options for the Composer dependency management library.</p>
+<p>In this panel you set global options for projects that contain Twig templates.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t41">Element</th>
-<th align="left" valign="bottom" id="r1c2-t41">Description</th>
+<th align="left" valign="bottom" id="r1c1-t36">Element</th>
+<th align="left" valign="bottom" id="r1c2-t36">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t41" headers="r1c1-t41">
-<p>Composer</p>
+<td align="left" id="r2c1-t36" headers="r1c1-t36">
+<p>Toggle comment</p>
 </td>
-<td align="left" headers="r2c1-t41 r1c2-t41">
-<p>Specify the path to the Composer script. Use the Browse or Search buttons to locate the script on your local file system.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t41" headers="r1c1-t41">
-<p>Vendor</p>
-</td>
-<td align="left" headers="r3c1-t41 r1c2-t41">
-<p>Specify the name of the vendor directory. The default is <code>vendor</code>.</p>
+<td align="left" headers="r2c1-t36 r1c2-t36">
+<p>Specify how code is designated as a comment in when you choose Toggle Comment in the Source menu or use a keyboard shortcut.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t41" headers="r1c1-t41">
-<p>Author name</p>
+<td align="left" id="r3c1-t36" headers="r1c1-t36">
+<p>as Twig comment everywhere</p>
 </td>
-<td align="left" headers="r4c1-t41 r1c2-t41">
-<p>Specify the name that you want to appear as the author.</p>
+<td align="left" headers="r3c1-t36 r1c2-t36">
+<p>When selected, the selected line or lines of code are designated as a comment using Twig syntax (<code>{# ... #}</code>).</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t41" headers="r1c1-t41">
-<p>Author e-mail</p>
+<td align="left" id="r4c1-t36" headers="r1c1-t36">
+<p>language sensitive</p>
 </td>
-<td align="left" headers="r5c1-t41 r1c2-t41">
-<p>Specify your email address in the text field.</p>
+<td align="left" headers="r4c1-t36 r1c2-t36">
+<p>When selected, the editor determines the language of the code based on the position of your insert cursor and all elements in that language in the selected line or lines of code are designated as a comment using the syntax of that language.</p>
+<p>For example, if a line of code contains HTML and Twig elements and your insert cursor is in an HTML element, when you toggle comments all the HTML elements in the selected line or lines of code are designated as comments using HTML syntax (<code>&lt;!-- ... --&gt;</code>) and the Twig elements are not affected.</p>
 </td>
 </tr>
 </tbody>
