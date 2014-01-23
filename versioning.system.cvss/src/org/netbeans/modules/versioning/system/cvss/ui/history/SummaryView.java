@@ -62,7 +62,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -499,11 +498,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            try {
-                ViewRevisionAction.view(drev.getRevision().getLogInfoHeader().getFile(), drev.getRevision().getNumber(), null);
-            } catch (Exception e) {
-                Logger.getLogger(SummaryView.class.getName()).log(Level.INFO, e.getMessage(), e);
-            }
+            ViewRevisionAction.view(drev.getRevision().getLogInfoHeader().getFile(), drev.getRevision().getNumber(), null);
         }
     }    
     private void diffPrevious(int idx) {
