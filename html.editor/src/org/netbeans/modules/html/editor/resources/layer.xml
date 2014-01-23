@@ -447,6 +447,10 @@ made subject to such option by the copyright holder.
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.html.editor.HtmlCompletionOptionsPanel.getCustomizerFactory"/>
                             <attr name="position" intvalue="150"/>
                         </file>
+                        <file name="HtmlSpecificCustomCustomizer.instance">
+                            <attr name="instanceCreate" newvalue="org.netbeans.modules.html.editor.HtmlCompletionOptionsPanel$CustomCustomizerImpl"/>
+                            <attr name="position" intvalue="151"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
