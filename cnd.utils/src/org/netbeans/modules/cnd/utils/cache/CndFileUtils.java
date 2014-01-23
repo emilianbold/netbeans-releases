@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -327,7 +328,7 @@ public final class CndFileUtils {
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
             if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
+                path = path.replace('\\', '/');
             }
         }
         String normalized;
@@ -351,7 +352,7 @@ public final class CndFileUtils {
     /**
      * Tests whether the file exists and not directory. One of file or filePath
      * must be not null
-     * @param file
+     * @param fs file system
      * @param filePath
      * @return
      */
@@ -378,7 +379,24 @@ public final class CndFileUtils {
     }
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
-   private static final boolean isWindows = Utilities.isWindows();
+    private static final boolean isWindows;
+    private static final String  windowsDrive;
+    private static final Pattern windowsNoDiskDrivePattern;
+    private static final String  windowsPathSeparator = "\\"; // NOI18N
+    static {
+        isWindows = Utilities.isWindows();
+        windowsNoDiskDrivePattern = Pattern.compile("$(\\\\)*"); //NOI18N
+        if (isWindows) {
+            String disk = new File(windowsPathSeparator).getAbsolutePath().toLowerCase(); 
+            if (!disk.endsWith(windowsPathSeparator)) { 
+                assert disk.endsWith(":") : "unexpected disk name " + disk;
+                disk += windowsPathSeparator;
+            }
+            windowsDrive = disk;
+        } else {
+            windowsDrive = "";// NOI18N
+        }
+    }
    
    // expensive check
    private static final boolean ASSERT_INDEXED_NOTFOUND = Boolean.getBoolean("cnd.modelimpl.assert.notfound"); // NOI18N
@@ -391,6 +409,8 @@ public final class CndFileUtils {
         }
         if (isWindows && isLocalFileSystem(fs)) {
             absolutePath = absolutePath.replace('/', '\\');
+            // append disk drive on windows for files like "/ws/full/path"
+            absolutePath = windowsNoDiskDrivePattern.matcher(absolutePath).replaceFirst(windowsDrive);
         }
         absolutePath = changeStringCaseIfNeeded(fs, absolutePath);
         Flags exists;
@@ -514,7 +534,7 @@ public final class CndFileUtils {
             if (CndFileUtils.isSystemCaseSensitive()) {
                 return path;
             } else {
-                return path.toString().toLowerCase();
+                return path.toLowerCase();
             }
         } else {
             return path; // remote is always case sensitive
