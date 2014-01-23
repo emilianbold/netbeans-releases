@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * A list of all client FilePaths per Unit.
@@ -55,8 +56,9 @@ import java.util.Map;
  * @author akrasny
  */
 /* package */ final class FilePathsDictionary {
+    private static final boolean PRINT_STACK = Boolean.getBoolean("cnd.repository.print.stack.wrong.file");
 
-    private static final String WORNG_PATH = "<WRONG FILE>"; // NOI18N
+    private static final String WRONG_PATH = "<WRONG FILE>"; // NOI18N
     private final List<CharSequence> paths;
     private final Map<CharSequence, Integer> map = new HashMap<CharSequence, Integer>();
     private final Object lock = new Object();
@@ -76,12 +78,15 @@ import java.util.Map;
     CharSequence getFilePath(final int fileIdx) {
         synchronized (lock) {
             if (fileIdx >= paths.size()) {
-                return WORNG_PATH;
+                if (PRINT_STACK){   
+                    CndUtils.threadsDump();
+                }
+                return WRONG_PATH;
             } else {
                 return paths.get(fileIdx);
             }
         }
-    }
+    }    
 
     int getFileID(final CharSequence filePath) {
         synchronized (lock) {
