@@ -2,68 +2,43 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Smarty</title>
+<title>Options Window: PHP: Frameworks &amp; Tools: Symfony2</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-21</p>
-<p><a id="org.netbeans.modules.php.smarty.ui.options.SmartyOptions" name="org.netbeans.modules.php.smarty.ui.options.SmartyOptions"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref473" name="sthref473"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Smarty</h1>
+<p>Beta Draft: 2014-01-23</p>
+<p><a id="org.netbeans.modules.php.symfony2.options.Symfony2Options" name="org.netbeans.modules.php.symfony2.options.Symfony2Options"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref463" name="sthref463"></a>
+<h1>Options Window: PHP: Frameworks &amp; Tools: Symfony2</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this panel you set global options for projects that contain Smarty templates (.tpl files).</p>
+<p>In this panel you can set the following options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t33">Element</th>
-<th align="left" valign="bottom" id="r1c2-t33">Description</th>
+<th align="left" valign="bottom" id="r1c1-t28">Element</th>
+<th align="left" valign="bottom" id="r1c2-t28">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t33" headers="r1c1-t33">
-<p>Smarty version</p>
+<td align="left" id="r2c1-t28" headers="r1c1-t28">
+<p>Symfony</p>
 </td>
-<td align="left" headers="r2c1-t33 r1c2-t33">
-<p>Select Smarty2 or Smarty3 in the drop-down list. This field affects the parsing of Smarty template (<code>.tpl</code>) files. If you select Smarty3, curly brackets are recognized as JavaScript code if they are surrounded by whitespaces. If you select Smarty2, all curly brackets are recognized as Smarty delimiters, unless you set custom delimiters.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t33" headers="r1c1-t33">
-<p>Open delimiter/ Close delimiter</p>
-</td>
-<td align="left" headers="r3c1-t33 r1c2-t33">
-<p>Set delimiters globally for Smarty templates.</p>
-<p>You can override global delimiter settings for individual projects. Open the project's Properties and navigate to the <b>Frameworks &gt; Smarty</b> category. The project must include a .tpl file.</p>
+<td align="left" headers="r2c1-t28 r1c2-t28">
+<p>The path to the Symfony Standard Edition <code>.zip</code> archive. Use the Browse button to locate the archive on your local file system. If you do not have a copy of Symfony Standard Edition, click the download link. in the panel</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t33" headers="r1c1-t33">
-<p>Toggle comment</p>
+<td align="left" id="r3c1-t28" headers="r1c1-t28">
+<p>Ignore cache directory by default</p>
 </td>
-<td align="left" headers="r4c1-t33 r1c2-t33">
-<p>Specify how code is designated as a comment in when you choose Toggle Comment in the Source menu or use a keyboard shortcut.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t33" headers="r1c1-t33">
-<p>as Smarty comment everywhere</p>
-</td>
-<td align="left" headers="r5c1-t33 r1c2-t33">
-<p>When selected, the selected line or lines of code are designated as a comment using Smarty syntax.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t33" headers="r1c1-t33">
-<p>language sensitive</p>
-</td>
-<td align="left" headers="r6c1-t33 r1c2-t33">
-<p>When selected, the editor determines the language of the code based on the position of your insert cursor and all elements in that language in the selected line or lines of code are designated as a comment using the syntax of that language.</p>
-<p>For example, if a line of code contains HTML and Smarty elements and your insert cursor is in an HTML element, when you toggle comments all the HTML elements in the selected line or lines of code are designated as comments using HTML syntax (<code>&lt;!-- ... --&gt;</code>) and the Smarty elements are not affected.</p>
+<td align="left" headers="r3c1-t28 r1c2-t28">
+<p>When selected the IDE does not include the <code>/cache</code> directory when scanning for Symfony functions. This option is selected by default. You might want to deselect his option if you cache actions.</p>
+<p>This box globally sets whether cache directories are ignored. You can set whether the cache directory is ignored for an individual project in that project's Properties, under <b>Frameworks &gt; Symfony</b>.</p>
 </td>
 </tr>
 </tbody>
