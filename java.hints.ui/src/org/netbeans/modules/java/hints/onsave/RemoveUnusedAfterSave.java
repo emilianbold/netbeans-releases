@@ -152,6 +152,7 @@ public class RemoveUnusedAfterSave implements OnSaveTask {
     }
 
     private static final Map<String, Boolean> id2DefaultState = new HashMap<String, Boolean>();
+    private static final Map<String, Boolean> id2SavedState = new HashMap<String, Boolean>();
     
     static {
         id2DefaultState.put("Imports_UNUSED", false);
@@ -159,7 +160,17 @@ public class RemoveUnusedAfterSave implements OnSaveTask {
     }
     
     static boolean getValue(Preferences settings, String id) {
-        return settings.getBoolean(KEY_SETTINGS_PREFIX + id, id2DefaultState.get(id));
+        String saved = settings.get(KEY_SETTINGS_PREFIX + id, null);
+        if(saved == null) {
+            id2SavedState.put(KEY_SETTINGS_PREFIX + id, id2DefaultState.get(id));
+            return id2DefaultState.get(id);
+        }
+        id2SavedState.put(KEY_SETTINGS_PREFIX + id, Boolean.parseBoolean(saved));
+        return Boolean.parseBoolean(saved);
+    }
+    
+    static boolean getSavedValue(String id) {
+        return id2SavedState.get(id);
     }
     
 }

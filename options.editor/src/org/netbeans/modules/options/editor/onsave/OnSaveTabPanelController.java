@@ -212,17 +212,18 @@ public final class OnSaveTabPanelController extends OptionsPanelController {
             return false;
         }
         for (String key : hashSet) {
+            String current = prefs.get(key, null);
             String saved = savedPrefs.get(key, null);
-            if(key.equals(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE) || key.equals(SimpleValueNames.ON_SAVE_REFORMAT)) {
-                if(saved == null) {
+            if (saved == null) {
+                if (key.equals(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE) || key.equals(SimpleValueNames.ON_SAVE_REFORMAT)) {
                     saved = "never"; // NOI18N
-                }
-            } else if(key.equals(SimpleValueNames.ON_SAVE_USE_GLOBAL_SETTINGS)) {
-                if(saved == null) {
+                } else if (key.equals(SimpleValueNames.ON_SAVE_USE_GLOBAL_SETTINGS)) {
                     saved = "true"; // NOI18N
+                } else {
+                    saved = selector.getSavedValue(mimeType, key);
                 }
             }
-            isChanged |= prefs.get(key, null) == null ? saved != null : !prefs.get(key, null).equals(saved);
+            isChanged |= current == null ? saved != null : !current.equals(saved);
             if (isChanged) { // no need to iterate further
                 return true;
             }
