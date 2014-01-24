@@ -131,7 +131,7 @@ class SearchExecutor extends SvnProgressSupport {
         for (Entry<File, SVNUrl> e : m.entrySet()) {
             SVNUrl url = e.getValue();
             if(url != null) {
-                String rootPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);
+                String rootPath = SvnUtils.decodeToString(SVNUrlUtils.getRelativePath(rootUrl, url, true));
                 if (rootPath == null) {
                     LOG.log(Level.FINE, "populatePathToRoot: rootUrl: {0}, url: {1}, probably svn:externals", new String[] {rootUrl.toString(), url.toString()});
                     continue;

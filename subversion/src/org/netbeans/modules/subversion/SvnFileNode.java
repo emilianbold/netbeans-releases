@@ -140,7 +140,8 @@ public class SvnFileNode {
         if (relativePath == null) {
             try {
                 assert !java.awt.EventQueue.isDispatchThread();
-                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(getFile()).toString() : SvnUtils.getRelativePath(getFile());
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                        ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(getFile())) : SvnUtils.getRelativePath(getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
             }

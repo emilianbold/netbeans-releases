@@ -796,19 +796,84 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         });
     }
 
+    public void fill() {
+        String displayName = getQueryProgressName(); 
+        final String progressTitle = NbBundle.getMessage(ODCSQueryController.class, "MSG_InitializingQuery", new Object[] {displayName}); // NOI18N
+        final String progressText = NbBundle.getMessage(ODCSQueryController.class, "MSG_Initializing");  // NOI18N
+        new QueryTask() {
+            @Override
+            void notifyStart() {
+                if (delegatingIssueContainer != null) {
+                    delegatingIssueContainer.restoreStarted();
+                }
+            }
+            @Override
+            void notifyFinish() {
+                if (delegatingIssueContainer != null) {
+                    delegatingIssueContainer.restoreFinished();
+                }
+            }
+            @Override
+            void invokeQueryOperation() {
+                query.fillContainer();
+            }
+            @Override
+            String getProgressTitle() {
+                return progressTitle;
+            }
+            @Override
+            String getProgressText() {
+                return progressText;
+            }
+        }.post().waitFinished();
+    }
+
     private void refresh(final boolean auto, boolean synchronously) {
         Task t;
         synchronized(REFRESH_LOCK) {
             if(refreshTask == null) {
-                refreshTask = new QueryTask();
-            } 
-            t = refreshTask.post(auto);
+                String displayName = getQueryProgressName();
+                final String progressTitle =NbBundle.getMessage(ODCSQueryController.class, "MSG_SearchingQuery", new Object[] {displayName}); // NOI18N
+                final String progressText = NbBundle.getMessage(ODCSQueryController.class, "MSG_Searching");  // NOI18N
+               
+                refreshTask = new QueryTask() {
+                    @Override
+                    void notifyStart() {
+                        if (delegatingIssueContainer != null) {
+                            delegatingIssueContainer.refreshingStarted();
+                        } 
+                    }
+                    @Override
+                    void notifyFinish() {
+                        if (delegatingIssueContainer != null) {
+                            delegatingIssueContainer.refreshingFinished();
+                        }
+                    }
+                    @Override
+                    void invokeQueryOperation() {
+                         query.refresh(auto);
+                    }
+                    @Override
+                    String getProgressTitle() {
+                        return progressTitle;
+                    }
+                    @Override
+                    String getProgressText() {
+                        return progressText;
+                    }
+                };
+            }
+            t = refreshTask.post();
         }
         if(synchronously) {
             t.waitFinished();
         }
     }
 
+    private String getQueryProgressName() {
+        return query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" : repository.getDisplayName();  // NOI18N
+    }
+    
     @NbBundle.Messages({"MSG_WrongFromDate=Wrong date format in Start field.",
                         "MSG_WrongToDate=Wrong date format in End field."})
     private boolean validate() {
@@ -1036,11 +1101,10 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         delegatingIssueContainer = c;
     }
 
-    private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
+    private abstract class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
         private int counter;
-        private boolean autoRefresh;
         private long progressMaxWorkunits;
         private int progressWorkunits;
 
@@ -1055,33 +1119,21 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
 ////            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
 ////                ODCSConfig.getInstance().setLastChangeFrom(lastChageFrom);
 ////            }
-            if(delegatingIssueContainer != null) {
-                delegatingIssueContainer.refreshingStarted();
-            }
+            notifyStart();
             setQueryRunning(true);
-            String displayName = query.getDisplayName() != null ? query.getDisplayName() + " (" + repository.getDisplayName() + ")" // NOI18N
-                    : repository.getDisplayName();
-            handle = ProgressHandleFactory.createHandle(
-                    NbBundle.getMessage(
-                        ODCSQueryController.class,
-                        "MSG_SearchingQuery",                                       // NOI18N
-                        new Object[] {
-                            displayName}),
-                    this);
+            handle = ProgressHandleFactory.createHandle(getProgressTitle(), this);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     enableFields(false);
-                    panel.showSearchingProgress(true, NbBundle.getMessage(ODCSQueryController.class, "MSG_Searching")); // NOI18N
+                    panel.showSearchingProgress(true, getProgressText()); 
                 }
             });
             handle.start();
         } 
 
         private void finnishQuery() {
-            if(delegatingIssueContainer != null) {
-                delegatingIssueContainer.refreshingFinished();
-            }
+            notifyFinish();
             setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
             synchronized(REFRESH_LOCK) {
                 task = null;
@@ -1146,19 +1198,28 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     // something went wrong during populate - skip execute
                     return;
                 }                
-                query.refresh(autoRefresh);
+                invokeQueryOperation();
             } finally {
                 finnishQuery();
             }
         }
 
-        Task post(boolean autoRefresh) {
+        abstract void notifyStart();
+        abstract void notifyFinish();
+        abstract void invokeQueryOperation();
+        abstract String getProgressTitle();
+        abstract String getProgressText();
+        
+        Task post() {
+            return post(0);
+        }
+        
+        Task post(int s) {
             if(task != null && !task.isFinished()) {
                 return task;
             }
             task = rp.create(this);
-            this.autoRefresh = autoRefresh;
-            task.schedule(0);
+            task.schedule(s);
             return task;
         }
 

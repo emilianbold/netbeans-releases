@@ -44,8 +44,6 @@ package org.netbeans.modules.odcs.tasks.query;
 import com.tasktop.c2c.server.common.service.domain.SortInfo;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,8 +60,6 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.team.spi.TeamProject;
-import org.netbeans.modules.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -301,6 +297,44 @@ public abstract class ODCSQuery {
                     }
                     if(ODCS.LOG.isLoggable(Level.FINE)) {
                         ODCS.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
+                    }
+                }
+            }
+        });
+    }
+
+    void fillContainer() {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing disk. Do not call in awt"; // NOI18N
+          
+        executeQuery(new Runnable() {
+            @Override
+            public void run() {
+                ODCS.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
+                
+                MylynSupport supp = MylynSupport.getInstance();
+                try {
+                    IRepositoryQuery runningQuery = getRepositoryQuery();
+                    runningQuery = supp.getRepositoryQuery(getRepository().getTaskRepository(), runningQuery.getSummary());
+                    if (runningQuery == null) {
+                        return;
+                    }
+                    firstRun = false;
+                    Collection<NbTask> tasks = MylynSupport.getInstance().getTasks(runningQuery);
+                    if(tasks != null) {
+                        long t = System.currentTimeMillis();
+                        for (NbTask task : tasks) {
+                            ODCSIssue issue = repository.getIssueForTask(task);
+                            synchronized(ISSUES_LOCK) {
+                                issues.add(task.getTaskId());
+                            }
+                            fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
+                        }
+                    }
+                } catch (CoreException ex) {
+                    ODCS.LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if(ODCS.LOG.isLoggable(Level.FINE)) {
+                        ODCS.LOG.log(Level.FINE, "stored issue fill finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
                     }
                 }
             }

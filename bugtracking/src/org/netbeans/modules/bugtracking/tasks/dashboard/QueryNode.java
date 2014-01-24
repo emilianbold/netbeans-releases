@@ -59,9 +59,12 @@ import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.team.commons.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,6 +77,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private TreeLabel lblName;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
+    private TreeLabel lblStalled;    
     private final QueryListener queryListener;
     private final Object LOCK = new Object();
     private TreeLabel lblSeparator;
@@ -81,30 +85,15 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private static final ImageIcon QUERY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true);
 
     public QueryNode(QueryImpl query, TreeListNode parent) {
-        super(!query.wasRefreshed(), true, parent, query.getDisplayName(), QUERY_ICON);
+        super(!query.wasRefreshed() && DashboardUtils.isQueryAutoRefresh(query), true, parent, query.getDisplayName(), QUERY_ICON);
         this.query = query;
         queryListener = new QueryListener();
     }
 
     @Override
     void refreshTaskContainer() {
-        // we want to make sure, that this method blocks until finnish was notified (see queryListener).
-        // so if possible, acquire a lock, so that the .acquire after query.refresh()
-        // blocks until the finnish event .releases
-        s.tryAcquire();
-        
         query.refresh();
-        
-        try {
-            // just block until query finished is notified and
-            // we retrieve the issues then
-            s.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(QueryNode.class.toString()).log(Level.FINE, "Query refresh interrupted: " + ex.getMessage()); //NOI18N
-        } finally {
-            s.release();
-        }        
-    }
+    }        
 
     @Override
     protected void attach() {
@@ -150,9 +139,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             } else {
                 lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
             }
+            lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
         }
     }
 
+    @NbBundle.Messages({
+    "CTL_AutoRefreshOff=auto refresh off",
+    })
     @Override
     protected JComponent createComponent(List<IssueImpl> data) {
         if (isError()) {
@@ -193,16 +186,28 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnChanged);
 
+            boolean isStalled = !DashboardUtils.isQueryAutoRefresh(query);
 
+            lblStalled = new TreeLabel(Bundle.CTL_AutoRefreshOff()); 
+            lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
+            
+            lblStalled.setVisible(isStalled);
+            panel.add(lblStalled, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
+            labels.add(lblStalled);
+            
             lbl = new TreeLabel(")"); //NOI18N
             labels.add(lbl);
-            panel.add(lbl, new GridBagConstraints(6, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(lbl, new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-            panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(new JLabel(), new GridBagConstraints(9, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
         return panel;
     }
 
+    public void setStalled(boolean isStalled) {
+        lblStalled.setVisible(isStalled);
+    }
+    
     @Override
     Icon getIcon() {
         return QUERY_ICON;
@@ -277,25 +282,34 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         return DashboardSettings.getInstance().isTasksLimitQuery();
     }
 
-    private final Semaphore s = new Semaphore(1);
     private class QueryListener implements PropertyChangeListener {
 
+        private boolean loadingStarted = false;
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_STARTED)) {
-                if(!isRefresh() && s.tryAcquire()) {
-                    // not yet refreshing
-                    // and not blocked => query not running - invoke via refresh content
-                    refreshContent();
-                }
-            } else if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_FINISHED)) {
-                s.release();
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESH_STARTED) ||
+                evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_RESTORE_STARTED)) 
+            {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        setLoadingVisible(true);
+                        loadingStarted = true;
+                    }
+                });
+            } else if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_REFRESH_FINISHED) || 
+                       evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_RESTORE_FINISHED)) 
+            {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(loadingStarted) {
+                            setLoadingVisible(false);
+                            loadingStarted = false;
+                        }
                         updateContent();
                     }
-                });                
+                });
             }
         }
     }

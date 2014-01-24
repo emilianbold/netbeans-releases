@@ -182,7 +182,7 @@ public final class VersioningInfoAction extends ContextAction {
                 try {
                     SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
                     if (url != null) {
-                        repositoryRootUrl = url.toString();
+                        repositoryRootUrl = SvnUtils.decodeToString(url);
                     }
                 } catch (SVNClientException ex) {
                     //
