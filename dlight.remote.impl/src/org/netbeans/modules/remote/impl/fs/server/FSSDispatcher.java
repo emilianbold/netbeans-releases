@@ -463,8 +463,9 @@ import org.openide.util.RequestProcessor;
             npb.call().waitFor();
             Future<CommonTasksSupport.UploadStatus> copyTask;
             copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
-            CommonTasksSupport.UploadStatus uploadStatus = copyTask.get(); // is it OK not to check upload exit code?
+            CommonTasksSupport.UploadStatus uploadStatus = copyTask.get();
             if (!uploadStatus.isOK()) {
+                setInvalid(true);
                 throw new IOException(uploadStatus.getError());
             }
         } else {
