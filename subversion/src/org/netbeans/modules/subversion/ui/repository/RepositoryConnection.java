@@ -237,7 +237,7 @@ public class RepositoryConnection {
         SVNUrl normalizedUrl = removeEmptyPathSegments(new SVNUrl(urlString));
         if ("file".equals(normalizedUrl.getProtocol()) && normalizedUrl.getHost() != null //NOI18N
                 && normalizedUrl.getPathSegments().length == 0) {
-            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", normalizedUrl.toString())); //NOI18N
+            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", SvnUtils.decodeToString(normalizedUrl))); //NOI18N
         }
         svnUrl = normalizedUrl;
     }

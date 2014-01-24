@@ -677,7 +677,7 @@ class FilesystemHandler extends VCSInterceptor {
                 Subversion.LOG.log(Level.FINE, "No repository url found for managed file : [" + file + "]", ex1);
             }
         }
-        return url != null ? url.toString() : null;
+        return url != null ? SvnUtils.decodeToString(url) : null;
     }
 
     /**

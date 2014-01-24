@@ -174,7 +174,8 @@ class UpdateResultNode extends AbstractNode {
     private String getLocation () {
         if (relativePath == null) {
             try {
-                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(info.getFile()).toString() : SvnUtils.getRelativePath(info.getFile());
+                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                        ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(info.getFile())) : SvnUtils.getRelativePath(info.getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, false, false);
                 relativePath = "";                                      //NOI18N

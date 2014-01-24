@@ -53,6 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -102,7 +103,7 @@ public class OutputLogger implements ISVNNotifyListener {
     private String lastCompletedMessage;
     
     private OutputLogger(SVNUrl repositoryRoot) {
-        repositoryRootString = repositoryRoot.toString();
+        repositoryRootString = SvnUtils.decodeToString(repositoryRoot);
     }
 
     private OutputLogger() {
