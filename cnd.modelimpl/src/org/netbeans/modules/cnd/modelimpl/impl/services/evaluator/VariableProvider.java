@@ -362,11 +362,11 @@ public class VariableProvider {
         return type;
     }
 
-    private Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmSpecializationParameter> mapping2 = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        mapping2.putAll(inst.getMapping());
+    private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
+        MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping2 = new MapHierarchy<>(inst.getMapping());
         if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-            mapping2.putAll(getMapping((CsmInstantiation) inst.getTemplateDeclaration()));
+            inst = (CsmInstantiation) inst.getTemplateDeclaration();
+            mapping2.push(inst.getMapping());
         }
         return mapping2;
     }
