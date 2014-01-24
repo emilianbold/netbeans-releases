@@ -48,9 +48,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -644,8 +646,11 @@ import org.openide.util.RequestProcessor;
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
-            writer = new PrintWriter(process.getOutputStream());
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8")); //NOI18N
+            Charset charset = Charset.isSupported("UTF-8") // NOI18N
+                    ? Charset.forName("UTF-8") // NOI18N
+                    : Charset.defaultCharset();
+            writer = new PrintWriter(new OutputStreamWriter(process.getOutputStream(), charset));
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
             if (RemoteFileSystemUtils.isUnitTestMode()) {
                 StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
                 for (String p : args) {
