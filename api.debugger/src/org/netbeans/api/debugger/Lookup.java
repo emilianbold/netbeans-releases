@@ -356,7 +356,7 @@ abstract class Lookup implements ContextProvider {
     static class MetaInf extends Lookup {
         
         private static final String HIDDEN = "-hidden"; // NOI18N
-        private static final RequestProcessor RP = new RequestProcessor("Debugger Services Refresh", 1);
+        private static final RequestProcessor RP = new RequestProcessor("Debugger Services Refresh", 1, false, false);
         
         private String rootFolder;
         private final Map<String,List<String>> registrationCache = new HashMap<String,List<String>>();
@@ -374,6 +374,7 @@ abstract class Lookup implements ContextProvider {
         private final Set<MetaInfLookupList> lookupLists = new WeakSet<MetaInfLookupList>();
         private RequestProcessor.Task refreshListEnabled;
         private RequestProcessor.Task refreshListDisabled;
+        private final RequestProcessor.Task listenOnDisabledModulesTask;
         private final Map<String, org.openide.util.Lookup> pathLookups = new HashMap<String, org.openide.util.Lookup>();
 
         
@@ -389,6 +390,13 @@ abstract class Lookup implements ContextProvider {
                     WeakListeners.create(org.openide.util.LookupListener.class,
                                          modulesChangeListener,
                                          moduleLookupResult));
+            listenOnDisabledModulesTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    // This may take a while...
+                    listenOnDisabledModules();
+                }
+            });
         }
         
         void setContext (Lookup context) {
@@ -716,13 +724,8 @@ abstract class Lookup implements ContextProvider {
                 assert service != null;
                 this.service = service;
                 fillInstances(l, lr, s);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        // This may take a while...
-                        listenOnDisabledModules();
-                    }
-                });
+                // Schedule lazily as this may take a while...
+                listenOnDisabledModulesTask.schedule(100);
             }
             
             private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
