@@ -223,11 +223,10 @@ public final class MakeSources implements Sources, MakeProjectListener {
         }
         ExecutionEnvironment fsEnv = project.getFileSystemHost();                
         FileObjectBasedSources sources = new FileObjectBasedSources();
-        String baseDir = project.getProjectDirectory().getPath();
         Set<FileObject> added = new HashSet<FileObject>();
-        sourceRootList.add(baseDir); // add remote project itself to the tail
+        sourceRootList.add(project.getProjectDirectory().getPath()); // add remote project itself to the tail
         for (String name : sourceRootList) {
-            String path = CndPathUtilities.toAbsolutePath(baseDir, name);
+            String path = CndPathUtilities.toAbsolutePath(project.getProjectDirectory(), name);
             path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
             String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + path; //NOI18N
             FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);

@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -1452,23 +1451,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
         }
         cache.delete();
-    }
-
-    private static void setStorageTimestamp(File cache, final long timestamp, boolean recursive) {
-        cache.setLastModified(timestamp);
-        if (recursive && cache.exists()) {
-            // no need to gather all files into array - process just in filter
-            cache.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                    if (pathname.isDirectory()) {
-                        File childCache = new File(pathname, RemoteFileSystem.CACHE_FILE_NAME);
-                        setStorageTimestamp(childCache, timestamp, true);
-                    }
-                    return false;
-                }
-            });
-        }
     }
 
     @Override
