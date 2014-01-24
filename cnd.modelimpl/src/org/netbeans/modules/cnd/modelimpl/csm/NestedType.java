@@ -117,6 +117,7 @@ public final class NestedType extends TypeImpl {
             // skip
         } else {
             _setClassifier(null);
+            boolean validParentClassifierExamined = false; // flag that parent classifier was resolved and examined
             if (parentType != null) {
                 CsmClassifier parentClassifier;
                 if(parentType instanceof TypeImpl) {
@@ -128,11 +129,12 @@ public final class NestedType extends TypeImpl {
                     parentClassifier = parentType.getClassifier();                        
                 }
                 if (CsmBaseUtilities.isValid(parentClassifier)) {
+                    validParentClassifierExamined = true;
                     MemberResolverImpl memberResolver = new MemberResolverImpl();
                     classifier = getNestedClassifier(memberResolver, parentClassifier, getOwnText());
                 }
             }
-            if (!CsmBaseUtilities.isValid(classifier)) {
+            if (!CsmBaseUtilities.isValid(classifier) && !validParentClassifierExamined) {
                 // try to resolve qualified name, not through the parent classifier
                 List<CharSequence> fqn = getFullQName();
                 classifier = renderClassifier(fqn.toArray(new CharSequence[fqn.size()]));

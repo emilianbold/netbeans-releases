@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -1152,11 +1153,22 @@ public class CsmUtilities {
      * @return last type
      */
     public static CsmType iterateTypeChain(CsmType type, Predicate<CsmType> stopFilter) {
+        return iterateTypeChain(type, stopFilter, 50);
+    }
+    
+    /**
+     * Iterates type chain until end is reached or stopFilter returned true
+     * @param type from iterate should start
+     * @param stopFilter
+     * @param maxDepth - max number of iterations
+     * @return last type
+     */    
+    public static CsmType iterateTypeChain(CsmType type, Predicate<CsmType> stopFilter, int maxDepth) {
         CsmType lastNestedType = type;
         
         Set<CsmType> antiLoop = new HashSet<CsmType>();
         
-        while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
+        while (type != null && !antiLoop.contains(type) && antiLoop.size() < maxDepth) {
             lastNestedType = type;
             
             if (stopFilter.check(type)) {
@@ -1175,7 +1187,7 @@ public class CsmUtilities {
         }
         
         return lastNestedType;
-    }                 
+    }    
     
     //-----------------------------------------------------------------
 
