@@ -378,30 +378,32 @@ import org.openide.util.NbBundle;
             createdFiles.add(local);
         }
         if (hasRemote) {
-            FileObject remotePackage = SessionGenerator.createRemoteInterfacePackage(remoteProject, pkg, targetFolder);
-            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, remotePackage);
-            addMethodToInterface(intfOptions, remote);
-            createdFiles.add(remote);
-            if (entityProject != null && !entityProject.getProjectDirectory().equals(remoteProject.getProjectDirectory())) {
-                SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (groups != null && groups.length > 0) {
-                    FileObject fo = groups[0].getRootFolder();
-                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                    if (cp != null) {
-                        try {
-                            ProjectClassPathModifier.addProjects(new Project[]{entityProject}, fo, ClassPath.COMPILE);
-                        } catch (Throwable e) {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "WARN_UpdateClassPath",
-                                    ProjectUtils.getInformation(remoteProject).getDisplayName(),
-                                    ProjectUtils.getInformation(entityProject).getDisplayName()),
-                                    NotifyDescriptor.INFORMATION_MESSAGE);
-                            DialogDisplayer.getDefault().notify(d);
+            final SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String simpleName = JavaIdentifiers.unqualify(remoteInterfaceFQN);
+            if (!interfaceExists(groups, pkg, simpleName)) {
+                FileObject remotePackage = SessionGenerator.createRemoteInterfacePackage(remoteProject, pkg, targetFolder);
+                FileObject remote = createInterface(simpleName, EJB_REMOTE, remotePackage);
+                addMethodToInterface(intfOptions, remote);
+                createdFiles.add(remote);
+                if (entityProject != null && !entityProject.getProjectDirectory().equals(remoteProject.getProjectDirectory())) {
+                    if (groups != null && groups.length > 0) {
+                        FileObject fo = groups[0].getRootFolder();
+                        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                        if (cp != null) {
+                            try {
+                                ProjectClassPathModifier.addProjects(new Project[]{entityProject}, fo, ClassPath.COMPILE);
+                            } catch (IOException | UnsupportedOperationException e) {
+                                NotifyDescriptor d = new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(EjbFacadeWizardIterator.class, "WARN_UpdateClassPath",
+                                        ProjectUtils.getInformation(remoteProject).getDisplayName(),
+                                        ProjectUtils.getInformation(entityProject).getDisplayName()),
+                                        NotifyDescriptor.INFORMATION_MESSAGE);
+                                DialogDisplayer.getDefault().notify(d);
+                            }
                         }
                     }
                 }
             }
-
         }
 
         final FileObject abstractFacadeFO = afFO;
@@ -856,5 +858,17 @@ import org.openide.util.NbBundle;
     public static  int getProgressStepCount(int numEntites)
     {
         return numEntites;
+    }
+
+    private static boolean interfaceExists(SourceGroup[] groups, String pkg, String simpleName) {
+        for (SourceGroup sourceGroup : groups) {
+            FileObject pkgFO = sourceGroup.getRootFolder().getFileObject(pkg);
+            if (pkgFO != null) {
+                if (pkgFO.getFileObject(simpleName + ".java") != null) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
