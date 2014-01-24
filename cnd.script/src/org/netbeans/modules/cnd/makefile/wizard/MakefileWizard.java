@@ -939,11 +939,12 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 }
                 mes.setBuildDirectory(buildDirectory);
 
-                String fullMakefilePath = result.getPrimaryFile().getFileSystem().getDisplayName() + File.separator + result.getPrimaryFile().getPath();
+                String fullMakefilePath = result.getPrimaryFile().getPath();
                 String fullBuildDirectoryPath = buildDirectory;
                 int aIndex = fullMakefilePath.lastIndexOf(File.separatorChar);
                 if (aIndex >= 0) {
-                    fullBuildDirectoryPath = CndPathUtilities.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
+                    FileObject parent = result.getPrimaryFile().getParent();
+                    fullBuildDirectoryPath = CndPathUtilities.toAbsolutePath(parent, fullBuildDirectoryPath);
                 }
 
                 // Send creation event
@@ -1024,7 +1025,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         try {
             DataFolder targetFolder = getTemplateWizard().getTargetFolder();
             FileObject fo = targetFolder.getPrimaryFile();
-            fullFolderName = CndFileUtils.toFile(fo).getPath();
+            fullFolderName = fo.getPath();
         } catch (IOException ioe) {
             // FIXUP
         }

@@ -52,7 +52,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -61,12 +60,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
@@ -131,10 +129,10 @@ public class ProjectSupport {
         return toProperPath(base, path, getPathMode(project));
     }
 
-    public static String toProperPath(String base, String path, Project project) {
+    public static String toProperPath(FSPath base, String path, Project project) {
         return toProperPath(base, path, getPathMode(project));
     }
-
+    
     public static String toProperPath(FileObject base, FileObject path, MakeProjectOptions.PathMode pathMode) {
         switch (pathMode) {
             case REL_OR_ABS:
@@ -166,12 +164,12 @@ public class ProjectSupport {
         }
     }
 
-    public static String toProperPath(String base, String path, MakeProjectOptions.PathMode pathMode) {
+    public static String toProperPath(FSPath base, String path, MakeProjectOptions.PathMode pathMode) {
         switch (pathMode) {
             case REL_OR_ABS:
-                return CndPathUtilities.toAbsoluteOrRelativePath(base, path);
+                return CndPathUtilities.toAbsoluteOrRelativePath(base.getPath(), path);
             case REL:
-                return CndPathUtilities.toRelativePath(base, path);
+                return CndPathUtilities.toRelativePath(base.getPath(), path);
             case ABS:
                 return CndPathUtilities.toAbsolutePath(base, path);
             default:
