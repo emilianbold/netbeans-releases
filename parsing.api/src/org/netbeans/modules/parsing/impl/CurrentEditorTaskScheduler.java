@@ -48,9 +48,14 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -71,12 +76,18 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
     private class AListener implements PropertyChangeListener {
     
         public void propertyChange (PropertyChangeEvent evt) {
-            if (evt.getPropertyName () == null ||
-                evt.getPropertyName ().equals (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY) ||
-                evt.getPropertyName ().equals (EditorRegistry.FOCUS_GAINED_PROPERTY)
+            final String propName = evt.getPropertyName();
+            if (propName == null ||
+                propName.equals (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY) ||
+                propName.equals (EditorRegistry.FOCUS_GAINED_PROPERTY)
             ) {
                 JTextComponent editor = EditorRegistry.focusedComponent ();
-                if (editor == currentEditor || (editor != null && editor.getClientProperty("AsTextField") != null)) return; //NOI18N
+                if (editor == currentEditor || (editor != null && editor.getClientProperty("AsTextField") != null)) {    //NOI18N
+                    return;
+                }
+                if (currentEditor != null) {
+                    currentEditor.removePropertyChangeListener(this);
+                }
                 currentEditor = editor;
                 if (currentEditor != null) {
                     Document document = currentEditor.getDocument ();
@@ -85,12 +96,22 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
 //                        System.out.println("no file object for " + document);
                         return;
                     }
+                    currentEditor.addPropertyChangeListener(this);
                 }
                 setEditor (currentEditor);
-            }
-            else if (evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {
+            } else if (propName.equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {
+                if (currentEditor != null) {
+                    currentEditor.removePropertyChangeListener(this);
+                }
                 currentEditor = null;
                 setEditor(null);
+            } else if (propName.equals("document") && currentEditor != null) {   //NOI18N
+                final Document document = currentEditor.getDocument();
+                final FileObject fileObject = Util.getFileObject(document);
+                if (fileObject != null && fileObject.isValid()) {
+                    final Source src = Source.create(document);
+                    schedule(src, new SchedulerEvent(this){});
+                }
             }
         }
     }
