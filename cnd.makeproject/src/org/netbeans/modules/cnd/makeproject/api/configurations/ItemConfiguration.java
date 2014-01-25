@@ -562,7 +562,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
             fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            
             itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
         } else {
-            fullPath = CndPathUtilities.toAbsolutePath(baseDir, item.getPath());
+            fullPath = CndPathUtilities.toAbsolutePath(sourceFS, baseDir, item.getPath());
             itemFO = null;
         }
         if (itemFO != null && itemFO.isValid()) {

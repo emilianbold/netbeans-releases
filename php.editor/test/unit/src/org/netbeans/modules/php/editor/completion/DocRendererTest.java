@@ -42,12 +42,11 @@
 
 package org.netbeans.modules.php.editor.completion;
 
-import org.netbeans.modules.php.editor.completion.DocRenderer;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 
-public class DocRendererTest extends PHPNavTestBase {
+public class DocRendererTest extends PHPTestBase {
 
     public DocRendererTest(String name) {
         super(name);
@@ -55,7 +54,7 @@ public class DocRendererTest extends PHPNavTestBase {
 
     public void testProcespsPhpDoc() {
         // text => result
-        final Map<String, String> testCases = new LinkedHashMap<String, String>();
+        final Map<String, String> testCases = new LinkedHashMap<>();
         testCases.put(
                 "<b>test1</b>",
                 "<b>test1</b>");

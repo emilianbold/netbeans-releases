@@ -263,9 +263,10 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             String itemPath = CndPathUtilities.naturalizeSlashes(selectedFile.getPath());
             RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
             itemPath = ProjectSupport.toProperPath(
-                    CndPathUtilities.naturalizeSlashes(baseDir.getPath()),
+                    baseDir,
                     itemPath,
                     MakeProjectOptions.getPathMode());
+            itemPath = CndPathUtilities.naturalizeSlashes(baseDir.getFileSystem(), itemPath);
             itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             return itemPath;
         }

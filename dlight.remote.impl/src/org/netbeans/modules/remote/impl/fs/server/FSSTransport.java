@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -217,7 +218,10 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             int respId = buf.getInt();
             assert respId == request.getId();
             String serverPath = buf.getString();
-            assert serverPath.equals(path);
+            if (!serverPath.equals(path)) {
+                DLightLibsCommonLogger.assertTrue(false, "Unexpected path in response: \"" + //NOI18N
+                        serverPath + "\" expected \"" + path + "\""); //NOI18N
+            }
             return readEntries(response, path, request.getId(), realCnt);
         } finally {
             dirReadCnt.incrementAndGet();

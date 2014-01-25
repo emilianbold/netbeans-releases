@@ -193,7 +193,7 @@ public class ProjectBridge {
         Item item = makeConfigurationDescriptor.findProjectItemByPath(path);
         if (item == null){
             if (!CndPathUtilities.isPathAbsolute(path)) {
-                path = CndPathUtilities.toAbsolutePath(baseFolder, path);
+                path = CndPathUtilities.toAbsolutePath(baseFolderFileSystem, baseFolder, path);
             }
             item = findByCanonicalName(path);
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,47 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.dbgp.packets;
 
-import org.netbeans.modules.php.dbgp.DebugSession;
-import org.netbeans.modules.php.dbgp.SessionManager;
-import org.w3c.dom.Node;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
+
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
+import org.netbeans.modules.cnd.spi.model.TypesProvider;
 
 /**
- * @author ads
  *
+ * @author petrk
  */
-public class PropertyGetResponse extends DbgpResponse {
-
-    PropertyGetResponse(Node node) {
-        super(node);
-    }
-
-    public Property getProperty() {
-        Node node = getChild(getNode(), Property.PROPERTY);
-        if (node != null) {
-            return new Property(node);
-        }
-        return null;
-    }
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.TypesProvider.class)
+public class TypesProviderImpl implements TypesProvider {
+    
+    @Override
+    public CsmType createType(CsmClassifier cls, CsmTypes.TypeDescriptor td, CsmTypes.OffsetDescriptor offs) {
+        throw new UnsupportedOperationException("Not implemented yet."); // NOI18N
+    }    
 
     @Override
-    public void process(DebugSession session, DbgpCommand command) {
-        if (!(command instanceof PropertyGetCommand)) {
-            return;
-        }
-        DebugSession currentSession = SessionManager.getInstance().
-                getSession(session.getSessionId());
-        if (currentSession == session) {
-            // perform update local view only if response appears in current session
-            PropertyGetCommand propertyCommand = (PropertyGetCommand) command;
-            Property property = getProperty();
-            if (property != null) {
-                session.getBridge().getVariablesModel().updateProperty(getProperty());
-                propertyCommand.firePropertyChangeEvent(property.getName(), property);
-            }
-        }
+    public CsmType createType(CsmType orig, CsmTypes.TypeDescriptor newDescriptor) {
+        return TypeFactory.createType(
+                orig, 
+                newDescriptor.getPtrDepth(), 
+                CsmTypes.TypeDescriptor.getReferenceType(newDescriptor), 
+                newDescriptor.getArrDepth(), 
+                newDescriptor.isConst()
+        );
     }
-
 }

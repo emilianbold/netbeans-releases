@@ -538,7 +538,7 @@ public final class MakeActionProvider implements ActionProvider {
                 if (compilerSet != null) {
                     path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                     path = conf.expandMacros(path);
-                    path = CndPathUtilities.toAbsolutePath(conf.getBaseDir(), path);
+                    path = CndPathUtilities.toAbsolutePath(conf.getBaseFSPath(), path);
                     
                     conf = conf.clone();    //  Replacing output path with test output path
                     StringConfiguration sc = new StringConfiguration(null, "OutputPath"); // NOI18N
@@ -639,7 +639,7 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             } else {
                 // Always absolute
-                path = CndPathUtilities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
+                path = CndPathUtilities.toAbsolutePath(conf.getBaseFSPath(), makeArtifact.getOutput());
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false, context);
             actionEvents.add(projectActionEvent);

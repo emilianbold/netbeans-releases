@@ -197,9 +197,11 @@ import org.openide.util.Utilities;
         files.add(new FileInfo(file, remotePath));
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
-            for (File child : children) {
-                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
-                gatherFiles(child, newBase, filter, files);
+            if (children != null) {
+                for (File child : children) {
+                    String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                    gatherFiles(child, newBase, filter, files);
+                }
             }
         }
     }
