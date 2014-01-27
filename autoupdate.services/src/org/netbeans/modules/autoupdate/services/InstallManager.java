@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -78,7 +78,10 @@ public class InstallManager extends InstalledFileLocator{
     static final String NBM_LIB = "lib"; // NOI18N
     static final String NBM_CORE = "core"; // NOI18N
     static final String NETBEANS_DIRS = "netbeans.dirs"; // NOI18N
-    
+
+    private static int countOfWarnings = 0;
+    private static final int MAX_COUNT_OF_WARNINGS = 5;
+
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
     private static final List<File> clusters = new ArrayList<File>();
     
@@ -151,7 +154,7 @@ public class InstallManager extends InstalledFileLocator{
         ERR.log (Level.FINEST, "UpdateElement " + update.getUpdateElement () + " has the target cluster " + res);
         return res;
     }
-
+    
     private static File checkTargetCluster(UpdateElementImpl update, String targetCluster, boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
         if (targetCluster == null || targetCluster.length () == 0) {
             return null;
@@ -169,9 +172,15 @@ public class InstallManager extends InstalledFileLocator{
                     }
                     res = cluster;
                 } else {
-                    ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement ());
                     if (! useUserdirAsFallback && isGlobal) {
+                        ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement());
                         throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
+                    }
+                    if (countOfWarnings++ < MAX_COUNT_OF_WARNINGS) {
+                        ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for " + update.getUpdateElement());
+                    }
+                    if (countOfWarnings == MAX_COUNT_OF_WARNINGS) {
+                        ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + targetCluster + " for more updates or plugins.");
                     }
                 }
                 break;
@@ -288,11 +297,16 @@ public class InstallManager extends InstalledFileLocator{
         }
 
         if (res == null || ! Utilities.canWriteInCluster (res)) {
-            // go to userdir if no writable cluster is known
-            ERR.log (Level.WARNING, "There is no write permission to write in target cluster " + res + 
-                    " for " + update.getUpdateElement ());
             if (! useUserdirAsFallback && isGlobal) {
+                ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + res + " for " + update.getUpdateElement());
                 throw new OperationException(OperationException.ERROR_TYPE.WRITE_PERMISSION, update.getCodeName());
+            }
+            // go to userdir if no writable cluster is known
+            if (countOfWarnings++ < MAX_COUNT_OF_WARNINGS) {
+                ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + res + " for " + update.getUpdateElement());
+            }
+            if (countOfWarnings == MAX_COUNT_OF_WARNINGS) {
+                ERR.log(Level.WARNING, "There is no write permission to write in target cluster " + res + " for more updates or plugins.");
             }
             res = UpdateTracking.getUserDir ();
         }
