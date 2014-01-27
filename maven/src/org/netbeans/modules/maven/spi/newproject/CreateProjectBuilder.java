@@ -174,8 +174,10 @@ public class CreateProjectBuilder {
                 }
                 FileObject pom = FileUtil.toFileObject(parent.getFile());
                 assert pom != null : "parent file:" + parent.getFile() + " for project " + parent.getId() + "  wizard directory: " + projectDirectory; //#240989
-                ModelSource pmodel = Utilities.createModelSource(pom);
-                Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(pom.getParent(), projectDirectory)));
+                if (pom != null) {
+                    ModelSource pmodel = Utilities.createModelSource(pom);
+                    Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(pom.getParent(), projectDirectory)));
+                }
             }
         
             if (moreWork != null) {
