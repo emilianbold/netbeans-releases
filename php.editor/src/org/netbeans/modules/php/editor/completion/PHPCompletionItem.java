@@ -228,8 +228,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     @Override
     public boolean isSmart() {
-        return request.context == CompletionContext.USE_KEYWORD
-                || element instanceof AliasedElement
+        return element instanceof AliasedElement
                 || (request.currentlyEditedFileURL != null && request.currentlyEditedFileURL.equals(getFileNameURL()));
     }
 
