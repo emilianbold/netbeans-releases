@@ -512,6 +512,13 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 wizardDescriptor.putProperty(ProjectLocationPanel.PROP_ERROR_MESSAGE, ProjectLocationPanel.decorateMessage(
                     NbBundle.getMessage(ProjectServerPanel.class, "PanelSharability.licenseWarning.text")));
         }
+
+        Profile selectedProfile = getSelectedJ2eeProfile();
+        if (selectedProfile == null) {
+            setErrorMessage("ERROR_EnterpriseLevelOfYourServerIsNotSupported", wizardDescriptor); // NOI18N
+            return false;
+        }
+
         if (J2eeModule.Type.EJB.equals(j2eeModuleType)) {
             setJ2eeVersionWarning(wizardDescriptor);
         }
