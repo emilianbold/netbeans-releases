@@ -46,6 +46,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -64,6 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
     private final Preferences preferences;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     /** Creates new form ReleaseVersionErrorCustomizer */
     public JavaNetRepositoryErrorCustomizer(Preferences prefs) {
@@ -82,6 +85,12 @@ public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
         if (rbAny.isSelected()) {
             taSelected.setEnabled(false);
         }
+        id2Saved.put(JavaNetRepositoryError.PROP_SELECTED, selected);
+        id2Saved.put(JavaNetRepositoryError.PROP_URLS, values);
+    }
+    
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
     }
 
     /** This method is called from within the constructor to
@@ -119,8 +128,8 @@ public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
         taSelected.setColumns(20);
         taSelected.setRows(5);
         taSelected.addKeyListener(new KeyAdapter() {
-            public void keyTyped(KeyEvent evt) {
-                taSelectedKeyTyped(evt);
+            public void keyReleased(KeyEvent evt) {
+                taSelectedKeyReleased(evt);
             }
         });
         jScrollPane1.setViewportView(taSelected);
@@ -169,14 +178,14 @@ public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
         taSelected.setEnabled(true);
     }//GEN-LAST:event_rbSelectedActionPerformed
 
-    private void taSelectedKeyTyped(KeyEvent evt) {//GEN-FIRST:event_taSelectedKeyTyped
+    private void taSelectedKeyReleased(KeyEvent evt) {//GEN-FIRST:event_taSelectedKeyReleased
         String[] vals = taSelected.getText().split("([\\s])+");
         StringBuilder sb = new StringBuilder();
         for (String v : vals) {
             sb.append(v.trim()).append(" ");
         }
         preferences.put(JavaNetRepositoryError.PROP_URLS, sb.toString());
-    }//GEN-LAST:event_taSelectedKeyTyped
+    }//GEN-LAST:event_taSelectedKeyReleased
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
