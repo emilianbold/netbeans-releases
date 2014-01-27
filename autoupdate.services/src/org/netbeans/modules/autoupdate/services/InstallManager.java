@@ -80,7 +80,7 @@ public class InstallManager extends InstalledFileLocator{
     static final String NETBEANS_DIRS = "netbeans.dirs"; // NOI18N
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.services.InstallManager");
-    private static List<File> clusters = new ArrayList<File>();
+    private static final List<File> clusters = new ArrayList<File>();
     
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, Boolean globalOrLocal, boolean useUserdirAsFallback) throws OperationException {
         File res;
@@ -97,9 +97,9 @@ public class InstallManager extends InstalledFileLocator{
         // if an update, overwrite the existing location, wherever that is.
         if (installed != null) {
             
-                // adjust isGlobal to forced global if present
-                isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
-                res = getInstallDir (installed, update, isGlobal, useUserdirAsFallback);
+            // adjust isGlobal to forced global if present
+            isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ();
+            res = getInstallDir (installed, update, isGlobal, useUserdirAsFallback);
             
         } else {
 
@@ -107,7 +107,7 @@ public class InstallManager extends InstalledFileLocator{
             isGlobal |= update.isFixed ();
 
             // adjust isGlobal to forced global if present
-            isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
+            isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ();
             
             final String targetCluster = update.getInstallInfo ().getTargetCluster ();
 
@@ -195,9 +195,9 @@ public class InstallManager extends InstalledFileLocator{
 
                     StringBuffer sb = new StringBuffer ();
                     String sep = "";
-                    for (int i = 0; i < dirs.length; i++) {
+                    for (File dir : dirs) {
                         sb.append (sep);
-                        sb.append (dirs [i].getPath ());
+                        sb.append(dir.getPath());
                         sep = File.pathSeparator;
                     }
 
@@ -315,7 +315,7 @@ public class InstallManager extends InstalledFileLocator{
     
     static boolean needsRestart (boolean isUpdate, UpdateElementImpl update, File dest) {
         assert update.getInstallInfo () != null : "Each UpdateElement must know own InstallInfo but " + update;
-        boolean isForcedRestart = update.getInstallInfo ().needsRestart () != null && update.getInstallInfo ().needsRestart ().booleanValue ();
+        boolean isForcedRestart = update.getInstallInfo ().needsRestart () != null && update.getInstallInfo ().needsRestart ();
         boolean needsRestart = isForcedRestart || isUpdate;
         if (! needsRestart) {
             // handle installation into core or lib directory
@@ -380,26 +380,26 @@ public class InstallManager extends InstalledFileLocator{
             prefix = "";
             name = relativePath;
         }
-            if (localized) {
-                int i = name.lastIndexOf('.');
-                String baseName, ext;
-                if (i == -1) {
-                    baseName = name;
-                    ext = "";
-                } else {
-                    baseName = name.substring(0, i);
-                    ext = name.substring(i);
-                }
-                String[] suffixes = org.netbeans.Util.getLocalizingSuffixesFast();
-                Set<File> files = new HashSet<File>();
-                for (int j = 0; j < suffixes.length; j++) {
-                    String locName = baseName + suffixes[j] + ext;
-                    files.addAll(locateExactPath(prefix, locName));
-                }
-                return files;
+        if (localized) {
+            int i = name.lastIndexOf('.');
+            String baseName, ext;
+            if (i == -1) {
+                baseName = name;
+                ext = "";
             } else {
-                return locateExactPath(prefix, name);
+                baseName = name.substring(0, i);
+                ext = name.substring(i);
             }
+            String[] suffixes = org.netbeans.Util.getLocalizingSuffixesFast();
+            Set<File> files = new HashSet<File>();
+            for (String suffixe : suffixes) {
+                String locName = baseName + suffixe + ext;
+                files.addAll(locateExactPath(prefix, locName));
+            }
+            return files;
+        } else {
+            return locateExactPath(prefix, name);
+        }
         
     }
 
@@ -408,8 +408,8 @@ public class InstallManager extends InstalledFileLocator{
         Set<File> files = new HashSet<File>();
         synchronized(InstallManager.class) {
             File[] dirs = clusters.toArray(new File[clusters.size()]);
-            for (int i = 0; i < dirs.length; i++) {
-                File f = makeFile(dirs[i], prefix, name);
+            for (File dir : dirs) {
+                File f = makeFile(dir, prefix, name);
                 if (f.exists()) {                    
                     files.add(f);
                 }
