@@ -77,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
+import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -145,6 +146,12 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         tasklistCheckBox.removeChangeListener(this);
                 
         componentsSetEnabled( false );
+        for (POMErrorFixBase hint : changes.keySet()) {
+            if(hint instanceof POMErrorFixProvider) {
+                ((POMErrorFixProvider) hint).cancel();
+            }
+        }
+        changes.clear();
     }
     
     synchronized void applyChanges() {
@@ -157,7 +164,30 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return !changes.isEmpty();
+        boolean isChanged = false;
+        for (POMErrorFixBase hint : changes.keySet()) {
+            Preferences prefs = changes.get(hint);
+            try {
+                for (String key : prefs.keys()) {
+                    String current = prefs.get(key, null);
+                    String saved;
+                    if(key.equals(Configuration.ENABLED_KEY)) {
+                        saved = Boolean.toString((Boolean)hint.getConfiguration().getSavedValue(key));
+                    } else if(key.equals(Configuration.SEVERITY_KEY)) {
+                        saved = ((Configuration.HintSeverity)hint.getConfiguration().getSavedValue(key)).toPreferenceString();
+                    } else { // the key refers to a property handled by a custom customizer
+                        saved = ((POMErrorFixProvider) hint).getSavedValue(hint.getCustomizer(prefs), key);
+                    }
+                    isChanged |= current == null ? saved != null : !current.equals(saved);
+                    if (isChanged) { // no need to iterate further
+                        return true;
+                    }
+                }
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return isChanged;
     }
     
     synchronized Preferences getCurrentPrefernces( POMErrorFixBase hint ) {

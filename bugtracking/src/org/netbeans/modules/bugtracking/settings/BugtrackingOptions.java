@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -71,7 +72,7 @@ import org.openide.util.lookup.Lookups;
 @OptionsPanelController.SubRegistration(
     id = BugtrackingOptions.OPTIONS_PATH,
     displayName="#LBL_IssueTracking",
-    location="Team",
+    location=SettingsServices.TEAM_SETTINGS_LOCATION,
     keywords="#KW_IssueTracking",
     keywordsCategory="Team/IssueTracking")
 public class BugtrackingOptions extends OptionsPanelController {
@@ -80,7 +81,7 @@ public class BugtrackingOptions extends OptionsPanelController {
         private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
         private DashboardOptions tasksPanel;
 
-        public static final String OPTIONS_PATH = "Tasks"; // name of the layer file, may be used in JDev // NOI18N
+        public static final String OPTIONS_PATH = SettingsServices.TASKS_SETTINGS_ID;
 
         public BugtrackingOptions() {
             if (initialized) return;

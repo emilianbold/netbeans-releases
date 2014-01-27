@@ -50,30 +50,73 @@ import org.openide.util.NbBundle;
  */
 public final class HudsonOptionsValidator {
 
+    public static final String BUILD_XML_NAME = "build.xml"; // NOI18N
     public static final String JOB_CONFIG_NAME = "config.xml"; // NOI18N
+    public static final String PHP_UNIT_CONFIG_NAME = "phpunit.xml"; // NOI18N
+    public static final String PHP_UNIT_CONFIG_DIST_NAME = "phpunit.xml.dist"; // NOI18N
 
 
     private HudsonOptionsValidator() {
     }
 
-    /**
-     * Validate job config ("config.xml") file for Hudson PHP job.
-     * @param jobConfig file path to be validated
-     * @return error if any or {@code null} if everything is OK
-     * @see FileUtils#validateFile(String, boolean)
-     */
+    public static String validate(String buildXml, String jobConfig, String phpUnitConfig) {
+        String error = validateBuildXml(buildXml);
+        if (error != null) {
+            return error;
+        }
+        error = validateJobConfig(jobConfig);
+        if (error != null) {
+            return error;
+        }
+        error = validatePhpUnitConfig(phpUnitConfig);
+        if (error != null) {
+            return error;
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "HudsonOptionsValidator.error.buildXml.file=Build script",
+        "HudsonOptionsValidator.error.buildXml.name=File 'build.xml' must be selected."
+    })
+    public static String validateBuildXml(String buildXml) {
+        return validateFile(Bundle.HudsonOptionsValidator_error_buildXml_file(), buildXml,
+                Bundle.HudsonOptionsValidator_error_buildXml_name(), BUILD_XML_NAME);
+    }
+
     @NbBundle.Messages({
         "HudsonOptionsValidator.error.jobConfig.file=Job config",
         "HudsonOptionsValidator.error.jobConfig.name=File 'config.xml' must be selected."
     })
     public static String validateJobConfig(String jobConfig) {
-        String error = FileUtils.validateFile(Bundle.HudsonOptionsValidator_error_jobConfig_file(), jobConfig, false);
+        return validateFile(Bundle.HudsonOptionsValidator_error_jobConfig_file(), jobConfig,
+                Bundle.HudsonOptionsValidator_error_jobConfig_name(), JOB_CONFIG_NAME);
+    }
+
+    @NbBundle.Messages({
+        "HudsonOptionsValidator.error.phpUnitConfig.file=PHPUnit config",
+        "HudsonOptionsValidator.error.phpUnitConfig.name=File 'phpunit.xml' or 'phpunit.xml.dist' must be selected."
+    })
+    public static String validatePhpUnitConfig(String phpUnitConfig) {
+        return validateFile(Bundle.HudsonOptionsValidator_error_phpUnitConfig_file(), phpUnitConfig,
+                Bundle.HudsonOptionsValidator_error_phpUnitConfig_name(), PHP_UNIT_CONFIG_NAME, PHP_UNIT_CONFIG_DIST_NAME);
+    }
+
+    private static String validateFile(String fileLabel, String filePath, String fileNameError, String... fileNames) {
+        String error = FileUtils.validateFile(fileLabel, filePath, false);
         if (error != null) {
             return error;
         }
         // check file name
-        if (!JOB_CONFIG_NAME.equals(new File(jobConfig).getName())) {
-            return Bundle.HudsonOptionsValidator_error_jobConfig_name();
+        boolean found = false;
+        for (String fileName : fileNames) {
+            if (fileName.equals(new File(filePath).getName())) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return fileNameError;
         }
         return null;
     }

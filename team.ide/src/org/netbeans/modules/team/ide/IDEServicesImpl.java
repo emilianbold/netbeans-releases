@@ -45,7 +45,6 @@ package org.netbeans.modules.team.ide;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -62,7 +61,6 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ide.spi.IDEServices;
@@ -281,16 +279,6 @@ public class IDEServicesImpl implements IDEServices {
         } catch (NullPointerException ex) {
             Logger.getLogger(IDEServicesImpl.class.getName()).log(Level.FINE, ex.getMessage(), ex);
         }
-    }
-
-    @Override
-    public boolean providesProxyConfiguration() {
-        return true;
-    }
-
-    @Override
-    public void openProxyConfiguration() {
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
     }
 
     @Override

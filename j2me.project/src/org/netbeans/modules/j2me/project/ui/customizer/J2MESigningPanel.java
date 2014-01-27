@@ -56,13 +56,14 @@ import org.netbeans.modules.j2me.keystore.ui.ExportPanel;
 import org.netbeans.modules.j2me.keystore.ui.KeyAliasCellRenderer;
 import org.netbeans.modules.j2me.keystore.ui.KeystoreCellRenderer;
 import org.netbeans.modules.j2me.keystore.ui.SecurityManagerPanel;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Roman Svitanic
  */
-public class J2MESigningPanel extends javax.swing.JPanel {
+public class J2MESigningPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final J2MEProjectProperties properties;
     private final ItemListener keystoreListener;
@@ -372,5 +373,10 @@ public class J2MESigningPanel extends javax.swing.JPanel {
         }
         cKeystore.addItemListener(keystoreListener);
         cAlias.addItemListener(aliasListener);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MESigningPanel"); //NOI18N
     }
 }

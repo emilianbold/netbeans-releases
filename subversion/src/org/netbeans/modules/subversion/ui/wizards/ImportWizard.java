@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep;
 import org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep;
 import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
 import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -120,8 +121,8 @@ public final class ImportWizard implements ChangeListener {
     private void setupImportPreviewStep(boolean startCommitTask) {
         // must be initialized so we may retrieve the commitFiles for the ImportAction
         SVNUrl repository = repositoryStep.getRepositoryFile().getRepositoryUrl();
-        String repositoryUrl = repository.toString();
-        String repositoryFolderUrl = importStep.getRepositoryFolderUrl().toString();
+        String repositoryUrl = SvnUtils.decodeToString(repository);
+        String repositoryFolderUrl = SvnUtils.decodeToString(importStep.getRepositoryFolderUrl());
         String localPath = context.getRootFiles()[0].getAbsolutePath();
         importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath, repository, importStep.getImportMessage(), startCommitTask);
     }

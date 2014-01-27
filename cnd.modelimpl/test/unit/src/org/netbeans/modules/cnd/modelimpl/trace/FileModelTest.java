@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
@@ -370,23 +371,28 @@ public class FileModelTest extends TraceModelTestBase {
     }
 
     public void testIZ144276() throws Exception {
-        // IZ 144276 : StackOverflowError on typedef C::C C;
-        performTest("IZ144276.cc"); // NOI18N
-        for(CsmProject p : getModel().projects()){
-            for(CsmFile f : p.getAllFiles()){
-                for (CsmDeclaration d : f.getDeclarations()){
-                    if (CsmKindUtilities.isTypedef(d) || CsmKindUtilities.isTypeAlias(d)) {
-                        CsmType t = ((CsmTypedef)d).getType();
-                        if (t != null) {
-                            t.isTemplateBased();
-                            CsmClassifier c = t.getClassifier();
-                            if (c != null) {
-                                CsmBaseUtilities.getOriginalClassifier(c,f);
+        CsmCacheManager.enter();
+        try {
+            // IZ 144276 : StackOverflowError on typedef C::C C;
+            performTest("IZ144276.cc"); // NOI18N
+            for(CsmProject p : getModel().projects()){
+                for(CsmFile f : p.getAllFiles()){
+                    for (CsmDeclaration d : f.getDeclarations()){
+                        if (CsmKindUtilities.isTypedef(d) || CsmKindUtilities.isTypeAlias(d)) {
+                            CsmType t = ((CsmTypedef)d).getType();
+                            if (t != null) {
+                                t.isTemplateBased();
+                                CsmClassifier c = t.getClassifier();
+                                if (c != null) {
+                                    CsmBaseUtilities.getOriginalClassifier(c,f);
+                                }
                             }
                         }
                     }
                 }
             }
+        } finally {
+            CsmCacheManager.leave();
         }
     }
 

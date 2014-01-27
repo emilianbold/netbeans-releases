@@ -145,7 +145,7 @@ public class TabbedController extends OptionsPanelController {
     public boolean isValid() {
         for (OptionsPanelController c : getControllers()) {
             // if changed (#145569) and not valid
-            if (c.isChanged() && !c.isValid()) {
+            if (!c.isValid() && c.isChanged()) {
                 return false;
             }
         }

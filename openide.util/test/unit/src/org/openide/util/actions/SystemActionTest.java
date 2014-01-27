@@ -78,8 +78,8 @@ public class SystemActionTest extends NbTestCase {
     public void testIcons() throws Exception {
         Image i = Toolkit.getDefaultToolkit().getImage(SystemActionTest.class.getResource("data/someicon.gif"));
         int h = imageHash("Control icon", i, 16, 16);
-        CharSequence log = Log.enable("org.openide.util", Level.WARNING);
         SystemAction a = SystemAction.get(SystemAction1.class);
+        CharSequence log = Log.enable("org.openide.util", Level.WARNING);
         assertEquals("Absolute slash-initial iconResource works (though deprecated)", h, imageHash("icon1", icon2Image(a.getIcon()), 16, 16));
         assertTrue(log.toString(), log.toString().contains("Initial slashes in Utilities.loadImage deprecated"));
         a = SystemAction.get(SystemAction2.class);

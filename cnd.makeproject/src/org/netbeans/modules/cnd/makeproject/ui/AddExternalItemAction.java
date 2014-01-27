@@ -112,7 +112,7 @@ public class AddExternalItemAction extends AbstractAction {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                 continue;
             }
-            String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), file.getPath(), project);
+            String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDirFileObject(), file.getPath(), project);
             itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
             if (item != null) {

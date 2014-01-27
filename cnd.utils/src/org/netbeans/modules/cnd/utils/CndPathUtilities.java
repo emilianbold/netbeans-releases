@@ -180,48 +180,28 @@ public class CndPathUtilities {
     }
 
     public static String toAbsolutePath(FileObject base, String path) {
+        try {
+            return toAbsolutePath(base.getFileSystem(), base.getPath(), path);
+        } catch (FileStateInvalidException ex) {
+            throw new IllegalStateException(ex);
+        }        
+    }
+
+    public static String toAbsolutePath(FSPath basePath, String path) {
+        return toAbsolutePath(basePath.getFileSystem(), basePath.getPath(), path);
+    }
+    
+    public static String toAbsolutePath(FileSystem fileSystem, String basePath, String path) {
+        CndUtils.assertAbsolutePathInConsole(basePath);
         path = (path == null || path.length() == 0) ? "." : path; // NOI18N
         if (!isPathAbsolute(path)) {
-            path = base.getPath() + '/' + path; //NOI18N
+            path = basePath + '/' + path; //NOI18N
         }       
-        try {
-            FileSystem fileSystem = base.getFileSystem();
-            path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
-            path = naturalizeSlashes(fileSystem, path);
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+        path = CndFileUtils.normalizeAbsolutePath(fileSystem, path);
+        path = naturalizeSlashes(fileSystem, path);
         return path;
     }
-
-    /**
-     * @deprecated Please use {@link #toAbsolutePath(FileObject base, String path)}
-     */
-    @Deprecated
-    public static String toAbsolutePath(String base, String path) {
-        String newPath = path;
-        if (newPath == null || newPath.length() == 0) {
-            newPath = "."; // NOI18N
-        } // NOI18N
-        if (!isPathAbsolute(newPath)) {
-            // it is a relative path
-            //RemoteUtils ru = RemoteUtils.getInstance();
-            //String localBase = ru.getRemotetoLocalMapping(base);
-            //String localPath = ru.getRemotetoLocalMapping(newPath);
-            // newPath = localBase + File.separator + localPath;
-            newPath = base + File.separator + path; // NOI18N
-            File newPathFile = new File(newPath);
-            if (newPathFile.exists()) {
-                try {
-                    newPath = FileUtil.normalizePath(newPath);
-                } catch (Exception e) {
-                }
-            }
-        // newPath = ru.getLocalToRemoteMapping(newPath);
-        }
-        return newPath;
-    }
-
+    
     public static String toRelativePath(FileObject base, FileObject path) {
         return toRelativePath(base.getPath(), path.getPath()); // TODO: use smarter logic (compare file systems, etc)
     }

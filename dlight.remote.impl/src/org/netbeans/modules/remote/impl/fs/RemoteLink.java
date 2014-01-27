@@ -48,8 +48,6 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -109,13 +107,13 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     @Override
-    protected void postDeleteChild(FileObject child) {
-        getCanonicalDelegate().postDeleteChild(child);
+    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+        getCanonicalDelegate().postDeleteChild(child, entryList);
     }
 
     @Override
-    protected boolean deleteImpl(FileLock lock) throws IOException {
-        return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    protected DirEntryList deleteImpl(FileLock lock) throws IOException {
+        return RemoteFileSystemTransport.delete(getExecutionEnvironment(), getPath(), false);
     }
 
     @Override

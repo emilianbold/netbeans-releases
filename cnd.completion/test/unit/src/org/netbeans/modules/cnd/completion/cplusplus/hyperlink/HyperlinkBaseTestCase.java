@@ -52,6 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -161,28 +162,33 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
     }
     
     protected CsmOffsetable findTargetObject(String source, int lineIndex, int colIndex, AtomicReference<TokenItem<TokenId>> reference) throws Exception {
-        File testSourceFile = getDataFile(source);
-        BaseDocument doc = getBaseDocument(testSourceFile);
-        int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        TokenItem<TokenId> jumpToken = getJumpToken(doc, offset);
-        reference.set(jumpToken);
-        assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
-                jumpToken);        
-        CsmOffsetable csmItem = null;
-        // emulate hyperlinks order
-        // first ask includes handler
-        if (includeProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
-            csmItem = includeProvider.findTargetObject(doc, offset);
+        CsmCacheManager.enter();
+        try {        
+            File testSourceFile = getDataFile(source);
+            BaseDocument doc = getBaseDocument(testSourceFile);
+            int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
+            TokenItem<TokenId> jumpToken = getJumpToken(doc, offset);
+            reference.set(jumpToken);
+            assertNotNull("Hyperlink not found token in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", // NOI18N
+                    jumpToken);        
+            CsmOffsetable csmItem = null;
+            // emulate hyperlinks order
+            // first ask includes handler
+            if (includeProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
+                csmItem = includeProvider.findTargetObject(doc, offset);
+            }
+            // if failed => ask define handler
+            if (csmItem == null && defineProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
+                csmItem = (CsmOffsetable) defineProvider.findTargetObject(doc, jumpToken, offset, true);
+            }
+            // if failed => ask declarations handler
+            if (csmItem == null && declarationsProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
+                csmItem = (CsmOffsetable) declarationsProvider.findTargetObject(doc, jumpToken, offset, true);
+            }
+            return csmItem;
+        } finally {
+            CsmCacheManager.leave();
         }
-        // if failed => ask define handler
-        if (csmItem == null && defineProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
-            csmItem = (CsmOffsetable) defineProvider.findTargetObject(doc, jumpToken, offset, true);
-        }
-        // if failed => ask declarations handler
-        if (csmItem == null && declarationsProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
-            csmItem = (CsmOffsetable) declarationsProvider.findTargetObject(doc, jumpToken, offset, true);
-        }
-        return csmItem;
     }
     
     private TokenItem<TokenId> getJumpToken(BaseDocument doc, int offset) {

@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                 <file name="Factory.instance">
                     <attr name="urlPattern" stringvalue="^wildfly-deployer:.*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory.getInstance"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory.getInstance"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
@@ -72,13 +72,13 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="OptionalFactory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyOptionalFactory.create"/>
-                    <attr name="delegate" newvalue="org.netbeans.modules.javaee.wildfly.ide.WildFlyOptionalDeploymentManagerFactory"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.javaee.wildfly.ide.WildflyOptionalDeploymentManagerFactory"/>
                     <attr name="noInitializationFinish" boolvalue="true"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.javaee.wildfly.Bundle#SERVER_NAME"/>
                 </file>
                 <file name="JBModuleConfigurationFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.WildlfyModuleConfigurationFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.javaee.wildfly.config.WildflyModuleConfigurationFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
                 <folder name="DeploymentFileNames">

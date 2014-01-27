@@ -410,7 +410,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     public int getMaintenanceWeight() throws IOException {
         int weight = 0;
         for (UnitStorage storage : unitStorageCache.values()) {
-            weight += storage.dblStorage.getFragmentationPercentage();
+            weight += storage.dblStorage.isOpened() ? storage.dblStorage.getFragmentationPercentage() : 0;
         }
         return weight;
     }

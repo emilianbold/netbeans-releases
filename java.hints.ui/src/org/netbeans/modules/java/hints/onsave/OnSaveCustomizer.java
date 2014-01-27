@@ -59,6 +59,10 @@ public class OnSaveCustomizer extends javax.swing.JPanel {
         removeUnusedImports.setSelected(RemoveUnusedAfterSave.getValue(settings, "Imports_UNUSED"));
         organizeImports.setSelected(RemoveUnusedAfterSave.getValue(settings, "org.netbeans.modules.java.hints.OrganizeImports"));
     }
+    
+    String getSavedValue(String key) {
+        return Boolean.toString(RemoveUnusedAfterSave.getSavedValue(key));
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.

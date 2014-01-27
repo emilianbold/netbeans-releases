@@ -384,8 +384,8 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     private void fireChanged() {
         boolean isChanged = false;
         for (String profile : toBeSaved) {
-            List<AttributeSet> attributeSet = schemes.get(profile);
-            Map<String, AttributeSet> savedAnnotations = EditorSettings.getDefault().getAnnotations(profile);
+            List<AttributeSet> attributeSet = getAnnotations(profile);
+            Map<String, AttributeSet> savedAnnotations = toMap(getDefaults(profile));
             Map<String, AttributeSet> currentAnnotations = toMap(attributeSet);
             if (savedAnnotations != null && currentAnnotations != null) {
                 if (savedAnnotations.size() >= currentAnnotations.size()) {
@@ -404,9 +404,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             if (currentMap.containsKey(name)) {
                 AttributeSet currentAS = currentMap.get(name);
                 AttributeSet savedAS = savedMap.get(name);
+                Color currentWave = (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+                Color savedWave = (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
                 isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
                         || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
-                        || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
+                        || (currentWave == null ? savedWave != null : !currentWave.equals(savedWave));
 
             }
         }

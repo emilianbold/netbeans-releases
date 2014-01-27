@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.java.hints.bugs;
 
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.filesystems.FileUtil;
@@ -1450,6 +1451,31 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testDoWhileIssue240643() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "class Test {\n" +
+                       "public static void main(String[] args) {\n" +
+                        "        Test var = null;\n" +
+                        "        do {\n" +
+                        "            var = createNullDereferenceHint();\n" +
+                        "            if (var == null) {\n" +
+                        "                System.out.println(\"NullDereferenceHint still null!\");\n" +
+                        "            }\n" +
+                        "        } while (var == null);\n" +
+                        "\n" +
+                        "        Class clazz = var.getClass(); \n" +
+                        "    }\n" +
+                        "\n" +
+                        "    public static Test createNullDereferenceHint() {\n" +
+                        "        return new Test();\n" +
+                        "    }" + 
+                        "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

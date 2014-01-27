@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.options;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -65,6 +67,7 @@ import org.openide.util.NbBundle;
 @org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE"})
 public class CodeCompletionPanel extends JPanel {
     private static final long serialVersionUID = -24730122182427272L;
+    private final Map<String, Object> id2Saved = new HashMap<>();
 
     public static enum CodeCompletionType {
         SMART,
@@ -137,6 +140,19 @@ public class CodeCompletionPanel extends JPanel {
         initCodeCompletionForMethods();
         initCodeCompletionForVariables();
         initCodeCompletionType();
+        id2Saved.put(PHP_AUTO_COMPLETION_FULL, autoCompletionFullRadioButton.isSelected());
+        id2Saved.put(PHP_AUTO_COMPLETION_VARIABLES, autoCompletionVariablesCheckBox.isSelected());
+        id2Saved.put(PHP_AUTO_COMPLETION_TYPES, autoCompletionTypesCheckBox.isSelected());
+        id2Saved.put(PHP_AUTO_COMPLETION_NAMESPACES, autoCompletionNamespacesCheckBox.isSelected());
+        id2Saved.put(PHP_CODE_COMPLETION_STATIC_METHODS, codeCompletionStaticMethodsCheckBox.isSelected());
+        id2Saved.put(PHP_CODE_COMPLETION_NON_STATIC_METHODS, codeCompletionNonStaticMethodsCheckBox.isSelected());
+        VariablesScope variablesScope = VariablesScope.resolve(preferences.get(PHP_CODE_COMPLETION_VARIABLES_SCOPE, null));
+        id2Saved.put(PHP_CODE_COMPLETION_VARIABLES_SCOPE, variablesScope == null ? null : variablesScope.name());
+        CodeCompletionType type = CodeCompletionType.resolve(preferences.get(PHP_CODE_COMPLETION_TYPE, null));
+        id2Saved.put(PHP_CODE_COMPLETION_TYPE, type == null ? null : type.name());
+        id2Saved.put(PHP_CODE_COMPLETION_SMART_PARAMETERS_PRE_FILLING, codeCompletionSmartParametersPreFillingCheckBox.isSelected());
+        id2Saved.put(PHP_AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
+        id2Saved.put(PHP_AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
     }
 
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
@@ -587,6 +603,7 @@ public class CodeCompletionPanel extends JPanel {
     static final class CodeCompletionPreferencesCustomizer implements PreferencesCustomizer {
 
         private final Preferences preferences;
+        private CodeCompletionPanel component;
 
         private CodeCompletionPreferencesCustomizer(Preferences preferences) {
             this.preferences = preferences;
@@ -609,7 +626,25 @@ public class CodeCompletionPanel extends JPanel {
 
         @Override
         public JComponent getComponent() {
-            return new CodeCompletionPanel(preferences);
+            if (component == null) {
+                component = new CodeCompletionPanel(preferences);
+            }
+            return component;
+        }
+    }
+
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
+    }
+
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof CodeCompletionPreferencesCustomizer) {
+                return ((CodeCompletionPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
         }
     }
 }

@@ -46,6 +46,8 @@ import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
@@ -75,6 +77,7 @@ public class CodeCompletionPanel extends JPanel {
     private final ItemListener defaultCheckBoxListener = new DefaultCheckBoxListener();
     private final ItemListener defaultRadioButtonListener = new DefaultRadioButtonListener();
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     public CodeCompletionPanel(Preferences preferences) {
         assert preferences != null;
@@ -153,6 +156,13 @@ public class CodeCompletionPanel extends JPanel {
                 OptionsUtils.COMPETION_ITEM_SIGNATURE_WIDTH_DEFAULT);
         codeCompletionSignatureWidthSpinner.setValue(codeCompletionItemSignatureWidth);
         codeCompletionSignatureWidthSpinner.addChangeListener(defaultChangeListener);
+        
+        id2Saved.put(OptionsUtils.AUTO_COMPLETION_TYPE_RESOLUTION, autoCompletionTypeResolutionCheckBox.isSelected());
+        id2Saved.put(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
+        id2Saved.put(OptionsUtils.AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
+        id2Saved.put(OptionsUtils.AUTO_COMPLETION_FULL, autoCompletionFullRadioButton.isSelected());
+        id2Saved.put(OptionsUtils.AUTO_COMPLETION_AFTER_DOT, autoCompletionAfterDotCheckBox.isSelected());
+        id2Saved.put(OptionsUtils.COMPETION_ITEM_SIGNATURE_WIDTH, codeCompletionSignatureWidthSpinner.getValue());
     }
 
     void setAutoCompletionState(boolean enabled) {
@@ -320,6 +330,7 @@ public class CodeCompletionPanel extends JPanel {
     static final class CodeCompletionPreferencesCustomizer implements PreferencesCustomizer {
 
         private final Preferences preferences;
+        private CodeCompletionPanel component;
 
         private CodeCompletionPreferencesCustomizer(Preferences preferences) {
             this.preferences = preferences;
@@ -342,7 +353,25 @@ public class CodeCompletionPanel extends JPanel {
 
         @Override
         public JComponent getComponent() {
-            return new CodeCompletionPanel(preferences);
+            if (component == null) {
+                component = new CodeCompletionPanel(preferences);
+            }
+            return component;
+        }
+    }
+
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
+    }
+
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof CodeCompletionPreferencesCustomizer) {
+                return ((CodeCompletionPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
         }
     }
 }

@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="CustomCustomizer">
+      <summary>Adding CustomCustomizer</summary>
+      <version major="1" minor="50"/>
+      <date day="23" month="1" year="2014"/>
+      <author login="theofanis"/>
+      <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+        <p>
+            Added CustomCustomizer class in PreferencesCustomizer in order for the options infrastructure to be able to 
+            access saved values of options in order to enable/disable the Apply button in options window.
+        </p>
+      </description>
+      <class package="org.netbeans.modules.options.editor.spi" name="PreferencesCustomizer"/>
+      <issue number="240879"/>
+  </change>
     <change id="OptionsFilter.create">
       <summary>Adding OptionsFilter.create</summary>
       <version major="1" minor="42"/>

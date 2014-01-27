@@ -72,6 +72,7 @@ public class Zend2OptionsPanelController extends OptionsPanelController implemen
 
     private Zend2OptionsPanel zend2OptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
 
     public static String getOptionsPath() {
@@ -80,7 +81,8 @@ public class Zend2OptionsPanelController extends OptionsPanelController implemen
 
     @Override
     public void update() {
-        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             zend2OptionsPanel.setSkeleton(getOptions().getSkeleton());
         }
 

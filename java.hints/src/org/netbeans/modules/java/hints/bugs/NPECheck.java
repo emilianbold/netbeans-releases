@@ -362,7 +362,6 @@ public class NPECheck {
         v.scan(ctx.getInfo().getCompilationUnit(), null);
         
         ctx.getInfo().putCachedValue(KEY_EXPRESSION_STATE, result = v.expressionState, CompilationInfo.CacheClearPolicy.ON_TASK_END);
-        
         return result;
     }
     
@@ -874,6 +873,24 @@ public class NPECheck {
         public State visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
             return handleGeneralizedFor(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), p);
         }
+
+        /**
+         * Helps to disable speculative evaluation of nested cycle bodies, to prevent combinatorial explosion
+         * with a lot of nested cycles.
+         */
+        private boolean inCycle = false;
+        
+        private Map<VariableElement, State> findStateDifference(Map<VariableElement, State> basepoint) {
+            Map<VariableElement, State> m = new HashMap<VariableElement, State>();
+            for (Map.Entry<VariableElement, State> vEntry : variable2State.entrySet()) {
+                VariableElement k = vEntry.getKey();
+                State s = basepoint.get(k);
+                if (s != vEntry.getValue()) {
+                    m.put(k, vEntry.getValue());
+                }
+            }
+            return m;
+        }
         
         private State handleGeneralizedFor(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
             scan(initializer, p);
@@ -890,12 +907,15 @@ public class NPECheck {
             
             not = oldNot;
             
-            Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
+              Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
+            // get just the _changed_ stuff
+            Map<VariableElement, State> negConditionChanges2State = findStateDifference(oldVariable2State);
             
                 
             doNotRecord = oldDoNotRecord;
             
-            if (!oldDoNotRecord) {
+            if (!inCycle) {
+                inCycle = true;
                 variable2State = new HashMap<VariableElement, State>(oldVariable2State);
                 
                 scan(condition, p);
@@ -903,18 +923,17 @@ public class NPECheck {
                 scan(update, p);
                 
                 mergeIntoVariable2State(oldVariable2State);
+                inCycle = false;
             } else {
                 variable2State = oldVariable2State;
             }
         
-//            
-//            doNotRecord = oldDoNotRecord;
-            
             scan(condition, p);
             scan(statement, p);
             scan(update, p);
             
             mergeIntoVariable2State(negConditionVariable2State);
+            forceIntoVariable2State(negConditionChanges2State);
             
             return null;
         }
@@ -1108,6 +1127,15 @@ public class NPECheck {
             }
 
             r.add(new HashMap<VariableElement, State>(state));
+        }
+        
+        private void forceIntoVariable2State(Map<VariableElement, State> other) {
+            Map<VariableElement, State> target = variable2State;
+            for (Entry<VariableElement, State> e : other.entrySet()) {
+                State t = e.getValue();
+
+                target.put(e.getKey(), t);
+            }
         }
 
         private void mergeIntoVariable2State(Map<VariableElement, State> other) {

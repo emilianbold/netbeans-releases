@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.sql.editor.completion;
 
 import java.io.BufferedReader;
@@ -67,7 +66,6 @@ import org.openide.filesystems.FileUtil;
  */
 public class SelectCompletionQueryTest extends NbTestCase {
 
-    private final String testName;
     private final boolean stdout;
 
     public SelectCompletionQueryTest(String testName) {
@@ -75,8 +73,7 @@ public class SelectCompletionQueryTest extends NbTestCase {
     }
 
     public SelectCompletionQueryTest(String testName, boolean stdout) {
-        super("testCompletion");
-        this.testName = testName;
+        super(testName);
         this.stdout = stdout;
     }
 
@@ -132,7 +129,7 @@ public class SelectCompletionQueryTest extends NbTestCase {
 
         suite.addTest(new SelectCompletionQueryTest("dropTableAll"));
         suite.addTest(new SelectCompletionQueryTest("dropTableSimple"));
-        
+
         // #200367: CC breaks with use of DECLARE/SET
         suite.addTest(new SelectCompletionQueryTest("selectAfterDeclare"));
         suite.addTest(new SelectCompletionQueryTest("selectAfterSet"));
@@ -144,13 +141,18 @@ public class SelectCompletionQueryTest extends NbTestCase {
         return suite;
     }
 
+    @Override
+    public void runTest() throws Exception {
+        testCompletion();
+    }
+
     public void testCompletion() throws Exception {
         StringBuilder sqlData = new StringBuilder();
         List<String> modelData = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(SelectCompletionQueryTest.class.getResource(testName + ".test").openStream(), "utf-8"));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(SelectCompletionQueryTest.class.getResource(getName() + ".test").openStream(), "utf-8"));
         try {
             boolean separatorRead = false;
-            for (String line = null ; (line = reader.readLine()) != null;) {
+            for (String line; (line = reader.readLine()) != null;) {
                 if (line.startsWith("#") || line.trim().length() == 0) {
                     continue;
                 }
@@ -172,21 +174,21 @@ public class SelectCompletionQueryTest extends NbTestCase {
         if (stdout) {
             performTest(sql, metadata, System.out);
         } else {
-            File result = new File(getWorkDir(), testName + ".result");
+            File result = new File(getWorkDir(), getName() + ".result");
             Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(result), "utf-8"));
             try {
                 performTest(sql, metadata, writer);
             } finally {
                 writer.close();
             }
-            File pass = new File(getWorkDir(), testName + ".pass");
-            InputStream input = SelectCompletionQueryTest.class.getResource(testName + ".pass").openStream();
+            File pass = new File(getWorkDir(), getName() + ".pass");
+            InputStream input = SelectCompletionQueryTest.class.getResource(getName() + ".pass").openStream();
             try {
                 copyStream(input, pass);
             } finally {
                 input.close();
             }
-            assertFile(testName, result, pass, null);
+            assertFile(getName(), result, pass, null);
         }
     }
 
@@ -216,6 +218,6 @@ public class SelectCompletionQueryTest extends NbTestCase {
 
     @Override
     public String toString() {
-        return testName + "(" + getClass().getName() + ")";
+        return getName() + "(" + getClass().getName() + ")";
     }
 }

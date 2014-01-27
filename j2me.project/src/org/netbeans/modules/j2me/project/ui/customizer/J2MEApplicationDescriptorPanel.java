@@ -41,13 +41,14 @@
  */
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel {
+public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     /**
      * Creates new form J2MEApplicationDescriptorPanel
@@ -86,4 +87,9 @@ public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MEApplicationDescriptorPanel"); //NOI18N
+    }
 }

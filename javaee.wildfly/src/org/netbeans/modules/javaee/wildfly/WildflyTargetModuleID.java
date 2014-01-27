@@ -93,20 +93,24 @@ public class WildflyTargetModuleID implements TargetModuleID {
         return jar_name ;
     }
     //         Retrieve the id assigned to represent the deployed module.
+    @Override
     public TargetModuleID getParentTargetModuleID() {
 
         return parent;
     }
     //Retrieve the identifier of the parent object of this deployed module.
+    @Override
     public Target getTarget() {
         return target;
     }
     //Retrieve the name of the target server.
+    @Override
     public String getWebURL() {
         return context_url;//"http://" + module_id; //NOI18N
     }
     //If this TargetModulID represents a web module retrieve the URL for it.
+    @Override
     public String toString() {
-        return getModuleID() +  hashCode();
+        return getModuleID();
     }
 }

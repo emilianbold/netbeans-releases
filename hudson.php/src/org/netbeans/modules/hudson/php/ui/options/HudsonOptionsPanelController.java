@@ -46,13 +46,13 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.hudson.php.commands.PpwScript;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
 import org.netbeans.modules.hudson.php.options.HudsonOptionsValidator;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * IDE options controller for Hudson PHP.
@@ -80,16 +80,18 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        hudsonOptionsPanel.setPpw(getOptions().getPpw());
+        hudsonOptionsPanel.setBuildXml(getOptions().getBuildXml());
         hudsonOptionsPanel.setJobConfig(getOptions().getJobConfig());
+        hudsonOptionsPanel.setPhpUnitConfig(getOptions().getPhpUnitConfig());
 
         changed = false;
     }
 
     @Override
     public void applyChanges() {
-        getOptions().setPpw(hudsonOptionsPanel.getPpw());
+        getOptions().setBuildXml(hudsonOptionsPanel.getBuildXml());
         getOptions().setJobConfig(hudsonOptionsPanel.getJobConfig());
+        getOptions().setPhpUnitConfig(hudsonOptionsPanel.getPhpUnitConfig());
 
         changed = false;
     }
@@ -98,35 +100,35 @@ public class HudsonOptionsPanelController extends OptionsPanelController impleme
     public void cancel() {
     }
 
+    @NbBundle.Messages("HudsonOptionsPanelController.warning.existingFiles=If build script or PHPUnit config file exists in project, it will be preferred.")
     @Override
     public boolean isValid() {
         // warnings
-        String warning = PpwScript.validate(hudsonOptionsPanel.getPpw());
+        String warning = HudsonOptionsValidator.validate(hudsonOptionsPanel.getBuildXml(),
+                hudsonOptionsPanel.getJobConfig(), hudsonOptionsPanel.getPhpUnitConfig());
         if (warning != null) {
             hudsonOptionsPanel.setWarning(warning);
             return true;
         }
-
-        warning = HudsonOptionsValidator.validateJobConfig(hudsonOptionsPanel.getJobConfig());
-        if (warning != null) {
-            hudsonOptionsPanel.setWarning(warning);
-            return true;
-        }
-
         // everything ok
-        hudsonOptionsPanel.setError(" "); // NOI18N
+        hudsonOptionsPanel.setWarning(Bundle.HudsonOptionsPanelController_warning_existingFiles());
         return true;
     }
 
     @Override
     public boolean isChanged() {
-        String saved = getOptions().getPpw();
-        String current = hudsonOptionsPanel.getPpw().trim();
-        if(saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        String saved = getOptions().getBuildXml();
+        String current = hudsonOptionsPanel.getBuildXml().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
             return true;
         }
         saved = getOptions().getJobConfig();
         current = hudsonOptionsPanel.getJobConfig().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getOptions().getPhpUnitConfig();
+        current = hudsonOptionsPanel.getPhpUnitConfig().trim();
         return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 

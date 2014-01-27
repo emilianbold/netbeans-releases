@@ -37,12 +37,20 @@ expr returns [int value]
     ;
 
 multExpr returns [int value]
-    :   e=atom {$value = $e.value;} (STAR e=atom {$value *= $e.value;})*
+    :   e=unaryExpr {$value = $e.value;} (STAR e=unaryExpr {$value *= $e.value;})*
+    ;
+
+unaryExpr returns [int value]
+    :   e=atom {$value = $e.value;}
+    |   NOT e=unaryExpr {$value = ($e.value == 0 ? 1 : 0);}
     ;
 
 atom returns [int value]
-    :   DECIMALINT {$value = (($DECIMALINT.text) == null) ? 0 : Integer.parseInt(($DECIMALINT.text).replaceAll("[a-z,A-Z,_].*", "")) ;}
-    |   id = qualified_id
+    :   
+        DECIMALINT {$value = (($DECIMALINT.text) == null) ? 0 : Integer.parseInt(($DECIMALINT.text).replaceAll("[a-z,A-Z,_].*", "")) ;}
+    |   
+        (LITERAL_const)*
+        id = qualified_id
         {
             $value = vp==null?0:vp.getValue($id.q);
             //Integer v = (Integer)memory.get($IDENT.text);
@@ -69,11 +77,7 @@ qualified_id returns [String q = ""]
             IDENT
             {q += $IDENT.text;}
             (
-                LESSTHAN
-                {q += "<";}
-                (x=~GREATERTHAN {q += $x.text;})*
-                GREATERTHAN
-                {q += ">";}
+                inner = balance_less_greater {q += $inner.s;}
             )?
         )
     ;
@@ -84,7 +88,7 @@ scope_override returns [String s = ""]
             SCOPE { s += "::";}
         )?
         (
-            sp = scope_override_part
+            (IDENT (balance_less_greater)? SCOPE)=> sp = scope_override_part
             {
                     s += ($sp.s != null) ? $sp.s : "";
             }
@@ -98,21 +102,28 @@ scope_override_part returns [String s = ""]
             s += $IDENT.text;
         }
         (
-            LESSTHAN
-            {s += "<";}
-            (x=~GREATERTHAN {s += $x.text;})*
-            GREATERTHAN
-            {s += ">";}
+            inner = balance_less_greater {s += $inner.s;}
         )?
         SCOPE
         {
             s += "::";
         }
 
-        ((IDENT SCOPE) => sp = scope_override_part)?
+        ((IDENT (balance_less_greater)? SCOPE)=> sp = scope_override_part)?
         {
             s += ($sp.s != null) ? $sp.s : "";
         }
+    ;
+
+balance_less_greater returns [String s = ""]
+    :
+        LESSTHAN {s += "<";}
+        (
+            (LESSTHAN)=> inner = balance_less_greater {s += $inner.s;}
+        |
+            other = (~GREATERTHAN) {s += $other.text;}
+        )*
+        GREATERTHAN {s += ">";}
     ;
 
 // Suppressing warnings "no lexer rule corresponding to token"
@@ -124,6 +135,7 @@ fragment MINUS: ' ';
 fragment STAR: ' ';
 fragment LESSTHAN: ' ';
 fragment GREATERTHAN: ' ';
+fragment NOT: ' ';
 
 fragment SCOPE: ' ';
 
@@ -133,4 +145,6 @@ fragment RPAREN: ' ';
 fragment LITERAL_static_cast: ' ';
 fragment LITERAL_true: ' ';
 fragment LITERAL_false: ' ';
+
+fragment LITERAL_const: ' ';
 

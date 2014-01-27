@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -183,7 +184,7 @@ public class LockForFile extends FileLock {
         File hardLock = getLock();
         hardLock.getParentFile().mkdirs();
         hardLock.createNewFile();
-        OutputStream os = new FileOutputStream(hardLock);
+        OutputStream os = Files.newOutputStream(hardLock.toPath());
         try {
             os.write(getFile().getAbsolutePath().getBytes());
             return true;

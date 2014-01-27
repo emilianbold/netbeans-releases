@@ -120,6 +120,7 @@ public class Configuration {
     }
 
     private FileObject configFile;
+    private FileObject configFileDir;
     private JSONObject root;
 
     private Configuration() {
@@ -127,32 +128,23 @@ public class Configuration {
 
     public Configuration(Project project) {
         //TODO fix the conf location in maven and other project types
-        FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); //NOI18N
-        nbproject = nbproject == null ? project.getProjectDirectory() : nbproject;
-        if (nbproject != null) {
+        FileObject nbprojectDir = project.getProjectDirectory().getFileObject("nbproject"); //NOI18N
+        configFileDir = nbprojectDir == null ? project.getProjectDirectory() : nbprojectDir;
+        configFile = configFileDir.getFileObject(CONF_FILE_NAME);
+        if (configFile != null) {
+            configFile.addFileChangeListener(new ConfigFileChangeListener());
             try {
-                configFile = nbproject.getFileObject(CONF_FILE_NAME);
-                if (configFile == null) {
-                    configFile = nbproject.createData(CONF_FILE_NAME); //create one if doesn't exist
-                    LOGGER.log(Level.INFO, "Created configuration file {0} ", configFile.getPath()); //NOI18N
-                }
-                configFile.addFileChangeListener(new FileChangeAdapter() {
-
-                    @Override
-                    public void fileChanged(FileEvent fe) {
-                        LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
-                        try {
-                            reload();
-                        } catch (IOException ex) {
-                            handleIOEFromReload(ex);
-                        }
-                    }
-
-                });
                 reload();
             } catch (IOException ex) {
                 handleIOEFromReload(ex);
             }
+        }
+    }
+
+    private void initConfigFile() throws IOException {
+        if (configFile == null) {
+            configFile = configFileDir.createData(CONF_FILE_NAME); //create one if doesn't exist
+            configFile.addFileChangeListener(new ConfigFileChangeListener());
         }
     }
 
@@ -161,9 +153,9 @@ public class Configuration {
     }
 
     private void handleIOEFromReload(IOException e) {
-        Project project = FileOwnerQuery.getOwner(configFile);
+        Project project = FileOwnerQuery.getOwner(getProjectsConfigurationFile());
         String projectDisplayName = project != null ? ProjectUtils.getInformation(project).getDisplayName() : "???"; //NOI18N
-        String msg = String.format("An error found in the configuration file %s in the project %s: %s", configFile.getNameExt(), projectDisplayName, e.getMessage());
+        String msg = String.format("An error found in the configuration file %s in the project %s: %s", getProjectsConfigurationFile().getNameExt(), projectDisplayName, e.getMessage());
 
         NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notifyLater(d);
@@ -220,44 +212,46 @@ public class Configuration {
     }
 
     private void reload() throws IOException {
-        //if something goes wrong, the data will be empty until the problem is corrected
-        tags.clear();
-        attrs.clear();
+        if (getProjectsConfigurationFile() != null) {
+            //if something goes wrong, the data will be empty until the problem is corrected
+            tags.clear();
+            attrs.clear();
 
-        final Document document = getDocument(configFile);
-        final AtomicReference<String> docContentRef = new AtomicReference<>();
-        final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
-        document.render(new Runnable() {
+            final Document document = getDocument(getProjectsConfigurationFile());
+            final AtomicReference<String> docContentRef = new AtomicReference<>();
+            final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
+            document.render(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    docContentRef.set(document.getText(0, document.getLength()));
-                } catch (BadLocationException ex) {
-                    bleRef.set(ex);
+                @Override
+                public void run() {
+                    try {
+                        docContentRef.set(document.getText(0, document.getLength()));
+                    } catch (BadLocationException ex) {
+                        bleRef.set(ex);
+                    }
                 }
+
+            });
+            if (bleRef.get() != null) {
+                throw new IOException(bleRef.get());
             }
 
-        });
-        if (bleRef.get() != null) {
-            throw new IOException(bleRef.get());
-        }
-
-        String content = docContentRef.get();
-        root = (JSONObject) JSONValue.parse(content);
-        if (root != null) {
-            JSONObject elements = (JSONObject) root.get(ELEMENTS);
-            if (elements != null) {
-                Collection<Tag> rootTags = loadTags(elements, null);
-                for (Tag rootTag : rootTags) {
-                    tags.put(rootTag.getName(), rootTag);
+            String content = docContentRef.get();
+            root = (JSONObject) JSONValue.parse(content);
+            if (root != null) {
+                JSONObject elements = (JSONObject) root.get(ELEMENTS);
+                if (elements != null) {
+                    Collection<Tag> rootTags = loadTags(elements, null);
+                    for (Tag rootTag : rootTags) {
+                        tags.put(rootTag.getName(), rootTag);
+                    }
                 }
-            }
-            JSONObject attributes = (JSONObject) root.get(ATTRIBUTES);
-            if (attributes != null) {
-                Collection<Attribute> rootAttrs = loadAttributes(attributes, null);
-                for (Attribute a : rootAttrs) {
-                    attrs.put(a.getName(), a);
+                JSONObject attributes = (JSONObject) root.get(ATTRIBUTES);
+                if (attributes != null) {
+                    Collection<Attribute> rootAttrs = loadAttributes(attributes, null);
+                    for (Attribute a : rootAttrs) {
+                        attrs.put(a.getName(), a);
+                    }
                 }
             }
         }
@@ -273,6 +267,7 @@ public class Configuration {
     }
 
     public JSONObject store() throws IOException {
+        initConfigFile();
         JSONObject node = new JSONObject();
         storeTags(node, tags.values());
         storeAttributes(node, attrs.values());
@@ -281,7 +276,7 @@ public class Configuration {
         final String newContent = node.toJSONString();
 
         //and save it to the underlying document/file
-        DataObject dobj = DataObject.find(configFile);
+        DataObject dobj = DataObject.find(getProjectsConfigurationFile());
         EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
         final BaseDocument document = (BaseDocument) editorCookie.openDocument();
         final AtomicReference<BadLocationException> bleRef = new AtomicReference<>();
@@ -596,6 +591,20 @@ public class Configuration {
 
         }
         return attributes;
+    }
+
+    private final class ConfigFileChangeListener extends FileChangeAdapter {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
+            try {
+                reload();
+            } catch (IOException ex) {
+                handleIOEFromReload(ex);
+            }
+        }
+
     }
 
 }

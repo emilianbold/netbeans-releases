@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makefile.wizard;
 
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.JTextField;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
@@ -139,19 +140,21 @@ public class BuildOutputPanel extends DirectoryChooserPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-
-        TargetData target = getMakefileData().getTarget(key);
-        String od = getText().getText();
-        if (od == null) {
-            od = "."; // NOI18N
+        JTextField tf = getText();
+        if (tf != null) {
+            TargetData target = getMakefileData().getTarget(key);
+            String od = tf.getText();
+            if (od == null) {
+                od = "."; // NOI18N
+            }
+            od = od.trim();
+            if (od.length() > 1) {
+                od = CndPathUtilities.trimpath(od);
+            }
+            if (od.length() == 0) {
+                od = "."; // NOI18N
+            }
+            target.setOutputDirectory(od); // FIXUP: no trim here ????
         }
-        od = od.trim();
-        if (od.length() > 1) {
-            od = CndPathUtilities.trimpath(od);
-        }
-        if (od.length() == 0) {
-            od = "."; // NOI18N
-        }
-        target.setOutputDirectory(od); // FIXUP: no trim here ????
     }
 }

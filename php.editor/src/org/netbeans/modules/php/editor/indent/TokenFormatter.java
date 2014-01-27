@@ -711,10 +711,12 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_USE:
                                         indentRule = true;
                                         newLines = docOptions.blankLinesBeforeUse + 1 > newLines ? docOptions.blankLinesBeforeUse + 1 : newLines;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_BETWEEN_USE:
                                         indentRule = true;
                                         newLines = 1;
+                                        countSpaces = indent;
                                         break;
                                     case WHITESPACE_AFTER_USE:
                                         indentRule = true;
@@ -1798,14 +1800,13 @@ public class TokenFormatter {
             private boolean isRightBeforeNamespaceDeclaration(List<FormatToken> formatTokens, int index) {
                 boolean result = false;
                 int i = index + 1;
-                if (formatTokens.size() >= i) {
-                    while (formatTokens.get(i).isWhitespace()) {
-                        if (formatTokens.get(i).getId() == FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE) {
-                            result = true;
-                            break;
-                        }
-                        i++;
+                int formatTokensSize = formatTokens.size();
+                while (formatTokensSize > i && formatTokens.get(i).isWhitespace()) {
+                    if (formatTokens.get(i).getId() == FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE) {
+                        result = true;
+                        break;
                     }
+                    i++;
                 }
                 return result;
             }

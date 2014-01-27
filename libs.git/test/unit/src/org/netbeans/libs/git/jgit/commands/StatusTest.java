@@ -701,6 +701,72 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, link, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false);
     }
     
+    public void testIgnoredSymlinkFile () throws Exception {
+        File folder1 = new File(workDir, "boo");
+        File file1 = new File(workDir, "old_file");
+        File folder2 = new File(workDir, "some_dir");
+        File file2_1 = new File(folder2, "some_file");
+        
+        folder1.mkdirs();
+        folder2.mkdirs();
+        file1.createNewFile();
+        file2_1.createNewFile();
+        add(workDir);
+        commit(workDir);
+        
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file2_1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+     
+        // create a symlink, not added to index
+        String relPath = "../some_dir/some_file";
+        File link = new File(folder1, file2_1.getName());
+        Files.createSymbolicLink(Paths.get(link.getAbsolutePath()), Paths.get(relPath));
+        assertTrue(Files.isSymbolicLink(Paths.get(link.getAbsolutePath())));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+        
+        client.ignore(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertEquals("/boo/some_file", read(new File(workDir, ".gitignore")));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+    }
+    
+    public void testIgnoredSymlinkFolder () throws Exception {
+        File folder1 = new File(workDir, "boo");
+        File file1 = new File(workDir, "old_file");
+        File folder2 = new File(workDir, "some_dir");
+        File file2_1 = new File(folder2, "some_file");
+        
+        folder1.mkdirs();
+        folder2.mkdirs();
+        file1.createNewFile();
+        file2_1.createNewFile();
+        add(workDir);
+        commit(workDir);
+        
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertEquals(2, statuses.size());
+        assertStatus(statuses, workDir, file1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file2_1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+     
+        // create a symlink, not added to index
+        String relPath = "../some_dir";
+        File link = new File(folder1, folder2.getName());
+        Files.createSymbolicLink(Paths.get(link.getAbsolutePath()), Paths.get(relPath));
+        assertTrue(Files.isSymbolicLink(Paths.get(link.getAbsolutePath())));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+        
+        client.ignore(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertEquals("/boo/some_dir/", read(new File(workDir, ".gitignore")));
+        statuses = client.getStatus(new File[] { link }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, link, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
+    }
+    
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);

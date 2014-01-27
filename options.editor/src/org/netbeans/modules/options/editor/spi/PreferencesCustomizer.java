@@ -152,4 +152,42 @@ public interface PreferencesCustomizer {
          */
         PreferencesCustomizer create(Preferences preferences);
     }
+    
+    /**
+     * A way to query a custom <code>PreferencesCustomizer</code>, created by a <code>{@link Factory}</code>, 
+     * for the saved value of any option by invoking the {@link CustomCustomizer#getSavedValue(PreferencesCustomizer, String)} method.
+     * Based on the returned value the infrastructure will decide whether to enable or disable the Apply button in options window.
+     * The custom customizer need to be registered in the XML layer in order to be discoverable.
+     *
+     * <p>If you need to show some custom customizer for your language you can use the following XML layer registration.
+     *
+     * <pre style="background-color: rgb(255, 255, 153);">
+     * &lt;folder name="OptionsDialog"&gt;
+     *   &lt;folder name="Editor"&gt;
+     *     &lt;folder name="OnSave"&gt;
+     *       &lt;folder name="your"&gt;
+     *         &lt;folder name="mimetype"&gt;
+     *           &lt;file name="JavaOnSaveCustomCustomizer.instance"&gt;
+     *             &lt;attr name="instanceCreate" methodvalue="fully.qualified.name.of.the.PreferencesCustomizer$CustomCustomizerImpl"/&gt;
+     *             &lt;attr name="position" intvalue="100"/&gt;
+     *           &lt;/file&gt;
+     *         &lt;/folder&gt;
+     *       &lt;/folder&gt;
+     *     &lt;/folder&gt;
+     *   &lt;/folder&gt;
+     * &lt;/folder&gt;</pre>
+     */
+    public class CustomCustomizer {
+        
+        /**
+         * Returns the <code>PreferencesCustomizer</code>'s saved value for the specific key.
+         *
+         * @param customCustomizer the custom <code>PreferencesCustomizer</code>
+         * @param key the key for which the saved value is needed
+         * @return the saved value for the specific <code>PreferencesCustomizer</code> and key or null
+         */
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            return null;
+        }
+    }
 }

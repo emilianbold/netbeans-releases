@@ -53,6 +53,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
@@ -80,13 +81,18 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         });
         log("end of references list");
         log("start resolving referenced objects");
-        for (ReferenceImpl ref : tp.references) {
-            CsmObject owner = ref.getOwner();
-            ref(ref.toString());
-            ref("--OWNER:\n    " + CsmTracer.toString(owner));
-            CsmObject out = ref.getReferencedObject();
-            ref("--RESOLVED TO:\n    " + CsmTracer.toString(out));
-            ref("==============================================================");
+        CsmCacheManager.enter();
+        try {
+            for (ReferenceImpl ref : tp.references) {
+                CsmObject owner = ref.getOwner();
+                ref(ref.toString());
+                ref("--OWNER:\n    " + CsmTracer.toString(owner));
+                CsmObject out = ref.getReferencedObject();
+                ref("--RESOLVED TO:\n    " + CsmTracer.toString(out));
+                ref("==============================================================");
+            }
+        } finally {
+            CsmCacheManager.leave();
         }
         log("end of resolving referenced objects");
         compareReferenceFiles();

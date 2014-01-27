@@ -145,8 +145,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 
 		File file = getSelectedFile();
 		if (file != null) {
-		    String path = file.getPath();
-		    path = CndPathUtilities.toAbsolutePath(baseDir, path);
+		    String path = file.getAbsolutePath();
 		    editor.setValue(path);
 		}
 	    }

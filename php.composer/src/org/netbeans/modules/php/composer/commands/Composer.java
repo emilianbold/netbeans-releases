@@ -89,6 +89,7 @@ public final class Composer {
     private static final String SHOW_COMMAND = "show"; // NOI18N
     // params
     private static final String ANSI_PARAM = "--ansi"; // NOI18N
+    private static final String NO_ANSI_PARAM = "--no-ansi"; // NOI18N
     private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
@@ -248,6 +249,7 @@ public final class Composer {
         // params
         List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
+        defaultParams.add(NO_ANSI_PARAM);
         List<String> params = new ArrayList<>(2);
         if (onlyName) {
             params.add(ONLY_NAME_PARAM);
@@ -286,6 +288,7 @@ public final class Composer {
         // params
         List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
+        defaultParams.add(NO_ANSI_PARAM);
         composer = composer
                 .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
                 // avoid parser confusion

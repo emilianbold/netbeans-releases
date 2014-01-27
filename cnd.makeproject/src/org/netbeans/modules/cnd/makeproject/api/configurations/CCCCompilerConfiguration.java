@@ -104,6 +104,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private BooleanConfiguration inheritPreprocessor;
     private BooleanConfiguration inheritUndefinedPreprocessor;
     private BooleanConfiguration useLinkerPkgConfigLibraries;
+    private StringConfiguration importantFlags;
     private MakeConfiguration owner;
 
     // Constructors
@@ -121,6 +122,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         inheritPreprocessor = new BooleanConfiguration(true);
         inheritUndefinedPreprocessor = new BooleanConfiguration(true);
         useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
+        importantFlags = new StringConfiguration(null, "");
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -133,6 +135,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     @Override
     public boolean getModified() {
+        boolean modifiedFlags = importantFlags.getValue() != null && !importantFlags.getValue().isEmpty();
         return super.getModified() ||
                 libraryLevel.getModified() ||
                 standardsEvolution.getModified() ||
@@ -143,7 +146,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 inheritPreprocessor.getModified() ||
                 preprocessorUndefinedConfiguration.getModified() ||
                 inheritUndefinedPreprocessor.getModified() ||
-                useLinkerPkgConfigLibraries.getModified();
+                useLinkerPkgConfigLibraries.getModified() ||
+                modifiedFlags;
     }
 
     protected final String[] getLibraryLevelOptions() {
@@ -247,6 +251,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         this.useLinkerPkgConfigLibraries = useLinkerPkgConfigLibraries;
     }
 
+    public StringConfiguration getImportantFlags() {
+        return importantFlags;
+    }
+    
+    public void setImportantFlags(StringConfiguration importantFlags) {
+        this.importantFlags = importantFlags;
+    }
+    
     /**
      * @return the owner
      */
@@ -276,6 +288,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getUndefinedPreprocessorConfiguration().assign(conf.getUndefinedPreprocessorConfiguration());
         getInheritUndefinedPreprocessor().assign(conf.getInheritUndefinedPreprocessor());
         getUseLinkerLibraries().assign(conf.getUseLinkerLibraries());
+        getImportantFlags().assign(conf.getImportantFlags());
     }
 
     // Sheet

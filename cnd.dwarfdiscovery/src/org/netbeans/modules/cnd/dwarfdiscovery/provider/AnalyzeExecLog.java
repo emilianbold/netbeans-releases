@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -91,7 +90,7 @@ import org.openide.util.Utilities;
  */
 public class AnalyzeExecLog extends BaseDwarfProvider {
 
-    private Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
+    private final Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
     private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N
@@ -280,7 +279,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myBuildArtifacts;
-                private List<String> myIncludedFiles = new ArrayList<String>();
+                private final List<String> myIncludedFiles = new ArrayList<String>();
 
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
@@ -689,7 +688,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 args.add(next);
               }
             Artifacts artifacts = new Artifacts();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.iterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.listIterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             if (cu != null) {
                 sourcesList.clear();
                 sourcesList.add(cu);
@@ -779,6 +778,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.userIncludes = userIncludes;
                     res.userMacros = userMacros;
                     res.undefinedMacros = artifacts.undefinedMacros;
+                    res.importantFlags = artifacts.getImportantFlags();
                     for(String lang : artifacts.languageArtifacts) {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;
@@ -964,6 +964,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private final CompileLineStorage storage;
         private int handler = -1;
+        private String importantFlags;
 
         private ExecSource(CompileLineStorage storage) {
             this.storage = storage;
@@ -1031,6 +1032,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         @Override
         public LanguageStandard getLanguageStandard() {
             return standard;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return importantFlags;
         }
     }
 }

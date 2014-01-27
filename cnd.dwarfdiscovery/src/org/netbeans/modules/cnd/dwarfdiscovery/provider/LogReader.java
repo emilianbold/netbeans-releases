@@ -940,7 +940,8 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached,
+                        artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                 continue;
             }
             if (!isRelative) {
@@ -952,7 +953,8 @@ public class LogReader {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached,
+                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         continue;
                     }
                 }
@@ -964,7 +966,8 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached,
+                            artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                     continue;
                 }
             }
@@ -979,7 +982,8 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userMacrosCached,
+                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
                         }
@@ -1064,9 +1068,10 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private CompileLineStorage storage;
         private int handler = -1;
+        private String importantFlags;
 
         CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
-                List<String> userIncludes, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage) {
+                List<String> userIncludes, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage, String importantFlags) {
             language = li.getLanguage();
             if (languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
@@ -1123,6 +1128,7 @@ public class LogReader {
             if (storage != null) {
                 handler = storage.putCompileLine(li.compileLine);
             }
+            this.importantFlags = importantFlags;
         }
 
         @Override
@@ -1191,6 +1197,11 @@ public class LogReader {
         @Override
         public LanguageStandard getLanguageStandard() {
             return standard;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return importantFlags;
         }
     }
 

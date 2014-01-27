@@ -30,7 +30,7 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.ui;
 
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -44,19 +44,19 @@ public class JBPluginUtilsTest extends NbTestCase {
     }
 
     public void testVersion() {
-        JBPluginUtils.Version version = new JBPluginUtils.Version("4.1.1.update"); // NOI18N
+        WildflyPluginUtils.Version version = new WildflyPluginUtils.Version("4.1.1.update"); // NOI18N
         assertEquals("4", version.getMajorNumber()); // NOI18N
         assertEquals("1", version.getMinorNumber()); // NOI18N
         assertEquals("1", version.getMicroNumber()); // NOI18N
         assertEquals("update", version.getUpdate()); // NOI18N
 
-        JBPluginUtils.Version versionCmp1 = new JBPluginUtils.Version("4.1.1.update"); // NOI18N
+        WildflyPluginUtils.Version versionCmp1 = new WildflyPluginUtils.Version("4.1.1.update"); // NOI18N
         assertEquals(version, versionCmp1);
         assertEquals(0, version.compareTo(versionCmp1));
         assertEquals(0, version.compareToIgnoreUpdate(versionCmp1));
         assertEquals(version.hashCode(), versionCmp1.hashCode());
 
-        JBPluginUtils.Version versionCmp2 = new JBPluginUtils.Version("4.1.1"); // NOI18N
+        WildflyPluginUtils.Version versionCmp2 = new WildflyPluginUtils.Version("4.1.1"); // NOI18N
         assertTrue(version.compareTo(versionCmp2) > 0);
         assertEquals(0, version.compareToIgnoreUpdate(versionCmp2));
     }

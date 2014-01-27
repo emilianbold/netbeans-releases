@@ -105,6 +105,7 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
@@ -683,7 +684,7 @@ public class ProjectActionSupport {
 //                      }
                     }
 
-                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseDir(), selectedExecutable, pae.getProject());
+                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseFSPath(), selectedExecutable, pae.getProject());
                     projectConfiguration.getMakefileConfiguration().getOutput().setValue(relativeToBaseDir);
 
                     // Modify pae ...
@@ -714,14 +715,15 @@ public class ProjectActionSupport {
                     }
                 }
                 if (runDir == null || runDir.length() == 0) {
-                    executable = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                    executable = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseFSPath(), executable);
                 } else {
-                    runDir = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    runDir = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseFSPath(), runDir);
+                    FileSystem fs = pae.getConfiguration().getFileSystem();
                     if (pae.getConfiguration().getBaseDir().equals(runDir)) {
                         // In case if runDir is .
-                        executable = CndPathUtilities.toAbsolutePath(runDir, executable);
+                        executable = CndPathUtilities.toAbsolutePath(fs, runDir, executable);
                     } else {
-                        executable = CndPathUtilities.toAbsolutePath(runDir, CndPathUtilities.getBaseName(executable));
+                        executable = CndPathUtilities.toAbsolutePath(fs,runDir, CndPathUtilities.getBaseName(executable));
                     }
                 }
                 executable = CndPathUtilities.normalizeSlashes(executable);

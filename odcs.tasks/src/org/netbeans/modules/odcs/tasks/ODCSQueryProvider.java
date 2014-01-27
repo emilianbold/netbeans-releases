@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -94,8 +92,14 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
     }
     
     @Override
-    public void setIssueContainer(ODCSQuery q, IssueContainer<ODCSIssue> c) {
+    public void setIssueContainer(final ODCSQuery q, IssueContainer<ODCSIssue> c) {
         q.getController().setIssueContainer(c);
+        ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                q.getController().fill();
+            }
+        });
     }
     
     @Override

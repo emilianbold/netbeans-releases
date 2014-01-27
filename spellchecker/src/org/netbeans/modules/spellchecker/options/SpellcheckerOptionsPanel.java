@@ -168,7 +168,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                         ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
                     else
                         ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
-                    c.notifyChanged(true);
+                    fireChanged();
                 }
             }
         });
@@ -183,7 +183,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                     ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
                 else
                     ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
-                c.notifyChanged(true);
+                fireChanged();
             }
         });
         
@@ -195,6 +195,42 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         });
         enableDisableButtons();
     }
+    
+    private void fireChanged() {
+        List<String> savedCategories = loadCategories();
+        ListModel model = lUseIn.getModel();
+        List<String> currentCategories = new ArrayList<String>(model.getSize());
+        for (int i = 0; i < model.getSize(); i++) {
+            currentCategories.add((String) model.getElementAt(i));
+        }
+        boolean isChanged = !savedCategories.equals(currentCategories);
+        
+        List<Locale> savedLocales = new ArrayList<Locale>(Arrays.asList(DictionaryProviderImpl.getInstalledDictionariesLocales()));
+        model = installedLocalesList.getModel();
+        List<Locale> currentLocales = new ArrayList<Locale>(model.getSize());
+        for (int i = 0; i < model.getSize(); i++) {
+            currentLocales.add((Locale) model.getElementAt(i));
+        }
+        isChanged |= !savedLocales.equals(currentLocales);
+        
+        Object selectedItem = defaultLocale.getSelectedItem();
+        Locale selectedLocale = null;
+        if (selectedItem instanceof Locale) {
+            selectedLocale = (Locale) selectedItem;
+        }
+        if (selectedItem instanceof String) {
+            String[] parsedComponents = ((String) selectedItem).split("_");
+            String[] components = new String[] {"", "", ""};
+            
+            System.arraycopy(parsedComponents, 0, components, 0, parsedComponents.length);
+            
+            selectedLocale = new Locale(components[0], components[1], components[2]);
+        }
+        if (selectedLocale != null) {
+            isChanged |= !DefaultLocaleQueryImplementation.getDefaultLocale().equals(selectedLocale);
+        }
+        c.notifyChanged(isChanged);
+    }
 
     private void setError(String error) {
         c.setValid(error == null);
@@ -203,12 +239,22 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
     }
     
     public void update() {
+        updateUsedIn();
         removedDictionaries.clear();
         addedDictionaries.clear();
 
         updateLocales();
         
         defaultLocale.setSelectedItem(DefaultLocaleQueryImplementation.getDefaultLocale());
+    }
+    
+    private void updateUsedIn() {
+        List<String> categories = loadCategories();
+        DefaultListModel model = new DefaultListModel();
+        for (String category : categories) {
+            model.addElement(category);
+        }
+        lUseIn.setModel(model);
     }
 
     private void updateLocales() {
@@ -442,6 +488,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             removedDictionaries.add((Locale) o);
         }
         updateLocales();
+        fireChanged();
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -470,10 +517,11 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             removedDictionaries.remove(desc.getLocale());
             updateLocales();
         }
+        fireChanged();
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void defaultLocaleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_defaultLocaleItemStateChanged
-        c.notifyChanged(true);
+        fireChanged();
     }//GEN-LAST:event_defaultLocaleItemStateChanged
     
     
