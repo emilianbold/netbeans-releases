@@ -192,7 +192,9 @@ public final class CndFileUtils {
         FileObject res = map.get(absolutePath);
         if (res == null || !res.isValid()) {
             res = toFileObjectImpl(fs, absolutePath);
-            map.putIfAbsent(absolutePath, res);
+            if (res != null) {
+                map.putIfAbsent(absolutePath, res);
+            }
         }
         return res;
     }

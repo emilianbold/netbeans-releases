@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
+import org.openide.filesystems.FileObject;
 
 /**
  * simple test implementation of walker
@@ -100,16 +101,19 @@ public class APTWalkerTest extends APTAbstractWalker {
         resolvingTime += System.currentTimeMillis() - lastTime;
         if (inclState == IncludeState.Success) {
             try {
-                if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
-                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                    includeStream(apt, walker);
-                    resolvingTime += walker.resolvingTime;
-                } else {
-                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
-                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                    walker.visit();
-                    resolvingTime += walker.resolvingTime;
+                FileObject resolvedFO = resolvedPath.getFileObject();
+                if (resolvedFO != null && resolvedFO.isValid()) {
+                    if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                        APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedFO), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
+                        APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                        includeStream(apt, walker);
+                        resolvingTime += walker.resolvingTime;
+                    } else {
+                        APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedFO));
+                        APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                        walker.visit();
+                        resolvingTime += walker.resolvingTime;
+                    }
                 }
             } catch (IOException ex) {
                 DiagnosticExceptoins.register(ex);

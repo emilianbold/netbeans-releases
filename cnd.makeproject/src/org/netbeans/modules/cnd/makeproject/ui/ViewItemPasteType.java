@@ -118,9 +118,9 @@ final class ViewItemPasteType extends PasteType {
         return null;
     }
 
-    Transferable pasteImpl() throws IOException {
+    void pasteImpl() throws IOException {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
-            return null;
+            return;
         }
         ItemConfiguration[] oldConfigurations = fromItem.getItemConfigurations();
         FileObject itemFO = fromItem.getFileObject();
@@ -132,6 +132,9 @@ final class ViewItemPasteType extends PasteType {
                     if (itemFO.isValid()) {
                         String toFolderPath = CndPathUtilities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                         FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
+                        if (toFolderFO == null || !toFolderFO.isValid()) {
+                            return;
+                        }
                         String newName = CndPathUtilities.createUniqueFileName(toFolderFO, itemFO.getName(), itemFO.getExt());
                         FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
 
@@ -266,6 +269,5 @@ final class ViewItemPasteType extends PasteType {
                 }
             }
         }
-        return null;
     }
 }
