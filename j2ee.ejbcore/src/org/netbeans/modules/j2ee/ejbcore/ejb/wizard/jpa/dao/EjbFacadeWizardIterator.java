@@ -861,8 +861,9 @@ import org.openide.util.NbBundle;
     }
 
     private static boolean interfaceExists(SourceGroup[] groups, String pkg, String simpleName) {
+        String path = pkg.replace(".", "/"); //NOIN18N
         for (SourceGroup sourceGroup : groups) {
-            FileObject pkgFO = sourceGroup.getRootFolder().getFileObject(pkg);
+            FileObject pkgFO = sourceGroup.getRootFolder().getFileObject(path);
             if (pkgFO != null) {
                 if (pkgFO.getFileObject(simpleName + ".java") != null) { //NOI18N
                     return true;
