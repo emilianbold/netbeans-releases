@@ -163,18 +163,19 @@ public class ProgressTransferListener implements TransferListener {
 
     @Override
     public void transferStarted(TransferEvent te) throws TransferCancelledException {
-        if (contrib == null || handle == null) {
+        ProgressContributor c = contrib;
+        if (c == null || handle == null) {
             return;
         }
         TransferResource res = te.getResource();
         int total = (int)Math.min((long)Integer.MAX_VALUE, res.getContentLength());
         if (total < 0) {
-            contrib.start(0);
+            c.start(0);
         } else {
-            contrib.start(total);
+            c.start(total);
         }
         length = total;
-        contrib.progress(TXT_Started(getResourceName(res)));
+        c.progress(TXT_Started(getResourceName(res)));
     }
 
     @Messages({
@@ -186,45 +187,46 @@ public class ProgressTransferListener implements TransferListener {
     })
     @Override
     public void transferProgressed(TransferEvent te) throws TransferCancelledException {
-         checkCancel();
-        if (contrib == null) {
+        checkCancel();
+        ProgressContributor c = contrib;
+        if (c == null) {
             return;
         }
         long cnt = te.getTransferredBytes();
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (length < 0) {
-            contrib.progress(TXT_Transferring(getResourceName(te.getResource())));
+            c.progress(TXT_Transferring(getResourceName(te.getResource())));
         } else {
             cnt = Math.min(cnt, (long)length);
-            contrib.progress(TXT_Transferred(getResourceName(te.getResource()), cnt), (int)cnt);
+            c.progress(TXT_Transferred(getResourceName(te.getResource()), cnt), (int)cnt);
         }
     }
 
     @Override
     public void transferCorrupted(TransferEvent te) throws TransferCancelledException {
-       if (contrib == null) {
-            return;
-        }
-        contrib.finish();
+        ProgressContributor c = contrib;
         contrib = null;
+        if (c != null) {
+            c.finish();
+        }
     }
 
     @Override
     public void transferSucceeded(TransferEvent te) {
-        if (contrib == null) {
-            return;
-        }
-        contrib.finish();
+        ProgressContributor c = contrib;
         contrib = null;
+        if (c != null) {
+            c.finish();
+        }
     }
 
     @Override
     public void transferFailed(TransferEvent te) {
-         if (contrib == null) {
-            return;
-        }
-        contrib.finish();
+        ProgressContributor c = contrib;
         contrib = null;
+        if (c != null) {
+            c.finish();
+        }
     }
 
 }
