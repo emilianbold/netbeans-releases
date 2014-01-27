@@ -1094,7 +1094,7 @@ public class FormatVisitor extends DefaultVisitor {
             while (ts.moveNext() && ts.offset() < falseStatement.getStartOffset()) {
                 if (ts.token().id() == PHPTokenId.PHP_ELSE || ts.token().id() == PHPTokenId.PHP_ELSEIF) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                } else {
+                } else if (lastIndex < ts.index()) {
                     addFormatToken(formatTokens);
                 }
             }

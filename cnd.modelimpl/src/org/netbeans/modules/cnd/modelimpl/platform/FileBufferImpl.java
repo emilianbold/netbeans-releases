@@ -263,7 +263,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
             try {
                 long timeStamp = fileObject.lastModified().getTime();
                 StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
-                List<Integer> lso = new LinkedList<Integer>();
+//                List<Integer> lso = new LinkedList<Integer>();
                 boolean lastCharCR = false;
                 char[] buffer = new char[1024];
                 int size = -1;
@@ -273,13 +273,13 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                 final char LS = 0x2028; // Unicode line separator (0x2028)
                 final char PS = 0x2029; // Unicode paragraph separator (0x2029)
 
-                lso.add(0);
+//                lso.add(0);
                 while (-1 != (size = reader.read(buffer, 0, buffer.length))) {
                     for (int i = 0; i < size; i++) {
                         char ch = buffer[i];
                         if (lastCharCR && ch == LF) { // found CRLF sequence
                             output.append(LF);
-                            lso.add(output.length());
+//                            lso.add(output.length());
                             lastCharCR = false;
 
                         } else { // not CRLF sequence
@@ -287,7 +287,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                                 lastCharCR = true;
                             } else if (ch == LS || ch == PS) { // Unicode LS, PS
                                 output.append(LF);
-                                lso.add(output.length());
+//                                lso.add(output.length());
                                 lastCharCR = false;
                             } else { // current char not CR
                                 lastCharCR = false;
@@ -297,15 +297,15 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                     }
                 }
 
-                int[] lsoArr = new int[lso.size()];
-                int idx = 0;
-                for (Integer offset : lso) {
-                    lsoArr[idx++] = offset;
-                }
+//                int[] lsoArr = new int[lso.size()];
+//                int idx = 0;
+//                for (Integer offset : lso) {
+//                    lsoArr[idx++] = offset;
+//                }
 
                 char[] out = new char[output.length()];
                 output.getChars(0, output.length(), out, 0);
-                return new FileBufferSnapshot(fileSystem, absPath, bufType, out, lsoArr, timeStamp);
+                return new FileBufferSnapshot(fileSystem, absPath, bufType, out, null/*lsoArr*/, timeStamp);
             } finally {
                 reader.close();
             }
