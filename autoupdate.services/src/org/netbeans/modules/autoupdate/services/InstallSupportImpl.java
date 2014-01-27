@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -384,7 +384,7 @@ public class InstallSupportImpl {
                             if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals(entry.toString()) ||
                                     entry.toString().matches(ModuleUpdater.AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
                                 LOG.log(Level.FINE, entry.toString() + " is being installed from " + moduleImpl.getCodeName());
-                                updaterFiles.add(new UpdaterInfo(entry, jf, targetCluster));
+                                updaterFiles.add(new UpdaterInfo(entry, dest, targetCluster));
                                 needsRestart = true;
                              }
                          }
@@ -401,20 +401,10 @@ public class InstallSupportImpl {
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
                     for(int i=0;i<updaterFiles.size();i++) {
                         UpdaterInfo info = updaterFiles.get(i);
-                        Utilities.writeUpdateOfUpdaterJar (info.getUpdaterJarEntry(), info.getUpdaterJarFile(), info.getUpdaterTargetCluster());
-                        boolean hasAnotherEntryInSameJarFile = false;
-                        for(int j = i + 1; j < updaterFiles.size(); j++) {
-                            if(updaterFiles.get(j).getUpdaterJarFile() == info.getUpdaterJarFile()) {
-                                hasAnotherEntryInSameJarFile = true;
-                                break;
-                            }
-                        }
-                        if (!hasAnotherEntryInSameJarFile) {
-                            try {
-                                info.getUpdaterJarFile().close();
-                            } catch (IOException e) {
-                                LOG.log(Level.INFO, "Cannot close jar file " + info.getUpdaterJarFile());
-                            }
+                        try {
+                            Utilities.writeUpdateOfUpdaterJar (info.getUpdaterJarEntry(), info.getZipFileWithUpdater(), info.getUpdaterTargetCluster());
+                        } catch (IOException ex) {
+                            LOG.log(Level.INFO, "Cannot open or close jar file {0}", info.getZipFileWithUpdater());
                         }
                     }
 
@@ -1325,13 +1315,13 @@ public class InstallSupportImpl {
     }
     
     private static class UpdaterInfo {
-        private JarEntry updaterJarEntry;
-        private JarFile updaterJarFile;
-        private File updaterTargetCluster;
+        private final JarEntry updaterJarEntry;
+        private final File zipFileWithUpdater;
+        private final File updaterTargetCluster;
 
-        public UpdaterInfo(JarEntry updaterJarEntry, JarFile updaterJarFile, File updaterTargetCluster) {
+        public UpdaterInfo(JarEntry updaterJarEntry, File updaterJarFile, File updaterTargetCluster) {
             this.updaterJarEntry = updaterJarEntry;
-            this.updaterJarFile = updaterJarFile;
+            this.zipFileWithUpdater = updaterJarFile;
             this.updaterTargetCluster = updaterTargetCluster;
         }
 
@@ -1339,24 +1329,13 @@ public class InstallSupportImpl {
             return updaterJarEntry;
         }
 
-        public void setUpdaterJarEntry(JarEntry updaterJarEntry) {
-            this.updaterJarEntry = updaterJarEntry;
-        }
-
-        public JarFile getUpdaterJarFile() {
-            return updaterJarFile;
-        }
-
-        public void setUpdaterJarFile(JarFile updaterJarFile) {
-            this.updaterJarFile = updaterJarFile;
+        public File getZipFileWithUpdater() {
+            return zipFileWithUpdater;
         }
 
         public File getUpdaterTargetCluster() {
             return updaterTargetCluster;
         }
 
-        public void setUpdaterTargetCluster(File updaterTargetCluster) {
-            this.updaterTargetCluster = updaterTargetCluster;
-        }
     }
 }
