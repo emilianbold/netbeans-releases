@@ -129,6 +129,7 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
+    @SuppressWarnings("ThrowableResultIgnored")
     public boolean doDownload (final ProgressHandle progress/*or null*/, final Boolean isGlobal, final boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
         this.useUserdirAsFallback = useUserdirAsFallback;
@@ -241,6 +242,7 @@ public class InstallSupportImpl {
         }
     }
 
+    @SuppressWarnings("ThrowableResultIgnored")
     public boolean doValidate (final Validator validator, final ProgressHandle progress/*or null*/) throws OperationException {
         assert validator != null;
         Callable<Boolean> validationCallable = new Callable<Boolean>() {
@@ -307,6 +309,7 @@ public class InstallSupportImpl {
     private Set<ModuleUpdateElementImpl> affectedModuleImpls = null;
     private Set<FeatureUpdateElementImpl> affectedFeatureImpls = null; 
     
+    @SuppressWarnings("ThrowableResultIgnored")
     public Boolean doInstall (final Installer installer, final ProgressHandle progress/*or null*/, final boolean forceInstall) throws OperationException {
         assert installer != null;
         Callable<Boolean> installCallable = new Callable<Boolean>() {
@@ -947,6 +950,7 @@ public class InstallSupportImpl {
         }
 
     }
+    @SuppressWarnings("ThrowableResultIgnored")
     private int copy (URL source, File dest, 
             ProgressHandle progress, final int estimatedSize, final int aggregateDownload, final int totalSize,
             String label) throws MalformedURLException, IOException {
