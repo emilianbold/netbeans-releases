@@ -192,7 +192,7 @@ public class CndPathUtilities {
     }
     
     public static String toAbsolutePath(FileSystem fileSystem, String basePath, String path) {
-        CndUtils.assertAbsolutePathInConsole(path);
+        CndUtils.assertAbsolutePathInConsole(basePath);
         path = (path == null || path.length() == 0) ? "." : path; // NOI18N
         if (!isPathAbsolute(path)) {
             path = basePath + '/' + path; //NOI18N
