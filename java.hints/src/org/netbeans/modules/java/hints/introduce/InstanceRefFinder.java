@@ -155,7 +155,8 @@ public class InstanceRefFinder extends TreePathScanner {
             switch (t.getKind()) {
                 case METHOD:
                 case VARIABLE:
-                case CLASS: 
+                case CLASS:
+                case ENUM:
                 case INTERFACE:
                 case NEW_CLASS:
                     enclosingElementPath = path;
@@ -209,7 +210,7 @@ public class InstanceRefFinder extends TreePathScanner {
         
         for (TypeElement enclType = enclosingType; enclType != null; enclType = ci.getElementUtilities().enclosingTypeElement(enclType)) {
             if (ci.getTypes().isSubtype(enclType.asType(), declType)) {
-                if (k == ElementKind.CLASS) {
+                if (k.isClass()) {
                     return enclType;
                 } else if (k == ElementKind.INTERFACE) {
                     if (t.getModifiers().contains(Modifier.DEFAULT)) {
@@ -234,6 +235,9 @@ public class InstanceRefFinder extends TreePathScanner {
      */
     private void addInstanceForConstructor(Element el) {
         TypeElement pt = findEnclosingType(el);
+        if (pt == null) {
+            return;
+        }
         switch (pt.getNestingKind()) {
             case ANONYMOUS:
                 // anonymous class can be moved, but they contain an implicit instance of this
@@ -369,6 +373,8 @@ public class InstanceRefFinder extends TreePathScanner {
                 addInstanceForMemberOf(el);
                 break;
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 if (node.getName().contentEquals("this") || node.getName().contentEquals("super")) {
                     addInstanceForType(enclosingType);
                 }
@@ -448,10 +454,12 @@ public class InstanceRefFinder extends TreePathScanner {
         r = scanAndReduce(node.getArguments(), p, r);
         
         // switch context to the anonymous class
-        TypeElement saveType = enclosingType;
-        enclosingType = ci.getElementUtilities().enclosingTypeElement(e);
-        r = scanAndReduce(node.getClassBody(), p, r);
-        this.enclosingType = saveType;
+        if (e != null) {
+            TypeElement saveType = enclosingType;
+            enclosingType = ci.getElementUtilities().enclosingTypeElement(e);
+            r = scanAndReduce(node.getClassBody(), p, r);
+            this.enclosingType = saveType;
+        }
         return r;
     }
 

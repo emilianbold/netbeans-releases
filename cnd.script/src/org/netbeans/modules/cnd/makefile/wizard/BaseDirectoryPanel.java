@@ -189,12 +189,13 @@ public class BaseDirectoryPanel extends DirectoryChooserPanel {
     @Override
     public void removeNotify() {
         super.removeNotify();
-
-        String base = getText().getText();
-        if (!base.equals(getMakefileData().getBaseDirectory())) {
-            getMakefileData().setBaseDirectory(base);
+        JTextField tf = getText();
+        if (tf != null) {
+            String base = tf.getText();
+            if (!base.equals(getMakefileData().getBaseDirectory())) {
+                getMakefileData().setBaseDirectory(base);
+            }
+            MakefileWizard.getMakefileWizard().initMakefileName();
         }
-
-        MakefileWizard.getMakefileWizard().initMakefileName();
     }
 }

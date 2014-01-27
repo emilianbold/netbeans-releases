@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -70,9 +71,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -87,11 +88,14 @@ import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
+import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.spi.editor.fold.FoldOperation;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -102,6 +106,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private FoldOperation operation;
     private FileObject    file;
     private JavaElementFoldTask task;
+    private boolean first = true;
     
     public void init(FoldOperation operation) {
         this.operation = operation;
@@ -263,14 +268,14 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             if (mgrs instanceof JavaElementFoldManager) {
                 SwingUtilities.invokeLater(
-                        ((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.folds, version, stamp)
+                        ((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.folds, v.anchors, version, stamp)
                 );
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<JavaElementFoldManager> jefms = (Collection<JavaElementFoldManager>)mgrs;
                     public void run() {
                         for (JavaElementFoldManager jefm : jefms) {
-                            jefm.new CommitFolds(doc, v.folds, version, stamp).run();
+                            jefm.new CommitFolds(doc, v.folds, v.anchors, version, stamp).run();
                         }
                 }});
             }
@@ -288,18 +293,33 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private boolean insideRender;
         private Document doc;
         private List<FoldInfo> infos;
+        private List<Integer> anchors;
         private long startTime;
         private AtomicLong version;
         private long stamp;
         
-        public CommitFolds(Document doc, List<FoldInfo> infos, AtomicLong version, long stamp) {
+        public CommitFolds(Document doc, List<FoldInfo> infos, List<Integer> anchors, AtomicLong version, long stamp) {
             this.doc = doc;
             this.infos = infos;
             this.version = version;
             this.stamp = stamp;
+            this.anchors = anchors;
+        }
+        
+        private FoldInfo expanded(FoldInfo info) {
+            FoldInfo ex = FoldInfo.range(info.getStart(), info.getEnd(), info.getType());
+            if (info.getTemplate() != info.getType().getTemplate()) {
+                ex = ex.withTemplate(info.getTemplate());
+            }
+            if (info.getDescriptionOverride() != null) {
+                ex = ex.withDescription(info.getDescriptionOverride());
+            }
+            ex.attach(info.getExtraInfo());
+            return ex.collapsed(false);
         }
         
         public void run() {
+            int caretPos = -1;
             if (!insideRender) {
                 startTime = System.currentTimeMillis();
                 insideRender = true;
@@ -309,16 +329,47 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 
                 return;
             }
+            if (first) {
+                JTextComponent c = operation.getHierarchy().getComponent();
+                Object od = doc.getProperty(Document.StreamDescriptionProperty);
+                if (od instanceof DataObject) {
+                    DataObject d = (DataObject)od;
+                    EditorCookie cake = d.getCookie(EditorCookie.class);
+                    int idx = Arrays.asList(cake.getOpenedPanes()).indexOf(c);
+                    if (idx != -1) {
+                        caretPos = c.getCaret().getDot();
+                    }
+                }
+            }
             operation.getHierarchy().lock();
             try {
                 if (version.get() != stamp || operation.getHierarchy().getComponent().getDocument() != doc) {
                     return;
+                }
+                int expandIndex = -1;
+                if (caretPos >= 0) {
+                    for (int i = 0; i < anchors.size(); i++) {
+                        int a = anchors.get(i);
+                        if (a > caretPos) {
+                            continue;
+                        }
+                        FoldInfo fi = infos.get(i);
+                        if (fi.getEnd() > caretPos) {
+                            expandIndex = i;
+                            break;
+                        }
+                    }
+                }
+                if (expandIndex != -1) {
+                    infos = new ArrayList<FoldInfo>(infos);
+                    infos.set(expandIndex, expanded(infos.get(expandIndex)));
                 }
                 Map<FoldInfo, Fold> folds = operation.update(infos, null, null);
                 if (folds == null) {
                     // manager has been released.
                     return;
                 }
+                first = false;
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
             } finally {
@@ -333,7 +384,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
     }
 
     private static final class JavaElementFoldVisitor extends CancellableTreePathScanner<Object, Object> {
-        
+        private List<Integer> anchors = new ArrayList<Integer>();
         private List<FoldInfo> folds = new ArrayList<FoldInfo>();
         private CompilationInfo info;
         private CompilationUnitTree cu;
@@ -341,12 +392,18 @@ public class JavaElementFoldManager extends JavaFoldManager {
         private boolean stopped;
         private int initialCommentStopPos = Integer.MAX_VALUE;
         private Document doc;
+        int expandMembersAtCaret = -1;
         
         public JavaElementFoldVisitor(CompilationInfo info, CompilationUnitTree cu, SourcePositions sp, Document doc) {
             this.info = info;
             this.cu = cu;
             this.sp = sp;
             this.doc = doc;
+        }
+        
+        private void addFold(FoldInfo f, int anchor) {
+            this.folds.add(f);
+            this.anchors.add(anchor);
         }
         
         public void checkInitialFold() {
@@ -362,7 +419,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     
                     if (token.id() == JavaTokenId.BLOCK_COMMENT || token.id() == JavaTokenId.JAVADOC_COMMENT) {
                         int startOffset = ts.offset();
-                        folds.add(FoldInfo.range(startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TYPE));
+                        addFold(FoldInfo.range(startOffset, startOffset + token.length(), INITIAL_COMMENT_FOLD_TYPE), startOffset);
                         break;
                     }
                 }
@@ -393,7 +450,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 
                 if (token.id() == JavaTokenId.JAVADOC_COMMENT) {
                     int startOffset = ts.offset();
-                    folds.add(FoldInfo.range(startOffset, startOffset + token.length(), JAVADOC_FOLD_TYPE));
+                    addFold(FoldInfo.range(startOffset, startOffset + token.length(), JAVADOC_FOLD_TYPE), startOffset);
                     if (startOffset < initialCommentStopPos)
                         initialCommentStopPos = startOffset;
                 }
@@ -405,13 +462,18 @@ public class JavaElementFoldManager extends JavaFoldManager {
         }
         
         private void handleTree(Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
+            handleTree((int)sp.getStartPosition(cu, node), node, javadocTree, handleOnlyJavadoc);
+        }
+        
+        private void handleTree(int symStart, Tree node, Tree javadocTree, boolean handleOnlyJavadoc) {
             try {
                 if (!handleOnlyJavadoc) {
                     int start = (int)sp.getStartPosition(cu, node);
                     int end   = (int)sp.getEndPosition(cu, node);
                     
                     if (start != (-1) && end != (-1)) {
-                        folds.add(FoldInfo.range(start, end, CODE_BLOCK_FOLD_TYPE));
+                        FoldInfo fi = FoldInfo.range(start, end, CODE_BLOCK_FOLD_TYPE);
+                        addFold(fi, symStart);
                     }
                 }
                 
@@ -428,7 +490,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         @Override
         public Object visitMethod(MethodTree node, Object p) {
             super.visitMethod(node, p);
-            handleTree(node.getBody(), node, false);
+            handleTree((int)sp.getStartPosition(cu, node), node.getBody(), node, false);
             return null;
         }
 
@@ -441,7 +503,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     int end   = (int)sp.getEndPosition(cu, node);
                     
                     if (start != (-1) && end != (-1)) {
-                        folds.add(FoldInfo.range(start, end, INNERCLASS_TYPE));
+                        addFold(FoldInfo.range(start, end, INNERCLASS_TYPE), (int)sp.getStartPosition(cu, node));
 		      }
                 }
                 
@@ -501,7 +563,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 importsStart += 7/*"import ".length()*/;
 
                 if (importsStart < importsEnd) {
-                    folds.add(FoldInfo.range(importsStart , importsEnd, IMPORTS_FOLD_TYPE));
+                    addFold(FoldInfo.range(importsStart , importsEnd, IMPORTS_FOLD_TYPE), importsStart);
                 }
             }
             return super.visitCompilationUnit(node, p);

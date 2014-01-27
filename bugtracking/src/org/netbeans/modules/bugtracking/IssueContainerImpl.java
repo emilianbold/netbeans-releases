@@ -49,6 +49,8 @@ package org.netbeans.modules.bugtracking;
 public interface IssueContainerImpl<I> {
     public void refreshingStarted();
     public void refreshingFinished();
+    public void restoreStarted();
+    public void restoreFinished();
     public void add(I... issue);
     public void remove(I... issue);
     public void clear();

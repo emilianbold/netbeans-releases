@@ -53,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -376,12 +377,14 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             attrs = Files.readAttributes(path, BasicFileAttributes.class);
         } catch (FileNotFoundException ex) {
             // it is OK for file to be deleted
-            LOG.log(Level.FINE, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
+            LOG.log(Level.FINE, "FileNotFoundException: can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
         } catch (NoSuchFileException ex) {
             // it is OK for file to be deleted
-            LOG.log(Level.FINE, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
+            LOG.log(Level.FINE, "NoSuchFileException: can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
+        } catch (InvalidPathException ex) {
+            LOG.log(Level.INFO, "InvalidPathException: can not get inode for {0}:\n{1}", new Object[]{dao, ex.getMessage()});
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "can not get inode for {0}:\n{1}", new Object[] {dao, ex.getMessage()});
+            LOG.log(Level.INFO, "{0}: can not get inode for {1}:\n{2}", new Object[] {ex.getClass().getName(), dao, ex.getMessage()});
         }
         Object key = null;
         if (attrs != null) {

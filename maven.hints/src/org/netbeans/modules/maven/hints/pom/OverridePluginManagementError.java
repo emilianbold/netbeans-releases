@@ -144,6 +144,14 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
     }
 
     @Override
+    public String getSavedValue(JComponent customizer, String key) {
+        return null;
+    }
+
+    @Override
+    public void cancel() { }
+
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }

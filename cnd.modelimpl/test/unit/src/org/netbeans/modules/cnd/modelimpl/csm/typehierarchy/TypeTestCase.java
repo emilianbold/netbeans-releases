@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
@@ -80,17 +81,22 @@ public class TypeTestCase extends TraceModelTestBase {
 
     @Override
     protected void performTest(String source) throws Exception {
-        File testFile = getDataFile(source);
-        assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
-        performModelTest(testFile, System.out, System.err);
-        boolean found = false;
-        for (FileImpl file : getProject().getAllFileImpls()) {
-            if ("type.cc".equals(file.getName().toString())) { // NOI18N
-                found = true;
-                checkFile(file);
+        CsmCacheManager.enter();
+        try {
+            File testFile = getDataFile(source);
+            assertTrue("File not found " + testFile.getAbsolutePath(), testFile.exists()); // NOI18N
+            performModelTest(testFile, System.out, System.err);
+            boolean found = false;
+            for (FileImpl file : getProject().getAllFileImpls()) {
+                if ("type.cc".equals(file.getName().toString())) { // NOI18N
+                    found = true;
+                    checkFile(file);
+                }
             }
+            assertTrue("Not found FileImpl for 'type.cc'", found); // NOI18N
+        } finally {
+            CsmCacheManager.leave();
         }
-        assertTrue("Not found FileImpl for 'type.cc'", found); // NOI18N
     }
 
     private void checkFile(FileImpl file) {

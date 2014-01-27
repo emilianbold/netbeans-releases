@@ -93,7 +93,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         panel.skipCheckBox.addActionListener(this);        
 
         panel.copyFromLocalTextField.setText(localeFile.getAbsolutePath());
-        panel.copyFromRemoteTextField.setText(repositoryFile.getFileUrl().toString());        
+        panel.copyFromRemoteTextField.setText(SvnUtils.decodeToString(repositoryFile.getFileUrl()));        
                         
         copyFromRepositoryPaths = 
             new RepositoryPaths(
@@ -322,7 +322,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         try {
             RepositoryFile repositoryFile = getToRepositoryFileIntern();
             if(repositoryFile!=null) {
-                getCreateCopyPanel().previewTextField.setText(repositoryFile.getFileUrl().toString());    
+                getCreateCopyPanel().previewTextField.setText(SvnUtils.decodeToString(repositoryFile.getFileUrl()));    
             } else {
                 getCreateCopyPanel().previewTextField.setText("");              // NOI18N
             }

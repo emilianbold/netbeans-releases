@@ -533,7 +533,7 @@ final class RepositoryRevision {
                     if (f != null) {
                         for (File selectionRoot : selectionRoots) {
                             if (VersioningSupport.isFlat(selectionRoot)) {
-                                underRoots = selectionRoot.equals(f.getParentFile());
+                                underRoots = selectionRoot.equals(f) || selectionRoot.equals(f.getParentFile());
                             } else {
                                 underRoots = Utils.isAncestorOrEqual(selectionRoot, f);
                             }

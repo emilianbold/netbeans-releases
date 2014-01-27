@@ -93,7 +93,6 @@ import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
 import org.netbeans.modules.team.spi.TeamBugtrackingConnector;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -406,13 +405,13 @@ public class ODCSRepository implements PropertyChangeListener {
     }    
 
     public Collection<ODCSQuery> getQueries() {
-        List<ODCSQuery> ret = new ArrayList<ODCSQuery>();
+        List<ODCSQuery> ret = new ArrayList<>();
         synchronized (QUERIES_LOCK) {
             initializePredefinedQueries();
             ret.addAll(predefinedQueries.values());
             if (remoteSavedQueries == null) {
                 // do not query saved queries again until really needed
-                remoteSavedQueries = new HashSet<ODCSQuery>();
+                remoteSavedQueries = new HashSet<>();
                 ODCS.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
@@ -427,7 +426,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     private void requestRemoteSavedQueries () {
-        List<ODCSQuery> queries = new ArrayList<ODCSQuery>();
+        List<ODCSQuery> queries = new ArrayList<>();
         ensureCredentials();
         RepositoryConfiguration conf = getRepositoryConfiguration(false);
         if (conf != null) {
@@ -442,7 +441,7 @@ public class ODCSRepository implements PropertyChangeListener {
         synchronized (QUERIES_LOCK) {
             if (remoteSavedQueries == null) {
                 // this can still be null, when user logins
-                remoteSavedQueries = new HashSet<ODCSQuery>();
+                remoteSavedQueries = new HashSet<>();
             }
             remoteSavedQueries.addAll(queries);
         }
@@ -454,7 +453,7 @@ public class ODCSRepository implements PropertyChangeListener {
 
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
-            Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
+            Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<>(PredefinedTaskQuery.class);
             if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
                 for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
                     if(ptq == PredefinedTaskQuery.RECENT) {
@@ -476,7 +475,7 @@ public class ODCSRepository implements PropertyChangeListener {
                 }
             }
             synchronized(QUERIES_LOCK) {
-                predefinedQueries = new EnumMap<PredefinedTaskQuery, ODCSQuery>(PredefinedTaskQuery.class);
+                predefinedQueries = new EnumMap<>(PredefinedTaskQuery.class);
                 for (Map.Entry<PredefinedTaskQuery, IRepositoryQuery> e : queries.entrySet()) {
                     predefinedQueries.put(e.getKey(), ODCSQuery.createPredefined(ODCSRepository.this, e.getValue().getSummary(), e.getValue()));
                     
@@ -520,7 +519,7 @@ public class ODCSRepository implements PropertyChangeListener {
             return Collections.emptyList();
         } else {
             //TODO is there a bulk command?
-            List<ODCSIssue> issues = new ArrayList<ODCSIssue>(ids.length);
+            List<ODCSIssue> issues = new ArrayList<>(ids.length);
             for (String id : ids) {
                 ODCSIssue i = getIssue(id);
                 if (i != null) {
@@ -595,11 +594,8 @@ public class ODCSRepository implements PropertyChangeListener {
         RepositoryConfiguration configuration = null;
         try {
             configuration = client.getRepositoryConfiguration(forceRefresh, new NullProgressMonitor());
-        } catch (CoreException ex) {
+        } catch (CoreException | NullPointerException ex) {
             ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", ex);
-        } catch (NullPointerException npe) {
-            // see issue #238231
-            ODCS.LOG.log(Level.WARNING, "Trying to access " + getUrl() + " resulted in an exception:", npe);
         }
         return configuration;
     }
@@ -657,7 +653,7 @@ public class ODCSRepository implements PropertyChangeListener {
         try {
             UnsubmittedTasksContainer cont = getUnsubmittedTasksContainer();
             List<NbTask> unsubmittedTasks = cont.getTasks();
-            List<ODCSIssue> unsubmittedIssues = new ArrayList<ODCSIssue>(unsubmittedTasks.size());
+            List<ODCSIssue> unsubmittedIssues = new ArrayList<>(unsubmittedTasks.size());
             for (NbTask task : unsubmittedTasks) {
                 ODCSIssue issue = getIssueForTask(task);
                 if (issue != null) {
@@ -682,7 +678,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     public class Cache {
-        private final Map<String, Reference<ODCSIssue>> issues = new HashMap<String, Reference<ODCSIssue>>();
+        private final Map<String, Reference<ODCSIssue>> issues = new HashMap<>();
         
         Cache() { }
 
@@ -695,7 +691,7 @@ public class ODCSRepository implements PropertyChangeListener {
 
         public ODCSIssue setIssue (String id, ODCSIssue issue) {
             synchronized (CACHE_LOCK) {
-                issues.put(id, new SoftReference<ODCSIssue>(issue));
+                issues.put(id, new SoftReference<>(issue));
             }
             return issue;
         }

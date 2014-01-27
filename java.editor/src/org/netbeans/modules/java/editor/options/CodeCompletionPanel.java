@@ -46,6 +46,8 @@ package org.netbeans.modules.java.editor.options;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -89,6 +91,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
 
     // null if a new entry is to be created, otherwise the entry to be replaced
     private volatile String javaExcluderEditing;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     /** Creates new form FmtTabsIndents */
     public CodeCompletionPanel(Preferences p) {
@@ -107,6 +110,17 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         initExcluderList(javaCompletionIncludeJlist, whitelist);
         javaCompletionExcluderMethodsCheckBox.setSelected(preferences.getBoolean(JAVA_COMPLETION_EXCLUDER_METHODS, JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT));
         javaCompletionExcluderDialog2.getRootPane().setDefaultButton(javaCompletionExcluderDialogOkButton);
+        
+        id2Saved.put(GUESS_METHOD_ARGUMENTS, guessMethodArguments.isSelected());
+        id2Saved.put(JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, javaAutoPopupOnIdentifierPart.isSelected());
+        id2Saved.put(JAVA_AUTO_COMPLETION_SUBWORDS, javaAutoCompletionSubwords.isSelected());
+        id2Saved.put(JAVA_COMPLETION_EXCLUDER_METHODS, javaCompletionExcluderMethodsCheckBox.isSelected());
+        id2Saved.put(JAVA_AUTO_COMPLETION_TRIGGERS, javaAutoCompletionTriggersField.getText());
+        id2Saved.put(JAVA_COMPLETION_SELECTORS, javaCompletionSelectorsField.getText());
+        id2Saved.put(JAVADOC_AUTO_COMPLETION_TRIGGERS, javadocAutoCompletionTriggersField.getText());
+        id2Saved.put(JAVADOC_COMPLETION_SELECTORS, javadocCompletionSelectorsField.getText());
+        id2Saved.put(JAVA_COMPLETION_BLACKLIST, blacklist);
+        id2Saved.put(JAVA_COMPLETION_WHITELIST, whitelist);
 
         javaCompletionExcluderDialog2.pack();
         javaCompletionExcluderDialog2.setLocationRelativeTo(this);
@@ -624,6 +638,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private static class CodeCompletionPreferencesCustomizer implements PreferencesCustomizer {
 
         private final Preferences preferences;
+        private CodeCompletionPanel component;
 
         private CodeCompletionPreferencesCustomizer(Preferences p) {
             preferences = p;
@@ -642,7 +657,25 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         }
 
         public JComponent getComponent() {
-            return new CodeCompletionPanel(preferences);
-        }        
+            if (component == null) {
+                component = new CodeCompletionPanel(preferences);
+            }
+            return component;
+        }
+    }
+
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
+    }
+
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof CodeCompletionPreferencesCustomizer) {
+                return ((CodeCompletionPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
+        }
     }
 }

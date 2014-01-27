@@ -51,7 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
 
 /**
  *
@@ -63,24 +63,22 @@ public class WildflyManagementAPI {
 
     private static Map<String, Object> modelDescriptionConstants;
 
-    static Object createClient(WildFlyDeploymentFactory.WildFlyClassLoader cl, final String serverAddress, final int serverPort,
+    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, final String serverAddress, final int serverPort,
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class
-        );
-        return method.invoke(
-                null, serverAddress, serverPort, handler);
+        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class);
+        return method.invoke(null, serverAddress, serverPort, handler);
     }
 
-    static void closeClient(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
+    static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
         Method method = client.getClass().getMethod("close", new Class[]{});
         method.invoke(client, (Object[]) null);
     }
 
     // ModelNode
-    static Object createDeploymentPathAddressAsModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name)
+    static Object createDeploymentPathAddressAsModelNode(WildflyDeploymentFactory.WildFlyClassLoader cl, String name)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class paClazz = cl.loadClass("org.jboss.as.controller.PathAddress"); // NOI18N
         Class peClazz = cl.loadClass("org.jboss.as.controller.PathElement"); // NOI18N
@@ -100,7 +98,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object createPathAddressAsModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl, LinkedHashMap<Object, Object> elements)
+    static Object createPathAddressAsModelNode(WildflyDeploymentFactory.WildFlyClassLoader cl, LinkedHashMap<Object, Object> elements)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class paClazz = cl.loadClass("org.jboss.as.controller.PathAddress"); // NOI18N
         Class peClazz = cl.loadClass("org.jboss.as.controller.PathElement"); // NOI18N
@@ -121,7 +119,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object createOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object name, Object modelNode)
+    static Object createOperation(WildflyDeploymentFactory.WildFlyClassLoader cl, Object name, Object modelNode)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -130,7 +128,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object createReadResourceOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, boolean recursive)
+    static Object createReadResourceOperation(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, boolean recursive)
             throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -139,7 +137,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object createRemoveOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
+    static Object createRemoveOperation(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -148,7 +146,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object createAddOperation(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
+    static Object createAddOperation(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -157,7 +155,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object readResult(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
+    static Object readResult(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -166,21 +164,21 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object getModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object name) throws IllegalAccessException,
+    static Object getModelNodeChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object name) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("get", String.class);
         return method.invoke(modelNode, name);
     }
 
     // ModelNode
-    static Object getModelNodeChildAtIndex(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int index) throws IllegalAccessException,
+    static Object getModelNodeChildAtIndex(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int index) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("get", int.class);
         return method.invoke(modelNode, index);
     }
 
     // ModelNode
-    static Object getModelNodeChildAtPath(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object[] path) throws IllegalAccessException,
+    static Object getModelNodeChildAtPath(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object[] path) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("get", String[].class);
         Object array = Array.newInstance(String.class, path.length);
@@ -191,27 +189,27 @@ public class WildflyManagementAPI {
     }
     
     // ModelNode
-    static boolean modelNodeHasChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, String child) throws IllegalAccessException,
+    static boolean modelNodeHasChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, String child) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("has", String.class);
         return (Boolean) method.invoke(modelNode, child);
     }
     
     // ModelNode
-    static boolean modelNodeHasDefinedChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, String child) throws IllegalAccessException,
+    static boolean modelNodeHasDefinedChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, String child) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("hasDefined", String.class);
         return (Boolean) method.invoke(modelNode, child);
     }
 
     // ModelNode
-    static Object createModelNode(WildFlyDeploymentFactory.WildFlyClassLoader cl) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+    static Object createModelNode(WildflyDeploymentFactory.WildFlyClassLoader cl) throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         return modelClazz.newInstance();
     }
 
     // ModelNode
-    static Object setModelNodeChildString(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
+    static Object setModelNodeChildString(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         assert value != null;
         Method method = modelNode.getClass().getMethod("set", String.class);
@@ -219,7 +217,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
+    static Object setModelNodeChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object value) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         assert value != null;
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -228,14 +226,14 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object setModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int value) throws IllegalAccessException,
+    static Object setModelNodeChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, int value) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("set", int.class);
         return method.invoke(modelNode, value);
     }
 
     // ModelNode
-    static Object setModelNodeChildEmptyList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static Object setModelNodeChildEmptyList(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
         Method method = modelNode.getClass().getMethod("setEmptyList", (Class<?>[]) null);
@@ -243,7 +241,7 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object setModelNodeChildBytes(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, byte[] value) throws IllegalAccessException,
+    static Object setModelNodeChildBytes(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, byte[] value) throws IllegalAccessException,
             ClassNotFoundException, InstantiationException, NoSuchMethodException, InvocationTargetException {
 
         Method method = modelNode.getClass().getMethod("set", byte[].class);
@@ -251,46 +249,46 @@ public class WildflyManagementAPI {
     }
 
     // ModelNode
-    static Object addModelNodeChild(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object toAddModelNode) throws IllegalAccessException,
+    static Object addModelNodeChild(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode, Object toAddModelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException, ClassNotFoundException {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Method method = modelNode.getClass().getMethod("add", modelClazz);
         return method.invoke(modelNode, toAddModelNode);
     }
 
-    static boolean modelNodeIsDefined(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static boolean modelNodeIsDefined(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("isDefined", (Class<?>[]) null);
         return (Boolean) method.invoke(modelNode, (Object[]) null);
     }
 
-    static String modelNodeAsString(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static String modelNodeAsString(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asString", (Class<?>[]) null);
         return (String) method.invoke(modelNode, (Object[]) null);
     }
 
-    static String modelNodeAsPropertyForName(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static String modelNodeAsPropertyForName(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
         Object property = method.invoke(modelNode, (Object[]) null);
         return getPropertyName(cl, property);
     }
 
-    static Object modelNodeAsPropertyForValue(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static Object modelNodeAsPropertyForValue(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asProperty", (Class<?>[]) null);
         Object property = method.invoke(modelNode, (Object[]) null);
         return getPropertyValue(cl, property);
     }
 
-    static String getPropertyName(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
+    static String getPropertyName(WildflyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = property.getClass().getMethod("getName", (Class<?>[]) null);
         return (String) method.invoke(property, (Object[]) null);
     }
     
-    static Object getPropertyValue(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
+    static Object getPropertyValue(WildflyDeploymentFactory.WildFlyClassLoader cl, Object property) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = property.getClass().getMethod("getValue", (Class<?>[]) null);
         return method.invoke(property, (Object[]) null);
@@ -298,31 +296,31 @@ public class WildflyManagementAPI {
 
     
     // List<ModelNode>
-    static List modelNodeAsList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static List modelNodeAsList(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asList", (Class<?>[]) null);
         return (List) method.invoke(modelNode, (Object[]) null);
     }
     
-    static List modelNodeAsPropertyList(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static List modelNodeAsPropertyList(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asPropertyList", (Class<?>[]) null);
         return (List) method.invoke(modelNode, (Object[]) null);
     }
     
-    static boolean modelNodeAsBoolean(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static boolean modelNodeAsBoolean(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asBoolean", (Class<?>[]) null);
         return (boolean) method.invoke(modelNode, (Object[]) null);
     }
     
-    static int modelNodeAsInt(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
+    static int modelNodeAsInt(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws IllegalAccessException,
             NoSuchMethodException, InvocationTargetException {
         Method method = modelNode.getClass().getMethod("asInt", (Class<?>[]) null);
         return (int) method.invoke(modelNode, (Object[]) null);
     }
 
-    static boolean isSuccessfulOutcome(WildFlyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
+    static boolean isSuccessfulOutcome(WildflyDeploymentFactory.WildFlyClassLoader cl, Object modelNode) throws ClassNotFoundException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.Operations"); // NOI18N
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
@@ -330,7 +328,7 @@ public class WildflyManagementAPI {
         return (Boolean) method.invoke(null, modelNode);
     }
 
-    static Object getClientConstant(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
+    static Object getClientConstant(WildflyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
         if (clientConstants == null) {
             clientConstants = new HashMap<String, Object>();
             Class clazz = cl.loadClass("org.jboss.as.controller.client.helpers.ClientConstants"); // NOI18N
@@ -345,7 +343,7 @@ public class WildflyManagementAPI {
         return clientConstants.get(name);
     }
 
-    static Object getModelDescriptionConstant(WildFlyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
+    static Object getModelDescriptionConstant(WildflyDeploymentFactory.WildFlyClassLoader cl, String name) throws ClassNotFoundException, IllegalAccessException {
         if (modelDescriptionConstants == null) {
             modelDescriptionConstants = new HashMap<String, Object>();
             Class clazz = cl.loadClass("org.jboss.as.controller.descriptions.ModelDescriptionConstants"); // NOI18N

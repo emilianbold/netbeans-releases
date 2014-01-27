@@ -69,6 +69,7 @@ import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
@@ -81,6 +82,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
+import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -88,6 +90,7 @@ import org.openide.actions.FindAction;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.Presenter;
 import org.openide.xml.XMLUtil;
@@ -551,6 +554,26 @@ public class DashboardUtils {
         return millisToTomorrow.intValue();
     }
 
+    public static void setQueryAutoRefresh(QueryImpl q, boolean b) {
+        NbPreferences.forModule(Actions.class).putBoolean(getQueryRefreshKey(q), b);
+    }
+
+    public static boolean isQueryAutoRefresh(QueryImpl q) {
+        return NbPreferences.forModule(Actions.class).getBoolean(getQueryRefreshKey(q), true);
+    }
+    
+    private static String getQueryRefreshKey(QueryImpl q) {
+        RepositoryImpl r = q.getRepositoryImpl();
+        StringBuilder sb = new StringBuilder();
+        sb.append("query.auto.refresh.");
+        sb.append(r.getConnectorId());
+        sb.append("<=>");
+        sb.append(r.getId());
+        sb.append("<=>");
+        sb.append(q.getDisplayName());
+        return sb.toString();
+    }
+        
     public static final class SchedulingMenu {
 
         private final JMenu menu;

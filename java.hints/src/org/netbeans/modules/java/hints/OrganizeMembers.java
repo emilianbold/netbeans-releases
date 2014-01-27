@@ -41,6 +41,16 @@
  */
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LineMap;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -48,21 +58,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
 import javax.tools.Diagnostic;
-
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -121,6 +119,11 @@ public class OrganizeMembers {
                 Fix fix = new OrganizeMembersFix(context.getInfo(), context.getPath()).toEditorFix();
                 SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
                 int offset = diffs.get(0).getStartPosition().getOffset();
+                LineMap lm = context.getInfo().getCompilationUnit().getLineMap();
+                long lno = lm.getLineNumber(offset);
+                if (lno >= 1) {
+                    offset = (int)lm.getStartPosition(lno);
+                }
                 CompilationUnitTree cut = context.getPath().getCompilationUnit();
                 ClassTree clazz = (ClassTree) context.getPath().getLeaf();
                 for (Tree member : clazz.getMembers()) {

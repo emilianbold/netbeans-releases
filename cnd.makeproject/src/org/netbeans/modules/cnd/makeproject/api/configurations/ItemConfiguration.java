@@ -70,7 +70,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
-public class ItemConfiguration implements ConfigurationAuxObject {
+public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationAuxObjectWithDictionary {
     
     // enabled by default for now, see #217779
     private static final boolean SHOW_HEADER_EXCLUDE = CndUtils.getBoolean("cnd.makeproject.showHeaderExclude", true); // NOI18N
@@ -530,6 +530,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     @Override
+    public XMLEncoder getXMLEncoder(Dictionaries dictionaries) {
+        return new ItemXMLCodec(this, dictionaries);
+    }
+
+    @Override
     public void initialize() {
         // FIXUP: this doesn't make sense...
     }
@@ -557,7 +562,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            
             itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
         } else {
-            fullPath = CndPathUtilities.toAbsolutePath(baseDir, item.getPath());
+            fullPath = CndPathUtilities.toAbsolutePath(sourceFS, baseDir, item.getPath());
             itemFO = null;
         }
         if (itemFO != null && itemFO.isValid()) {

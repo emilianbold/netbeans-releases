@@ -111,22 +111,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
 }
     
     public boolean changed() {
-        if (changed) {
-            return true;
-        }
-        
-        Preferences node = MarkOccurencesSettings.getCurrentNode();
-        
-        for (JCheckBox box : boxes) {
-            boolean value = box.isSelected();
-            boolean original = node.getBoolean(box.getActionCommand(), DEFAULT_VALUE);
-            if ( value != original ) {
-                changed = true;
-                return true;
-            }
-        }
-
-        return false;
+        return changed;
     }
 
 
@@ -356,6 +341,16 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         }
     }
     
+    private void fireChanged() {
+        Preferences node = MarkOccurencesSettings.getCurrentNode();
+        for (JCheckBox box : boxes) {
+            if (node.getBoolean(box.getActionCommand(), DEFAULT_VALUE) != box.isSelected()) {
+                changed = true;
+                return;
+            }
+        }
+        changed = false;
+    }
     
     private class CheckChangeListener implements ChangeListener {
 
@@ -364,6 +359,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
             if (evt.getSource().equals(onOffCheckBox)) {
                 componentsSetEnabled();
             }
+            fireChanged();
         }
     }
     

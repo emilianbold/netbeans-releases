@@ -43,12 +43,13 @@ package org.netbeans.modules.j2me.project.ui.customizer;
 
 import java.awt.BorderLayout;
 import org.netbeans.modules.j2me.project.wizard.PlatformDevicesPanel;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class J2MEPlatformPanel extends javax.swing.JPanel {
+public class J2MEPlatformPanel extends javax.swing.JPanel implements HelpCtx.Provider {
     
     private PlatformDevicesPanel platformDevicesPanel;
 
@@ -74,4 +75,9 @@ public class J2MEPlatformPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel"); //NOI18N
+    }
 }

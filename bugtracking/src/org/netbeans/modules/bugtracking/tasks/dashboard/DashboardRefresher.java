@@ -44,6 +44,8 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -140,7 +142,10 @@ public class DashboardRefresher {
         List<Category> categories = DashboardViewer.getInstance().getCategories(true, true);
         for (RepositoryImpl<?, ?, ?> repository : repositories) {
             for (QueryImpl query : repository.getQueries()) {
-                query.refresh();
+                if(DashboardUtils.isQueryAutoRefresh(query)) {
+                    Logger.getLogger(DashboardRefresher.class.getName()).log(Level.INFO, "refreshing query {0} - {1}", new Object[]{query.getRepositoryImpl().getDisplayName(), query.getDisplayName()});
+                    query.refresh();
+                }
             }
         }
 

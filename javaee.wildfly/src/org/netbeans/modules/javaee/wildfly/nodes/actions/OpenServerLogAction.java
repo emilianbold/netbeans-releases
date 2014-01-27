@@ -47,9 +47,9 @@ package org.netbeans.modules.javaee.wildfly.nodes.actions;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.WildlfyOutputSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.WildflyOutputSupport;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -78,17 +78,17 @@ public class OpenServerLogAction extends NodeAction {
                 continue;
             }
             
-            WildFlyDeploymentManager dm = ((WildflyManagerNode)node).getDeploymentManager();
+            WildflyDeploymentManager dm = ((WildflyManagerNode)node).getDeploymentManager();
             InputOutput io = UISupport.getServerIO(dm.getUrl());
             if (io != null) {
                 io.select();
             }
             
             InstanceProperties ip = dm.getInstanceProperties();
-            WildlfyOutputSupport outputSupport = WildlfyOutputSupport.getInstance(ip, false);
+            WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, false);
             if (outputSupport == null) {
-                outputSupport = WildlfyOutputSupport.getInstance(ip, true);
-                String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+                outputSupport = WildflyOutputSupport.getInstance(ip, true);
+                String serverDir = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
                 String logFileName = serverDir + File.separator + "log" + File.separator + "server.log" ; // NOI18N
                 File logFile = new File(logFileName);
                 if (logFile.exists()) {

@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -104,13 +105,13 @@ import org.xml.sax.Attributes;
  */
 class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
-    private String tag;
-    private FileObject projectDirectory;
+    private final String tag;
+    private final FileObject projectDirectory;
     private int descriptorVersion = -1;
     private final MakeConfigurationDescriptor projectDescriptor;
     private final RemoteProject remoteProject;
     private final Project project;
-    private List<Configuration> confs = new ArrayList<Configuration>();
+    private final List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
     private FolderConfiguration currentFolderConfiguration = null;
@@ -130,11 +131,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = -1;
-    private Stack<Folder> currentFolderStack = new Stack<Folder>();
+    private final Stack<Folder> currentFolderStack = new Stack<Folder>();
     private Folder currentFolder = null;
     private String relativeOffset;
-    private Map<String, String> cache = new HashMap<String, String>();
-    private Map<String, String> rootDecoder = new HashMap<String, String>();
+    private final Map<String, String> cache = new HashMap<String, String>();
+    private Map<String, String> dictionary;
+    private final Map<String, String> rootDecoder = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
@@ -313,7 +315,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
                     if (flavor != null) {
                         itemConfiguration.setLanguageFlavor(LanguageFlavor.fromExternal(Integer.parseInt(flavor)));
-                    }                    
+                    }
                 }
             } else {
                 System.err.println("Not found item: " + path);
@@ -353,6 +355,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentList = currentCodeAssistanceConfiguration.getTransientMacros().getValue();
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
+        } else if (element.equals(DICTIONARY_ELEMENTS)) {
+             dictionary = new HashMap<String, String>();
+        } else if (element.equals(DICTIONARY_ELEMENT)) {
+            if (dictionary != null) {
+                String id = getString(atts.getValue(CommonConfigurationXMLCodec.DICTIONARY_ELEMENT_ATR_ID));
+                String flags = getString(atts.getValue(CommonConfigurationXMLCodec.DICTIONARY_ELEMENT_ATR_VALUE));
+                if (id != null && flags != null) {
+                    dictionary.put(id, flags);
+                }
+            }
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
                 currentCCompilerConfiguration = currentItemConfiguration.getCCompilerConfiguration();
@@ -363,6 +375,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentCCCCompilerConfiguration = currentCCompilerConfiguration;
             currentBasicCompilerConfiguration = currentCCompilerConfiguration;
+            String importantFlags = getString(atts.getValue(CommonConfigurationXMLCodec.IMPORTANT_FLAGS_ATTR));
+            if (importantFlags != null) {
+                if (dictionary != null) {
+                    String candidate = dictionary.get(importantFlags);
+                    if (candidate != null) {
+                        importantFlags = candidate;
+                    }
+                }
+                currentCCCCompilerConfiguration.setImportantFlags(new StringConfiguration(null, importantFlags));
+            }
         } else if (element.equals(CCCOMPILERTOOL_ELEMENT2) || element.equals(CCCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
             if (currentItemConfiguration != null) {
                 currentCCCompilerConfiguration = currentItemConfiguration.getCCCompilerConfiguration();
@@ -373,6 +395,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             currentCCCCompilerConfiguration = currentCCCompilerConfiguration;
             currentBasicCompilerConfiguration = currentCCCompilerConfiguration;
+            String importantFlags = getString(atts.getValue(CommonConfigurationXMLCodec.IMPORTANT_FLAGS_ATTR));
+            if (importantFlags != null) {
+                if (dictionary != null) {
+                    String candidate = dictionary.get(importantFlags);
+                    if (candidate != null) {
+                        importantFlags = candidate;
+                    }
+                }
+                currentCCCCompilerConfiguration.setImportantFlags(new StringConfiguration(null, importantFlags));
+            }
         } else if (element.equals(FORTRANCOMPILERTOOL_ELEMENT)) {
             if (currentItemConfiguration != null) {
                 currentFortranCompilerConfiguration = currentItemConfiguration.getFortranCompilerConfiguration();

@@ -110,4 +110,11 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("bug172419_5.cpp", 61, 15, "bug172419_5.cpp", 14, 9); // this fails always
     }    
     
+    public void testBug240929() throws Exception {
+        // Bug 240929 - Unresolved return type of casts functions in LLVM 3.4
+        performTest("bug240929.cpp", 190, 30, "bug240929.cpp", 178, 9); 
+        performTest("bug240929.cpp", 193, 30, "bug240929.cpp", 178, 9); 
+        performTest("bug240929.cpp", 196, 32, "bug240929.cpp", 178, 9); 
+        performTest("bug240929.cpp", 199, 32, "bug240929.cpp", 178, 9);         
+    }
 }

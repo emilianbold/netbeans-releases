@@ -923,7 +923,7 @@ public class LogReaderTest extends TestCase {
 
     private String processLine(String[] line, DiscoveryUtils.LogOrigin isScriptOutput) {
         Artifacts artifacts = new Artifacts();
-        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).iterator(), isScriptOutput, artifacts, null, false).get(0);
+        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).listIterator(), isScriptOutput, artifacts, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
@@ -1033,7 +1033,8 @@ public class LogReaderTest extends TestCase {
         List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
-            CommandLineSource cs = new CommandLineSource(li, artifacts.languageArtifacts, "/", what, artifacts.userIncludes, artifacts.userMacros, artifacts.undefinedMacros, null);
+            CommandLineSource cs = new CommandLineSource(li, artifacts.languageArtifacts, "/", what, artifacts.userIncludes, artifacts.userMacros,
+                    artifacts.undefinedMacros, null, artifacts.getImportantFlags());
             assertEquals(ct, cs.getLanguageKind());
         }
     }

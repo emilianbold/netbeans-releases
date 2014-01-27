@@ -394,7 +394,7 @@ public class DefaultTabDataModel implements TabDataModel {
         if (start == end) {
             list.remove(start);
         } else {
-            list.removeRange(start, end + 1);
+            list.removeRange(start, end);
         }
         ComplexListDataEvent lde = new ComplexListDataEvent(this,
                                                             ListDataEvent.INTERVAL_REMOVED,

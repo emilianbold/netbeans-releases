@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 
@@ -60,8 +61,16 @@ final class NetigsoLoader extends ClassLoader {
     }
 
     @Override
-    public Class<?> loadClass(String string) throws ClassNotFoundException {
-        return getDelegate().loadClass(string);
+    public Class<?> loadClass(String className) throws ClassNotFoundException {
+        ClassLoader del = getDelegate(10000);
+        if (del == null) {
+            Util.err.log(Level.WARNING, 
+                "Time out waiting to enabled {0}. Cannot load {1}",
+                new Object[]{mi.getCodeNameBase(), className}
+            );
+            throw new ClassNotFoundException(className);
+        }
+        return del.loadClass(className);
     }
 
     @Override
@@ -90,10 +99,15 @@ final class NetigsoLoader extends ClassLoader {
     }
 
     private ClassLoader getDelegate() {
+        return getDelegate(0);
+    }
+    private ClassLoader getDelegate(long timeout) {
         if (!mi.isEnabled()) {
             Mutex.Privileged p = mi.getManager().mutexPrivileged();
+            if (!p.tryWriteAccess(timeout)) {
+                return null;
+            }
             try {
-                p.enterWriteAccess();
                 mi.getManager().enable(mi, false);
             } catch (IllegalArgumentException ex) {
                 Exceptions.printStackTrace(ex);

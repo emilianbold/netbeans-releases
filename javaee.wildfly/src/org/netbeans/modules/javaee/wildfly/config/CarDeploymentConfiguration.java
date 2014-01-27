@@ -62,7 +62,7 @@ import org.netbeans.modules.javaee.wildfly.config.gen.JbossClient;
 import org.netbeans.modules.javaee.wildfly.config.gen.ResourceRef;
 import org.netbeans.modules.javaee.wildfly.config.gen.ServiceRef;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -90,7 +90,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     }
 
     /** Creates a new instance of CarDeploymentConfiguration */
-    public CarDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public CarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
         super(j2eeModule, version);
         jbossClientFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-client.xml"); // NOI18N
         getJbossClient();

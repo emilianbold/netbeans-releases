@@ -360,6 +360,7 @@ import org.openide.util.lookup.Lookups;
         }
         return LayerKey.create(key, layerUnitID);
     }
+    
 
     void openUnit(int clientUnitID) {
         // unitID == 100001
@@ -389,11 +390,15 @@ import org.openide.util.lookup.Lookups;
                 // There is no this Unit in this layer
                 continue;
             }
-            
-            layer_to_read_files_from = layer;
-            unit_id_layer_to_read_files_from = unitIDInLayer;
+            //here we can be in a situation when we have 2 layers already but 
+            //file tables is not listed in one of them?
             layer.openUnit(unitIDInLayer);
-
+            //read files from the layers where file tables exists
+            if (layer_to_read_files_from == null || !layer.getFileNameTable(unitIDInLayer).isEmpty()) {
+                layer_to_read_files_from = layer;
+                unit_id_layer_to_read_files_from = unitIDInLayer;                
+            }
+           
             Map<Integer, Integer> map = fileSystemsTranslationMap.get(layer.getLayerDescriptor());
             // map: clientFileSystemID => fileSystemIndexInLayer
             Integer requiredFileSystem = map.get(clientFileSystemID);
@@ -423,6 +428,9 @@ import org.openide.util.lookup.Lookups;
                     }
                 } else {
                     convertedTable = new ArrayList<CharSequence>();
+                }
+                if (convertedTable.isEmpty()) {
+                    //should read from another layer
                 }
                 filePathDictionaries.put(clientShortUnitID, new FilePathsDictionary(convertedTable));
             }
@@ -464,13 +472,13 @@ import org.openide.util.lookup.Lookups;
      */
     CharSequence getFileName(int unitID, int fileIdx) {
         // 1
-        Integer unmaskedID = storageMask.clientToLayer(unitID);
+        Integer clientShortUnitID = storageMask.clientToLayer(unitID);
         FilePathsDictionary fsDict;
         synchronized (filePathDictionaries) {
-            fsDict = filePathDictionaries.get(unmaskedID);
+            fsDict = filePathDictionaries.get(clientShortUnitID);
             if (fsDict == null) {
-                openUnit(unmaskedID);
-                fsDict = filePathDictionaries.get(unmaskedID);
+                openUnit(unitID);
+                fsDict = filePathDictionaries.get(clientShortUnitID);
             }            
         }
         return fsDict.getFilePath(fileIdx);
@@ -550,7 +558,12 @@ import org.openide.util.lookup.Lookups;
             }
         }
         if (clientFileSystemID == -1) {
-            throw new InternalError();
+            //need to register file system here, when we are here when reading one peristent object which contains 
+            //new unit id for which getUnitId() was not invoked yet the file system is not registered in fileSystemsTranslationMap yet
+            //need to registe
+            clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(unitFileSystemInLayer);
+            map.put(clientFileSystemID, fileSystemIndexInLayer);
+            //throw new InternalError();
         }
         FileSystem clientFileSystem = clientFileSystemsDictionary.getFileSystem(clientFileSystemID);
         return RepositoryMapper.map(clientFileSystem, layerUnitDescriptor);

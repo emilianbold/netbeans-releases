@@ -1328,6 +1328,12 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         } else {
             configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER, sel);
             configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_PATH, jfxProps.getBrowserPaths().get(sel));
+            if (Utilities.isMac()) {
+                String browserArgs = jfxProps.getBrowserPaths().get(sel + "-args"); //NOI18N
+                configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS, browserArgs);
+            } else {
+                configs.setPropertyTransparent(config, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS, null);
+            }
             if(!radioButtonBE.isEnabled()) {
                 radioButtonBE.setEnabled(true);
             }
@@ -1710,14 +1716,15 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                 ExtWebBrowser instance = browser.getInstance();
                 if(instance != null) {
                     NbProcessDescriptor proc = instance.getBrowserExecutable();
-                    if(proc != null) {
-                        StringBuilder path = new StringBuilder();
-                        path.append(proc.getProcessName());
-                        if (Utilities.isMac()) {                            
+                    if (proc != null) {
+                        String path = proc.getProcessName();
+                        if (Utilities.isMac()) {
                             String args = proc.getArguments();
                             if (args != null && !args.trim().startsWith("{")) { //NOI18N
-                                path.append(" ");//NOI18N
-                                path.append(args.substring(0, args.indexOf("{")).trim()); //NOI18N
+                                String browserArgs = args.substring(0, args.indexOf("{")).trim(); //NOI18N
+                                jfxProps.getBrowserPaths().put(browser.getDisplayName() + "-args", browserArgs); //NOI8N
+                            } else {
+                                jfxProps.getBrowserPaths().put(browser.getDisplayName() + "-args", null); //NOI8N
                             }
                         }
                         jfxProps.getBrowserPaths().put(browser.getDisplayName(), path.toString());

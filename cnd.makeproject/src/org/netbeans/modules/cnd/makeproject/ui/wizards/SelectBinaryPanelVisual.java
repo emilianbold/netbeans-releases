@@ -110,10 +110,13 @@ import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -934,7 +937,13 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String selectBinaryFile(String path) {
         FileFilter[] filters = FileFilterFactory.getBinaryFilters();
-
+        if (path.isEmpty() && HostInfoUtils.isHostInfoAvailable(env)) { 
+            try {  
+                path = HostInfoUtils.getHostInfo(env).getUserDir();
+            } catch (    IOException | ConnectionManager.CancellationException ex) {
+                // reporting doesn't has much sense here
+            }
+        }
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
                 getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N

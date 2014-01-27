@@ -359,7 +359,7 @@ public class SQLEditorSupport extends DataEditorSupport
             Logger.getLogger("global").log(Level.INFO, null, e);
             sql = ""; // NOI18N
         }
-        execute(sql, 0, sql.length());
+        execute(sql, 0, sql.length(), null);
     }
 
     @Override
@@ -394,7 +394,7 @@ public class SQLEditorSupport extends DataEditorSupport
      * @param sql the SQL string to execute. If it contains multiple lines they 
      * have to be delimited by \n.
      */
-    void execute(String sql, int startOffset, int endOffset) {
+    void execute(String sql, int startOffset, int endOffset, SQLCloneableEditor editor) {
         DatabaseConnection conn;
         synchronized (this) {
             conn = this.dbconn;
@@ -402,7 +402,7 @@ public class SQLEditorSupport extends DataEditorSupport
         if (conn == null) {
             return;
         }
-        SQLExecutor executor = new SQLExecutor(this, conn, sql, startOffset, endOffset);
+        SQLExecutor executor = new SQLExecutor(this, conn, sql, startOffset, endOffset, editor);
         final RequestProcessor.Task task = rp.create(executor);
         executor.setTask(task);
         task.schedule(0);
@@ -426,7 +426,7 @@ public class SQLEditorSupport extends DataEditorSupport
         sqlPropChangeSupport.firePropertyChange(SQLExecution.PROP_EXECUTING, null, null);
     }
     
-    private void setResultsToEditors(final SQLExecutionResults results) {
+    private void setResultsToEditors(final SQLExecutionResults results, final SQLCloneableEditor editor) {
        Mutex.EVENT.writeAccess(new Runnable() {
             @Override
             public void run() {
@@ -442,6 +442,9 @@ public class SQLEditorSupport extends DataEditorSupport
                     }
                 }
                 
+                if (editor != null) {
+                    editor.setResults(components);
+                } else {
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
                     CloneableTopComponent editor = (CloneableTopComponent) editors.nextElement();
@@ -451,6 +454,7 @@ public class SQLEditorSupport extends DataEditorSupport
                     }
                 }
             }
+            }
         });
     }
     
@@ -459,7 +463,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     private void closeExecutionResult() {
-        setResultsToEditors(null);
+        setResultsToEditors(null, null);
         
         Runnable run = new Runnable() {
             @Override
@@ -513,7 +517,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
 
     private final static class SQLExecutor implements Runnable, Cancellable {
-        
+        private final SQLCloneableEditor editor;
         private final SQLEditorSupport parent;
 
         // the connections which the statements are executed against
@@ -527,7 +531,7 @@ public class SQLEditorSupport extends DataEditorSupport
         // the task representing the execution of statements
         private RequestProcessor.Task task;
         
-        public SQLExecutor(SQLEditorSupport parent, DatabaseConnection dbconn, String sql, int startOffset, int endOffset) {
+        public SQLExecutor(SQLEditorSupport parent, DatabaseConnection dbconn, String sql, int startOffset, int endOffset, SQLCloneableEditor editor) {
             assert parent != null;
             assert dbconn != null;
             assert sql != null;
@@ -537,6 +541,7 @@ public class SQLEditorSupport extends DataEditorSupport
             this.sql = sql;
             this.startOffset = startOffset;
             this.endOffset = endOffset;
+            this.editor = editor;
         }
         
         public void setTask(RequestProcessor.Task task) {
@@ -638,7 +643,7 @@ public class SQLEditorSupport extends DataEditorSupport
                 return;
             }
 
-            parent.setResultsToEditors(executionResults);
+            parent.setResultsToEditors(executionResults, editor);
 
             if (executionResults.hasExceptions()) {
                 // there was at least one exception

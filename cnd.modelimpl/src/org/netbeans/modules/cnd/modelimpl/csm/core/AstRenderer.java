@@ -426,8 +426,11 @@ public class AstRenderer {
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         if (!isAbstractDeclarator(child.getNextSibling())) {
                             CsmType type = TypeFactory.createType(child, file, null, 0);
-                            if (type != null && type.getClassifier().isValid()) {
-                                return true;
+                            if (type != null) {
+                                CsmClassifier cls = type.getClassifier();
+                                if (CsmBaseUtilities.isValid(cls)) {
+                                    return true;
+                                }
                             }
                         }
                     } else {

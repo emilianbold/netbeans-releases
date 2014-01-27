@@ -66,6 +66,12 @@ public final class MapHierarchy<K, V> {
         push(map);
     }    
     
+    public MapHierarchy(MapHierarchy<K, V> mapHierarchy) {
+        for (Map<K, V> map : mapHierarchy.maps) {
+            push(map);
+        }
+    }        
+    
     public void push(Map<K, V> map) {
         maps.push(map);
     }

@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -160,11 +161,16 @@ public class InnerToOuterRefactoringUI implements RefactoringUI, JavaRefactoring
                 ? null
                 : JavaRefactoringUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
         if (enclosing != null && enclosing != resolved) {
-            handles[0] = TreePathHandle.create(enclosing, info);
+                handles[0] = TreePathHandle.create(enclosing, info);
         }
-        return handles[0] != null && resolved != null
-                ? new InnerToOuterRefactoringUI(handles[0], info)
-                : null;
+        if(handles[0] != null && resolved != null) {
+            Element inner = handles[0].resolveElement(info);
+            TypeElement outer = info.getElementUtilities().enclosingTypeElement(inner);
+            if (outer.getEnclosedElements().contains(inner)) {
+                return new InnerToOuterRefactoringUI(handles[0], info);
+            }
+        }
+        return null;
     }
     
     public static JavaRefactoringUIFactory factory() {

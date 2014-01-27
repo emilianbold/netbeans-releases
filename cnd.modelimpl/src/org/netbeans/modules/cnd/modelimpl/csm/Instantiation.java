@@ -1227,18 +1227,36 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         return new Type(type, instantiation);       
     }
-
+    
+    public static CsmType createType(CsmType type, List<CsmInstantiation> instantiations) {
+        for (CsmInstantiation instantiation : instantiations) {
+            type = createType(type, instantiation);
+        }
+        return type;
+    }
+    
+//    public static CsmType resolveTemplateParameterType(CsmType type, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+//        if (CsmKindUtilities.isTemplateParameterType(type)) {
+//            LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
+//            CsmType resolvedType = resolveTemplateParameterType(((CsmTemplateParameterType) type).getParameter(), new MapHierarchy<>(mapping));
+//            if (resolvedType != null) {
+//                return resolvedType;
+//            }            
+//        }
+//        return type;
+//    }    
+    
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
-            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(instantiation.getMapping());
             CsmType resolvedType = resolveTemplateParameterType(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
                 return resolvedType;
             }
         }
         return type;
-    }
+    }    
     
     public static CsmType resolveTemplateParameterType(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         return resolveTemplateParameterType(templateParameter, new MapHierarchy<>(mapping));

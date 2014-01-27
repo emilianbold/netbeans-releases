@@ -45,7 +45,7 @@
 package org.netbeans.modules.options.colors;
 
 import java.awt.Color;
-import javax.swing.JComboBox;
+import java.util.HashSet;
 import org.openide.awt.ColorComboBox;
 import org.openide.util.NbBundle;
 
@@ -74,7 +74,9 @@ public class ColorComboBoxSupport {
 	new ColorValue (Color.YELLOW), 
 	new ColorValue (loc ("CTL_None_Color"), null)                  //NOI18N
     };
-
+    
+    private static final HashSet<ColorComboBox> cbWithInheritedColor = new HashSet<ColorComboBox>();
+    
     /**
      * Fill given combo box with some basic colors.
      * @param combo
@@ -92,6 +94,7 @@ public class ColorComboBoxSupport {
         if (color != null) {
             colors[content.length - 1] = color;
             names[content.length - 1] = loc ("CTL_Inherited_Color"); //NOI18N
+            cbWithInheritedColor.add(combo);
         } else {
             colors[content.length - 1] = null;
             names[content.length - 1] = loc ("CTL_None_Color"); //NOI18N
@@ -120,7 +123,7 @@ public class ColorComboBoxSupport {
      */
     static Color getSelectedColor(ColorComboBox combo) {
         int selIndex = combo.getSelectedIndex();
-        if( selIndex == combo.getItemCount()-2 )
+        if (selIndex == combo.getItemCount() - 2 && cbWithInheritedColor.contains(combo))
             return null; //inherited color
         return combo.getSelectedColor();
     }

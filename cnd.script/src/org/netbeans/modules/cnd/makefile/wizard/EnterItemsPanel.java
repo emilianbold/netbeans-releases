@@ -848,18 +848,22 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 	// Add each file in the directory
 	File[] files = dir.listFiles(new SrcsFileFilter());
-	for (int i = 0; i < files.length; i++) {
-	    aList.add(new ListItem(
-			parent + File.separator + files[i].getName(), true));
-	}
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                aList.add(new ListItem(
+                            parent + File.separator + files[i].getName(), true));
+            }
+        }
 
 	if (recurse) {
 	    // Recursively call this method for each subdirectory
 	    File[] dirs = dir.listFiles(new DirFilter());
-	    for (int i = 0; i < dirs.length; i++) {
-		aList.addAll(addDirectoryFiles(parent + File.separator +
-			    dirs[i].getName(), dirs[i], true));
-	    }
+            if (files != null) {
+                for (int i = 0; i < dirs.length; i++) {
+                    aList.addAll(addDirectoryFiles(parent + File.separator +
+                                dirs[i].getName(), dirs[i], true));
+                }
+            }
 	}
 
 	return aList;

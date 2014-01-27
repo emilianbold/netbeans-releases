@@ -630,7 +630,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         setSelectedTestingFramework();
         Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
         for (GuiUtilsProvider provider : providers) {
-            if(selectedTestingFramework.equals(provider.getJunitFramework())) {
+            if(selectedTestingFramework != null && selectedTestingFramework.equals(provider.getJunitFramework())) {
                 chkIntegrationTests.setEnabled(true);
             } else {
                 chkIntegrationTests.setEnabled(false);

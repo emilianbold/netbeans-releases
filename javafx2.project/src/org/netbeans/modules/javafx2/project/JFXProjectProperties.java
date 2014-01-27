@@ -1864,7 +1864,7 @@ public final class JFXProjectProperties {
 
         private String BROWSER_GROUP_NAME = "browser"; // NOI18N
         private List<String> BROWSER_PROPERTIES = Arrays.asList(new String[] {
-            JFXProjectProperties.RUN_IN_BROWSER, JFXProjectProperties.RUN_IN_BROWSER_PATH});
+            JFXProjectProperties.RUN_IN_BROWSER, JFXProjectProperties.RUN_IN_BROWSER_PATH, JFXProjectProperties.RUN_IN_BROWSER_ARGUMENTS});
         
         public final List<String> getPreloaderProperties() {
             return Collections.unmodifiableList(PRELOADER_PROPERTIES);
@@ -1881,7 +1881,7 @@ public final class JFXProjectProperties {
                 PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
                 RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS});
             registerPrivateProperties(new String[] {
-                RUN_WORK_DIR, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS});
+                RUN_WORK_DIR, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_IN_BROWSER_ARGUMENTS, RUN_AS});
             registerStaticProperties(new String[] {
                 RUN_AS});
             
