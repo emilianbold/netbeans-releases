@@ -356,6 +356,9 @@ public class MethodChooserSupport implements PropertyChangeListener {
         if (operations.length == 1) {
             // do not show UI, continue directly using the selection
             String name = operations[selectedIndex].getMethodName();
+            if ("<init>".equals(name)) {
+                name = operations[selectedIndex].getMethodClassType();
+            }
             RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
             return true;
         }

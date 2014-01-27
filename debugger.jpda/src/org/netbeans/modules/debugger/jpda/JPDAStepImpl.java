@@ -133,6 +133,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     //private SingleThreadedStepWatch stepWatch;
     private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     private volatile StepPatternDepth stepPatternDepth;
+    private boolean ignoreStepFilters = false;
     private Properties p;
     
     private Session session;
@@ -205,10 +206,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     getDepth()
                 );
                 //stepRequest.addCountFilter(1); - works bad with exclusion filters!
-                String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-                for (int i = 0; i < exclusionPatterns.length; i++) {
-                    StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
-                    logger.finer("   add pattern: "+exclusionPatterns[i]);
+                String[] exclusionPatterns;
+                if (ignoreStepFilters) {
+                    exclusionPatterns = null;
+                } else {
+                    exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                    for (int i = 0; i < exclusionPatterns.length; i++) {
+                        StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                        logger.finer("   add pattern: "+exclusionPatterns[i]);
+                    }
                 }
                 debuggerImpl.getOperator().register(stepRequest, this);
                 EventRequestWrapper.setSuspendPolicy(stepRequest, debugger.getSuspend());
@@ -786,7 +792,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             logger.fine("Method"+m+" is a static initializer, or constructor - will step out.");
                         }
                     }
-                    if (useStepFilters && !doStepAgain) {
+                    if (useStepFilters && !ignoreStepFilters && !doStepAgain) {
                         boolean stop = getCompoundSmartSteppingListener ().stopHere
                                (session, t, debuggerImpl.getSmartSteppingFilter());
                         if (stop) {
@@ -822,10 +828,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             doStepDepth
                         );
                         //EventRequestWrapper.addCountFilter(stepRequest, 1);
-                        String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-                        if (doStepDepth != StepRequest.STEP_OUT) {
-                            for (int i = 0; i < exclusionPatterns.length; i++) {
-                                StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                        String[] exclusionPatterns;
+                        if (ignoreStepFilters) {
+                            exclusionPatterns = null;
+                        } else {
+                            exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                            if (doStepDepth != StepRequest.STEP_OUT) {
+                                for (int i = 0; i < exclusionPatterns.length; i++) {
+                                    StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                                }
                             }
                         }
                         debuggerImpl.getOperator ().register (stepRequest, this);
@@ -1009,6 +1020,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (compoundSmartSteppingListener == null)
             compoundSmartSteppingListener = session.lookupFirst(null, CompoundSmartSteppingListener.class);
         return compoundSmartSteppingListener;
+    }
+
+    public void setIgnoreStepFilters(boolean ignoreStepFilters) {
+        this.ignoreStepFilters = ignoreStepFilters;
     }
 
     public static final class MethodExitBreakpointListener implements JPDABreakpointListener {

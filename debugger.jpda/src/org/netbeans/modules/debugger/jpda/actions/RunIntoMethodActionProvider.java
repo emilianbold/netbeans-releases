@@ -531,6 +531,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         step.setHidden(true);
         logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
                    new Object[]{method, methodLine, finishWhenNotFound});
+        // The user has explicitly set the method they want to step into.
+        // Therefore, ignore any stepping filters.
+        ((JPDAStepImpl) step).setIgnoreStepFilters(true);
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -561,14 +564,29 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     String threadMethod = jtr.getMethodName();
                     logger.log(Level.FINE, "  threadMethod = ''{0}'', tracing method = ''{1}'', equals = {2}",
                                new Object[]{threadMethod, method, threadMethod.equals(method)});
+                    boolean isInit = threadMethod.equals("<init>");
                     if (threadMethod.equals(method)) {
                         // We've found it :-)
                         step.setHidden(false);
-                    } else if (threadMethod.equals("<init>") && (jtr.getClassName().endsWith("."+method) || jtr.getClassName().equals(method))) {
+                    } else if (isInit && (jtr.getClassName().endsWith("."+method) || jtr.getClassName().equals(method))) {
                         // The method can be a constructor
                         step.setHidden(false);
                     } else {
-                        if (finishWhenNotFound) {
+                        boolean doFinish = finishWhenNotFound;
+                        if (doFinish) {
+                            if (currentDepth > depth) {
+                                try {
+                                    if (jtr.getCallStack(0, depth + 1)[depth].getLineNumber("Java") == methodLine) {
+                                        // We're still on the method line, do not finish yet...
+                                        doFinish = false;
+                                    }
+                                } catch (AbsentInformationException aiex) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+                                    // We're somewhere strange...
+                                }
+                            }
+                        }
+                        if (doFinish) {
                             // We've missed the method, finish.
                             step.setHidden(false);
                             logger.fine("  stepping finished.");
