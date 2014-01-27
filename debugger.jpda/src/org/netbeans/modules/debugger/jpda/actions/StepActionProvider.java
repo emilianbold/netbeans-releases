@@ -128,6 +128,8 @@ implements Executor {
     private String className;
     private String methodName;
     private int depth;
+    private boolean steppingFromFilteredLocation = false;
+    private boolean steppingFromCompoundFilteredLocation = false;
     private static RequestProcessor operationsRP = new RequestProcessor("Debugger Operations Computation", 1);
     
     private static boolean ssverbose = 
@@ -272,6 +274,9 @@ implements Executor {
             className = resumeThread.getClassName ();
             methodName = resumeThread.getMethodName ();
             depth = resumeThread.getStackDepth();
+            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(className);
+            steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere 
+                     (lookupProvider, resumeThread, getSmartSteppingFilterImpl());
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (action "+action+"): " + stepRequest);
             }
@@ -434,16 +439,25 @@ implements Executor {
             }
             
             // Stop execution here?
-            boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
+            boolean fsh;
+            if (steppingFromFilteredLocation) {
+                fsh = true;
+            } else {
+                fsh = getSmartSteppingFilterImpl ().stopHere (className);
+            }
             if (ssverbose)
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
                     className + ") ? " + fsh
                 );
             if (fsh) {
-                JPDAThread t = getDebuggerImpl ().getThread (tr);
-                if (getCompoundSmartSteppingListener ().stopHere 
-                     (lookupProvider, t, getSmartSteppingFilterImpl ())
-                ) {
+                if (steppingFromCompoundFilteredLocation) {
+                    // fsh is true
+                } else {
+                    JPDAThread t = getDebuggerImpl ().getThread (tr);
+                    fsh = getCompoundSmartSteppingListener ().stopHere 
+                         (lookupProvider, t, getSmartSteppingFilterImpl ());
+                }
+                if (fsh) {
                     // YES!
                     //S ystem.out.println("/nStepAction.exec end - do not resume");
                     loggerStep.fine("Can stop here.");

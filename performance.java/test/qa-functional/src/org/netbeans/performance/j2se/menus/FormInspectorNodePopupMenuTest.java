@@ -45,6 +45,7 @@ package org.netbeans.performance.j2se.menus;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -91,6 +92,7 @@ public class FormInspectorNodePopupMenuTest extends ValidatePopupMenuOnNodes {
     @Override
     public void initialize() {
         CommonUtilities.openSmallFormFile();
+        NavigatorOperator.invokeNavigator();
     }
 
     @Override
