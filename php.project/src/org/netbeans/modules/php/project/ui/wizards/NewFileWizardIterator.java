@@ -104,6 +104,10 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
                         @Override
                         public void run() {
                             assert EventQueue.isDispatchThread();
+                            if (simpleTargetChooserPanel == null) {
+                                // #241005 - already uninitialized
+                                return;
+                            }
                             WizardDescriptor descriptor = new DummyWizardDescriptor();
                             assert simpleTargetChooserPanel != null;
                             simpleTargetChooserPanel.storeSettings(descriptor);
