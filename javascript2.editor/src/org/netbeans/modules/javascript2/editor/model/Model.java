@@ -332,7 +332,7 @@ public final class Model {
                     moved = true;
                 } else {
                     for (JsObject variable : variables) {
-                        if (variable.getName().equals(name)) {
+                        if (variable.getParent() != null && variable.getName().equals(name)) {
                             moveProperty(variable.getParent(), jsWithProperty);
                             moved = true;
                             break;
