@@ -108,7 +108,12 @@ public final class CodeCompletionOptionsSelector {
         PreferencesCustomizer prefsCustomizer = getCustomizer(mimeType);
         if (prefsCustomizer != null) {
             Lookup l = Lookups.forPath(CODE_COMPLETION_CUSTOMIZERS_FOLDER + mimeType);
-            PreferencesCustomizer.CustomCustomizer customizer = l.lookup(PreferencesCustomizer.CustomCustomizer.class);
+            PreferencesCustomizer.CustomCustomizer customizer;
+            if (mimeType.isEmpty()) {
+                customizer = l.lookup(GeneralCompletionOptionsPanelController.CustomCustomizerImpl.class);
+            } else {
+                customizer = l.lookup(PreferencesCustomizer.CustomCustomizer.class);
+            }
             if (customizer != null) {
                 return customizer.getSavedValue(prefsCustomizer, key);
             }
