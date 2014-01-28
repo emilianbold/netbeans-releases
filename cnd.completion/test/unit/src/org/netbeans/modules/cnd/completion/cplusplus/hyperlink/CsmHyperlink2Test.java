@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.completion;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -52,24 +52,20 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Vladimir Voskresensky
  */
-public class CCCompletionTest extends CndBaseTestSuite {
+public class CsmHyperlink2Test extends CndBaseTestSuite {
     
-    public CCCompletionTest() {
-        super("C/C++ Completion part 1");
+    public CsmHyperlink2Test() {
+        super("C/C++ Hyperlink part 2");
         
-        this.addTestSuite(CheckModelTestCase.class);
-        this.addTestSuite(CCBasicCompletionTestCase.class);
-        this.addTestSuite(ClassContentTestCase.class);
-        this.addTestSuite(TemplateSpecializationTestCase.class);
-        this.addTestSuite(NamespacesTestCase.class);
-        this.addTestSuite(NamespaceUsingTestCase.class);
-        this.addTestSuite(StaticMembersTestCase.class);
-        this.addTestSuite(FriendTestCase.class);
-        this.addTestSuite(EnumTestCase.class);
+        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
+        this.addTestSuite(TemplateSpecializationsTestCase.class);
+        this.addTestSuite(InstantiationHyperlinkTestCase.class);
+        this.addTestSuite(Cpp11TestCase.class);
+        this.addTestSuite(Cpp11TemplatesTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new CCCompletionTest();
+        TestSuite suite = new CsmHyperlink2Test();
         return suite;
     }
 }
