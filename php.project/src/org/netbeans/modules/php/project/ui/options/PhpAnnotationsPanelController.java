@@ -79,6 +79,7 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
         assert EventQueue.isDispatchThread();
         panel.setAnnotations(UserAnnotations.getInstance().getAnnotations());
         panel.setResolveDeprecatedElements(PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements());
+        panel.setUnknownAsType(PhpOptions.getInstance().isAnnotationsUnknownAnnotationsAsTypeAnnotations());
     }
 
     @Override
@@ -88,11 +89,13 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
         boolean resolveDeprecatedElements = panel.isResolveDeprecatedElements();
         LOGGER.log(Level.INFO, "Resolving of deprecated PHP elements: {0}", resolveDeprecatedElements);
         PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(resolveDeprecatedElements);
+        PhpOptions.getInstance().setAnnotationsUnknownAnnotationsAsTypeAnnotations(panel.isUnknownAsType());
     }
-    
+
     @Override
     protected boolean areOptionsChanged() {
         return PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements() != panel.isResolveDeprecatedElements()
+                || PhpOptions.getInstance().isAnnotationsUnknownAnnotationsAsTypeAnnotations() != panel.isUnknownAsType()
                 || !UserAnnotations.getInstance().getAnnotations().equals(panel.getAnnotations());
     }
 
