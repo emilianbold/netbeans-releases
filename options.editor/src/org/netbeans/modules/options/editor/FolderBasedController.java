@@ -63,6 +63,7 @@ import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -133,6 +134,14 @@ public final class FolderBasedController extends OptionsPanelController implemen
         this.allowFiltering = allowFiltering;
     }    
     
+    private void saveSelectedLanguage() {
+        NbPreferences.forModule(FolderBasedController.class).put(folder, panel.getSelectedLanguage());
+    }
+    
+    String getSavedSelectedLanguage() {
+        return NbPreferences.forModule(FolderBasedController.class).get(folder, null);
+    }
+    
     public final synchronized void update() {
         for (Entry<String, OptionsPanelController> e : getMimeType2delegates ().entrySet()) {
             OptionsFilter f = OptionsFilter.create(filterDocument, new FilteringUsedCallback(e.getKey()));
@@ -153,6 +162,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
         }
 
         mimeType2delegates = null;
+        saveSelectedLanguage();
     }
     
     public final synchronized void cancel() {
@@ -162,6 +172,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
         }
         
         mimeType2delegates = null;
+        saveSelectedLanguage();
     }
     
     public final synchronized boolean isValid() {
