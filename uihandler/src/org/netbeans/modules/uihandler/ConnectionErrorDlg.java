@@ -54,6 +54,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.HtmlBrowser;
@@ -204,7 +205,9 @@ final class ConnectionErrorDlg extends Box {
                 c = new JLabel(segment.text);
                 break;
             case LINK:
-                c = new JLabel("<html><u><font color=\"blue\">"+segment.text+"</font></u></html>"); // NOI18N
+                // use lighter blue for dark themes
+                String linkColor  = UIManager.getBoolean("nb.dark.theme")  ? "#A4A4FF" : "#0000FF";
+                c = new JLabel("<html><u><font color=\""+ linkColor + "\">"+segment.text+"</font></u></html>"); // NOI18N
                 preferredSize = c.getPreferredSize();
                 c.setMinimumSize(preferredSize);
                 c.setMaximumSize(preferredSize);

@@ -74,13 +74,11 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
 
     public EditorMenuPopupTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
     public EditorMenuPopupTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
@@ -127,6 +125,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files" + "|";
         docName = "php20kb.php";
+        expectedTime = 500;
         doMeasurement();
     }
 
@@ -134,6 +133,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "javascript20kb.js";
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -141,6 +141,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "json20kb.json";
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -148,6 +149,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "css20kb.css";
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -155,6 +157,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "bat20kb.bat";
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -162,6 +165,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "diff20kb.diff";
+        expectedTime = 100;
         doMeasurement();
     }
 
@@ -169,6 +173,7 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "manifest20kb.mf";
+        expectedTime = 100;
         doMeasurement();
     }
 
@@ -176,16 +181,19 @@ public class EditorMenuPopupTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages" + "|";
         docName = "sh20kb.sh";
+        expectedTime = 100;
         doMeasurement();
     }
 
     private static final RegionFilter NE_FILTER
             = new RegionFilter() {
 
+                @Override
                 public boolean accept(javax.swing.JComponent c) {
                     return !(c.getClass().getName().equals("org.openide.text.QuietEditorPane") || c.getClass().getName().equals("org.netbeans.modules.editor.errorstripe.AnnotationView"));
                 }
 
+                @Override
                 public String getFilterName() {
                     return "Accept paints from org.netbeans.modules.editor.completion.CompletionScrollPane || org.openide.text.QuietEditorPane";
                 }
