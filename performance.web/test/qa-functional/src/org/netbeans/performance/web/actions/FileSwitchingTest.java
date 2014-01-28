@@ -108,6 +108,7 @@ public class FileSwitchingTest extends PerformanceTestCase {
     public void testSwitchJSPToJSP() {
         filenameFrom = "Test.jsp";
         filenameTo = "BigJsp.jsp";
+        expectedTime = 2500;
         doMeasurement();
     }
 

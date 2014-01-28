@@ -107,6 +107,7 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         }
         languageCombo.setModel(model);
         
+        lastSelectedMimeType = controller.getSavedSelectedLanguage();        
         if (lastSelectedMimeType != null && model.getSize() > 0) {
             languageCombo.setSelectedItem(lastSelectedMimeType);
             return;
@@ -118,6 +119,10 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
         if (!preSelectMimeType.equals (languageCombo.getSelectedItem()) && model.getSize() > 0) {
             languageCombo.setSelectedIndex(0);
         }
+    }
+    
+    String getSelectedLanguage() {
+        return lastSelectedMimeType;
     }
     
     /** This method is called from within the constructor to
