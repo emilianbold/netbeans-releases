@@ -303,4 +303,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 238913 - Unable to deduce type through uniqe_ptr and decltype
         performTest("bug238847_2.cpp", 16, 15, "bug238847_2.cpp", 4, 9);
     }    
+    
+    public void testBug240723() throws Exception {
+        // Bug 240723 - auto return type and const noexcept in C++11 code highlighted as error
+        performTest("bug240723_c.cpp", 15, 42, "bug240723_c.cpp", 14, 9);
+        performTest("bug240723_c.cpp", 27, 42, "bug240723_c.cpp", 26, 9);
+    }        
 }

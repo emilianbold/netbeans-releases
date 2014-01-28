@@ -106,4 +106,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 236535 - Cannot parse c++11 deleted definitions for conversion operators
         performTest("bug236535.cpp");
     }    
+    
+    public void test240723() throws Exception {
+        // Bug 236535 - Cannot parse c++11 deleted definitions for conversion operators
+        performTest("bug240723_m.cpp");
+    }        
 }
