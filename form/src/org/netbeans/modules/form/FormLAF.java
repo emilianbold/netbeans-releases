@@ -430,7 +430,7 @@ public class FormLAF {
     private static Map<Object,Object> classLoaderDefaults;
 
     static void setUseDesignerDefaults(FormModel formModel) {
-        if (noLafSwitching()) {
+        if (noLafSwitching() || delDefaults == null) {
             return;
         }
         ClassLoader classLoader = null;
@@ -460,7 +460,7 @@ public class FormLAF {
     static String oldNoXP;
     static Object origLAF;
     public static void setUsePreviewDefaults(ClassLoader classLoader, PreviewInfo info) {
-        if (noLafSwitching()) {
+        if (noLafSwitching() || delDefaults == null) {
             return;
         }
         boolean classic = (info == null)
@@ -534,7 +534,7 @@ public class FormLAF {
     }
     
     public static boolean inLAFBlock() {
-        return preview || (!noLafSwitching() && delDefaults.isDelegating());
+        return preview || (!noLafSwitching() && delDefaults != null && delDefaults.isDelegating());
     }
 
     public static boolean noLafSwitching() {
