@@ -63,7 +63,6 @@ public class CCCompletionTest extends CndBaseTestSuite {
         this.addTestSuite(TemplateSpecializationTestCase.class);
         this.addTestSuite(NamespacesTestCase.class);
         this.addTestSuite(NamespaceUsingTestCase.class);
-        this.addTestSuite(InheritanceTestCase.class);
         this.addTestSuite(StaticMembersTestCase.class);
         this.addTestSuite(FriendTestCase.class);
         this.addTestSuite(EnumTestCase.class);

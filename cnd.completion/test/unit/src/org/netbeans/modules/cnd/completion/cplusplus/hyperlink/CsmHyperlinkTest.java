@@ -57,7 +57,6 @@ public class CsmHyperlinkTest extends CndBaseTestSuite {
     public CsmHyperlinkTest() {
         super("C/C++ Hyperlink part 1");
         
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
         this.addTestSuite(NamespacesHyperlinkTestCase.class);
         this.addTestSuite(BasicHyperlinkTestCase.class);
         this.addTestSuite(UnnamedEnumTestCase.class);

@@ -58,6 +58,7 @@ public class CCCompletion2Test extends CndBaseTestSuite {
         super("C/C++ Completion part 2");
         
         this.addTestSuite(LibrariesContentTestCase.class);
+        this.addTestSuite(InheritanceTestCase.class);
         this.addTestSuite(TypedefTestCase.class);
         this.addTestSuite(TemplateCompletionTestCase.class);
         this.addTestSuite(TemplateInstantiationTestCase.class);
