@@ -1222,6 +1222,7 @@ public final class FoldHierarchyTransactionImpl {
                 LOG.warning("Paret fold should have no parent and no children: " + f + ", dumping hierarchy: " + execution);
             }
             for (Fold x : c) {
+                execution.unmarkBlocked(x);
                 unblockBlocked(x);
                 if (lastOperationFold == x) {
                     lastOperationFold = null;
