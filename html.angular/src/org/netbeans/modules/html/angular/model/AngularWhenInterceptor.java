@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.html.angular.Utils;
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -100,7 +101,7 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                         String template = getStringValueAt(content, url.getOffsetRange().getStart());
                         String controllerName = getStringValueAt(content, controller.getOffsetRange().getStart());
                         if (template != null && controllerName != null) {
-                            AngularJsIndexer.addTemplateController(fo.toURI(), template, controllerName);
+                            AngularJsIndexer.addTemplateController(fo.toURI(), Utils.cutQueryFromTemplateUrl(template), controllerName);
                         }
                     }
                 }
