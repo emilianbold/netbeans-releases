@@ -152,6 +152,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.nodes.Node;
 
 /**
@@ -1595,6 +1596,49 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         }
     }
+    
+    /*
+     * debugging view stuff 
+     */
+    private boolean get_debugging = false; // indicates Debugging View open/close
+    
+    @Override
+    public void registerDebuggingViewModel(ModelListener model) {
+        super.registerDebuggingViewModel(model);
+        
+        get_debugging = model != null;
+        
+        if (get_frames || get_debugging) {
+	    stackEnabler.setRegistered(true);
+        } else {
+	    stackEnabler.setRegistered(false);
+        }
+        
+        if (get_threads || get_debugging) {
+            threadEnabler.setRegistered(true);
+        } else {
+            threadEnabler.setRegistered(false);
+        }
+    }
+
+    public Thread[] getThreadsWithStacks() {
+        Thread[] threadsWithStack = getThreads();
+        for (Thread thread : threadsWithStack) {
+            if (thread.isCurrent()) {
+                Frame[] stack = getStack();
+                for (Frame frame : stack) {
+                    ((DbxFrame) frame).setThread(thread);
+                }
+                thread.setStack(stack);
+            }
+        }
+        return threadsWithStack;
+    }
+
+    public void resumeThread(final Thread thread) {
+        runProgram("cont " + ((DbxThread) thread).getName()); // NOI18N
+    }
+    
     private static final class DbxVariableNodeChildren extends VariableNodeChildren {
         public DbxVariableNodeChildren(Variable v) {
             super(v);
@@ -2328,31 +2372,32 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             f.attr_sig = 0;
             f.attr_signame = null;
 
-            guiStackFrames[fx] = new DbxFrame(this, f);
+            guiStackFrames[fx] = new DbxFrame(this, f, null);
             fx++;
             if (attr_user_call) {
                 GPDbxFrame dummy = new GPDbxFrame();
                 dummy.attr_user_call = true;
-                guiStackFrames[fx] = new DbxFrame(this, dummy);
+                guiStackFrames[fx] = new DbxFrame(this, dummy, null);
                 fx++;
             } else if (attr_sig != 0 && attr_sig != -1) {
                 GPDbxFrame dummy = new GPDbxFrame();
                 dummy.attr_sig = attr_sig;
                 dummy.attr_signame = attr_signame;
-                guiStackFrames[fx] = new DbxFrame(this, dummy);
+                guiStackFrames[fx] = new DbxFrame(this, dummy, null);
                 fx++;
             }
         }
 	// add "More entry" in the end
 	if (!bottomframe_seen) {
 	    GPDbxFrame dummy = new GPDbxFrame();
-	    guiStackFrames[fx] = new DbxFrame(this, dummy);
+	    guiStackFrames[fx] = new DbxFrame(this, dummy, null);
 	    guiStackFrames[fx].more = true;
 	    guiStackFrames[fx].setFunc(Catalog.get("MoreFrames"));
 	}
 
 
         stackUpdater.treeChanged();	// causes a pull
+        debuggingViewUpdater.treeChanged();
         disassembly.stateUpdated();
     }
 
@@ -2382,6 +2427,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     // control notification to dbx engine to send stack data
     StackEnableLatch stackEnabler = new StackEnableLatch(); 
+    private boolean get_frames = false; // indicate Stack View open/close
 
     public void registerStackModel(StackModel model) {
 	if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug)
@@ -2391,10 +2437,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	if (postedKill)
 	    return;
 
-	if (model == null)
-	    stackEnabler.setRegistered(false);
-	else
+        get_frames = model != null;
+        
+        if (get_frames || get_debugging) {
 	    stackEnabler.setRegistered(true);
+        } else {
+	    stackEnabler.setRegistered(false);
+        }
     }
 
     public Frame getCurrentFrame() {
@@ -2430,6 +2479,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         if (changed) {
             stackUpdater.treeChanged();	// causes a pull
+            debuggingViewUpdater.treeChanged();
             disassembly.stateUpdated();
         }
     }
@@ -2471,6 +2521,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         }
 
         threadUpdater.treeChanged();	// causes a pull
+        debuggingViewUpdater.treeChanged();
     }
 
     public Thread[] getThreads() {
@@ -2485,7 +2536,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     // control notification to dbx engine to send threads info
-    ThreadEnableLatch threadEnabler = new ThreadEnableLatch(); 
+    ThreadEnableLatch threadEnabler = new ThreadEnableLatch();
+    private boolean get_threads = false; // indicate Thread View open/close
 
     public void registerThreadModel(ThreadModel model) {
 	threadUpdater.setListener(model);
@@ -2493,10 +2545,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	if (postedKill)
 	    return;
 
-	if (model == null)
-	    threadEnabler.setRegistered(false);
-	else
+        get_threads = model != null;
+        
+        if (get_threads || get_debugging) {
 	    threadEnabler.setRegistered(true);
+        } else {
+	    threadEnabler.setRegistered(false);
+        }
     }
 
     public void setCurrentThread(long tid) {

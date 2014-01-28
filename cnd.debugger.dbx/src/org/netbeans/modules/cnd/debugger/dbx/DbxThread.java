@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.debugger.dbx;
 import org.netbeans.spi.viewmodel.ModelListener;
 
 import com.sun.tools.swdev.glue.dbx.*;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
@@ -131,7 +132,16 @@ public final class DbxThread extends Thread {
 	}
     }
 
-    public boolean getSuspended() {
+    @Override
+    public void resume() {
+        SwingUtilities.invokeLater(new Runnable() { // TODO better way to implement
+            public void run() {
+                DbxThread.super.resume();
+            }
+        });
+    }
+
+    public boolean isSuspended() {
 	// dbx currently doesn't support thread suspension and resumption
 	// So this will always be false
 	return thread.db_suspended;
