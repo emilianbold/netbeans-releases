@@ -43,12 +43,7 @@ package org.netbeans.modules.php.composer.ui.actions;
 
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.composer.commands.Composer;
-import org.netbeans.modules.php.composer.options.ComposerOptions;
-import org.netbeans.modules.php.composer.options.ComposerOptionsValidator;
-import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.util.NbBundle;
 
 public class InitAction extends BaseComposerAction {
@@ -64,25 +59,7 @@ public class InitAction extends BaseComposerAction {
 
     @Override
     protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        // first, validate composer path
-        Composer composer = Composer.getDefault();
-        // then other composer options
-        if (!validateOptions()) {
-            return;
-        }
-        // all ok
-        composer.init(phpModule);
-    }
-
-    private boolean validateOptions() {
-        ValidationResult result = new ComposerOptionsValidator()
-                .validate(ComposerOptions.getInstance())
-                .getResult();
-        if (result.isFaultless()) {
-            return true;
-        }
-        UiUtils.showOptions(ComposerOptionsPanelController.OPTIONS_SUBPATH);
-        return false;
+        Composer.getDefault().init(phpModule);
     }
 
 }
