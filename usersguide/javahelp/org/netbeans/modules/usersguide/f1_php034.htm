@@ -2,16 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: ApiGen</title>
+<title>Options Window: PHP: Code Analysis</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-24</p>
-<p><a id="org.netbeans.modules.php.apigen.ui.options.Options" name="org.netbeans.modules.php.apigen.ui.options.Options"></a></p>
+<p>Beta Draft: 2014-01-28</p>
+<p><a id="org.netbeans.modules.php.project.ui.options.AnalysisOptionsPanelController" name="org.netbeans.modules.php.project.ui.options.AnalysisOptionsPanelController"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref457" name="sthref457"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: ApiGen</h1>
+<h1>Options Window: PHP: Code Analysis</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>Use this panel to specify the following global options for PHP code analysis.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -25,18 +26,96 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t35" headers="r1c1-t35">
-<p>ApiGen script</p>
+<p>Code Sniffer</p>
 </td>
 <td align="left" headers="r2c1-t35 r1c2-t35">
-<p>The path to the ApiGen run script. Use the Browse and Search buttons to locate ApiGen run scripts on your local file system.</p>
+<p>Select this category to specify the following Code Sniffer options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t35" headers="r1c1-t35">
+<p>Code Sniffer</p>
+</td>
+<td align="left" headers="r3c1-t35 r1c2-t35">
+<p>Specify the path to the Code Sniffer script. Click Browse or Search to locate the scripts on your local file system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t35" headers="r1c1-t35">
+<p>Default Standard</p>
+</td>
+<td align="left" headers="r4c1-t35 r1c2-t35">
+<p>Select default standard.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t35" headers="r1c1-t35">
+<p>Coding Standards Fixer</p>
+</td>
+<td align="left" headers="r5c1-t35 r1c2-t35">
+<p>Select this category to specify the following Coding Standards Fixer options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t35" headers="r1c1-t35">
+<p>Coding Standards Fixer</p>
+</td>
+<td align="left" headers="r6c1-t35 r1c2-t35">
+<p>Specify the path to the Coding Standards Fixer script. Click Browse or Search to locate the scripts on your local file system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t35" headers="r1c1-t35">
+<p>Default Level</p>
+</td>
+<td align="left" headers="r7c1-t35 r1c2-t35">
+<p>Select a level from the drop-down list to set the limit for the fixers that are applied. This option corresponds to the <code>--level</code> option.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t35" headers="r1c1-t35">
+<p>Default Config</p>
+</td>
+<td align="left" headers="r8c1-t35 r1c2-t35">
+<p>Select the default configuration from the drop-down list.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t35" headers="r1c1-t35">
+<p>Default Options</p>
+</td>
+<td align="left" headers="r9c1-t35 r1c2-t35">
+<p>Type specific CS Fixer options in the text field, separated by a comma.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t35" headers="r1c1-t35">
+<p>Mess Detector</p>
+</td>
+<td align="left" headers="r10c1-t35 r1c2-t35">
+<p>Select this category to specify the following Mess Detector options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t35" headers="r1c1-t35">
+<p>Mess Detector</p>
+</td>
+<td align="left" headers="r11c1-t35 r1c2-t35">
+<p>Specify the path to the Mess Detector script. Click Browse or Search to locate the scripts on your local file system.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t35" headers="r1c1-t35">
+<p>Default Rule Sets</p>
+</td>
+<td align="left" headers="r12c1-t35 r1c2-t35">
+<p>Select the rule sets that are run by default.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note</b>: ApiGen is not installed with NetBeans IDE. Click the first Learn More link to open a browser window with ApiGen's installation instructions.</p>
-<p>You can specify ApiGen run parameters either by providing individual parameters via the command line or by using a configuration file. The IDE lets you specify a configuration file per PHP project, in the project's Properties. Note that properties specified on the command line override properties in a configuration file.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
