@@ -65,6 +65,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.openide.LifecycleManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -110,6 +111,10 @@ public class EAWizardIterator extends BaseWizardIterator {
                     (Archetype) wiz.getProperty("ejb_archetype"), null, false); //NOI18N
         }
         addEARDependencies((File) wiz.getProperty("ear_projdir"), ejbVersionInfo, webVersionInfo); // NOI18N
+
+        // Save everything before calling ArchetypeWizards.openProjects(..)
+        // Obviously sometimes we don't see all currently created projects/folders --> See issue #240778
+        LifecycleManager.getDefault().saveAll();
 
         // For every single created project we need to setup server correctly
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);

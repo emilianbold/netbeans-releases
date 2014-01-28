@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui.options;
 import java.io.IOException;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.project.PhpPreferences;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
@@ -127,6 +128,7 @@ public final class PhpOptions {
         getPreferences().removePreferenceChangeListener(preferenceChangeListener);
     }
 
+    @CheckForNull
     public synchronized String getPhpInterpreter() {
         String phpInterpreter = getPreferences().get(PHP_INTERPRETER, null);
         if (phpInterpreter == null && !phpInterpreterSearched) {

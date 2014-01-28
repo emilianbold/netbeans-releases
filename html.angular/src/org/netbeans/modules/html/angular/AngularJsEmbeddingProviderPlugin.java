@@ -299,7 +299,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
         } else {
-             embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 
+                     value.length() - (tokenSequence.index() == tokenSequence.tokenCount() - 1 ? 1 : 0) , Constants.JAVASCRIPT_MIMETYPE));
              embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
 //            int parenStart = value.indexOf('('); //NOI18N
 //            String name = value;
