@@ -176,7 +176,11 @@ public class ComponentInspectorOperator extends NavigatorOperator {
         @Override
         public boolean checkComponent(Component comp) {
             Object root = ((JTree) comp).getModel().getRoot();
-            return root != null && root.toString().startsWith("Form");
+            if (root != null) {
+                String name = root.toString();
+                return name != null && name.startsWith("Form");
+            }
+            return false;
         }
 
         @Override

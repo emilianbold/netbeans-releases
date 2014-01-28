@@ -57,6 +57,7 @@ import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 
@@ -113,6 +114,7 @@ public class NavigateGoToSourceTest extends PerformanceTestCase {
         try {
             editorOperator = EditorWindowOperator.getEditor(docName);
             editorOperator.setCaretPosition(textToFind, false);
+            new EventTool().waitNoEvent(200);
             Rectangle r = editorOperator.txtEditorPane().getUI().modelToView((JTextComponent) editorOperator.txtEditorPane().getSource(), editorOperator.txtEditorPane().getCaretPosition());
             editorOperator.txtEditorPane().clickForPopup((int) r.getCenterX(), (int) r.getCenterY());
         } catch (BadLocationException ex) {

@@ -2506,8 +2506,9 @@ public class AstRenderer {
             if(planB) {
                 AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
-                    if(token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
-                        token = getTypeToken(token.getNextSibling());
+                    if (token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
+                        token = AstUtil.findSiblingOfType(token.getNextSibling(), CPPTokenTypes.POINTERTO);
+                        token = getTypeToken(token);
                     }
                     ret = AstRenderer.renderType(token, file, null, false); // last two params just dummy ones
                 }

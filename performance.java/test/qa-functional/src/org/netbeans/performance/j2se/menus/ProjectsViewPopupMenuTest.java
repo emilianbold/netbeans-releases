@@ -87,6 +87,7 @@ public class ProjectsViewPopupMenuTest extends ValidatePopupMenuOnNodes {
     }
 
     public void testProjectNodePopupMenuProjects() {
+        expectedTime = 250;
         testNode(getProjectNode("PerformanceTestData"));
     }
 
@@ -103,6 +104,7 @@ public class ProjectsViewPopupMenuTest extends ValidatePopupMenuOnNodes {
     }
 
     public void testJavaFilePopupMenuProjects() {
+        expectedTime = 250;
         testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|Main.java"));
     }
 
@@ -115,6 +117,7 @@ public class ProjectsViewPopupMenuTest extends ValidatePopupMenuOnNodes {
     }
 
     public void testXmlFilePopupMenuProjects() {
+        expectedTime = 400;
         testNode(new Node(new SourcePackagesNode("PerformanceTestData"), "org.netbeans.test.performance|xmlfile.xml"));
     }
 

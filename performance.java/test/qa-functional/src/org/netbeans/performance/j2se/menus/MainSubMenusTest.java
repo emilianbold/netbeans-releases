@@ -132,6 +132,7 @@ public class MainSubMenusTest extends PerformanceTestCase {
     }
 
     public void testToolsPaletteMenu() {
+        expectedTime = 400;
         testSubMenu("org.netbeans.core.ui.resources.Bundle", "Menu/Tools", "org.netbeans.modules.palette.resources.Bundle", "Menu/Tools/PaletteManager");
     }
 

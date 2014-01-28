@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
+import java.util.Locale;
 import org.netbeans.modules.dbschema.ColumnElement;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
@@ -158,8 +159,8 @@ public abstract class EntityMember {
             return makeName(removed.toString());
         }
         
-        String lower = fieldName.toLowerCase();
-        String upper = fieldName.toUpperCase();
+        String lower = fieldName.toLowerCase(Locale.ENGLISH);//see #157943
+        String upper = fieldName.toUpperCase(Locale.ENGLISH);
         boolean mixedCase = !(fieldName.equals(lower) ||
                 fieldName.equals(upper));
         
