@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 public class CCCompletionTest extends CndBaseTestSuite {
     
     public CCCompletionTest() {
-        super("C/C++ Completion");
+        super("C/C++ Completion part 1");
         
         this.addTestSuite(CheckModelTestCase.class);
         this.addTestSuite(CCBasicCompletionTestCase.class);
@@ -67,16 +67,6 @@ public class CCCompletionTest extends CndBaseTestSuite {
         this.addTestSuite(StaticMembersTestCase.class);
         this.addTestSuite(FriendTestCase.class);
         this.addTestSuite(EnumTestCase.class);
-        this.addTestSuite(LibrariesContentTestCase.class);
-        this.addTestSuite(TypedefTestCase.class);
-        this.addTestSuite(TemplateCompletionTestCase.class);
-        this.addTestSuite(TemplateInstantiationTestCase.class);
-        this.addTestSuite(AutosTestCase.class);
-        this.addTestSuite(FunctionCallsTestCase.class);
-        this.addTestSuite(NonGlobalCompletionTestCase.class);
-        
-        this.addTestSuite(TooltipTestCase.class);    
-        this.addTestSuite(DotArrowSubstitutionTestCase.class);
     }
 
     public static Test suite() {
