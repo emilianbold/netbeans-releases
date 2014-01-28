@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.SourceUtils;
@@ -163,7 +164,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             final RelatedCMPHelper helper,
             final FileObject dbSchemaFile,
             final ProgressContributor handle) throws IOException {
-
+        //as it's "public" and may be called from outside, need to check target package exist and create if necessary, see #220073
+        if(helper.getLocation() != null && helper.getPackageName() != null) {
+            SourceGroups.getFolderForPackage( helper.getLocation(), helper.getPackageName());
+        }
+        //
         generateBeans(helper.getBeans(), helper.isGenerateFinderMethods(),
                 helper.isGenerateJAXBAnnotations(),
                 helper.isGenerateValidationConstraints(),
