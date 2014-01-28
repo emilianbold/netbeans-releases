@@ -46,7 +46,6 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -56,6 +55,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.ScriptEngineFactory;
@@ -69,6 +70,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -374,9 +376,23 @@ public class JFXActionProvider implements ActionProvider {
         okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (JFXRunPanel.class, "AD_ChooseMainClass_OK"));  // NOI18N
         final boolean FXinSwing = JFXProjectUtils.isFXinSwingProject(prj);
         final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(prj);
-        final Set<String> appClassNames = FXinSwing ? 
-                                JFXProjectUtils.getMainClassNames(prj) : 
-                                JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N        
+        final Set<String> appClassNames;
+        if (FXinSwing) {
+            appClassNames = JFXProjectUtils.getMainClassNames(prj);
+        } else {
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final AtomicReference<Set<String>> result = new AtomicReference<>(Collections.<String>emptySet());
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!cancel.get()) {
+                        final Set<String> appClasses = JFXProjectUtils.getAppClassNames(classpathMap, "javafx.application.Application"); //NOI18N
+                        result.set(appClasses);
+                    }
+                }
+            }, NbBundle.getMessage(JFXActionProvider.class, "TXT_ActionInProgress"), cancel, true); //NOI18N
+            appClassNames = result.get();
+        }
         final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();
         
         String appClassName = eval.getProperty(FXinSwing ? ProjectProperties.MAIN_CLASS : JFXProjectProperties.MAIN_CLASS);
