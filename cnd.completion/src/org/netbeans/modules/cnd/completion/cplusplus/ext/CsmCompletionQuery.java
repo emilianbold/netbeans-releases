@@ -2532,6 +2532,23 @@ abstract public class CsmCompletionQuery {
                                         }
                                     }
                                     
+                                    if (candidates.isEmpty() && instantiations != null) {
+                                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS);
+                                        if (resolve(varPos, mtdName, true)) {
+                                            List<CsmObject> templateParams = new ArrayList<CsmObject>();
+                                            compResolver.getResult().addResulItemsToCol(templateParams);
+                                            for (CsmObject templateParam : templateParams) {
+                                                if (CsmKindUtilities.isTemplateParameter(templateParam)) {
+                                                    CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) templateParam, instantiations);
+                                                    CsmClassifier cls = resolvedType != null ? resolvedType.getClassifier() : null;
+                                                    if (CsmKindUtilities.isClass(cls)) {
+                                                        ((Collection<CsmObject>)candidates).add(cls);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }                                    
+                                    
                                     for (CsmObject object : candidates) {
                                         if (CsmKindUtilities.isClass(object)) {
                                             mtdList.addAll(getConstructors((CsmClass) object));
@@ -2728,8 +2745,7 @@ abstract public class CsmCompletionQuery {
                 assert !instantiations.isEmpty() : "Instantiations must not be empty"; //NOI18N
                 CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);  
                 if (CsmKindUtilities.isTemplateParameter(cls)) {
-                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations);
+                    CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) cls, instantiations);
                     if (resolvedType != null) {
                         lastType = resolvedType;
                     }
@@ -2776,6 +2792,11 @@ abstract public class CsmCompletionQuery {
                 cont = false;
             }
             return cont;
+        }
+        
+        private CsmType resolveTemplateParameter(CsmTemplateParameter param, List<CsmInstantiation> instantiations) {
+            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+            return ip.instantiate((CsmTemplateParameter) param, instantiations);
         }
         
         private void updateWithVariableOperator(Collection<CsmFunctional> mtdList, CsmVariable var) {
@@ -2874,7 +2895,11 @@ abstract public class CsmCompletionQuery {
 
         private CsmClassifier findExactClass(final String var, final int varPos) {
             CsmClassifier cls = null;
-            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+            if (instantiations != null) {
+                compResolver.setResolveTypes(CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS | CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+            } else {
+                compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+            }
             if (resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList<CsmObject>());
@@ -2885,7 +2910,13 @@ abstract public class CsmCompletionQuery {
                 List<CsmObject> td = new ArrayList<CsmObject>();
                 AtomicBoolean hasClassifier = new AtomicBoolean(false);
                 for (CsmObject item : allItems) {
-                    if (CsmKindUtilities.isClassifier(item)) {
+                    if (CsmKindUtilities.isTemplateParameter(item)) {
+                        CsmType resolvedType = resolveTemplateParameter((CsmTemplateParameter) item, instantiations);
+                        CsmClassifier resolvedCls = resolvedType != null ? resolvedType.getClassifier() : null;
+                        if (CsmKindUtilities.isClass(resolvedCls)) {
+                            visibleClassifiers.add(resolvedCls);
+                        }
+                    } else if (CsmKindUtilities.isClassifier(item)) {
                         // if more than one we prefer visible
                         if (ir.isObjectVisible(contextFile, item)) {
                             fillVisibleListAndFilterTypedefs(item, hasClassifier, visibleClassifiers, td);

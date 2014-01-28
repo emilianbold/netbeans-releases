@@ -2800,32 +2800,35 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
         function_direct_declarator[definition, symTabCheck] 
-        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*  // TODO: maybe should be moved to function_direct_declarator
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
 	{String q; CPPParser.TypeQualifier tq;}
-	:
-                (options {greedy=true;} : function_attribute_specification)?
-		(
-		function_direct_declarator_2[definition, symTabCheck]
-		)
+    :
+        (options {greedy=true;} : function_attribute_specification)?
+        (function_direct_declarator_2[definition, symTabCheck])
+
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* 
+             (LITERAL_override | LITERAL_final | LITERAL_new)*
+             (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO))
             =>
-            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
+            (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)* 
+            (options{greedy = true;}: LITERAL_noexcept)?
+            (options{greedy = true;}: LITERAL_override | LITERAL_final | LITERAL_new)?
+            (options{greedy = true;}: LITERAL_override | LITERAL_final | LITERAL_new)?
         )?
-        
+
         (trailing_type)?
 
-		//{functionEndParameterList(definition);}
-		(exception_specification)?
-		(( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
-                (options {greedy=true;} :function_attribute_specification)?
-                (asm_block!)?
-                (options {greedy=true;} :function_attribute_specification)?
-	;
+        //{functionEndParameterList(definition);}
+        (exception_specification)?
+        (( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
+        (options {greedy=true;} :function_attribute_specification)?
+        (asm_block!)?
+        (options {greedy=true;} :function_attribute_specification)?
+    ;
         
 protected
 is_post_declarator_token
