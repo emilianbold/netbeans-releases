@@ -76,6 +76,7 @@ public final class PhpOptions {
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
     public static final boolean DEFAULT_DEBUGGER_WATCHES_AND_EVAL = false;
     public static final boolean DEFAULT_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS = false;
+    public static final boolean DEFAULT_ANNOTATIONS_UNKNOWN_ANNOTATIONS_AS_TYPE_ANNOTATIONS = false;
 
     // php cli
     public static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
@@ -96,6 +97,7 @@ public final class PhpOptions {
 
     // annotations
     public static final String PHP_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS = "phpAnnottationsResolveDeprecetatedElements"; // NOI18N
+    public static final String PHP_ANNOTATIONS_UNKNOWN_ANNOTATIONS_AS_TYPE_ANNOTATIONS = "phpAnnotationsUnknownAnnotationsAsTypeAnnotations"; // NOI18N
 
     // global include path
     public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
@@ -247,6 +249,14 @@ public final class PhpOptions {
 
     public void setAnnotationsResolveDeprecatedElements(boolean resolveDeprecatedElements) {
         getPreferences().putBoolean(PHP_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS, resolveDeprecatedElements);
+    }
+
+    public boolean isAnnotationsUnknownAnnotationsAsTypeAnnotations() {
+        return getPreferences().getBoolean(PHP_ANNOTATIONS_UNKNOWN_ANNOTATIONS_AS_TYPE_ANNOTATIONS, DEFAULT_ANNOTATIONS_UNKNOWN_ANNOTATIONS_AS_TYPE_ANNOTATIONS);
+    }
+
+    public void setAnnotationsUnknownAnnotationsAsTypeAnnotations(boolean unknownAnnotationsAsTypeAnnotations) {
+        getPreferences().putBoolean(PHP_ANNOTATIONS_UNKNOWN_ANNOTATIONS_AS_TYPE_ANNOTATIONS, unknownAnnotationsAsTypeAnnotations);
     }
 
     /**
