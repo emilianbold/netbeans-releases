@@ -52,20 +52,18 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Vladimir Voskresensky
  */
-public class CsmHyperlinkTest extends CndBaseTestSuite {
+public class CsmHyperlink2Test extends CndBaseTestSuite {
     
-    public CsmHyperlinkTest() {
-        super("C/C++ Hyperlink part 1");
-        
-        this.addTestSuite(ClassMembersHyperlinkTestCase.class);
-        this.addTestSuite(NamespacesHyperlinkTestCase.class);
-        this.addTestSuite(BasicHyperlinkTestCase.class);
-        this.addTestSuite(UnnamedEnumTestCase.class);
-        this.addTestSuite(LibrariesContentHyperlinkTestCase.class);
+    public CsmHyperlink2Test() {
+        super("C/C++ Hyperlink part 2");
+        this.addTestSuite(TemplateSpecializationsTestCase.class);
+        this.addTestSuite(InstantiationHyperlinkTestCase.class);
+        this.addTestSuite(Cpp11TestCase.class);
+        this.addTestSuite(Cpp11TemplatesTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new CsmHyperlinkTest();
+        TestSuite suite = new CsmHyperlink2Test();
         return suite;
     }
 }
