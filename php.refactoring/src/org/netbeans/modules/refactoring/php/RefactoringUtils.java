@@ -440,4 +440,13 @@ public final class RefactoringUtils {
 
         return null;
     }
+
+    public static boolean isUsersFile(FileObject fileObject) {
+        boolean result = false;
+        PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+        if (fileType != PhpSourcePath.FileType.INCLUDE && fileType != PhpSourcePath.FileType.INTERNAL) {
+            result = true;
+        }
+        return result;
+    }
 }

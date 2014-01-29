@@ -46,8 +46,6 @@ package org.netbeans.modules.refactoring.php;
 import java.util.Collection;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI;
 import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
@@ -117,7 +115,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     private boolean canRenameFile(Lookup lookup) {
         boolean result = false;
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-	if (nodes.size() == 1) {
+        if (nodes.size() == 1) {
             Node node = nodes.iterator().next();
             EditorCookie ec = node.getLookup().lookup(EditorCookie.class);
             if (ec == null || !RefactoringUtils.isFromEditor(ec)) {
@@ -155,8 +153,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                 if (ctx != null && ctx.getName() != null) {
                     final FileObject fileObject = ctx.getModelElement().getFileObject();
-                    FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL) && !FileType.INCLUDE.equals(fileType)) {
+                    if (RefactoringUtils.isUsersFile(fileObject)) {
                         return new PhpRenameRefactoringUI(ctx);
                     }
                 }
@@ -193,8 +190,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 SafeDeleteSupport ctx = SafeDeleteSupport.getInstance(info);
                 if (ctx != null) {
                     final FileObject fileObject = ctx.getModel().getFileScope().getFileObject();
-                    FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL) && !FileType.INCLUDE.equals(fileType)) {
+                    if (RefactoringUtils.isUsersFile(fileObject)) {
                         return new PhpDeleteRefactoringUI(ctx, regularDelete);
                     }
                 }
