@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToValueList;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -77,7 +78,7 @@ public final class LayerIndex {
     private final Map<Integer, List<Integer>> dependencies = new HashMap<Integer, List<Integer>>();
 
     LayerIndex(URI cacheDirectory) {
-        this.cacheDirectoryFile = new File(cacheDirectory.getRawPath());
+        this.cacheDirectoryFile = Utilities.toFile(cacheDirectory);
     }
 
     boolean load(int persistMechanismVersion, boolean recreate, boolean recreateOnFail) {

@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Implements FilesAccessStrategy
@@ -107,7 +108,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             LayerDescriptor layerDescriptor) {
         this.layerIndex = layerIndex;
         this.cacheLocationURI = cacheLocation;
-        this.cacheLocationFile = new File(cacheLocation.getRawPath());
+        this.cacheLocationFile = Utilities.toFile(cacheLocation);
         this.isWritable = layerDescriptor.isWritable();
         KeysListFile f = null;
         RepositoryDataInputImpl din = null;
