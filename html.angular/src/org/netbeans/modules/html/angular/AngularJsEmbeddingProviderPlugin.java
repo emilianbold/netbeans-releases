@@ -75,17 +75,16 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private static class StackItem {
 
         final String tag;
-        final String finishText;
-        int balance;
+        String finishText;
 
-        public StackItem(String tag, String finishText) {
+        public StackItem(String tag) {
             this.tag = tag;
-            this.balance = 1;
-            this.finishText = finishText;
+            this.finishText = ""; //NOI18N
         }
     }
+    
     private final LinkedList<StackItem> stack;
-    private String lastTagOpen = null;
+    
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
@@ -142,25 +141,19 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         CharSequence tokenText = tokenSequence.token().text();        
         switch (tokenSequence.token().id()) {
             case TAG_OPEN:
-                lastTagOpen = tokenText.toString();
-                StackItem top = stack.peek();
-                if (top != null && LexerUtils.equals(top.tag, lastTagOpen, false, false)) {
-                    top.balance++;
-                }
+                stack.push(new StackItem(tokenText.toString()));
                 break;
             case TAG_CLOSE:
-                top = stack.peek();
-                if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
-                    top.balance--;
-                    if (top.balance == 0) {
-                        processed = true;
-                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
-                        stack.pop();
-                        top = stack.peek();
-                        if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
-                            top.balance--;
+                if (!stack.isEmpty()) {
+                    StackItem top = stack.pop();
+                    while (!stack.isEmpty() && !LexerUtils.equals(top.tag, tokenText, false, false)) {
+                        if (!top.finishText.isEmpty()) {
+                            embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));
                         }
-                        
+                        top = stack.pop();
+                    }
+                    if (!top.finishText.isEmpty()) {
+                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));
                     }
                 }
                 break;
@@ -178,7 +171,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
-                            stack.push(new StackItem(lastTagOpen, "}\n});\n")); //NOI18N
+                            stack.peek().finishText = "}\n});\n"; //NOI18N
                             break;
                         case model:
                         case disabled:
@@ -187,7 +180,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             break;
                         case repeat:
                             processed = processRepeat(value);
-                            stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
+                            stack.peek().finishText = "}\n"; //NOI18N
                             break;
                         default:   
                             processed = processExpression(value);
