@@ -371,12 +371,12 @@
         
         <if property="do.build.jdk">
             <get
-                src="${jdk.builds.host}/${jdk7.builds.path}/latest/bundles/linux-x64/"
+                src="${jdk.builds.host}/${jdk8.builds.path}/latest/bundles/linux-x64/"
                 dest="${temp.file}"/>
             <jdk-buildnumber file="${temp.file}"/>
 
             <echo message="Property jdk.version.number: ${jdk.version.number}"/>
-            <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <!-- not necessary for first build echo message="Property jdk.update.number: ${jdk.update.number}"/ -->
             <echo message="Property jdk.build.number: ${jdk.build.number}"/>
             <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
         </if>
