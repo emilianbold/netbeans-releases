@@ -493,14 +493,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 if (!projects.isEmpty()) {
                     // try to find full specialization of class
                     CsmClass cls = (CsmClass) classifier;
-                    StringBuilder fqn = new StringBuilder(cls.getUniqueName());
-                    fqn.append(Instantiation.getInstantiationCanonicalText(getPlainParams(params)));
+                    List<CsmSpecializationParameter> plainParams = getPlainParams(params);
                     
-                    for (CsmProject proj : projects) {
-                        CsmDeclaration decl = proj.findDeclaration(fqn.toString());
-                        if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
-                            specialization = (CsmClassifier) decl;
-                            break;
+                    if (checkAllowFastSearchFullSpecializations(plainParams)) {
+                        StringBuilder fqn = new StringBuilder(cls.getUniqueName());
+                        fqn.append(Instantiation.getInstantiationCanonicalText(plainParams));
+
+                        for (CsmProject proj : projects) {
+                            CsmDeclaration decl = proj.findDeclaration(fqn.toString());
+                            if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
+                                specialization = (CsmClassifier) decl;
+                                break;
+                            }
                         }
                     }
                     
@@ -509,7 +513,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>();
                         
                         for (ProjectBase proj : projects) {
-                            fqn = new StringBuilder();
+                            StringBuilder fqn = new StringBuilder();
                             fqn.append(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
                             fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
                             fqn.append(cls.getQualifiedName());
@@ -623,6 +627,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
 
         return specialization != null ? specialization : classifier;
+    }
+    
+    private boolean checkAllowFastSearchFullSpecializations(List<CsmSpecializationParameter> params) {
+        for (CsmSpecializationParameter param : params) {
+            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                CsmTypeBasedSpecializationParameter typeBasedParam = (CsmTypeBasedSpecializationParameter) param;
+                if (CsmKindUtilities.isTemplateParameterType(typeBasedParam.getType())) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     /**
