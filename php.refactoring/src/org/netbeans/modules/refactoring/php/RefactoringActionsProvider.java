@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -95,12 +96,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             new RefactoringTask.TextComponentTask(ec) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
+                protected RefactoringUIHolder createRefactoringUI(final PHPParseResult info, final int offset) {
+                    RefactoringUIHolder result = RefactoringUIHolder.NONE;
                     WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                     if (ctx != null && ctx.getName() != null) {
-                        return new WhereUsedQueryUI(ctx);
+                        result = new RefactoringUIHolderImpl(new WhereUsedQueryUI(ctx));
                     }
-                    return null;
+                    return result;
                 }
             }.run();
         }
@@ -149,15 +151,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         new RefactoringTask.TextComponentTask(ec) {
 
             @Override
-            protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
+            protected RefactoringUIHolder createRefactoringUI(final PHPParseResult info, final int offset) {
+                RefactoringUIHolder result = RefactoringUIHolder.NONE;
                 WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                 if (ctx != null && ctx.getName() != null) {
                     final FileObject fileObject = ctx.getModelElement().getFileObject();
                     if (RefactoringUtils.isUsersFile(fileObject)) {
-                        return new PhpRenameRefactoringUI(ctx);
+                        result = new RefactoringUIHolderImpl(new PhpRenameRefactoringUI(ctx));
+                    } else {
+                        result = RefactoringUIHolder.NOT_USERS_FILE;
                     }
                 }
-                return null;
+                return result;
             }
         }.run();
     }
@@ -186,16 +191,34 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         new RefactoringTask.NodeToFileTask(currentNode) {
 
             @Override
-            protected RefactoringUI createRefactoringUI(PHPParseResult info) {
+            protected RefactoringUIHolder createRefactoringUIHolder(PHPParseResult info) {
+                RefactoringUIHolder result = RefactoringUIHolder.NONE;
                 SafeDeleteSupport ctx = SafeDeleteSupport.getInstance(info);
                 if (ctx != null) {
                     final FileObject fileObject = ctx.getModel().getFileScope().getFileObject();
                     if (RefactoringUtils.isUsersFile(fileObject)) {
-                        return new PhpDeleteRefactoringUI(ctx, regularDelete);
+                        result = new RefactoringUIHolderImpl(new PhpDeleteRefactoringUI(ctx, regularDelete));
+                    } else {
+                        result = RefactoringUIHolder.NOT_USERS_FILE;
                     }
                 }
-                return null;
+                return result;
             }
         }.run();
+    }
+
+    static final class RefactoringUIHolderImpl implements RefactoringTask.RefactoringUIHolder {
+        private final RefactoringUI refactoringUI;
+
+        public RefactoringUIHolderImpl(RefactoringUI refactoringUI) {
+            assert refactoringUI != null;
+            this.refactoringUI = refactoringUI;
+        }
+
+        @Override
+        public void processUI(boolean parsingInProgress) {
+            UI.openRefactoringUI(refactoringUI, TopComponent.getRegistry().getActivated());
+        }
+
     }
 }
