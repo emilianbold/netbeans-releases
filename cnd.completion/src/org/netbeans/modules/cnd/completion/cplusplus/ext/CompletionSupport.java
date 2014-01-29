@@ -1015,9 +1015,15 @@ public final class CompletionSupport implements DocumentListener {
                                 }
                                 
                                 if (type != null) {
-                                    params.add(ip.createTypeBasedSpecializationParameter(type));
+                                    RenderedExpression renderedExpression = renderExpression(paramInst, new MockExpressionBuilderImpl.Creator());
+                                    params.add(ip.createTypeBasedSpecializationParameter(
+                                            type, 
+                                            context.getContextFile(), 
+                                            renderedExpression.startOffset, 
+                                            renderedExpression.endOffset
+                                    ));
                                 } else {
-                                    RenderedExpression renderedExpression = renderExpression(paramInst);
+                                    RenderedExpression renderedExpression = renderExpression(paramInst, new ExpressionBuilderImpl.Creator());
                                     params.add(ip.createExpressionBasedSpecializationParameter(
                                             renderedExpression.text,
                                             context.getContextFile(), 
@@ -1153,42 +1159,42 @@ public final class CompletionSupport implements DocumentListener {
         return null;
     }   
     
-    static RenderedExpression renderExpression(CsmCompletionExpression expr) {
+    static RenderedExpression renderExpression(CsmCompletionExpression expr, ExpressionBuilderCreator creator) {
         if (expr == null) {
             return null;
         }            
         switch (expr.getExpID()) {
             case CsmCompletionExpression.GENERIC_TYPE: {
-                StringBuilder sb = new StringBuilder();
+                ExpressionBuilder eb = creator.create();
                 int startExpOffset = expr.getTokenOffset(0);
                 int endExpOffset = startExpOffset;
                 
                 for (int paramIndex = 0; paramIndex < expr.getParameterCount(); paramIndex++) {
-                    RenderedExpression current = renderExpression(expr.getParameter(paramIndex));
+                    RenderedExpression current = renderExpression(expr.getParameter(paramIndex), creator);
                     
-                    sb.append(current.text);
+                    eb.append(current.text);
                     
                     if (paramIndex > 0) {
                         if (paramIndex < expr.getParameterCount() - 1) {
-                            sb.append(","); // NOI18N
+                            eb.append(","); // NOI18N
                         } else {
-                            sb.append(">"); // NOI18N
+                            eb.append(">"); // NOI18N
                         }
                         endExpOffset++;
                     } else {
-                        sb.append(expr.getTokenText(0));
+                        eb.append(expr.getTokenText(0));
                     }
                     
                     endExpOffset = current.endOffset;
                 }
                 
-                return new RenderedExpression(sb.toString(), startExpOffset, endExpOffset);
+                return new RenderedExpression(eb.toString(), startExpOffset, endExpOffset);
             }
             
             case CsmCompletionExpression.UNARY_OPERATOR:
             case CsmCompletionExpression.OPERATOR:
             case CsmCompletionExpression.SCOPE: {
-                StringBuilder sb = new StringBuilder();
+                ExpressionBuilder eb = creator.create();
                 int startExpOffset = -1;
                 int endExprOffset = -1;
 
@@ -1208,13 +1214,15 @@ public final class CompletionSupport implements DocumentListener {
                     entityChanged = false;
                                             
                     if (renderedParam == null && paramIndex < paramCount) {
-                        renderedParam = renderExpression(expr.getParameter(paramIndex));
+                        renderedParam = renderExpression(expr.getParameter(paramIndex), creator);
                         paramIndex++;
                     }
                     
                     if (renderedToken == null && tokenIndex < tokenCount) {
+                        ExpressionBuilder tokenExprBuilder = creator.create();
+                        tokenExprBuilder.append(expr.getTokenText(tokenIndex));                        
                         renderedToken = new RenderedExpression(
-                            expr.getTokenText(tokenIndex).toString(), 
+                            tokenExprBuilder.toString(), 
                             expr.getTokenOffset(tokenIndex), 
                             expr.getTokenOffset(tokenIndex) + expr.getTokenLength(tokenIndex)
                         );
@@ -1249,7 +1257,7 @@ public final class CompletionSupport implements DocumentListener {
                         }
                         
                         if (entityChanged) {
-                            sb.append(chosenExpression.text);
+                            eb.append(chosenExpression.text);
                             if (startExpOffset == -1) {
                                 startExpOffset = chosenExpression.startOffset;
                             }
@@ -1258,12 +1266,14 @@ public final class CompletionSupport implements DocumentListener {
                     }
                 }
                 
-                return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
+                return new RenderedExpression(eb.toString(), startExpOffset, endExprOffset);
             }
             
             default: {
+                ExpressionBuilder eb = creator.create();
+                eb.append(expr.getTokenText(0));
                 return new RenderedExpression(
-                        expr.getTokenText(0), 
+                        eb.toString(), 
                         expr.getTokenOffset(0), 
                         expr.getTokenOffset(0) + expr.getTokenLength(0)
                 );
@@ -1467,4 +1477,66 @@ public final class CompletionSupport implements DocumentListener {
             return text + "[" + startOffset + "," + endOffset + "]"; // NOI18N
         }
     }    
+    
+    static interface ExpressionBuilder {
+        
+        ExpressionBuilder append(String str);
+
+        @Override
+        public String toString();
+        
+    }
+    
+    static interface ExpressionBuilderCreator {
+        
+        ExpressionBuilder create();
+        
+    }
+    
+    private static class ExpressionBuilderImpl implements ExpressionBuilder {
+        
+        private final StringBuilder sb = new StringBuilder();
+
+        @Override
+        public ExpressionBuilder append(String str) {
+            sb.append(str);
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return sb.toString();
+        }
+        
+        public static class Creator implements ExpressionBuilderCreator {
+            
+            @Override
+            public ExpressionBuilder create() {
+                return new ExpressionBuilderImpl();
+            }            
+        }
+    }
+    
+    private static class MockExpressionBuilderImpl implements ExpressionBuilder {
+
+        @Override
+        public ExpressionBuilder append(String str) {
+            return this;
+        }
+        
+        @Override
+        public String toString() {
+            return ""; // NOI18N
+        }
+        
+        public static class Creator implements ExpressionBuilderCreator {
+            
+            private final MockExpressionBuilderImpl instance = new MockExpressionBuilderImpl();
+            
+            @Override
+            public ExpressionBuilder create() {
+                return instance;
+            }            
+        }        
+    }
 }

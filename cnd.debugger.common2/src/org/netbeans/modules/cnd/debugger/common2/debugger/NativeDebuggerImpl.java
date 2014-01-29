@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Inst
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.actions.SystemAction;
 
@@ -159,6 +160,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     // thread stuff
     protected final ModelChangeDelegator threadUpdater = new ModelChangeDelegator();
+    
+    // debugging view stuff
+    protected final ModelChangeDelegator debuggingViewUpdater = new ModelChangeDelegator();
 
     // assembly level stuff
     private boolean disActive = false;
@@ -1702,5 +1706,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         clipboard.setContents(
                 transferableText,
                 null);
+    }
+    
+    @Override
+    public void registerDebuggingViewModel(ModelListener model) {
+        debuggingViewUpdater.setListener(model);
     }
 }
