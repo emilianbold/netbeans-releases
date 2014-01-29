@@ -55,7 +55,6 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -96,9 +95,6 @@ import org.netbeans.modules.team.server.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.JobHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Tests for ODCSSBuilderAccessor.
@@ -106,6 +102,10 @@ import org.openide.util.lookup.Lookups;
  * @author jhavlin
  */
 public class ODCSBuilderAccessorTest {
+
+    private static final String JOB1_NAME = "mockProject.Job1";
+    private static final String JOB2_NAME = "mockProject.Job2";
+    private static final String HUDSON_URL = "http://test/hudson/";
 
     private ODCSBuilderAccessor accessor;
     private ProjectHandle<ODCSProject> projectHandle;
@@ -119,6 +119,10 @@ public class ODCSBuilderAccessorTest {
      * Set up environemtn before each test. Prepare a hudson instance for url
      * "http://test/hudson/" with mock {@link BuilderConnector}, instance of
      * {@link BuilderAccessor} and a project handle.
+     *
+     * @throws java.net.MalformedURLException
+     * @throws org.netbeans.modules.odcs.client.api.ODCSException
+     * @throws java.lang.InterruptedException
      */
     @Before
     public void setUp() throws MalformedURLException, ODCSException,
@@ -127,8 +131,7 @@ public class ODCSBuilderAccessorTest {
         projectHandle = TestUtils.createMockHandle(
                 "http://test/", "mockProject");
         connector = new MockBuilderConnector();
-        hudsonInstance = HudsonManager.addInstance("Mock Hudson Instance",
-                "http://test/hudson/", 1, connector);
+        hudsonInstance = HudsonManager.addInstance("Mock Hudson Instance", HUDSON_URL, 1, connector);
         final Semaphore s = new Semaphore(0);
         HudsonChangeListener hcListener = new HudsonChangeAdapter() {
             @Override
@@ -157,16 +160,18 @@ public class ODCSBuilderAccessorTest {
     public void testGetJobs() {
         List<JobHandle> jobs = accessor.getJobs(projectHandle);
         assertEquals(1, jobs.size());
-        assertEquals("Job1", jobs.get(0).getDisplayName());
+        assertEquals(JOB1_NAME, jobs.get(0).getDisplayName());
     }
 
     /**
      * Check that job list contains mock job with correct status.
+     *
+     * @throws java.lang.InterruptedException
      */
     @Test
     public void testGetJob() throws InterruptedException {
-        JobHandle job = accessor.getJob(projectHandle, "Job1");
-        assertEquals("Job1", job.getDisplayName());
+        JobHandle job = accessor.getJob(projectHandle, JOB1_NAME);
+        assertEquals(JOB1_NAME, job.getDisplayName());
         Status status = job.getStatus();
         if (status.equals(BuildHandle.Status.UNKNOWN)) {
             waitForInitialization(job);
@@ -195,13 +200,16 @@ public class ODCSBuilderAccessorTest {
     /**
      * Check that listener added to a job handle is notified when status of the
      * job changes.
+     *
+     * @throws java.lang.InterruptedException
      */
     @Test
     public void testJobStatusChangeListener() throws InterruptedException {
-        JobHandle job = accessor.getJob(projectHandle, "Job1");
+        JobHandle job = accessor.getJob(projectHandle, JOB1_NAME);
         if (job.getStatus().equals(BuildHandle.Status.UNKNOWN)) {
             waitForInitialization(job);
         }
+        assertEquals(BuildHandle.Status.UNSTABLE, job.getStatus());
         final AtomicBoolean notified = new AtomicBoolean(false);
         final Semaphore s = new Semaphore(0);
         job.addPropertyChangeListener(new PropertyChangeListener() {
@@ -224,6 +232,8 @@ public class ODCSBuilderAccessorTest {
     /**
      * Check that listener added to a project handle is notified when list of
      * its builder jobs changes.
+     *
+     * @throws java.lang.InterruptedException
      */
     @Test
     public void testJobListChangeListener() throws InterruptedException {
@@ -248,7 +258,7 @@ public class ODCSBuilderAccessorTest {
         jobs = accessor.getJobs(projectHandle);
         assertTrue(notified.get());
         assertEquals(2, jobs.size());
-        assertEquals("Job2", jobs.get(1).getDisplayName());
+        assertEquals(JOB2_NAME, jobs.get(1).getDisplayName());
     }
 
     /**
@@ -282,16 +292,16 @@ public class ODCSBuilderAccessorTest {
      */
     public class MockBuilderConnector extends BuilderConnector {
 
-        private List<JobData> jobsData;
-        private List<BuildData> buildsData;
+        private final List<JobData> jobsData;
+        private final List<BuildData> buildsData;
 
         public MockBuilderConnector() {
             JobData jd = new JobData();
-            jd.setJobName("Job1");
-            jd.setJobUrl("http://test/hudson/Job1/");
+            jd.setJobName(JOB1_NAME);
+            jd.setJobUrl(HUDSON_URL + "/" + JOB1_NAME + "/");
             jd.setBuildable(true);
             jd.setColor(HudsonJob.Color.yellow);
-            jd.setDisplayName("Job1");
+            jd.setDisplayName(JOB1_NAME);
             jd.setInQueue(false);
             jd.setLastBuild(2);
             jd.setLastCompletedBuild(2);
@@ -317,7 +327,7 @@ public class ODCSBuilderAccessorTest {
 
         @Override
         public Collection<BuildData> getJobBuildsData(HudsonJob job) {
-            if (job.getName().equals("Job1")) {
+            if (job.getName().equals(JOB1_NAME)) {
                 return this.buildsData;
             } else {
                 return Collections.emptyList();
@@ -356,9 +366,9 @@ public class ODCSBuilderAccessorTest {
             JobData jd = new JobData();
             jd.setBuildable(true);
             jd.setColor(HudsonJob.Color.grey);
-            jd.setJobName("Job2");
-            jd.setDisplayName("Job2");
-            jd.setJobUrl("http://test/hudson/Job2/");
+            jd.setJobName(JOB2_NAME);
+            jd.setDisplayName(JOB2_NAME);
+            jd.setJobUrl(HUDSON_URL + "/" + JOB2_NAME + "/");
             jd.setLastBuild(0);
             jd.setLastCompletedBuild(0);
             jd.setLastFailedBuild(0);
@@ -479,7 +489,7 @@ public class ODCSBuilderAccessorTest {
                     jd.setColor(Color.YELLOW.toString());
                     BuildSummary bs = new BuildSummary();
                     bs.setNumber(1);
-                    bs.setUrl("http://test/hudson/" + jobName + "/" + 1);
+                    bs.setUrl(HUDSON_URL + jobName + "/" + 1);
                     jd.setBuilds(Collections.singletonList(bs));
                     return jd;
                 }
@@ -492,7 +502,7 @@ public class ODCSBuilderAccessorTest {
                     p.setName("Mock Project");
                     ProjectService builder = new ProjectService();
                     builder.setServiceType(ServiceType.BUILD);
-                    builder.setUrl("http://test/hudson/");
+                    builder.setUrl(HUDSON_URL);
                     builder.setAvailable(true);
                     builder.setId(2L);
                     p.setProjectServices(Collections.singletonList(builder));
