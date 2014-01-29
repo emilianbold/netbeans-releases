@@ -286,6 +286,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final String classifier;
         private final URL binary;
 
+        //TODO should this be weak referenced? how to add/remove project listeners then.
         private Project currentProject;
         private FileObject[] cached;
         private Boolean cachedPreferedSources;
