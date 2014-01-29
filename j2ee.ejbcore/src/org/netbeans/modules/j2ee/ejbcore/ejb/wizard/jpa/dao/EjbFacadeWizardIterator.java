@@ -263,7 +263,7 @@ import org.openide.util.NbBundle;
 
         //create the abstract facade class
         Task<CompilationController> waiter = null;
-        final String afName = pkg + "." + FACADE_ABSTRACT;
+        final String afName = pkg.isEmpty() ? FACADE_ABSTRACT : pkg + "." + FACADE_ABSTRACT; //NOI18N
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
         if (afFO == null){
             afFO = GenerationUtils.createClass(targetFolder, FACADE_ABSTRACT, null);
@@ -413,7 +413,8 @@ import org.openide.util.NbBundle;
             @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
-                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX);
+                String fqn = pkg.isEmpty() ? entitySimpleName + FACADE_SUFFIX : pkg + "." + entitySimpleName + FACADE_SUFFIX;
+                TypeElement classElement = wc.getElements().getTypeElement(fqn);
                 ClassTree classTree = wc.getTrees().getTree(classElement);
                 if (classTree == null) {
                     StringBuilder message = new StringBuilder();

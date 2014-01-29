@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao;
 
 import java.awt.Component;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -65,6 +66,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeListener {
     
@@ -102,6 +104,10 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     @Override
     public boolean isValid() {
         getComponent();
+        if (!isValidPackageName(component.getPackage())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_InvalidPackage")); // NOI18N
+            return false;
+        }
         if (component.getLocationValue() == null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_LocationNotValid")); // NOI18N
             return false;
@@ -256,5 +262,20 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
         return true;
     }
 
-}
+    private static boolean isValidPackageName(String str) {
+        if (str.length() > 0 && str.charAt(0) == '.') {         //NOI18N
+            return false;
+        }
+        StringTokenizer tukac = new StringTokenizer(str, ".");  //NOI18N
+        while (tukac.hasMoreTokens()) {
+            String token = tukac.nextToken();
+            if ("".equals(token)) {                             //NOI18N
+                return false;
+            } else if (!Utilities.isJavaIdentifier(token)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+}

@@ -50,12 +50,11 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -79,7 +78,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     
     private WizardDescriptor wizard;
     private Project project;
-    private JTextComponent packageComboBoxEditor;
+    private JTextField packageComboBoxEditor;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private ComboBoxModel projectsList;
 
@@ -87,12 +86,11 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         this.wizard = wizard;
         this.project = project;
         initComponents();
-        packageComboBoxEditor = ((JTextComponent)packageComboBox.getEditor().getEditorComponent());
-        Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
-        // TODO: add package listener
-        packageComboBoxDocument.addDocumentListener(this);
+        packageComboBoxEditor = ((JTextField) packageComboBox.getEditor().getEditorComponent());
+        packageComboBoxEditor.getDocument().addDocumentListener(this);
+
         handleCheckboxes();
-        
+
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
             boolean serverSupportsEJB31 = ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
@@ -206,13 +204,23 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         }
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
+        fireUpdate();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
+        fireUpdate();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
+        fireUpdate();
+    }
+
+    private void fireUpdate() {
+        changeSupport.fireChange();
     }
 
     boolean isRemote() {
