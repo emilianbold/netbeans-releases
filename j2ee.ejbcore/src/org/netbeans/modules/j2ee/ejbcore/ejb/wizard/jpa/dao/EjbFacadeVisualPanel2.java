@@ -50,12 +50,11 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -79,7 +78,7 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     
     private WizardDescriptor wizard;
     private Project project;
-    private JTextComponent packageComboBoxEditor;
+    private JTextField packageComboBoxEditor;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private ComboBoxModel projectsList;
 
@@ -87,12 +86,11 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         this.wizard = wizard;
         this.project = project;
         initComponents();
-        packageComboBoxEditor = ((JTextComponent)packageComboBox.getEditor().getEditorComponent());
-        Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
-        // TODO: add package listener
-        packageComboBoxDocument.addDocumentListener(this);
+        packageComboBoxEditor = ((JTextField) packageComboBox.getEditor().getEditorComponent());
+        packageComboBoxEditor.getDocument().addDocumentListener(this);
+
         handleCheckboxes();
-        
+
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
         if (projectCap.isEjb31LiteSupported()){
             boolean serverSupportsEJB31 = ProjectUtil.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
@@ -161,52 +159,68 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        SourceGroupUISupport.connect(locationComboBox, sourceGroups);
+        if (sourceGroups.length > 0) {
+            SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
-        packageComboBox.setRenderer(PackageView.listRenderer());
+            packageComboBox.setRenderer(PackageView.listRenderer());
 
-        updateSourceGroupPackages();
+            updateSourceGroupPackages();
 
-        // set default source group and package cf. targetFolder
-        SourceGroup targetSourceGroup = targetFolder !=null ? SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder) : sourceGroups[0];
-        if (targetSourceGroup != null) {
-            locationComboBox.setSelectedItem(targetSourceGroup);
-            if(targetFolder != null){
-                String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
-                if (targetPackage != null) {
-                    packageComboBoxEditor.setText(targetPackage);
+            // set default source group and package cf. targetFolder
+            SourceGroup targetSourceGroup = targetFolder !=null ? SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder) : sourceGroups[0];
+            if (targetSourceGroup != null) {
+                locationComboBox.setSelectedItem(targetSourceGroup);
+                if(targetFolder != null){
+                    String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
+                    if (targetPackage != null) {
+                        packageComboBoxEditor.setText(targetPackage);
+                    }
                 }
             }
+            updateCheckboxes();
         }
-        updateCheckboxes();
-
     }
     
     void store(WizardDescriptor settings) {
-        try {
-            Templates.setTargetFolder(settings, SourceGroups.getFolderForPackage(getLocationValue(), getPackage()));
-        } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+        SourceGroup srcGroup = getLocationValue();
+        if (srcGroup != null) {
+            try {
+                Templates.setTargetFolder(settings, SourceGroups.getFolderForPackage(srcGroup, getPackage()));
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            }
         }
     }
 
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
-        ComboBoxModel model = PackageView.createListView(sourceGroup);
-        if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
-                && model.getSize() > 1) { // NOI18N
-            model.setSelectedItem(model.getElementAt(1));
+        if (sourceGroup != null) {
+            ComboBoxModel model = PackageView.createListView(sourceGroup);
+            if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF") //NOI18N
+                    && model.getSize() > 1) { // NOI18N
+                model.setSelectedItem(model.getElementAt(1));
+            }
+            packageComboBox.setModel(model);
         }
-        packageComboBox.setModel(model);
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
+        fireUpdate();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
+        fireUpdate();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
+        fireUpdate();
+    }
+
+    private void fireUpdate() {
+        changeSupport.fireChange();
     }
 
     boolean isRemote() {
