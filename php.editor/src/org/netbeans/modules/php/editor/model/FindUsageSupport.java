@@ -71,10 +71,9 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public final class FindUsageSupport {
-
-    private Set<FileObject> files;
-    private ModelElement element;
-    private ElementQuery.Index index;
+    private final Set<FileObject> files;
+    private final ModelElement element;
+    private final ElementQuery.Index index;
 
     public static FindUsageSupport getInstance(ElementQuery.Index index, ModelElement element) {
         return new FindUsageSupport(index, element);
