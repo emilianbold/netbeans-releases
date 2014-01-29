@@ -176,9 +176,7 @@ public final class FindUsageSupport {
 
     private synchronized void addFile(FileObject fileObject) {
         FileType fileType = PhpSourcePath.getFileType(fileObject);
-        if (fileType == PhpSourcePath.FileType.SOURCE
-                || fileType == PhpSourcePath.FileType.TEST
-                || fileType == PhpSourcePath.FileType.UNKNOWN) {
+        if (fileType != FileType.INCLUDE && fileType != FileType.INTERNAL) {
             this.files.add(fileObject);
         }
     }
