@@ -59,8 +59,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -68,23 +66,17 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Radek Matous
  */
-@NbBundle.Messages("ERR_CannotRefactorLoc=Cannot refactor here")
+@NbBundle.Messages("ERR_CannotRefactorLoc=Can't refactor here")
 public abstract class RefactoringTask extends UserTask implements Runnable {
     private static final RequestProcessor RP = new RequestProcessor(RefactoringTask.class);
     private static final Logger LOG = Logger.getLogger(RefactoringTask.class.getName());
-    protected RefactoringUI ui;
+    RefactoringUIHolder uiHolder = RefactoringUIHolder.NONE;
 
-    public final RefactoringUI getRefactoringUI() {
-        return ui;
-    }
-
-    @NbBundle.Messages("ERR_ParsingInProgress=Can't refactor - parsing in progress.")
     protected void fetchRefactoringUI(Source source, UserTask userTask) {
         Future<?> futureTask = RP.submit(new ParsingTask(source, userTask));
         boolean parsingInProgress = false;
@@ -98,14 +90,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             futureTask.cancel(true);
             parsingInProgress = true;
         }
-        TopComponent activeTopComponent = TopComponent.getRegistry().getActivated();
-        if (ui != null) {
-            UI.openRefactoringUI(ui, activeTopComponent);
-        } else if (parsingInProgress) {
-            JOptionPane.showMessageDialog(null, Bundle.ERR_ParsingInProgress());
-        } else {
-            JOptionPane.showMessageDialog(null, Bundle.ERR_CannotRefactorLoc());
-        }
+        uiHolder.processUI(parsingInProgress);
     }
 
     private static final class ParsingTask implements Runnable, Cancellable {
@@ -140,7 +125,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         }
     }
 
-    public abstract static class NodeToFileTask extends RefactoringTask {
+    abstract static class NodeToFileTask extends RefactoringTask {
 
         private final Node node;
         private FileObject fileObject;
@@ -155,7 +140,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (parserResult != null && parserResult instanceof PHPParseResult) {
                 Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
                 if (root != null) {
-                    ui = createRefactoringUI((PHPParseResult) parserResult);
+                    uiHolder = createRefactoringUIHolder((PHPParseResult) parserResult);
                     return;
                 }
             }
@@ -176,10 +161,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             }
         }
 
-        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info);
+        protected abstract RefactoringUIHolder createRefactoringUIHolder(final PHPParseResult info);
     }
 
-    public abstract static class TextComponentTask extends RefactoringTask {
+    abstract static class TextComponentTask extends RefactoringTask {
 
         private final JTextComponent textC;
         private final int caret;
@@ -203,7 +188,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (parserResult instanceof PHPParseResult) {
                 Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
                 if (root != null) {
-                    ui = createRefactoringUI((PHPParseResult) parserResult, caret);
+                    uiHolder = createRefactoringUI((PHPParseResult) parserResult, caret);
                     return;
                 }
             }
@@ -211,6 +196,35 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
         }
 
-        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset);
+        protected abstract RefactoringUIHolder createRefactoringUI(final PHPParseResult info, final int offset);
     }
+
+    @NbBundle.Messages({
+        "ERR_ParsingInProgress=Can't refactor - parsing in progress.",
+        "ERR_ElementNotInUsersFile=Can't refactor - element is on Include Path or in Signature File"
+    })
+    interface RefactoringUIHolder {
+        RefactoringUIHolder NONE = new RefactoringUIHolder() {
+
+            @Override
+            public void processUI(boolean parsingInProgress) {
+                if (parsingInProgress) {
+                    JOptionPane.showMessageDialog(null, Bundle.ERR_ParsingInProgress());
+                } else {
+                    JOptionPane.showMessageDialog(null, Bundle.ERR_CannotRefactorLoc());
+                }
+            }
+        };
+
+        RefactoringUIHolder NOT_USERS_FILE = new RefactoringUIHolder() {
+
+            @Override
+            public void processUI(boolean parsingInProgress) {
+                JOptionPane.showMessageDialog(null, Bundle.ERR_ElementNotInUsersFile());
+            }
+        };
+
+        void processUI(boolean parsingInProgress);
+    }
+
 }
