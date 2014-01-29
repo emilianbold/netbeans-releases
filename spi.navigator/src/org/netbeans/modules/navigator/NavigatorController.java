@@ -827,10 +827,14 @@ public final class NavigatorController implements LookupListener, PropertyChange
     }
 
     private FileObject getCurrentFileObject() {
-        for (Node node : curNodesRes.allInstances()) {
-            FileObject fo = node.getLookup().lookup(FileObject.class);
-            if (fo != null) {
-                return fo;
+        // Some updates runs delayed, so it's possible that
+        // navigator was already closed, that's why the check
+        if (curNodesRes != null) {
+            for (Node node : curNodesRes.allInstances()) {
+                FileObject fo = node.getLookup().lookup(FileObject.class);
+                if (fo != null) {
+                    return fo;
+                }
             }
         }
         return null;
