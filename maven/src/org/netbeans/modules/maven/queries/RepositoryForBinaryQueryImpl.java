@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -285,8 +286,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final String classifier;
         private final URL binary;
 
+        //TODO should this be weak referenced? how to add/remove project listeners then.
         private Project currentProject;
         private FileObject[] cached;
+        private Boolean cachedPreferedSources;
+        private boolean avoidScheduling = false; //to be accessed and modified only under synchronized lock
+        private final AtomicBoolean needsFiring = new AtomicBoolean(false);
 
         SrcResult(@NullAllowed String groupId, @NullAllowed String artifactId, @NullAllowed String version, @NullAllowed String classifier, @NonNull URL binary, @NullAllowed File sourceJar) {
             sourceJarFile = sourceJar;
@@ -346,9 +351,6 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
 
         private void checkChanges(boolean fireChanges) {
-            //getRoots will fire change in the result if the old cached value is different from the newly generated one
-            FileObject[] ch;
-            FileObject[] toRet;
             // use MFOQI to determine what is the current project owning our coordinates in local repository.
             Project owner = null;
             if (groupId != null && artifactId != null && version != null) {
@@ -358,7 +360,6 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 }
             }
             synchronized (this) {
-                ch = cached;
                 if (currentProject != null && !currentProject.equals(owner)) {
                     currentProject.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(projectListener);
                 }
@@ -366,10 +367,18 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     owner.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
                 }
                 currentProject = owner;
-                toRet = getRoots();
+                if (fireChanges && !needsFiring.get()) { //only do check if interested in changes and when no known change occured
+                    avoidScheduling = true;
+                    try {
+                        getRoots();
+                        preferSources();
+                    } finally {
+                        avoidScheduling = false;
+                    }
+                }
             }
 
-            if (fireChanges && !Arrays.equals(ch, toRet)) {
+            if (fireChanges && needsFiring.get()) {
                 support.fireChange();
             }
         }
@@ -427,6 +436,11 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 }
             }
             synchronized (this) {
+                if (cached != null && !Arrays.equals(cached, toRet)) {
+                    if (needsFiring.compareAndSet(false, true) && !avoidScheduling) {
+                        checkChangesTask.schedule(CHECK_CHANGES_DELAY);
+                    }
+                }
                 cached = toRet;
             }
             return toRet;
@@ -486,19 +500,28 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 
         @Override
         public boolean preferSources() {
+            boolean toRet = false;
             Project prj;
             synchronized (this) {
                 prj = currentProject;
             }
             if (prj != null && classifier == null) {
                 if (!NbMavenProject.isErrorPlaceholder(prj.getLookup().lookup(NbMavenProject.class).getMavenProject())) {
-                    return prj.getLookup().lookup(ForeignClassBundler.class).preferSources();
+                    toRet = prj.getLookup().lookup(ForeignClassBundler.class).preferSources();
                 }
             } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
-                return true;
+                toRet = true;
             }
-
-            return false;
+            synchronized (this) {
+                if (cachedPreferedSources != null && !cachedPreferedSources.equals(toRet)) {
+                    if (needsFiring.compareAndSet(false, true) && !avoidScheduling) {
+                        checkChangesTask.schedule(CHECK_CHANGES_DELAY);
+                    }
+                }
+                cachedPreferedSources = toRet;
+            }
+            
+            return toRet;
         }
 
         private @NonNull synchronized FileObject[] getShadedJarSources() {
