@@ -102,6 +102,10 @@ public class EjbFacadeWizardPanel2 implements WizardDescriptor.Panel, ChangeList
     @Override
     public boolean isValid() {
         getComponent();
+        if (component.getLocationValue() == null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(EjbFacadeWizardPanel2.class, "ERR_LocationNotValid")); // NOI18N
+            return false;
+        }
         if (!(component.isRemote() || component.isLocal())) {
             if(J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported()) {
                 //if it's jee6 project, ejb 3.1 allow to omit any interfaces

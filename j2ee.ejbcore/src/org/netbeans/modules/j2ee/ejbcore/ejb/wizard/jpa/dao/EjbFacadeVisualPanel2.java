@@ -161,43 +161,49 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        SourceGroupUISupport.connect(locationComboBox, sourceGroups);
+        if (sourceGroups.length > 0) {
+            SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
-        packageComboBox.setRenderer(PackageView.listRenderer());
+            packageComboBox.setRenderer(PackageView.listRenderer());
 
-        updateSourceGroupPackages();
+            updateSourceGroupPackages();
 
-        // set default source group and package cf. targetFolder
-        SourceGroup targetSourceGroup = targetFolder !=null ? SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder) : sourceGroups[0];
-        if (targetSourceGroup != null) {
-            locationComboBox.setSelectedItem(targetSourceGroup);
-            if(targetFolder != null){
-                String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
-                if (targetPackage != null) {
-                    packageComboBoxEditor.setText(targetPackage);
+            // set default source group and package cf. targetFolder
+            SourceGroup targetSourceGroup = targetFolder !=null ? SourceGroups.getFolderSourceGroup(sourceGroups, targetFolder) : sourceGroups[0];
+            if (targetSourceGroup != null) {
+                locationComboBox.setSelectedItem(targetSourceGroup);
+                if(targetFolder != null){
+                    String targetPackage = SourceGroups.getPackageForFolder(targetSourceGroup, targetFolder);
+                    if (targetPackage != null) {
+                        packageComboBoxEditor.setText(targetPackage);
+                    }
                 }
             }
+            updateCheckboxes();
         }
-        updateCheckboxes();
-
     }
     
     void store(WizardDescriptor settings) {
-        try {
-            Templates.setTargetFolder(settings, SourceGroups.getFolderForPackage(getLocationValue(), getPackage()));
-        } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+        SourceGroup srcGroup = getLocationValue();
+        if (srcGroup != null) {
+            try {
+                Templates.setTargetFolder(settings, SourceGroups.getFolderForPackage(srcGroup, getPackage()));
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex);
+            }
         }
     }
 
     private void updateSourceGroupPackages() {
         SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
-        ComboBoxModel model = PackageView.createListView(sourceGroup);
-        if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
-                && model.getSize() > 1) { // NOI18N
-            model.setSelectedItem(model.getElementAt(1));
+        if (sourceGroup != null) {
+            ComboBoxModel model = PackageView.createListView(sourceGroup);
+            if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF") //NOI18N
+                    && model.getSize() > 1) { // NOI18N
+                model.setSelectedItem(model.getElementAt(1));
+            }
+            packageComboBox.setModel(model);
         }
-        packageComboBox.setModel(model);
     }
     
     public void insertUpdate(DocumentEvent e) {
