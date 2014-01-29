@@ -205,7 +205,7 @@ run() {
             \"-Djdk.home=${JDK_HOME}\" \
             \"-Dcvs.root=${CVS_ROOT}\" \
             \"-Dcvs.timestamp=${CVS_STAMP}\" \
-            \"-Dcvs.branch=${CVS_BRANCH}\" \            
+            \"-Dcvs.branch=${CVS_BRANCH}\" \
             \"-Dbuild.jdk7=${BUILD_NBJDK7}\" \
             \"-Dbuild.jdk8=${BUILD_NBJDK8}\" \
             \"-Dbundle.jdk.platform=${BUNDLE_JDK_PLATFORM}\" \
