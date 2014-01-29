@@ -736,10 +736,9 @@ public final class FoldOperationImpl {
                         // compromise hierarchy constraints after update(x,y) and subsequent add() would not find the appropriate
                         // place for insertion of new folds.
                         tran.reinsertFoldTree(ff);
-                    } else if (isValidFold(ff)) {
-                        // update the data, if the fold is still valid
-                        update(ff, fi);
                     }
+                    // update the data, if the fold is still valid
+                    update(ff, fi);
                 }
                 for (FoldInfo info : toAdd) {
                     try {
@@ -766,10 +765,10 @@ public final class FoldOperationImpl {
                     execution.checkConsistency();
                 }
             } finally {
+                tran.commit();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "Updated fold hierarchy: " + getOperation().getHierarchy());
                 }
-                tran.commit();
             }
         }
         
