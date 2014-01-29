@@ -51,7 +51,7 @@ public class IncorrectDocumentationRule extends JsFunctionDocumentationRule {
 
     @Override
     public String getId() {
-        return "jsundocumentedparameter.hint";
+        return "IncorrectDocumentationRule.hint";
     }
 
     @NbBundle.Messages("IncorrectDocumentationRuleDesc=Incorrect Documented Parameter hint informs you about defined parameter not used in the function arguments.")
