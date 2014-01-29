@@ -156,7 +156,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 if (ctx != null && ctx.getName() != null) {
                     final FileObject fileObject = ctx.getModelElement().getFileObject();
                     FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL)) {
+                    if (!fileType.equals(FileType.INTERNAL) && !FileType.INCLUDE.equals(fileType)) {
                         return new PhpRenameRefactoringUI(ctx);
                     }
                 }
@@ -194,7 +194,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
                 if (ctx != null) {
                     final FileObject fileObject = ctx.getModel().getFileScope().getFileObject();
                     FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL)) {
+                    if (!fileType.equals(FileType.INTERNAL) && !FileType.INCLUDE.equals(fileType)) {
                         return new PhpDeleteRefactoringUI(ctx, regularDelete);
                     }
                 }

@@ -158,7 +158,7 @@ public final class FindUsageSupport {
     public Set<FileObject> inFiles() {
         synchronized (this) {
             if (this.files.isEmpty()) {
-                this.files.add(element.getFileObject());
+                addFile(element.getFileObject());
                 String name = element.getName();
                 final PhpElementKind kind = element.getPhpElementKind();
                 if (kind.equals(PhpElementKind.VARIABLE) || kind.equals(PhpElementKind.FIELD)) {
@@ -167,16 +167,20 @@ public final class FindUsageSupport {
                     name = element.getInScope().getName();
                 }
                 for (FileObject fo : index.getLocationsForIdentifiers(name)) {
-                    FileType fileType = PhpSourcePath.getFileType(fo);
-                    if (fileType == PhpSourcePath.FileType.SOURCE
-                            || fileType == PhpSourcePath.FileType.TEST
-                            || fileType == PhpSourcePath.FileType.UNKNOWN) {
-                        this.files.add(fo);
-                    }
+                    addFile(fo);
                 }
             }
         }
         return files;
+    }
+
+    private synchronized void addFile(FileObject fileObject) {
+        FileType fileType = PhpSourcePath.getFileType(fileObject);
+        if (fileType == PhpSourcePath.FileType.SOURCE
+                || fileType == PhpSourcePath.FileType.TEST
+                || fileType == PhpSourcePath.FileType.UNKNOWN) {
+            this.files.add(fileObject);
+        }
     }
 
     /**
