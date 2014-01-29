@@ -370,6 +370,7 @@
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.props</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types</package>
+                <package>org.netbeans.modules.cnd.debugger.common2.debugger.debugging</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.io</package>
                 <package>org.netbeans.modules.cnd.debugger.common2.debugger.options</package>
