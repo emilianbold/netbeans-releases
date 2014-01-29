@@ -73,4 +73,16 @@ public class IndexOfToContainsTest extends NbTestCase {
                               "    }\n" +
                               "}\n");
     }
+
+    public void testContainsForIndexOfChar() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private boolean test(String str) {\n" +
+                       "        return str.indexOf('s') == (-1);\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(IndexOfToContains.class)
+                .assertWarnings();
+    }
 }

@@ -1188,9 +1188,54 @@ public class Flow {
 
         @Override
         public Boolean visitLambdaExpression(LambdaExpressionTree node, ConstructorData p) {
-            TypeElement oldTarget = referenceTarget;
-            Boolean b = super.visitLambdaExpression(node, p);
-            referenceTarget = oldTarget;
+            TypeElement oldTarget = this.referenceTarget;
+            this.referenceTarget = null;
+            Boolean b;
+
+            Tree oldNearestMethod = nearestMethod;
+            Set<Element> oldCurrentMethodVariables = currentMethodVariables;
+            Map<TypeMirror, Collection<Map<Element, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<Element, State> oldVariable2State = variable2State;
+
+            nearestMethod = node;
+            currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<Element, State>>>();
+            variable2State = new HashMap<>(variable2State);
+            
+            for (Iterator<Entry<Element, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                Entry<Element, State> e = it.next();
+                
+                if (e.getKey().getKind().isField()) it.remove();
+            }
+            
+            try {
+                inParameters = true;
+
+                try {
+                    scan(node.getParameters(), null);
+                } finally {
+                    inParameters = false;
+                }
+                b = scan(node.getBody(), p);
+            
+                Set<Element> assigned = new HashSet<Element>();
+
+                for (Iterator<Entry<Element, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                    Entry<Element, State> e = it.next();
+
+                    if (e.getKey().getKind() == ElementKind.FIELD) {
+                        assigned.add(e.getKey());
+                        it.remove();
+                    }
+                }
+                finalCandidates.removeAll(assigned);
+            } finally {
+                referenceTarget = oldTarget;
+                nearestMethod = oldNearestMethod;
+                currentMethodVariables = oldCurrentMethodVariables;
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                variable2State = mergeOr(variable2State, oldVariable2State, false);
+            }
             return b;
         }
 

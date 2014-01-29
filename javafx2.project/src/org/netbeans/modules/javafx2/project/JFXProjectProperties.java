@@ -1087,7 +1087,7 @@ public final class JFXProjectProperties {
                         FileObject prelProjFO = FileUtil.toFileObject(prelProjDirF);
                         final Project proj = ProjectManager.getDefault().findProject(prelProjFO);
 
-                        AntArtifact[] artifacts = AntArtifactQuery.findArtifactsByType(proj, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        AntArtifact[] artifacts = proj != null ? AntArtifactQuery.findArtifactsByType(proj, JavaProjectConstants.ARTIFACT_TYPE_JAR) : new AntArtifact[0];
                         List<URI> allURI = new ArrayList<URI>();
                         for(AntArtifact artifact : artifacts) {
                             allURI.addAll(Arrays.asList(artifact.getArtifactLocations()));
