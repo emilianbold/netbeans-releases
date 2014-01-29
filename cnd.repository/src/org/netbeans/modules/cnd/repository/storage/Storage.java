@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.repository.api.FilePath;
@@ -74,7 +73,9 @@ import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
+import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -234,13 +235,22 @@ import org.openide.util.lookup.Lookups;
         return result;
     }
     
+    int getMaintananceWeight() {
+        int weight = 0;
+        for (Layer l : layers) {
+            weight += getMaintenanceWeight(l);
+        }
+        return weight;
+    }
     
     
     boolean maintain(long timeout){
         if (layers.isEmpty()) {
             return false;
         }
-
+        if (Stats.traceDefragmentation) {
+            System.out.println("-------Storage with id " + storageID + " start defragmenting------");
+        }
         Layer[] unitList = layers.toArray(new Layer[layers.size()]);
         Arrays.sort(unitList, new MaintenanceComparator());
         boolean needMoreTime = false;
@@ -251,9 +261,15 @@ import org.openide.util.lookup.Lookups;
                 //no need to maintain read onle layers
                 continue;
             }
-            if (timeout <= 0) {
-                needMoreTime = true;
-                break;
+            int weight = 0;
+            try {
+                weight = writeCapability.getMaintenanceWeight();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (weight < Stats.defragmentationThreashold) {
+                //we are done, no need to go inside, no maintenance is required
+                return needMoreTime;
             }
 
             try {
@@ -263,6 +279,10 @@ import org.openide.util.lookup.Lookups;
             } catch (IOException ex) {
             }
             timeout -= (System.currentTimeMillis() - start);
+            if (timeout <= 0 && i < unitList.length -1 ) {
+                needMoreTime = true;
+                break;
+            }
         }
         return needMoreTime;        
     }
@@ -911,25 +931,27 @@ import org.openide.util.lookup.Lookups;
             return result.intValue();
         }
     }
+
+    private static int getMaintenanceWeight(Layer layer) {
+        try {
+            final WriteLayerCapability writeCapability = layer.getWriteCapability();
+            if (writeCapability == null) {
+                return 0;
+            }
+            return writeCapability.getMaintenanceWeight();
+        } catch (IOException ex) {
+        }
+        return 0;
+    }
+
     private static class MaintenanceComparator implements Comparator<Layer>, Serializable {
 
-        private static final long serialVersionUID = 7249069246763182397L;
+        private static final long serialVersionUID = 7249059246763182397L;
 
         @Override
         public int compare(Layer o1, Layer o2) {
             return getMaintenanceWeight(o2) -  getMaintenanceWeight(o1);
         }
-        
-        private  int getMaintenanceWeight(Layer layer) {
-            try {
-                final WriteLayerCapability writeCapability = layer.getWriteCapability();
-                if (writeCapability == null){
-                    return 0;
-                }
-                return writeCapability.getMaintenanceWeight();
-            } catch (IOException ex) {
-            }
-        return 0;
-        }
+
     }    
 }

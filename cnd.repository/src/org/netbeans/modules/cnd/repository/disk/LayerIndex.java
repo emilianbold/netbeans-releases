@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToValueList;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 
 /**
  *
