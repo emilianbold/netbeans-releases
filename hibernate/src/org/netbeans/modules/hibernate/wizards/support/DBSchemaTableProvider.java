@@ -111,6 +111,15 @@ public class DBSchemaTableProvider implements TableProvider {
             return false;
         }
         
+        //issue 237629 table with overlapping of fk columns isn't join table
+        for(ColumnElement c:foreignKeys[0].getColumns()) {
+            for(ColumnElement c2:foreignKeys[1].getColumns()) {
+                if(c2!=null && c!=null && c2.equals(c)) {
+                    return false;
+                }
+            }
+        }
+        
         return true;
     }
     
