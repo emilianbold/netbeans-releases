@@ -1044,15 +1044,15 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
-     <target name="build-jdk6" if="do.build.jdk6">
-	<antcall target="build-jdk-product">
-	    <param name="jdk.build.file" value="build_jdk6.xml"/>
-	</antcall>
-     </target>
-
      <target name="build-jdk7" if="do.build.jdk7">
 	<antcall target="build-jdk-product">
 	    <param name="jdk.build.file" value="build_jdk7.xml"/>
+	</antcall>
+     </target>
+     
+     <target name="build-jdk8" if="do.build.jdk8">
+	<antcall target="build-jdk-product">
+	    <param name="jdk.build.file" value="build_jdk8.xml"/>
 	</antcall>
      </target>
 
