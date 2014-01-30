@@ -68,8 +68,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public final class DoubleFileStorage implements FileStorage {
 
-    private static final int MAINTENANCE_PERIOD = 5000;//5 seconds
-    private final static long PROBLEM_SIZE = 512*1024*1024;//1Gb
+    private static final int MAINTENANCE_PERIOD = 10000;//10 seconds
+    private  static long MAINTAINANCE_SIZE = 512*1024*1024;//512Mb
+    private  static long SIZE_INCREASE_STEP = 256*1024*1024;//256Mb
     private final AtomicLong lastDefragmentationTime = new AtomicLong(0);
     private final File baseDir;
     private IndexedStorageFile cache_0_dataFile;
@@ -218,13 +219,21 @@ public final class DoubleFileStorage implements FileStorage {
             //maintain is required if:
             //one of the files are bigger than 1 Gb and more than 10 seconds (10000 ms since last defragment)
             boolean activeFlag = getFlag();
-            long activeFileSize = getFileByFlag(activeFlag).getSize();
+            final IndexedStorageFile activeFile = getFileByFlag(activeFlag);
+            long activeFileSize = activeFile.getSize();
             long passiveFileSize = getFileByFlag(!activeFlag).getSize();
-            if ((activeFileSize >= PROBLEM_SIZE || passiveFileSize >= PROBLEM_SIZE) && 
+            int activeFileFragmentationPercentage = activeFile.getFragmentationPercentage();
+            if ((activeFileSize >= MAINTAINANCE_SIZE || passiveFileSize >= MAINTAINANCE_SIZE) &&
                     System.currentTimeMillis() - lastDefragmentationTime.get() >= MAINTENANCE_PERIOD) {
                 //need to maintain
                 defragment(true, Stats.maintenanceInterval);
-
+                if (activeFileSize >= MAINTAINANCE_SIZE && activeFileFragmentationPercentage < 40) {
+                    if (Stats.traceDefragmentation) {
+                        System.out.printf(">>> Active file size %d  total fragmentation %d%%\n", activeFileSize, activeFileFragmentationPercentage); // NOI18N
+                        System.out.printf("\tWill increase file size maintanance trashold on 256Mb\n"); // NOI18N
+                    }       
+                    MAINTAINANCE_SIZE += SIZE_INCREASE_STEP;
+                }
             }
         } catch (IOException ex) {
             RepositoryExceptions.throwException(this, ex);
