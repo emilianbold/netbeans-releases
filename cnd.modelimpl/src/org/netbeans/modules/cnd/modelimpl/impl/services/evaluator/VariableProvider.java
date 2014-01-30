@@ -289,9 +289,9 @@ public class VariableProvider {
 
                             // TODO: think about differences between decl and mapping!!!
                             
-                            if (CsmKindUtilities.isInstantiation(decl)) {
-                                type = instantiateType(type, (Instantiation)decl);
-                            }
+//                            if (CsmKindUtilities.isInstantiation(decl)) {
+//                                type = instantiateType(type, (Instantiation)decl);
+//                            }
 
                             CsmClassifier originalClassifier = CsmClassifierResolver.getDefault().getOriginalClassifier(type.getClassifier(), decl.getContainingFile());
                             

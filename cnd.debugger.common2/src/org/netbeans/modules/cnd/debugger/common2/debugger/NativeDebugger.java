@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Context;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.spi.viewmodel.ModelListener;
 
 public interface NativeDebugger {
     public interface QualifiedExprListener {
@@ -143,6 +144,9 @@ public interface NativeDebugger {
     public void registerThreadModel(ThreadModel model);
     public void makeThreadCurrent(Thread f );
     public Thread[] getThreads();
+    
+    public Thread[] getThreadsWithStacks();
+    public void registerDebuggingViewModel(ModelListener model);
 
     public void rerun();
 
@@ -160,6 +164,7 @@ public interface NativeDebugger {
     public void go();
     public void pause();
     public void interrupt();
+    public void resumeThread(Thread thread);
     public void runToCursor(String src, int line);
     public void contAt(String src, int line);
     public void makeCalleeCurrent();
