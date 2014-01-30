@@ -69,8 +69,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 public final class DoubleFileStorage implements FileStorage {
 
     private static final int MAINTENANCE_PERIOD = 10000;//10 seconds
-    private  static long MAINTAINANCE_SIZE = 512*1024*1024;//512Mb
-    private  static long SIZE_INCREASE_STEP = 256*1024*1024;//256Mb
+    private long NextMaintainanceSize = 512*1024*1024;//512Mb
+    private static final long SIZE_INCREASE_STEP = 256*1024*1024;//256Mb
     private final AtomicLong lastDefragmentationTime = new AtomicLong(0);
     private final File baseDir;
     private IndexedStorageFile cache_0_dataFile;
@@ -223,16 +223,16 @@ public final class DoubleFileStorage implements FileStorage {
             long activeFileSize = activeFile.getSize();
             long passiveFileSize = getFileByFlag(!activeFlag).getSize();
             int activeFileFragmentationPercentage = activeFile.getFragmentationPercentage();
-            if ((activeFileSize >= MAINTAINANCE_SIZE || passiveFileSize >= MAINTAINANCE_SIZE) &&
+            if ((activeFileSize >= NextMaintainanceSize || passiveFileSize >= NextMaintainanceSize) &&
                     System.currentTimeMillis() - lastDefragmentationTime.get() >= MAINTENANCE_PERIOD) {
                 //need to maintain
                 defragment(true, Stats.maintenanceInterval);
-                if (activeFileSize >= MAINTAINANCE_SIZE && activeFileFragmentationPercentage < 40) {
+                if (activeFileSize >= NextMaintainanceSize && activeFileFragmentationPercentage < 40) {
                     if (Stats.traceDefragmentation) {
                         System.out.printf(">>> Active file size %d  total fragmentation %d%%\n", activeFileSize, activeFileFragmentationPercentage); // NOI18N
                         System.out.printf("\tWill increase file size maintanance trashold on 256Mb\n"); // NOI18N
                     }       
-                    MAINTAINANCE_SIZE += SIZE_INCREASE_STEP;
+                    NextMaintainanceSize += SIZE_INCREASE_STEP;
                 }
             }
         } catch (IOException ex) {
