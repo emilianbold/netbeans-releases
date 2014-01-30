@@ -362,7 +362,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     @Override
     public boolean maintenance(long timeout) {
         if (Stats.traceDefragmentation) {
-            System.out.println("-------layer " + cacheLocationURI + " start defragmenting------");
+            System.out.println("-------layer " + cacheLocationURI + " start defragmenting------");//NOI18N
         }
         final UnitStorage[] values = unitStorageCache.values().toArray(new UnitStorage[0]);
         Arrays.sort(values, new MaintenanceStorageComparator());

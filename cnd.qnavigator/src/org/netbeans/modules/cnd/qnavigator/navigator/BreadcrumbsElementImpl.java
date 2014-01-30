@@ -46,6 +46,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.actions.Openable;
@@ -71,12 +72,16 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
     private final DataObject cdo;
     private BreadcrumbsElement parent;
     private List<BreadcrumbsElement> children;
+    private final AtomicBoolean canceled;
+    private final CharSequence text;
 
-    public BreadcrumbsElementImpl(BreadcrumbsElement parent, Node node, DataObject cdo) {
+    public BreadcrumbsElementImpl(BreadcrumbsElement parent, Node node, DataObject cdo, AtomicBoolean canceled, CharSequence text) {
         lookup = Lookups.fixed(new OpenableImpl(node));
         this.parent = parent;
         this.node = node;
         this.cdo = cdo;
+        this.canceled = canceled;
+        this.text = text;
     }
 
     @Override
@@ -115,8 +120,14 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
                         CsmFunctionDefinition funDef = (CsmFunctionDefinition) csmObject;
                         CsmCompoundStatement body = funDef.getBody();
                         if (body != null) {
+                            if (canceled != null && canceled.get()) {
+                                return children;
+                            }
                             for (CsmStatement st : body.getStatements()) {
-                                StatementNode statementNode = StatementNode.createStatementNode(st, null, this, cdo);
+                                if (canceled != null && canceled.get()) {
+                                    break;
+                                }
+                                StatementNode statementNode = StatementNode.createStatementNode(st, null, this, cdo, canceled, text);
                                 if (statementNode != null) {
                                     children.add(statementNode);
                                 }
@@ -127,7 +138,7 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
                 }
             }
             for (Node n : node.getChildren().getNodes()) {
-                children.add(new BreadcrumbsElementImpl(this, n, cdo));
+                children.add(new BreadcrumbsElementImpl(this, n, cdo, canceled, text));
             }
         }
         return children;

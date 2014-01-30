@@ -96,7 +96,7 @@ public final class StorageManager {
     // maintain 
     public boolean maintenance (long interval) {
         if (Stats.traceDefragmentation) {
-            System.out.println("-------StorageManager start defragmenting------");
+            System.out.println("-------StorageManager start defragmenting------");//NOI18N
         }
         boolean needMaintence = false;
         long workTime = 0;        

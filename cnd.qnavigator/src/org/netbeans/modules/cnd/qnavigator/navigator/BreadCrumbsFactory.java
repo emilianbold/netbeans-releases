@@ -66,7 +66,7 @@ public final class BreadCrumbsFactory {
     private BreadCrumbsFactory(){
     }
     
-    public static void createBreadCrumbs(long caretLineNo, Node selectedNode, JEditorPane jEditorPane, DataObject cdo, final AtomicBoolean canceled) {
+    public static void createBreadCrumbs(long caretLineNo, Node selectedNode, JEditorPane jEditorPane, DataObject cdo, final AtomicBoolean canceled, CharSequence text) {
         if (!(selectedNode instanceof CppDeclarationNode)) {
             return;
         }
@@ -83,7 +83,7 @@ public final class BreadCrumbsFactory {
                 break;
             }
         }
-        BreadcrumbsElementImpl breadcrumbsElement = new BreadcrumbsElementImpl(null, list.removeFirst(), cdo);
+        BreadcrumbsElementImpl breadcrumbsElement = new BreadcrumbsElementImpl(null, list.removeFirst(), cdo, canceled, text);
         breadcrumbsElement.setParent(new BreadcrumbsRoot(cdo, breadcrumbsElement));
         while(true) {
             if (list.isEmpty()) {
@@ -108,9 +108,7 @@ public final class BreadCrumbsFactory {
             return;
         }
         boolean deep = false;
-        BreadcrumbsElement selected = breadcrumbsElement;
-        if (selected instanceof BreadcrumbsElementImpl &&
-           ((BreadcrumbsElementImpl)selected).getNode() == selectedNode) {
+        if (breadcrumbsElement.getNode() == selectedNode) {
             CsmObject csmObject = ((CppDeclarationNode)selectedNode).getCsmObject();
             int startOffset = -1;
             int endOffset = -1;
@@ -124,7 +122,7 @@ public final class BreadCrumbsFactory {
                 }
             }
         }
-        RP.post(new Body(selected, doc, caretLineNo, deep, canceled));
+        RP.post(new Body(breadcrumbsElement, doc, caretLineNo, deep, canceled));
     }
     
     private static final class Body implements Runnable {
