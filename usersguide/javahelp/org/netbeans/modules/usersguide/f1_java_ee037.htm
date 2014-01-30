@@ -2,75 +2,68 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Enterprise Application Project Properties Dialog Box: Run</title>
+<title>New Enterprise Application Wizard with Existing Sources: Server and Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun"></a></p>
+<p>Beta Draft: 2014-01-30</p>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR_IMPORT" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR_IMPORT"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref602" name="sthref602"></a>
-<h1>Standard Enterprise Application Project Properties Dialog Box: Run</h1>
+<h1>New Enterprise Application Wizard with Existing Sources: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Run page lets you configure options for running your project.</p>
-<p>In the Run page, you can set the following properties:</p>
+<p>The New Enterprise Application wizard creates a new standard project&nbsp; containing an empty enterprise application. You open the New Enterprise Application wizard by opening the New Project wizard and selecting the Enterprise Application template from the Java EE category.</p>
+<p>In the Server and Settings page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t31">Element</th>
-<th align="left" valign="bottom" id="r1c2-t31">Description</th>
+<th align="left" valign="bottom" id="r1c1-t32">Element</th>
+<th align="left" valign="bottom" id="r1c2-t32">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t31" headers="r1c1-t31">
-<p>Client Module</p>
-</td>
-<td align="left" headers="r2c1-t31 r1c2-t31">
-<p>Specifies the name of the WAR file or the client module in the EAR file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t31" headers="r1c1-t31">
+<td align="left" id="r2c1-t32" headers="r1c1-t32">
 <p>Server</p>
 </td>
-<td align="left" headers="r3c1-t31 r1c2-t31">
-<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are registered with the IDE are available to be selected here.</p>
+<td align="left" headers="r2c1-t32 r1c2-t32">
+<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are registered with the IDE are available to be selected here. Any servers installed as part of the IDE installation are registered by default. Note that you cannot deploy Java EE applications and JSR-109 web service clients to the Tomcat Web Server.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t31" headers="r1c1-t31">
-<p>Deploy on Save</p>
+<td align="left" id="r3c1-t32" headers="r1c1-t32">
+<p>Copy Server JAR Files to Libraries Folder</p>
 </td>
-<td align="left" headers="r4c1-t31 r1c2-t31">
-<p>Specifies whether changed files are automatically redeployed. This option saves you time when you run or debug your application in the IDE.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t31" headers="r1c1-t31">
-<p>Display Browser on Run</p>
-</td>
-<td align="left" headers="r5c1-t31 r1c2-t31">
-<p>Specifies whether the browser is displayed. You can edit this if the selected Client Module is a web module.</p>
+<td align="left" headers="r3c1-t32 r1c2-t32">
+<p>If you are using a dedicated folder for storing libraries, you can select this option to copy the server JAR files required for compilation into the dedicated libraries folder. If not selected, other users will need local copies of the server JAR files to build the project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t31" headers="r1c1-t31">
-<p>Relative URL</p>
+<td align="left" id="r4c1-t32" headers="r1c1-t32">
+<p>Java EE Version</p>
 </td>
-<td align="left" headers="r6c1-t31 r1c2-t31">
-<p>Specifies the URL relative to the Client Module to run. You can edit this if the selected Client Module is a web module.</p>
+<td align="left" headers="r4c1-t32 r1c2-t32">
+<p>Specifies the Java EE level against which you want to develop your enterprise application. You can deploy your application to an implementation that supports that specification level or a higher specification level.</p>
+<p>One of the following checkboxes will appear when JDK 1.5 is set as the default platform in the Java Platform Manager and if you choose a source level other than JDK 1.5. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t31" headers="r1c1-t31">
-<p>Client Information</p>
+<td align="left" id="r5c1-t32" headers="r1c1-t32">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
 </td>
-<td align="left" headers="r7c1-t31 r1c2-t31">
-<p>Specifies options for running an enterprise application client. You can edit these fields if the selected Client Module is an application client.</p>
+<td align="left" headers="r5c1-t32 r1c2-t32">
+<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t32" headers="r1c1-t32">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r6c1-t32 r1c2-t32">
+<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
 </td>
 </tr>
 </tbody>
@@ -80,8 +73,48 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1216">
-<param name="text" value="<html><u>&quot;Developing Enterprise Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2900">
+<param name="text" value="<html><u>&quot;About Developing Application Clients&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1651">
+<param name="text" value="<html><u>&quot;About Working with Web and Application Servers&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2901">
+<param name="text" value="<html><u>&quot;Creating Application Clients&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1957">
+<param name="text" value="<html><u>&quot;Understanding Java Platform Manager&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
+<param name="text" value="<html><u>&quot;Sharing Libraries with Other Users&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

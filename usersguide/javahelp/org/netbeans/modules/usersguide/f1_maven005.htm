@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
+<p>Beta Draft: 2014-01-30</p>
 <p><a id="org.netbeans.modules.maven.options.MavenAdvancedOption" name="org.netbeans.modules.maven.options.MavenAdvancedOption"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref279" name="sthref279"></a>
 <h1>Options Window: Java: Maven</h1>
@@ -33,27 +33,27 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t5" headers="r1c1-t5">
-<p>Maven Home</p>
+<p>Execution</p>
 </td>
 <td align="left" headers="r2c1-t5 r1c2-t5">
+<p>Select this category to set options for executing Maven commands in the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t5" headers="r1c1-t5">
+<p>Maven Home</p>
+</td>
+<td align="left" headers="r3c1-t5 r1c2-t5">
 <p>Specifies the location of the local Maven installation (for example, <code>/usr/local/maven/apache-maven-209</code>).</p>
 <p>By default, the IDE uses the version of Maven that is bundled and installed with the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t5" headers="r1c1-t5">
+<td align="left" id="r4c1-t5" headers="r1c1-t5">
 <p>Global Execution Options</p>
 </td>
-<td align="left" headers="r3c1-t5 r1c2-t5">
-<p>Enables you to select additional Maven execution options to apply to all Maven projects.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t5" headers="r1c1-t5">
-<p>Dependency Download Strategy</p>
-</td>
 <td align="left" headers="r4c1-t5 r1c2-t5">
-<p>Specifies how often the IDE performs the listed tasks when a Maven project is opened. The default setting for the tasks is Never. Modifying the setting can have a significant impact on performance when opening a Maven project.</p>
+<p>Enables you to select additional Maven execution options to apply to all Maven projects.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -67,9 +67,105 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t5" headers="r1c1-t5">
-<p>Index Update Frequency</p>
+<p>Reuse Output Tabs from Finished Processes</p>
 </td>
 <td align="left" headers="r6c1-t5 r1c2-t5">
+<p>When selected, Maven output messages are displayed in the same tab in the Output window. When deselected, a new tab is opened for each new Maven process.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t5" headers="r1c1-t5">
+<p>Always Show Output</p>
+</td>
+<td align="left" headers="r7c1-t5 r1c2-t5">
+<p>When selected, Maven output messages are always written to the Output window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t5" headers="r1c1-t5">
+<p>Output Tab identified by</p>
+</td>
+<td align="left" headers="r8c1-t5 r1c2-t5">
+<p>Select the name that is used to identify the tab in the Output window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t5" headers="r1c1-t5">
+<p>Also show active configuration</p>
+</td>
+<td align="left" headers="r9c1-t5 r1c2-t5">
+<p>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t5" headers="r1c1-t5">
+<p>Collapse folds for successfully executed mojos</p>
+</td>
+<td align="left" headers="r10c1-t5 r1c2-t5">
+<p>S.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t5" headers="r1c1-t5">
+<p>Appearance</p>
+</td>
+<td align="left" headers="r11c1-t5 r1c2-t5">
+<p>Select this category to set options for displaying Maven projects in the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t5" headers="r1c1-t5">
+<p>Project node name</p>
+</td>
+<td align="left" headers="r12c1-t5 r1c2-t5">
+<p>Select a template for displaying the Maven project node in the IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t5" headers="r1c1-t5">
+<p>Dependencies</p>
+</td>
+<td align="left" headers="r13c1-t5 r1c2-t5">
+<p>Select this category to set options for downloading project dependencies. The default setting for the tasks is Never. Modifying the setting can have a significant impact on performance when opening a Maven project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t5" headers="r1c1-t5">
+<p>Dependency Download Strategy</p>
+</td>
+<td align="left" headers="r14c1-t5 r1c2-t5">
+<p>Specifies how often the IDE downloads dependency binaries when a Maven project is opened.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t5" headers="r1c1-t5">
+<p>Check Javadoc</p>
+</td>
+<td align="left" headers="r15c1-t5 r1c2-t5">
+<p>Specifies how often the IDE checks the Javadoc when a Maven project is opened.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t5" headers="r1c1-t5">
+<p>Check Sources</p>
+</td>
+<td align="left" headers="r16c1-t5 r1c2-t5">
+<p>Specifies how often the IDE checks the sources when a Maven project is opened.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t5" headers="r1c1-t5">
+<p>Index</p>
+</td>
+<td align="left" headers="r17c1-t5 r1c2-t5">
+<p>Select this category to set options for updating the Maven repository index.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r18c1-t5" headers="r1c1-t5">
+<p>Index Update Frequency</p>
+</td>
+<td align="left" headers="r18c1-t5 r1c2-t5">
 <p>Specifies how often the IDE checks the remote repository for updates.</p>
 </td>
 </tr>
