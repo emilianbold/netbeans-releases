@@ -725,7 +725,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
     }
     
-    private static class FunctionPointerClassifier extends Instantiation<CsmFunctionPointerClassifier> implements CsmFunctionPointerClassifier {
+    private static class FunctionPointerClassifier extends Instantiation<CsmFunctionPointerClassifier> implements CsmFunctionPointerClassifier, CsmTemplate {
         
         private final CsmType retType;
         
@@ -737,10 +737,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public Collection<CsmScopeElement> getScopeElements() {
             return declaration.getScopeElements();
-        }
-
-        public boolean isTemplate() {
-            return ((CsmTemplate)declaration).isTemplate();
         }
 
         @Override
@@ -760,6 +756,31 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 res.add(new Parameter(param, this));
             }
             return res;
+        }
+        
+        @Override
+        public boolean isTemplate() {
+            return ((CsmTemplate)declaration).isTemplate();
+        }        
+
+        @Override
+        public boolean isSpecialization() {
+            return ((CsmTemplate)declaration).isSpecialization();
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return ((CsmTemplate)declaration).isExplicitSpecialization();
+        }
+
+        @Override
+        public List<CsmTemplateParameter> getTemplateParameters() {
+            return ((CsmTemplate)declaration).getTemplateParameters();
+        }
+
+        @Override
+        public CharSequence getDisplayName() {
+            return ((CsmTemplate)declaration).getDisplayName();
         }
     }
 
