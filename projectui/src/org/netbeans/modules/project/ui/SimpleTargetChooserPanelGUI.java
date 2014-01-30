@@ -180,7 +180,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
         if (template != null) {
-            final String baseName = isFolder ? LBL_folder_name() : LBL_SimpleTargetChooserPanelGUI_NewFileName(template.getName());
+            final String baseName;
+            if (isFolder) {
+                baseName = LBL_folder_name();
+            } else {
+                Object targetName = template.getAttribute("targetName");//NOI18N
+                baseName = targetName instanceof String
+                        ? (String) targetName
+                        : LBL_SimpleTargetChooserPanelGUI_NewFileName(template.getName());
+            }
             if (documentName == null) {
                 documentName = baseName;
             }

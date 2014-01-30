@@ -751,7 +751,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new UnusedVariableCustomizer(preferences, this);
+        JComponent customizer = new UnusedVariableCustomizer(preferences, this);
+        setCheckUnusedFormalParameters(preferences, checkUnusedFormalParameters(preferences));
+        return customizer;
     }
 
     public void setCheckUnusedFormalParameters(Preferences preferences, boolean isEnabled) {

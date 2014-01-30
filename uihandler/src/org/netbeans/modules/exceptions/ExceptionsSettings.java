@@ -46,10 +46,7 @@ package org.netbeans.modules.exceptions;
 import java.awt.EventQueue;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.lib.uihandler.BugTrackingAccessor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -62,7 +59,6 @@ public class ExceptionsSettings {
     private static final String passwdKey = "exceptionreporter"; // NOI18N
     private static final String guestProp = "Guest";
     private static final String rememberProp = "RememberPasswd";
-    private final BugTrackingAccessor nba;
     private String userName;
     private char[] passwd;
     private boolean changed = false;
@@ -70,21 +66,15 @@ public class ExceptionsSettings {
     /** Creates a new instance of ExceptionsSettings */
     public ExceptionsSettings() {
         assert !EventQueue.isDispatchThread();
-        nba = Lookup.getDefault().lookup(BugTrackingAccessor.class);
-        if (nba != null) {
-            userName = nba.getUsername();
-            passwd = nba.getPassword();
-        } else {
-            userName = prefs().get(userProp, "");
-            String old = prefs().get(passwdProp, null);
-            char[] keyringPasswd = Keyring.read(passwdKey);
-            if (old != null) {
-                passwd = old.toCharArray();
-                changed = true;
-                prefs().remove(passwdProp);
-            }else if (keyringPasswd != null) {
-                passwd = keyringPasswd;
-            }
+        userName = prefs().get(userProp, "");
+        String old = prefs().get(passwdProp, null);
+        char[] keyringPasswd = Keyring.read(passwdKey);
+        if (old != null) {
+            passwd = old.toCharArray();
+            changed = true;
+            prefs().remove(passwdProp);
+        }else if (keyringPasswd != null) {
+            passwd = keyringPasswd;
         }
         if (passwd == null){
             passwd = new char[0];
@@ -99,14 +89,9 @@ public class ExceptionsSettings {
         if (!changed){
             return;
         }
-        if (nba != null){
-            nba.saveUsername(userName);
-            nba.savePassword(passwd);
-        }else{
-            prefs().put(userProp, userName);
-            Keyring.save(passwdKey, passwd,
-                    NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
-        }
+        prefs().put(userProp, userName);
+        Keyring.save(passwdKey, passwd,
+                NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
     }
 
     public String getUserName() {
@@ -144,6 +129,6 @@ public class ExceptionsSettings {
     }
 
     private Preferences prefs() {
-        return NbPreferences.forModule(ExceptionsSettings.class);
+        return java.util.prefs.Preferences.userRoot().node("org/netbeans/modules/exceptions");
     }
 }

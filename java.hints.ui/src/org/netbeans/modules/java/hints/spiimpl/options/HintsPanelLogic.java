@@ -242,7 +242,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return writableSettings.isModified()|| depScn != null;
+        return writableSettings.isModified() || (depScn != null && depScn != DepScanningSettings.getDependencyTracking());
     }
     
 //    synchronized Preferences getCurrentPrefernces(HintMetadata hm) {
@@ -600,6 +600,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         private static final String MODIFIED_HINT_SETTINGS_MARKER = "MODIFIED_HINT_SETTINGS";
         
         private Map<String,Object> map = new HashMap<String, Object>();
+        private final Map<String,String> mapSaved = new HashMap<>();
 
         public ModifiedPreferences( Preferences node ) {
             super(FAKE_ROOT, MODIFIED_HINT_SETTINGS_MARKER); // NOI18N
@@ -627,9 +628,17 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         }
         
+        public String getSavedValue(String key) {
+            return mapSaved.get(key);
+        }
+        
         @Override
         protected void putSpi(String key, String value) {
             map.put(key, value);            
+            if(!mapSaved.containsKey(key)) {
+                // The saved value for key is equal to the default value, which is set by the Customizer's constructor
+                mapSaved.put(key, value);
+            }
         }
 
         @Override
@@ -773,13 +782,42 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         }
         
         public boolean isModified() {
-            for (ModifiedHint e : changes.values()) {
-                if (e.enabledOverride != null || e.severityOverride != null) {
-                    return true;
+            boolean isChanged = false;
+            for (HintMetadata hint : changes.keySet()) {
+                ModifiedHint e = changes.get(hint);
+                if (e.enabledOverride != null) {
+                    Boolean currentEnabled = e.enabledOverride;
+                    Boolean savedEnabled = delegate.isEnabled(hint);
+                    isChanged |= currentEnabled != savedEnabled;
+                    if(isChanged) {
+                        return true;
+                    }
                 }
-                if (e.preferencesOverride != null && 
-                        !e.preferencesOverride.isEmpty()) {
-                    return true;
+                if (e.severityOverride != null) {
+                    Severity currentSeverity = e.severityOverride;
+                    Severity savedSeverity = delegate.getSeverity(hint);
+                    isChanged |= currentSeverity.compareTo(savedSeverity) != 0;
+                    if(isChanged) {
+                        return true;
+                    }
+                }
+                if (e.preferencesOverride != null && !e.preferencesOverride.isEmpty()) {
+                    try {
+                        for (String key : e.preferencesOverride.keys()) {
+                            String current = e.preferencesOverride.get(key, null);
+                            String saved = delegate.getHintPreferences(hint).get(key, null);
+                            if(saved == null) {
+                                // The saved value for key is equal to the default value, which should be set by the Customizer's constructor
+                                saved = e.preferencesOverride.getSavedValue(key);
+                            }
+                            isChanged |= current == null ? saved != null : !current.equals(saved);
+                            if (isChanged) {
+                                return true;
+                            }
+                        }
+                    } catch (BackingStoreException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
             return false;
@@ -796,7 +834,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             }
             changes.clear();
         }
-        
+
         private static final class ModifiedHint {
             private Boolean enabledOverride;
             private Severity severityOverride;

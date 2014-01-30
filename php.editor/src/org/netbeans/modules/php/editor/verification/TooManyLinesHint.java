@@ -173,7 +173,9 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public JComponent getCustomizer(Preferences preferences) {
-            return new FunctionLinesCustomizer(preferences, this);
+            JComponent customizer = new FunctionLinesCustomizer(preferences, this);
+            setMaxAllowedLines(preferences, getMaxAllowedLines(preferences));
+            return customizer;
         }
 
     }
@@ -252,7 +254,9 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public JComponent getCustomizer(Preferences preferences) {
-            return new ClassLinesCustomizer(preferences, this);
+            JComponent customizer = new ClassLinesCustomizer(preferences, this);
+            setMaxAllowedLines(preferences, getMaxAllowedLines(preferences));
+            return customizer;
         }
 
     }
@@ -331,7 +335,9 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public JComponent getCustomizer(Preferences preferences) {
-            return new InterfaceLinesCustomizer(preferences, this);
+            JComponent customizer = new InterfaceLinesCustomizer(preferences, this);
+            setMaxAllowedLines(preferences, getMaxAllowedLines(preferences));
+            return customizer;
         }
 
     }
@@ -410,7 +416,9 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
 
         @Override
         public JComponent getCustomizer(Preferences preferences) {
-            return new TraitLinesCustomizer(preferences, this);
+            JComponent customizer = new TraitLinesCustomizer(preferences, this);
+            setMaxAllowedLines(preferences, getMaxAllowedLines(preferences));
+            return customizer;
         }
 
     }

@@ -50,6 +50,7 @@ class OneCheckboxCustomizer extends javax.swing.JPanel {
         this.preferencesKey = preferencesKey;
         initComponents();
         checkbox.setSelected(p.getBoolean(preferencesKey, defaultValue));
+        p.putBoolean(preferencesKey, checkbox.isSelected());
     }
 
     /** This method is called from within the constructor to
