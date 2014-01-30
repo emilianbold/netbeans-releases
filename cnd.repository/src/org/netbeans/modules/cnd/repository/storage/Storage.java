@@ -249,7 +249,7 @@ import org.openide.util.lookup.Lookups;
             return false;
         }
         if (Stats.traceDefragmentation) {
-            System.out.println("-------Storage with id " + storageID + " start defragmenting------");
+            System.out.println("-------Storage with id " + storageID + " start defragmenting------");//NOI18N
         }
         Layer[] unitList = layers.toArray(new Layer[layers.size()]);
         Arrays.sort(unitList, new MaintenanceComparator());

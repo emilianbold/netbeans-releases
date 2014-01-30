@@ -66,7 +66,6 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
 /**
@@ -99,13 +98,16 @@ public final class CndParser extends Parser implements CsmProgressListener {
         }
         long oldVersion;
         CsmFile oldFile;
+        CharSequence oldText;
         synchronized(lock) {
             if (this.cndParserResult == null) {
                 oldVersion = 0;
                 oldFile = null;
+                oldText = null;
             } else {
                 oldVersion = this.cndParserResult.getFileVersion();
                 oldFile = this.cndParserResult.getCsmFile();
+                oldText = this.cndParserResult.getSnapshot().getText();
             }
         }
         final FileObject fo = snapshot.getSource().getFileObject();
@@ -123,7 +125,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
         }
         synchronized(lock) {
             long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-            if (oldVersion != fileVersion) {
+            if (oldVersion != fileVersion || !snapshot.getText().equals(oldText)) {
                 this.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
             }
         }
