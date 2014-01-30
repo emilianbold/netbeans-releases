@@ -4204,7 +4204,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression[templateLevel]) => IDENT balanceLessthanGreaterthanInExpression[templateLevel] (balanceCurlies)?
             |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression[templateLevel] isGreaterthanInTheRestOfExpression[templateLevel]) => IDENT balanceLessthanGreaterthanInExpression[templateLevel] (balanceCurlies)?
             |   SCOPE
-            |   id:IDENT {action.id(id);} (balanceCurlies)?
+            |   id:IDENT {action.id(id);} (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
             )
         )+
 
