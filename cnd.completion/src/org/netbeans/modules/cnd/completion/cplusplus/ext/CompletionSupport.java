@@ -368,22 +368,31 @@ public final class CompletionSupport implements DocumentListener {
         if (typ1.equals(typ2)) {
             return typ1;
         }
+        
+        CsmClassifier cls1 = typ1.getClassifier();
 
-        // The following part
-        if (!CndLexerUtilities.isType(typ1.getClassifier().getName().toString()) && ! !CndLexerUtilities.isType(typ2.getClassifier().getName().toString())) { // non-primitive classes
-            if (isAssignable(typ1, typ2)) {
-                return typ1;
-            } else if (isAssignable(typ2, typ1)) {
-                return typ2;
-            } else {
-                return null;
+        if (cls1 != null) {
+            CsmClassifier cls2 = typ2.getClassifier();
+            
+            if (cls2 != null) {
+                // The following part
+                if (!CndLexerUtilities.isType(cls1.getName().toString()) && !CndLexerUtilities.isType(cls2.getName().toString())) { // non-primitive classes
+                    if (isAssignable(typ1, typ2)) {
+                        return typ1;
+                    } else if (isAssignable(typ2, typ1)) {
+                        return typ2;
+                    } else {
+                        return null;
+                    }
+                } else { // at least one primitive class
+                    if (typ1.getArrayDepth() != typ2.getArrayDepth()) {
+                        return null;
+                    }
+                    return null;
+                }
             }
-        } else { // at least one primitive class
-            if (typ1.getArrayDepth() != typ2.getArrayDepth()) {
-                return null;
-            }
-            return null;
         }
+        return null;
     }
 
     /** Filter the list of the methods (usually returned from
