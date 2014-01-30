@@ -276,7 +276,7 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     @Override
-    public int getPriority() {return 200;}
+    public int getPriority() {return 300;}
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {

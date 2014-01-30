@@ -116,7 +116,7 @@ public class NavigatorNodeFactoryTask extends IndexingAwareParserResultTask<CndP
         }
     }
 
-    static final int PRIORITY = 300;
+    static final int PRIORITY = 200;
 
     @Override
     public int getPriority() {
