@@ -143,6 +143,17 @@ public abstract class CsmInstantiationProvider {
      * @return specialization parameter
      */
     public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type);
+    
+    /**
+     * Creates specialization parameter based on type.
+     *
+     * @param type - type for parameter
+     * @param file - containing file
+     * @param start - start offset
+     * @param end - end offset* 
+     * @return specialization parameter
+     */
+    public abstract CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end);    
 
      /**
      * Creates specialization parameter based on expression.
@@ -210,6 +221,11 @@ public abstract class CsmInstantiationProvider {
         public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
             return null;
         }
+        
+        @Override
+        public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type, CsmFile file, int start, int end) {
+            return null;
+        }        
 
         @Override
         public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {

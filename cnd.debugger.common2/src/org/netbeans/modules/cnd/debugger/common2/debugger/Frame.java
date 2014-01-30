@@ -62,9 +62,11 @@ public class Frame {
     protected String attr_signame;
     public boolean more;
     private String signal = null;
+    /*private*/protected Thread thread = null;
     
-    public Frame(NativeDebugger debugger) {
+    public Frame(NativeDebugger debugger, Thread thread) {
 	this.debugger = debugger;
+        this.thread = thread;
     }
 
     public boolean isSpecial() {
@@ -214,5 +216,9 @@ public class Frame {
             }
         }
         return signal;
+    }
+
+    public Thread getThread() {
+        return thread;
     }
 }
