@@ -512,9 +512,9 @@ public final class FoldHierarchy {
                 for (Fold x : children) {
                     foldTearOut2(x, c);
                 }
-                f.setChildren(null);
             }
             c.add(f);
+            f.setChildren(null);
             f.setParent(null);
         }
     }

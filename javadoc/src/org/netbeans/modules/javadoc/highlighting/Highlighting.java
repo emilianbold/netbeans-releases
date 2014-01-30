@@ -86,22 +86,18 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     /** Creates a new instance of Highlighting */
     public Highlighting(Document doc) {
         this.document = doc;
+        hierarchy = TokenHierarchy.get(document);
+        if (hierarchy != null) {
+            hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
+        }
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        synchronized (this) {
-            if (hierarchy == null) {
-                hierarchy = TokenHierarchy.get(document);
-                if (hierarchy != null) {
-                    hierarchy.addTokenHierarchyListener(WeakListeners.create(TokenHierarchyListener.class, this, hierarchy));
-                }
-            }
-
-            if (hierarchy != null) {
-                return new HSImpl(version, hierarchy, startOffset, endOffset);
-            } else {
-                return HighlightsSequence.EMPTY;
-            }
+        if (hierarchy.isActive()) {
+            return new HSImpl(getVersion(), hierarchy, startOffset, endOffset);
+        } else {
+            return HighlightsSequence.EMPTY;
         }
     }
 
@@ -109,6 +105,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     //  TokenHierarchyListener implementation
     // ----------------------------------------------------------------------
 
+    @Override
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
         TokenChange<?> tc = evt.tokenChange();
         int affectedArea [] = null;
@@ -173,6 +170,9 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
         return null;
     }
 
+    synchronized long getVersion() {
+        return version;
+    }
     
     private static boolean isWhiteSpace(Token<? extends TokenId> token) {
         if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {

@@ -93,6 +93,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
                 bRemove.setEnabled(table.isEnabled()  &&  table.getSelectedRow() >= 0);
+                bEdit.setEnabled(table.isEnabled()  &&  table.getSelectedRow() >= 0);
             }
         };
         table.getSelectionModel().addListSelectionListener(listSelectionListener);
@@ -134,6 +135,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         bAdd = new javax.swing.JButton();
         bRemove = new javax.swing.JButton();
         lError = new javax.swing.JLabel();
+        bEdit = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -147,7 +149,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -177,7 +179,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -189,20 +191,35 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lError, org.openide.util.NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "J2MEAPIPermissionsPanel.lError.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 8, 8, 8);
         add(lError, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(bEdit, java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/project/ui/customizer/Bundle").getString("J2MEAPIPermissionsPanel.bEdit.text"), new Object[] {})); // NOI18N
+        bEdit.setEnabled(false);
+        bEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bEditActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 5, 8);
+        add(bEdit, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void bAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bAddActionPerformed
         J2MEPlatform selectedPlatform = (J2MEPlatform) uiProperties.J2ME_PLATFORM_MODEL.getSelectedItem();
         if (selectedPlatform != null) {
             File libsDir = new File(selectedPlatform.getHomePath() + File.separator + "lib"); //NOI18N
-            final AddPermissionPanel add = new AddPermissionPanel(null, new PermissionsProvider(libsDir), tableModel.getKeys());
-            final DialogDescriptor dd = new DialogDescriptor(add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_AddAPI"),
+            final AddPermissionPanel add = new AddPermissionPanel(null, new PermissionsProvider(libsDir), tableModel.getKeys(), null);
+            final DialogDescriptor dd = new DialogDescriptor(add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_AddAPI"), //NOI18N
                     true, new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -237,9 +254,36 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_bRemoveActionPerformed
 
+    private void bEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bEditActionPerformed
+        J2MEPlatform selectedPlatform = (J2MEPlatform) uiProperties.J2ME_PLATFORM_MODEL.getSelectedItem();
+        final int selectedRow = table.getSelectedRow();
+        final StorableTableModel.Item selectedPermission = (StorableTableModel.Item) tableModel.getValueAt(selectedRow, 0);
+        if (selectedPlatform != null) {
+            File libsDir = new File(selectedPlatform.getHomePath() + File.separator + "lib"); //NOI18N
+            final AddPermissionPanel add = new AddPermissionPanel(null, new PermissionsProvider(libsDir), tableModel.getKeys(), selectedPermission.getName());
+            final DialogDescriptor dd = new DialogDescriptor(add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_EditAPI"), //NOI18N
+                    true, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
+                                PermissionsProvider.PermissionDefinition pd = add.getPermission();
+                                if (pd != null) {
+                                    tableModel.updateRow(selectedRow, pd.toString(), pd.isPermissionClass());
+                                    table.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+                                }
+                            }
+                        }
+                    });
+            add.setDialogDescriptor(dd);
+            final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.setVisible(true);
+        }
+    }//GEN-LAST:event_bEditActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bAdd;
+    private javax.swing.JButton bEdit;
     private javax.swing.JButton bRemove;
     private javax.swing.JLabel lError;
     private javax.swing.JLabel lTable;
@@ -250,7 +294,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         
         static class Item {
             
-            final private String name;
+            private String name;
             private boolean required;
             private boolean permissionClass;
             
@@ -263,7 +307,11 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             public String getName() {
                 return name;
             }
-            
+
+            public void setName(String name) {
+                this.name = name;
+            }
+
             public boolean isRequired() {
                 return required;
             }
@@ -481,7 +529,14 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             fireTableRowsInserted(row, row);
             return row;
         }
-        
+
+        public void updateRow(final int row, final String name, final boolean permissionClass) {
+            assert row < items.size();
+            items.get(row).setName(name);
+            items.get(row).setPermissionClass(permissionClass);
+            fireTableRowsUpdated(row, row);
+        }
+
         public void removeRow(final int row) {
             assert row < items.size();
             items.remove(row);
