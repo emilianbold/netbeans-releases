@@ -69,6 +69,8 @@ public class FillSwitchCustomizer extends javax.swing.JPanel {
             }
             @Override public void changedUpdate(DocumentEvent e) { }
         });
+        p.putBoolean(Tiny.KEY_DEFAULT_ENABLED, generateDefault.isSelected());
+        p.put(Tiny.KEY_DEFAULT_SNIPPET, defaultTemplate.getText());
     }
 
     /**

@@ -93,6 +93,7 @@ public class SuspiciousNamesCustomizer extends javax.swing.JPanel implements Act
     
     private void load() {
         String val = prefs.get(SuspiciousNamesCombination.GROUP_KEY, SuspiciousNamesCombination.DEFAULT_GROUPS);
+        prefs.put(SuspiciousNamesCombination.GROUP_KEY, val);
         String[] groups = val == null ? new String[0] : val.split(Pattern.quote(SuspiciousNamesCombination.GROUP_SEPARATOR));
         for (String g : groups) {
             listModel.addElement(g);

@@ -210,9 +210,38 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        for (ModifiedPreferences mpref : changes.values()) {
-            if (mpref.isModified()) {
+        boolean isChanged = false;
+        for (UserConfigurableRule hint : changes.keySet()) {
+            ModifiedPreferences mn = changes.get(hint);
+
+            Boolean currentEnabled = mn.getBoolean(HintsSettings.ENABLED_KEY, hint.getDefaultEnabled());
+            Boolean savedEnabled = HintsSettings.isEnabled(manager, hint);
+            isChanged |= currentEnabled != savedEnabled;
+            if (isChanged) {
                 return true;
+            }
+
+            String currentSeverity = mn.get(HintsSettings.SEVERITY_KEY, hint.getDefaultSeverity().toString());
+            String savedSeverity = HintsSettings.getSeverity(manager, hint).toString();
+            isChanged |= !currentSeverity.equals(savedSeverity);
+            if (isChanged) {
+                return true;
+            }
+
+            try {
+                for (String key : mn.keys()) {
+                    if(key.equals(HintsSettings.ENABLED_KEY) || key.equals(HintsSettings.SEVERITY_KEY)) {
+                        continue;
+                    }
+                    String current = mn.get(key, null);
+                    String saved = mn.getSavedValue(key);
+                    isChanged |= current == null ? saved != null : !current.equals(saved);
+                    if (isChanged) {
+                        return true;
+                    }
+                }
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return false;
@@ -336,10 +365,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             }
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = hint.getCustomizer(ex == null ? 
-                getCurrentPrefernces(hint) :
-                getPreferences4Modification(hint));
-            
+            JComponent c = hint.getCustomizer(getPreferences4Modification(hint));
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
@@ -457,6 +483,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private static class ModifiedPreferences extends AbstractPreferences {
         
         private Map<String,Object> map = new HashMap<String, Object>();
+        private final Map<String,String> mapSaved = new HashMap<String,String>();
         private boolean modified;
         public ModifiedPreferences( Preferences node ) {
             super(null, ""); // NOI18N
@@ -489,9 +516,17 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         }
         
+        public String getSavedValue(String key) {
+            return mapSaved.get(key);
+        }
+        
         protected void putSpi(String key, String value) {
             modified = true;
             map.put(key, value);            
+            if(!mapSaved.containsKey(key)) {
+                // The saved value for key is equal to the default value, which should be set by the Customizer's constructor
+                mapSaved.put(key, value);
+            }
         }
 
         protected String getSpi(String key) {

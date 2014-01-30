@@ -121,6 +121,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     )
     private List<JobHandle> getJobs(ProjectHandle<ODCSProject> projectHandle,
             boolean onlyWatched) {
+        if (!ODCSHudsonUtils.isLoggedIn(projectHandle)) {
+            return Collections.emptyList(); // sometimes called after logout
+        }
         ODCSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
         Persistence pers = Persistence.tranzient(Bundle.MSG_from_odcs_project(),
@@ -262,6 +265,25 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             jobs = hi.getJobs();
         }
         return jobs;
+    }
+
+    /**
+     * Remove Hudson instance and related resources of a cached project handle.
+     *
+     * @param projectHandle
+     */
+    static void clearCached(ProjectHandle<ODCSProject> projectHandle) {
+        if (projectHandle == null) {
+            return;
+        }
+        synchronized (CACHE) {
+            for (BuildsListener bl : CACHE.keySet()) {
+                Reference<ProjectHandle<ODCSProject>> ref = bl.projectHandle;
+                if (ref != null && projectHandle.equals(ref.get())) {
+                    bl.removeHudsonAndClean();
+                }
+            }
+        }
     }
 
     private static Status hudsonJobBuildResultToStatus(HudsonJobBuild build) {

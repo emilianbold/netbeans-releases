@@ -277,7 +277,10 @@ public class WrongStringComparison {
 
         @Override
         public JComponent getCustomizer(Preferences prefs) {
-            return new WrongStringComparisonCustomizer(prefs);
+            JComponent customizer = new WrongStringComparisonCustomizer(prefs);
+            prefs.putBoolean(STRING_LITERALS_FIRST, getStringLiteralsFirst(prefs));
+            prefs.putBoolean(TERNARY_NULL_CHECK, getTernaryNullCheck(prefs));
+            return customizer;
         }
         
     }

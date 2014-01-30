@@ -97,15 +97,28 @@ public class ErrorFixesFakeHint extends AbstractHint {
 
     @Override
     public JComponent getCustomizer(Preferences node) {
+        JComponent customizer;
         switch (kind) {
             case CREATE_LOCAL_VARIABLE:
-                return new LocalVariableFixCustomizer(node);
+                customizer = new LocalVariableFixCustomizer(node);
+                setCreateLocalVariableInPlace(node, isCreateLocalVariableInPlace(node));
+                break;
             case SURROUND_WITH_TRY_CATCH:
-                return new SurroundWithTryCatchLog(node);
+                customizer = new SurroundWithTryCatchLog(node);
+                setRethrow(node, isRethrow(node));
+                setRethrowAsRuntimeException(node, isRethrowAsRuntimeException(node));
+                setUseExceptions(node, isUseExceptions(node));
+                setUseLogger(node, isUseLogger(node));
+                break;
             case CREATE_FINAL_FIELD_CTOR:
-                return new FinalFieldsFromCtorCustomiser(node);
+                customizer = new FinalFieldsFromCtorCustomiser(node);
+                setCreateFinalFieldsForCtor(node, isCreateFinalFieldsForCtor(node));
+                break;
+            default:
+                customizer = super.getCustomizer(node);
+                break;
         }
-        return super.getCustomizer(node);
+        return customizer;
     }
 
     public static enum FixKind {

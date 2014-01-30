@@ -131,4 +131,12 @@ public @interface TemplateRegistration {
      * @since 7.46
      */
     boolean requireProject() default true;
+
+    /**
+     * Default (pre-filled) target name for the template, without extension. May
+     * use the usual {@code #key} syntax for localization or branding.
+     *
+     * @since 7.56
+     */
+    String targetName() default "";
 }
