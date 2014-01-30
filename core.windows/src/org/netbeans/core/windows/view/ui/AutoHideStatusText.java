@@ -142,7 +142,9 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
             panel.setBounds( rect.x-1, rect.y+rect.height-dim.height+1, dim.width, dim.height+1 );
             if( parent instanceof JLayeredPane ) {
                 JLayeredPane pane = (JLayeredPane) parent;
-                pane.moveToFront( panel );
+                if( pane.getComponentZOrder(panel) >= 0 ) { //#241059 
+                    pane.moveToFront( panel );
+                }
             }
         }
     }
