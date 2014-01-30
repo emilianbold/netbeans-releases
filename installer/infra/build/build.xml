@@ -369,7 +369,19 @@
             prefix="openesb"/>
         -->
         
-        <if property="do.build.jdk">
+        <if property="do.build.jdk7">
+            <get
+                src="${jdk.builds.host}/${jdk7.builds.path}/latest/bundles/linux-x64/"
+                dest="${temp.file}"/>
+            <jdk-buildnumber file="${temp.file}"/>
+
+            <echo message="Property jdk.version.number: ${jdk.version.number}"/>
+            <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.build.number: ${jdk.build.number}"/>
+            <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
+        </if>
+        
+        <if property="do.build.jdk8">
             <get
                 src="${jdk.builds.host}/${jdk8.builds.path}/latest/bundles/linux-x64/"
                 dest="${temp.file}"/>
@@ -466,6 +478,7 @@ nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
 jdk.builds.host=${jdk.builds.host}
 jdk7.builds.path=${jdk.builds.path}
+jdk8.builds.path=${jdk.builds.path}
 openesb.builds.host=${openesb.builds.host}
 remote.work.dir=~/.${nb.bundle.files.prefix}
 	</echo>
