@@ -545,42 +545,44 @@ public class CsmContextUtilities {
             CsmClassifier classifier = var.getType().getClassifier();
             
             if (classifier != null && CsmKindUtilities.isClass(classifier)) {
-                CsmExpression expression = var.getInitialValue();
-                String expressionText = expression.getExpandedText().toString();        
-                int startOffset = expression.getStartOffset();
+                CsmExpression expression = var.getInitialValue();                
+                if (expression != null) {
+                    String expressionText = expression.getExpandedText().toString();        
+                    int startOffset = expression.getStartOffset();
 
-                TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
-                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
-                // Go from inner to outer TSes
-                TokenSequence<TokenId> cppts = null;
-                for (int i = tsList.size() - 1; i >= 0; i--) {
-                    TokenSequence<?> ts = tsList.get(i);
-                    final Language<?> lang = ts.languagePath().innerLanguage();
-                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                        @SuppressWarnings("unchecked") // NOI18N
-                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                        cppts = uts;
-                    }
-                }    
-                if (cppts != null) {
-                    cppts.move(context.getOffset() - startOffset);
-                    if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
-                        boolean leftSeparatorFound = findToken(
-                                cppts,
-                                true,
-                                Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
-                                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                        ) != null;
+                    TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CppTokenId.languageCpp());
+                    List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset() - expression.getStartOffset(), true);
+                    // Go from inner to outer TSes
+                    TokenSequence<TokenId> cppts = null;
+                    for (int i = tsList.size() - 1; i >= 0; i--) {
+                        TokenSequence<?> ts = tsList.get(i);
+                        final Language<?> lang = ts.languagePath().innerLanguage();
+                        if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                            @SuppressWarnings("unchecked") // NOI18N
+                            TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                            cppts = uts;
+                        }
+                    }    
+                    if (cppts != null) {
+                        cppts.move(context.getOffset() - startOffset);
+                        if (cppts.movePrevious() && cppts.token() != null && CppTokenId.IDENTIFIER.equals(cppts.token().id())) {
+                            boolean leftSeparatorFound = findToken(
+                                    cppts,
+                                    true,
+                                    Arrays.asList(CppTokenId.LBRACE, CppTokenId.COMMA),
+                                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                            ) != null;
 
-                        boolean rightSeparatorFound = findToken(
-                                cppts,
-                                false,
-                                Arrays.asList(CppTokenId.COLON),
-                                CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
-                        ) != null;
+                            boolean rightSeparatorFound = findToken(
+                                    cppts,
+                                    false,
+                                    Arrays.asList(CppTokenId.COLON),
+                                    CppTokenId.WHITESPACE, CppTokenId.NEW_LINE, CppTokenId.LINE_COMMENT, CppTokenId.BLOCK_COMMENT
+                            ) != null;
 
-                        if (leftSeparatorFound && rightSeparatorFound) {
-                            clazz = (CsmClass) classifier;
+                            if (leftSeparatorFound && rightSeparatorFound) {
+                                clazz = (CsmClass) classifier;
+                            }
                         }
                     }
                 }
