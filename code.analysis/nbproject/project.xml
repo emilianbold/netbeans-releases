@@ -210,6 +210,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.ide.analysis.api</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>org.netbeans.modules.android.lint</friend>
