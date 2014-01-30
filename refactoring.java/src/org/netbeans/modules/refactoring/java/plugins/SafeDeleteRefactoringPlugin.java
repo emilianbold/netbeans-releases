@@ -77,6 +77,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 
 /**
@@ -302,7 +303,26 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 //                return new Problem(true, NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "ERR_ProjectNotOpened"));
 //            }
 //        }
-        return null;
+        return super.preCheck();
+    }
+
+    @Override
+    @NbBundle.Messages({"# {0} - VariableName", "ERR_VarNotInBlockOrMethod=Variable \"{0}\" is not inside a block or method declaration."})
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+        for (TreePathHandle treePathHandle : handles) {
+            TreePath selectedTree = treePathHandle.resolve(javac);
+            if(selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                switch (selectedTree.getParentPath().getLeaf().getKind()) {
+                    case BLOCK:
+                    case METHOD:
+                        break;
+                    default:
+                        return new Problem(true, ERR_VarNotInBlockOrMethod(selectedTree.getLeaf().toString()));
+                }
+            }
+        }
+        return super.preCheck(javac);
     }
     
     /**
@@ -381,7 +401,10 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     
     @Override
     protected JavaSource getJavaSource(Phase p) {
-        return null;
+        switch (p) {
+        default: 
+            return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
+        }
     }
     
     private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
