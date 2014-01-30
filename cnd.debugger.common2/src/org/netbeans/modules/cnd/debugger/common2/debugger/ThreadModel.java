@@ -325,7 +325,7 @@ public final class ThreadModel extends ModelListenerSupport
 	// debuggercore predefined column id's:
 
 	} else if (columnID.equals(PROP_THREAD_SUSPENDED)) {
-	    return new Boolean(thread.getSuspended());
+	    return new Boolean(thread.isSuspended());
 
 	} else if (columnID.equals(PROP_THREAD_STATE) ) {
 	    return thread.getState();

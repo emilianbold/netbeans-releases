@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
+import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 
 public final class GdbFrame extends Frame {
   
@@ -57,8 +58,8 @@ public final class GdbFrame extends Frame {
     private final List<GdbLocal> argsArray = new ArrayList<GdbLocal>();
     private String fullname;
 
-    public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs) {
-	super(debugger);
+    public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs, Thread thread) {
+	super(debugger, thread);
 	if (frame == null) {
 	    return;
         }
@@ -110,7 +111,7 @@ public final class GdbFrame extends Frame {
 	}
 
 	range_of_hidden = false;
-	current = false;
+        current = false;
 	optimized = false;
 	attr_user_call = false;
 	attr_sig = 0;
