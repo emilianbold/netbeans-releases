@@ -75,7 +75,7 @@ made subject to such option by the copyright holder.
 <!--$${jnlp.resources}-->
   </resources>
   <resources os="Mac OS X">
-      <property name="netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
+      <property name="jnlp.netbeans.user" value="$${user.home}/Library/Application Support/$${app.name}"/>
   </resources>
   <application-desc>
     <argument>--branding</argument>
@@ -316,8 +316,8 @@ made subject to such option by the copyright holder.
         
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
     <java version="1.6+"/>
-    <jar href="startup.jar"/>
-    <property name="netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
+    <jar href="startup.jar" main="true"/>
+    <property name="jnlp.netbeans.user" value="$${user.home}/.nbapp-${app.name}"/>
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
             <fileset dir="${jnlp.master.dir}">
