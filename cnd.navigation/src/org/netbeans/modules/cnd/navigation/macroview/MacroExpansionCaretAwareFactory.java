@@ -120,9 +120,7 @@ public final class MacroExpansionCaretAwareFactory extends IndexingAwareParserRe
     }
 
     @Override
-    public int getPriority() {
-        return 100;
-    }
+    public int getPriority() {return 400;}
 
     private void runImpl(final CursorMovedSchedulerEvent event, final CsmFile csmFile, final Document doc, final AtomicBoolean canceled) {
        if (doc == null) {

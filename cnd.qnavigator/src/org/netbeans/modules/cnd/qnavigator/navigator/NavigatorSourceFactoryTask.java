@@ -89,7 +89,7 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
                 CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
                 JTextComponent comp = EditorRegistry.lastFocusedComponent();
                 if (comp instanceof JEditorPane) {
-                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp, canceled);
+                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp, canceled, result.getSnapshot().getText());
                 }
             }
         }
@@ -97,7 +97,9 @@ public class NavigatorSourceFactoryTask extends IndexingAwareParserResultTask<Cn
 
     @Override
     public int getPriority() {
-        return 100;
+        // this tasks depends on model created by NavigatorNodeFactoryTask
+        // make sure we are called after it
+        return NavigatorNodeFactoryTask.PRIORITY + 10;
     }
 
     @Override

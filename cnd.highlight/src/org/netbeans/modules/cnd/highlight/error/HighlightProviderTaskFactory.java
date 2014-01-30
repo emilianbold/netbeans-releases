@@ -126,8 +126,6 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
         }
 
         @Override
-        public int getPriority() {
-            return 100;
-        }
+        public int getPriority() {return 3000;}
     }
 }
