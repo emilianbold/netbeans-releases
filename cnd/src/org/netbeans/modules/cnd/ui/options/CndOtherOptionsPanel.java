@@ -100,6 +100,7 @@ import org.openide.util.lookup.Lookups;
         for (Entity e : entities) {
             e.cb.setSelected(NamedOption.getAccessor().getBoolean(e.se.getName()));
         }
+        isChanged = false;
     }
 
     // for OptionsPanelSupport
@@ -112,10 +113,23 @@ import org.openide.util.lookup.Lookups;
     boolean isChanged() {
         return isChanged;
     }
+    
+    private boolean areExtensionsChanged() {
+        boolean changed = false;
+        for (ExtensionsElements ee : eeList) {
+            List<String> current = ee.getValues();
+            Collection<String> saved = ee.es.getValues();
+            changed |= !ee.es.getDefaultExtension().equals(ee.defaultValue) || current.size() != saved.size() || !current.containsAll(saved);
+            if (changed) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        isChanged = true;
+        isChanged = areExtensionsChanged();
     }
     
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
@@ -148,7 +162,7 @@ import org.openide.util.lookup.Lookups;
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
                 ee.defaultValue = editor.getDefaultValue();
                 ee.setValues( editor.getItemList() );
-                isChanged = true;
+                isChanged = areExtensionsChanged();
             }
         } catch (Throwable th) {
             if (!(th.getCause() instanceof InterruptedException)) {
