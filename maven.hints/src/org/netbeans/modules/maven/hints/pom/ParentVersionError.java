@@ -81,6 +81,7 @@ public class ParentVersionError implements POMErrorFixProvider {
     private final Configuration configuration;
     static final String PROP_SOURCES = "sources";//NOI18N
     static final String PROP_SNAPSHOT = "snapshot";//NOI18N
+    private JComponent component;
 
     @Messages({
         "TIT_ParentVersionError=Use latest version of parent POM", 
@@ -181,7 +182,20 @@ public class ParentVersionError implements POMErrorFixProvider {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new ParentVersionErrorCustomizer(preferences);
+        if (component == null) {
+            component = new ParentVersionErrorCustomizer(preferences);
+        }
+        return component;
+    }
+
+    @Override
+    public String getSavedValue(JComponent customCustomizer, String key) {
+        return ((ParentVersionErrorCustomizer) customCustomizer).getSavedValue(key);
+    }
+
+    @Override
+    public void cancel() {
+        component = null;
     }
 
     @Override

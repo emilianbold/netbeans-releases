@@ -157,15 +157,15 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         DomainComboModel model = (DomainComboModel)domainField.getModel();
         String path = model.getCurrentPath();
         domainPathField.setText(path);
-        portField.setText(JBPluginUtils.getHTTPConnectorPort(path));
+        portField.setText(WildflyPluginUtils.getHTTPConnectorPort(path));
         fireChangeEvent(); 
     }
     
     void installLocationChanged() {
         DomainComboModel domainModel = (DomainComboModel) domainField.getModel();
-        String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
-        domainModel.setDomains(JBPluginUtils.getRegisteredDomains(serverLocation));
-        String configLocation = JBPluginProperties.getInstance().getConfigLocation();
+        String serverLocation = WildflyPluginProperties.getInstance().getInstallLocation();
+        domainModel.setDomains(WildflyPluginUtils.getRegisteredDomains(serverLocation));
+        String configLocation = WildflyPluginProperties.getInstance().getConfigLocation();
         File domainDir = new File(configLocation).getParentFile().getParentFile();
         if(domainModel.hasDomain(domainDir.getName())) {
             domainModel.setSelectedItem(domainDir.getName());
@@ -223,8 +223,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         
         //Domain combobox
         domainLabel = new JLabel();
-        String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
-        domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains(serverLocation)));
+        String serverLocation = WildflyPluginProperties.getInstance().getInstallLocation();
+        domainField = new JComboBox(new DomainComboModel(WildflyPluginUtils.getRegisteredDomains(serverLocation)));
         domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         domainField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
         
@@ -416,7 +416,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         add(panel1, gridBagConstraints);
         
         hostField.setText("localhost");//NOI18N
-        portField.setText(JBPluginUtils.getHTTPConnectorPort(domainPathField.getText()));//NOI18N
+        portField.setText(WildflyPluginUtils.getHTTPConnectorPort(domainPathField.getText()));//NOI18N
     //    serverTypeChanged();
         domainChanged();
         

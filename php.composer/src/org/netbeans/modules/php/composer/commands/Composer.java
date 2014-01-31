@@ -57,7 +57,10 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.netbeans.modules.php.composer.options.ComposerOptionsValidator;
 import org.netbeans.modules.php.composer.output.model.SearchResult;
 import org.netbeans.modules.php.composer.output.parsers.Parsers;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
@@ -89,6 +92,7 @@ public final class Composer {
     private static final String SHOW_COMMAND = "show"; // NOI18N
     // params
     private static final String ANSI_PARAM = "--ansi"; // NOI18N
+    private static final String NO_ANSI_PARAM = "--no-ansi"; // NOI18N
     private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
@@ -154,14 +158,24 @@ public final class Composer {
     })
     public Future<Integer> init(PhpModule phpModule) {
         assert phpModule != null;
+        // config file
         FileObject configFile = getComposerConfigFile(phpModule);
         if (configFile != null && configFile.isValid()) {
+            // existing config
             if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_file_exists())) {
                 return null;
             }
         }
-        // command params
         ComposerOptions options = ComposerOptions.getInstance();
+        // validation
+        ValidationResult result = new ComposerOptionsValidator()
+                .validate(options)
+                .getResult();
+        if (!result.isFaultless()) {
+            UiUtils.showOptions(ComposerOptionsPanelController.OPTIONS_SUBPATH);
+            return null;
+        }
+        // command params
         List<String> params = Arrays.asList(
                 String.format(NAME_PARAM, getInitName(options.getVendor(), phpModule.getName())),
                 String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()),
@@ -248,6 +262,7 @@ public final class Composer {
         // params
         List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
+        defaultParams.add(NO_ANSI_PARAM);
         List<String> params = new ArrayList<>(2);
         if (onlyName) {
             params.add(ONLY_NAME_PARAM);
@@ -286,6 +301,7 @@ public final class Composer {
         // params
         List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
+        defaultParams.add(NO_ANSI_PARAM);
         composer = composer
                 .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
                 // avoid parser confusion

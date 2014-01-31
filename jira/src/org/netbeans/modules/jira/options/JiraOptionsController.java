@@ -46,15 +46,17 @@ package org.netbeans.modules.jira.options;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeSupport;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.REST;
 import static org.netbeans.modules.jira.client.spi.JiraConnectorProvider.Type.XMLRPC;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.LifecycleManager;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -146,22 +148,36 @@ public final class JiraOptionsController extends OptionsPanelController {
     }
 
     @NbBundle.Messages({"CTL_Restart=Restart IDE",
-                        "CTL_RestartClickHere=Click here to restart IDE before the JIRA connector change will have any effect."})
+                        "CTL_RestartClickHere=Click here to restart IDE before the JIRA connector change will have any effect.",
+                        "CTL_NeedsRestart=You have to restart the IDE before the JIRA connector change will have any effect."})
     private void askForRestart() {
         if( null != restartNotification ) {
             restartNotification.clear();
         }
+        
+        Action a;
+        String msg;
+        final IDEServices services = Lookup.getDefault().lookup(IDEServices.class);
+        if(services != null && services.providesShutdown(true)) {
+            msg = Bundle.CTL_RestartClickHere();
+            a = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    services.shutdown(true);
+                }
+            };
+        } else {
+            a = null;
+            msg = Bundle.CTL_NeedsRestart();
+        }
+        
         restartNotification = NotificationDisplayer.getDefault().notify( 
                 Bundle.CTL_Restart(),
                 ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/restart.png", true ), //NOI18N
-                Bundle.CTL_RestartClickHere(), new AbstractAction(){
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        LifecycleManager.getDefault().markForRestart();
-                        LifecycleManager.getDefault().exit();
-                    }
-                },
-                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
+                msg, 
+                a,
+                NotificationDisplayer.Priority.HIGH,
+                NotificationDisplayer.Category.INFO);
     }    
     
 }

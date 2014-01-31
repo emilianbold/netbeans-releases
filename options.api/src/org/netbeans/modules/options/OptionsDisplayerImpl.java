@@ -448,7 +448,7 @@ public class OptionsDisplayerImpl {
                 descriptor.setHelpCtx(helpCtx);
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
-		bAPPLY.setEnabled (optionsPanel.dataValid());
+		bAPPLY.setEnabled (optionsPanel.isChanged() && optionsPanel.dataValid());
             }
         }
         

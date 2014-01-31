@@ -6,9 +6,11 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.Collator;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -219,6 +221,46 @@ public class PermissionsProvider {
 
             availablePermissions = avilablePermissionsList.toArray(new PermissionDescriptor[avilablePermissionsList.size()]);
         }
+        
+        public PermissionDescriptor getDescriptor(PermissionDefinition permission) {
+            return permissions.get(permission.getPermission());
+        }
+
+        public PermissionDefinition getPermission(String permission) {
+            String[] permissionComponents = splitPermissionComponents(permission);
+
+            if (permissionComponents != null) {
+                PermissionDescriptor descriptor = permissions.get(permissionComponents[0]);
+
+                if (descriptor != null) {
+                    int numberOfParameters = 0;
+
+                    if (descriptor.supportsName() && !NO_PARAMETER.equals(permissionComponents[1])) {
+                        numberOfParameters = numberOfParameters + 1;
+
+                        if (descriptor.supportsAction() && !NO_PARAMETER.equals(permissionComponents[2])) {
+                            numberOfParameters = numberOfParameters + 1;
+                        }
+                    }
+
+                    if (numberOfParameters == 0 && !descriptor.nameCanBeOptional() && descriptor.isPermissionClass()) {
+                        return null;
+                    } else if (numberOfParameters == 1 && !descriptor.actionsCanBeOptional(true)) {
+                        return null;
+                    }
+
+                    return getPermissionWithoutValidation(
+                            descriptor,
+                            permissionComponents[1],
+                            permissionComponents[2],
+                            NO_PARAMETER.equals(permissionComponents[2]) ? (NO_PARAMETER.equals(permissionComponents[1]) ? 0
+                            : 1)
+                            : 2);
+                }
+            }
+
+            return null;
+        }
 
         private String[] splitPermissionComponents(String permission) {
             String[] result = new String[]{null, NO_PARAMETER, NO_PARAMETER};
@@ -268,7 +310,7 @@ public class PermissionsProvider {
 
             return result;
         }
-
+        
         public PermissionDescriptor[] getAvailablePermissions() {
             return availablePermissions;
         }
@@ -452,7 +494,7 @@ public class PermissionsProvider {
 
         @Override
         public int compareTo(PermissionDefinition o) {
-            return toString().compareTo(o.toString());
+            return Collator.getInstance().compare(toString(), o.toString());
         }
     }
 
@@ -462,8 +504,8 @@ public class PermissionsProvider {
         private final boolean permissionClass;
         private Set<Integer> numberOfSupportedArgumentes = new HashSet<>();
 
-        private PermissionDescriptor(String name, boolean permissionClass) {
-            this.permission = name;
+        private PermissionDescriptor(String permission, boolean permissionClass) {
+            this.permission = permission;
             this.permissionClass = permissionClass;
         }
 
@@ -482,7 +524,7 @@ public class PermissionsProvider {
 
         @Override
         public int compareTo(PermissionDescriptor o) {
-            return getPermission().compareTo(o.getPermission());
+            return Collator.getInstance().compare(getPermission(), o.getPermission());
         }
 
         @Override

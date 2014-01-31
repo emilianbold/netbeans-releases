@@ -73,12 +73,14 @@ public class AtoumOptionsPanelController extends OptionsPanelController implemen
     // @GuardedBy("EDT")
     private AtoumOptionsPanel atoumOptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
 
     @Override
     public void update() {
         assert EventQueue.isDispatchThread();
-        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             getPanel().setAtoumPath(getAtoumOptions().getAtoumPath());
         }
 

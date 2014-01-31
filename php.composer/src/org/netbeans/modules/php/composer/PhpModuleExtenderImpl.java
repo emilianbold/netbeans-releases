@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.composer;
 
-import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -121,22 +120,25 @@ public class PhpModuleExtenderImpl implements PhpModuleExtender {
         return getErrorMessage() == null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - error message",
+        "PhpModuleExtenderImpl.error.composer=Composer Options: {0}",
+    })
     @Override
     public String getErrorMessage() {
         ValidationResult validationResult = getValidationResult();
-        if (!validationResult.hasErrors()) {
-            return null;
+        if (validationResult.hasErrors()) {
+            return Bundle.PhpModuleExtenderImpl_error_composer(validationResult.getErrors().get(0).getMessage());
         }
-        return validationResult.getErrors().get(0).getMessage();
+        if (validationResult.hasWarnings()) {
+            return Bundle.PhpModuleExtenderImpl_error_composer(validationResult.getWarnings().get(0).getMessage());
+        }
+        return null;
     }
 
     @Override
     public String getWarningMessage() {
-        ValidationResult validationResult = getValidationResult();
-        if (!validationResult.hasWarnings()) {
-            return null;
-        }
-        return validationResult.getWarnings().get(0).getMessage();
+        return null;
     }
 
     @Override

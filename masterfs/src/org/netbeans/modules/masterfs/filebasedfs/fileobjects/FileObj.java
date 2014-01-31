@@ -53,6 +53,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,19 +131,40 @@ public class FileObj extends BaseFileObj {
             extensions.beforeChange(mfo);
         }
         
-        FileOutputStream retVal = null;
+        OutputStream retVal = null;
         try {
-            retVal = new FileOutputStream(f) {
+            final OutputStream delegate = Files.newOutputStream(f.toPath());
+            retVal = new OutputStream() {
+
+                @Override
+                public void write(int b) throws IOException {
+                    delegate.write(b);
+                }
 
                 @Override
                 public void close() throws IOException {
                     if (!closable.isClosed()) {
-                        super.close();
+                        delegate.close();
                         LOGGER.log(Level.FINEST, "getOutputStream-close");
                         setLastModified(f.lastModified(), f, false);
                         closable.close();
                         fireFileChangedEvent(false);
                     }
+                }
+
+                @Override
+                public void flush() throws IOException {
+                    delegate.flush();
+                }
+
+                @Override
+                public void write(byte[] b, int off, int len) throws IOException {
+                    delegate.write(b, off, len);
+                }
+
+                @Override
+                public void write(byte[] b) throws IOException {
+                    delegate.write(b);
                 }
             };
         } catch (FileNotFoundException e) {

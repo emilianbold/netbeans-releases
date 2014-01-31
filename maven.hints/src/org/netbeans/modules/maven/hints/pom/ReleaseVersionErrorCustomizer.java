@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.hints.pom;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -58,6 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class ReleaseVersionErrorCustomizer extends javax.swing.JPanel {
     private final Preferences preferences;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     /** Creates new form ReleaseVersionErrorCustomizer */
     public ReleaseVersionErrorCustomizer(Preferences prefs) {
@@ -66,6 +69,14 @@ public class ReleaseVersionErrorCustomizer extends javax.swing.JPanel {
         cbRelease.setSelected(preferences.getBoolean(ReleaseVersionError.PROP_RELEASE, true));
         cbLatest.setSelected(preferences.getBoolean(ReleaseVersionError.PROP_LATEST, true));
         cbSnapshot.setSelected(preferences.getBoolean(ReleaseVersionError.PROP_SNAPSHOT, false));
+    
+        id2Saved.put(ReleaseVersionError.PROP_RELEASE, cbRelease.isSelected());
+        id2Saved.put(ReleaseVersionError.PROP_LATEST, cbLatest.isSelected());
+        id2Saved.put(ReleaseVersionError.PROP_SNAPSHOT, cbSnapshot.isSelected());
+    }
+    
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
     }
 
     /** This method is called from within the constructor to

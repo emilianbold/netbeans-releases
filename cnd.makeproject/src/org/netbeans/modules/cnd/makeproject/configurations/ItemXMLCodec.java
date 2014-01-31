@@ -49,12 +49,12 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectWithDictionary.Dictionaries;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.xml.sax.Attributes;
 
 public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private ItemConfiguration item;
     public final static String ITEM_ELEMENT = "item"; // NOI18N
     public final static String PATH_ATTR = "path"; // NOI18N
     public final static String EXCLUDED_ATTR = "ex"; // NOI18N
@@ -68,9 +68,17 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     public final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
     public final static String TRUE_VALUE = "true"; // NOI18N
     public final static String FALSE_VALUE = "false"; // NOI18N
+    private final ItemConfiguration item;
+    private final Dictionaries dictionaries;
 
     public ItemXMLCodec(ItemConfiguration item) {
         this.item = item;
+        this.dictionaries = null;
+    }
+
+    public ItemXMLCodec(ItemConfiguration item, Dictionaries dictionaries) {
+        this.item = item;
+        this.dictionaries = dictionaries;
     }
 
     // interface XMLDecoder
@@ -122,12 +130,12 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 //        }
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
         if (tool == PredefinedToolKind.CCompiler) {
-            CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
+            CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL, dictionaries);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }
         } else if (tool == PredefinedToolKind.CCCompiler) {
-            CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL);
+            CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration(), CommonConfigurationXMLCodec.ITEM_LEVEL, dictionaries);
             if(item.isProCFile()) {
                 CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
             }

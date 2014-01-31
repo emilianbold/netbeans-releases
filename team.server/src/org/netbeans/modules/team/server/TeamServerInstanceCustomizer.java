@@ -56,6 +56,7 @@ import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
@@ -89,8 +90,8 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         this.okButton = okButton;
         initComponents();
         
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        proxy.setVisible(ide != null && ide.providesProxyConfiguration());
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        proxy.setVisible(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY));
         
         progress.setVisible(false);
         if(providers == null) {
@@ -251,9 +252,9 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        if(ide != null && ide.providesProxyConfiguration()) {
-            ide.openProxyConfiguration();
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        if(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY)) {
+            settings.openSection(SettingsServices.Section.PROXY);
         }
     }//GEN-LAST:event_proxyActionPerformed
 

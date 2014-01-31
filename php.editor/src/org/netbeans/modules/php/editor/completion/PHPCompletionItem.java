@@ -228,8 +228,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     @Override
     public boolean isSmart() {
-        String url = getFileNameURL();
-        return (url != null && url.equals(request.currentlyEditedFileURL)) || (element instanceof AliasedElement);
+        return element instanceof AliasedElement
+                || (request.currentlyEditedFileURL != null && request.currentlyEditedFileURL.equals(getFileNameURL()));
     }
 
     protected boolean isDeprecated() {

@@ -19,9 +19,12 @@ PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
+PACKAGE    More                            [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
+PACKAGE    Name                            [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
+PACKAGE    Other                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
 PACKAGE    Second                          [PUBLIC]   null
@@ -66,7 +69,12 @@ PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
+PACKAGE    Name                            [PUBLIC]   More
+PACKAGE    Name                            [PUBLIC]   Other
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Space                           [PUBLIC]   More\Name
+PACKAGE    Space                           [PUBLIC]   Name
+PACKAGE    Space                           [PUBLIC]   Other\Name
 PACKAGE    Space                           [PUBLIC]   Test
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application

@@ -106,7 +106,7 @@ public class Lambda {
     @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION)
     @Messages({
         "DN_lambda2Class=Convert Lambda Expression to Anonymous Innerclass",
-        "DESC_lambda2Class=Converts lambda expressions to anonymous innerclasses",
+        "DESC_lambda2Class=Converts lambda expressions to anonymous inner classes",
         "ERR_lambda2Class="
     })
     @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)
@@ -226,6 +226,9 @@ public class Lambda {
         boolean hasSyntheticParameterName = false;
         
         for (VariableTree var : let.getParameters()) {
+            if (var.getType() == null) {
+                return null;
+            }
             hasSyntheticParameterName |= ctx.getInfo().getTreeUtilities().isSynthetic(TreePath.getPath(ctx.getPath(), var.getType()));
         }
         
@@ -261,7 +264,7 @@ public class Lambda {
         }
 
         @Override
-        @Messages("FIX_lambda2Class=Use anonymous innerclass")
+        @Messages("FIX_lambda2Class=Use anonymous inner class")
         protected String getText() {
             return Bundle.FIX_lambda2Class();
         }

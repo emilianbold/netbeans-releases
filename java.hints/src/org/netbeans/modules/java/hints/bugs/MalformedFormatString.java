@@ -233,7 +233,16 @@ public class MalformedFormatString {
                 } else if (idx != null) {
                     argIndex = Integer.parseInt(idx.substring(0, idx.length() - 1)) - 1;
                 } else {
-                    argIndex = ++ord;
+                    char cc = c.charAt(0);
+                    // do not increment on no-arg format specs.
+                    if (cc == '%' || cc == 'n') {
+                        argIndex = -1;
+                    } else {
+                        argIndex = ++ord;
+                    }
+                }
+                if (argIndex == -1) {
+                    continue;
                 }
                 lastArg = argIndex;
                 

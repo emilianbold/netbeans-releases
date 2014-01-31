@@ -209,7 +209,9 @@ public class FieldForUnusedParam extends AbstractHint {
 
     @Override
     public JComponent getCustomizer(Preferences node) {
-        return new FieldForUnusedParamCustomizer(node);
+        JComponent customizer = new FieldForUnusedParamCustomizer(node);
+        setFinalFields(node, isFinalFields(node));
+        return customizer;
     }
 
     public void cancel() {

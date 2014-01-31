@@ -46,6 +46,10 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Handler;
@@ -225,6 +229,47 @@ public class FileObjTest extends NbTestCase {
             } finally {
                 lockFile.delete();
             }
+        }
+    }
+
+    /**
+     * Test for bug 240953 - Netbeans Deletes User Defined Attributes.
+     *
+     * @throws java.io.IOException
+     */
+    public void testWritingKeepsFileAttributes() throws IOException {
+
+        final String attName = "User_Attribute";
+        final String attValue = "User_Attribute_Value";
+
+        if (Utilities.isWindows()) {
+            clearWorkDir();
+            File f = new File(getWorkDir(), "fileWithAtts.txt");
+            f.createNewFile();
+            UserDefinedFileAttributeView attsView = Files.getFileAttributeView(
+                    f.toPath(), UserDefinedFileAttributeView.class);
+            ByteBuffer buffer = Charset.defaultCharset().encode(attValue);
+            attsView.write(attName, buffer);
+
+            buffer.rewind();
+            attsView.read(attName, buffer);
+            buffer.flip();
+            String val = Charset.defaultCharset().decode(buffer).toString();
+            assertEquals(attValue, val);
+
+            FileObject fob = FileUtil.toFileObject(f);
+            OutputStream os = fob.getOutputStream();
+            try {
+                os.write(55);
+            } finally {
+                os.close();
+            }
+
+            buffer.rewind();
+            attsView.read(attName, buffer);
+            buffer.flip();
+            String val2 = Charset.defaultCharset().decode(buffer).toString();
+            assertEquals(attValue, val2);
         }
     }
 }

@@ -49,9 +49,9 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentFactory;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 
 /**
  * JBoss implementation of the ModuleConfigurationFactory.
@@ -80,11 +80,11 @@ public class WildlfyModuleConfigurationFactory implements ModuleConfigurationFac
 
     @Override
     public ModuleConfiguration create(J2eeModule j2eeModule, String instanceUrl) throws ConfigurationException {
-        if (!instanceUrl.startsWith(WildFlyDeploymentFactory.URI_PREFIX)) {
+        if (!instanceUrl.startsWith(WildflyDeploymentFactory.URI_PREFIX)) {
             return create(j2eeModule);
         }
         try {
-            WildFlyDeploymentManager dm = (WildFlyDeploymentManager) WildFlyDeploymentFactory.getInstance().getDisconnectedDeploymentManager(instanceUrl);
+            WildflyDeploymentManager dm = (WildflyDeploymentManager) WildflyDeploymentFactory.getInstance().getDisconnectedDeploymentManager(instanceUrl);
             Version version = dm.getServerVersion();
             if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
                 return new WarDeploymentConfiguration(j2eeModule, version);

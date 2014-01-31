@@ -71,11 +71,11 @@ public class DataCenterHandlerTest extends NbTestCase {
         try {
             parser.parse(is, handler);
             List<DataCenters.DataCenter> dataCenters = handler.getDataCenters();
-            assertEquals(4, dataCenters.size());
+            assertEquals(11, dataCenters.size());
             assertEquals("us1", dataCenters.get(0).getShortName());
             assertEquals("us2", dataCenters.get(1).getShortName());
-            assertEquals("em1", dataCenters.get(2).getShortName());
-            assertEquals("em2", dataCenters.get(3).getShortName());
+            assertEquals("us3", dataCenters.get(2).getShortName());
+            assertEquals("us4", dataCenters.get(3).getShortName());
 
             assertEquals(Version.fromJsr277OrDottedNotationWithFallback("13.2"),
                     dataCenters.get(1).getJcsVersion());

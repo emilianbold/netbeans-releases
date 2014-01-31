@@ -563,7 +563,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new UninitializedVariableCustomizer(preferences, this);
+        JComponent customizer = new UninitializedVariableCustomizer(preferences, this);
+        setCheckVariablesInitializedByReference(preferences, checkVariablesInitializedByReference(preferences));
+        return customizer;
     }
 
     public void setCheckVariablesInitializedByReference(Preferences preferences, boolean isEnabled) {

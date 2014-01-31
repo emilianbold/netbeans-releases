@@ -128,5 +128,9 @@ public class Utils {
         }
         return sb.toString();
     }
-    
+ 
+    public static String cutQueryFromTemplateUrl(String url) {
+        int index = url.indexOf('?');
+        return index > 0 ? url.substring(0, index) : url;
+    }
 }

@@ -304,13 +304,13 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
     }// </editor-fold>//GEN-END:initComponents
 
     private void initAccessibility() {
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSN_CreateKey"));
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey"));
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSN_CreateKey")); //NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey")); //NOI18N
     }
 
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
-        dd.setHelpCtx(new HelpCtx("me.signing_createkeypair"));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.j2me.keystore.ui.CreateKeyAliasPanel")); //NOI18N
         checkErrors();
     }
 

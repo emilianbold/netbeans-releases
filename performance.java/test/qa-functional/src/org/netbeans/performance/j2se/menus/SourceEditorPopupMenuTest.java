@@ -72,7 +72,6 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
      */
     public SourceEditorPopupMenuTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
@@ -84,7 +83,6 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
      */
     public SourceEditorPopupMenuTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 200;
     }
 
@@ -98,16 +96,19 @@ public class SourceEditorPopupMenuTest extends PerformanceTestCase {
     public void testPopupInTxt() {
         fileName = "textfile.txt";
         doMeasurement();
+        expectedTime = 200;
     }
 
     public void testPopupInXml() {
         fileName = "xmlfile.xml";
         doMeasurement();
+        expectedTime = 200;
     }
 
     public void testPopupInJava() {
         fileName = "Main.java";
         doMeasurement();
+        expectedTime = 500;
     }
 
     @Override

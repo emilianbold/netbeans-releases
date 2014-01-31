@@ -71,6 +71,7 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private volatile boolean changed = false;
     private Nette2OptionsPanel nette2OptionsPanel;
+    private boolean firstOpening = true;
 
     public static String getOptionsPath() {
         return UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUBPATH; //NOI18N
@@ -78,7 +79,8 @@ public class Nette2OptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             nette2OptionsPanel.setSandbox(getOptions().getSandbox());
             nette2OptionsPanel.setNetteDirectory(getOptions().getNetteDirectory());
         }

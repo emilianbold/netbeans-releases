@@ -101,7 +101,7 @@ class NamespaceProcessor {
         final ImportData importData = new ImportData();
 
         // use JSF 2.2 namespaces?
-        importData.isJsf22 = jsfSupport.isJsf22Plus();
+        importData.isJsf22 = jsfSupport == null ? false : jsfSupport.isJsf22Plus();
 
         // unused declarations
         for (Attribute namespaceAttribute : resultCollector.getUnusedNamespaces()) {
@@ -154,7 +154,7 @@ class NamespaceProcessor {
             String ns = it.next();
             Library library = supportedLibraries.get(ns);
             if (prefix.equals(library.getDefaultPrefix())) {
-                if (jsfSupport.isJsf22Plus()) {
+                if (jsfSupport != null && jsfSupport.isJsf22Plus()) {
                     ns = library.getNamespace();
                 }
                 result.add(new VariantItem(prefix, ns, library));
@@ -165,7 +165,7 @@ class NamespaceProcessor {
         // complete the remaining items
         for (String remainingNs : sortedList) {
             Library library = supportedLibraries.get(remainingNs);
-            if (jsfSupport.isJsf22Plus()) {
+            if (jsfSupport != null && jsfSupport.isJsf22Plus()) {
                     remainingNs = library.getNamespace();
                 }
             result.add(new VariantItem(prefix, remainingNs, library));

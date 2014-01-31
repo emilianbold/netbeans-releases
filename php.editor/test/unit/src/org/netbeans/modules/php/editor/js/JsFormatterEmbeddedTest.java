@@ -46,10 +46,10 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
-public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
+public class JsFormatterEmbeddedTest extends PHPTestBase {
 
     public JsFormatterEmbeddedTest(String name) {
         super(name);

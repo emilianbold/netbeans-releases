@@ -2,51 +2,91 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Symfony</title>
+<title>Options Window: PHP: Debugging</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" name="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref474" name="sthref474"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Symfony</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" name="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref449" name="sthref449"></a>
+<h1>Options Window: PHP: Debugging</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Symfony projects contain a Symfony run script. The run script you specify in this page is only used for new projects or in case the project's run script is not valid.</p>
+<p>In this tab you can set the following options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t28">Element</th>
-<th align="left" valign="bottom" id="r1c2-t28">Description</th>
+<th align="left" valign="bottom" id="r1c1-t26">Element</th>
+<th align="left" valign="bottom" id="r1c2-t26">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t28" headers="r1c1-t28">
-<p>Symfony Script</p>
+<td align="left" id="r2c1-t26" headers="r1c1-t26">
+<p>Debugger port</p>
 </td>
-<td align="left" headers="r2c1-t28 r1c2-t28">
-<p>The path to the Symfony run script and default parameters. Use the Browse and Search buttons to locate Symfony run scripts on your local file system.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t28" headers="r1c1-t28">
-<p>Ignore cache Directory by Default</p>
-</td>
-<td align="left" headers="r3c1-t28 r1c2-t28">
-<p>When selected the IDE does not include the <code>/cache</code> directory when scanning for Symfony functions. This option is selected by default. You might want to deselect his option if you cache actions.</p>
-<p>This box sets globally whether cache directories are ignored. You can set whether the cache directory is ignored for an individual project in the project's Properties, under <b>Frameworks &gt; Symfony</b>.</p>
+<td align="left" headers="r2c1-t26 r1c2-t26">
+<p>This is the port that XDebug uses, as set in php.ini. By default it is port 9000. The port number in this dialog must be the same as the debugger port you set in php.ini. You cannot affect the port that XDebug uses in this dialog. You only inform NetBeans IDE of the port that XDebug uses.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t28" headers="r1c1-t28">
-<p>Default Parameters</p>
+<td align="left" id="r3c1-t26" headers="r1c1-t26">
+<p>Session ID</p>
 </td>
-<td align="left" headers="r4c1-t28 r1c2-t28">
-<p>Specify default command line options for running Symfony projects or applications.</p>
+<td align="left" headers="r3c1-t26 r1c2-t26">
+<p>Arbitrary name of the debugging session. By default it is <code>netbeans-xdebug</code>. This value is important to note in cases where you have to set the xdebug.idekey property in <code>php.ini</code>, such as some remote debugging scenarios.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t26" headers="r1c1-t26">
+<p>Stop at First Line</p>
+</td>
+<td align="left" headers="r4c1-t26 r1c2-t26">
+<p>Tick this option for the debugger session to stop at the first line of code instead of at the first breakpoint. This keeps your screen focused in the IDE instead of switching to a browser window when you launch a debugging session.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t26" headers="r1c1-t26">
+<p>Watches and Balloon Evaluation</p>
+</td>
+<td align="left" headers="r5c1-t26 r1c2-t26">
+<p>Due to a number of bugs, watches and balloon evaluation is disabled by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t26" headers="r1c1-t26">
+<p>Maximum Depth of Structures</p>
+</td>
+<td align="left" headers="r6c1-t26 r1c2-t26">
+<p>Sets the visibility of nested structures (such as nested arrays, objects in objects, etc.)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t26" headers="r1c1-t26">
+<p>Maximum Number of Children</p>
+</td>
+<td align="left" headers="r7c1-t26 r1c2-t26">
+<p>Sets the visibility of array items during Watch evaluation. (If you set Maximum Number of Children to 1 you will see only the first item of an array even if the array has more then one item.)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t26" headers="r1c1-t26">
+<p>Show Requested URLs</p>
+</td>
+<td align="left" headers="r8c1-t26 r1c2-t26">
+<p>Opens new Output window during debugging. This Output window is named PHP Requested Urls and it shows currently processed URLs. The URLs are clickable. Click on a URL in the Output window to open the URL in a browser window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t26" headers="r1c1-t26">
+<p>Show Debugger Console</p>
+</td>
+<td align="left" headers="r9c1-t26 r1c2-t26">
+<p>Opens new Output window that shows the output of debugged scripts.</p>
+<p>Set <code>output_buffering = Off</code> in your <code>php.ini</code> file. Otherwise there will be a delay in seeing script output in the Output window.</p>
 </td>
 </tr>
 </tbody>
@@ -56,8 +96,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1534">
-<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2001">
+<param name="text" value="<html><u>&quot;Debugging PHP Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

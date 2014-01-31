@@ -422,7 +422,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new ImmutableVariablesCustomizer(preferences, this);
+        JComponent customizer = new ImmutableVariablesCustomizer(preferences, this);
+        setNumberOfAllowedAssignments(preferences, getNumberOfAllowedAssignments(preferences));
+        return customizer;
     }
 
     public void setNumberOfAllowedAssignments(Preferences preferences, Integer value) {

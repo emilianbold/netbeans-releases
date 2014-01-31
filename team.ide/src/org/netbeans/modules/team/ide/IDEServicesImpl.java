@@ -45,7 +45,6 @@ package org.netbeans.modules.team.ide;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -62,7 +61,6 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.jumpto.type.TypeBrowser;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ide.spi.IDEServices;
@@ -70,6 +68,7 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -284,16 +283,6 @@ public class IDEServicesImpl implements IDEServices {
     }
 
     @Override
-    public boolean providesProxyConfiguration() {
-        return true;
-    }
-
-    @Override
-    public void openProxyConfiguration() {
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
-    }
-
-    @Override
     public DatePickerComponent createDatePicker () {
         return new JXDatePickerImpl();
     }
@@ -307,6 +296,19 @@ public class IDEServicesImpl implements IDEServices {
             }
         }
         return false;        
+    }
+
+    @Override
+    public boolean providesShutdown(boolean restart) {
+        return true;
+    }
+
+    @Override
+    public void shutdown(boolean restart) {
+        if(restart) {
+            LifecycleManager.getDefault().markForRestart();
+        }
+        LifecycleManager.getDefault().exit();
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

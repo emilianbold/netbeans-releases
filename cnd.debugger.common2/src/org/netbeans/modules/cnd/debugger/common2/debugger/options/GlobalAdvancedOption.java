@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
 import org.netbeans.spi.options.*;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 
 /**
  * Panel for global native debugger options.
@@ -107,8 +108,17 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
 	    // This application leaves the original 'options' unmolested
 	    // untile we assign back to it in applyChanges() above.
 	    preferencesDialog.applyChanges();
-
-	    return clonedOptions.isDirty();
+            
+            // since original 'options' are unmolested, until Apply/OK button is pressed in the options window,
+            // find if current 'clonedOptions' and saved 'options' differ, without affecting the existing logic of isDirty()
+            boolean isChanged = false;
+            for(OptionValue o : options.values()) {
+                isChanged = !o.type().getCurrValue(clonedOptions).equals(o.type().getCurrValue(options));
+                if(isChanged) { // no need to iterate further
+                    return true;
+                }
+            }
+	    return isChanged;
 	}
     }
 

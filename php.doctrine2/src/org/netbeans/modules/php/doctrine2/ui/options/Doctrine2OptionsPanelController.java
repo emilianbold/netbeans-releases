@@ -72,6 +72,7 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
 
     private Doctrine2OptionsPanel doctrine2OptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
 
     public static String getOptionsPath() {
@@ -80,7 +81,8 @@ public class Doctrine2OptionsPanelController extends OptionsPanelController impl
 
     @Override
     public void update() {
-        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             doctrine2OptionsPanel.setScript(getOptions().getScript());
         }
 

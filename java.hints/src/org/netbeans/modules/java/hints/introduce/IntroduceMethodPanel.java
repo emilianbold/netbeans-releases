@@ -30,6 +30,8 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
@@ -60,10 +62,16 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     
     private JButton btnOk;
     
-    public IntroduceMethodPanel(String name, int duplicatesCount, Iterable<TargetDescription> targets) {
+    /**
+     * True, if the target is an interface.
+     */
+    private boolean targetInterface;
+    
+    public IntroduceMethodPanel(String name, int duplicatesCount, Iterable<TargetDescription> targets, boolean targetInterface) {
         super(targets);
         initComponents();
         
+        this.targetInterface = targetInterface;
         this.name.setText(name);
         if ( name != null && name.trim().length() > 0 ) {
             this.name.setCaretPosition(name.length());
@@ -73,20 +81,24 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         
         Preferences pref = getPreferences();
         
-        int accessModifier = pref.getInt( "accessModifier", ACCESS_PRIVATE ); //NOI18N
-        switch( accessModifier ) {
-        case ACCESS_PUBLIC:
-            accessPublic.setSelected( true );
-            break;
-        case ACCESS_PROTECTED:
-            accessProtected.setSelected( true );
-            break;
-        case ACCESS_DEFAULT:
-            accessDefault.setSelected( true );
-            break;
-        case ACCESS_PRIVATE:
-            accessPrivate.setSelected( true );
-            break;
+        if (!targetInterface) {
+            int accessModifier = pref.getInt( "accessModifier", ACCESS_PRIVATE ); //NOI18N
+            switch( accessModifier ) {
+            case ACCESS_PUBLIC:
+                accessPublic.setSelected( true );
+                break;
+            case ACCESS_PROTECTED:
+                accessProtected.setSelected( true );
+                break;
+            case ACCESS_DEFAULT:
+                accessDefault.setSelected( true );
+                break;
+            case ACCESS_PRIVATE:
+                accessPrivate.setSelected( true );
+                break;
+            }
+        } else {
+            updateAccessVisible(false);
         }
 
         if (duplicatesCount == 0) {
@@ -99,6 +111,31 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
         }
 
         initialize(target, duplicates);
+        
+        target.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                updateTargetChange();
+            }
+        });
+    }
+    
+    private void updateTargetChange() {
+        int index = target.getSelectedIndex();
+        if (index == -1) {
+            updateAccessVisible(targetInterface);
+            return;
+        }
+        TargetDescription desc = (TargetDescription)target.getModel().getSelectedItem();
+        updateAccessVisible(!desc.iface);
+    }
+    
+    private void updateAccessVisible(boolean v) {
+        lblAccess.setVisible(v);
+        accessPublic.setVisible(v);
+        accessDefault.setVisible(v);
+        accessPrivate.setVisible(v);
+        accessProtected.setVisible(v);
     }
     
     private Preferences getPreferences() {
@@ -285,9 +322,14 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
     
     public Set<Modifier> getAccess() {
         if (accessTest != null) return accessTest;
+
+        TargetDescription selTarget = (TargetDescription)target.getModel().getSelectedItem();
         Set<Modifier> set;
         int val;
-        if( accessPublic.isSelected() ) {
+        if (selTarget.iface) {
+            val = -1;
+            set = EnumSet.of(Modifier.DEFAULT);
+        } else if( accessPublic.isSelected() ) {
             val = ACCESS_PUBLIC;
             set = EnumSet.of(Modifier.PUBLIC);
         } else if( accessProtected.isSelected() ) {
@@ -300,7 +342,9 @@ public class IntroduceMethodPanel extends CommonMembersPanel {
             val = ACCESS_PRIVATE;
             set = EnumSet.of(Modifier.PRIVATE);
         }
-        getPreferences().putInt( "accessModifier", val ); //NOI18N
+        if (val >= 0) {
+            getPreferences().putInt( "accessModifier", val ); //NOI18N
+        }
         return set;
     }
 

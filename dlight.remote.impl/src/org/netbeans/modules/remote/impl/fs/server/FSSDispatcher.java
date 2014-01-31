@@ -48,9 +48,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -461,8 +463,9 @@ import org.openide.util.RequestProcessor;
             npb.call().waitFor();
             Future<CommonTasksSupport.UploadStatus> copyTask;
             copyTask = CommonTasksSupport.uploadFile(localFile, env, remotePath, 0755, true); // NOI18N
-            CommonTasksSupport.UploadStatus uploadStatus = copyTask.get(); // is it OK not to check upload exit code?
+            CommonTasksSupport.UploadStatus uploadStatus = copyTask.get();
             if (!uploadStatus.isOK()) {
+                setInvalid(true);
                 throw new IOException(uploadStatus.getError());
             }
         } else {
@@ -644,8 +647,11 @@ import org.openide.util.RequestProcessor;
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
-            writer = new PrintWriter(process.getOutputStream());
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Charset charset = Charset.isSupported("UTF-8") // NOI18N
+                    ? Charset.forName("UTF-8") // NOI18N
+                    : Charset.defaultCharset();
+            writer = new PrintWriter(new OutputStreamWriter(process.getOutputStream(), charset));
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream(), charset));
             if (RemoteFileSystemUtils.isUnitTestMode()) {
                 StringBuilder sb = new StringBuilder("launching ").append(path).append(' '); // NOI18N
                 for (String p : args) {

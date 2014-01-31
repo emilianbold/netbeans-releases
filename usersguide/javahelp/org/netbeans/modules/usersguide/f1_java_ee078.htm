@@ -2,21 +2,52 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Server Instance Wizard: Domain Folder Location</title>
+<title>Add Server Instance Wizard: Domain Admin Login Info</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="AS_RegServ_EnterPIDiR,AS_RegServ_EnterDomainDir" name="AS_RegServ_EnterPIDiR,AS_RegServ_EnterDomainDir"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref664" name="sthref664"></a>
-<h1>Add Server Instance Wizard: Domain Folder Location</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="AS_RegServ_EnterNameAndPassword" name="AS_RegServ_EnterNameAndPassword"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref647" name="sthref647"></a>
+<h1>Add Server Instance Wizard: Domain Admin Login Info</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the Add Server Instance wizard when you are creating a new domain or specifying an existing local domain of the GlassFish Server v1, GlassFish Server v2.x or Sun Java System Application Server that is not the local default domain. Use this page of the wizard to specify the location of the domain you are registering.</p>
+<p>You see this page of the Add Server Instance wizard when you specify domain details to register an instance of the GlassFish Server v1, GlassFish Server v2.x or Sun Java System Application Server. Use this page of the wizard to specify the username and password to use to login as domain administrator.</p>
 <p>To register an instance of GlassFish Server v1 or v2.x you need to install the GlassFish Server v1, v2.x plugin from the Update Center.</p>
-<p>If you are specifying the location of an existing domain, type the path to the domain folder in the Domain Folder text field, or click Browse to use the file chooser to navigate to the domain on your system.</p>
-<p>If you are creating a new domain, in the Domain Folder text field, type the path to the folder you want to contain the new domain folder, then type the name of the domain. Alternatively, click Browse and use the file chooser to locate the containing folder and then type the name of the new domain.</p>
-<p>For example, type path-to-location/GlassFishDomains/MyDomain to create a domain called MyDomain in the folder GlassFishDomains, where the folder MyDomain does not yet exist. The IDE creates the folder MyDomain for you.</p>
+<p>You are not required to supply a domain admin username and password when registering a server instance. If you do not supply a username and password when registering an instance, you are prompted to supply a username and password when needed.</p>
+<p><b>Note</b>: If you enter a user name and password, the values are stored in your user directory. This represents a security risk.</p>
+<p>In this page of the wizard you can supply the following information:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t75">Element</th>
+<th align="left" valign="bottom" id="r1c2-t75">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t75" headers="r1c1-t75">
+<p>Admin Username</p>
+</td>
+<td align="left" headers="r2c1-t75 r1c2-t75">
+<p>Enter the user name of a domain administrator.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t75" headers="r1c1-t75">
+<p>Admin Password</p>
+</td>
+<td align="left" headers="r3c1-t75 r1c2-t75">
+<p>Enter the password of a domain administrator.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

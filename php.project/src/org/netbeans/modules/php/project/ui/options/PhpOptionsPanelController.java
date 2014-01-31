@@ -86,7 +86,7 @@ public class PhpOptionsPanelController extends BaseOptionsPanelController {
     
     @Override
     protected boolean areOptionsChanged() {
-        return phpOptionsPanel == null ? false : !getPhpOptions().getPhpInterpreter().equals(phpOptionsPanel.getPhpInterpreter())
+        return phpOptionsPanel == null ? false : !phpOptionsPanel.getPhpInterpreter().equals(getPhpOptions().getPhpInterpreter())
                 || getPhpOptions().isOpenResultInOutputWindow() != phpOptionsPanel.isOpenResultInOutputWindow()
                 || getPhpOptions().isOpenResultInBrowser() != phpOptionsPanel.isOpenResultInBrowser()
                 || getPhpOptions().isOpenResultInEditor() != phpOptionsPanel.isOpenResultInEditor()

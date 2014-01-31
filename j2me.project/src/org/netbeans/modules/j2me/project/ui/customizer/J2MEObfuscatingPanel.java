@@ -54,13 +54,14 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Roman Svitanic
  */
-public class J2MEObfuscatingPanel extends javax.swing.JPanel {
+public class J2MEObfuscatingPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     /**
      * Creates new form J2MEObfuscatingPanel
@@ -239,4 +240,9 @@ public class J2MEObfuscatingPanel extends javax.swing.JPanel {
     private javax.swing.JPanel panelObfuscatorSettings;
     private javax.swing.JLabel settingsLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MEObfuscatingPanel"); //NOI18N
+    }
 }

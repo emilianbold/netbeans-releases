@@ -56,7 +56,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.EjbResourceConfig
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.javaee.wildfly.config.ds.DatasourceSupport;
 import org.netbeans.modules.javaee.wildfly.config.mdb.MessageDestinationSupport;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.openide.loaders.DataObject;
 
 /**
@@ -76,7 +76,7 @@ public abstract class WildflyDeploymentConfiguration
     //cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
 
-    private final JBPluginUtils.Version version;
+    private final WildflyPluginUtils.Version version;
 
     //the directory with resources - supplied by the configuration support in the construction time
     private File resourceDir;
@@ -90,7 +90,7 @@ public abstract class WildflyDeploymentConfiguration
     /**
      * Creates a new instance of JBDeploymentConfiguration
      */
-    public WildflyDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+    public WildflyDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
         this.j2eeModule = j2eeModule;
         this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();
@@ -102,12 +102,12 @@ public abstract class WildflyDeploymentConfiguration
     }
 
     public boolean isWildfly() {
-        return version != null && JBPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
+        return version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
     }
 
     @Override
     public boolean supportsCreateDatasource() {
-        return !isWildfly();
+        return false;
     }
 
     @Override
@@ -134,17 +134,21 @@ public abstract class WildflyDeploymentConfiguration
         return getDatasourceSupport().createDatasource(jndiName, url, username, password, driver);
     }
 
+    @Override
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
     }
 
+    @Override
     public void bindDatasourceReferenceForEjb(String ejbName, String ejbType,
             String referenceName, String jndiName) throws ConfigurationException {
     }
 
+    @Override
     public String findDatasourceJndiName(String referenceName) throws ConfigurationException {
         return null;
     }
 
+    @Override
     public String findDatasourceJndiNameForEjb(String ejbName, String referenceName) throws ConfigurationException {
         return null;
     }
@@ -161,6 +165,7 @@ public abstract class WildflyDeploymentConfiguration
         return destSupport;
     }
 
+    @Override
     public Set<MessageDestination> getMessageDestinations() throws ConfigurationException {
         try {
             return getMessageDestinationsSupport().getMessageDestinations();
@@ -169,6 +174,7 @@ public abstract class WildflyDeploymentConfiguration
         }
     }
 
+    @Override
     public MessageDestination createMessageDestination(String name, MessageDestination.Type type)
             throws UnsupportedOperationException, ConfigurationException {
         try {
@@ -178,14 +184,17 @@ public abstract class WildflyDeploymentConfiguration
         }
     }
 
+    @Override
     public void bindMdbToMessageDestination(String mdbName, String name,
             MessageDestination.Type type) throws ConfigurationException {
     }
 
+    @Override
     public String findMessageDestinationName(String mdbName) throws ConfigurationException {
         return null;
     }
 
+    @Override
     public void bindMessageDestinationReference(String referenceName, String connectionFactoryName,
             String destName, MessageDestination.Type type) throws ConfigurationException {
     }

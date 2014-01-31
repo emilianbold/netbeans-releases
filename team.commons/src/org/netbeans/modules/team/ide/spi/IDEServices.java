@@ -191,18 +191,20 @@ public interface IDEServices {
     public void openInFavorites(File workingDir);
 
     /**
-     * Determines whether the capability of opening a http proxy configuration UI
-     * is available.
+     * Determines whether it is possible to shutdown the IDE or not.
      * 
-     * @return <code>true</code> if there is a http proxy configuration UI available, otherwise <code>false</code>
+     * @param restart whether it is possible to shutdown with a subsequent restart or without it.
+     * @return <code>true</code> if it is possible to shutdown the IDE, otherwise <code>false</code>. 
      */
-    public boolean providesProxyConfiguration();
-    
+    public boolean providesShutdown(boolean restart);
+
     /**
-     * Opens the http proxy configuration UI
+     * Shuts down the IDE. 
+     * 
+     * @param restart <code>true</code> if the IDE is supposed to restart after the shutdown.
      */
-    public void openProxyConfiguration();
-    
+    public void shutdown(boolean restart);
+        
     /**
      * Creates a date picker component that can be used in task editor UI.
      * May return null.

@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 final class TwigPanel extends javax.swing.JPanel {
 
     private final TwigOptionsPanelController controller;
+    private boolean firstOpening = true;
 
     TwigPanel(TwigOptionsPanelController controller) {
         this.controller = controller;
@@ -132,7 +133,8 @@ final class TwigPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_asTwigEverywhereRadioButtonActionPerformed
 
     void load() {
-        if (!changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
             if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
                 asTwigEverywhereRadioButton.setSelected(true);

@@ -121,7 +121,7 @@ public class RevertCommand extends GitCommand {
             RevCommit srcParent = revertedCommit.getParent(0);
             revWalk.parseHeaders(srcParent);
 
-            ResolveMerger merger = (ResolveMerger) MergeStrategy.RESOLVE.newMerger(repository);
+            ResolveMerger merger = (ResolveMerger) MergeStrategy.RECURSIVE.newMerger(repository);
             merger.setWorkingTreeIterator(new FileTreeIterator(repository));
             merger.setBase(revertedCommit.getTree());
             String commitMessage = message == null || message.isEmpty() 

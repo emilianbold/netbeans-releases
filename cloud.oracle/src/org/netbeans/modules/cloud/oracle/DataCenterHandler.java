@@ -79,11 +79,8 @@ public class DataCenterHandler extends DefaultHandler {
             isDataCenters = true;
         } else if (isDataCenters && "DataCenter".equals(qName)) {
             isDataCenter = true;
-        } else if (isDataCenter && "Service".equals(qName)) {
-            String type = attributes.getValue("type");
-            if ("JCS".equals(type)) {
-                jcsVersion = attributes.getValue("version");
-            }
+        } else if (isDataCenter && "JCS".equals(qName)) {
+            jcsVersion = attributes.getValue("version");
         }
     }
 
@@ -92,8 +89,10 @@ public class DataCenterHandler extends DefaultHandler {
         if (isDataCenter) {
             if ("DataCenter".equals(qName)) {
                 isDataCenter = false;
-                dataCenters.add(new DataCenters.DataCenter(shortName, longName,
-                        Version.fromJsr277OrDottedNotationWithFallback(jcsVersion)));
+                if (jcsVersion != null) {
+                    dataCenters.add(new DataCenters.DataCenter(shortName, longName,
+                            Version.fromJsr277OrDottedNotationWithFallback(jcsVersion)));
+                }
                 shortName = null;
                 longName = null;
                 jcsVersion = null;

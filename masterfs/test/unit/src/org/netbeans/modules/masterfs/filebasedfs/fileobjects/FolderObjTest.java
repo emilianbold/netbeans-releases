@@ -76,6 +76,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -1750,6 +1751,61 @@ public class FolderObjTest extends NbTestCase {
         ev.assertDeleted(1);
     }
     
+    /**
+     * Test for bug 239302 - Deadlock encountered during project rename.
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void testDeadlockBug239302() throws IOException, InterruptedException {
+        final FileObject wd = FileBasedFileSystem.getFileObject(getWorkDir());
+        final FolderObj folder = (FolderObj) wd.createFolder("folder");
+        final File folderFile = FileUtil.toFile(folder);
+        final FileObjectFactory factory = FileObjectFactory.getInstance(
+                folderFile);
+
+        folder.createData("a.txt");
+        folder.createData("b.txt");
+        folder.createData("c.txt");
+        folder.createData("d.txt");
+        folder.createData("E.txt");
+
+        final Runnable rename = new Runnable() {
+
+            @Override
+            public void run() {
+                FileLock lock = null;
+                try {
+                    lock = folder.lock();
+                    folder.rename(lock, "folder" + Math.random(), null);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+            }
+        };
+
+        final Runnable invalidate = new Runnable() {
+
+            @Override
+            public void run() {
+                factory.invalidateSubtree(folder, true, true);
+            }
+        };
+
+        for (int i = 0; i < 100; i++) {
+            Thread t1 = new Thread(rename, "Rename-test");
+            Thread t2 = new Thread(invalidate, "Invalidate-test");
+            t1.start();
+            t2.start();
+            t1.join();
+            t2.join();
+        }
+    }
+
     private class EventsEvaluator extends FileChangeAdapter {
         private int folderCreatedCount;
         private int dataCreatedCount;

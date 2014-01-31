@@ -153,6 +153,23 @@ public interface QueryProvider<Q, I> {
         
         /**
          * The Query refreshing started.
+         * @since 1.101
+         */
+        public void restoreStarted() {
+            delegate.restoreStarted();
+        }
+        
+        /**
+         * The Query refreshing finished.
+         * 
+         * @since 1.101
+         */
+        public void restoreFinished() {
+            delegate.restoreFinished();
+        }
+        
+        /**
+         * The Query refreshing started.
          * @since 1.85
          */
         public void refreshingStarted() {
@@ -195,7 +212,7 @@ public interface QueryProvider<Q, I> {
          */
         public void clear() {
             delegate.clear();
-    }
+        }
         
-}
+    }
 }

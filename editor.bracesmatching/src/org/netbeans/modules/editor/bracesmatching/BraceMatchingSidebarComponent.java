@@ -430,11 +430,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                 }
             }
         });
-        try {
-            Thread.sleep(1000);
-        } catch (Exception ex) {
-            
-        }
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
             braceContext = ctx[0];

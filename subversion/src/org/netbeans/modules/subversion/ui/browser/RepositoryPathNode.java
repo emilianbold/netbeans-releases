@@ -70,6 +70,7 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -186,7 +187,7 @@ public class RepositoryPathNode extends AbstractNode {
     @Override
     public String getName() {
         if(entry.getRepositoryFile().isRepositoryRoot()) {
-            return entry.getRepositoryFile().getRepositoryUrl().toString();
+            return SvnUtils.decodeToString(entry.getRepositoryFile().getRepositoryUrl());
         } else {
             return entry.getRepositoryFile().getName();
         }

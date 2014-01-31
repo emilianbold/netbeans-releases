@@ -69,6 +69,19 @@ public class PushDownTest extends RefactoringTestBase {
         super(name);
    }
     
+    public void testPushDownMethodOverride() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public interface A { int a(); }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B implements A { @Override public int a() { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public interface A { int a(); }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B implements A {}"));
+    }
+
+    
     public void testPushDownMethodException() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),

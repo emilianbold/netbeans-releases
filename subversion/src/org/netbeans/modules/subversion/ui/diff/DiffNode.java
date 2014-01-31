@@ -215,7 +215,8 @@ public class DiffNode extends AbstractNode {
         public LocationProperty() {
             super(COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
             try {
-                location = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(setup.getBaseFile()).toString() : SvnUtils.getRelativePath(setup.getBaseFile());
+                location = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                        ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(setup.getBaseFile())) : SvnUtils.getRelativePath(setup.getBaseFile());
             } catch (SVNClientException e) {
                 location = "";
             }

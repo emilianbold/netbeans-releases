@@ -85,6 +85,19 @@ public final class ODCSHudsonUtils {
         return null;
     }
 
+    public static boolean isLoggedIn(ProjectHandle<ODCSProject> projectHandle) {
+        if (projectHandle != null) {
+            ODCSProject teamProject = projectHandle.getTeamProject();
+            if (teamProject != null) {
+                ODCSServer server = teamProject.getServer();
+                if (server != null) {
+                    return server.getPasswordAuthentication() != null;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Center Hudson status icon.
      *

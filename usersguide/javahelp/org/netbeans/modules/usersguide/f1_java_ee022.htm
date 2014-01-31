@@ -2,113 +2,80 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New EJB Module Wizard: Server and Settings</title>
+<title>New EJB Module with Existing Sources Wizard: Existing Sources and Libraries</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EJB" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EJB"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref603" name="sthref603"></a>
-<h1>New EJB Module Wizard: Server and Settings</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" name="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref586" name="sthref586"></a>
+<h1>New EJB Module with Existing Sources Wizard: Existing Sources and Libraries</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new standard project containing an EJB module. You open the wizard by opening the New Project wizard and selecting the EJB Module template from the Java EE category.</p>
-<p>In the Server and Settings page, you have to set the following properties:</p>
+<p>This wizard creates a new standard project&nbsp; containing an EJB module. You open the wizard by opening the New Project wizard and selecting the EJB Module with Existing Sources template from the Java EE category.</p>
+<p>Your existing EJB module source does not have to adhere to any particular directory structure. You specify the locations of the configuration files, libraries, and source roots. The only requirement is that the module contain a valid <code>ejb-jar.xml</code> deployment descriptor.In the Existing Sources and Libraries page, you specify the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t17">Element</th>
-<th align="left" valign="bottom" id="r1c2-t17">Description</th>
+<th align="left" valign="bottom" id="r1c1-t18">Element</th>
+<th align="left" valign="bottom" id="r1c2-t18">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t17" headers="r1c1-t17">
-<p>Add to Enterprise Application</p>
+<td align="left" id="r2c1-t18" headers="r1c1-t18">
+<p>Configuration Files Folder</p>
 </td>
-<td align="left" headers="r2c1-t17 r1c2-t17">
-<p>Lets you add the EJB module to any open enterprise application project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t17" headers="r1c1-t17">
-<p>Server</p>
-</td>
-<td align="left" headers="r3c1-t17 r1c2-t17">
-<p>Specifies the server to which the EJB module is deployed. You can only deploy EJB modules to a Java EE server such as the GlassFish application server. You can register multiple remote instances of the application server. You can click Add to register a server using the Server Manager.</p>
+<td align="left" headers="r2c1-t18 r1c2-t18">
+<p>Specifies the location of your deployment descriptors and other configuration files. You must have at least a valid <code>ejb-jar.xml</code> deployment descriptor to complete the wizard.</p>
+<p><b>Note</b>: The IDE does not convert deployment descriptors for unsupported application servers to GlassFish deployment descriptors.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t17" headers="r1c1-t17">
-<p>Copy Server JAR Files to Libraries Folder</p>
+<td align="left" id="r3c1-t18" headers="r1c1-t18">
+<p>Libraries Folder</p>
 </td>
-<td align="left" headers="r4c1-t17 r1c2-t17">
-<p>If you are using a dedicated folder for storing libraries, you can select this option to copy the server JAR files required for compilation into the dedicated libraries folder. If not selected, other users will need local copies of the server JAR files to build the project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t17" headers="r1c1-t17">
-<p>Java EE Version</p>
-</td>
-<td align="left" headers="r5c1-t17 r1c2-t17">
-<p>Specifies the level of the EJB specification that is used by the EJB.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t17" headers="r1c1-t17">
-<p>Source Level Recommendations</p>
-</td>
-<td align="left" headers="r6c1-t17 r1c2-t17">
-<p>One of the following checkboxes will appear if JDK 1.5 is set as the default platform in the Java Platform Manager. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t17" headers="r1c1-t17">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
-</td>
-<td align="left" headers="r7c1-t17 r1c2-t17">
-<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t17" headers="r1c1-t17">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
-</td>
-<td align="left" headers="r8c1-t17 r1c2-t17">
-<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t17" headers="r1c1-t17">
-<p>Enable Contexts and Dependency Injection</p>
-</td>
-<td align="left" headers="r9c1-t17 r1c2-t17">
-<p>Contexts and Dependency Injection (CDI) is specified by JSR-299. This option is not visible if Java EE 7 Web is set as the Java EE version with Glassfish 4 because it is enabled by default.</p>
-<p>When selected, this option generates a <code>beans.xml</code> file in the project's <code>WEB-INF</code> folder when the project template is created. The <code>beans.xml</code> file is used by CDI to instruct the Java EE-compliant server that the project is a module containing CDI beans.</p>
+<td align="left" headers="r3c1-t18 r1c2-t18">
+<p>Specifies the location of the class libraries that the EJB module depends on. All JAR files in this folder are added to the EJB module project's classpath and packaged with the module for deployment.</p>
+<p><b>Note</b>: The IDE only scans this folder once when you create the project. After the project is created, adding JAR files to this folder outside the IDE does not add them to the module's classpath. You have to add them manually through the Libraries tab of the module's Project Properties dialog box.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click <b>Finish</b>, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
-<p><b>Note</b>: If you are creating an EJB module with existing sources, you must click Next to specify existing sources and libraries.</p>
+<p>You can also specify each of the project's source package folders (containing source packages) and test package folders (containing JUnit tests). You can have multiple source roots in a standard project, with the following exceptions:</p>
+<ul>
+<li>The source root cannot already exist in another IDE project.</li>
+<li>
+<p>The source root cannot already be added to another compilation unit of the same project. For example, a source root that is registered under Test Packages cannot be added to the list of Source Packages.All of the source roots are packaged into the same JAR file and share the same classpath.</p>
+<p><b>Note</b>: If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects.</p>
+</li>
+</ul>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
-<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2115">
+<param name="text" value="<html><u>&quot;Working with Ant&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2697">
+<param name="text" value="<html><u>&quot;Creating an EJB Module Project&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG207">
-<param name="text" value="<html><u>&quot;Managing and Creating Projects&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -240,6 +240,9 @@ public final class JavadocHint {
         radio.addActionListener(l);
         group.add(radio);
         radio.setSelected(radio.getText().equals(node.get(SCOPE_KEY, SCOPE_DEFAULT)));
+        if(radio.isSelected()) {
+            node.put(SCOPE_KEY, radio.getText());
+        }
         radio.setOpaque(false);
         res.add(radio, new GridBagConstraints(0, row++, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8, 8, 0, 8), 0, 0));
 
@@ -251,6 +254,9 @@ public final class JavadocHint {
         radio.addActionListener(l);
         group.add(radio);
         radio.setSelected(radio.getText().equals(node.get(SCOPE_KEY, SCOPE_DEFAULT)));
+        if(radio.isSelected()) {
+            node.put(SCOPE_KEY, radio.getText());
+        }
         radio.setOpaque(false);
         res.add(radio, new GridBagConstraints(0, row++, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8, 8, 0, 8), 0, 0));
 
@@ -262,6 +268,9 @@ public final class JavadocHint {
         radio.addActionListener(l);
         group.add(radio);
         radio.setSelected(radio.getText().equals(node.get(SCOPE_KEY, SCOPE_DEFAULT)));
+        if(radio.isSelected()) {
+            node.put(SCOPE_KEY, radio.getText());
+        }
         radio.setOpaque(false);
         res.add(radio, new GridBagConstraints(0, row++, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8, 8, 0, 8), 0, 0));
 
@@ -273,6 +282,9 @@ public final class JavadocHint {
         radio.addActionListener(l);
         group.add(radio);
         radio.setSelected(radio.getText().equals(node.get(SCOPE_KEY, SCOPE_DEFAULT)));
+        if(radio.isSelected()) {
+            node.put(SCOPE_KEY, radio.getText());
+        }
         radio.setOpaque(false);
         res.add(radio, new GridBagConstraints(0, row++, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(8, 8, 0, 8), 0, 0));
 
@@ -290,6 +302,7 @@ public final class JavadocHint {
             }
         });
         outerPanel.add(apiCheckbox, new GridBagConstraints(0, 2, 1, 2, 1.0, 1.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        node.putBoolean(AVAILABILITY_KEY + createJavadocKind, apiCheckbox.isSelected());
         return outerPanel;
     }
 

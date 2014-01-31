@@ -65,6 +65,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo.Group;
@@ -282,7 +283,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                 BlockTree body = updateSuperThisReferences(oldOne.getBody(), mpath);
                 ExecutableElement overriddenMethod = workingCopy.getElementUtilities().getOverriddenMethod((ExecutableElement) member);
                 MethodTree newMemberTree = make.Method(
-                        overriddenMethod != null && workingCopy.getElementUtilities().isMemberOf(overriddenMethod, targetType)? oldOne.getModifiers() : removeAnnotations(oldOne.getModifiers(), mpath),
+                        overriddenMethod != null && workingCopy.getElementUtilities().isMemberOf(overriddenMethod, targetType)? oldOne.getModifiers() : removeAnnotations(workingCopy, make, oldOne.getModifiers(), mpath),
                         oldOne.getName(),
                         oldOne.getReturnType(),
                         oldOne.getTypeParameters(),
@@ -300,7 +301,7 @@ public class PullUpTransformer extends RefactoringVisitor {
         return njuClass;
     }
 
-    private ModifiersTree removeAnnotations(ModifiersTree oldOne, TreePath path) {
+    static ModifiersTree removeAnnotations(WorkingCopy workingCopy, TreeMaker make,ModifiersTree oldOne, TreePath path) {
         TypeElement override = workingCopy.getElements().getTypeElement("java.lang.Override");
         if(override == null) {
             return oldOne;

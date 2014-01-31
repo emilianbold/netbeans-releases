@@ -95,6 +95,8 @@ public class BroadCatchCustomizer extends javax.swing.JPanel
             !prefs.getBoolean(BroadCatchBlock.OPTION_EXCLUDE_COMMON, BroadCatchBlock.DEFAULT_EXCLUDE_COMMON));
         
         enableUmbrella();
+        prefs.putBoolean(BroadCatchBlock.OPTION_EXCLUDE_UMBRELLA, cbSuppressUmbrellas.isSelected());
+        prefs.putBoolean(BroadCatchBlock.OPTION_EXCLUDE_COMMON, !cbCommonTypes.isSelected());
     }
     
     private void initList(JList l, String val) {
@@ -107,6 +109,7 @@ public class BroadCatchCustomizer extends javax.swing.JPanel
             }
             m.addElement(s);
         }
+        prefs.put(BroadCatchBlock.OPTION_UMBRELLA_LIST, val);
     }
 
     @Override
@@ -152,7 +155,7 @@ public class BroadCatchCustomizer extends javax.swing.JPanel
         for (Enumeration en = ((DefaultListModel)list.getModel()).elements(); en.hasMoreElements(); ) {
             String s = (String)en.nextElement();
             if (sb.length() > 0) {
-                sb.append(",");
+                sb.append(", ");
             }
             sb.append(s);
         }

@@ -123,7 +123,8 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public boolean changed() {
-        return !getComponent().getLessPath().equals(getOptions().getLessPath())
+        String lessPath = getOptions().getLessPath();
+        return !getComponent().getLessPath().equals(lessPath == null ? "" : lessPath)
                 || getComponent().getLessOutputOnError() != getOptions().getLessOutputOnError()
                 || getComponent().getLessDebug()!= getOptions().getLessDebug();
     }

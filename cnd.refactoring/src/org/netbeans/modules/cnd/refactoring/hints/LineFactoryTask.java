@@ -190,7 +190,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
             if (decl.getStartOffset() < selectionStart && selectionEnd < decl.getEndOffset()) {
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
                     CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
-                    return findExpressionStatementInBody(def.getBody(), selectionStart, selectionEnd, doc);
+                    return findExpressionStatementInBody(def.getBody(), selectionStart, selectionEnd, doc, canceled);
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     CsmNamespaceDefinition def = (CsmNamespaceDefinition) decl;
                     return findExpressionStatement(def.getDeclarations(), selectionStart, selectionEnd, doc, canceled);
@@ -203,10 +203,13 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
         return null;
     }    
 
-    private StatementResult findExpressionStatementInBody(CsmCompoundStatement body, int selectionStart, int selectionEnd, final Document doc) {
+    private StatementResult findExpressionStatementInBody(CsmCompoundStatement body, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled) {
         if (body != null) {
             final List<CsmStatement> statements = body.getStatements();
             for(int i = 0; i < statements.size(); i++) {
+                if (canceled.get())  {
+                    break;
+                }
                 final CsmStatement st = statements.get(i);
                 final int startOffset = st.getStartOffset();
                 if (startOffset > selectionStart) {
@@ -219,7 +222,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                    nexStartOffset = body.getEndOffset();
                 }
                 if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
-                    final StatementResult res = findExpressionStatement(st, nexStartOffset, selectionStart, selectionEnd, doc);
+                    final StatementResult res = findExpressionStatement(st, nexStartOffset, selectionStart, selectionEnd, doc, canceled);
                     if (res != null && res.statementInBody == null) {
                         res.statementInBody = st;
                     }
@@ -230,10 +233,10 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
         return null;
     }
 
-    private StatementResult findExpressionStatement(final CsmStatement st, final int nexStartOffset, int selectionStrat, int selectionEnd, final Document doc) {
+    private StatementResult findExpressionStatement(final CsmStatement st, final int nexStartOffset, int selectionStrat, int selectionEnd, final Document doc, final AtomicBoolean canceled) {
         switch(st.getKind()) {
             case COMPOUND:
-                return findExpressionStatementInBody((CsmCompoundStatement)st, selectionStrat, selectionEnd, doc);
+                return findExpressionStatementInBody((CsmCompoundStatement)st, selectionStrat, selectionEnd, doc, canceled);
             case SWITCH:
             {
                 CsmSwitchStatement switchStmt = (CsmSwitchStatement) st;
@@ -248,7 +251,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                 if (body != null) {
                     final int startOffset = body.getStartOffset();
                     if (startOffset <= selectionStrat && selectionEnd < nexStartOffset) {
-                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 return null;
@@ -281,7 +284,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                 if (body != null) {
                     final int startOffset = body.getStartOffset();
                     if (startOffset <= selectionStrat && selectionEnd < nexStartOffset) {
-                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(body, nexStartOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 return null;
@@ -308,7 +311,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                         }
                     }
                     if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(body, endOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(body, endOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 return null;
@@ -325,7 +328,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                         endOffset = handlers.get(0).getStartOffset();
                     }
                     if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(tryBody, endOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(tryBody, endOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 if (handlers != null) {
@@ -334,7 +337,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                         final int startOffset = handler.getStartOffset();
                         final int endOffset = handler.getEndOffset();
                         if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                            return findExpressionStatement(handler, endOffset, selectionStrat, selectionEnd, doc);
+                            return findExpressionStatement(handler, endOffset, selectionStrat, selectionEnd, doc, canceled);
                         }
                     }
                 }
@@ -359,14 +362,14 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
                         endOffset = elseStmt.getStartOffset();
                     }
                     if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(thenStmt, endOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(thenStmt, endOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 if (elseStmt != null) {
                     final int startOffset = elseStmt.getStartOffset();
                     int endOffset = nexStartOffset;
                     if (startOffset <= selectionStrat && selectionEnd < endOffset) {
-                        return findExpressionStatement(elseStmt, endOffset, selectionStrat, selectionEnd, doc);
+                        return findExpressionStatement(elseStmt, endOffset, selectionStrat, selectionEnd, doc, canceled);
                     }
                 }
                 return null;
@@ -586,9 +589,7 @@ public class LineFactoryTask extends IndexingAwareParserResultTask<CndParserResu
     }
     
     @Override
-    public int getPriority() {
-        return 100;
-    }
+    public int getPriority() {return 500;}
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {

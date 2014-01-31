@@ -62,6 +62,7 @@ public class SearchDependencyCustomizer extends javax.swing.JPanel {
         }else{
             jrOptionInplace.setSelected(true);
         }
+        p.putBoolean(SearchClassDependencyHint.OPTION_DIALOG, jrOptionDialog.isSelected());
     }
 
     /** This method is called from within the constructor to

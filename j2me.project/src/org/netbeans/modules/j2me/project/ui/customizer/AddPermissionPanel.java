@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Collection;
+import java.util.HashSet;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -14,12 +15,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionDefinition;
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionDescriptor;
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionError;
 import org.netbeans.modules.j2me.project.ui.customizer.PermissionsProvider.PermissionsFactory;
 import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 
 public class AddPermissionPanel extends JPanel {
 
@@ -37,9 +38,17 @@ public class AddPermissionPanel extends JPanel {
 
     private final PermissionsFactory permissionsFactory;
 
-    protected AddPermissionPanel(Window owner, PermissionsProvider permissionsProvider, Collection<String> existingPermissions) {
+    protected AddPermissionPanel(Window owner, PermissionsProvider permissionsProvider,
+            Collection<String> existingPermissions, String permissionToEdit) {
+        
+        if (permissionToEdit != null) {
+            existingPermissions = new HashSet<>(existingPermissions);
+            existingPermissions.remove(permissionToEdit);
+        }
+        
         this.permissionsFactory = permissionsProvider.getPermissionsFactory(existingPermissions);
-        createUI();
+        
+        createUI(permissionToEdit);
     }
 
     private static String getUIString(String uiKey) {
@@ -49,7 +58,10 @@ public class AddPermissionPanel extends JPanel {
     /**
      * Creates and layouts UI components.
      */
-    private void createUI() {
+    private void createUI(String permissionToEdit) {
+        PermissionDefinition selectPermission = permissionToEdit == null ? null
+                : permissionsFactory.getPermission(permissionToEdit);
+        
         permissionsCombo = new JComboBox<>(permissionsFactory.getAvailablePermissions());
 
         permissionsCombo.setPreferredSize(new Dimension(Math.max(400, permissionsCombo.getPreferredSize().width),
@@ -186,6 +198,41 @@ public class AddPermissionPanel extends JPanel {
                 updateNameAndActions();
             }
         });
+        
+        PermissionDescriptor descriptor = null;
+
+        if (selectPermission != null) {
+            descriptor = permissionsFactory.getDescriptor(selectPermission);
+            permissionsCombo.setSelectedItem(descriptor);
+
+            if (selectPermission.getNumberOfParameters() > 0) {
+                if (descriptor.nameCanBeOptional()) {
+                    nameDefinition.setUseParameter(true);
+                }
+
+                String nameValue = selectPermission.getName();
+
+                useNullName.setSelected(nameValue == null);
+
+                if (nameValue != null) {
+                    nameField.setText(nameValue);
+                }
+
+                if (selectPermission.getNumberOfParameters() > 1) {
+                    if (descriptor.actionsCanBeOptional(true)) {
+                        actionsDefinition.setUseParameter(true);
+                    }
+
+                    String actionsValue = selectPermission.getActions();
+
+                    useNullActions.setSelected(actionsValue == null);
+
+                    if (actionsValue != null) {
+                        actionsField.setText(actionsValue);
+                    }
+                }
+            }
+        }
 
         updateNameAndActions();
     }
@@ -283,6 +330,7 @@ public class AddPermissionPanel extends JPanel {
 
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.AddPermissionPanel")); //NOI18N
         updateOKAction();
     }
 

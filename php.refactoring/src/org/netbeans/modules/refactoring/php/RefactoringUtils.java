@@ -61,8 +61,16 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.lexer.*;
-import org.netbeans.api.project.*;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -72,7 +80,12 @@ import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -95,7 +108,10 @@ import org.openide.xml.XMLUtil;
  *
  * @author Jan Becicka, Tor Norbye, Jan Lahoda, Radek Matous
  */
-public class RefactoringUtils {
+public final class RefactoringUtils {
+
+    private RefactoringUtils() {
+    }
 
     public static Program getRoot(ParserResult info) {
         return (info instanceof PHPParseResult) ? ((PHPParseResult) info).getProgram() : null;
@@ -207,9 +223,9 @@ public class RefactoringUtils {
         String colorB = "0" + Integer.toHexString(c.getBlue()); //NOI18N
 
         colorB = colorB.substring(colorB.length() - 2);
-        String html_color = "#" + colorR + colorG + colorB; //NOI18N
+        String htmlColor = "#" + colorR + colorG + colorB; //NOI18N
 
-        return html_color;
+        return htmlColor;
     }
 
     public static boolean isFileInOpenProject(FileObject file) {
@@ -259,7 +275,7 @@ public class RefactoringUtils {
     }
 
     /**
-     * creates or finds FileObject according to
+     * Creates or finds FileObject according to.
      * @param url
      * @return FileObject
      */
@@ -317,7 +333,7 @@ public class RefactoringUtils {
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
 
-            private Stack<ASTNode> result;
+            private final Stack<ASTNode> result;
 
             public Result(Stack<ASTNode> result) {
                 this.result = result;
@@ -331,7 +347,7 @@ public class RefactoringUtils {
         try {
             new DefaultVisitor() {
 
-                private Stack<ASTNode> s = new Stack<>();
+                private final Stack<ASTNode> s = new Stack<>();
 
                 @Override
                 public void scan(ASTNode node) {
@@ -367,22 +383,17 @@ public class RefactoringUtils {
 
     public static FileObject resolveInclude(ParserResult info, Include include) {
         Expression e = include.getExpression();
-
         if (e instanceof ParenthesisExpression) {
             e = ((ParenthesisExpression) e).getExpression();
         }
-
         if (e instanceof Scalar) {
             Scalar s = (Scalar) e;
-
             if (Type.STRING == s.getScalarType()) {
                 String fileName = s.getStringValue();
-                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
-
+                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName; //TODO: not nice
                 return resolveRelativeFile(info, fileName);
             }
         }
-
         return null;
     }
 
@@ -428,5 +439,14 @@ public class RefactoringUtils {
         }
 
         return null;
+    }
+
+    public static boolean isUsersFile(FileObject fileObject) {
+        boolean result = false;
+        PhpSourcePath.FileType fileType = PhpSourcePath.getFileType(fileObject);
+        if (fileType != PhpSourcePath.FileType.INCLUDE && fileType != PhpSourcePath.FileType.INTERNAL) {
+            result = true;
+        }
+        return result;
     }
 }

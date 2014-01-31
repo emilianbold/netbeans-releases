@@ -307,24 +307,6 @@ public class RemoteFileSystemUtils {
         }
     }
     
-    public static boolean delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
-        StringWriter writer = new StringWriter();
-        Future<Integer> task;
-        if (directory) {
-            task = CommonTasksSupport.rmDir(execEnv, path, true, writer);
-        } else {
-            task = CommonTasksSupport.rmFile(execEnv, path, writer);
-        }
-        try {
-            return task.get().intValue() == 0;
-        } catch (InterruptedException ex) {
-            throw new InterruptedIOException();
-        } catch (ExecutionException ex) {
-            final String errorText = writer.getBuffer().toString();
-            throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
-        }
-    }
-
     // copy from CndPathUtilitis
     public static boolean isPathAbsolute(String path) {
         if (path == null || path.length() == 0) {

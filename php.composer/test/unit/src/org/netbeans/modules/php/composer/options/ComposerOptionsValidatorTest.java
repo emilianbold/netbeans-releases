@@ -67,19 +67,19 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         ValidationResult result = new ComposerOptionsValidator()
                 .validateVendor("MyCompany")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateVendor("my company")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateVendor("my.company")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateVendor("my_company")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
     }
 
     public void testValidAuthorEmail() {
@@ -99,15 +99,15 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         ValidationResult result = new ComposerOptionsValidator()
                 .validateAuthorEmail("john.doe")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorEmail("john.doe@")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorEmail("john.doe@domain")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
     }
 
     public void testValidAuthorName() {
@@ -127,23 +127,23 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
         ValidationResult result = new ComposerOptionsValidator()
                 .validateAuthorName(null)
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorName("")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorName("1")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorName("junichi11")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
         result = new ComposerOptionsValidator()
                 .validateAuthorName("junichi 11 junichi")
                 .getResult();
-        assertTrue(result.hasErrors());
+        assertTrue(result.hasWarnings());
     }
 
 }

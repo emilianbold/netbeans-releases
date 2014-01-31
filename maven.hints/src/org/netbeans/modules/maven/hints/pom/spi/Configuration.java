@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.hints.pom.spi;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbPreferences;
@@ -54,11 +56,12 @@ public final class Configuration {
     private final String id;
     private final String description;
     private final boolean defaultEnabled;
-    static final String ENABLED_KEY = "enabled";         // NOI18N
-    static final String SEVERITY_KEY = "severity";       // NOI18N
+    public static final String ENABLED_KEY = "enabled";         // NOI18N
+    public static final String SEVERITY_KEY = "severity";       // NOI18N
     static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
     private final HintSeverity defaultSeverity;
     private final String displayName;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     public Configuration(String id, String displayName, String description, boolean defaultEnabled, HintSeverity defaultSeverity) {
         this.id = id;
@@ -103,7 +106,11 @@ public final class Configuration {
      * @return true if enabled false otherwise.
      */
     public final boolean isEnabled(Preferences p) {
-        return p.getBoolean(ENABLED_KEY, defaultEnabled);
+        boolean enabled = p.getBoolean(ENABLED_KEY, defaultEnabled);
+        if(!id2Saved.containsKey(ENABLED_KEY)) {
+            id2Saved.put(ENABLED_KEY, enabled);
+        }
+        return enabled;
     }
 
     public void setEnabled( Preferences p, boolean value ) {
@@ -116,14 +123,21 @@ public final class Configuration {
      */
     public final HintSeverity getSeverity(Preferences p) {
         String s = p.get(SEVERITY_KEY, null );
-        return s == null ? defaultSeverity : fromPreferenceString(s);
+        HintSeverity severity = s == null ? defaultSeverity : fromPreferenceString(s);
+        if(!id2Saved.containsKey(SEVERITY_KEY)) {
+            id2Saved.put(SEVERITY_KEY, severity);
+        }
+        return severity;
     }
 
 
     public void setSeverity( Preferences p, Configuration.HintSeverity severity ) {
         p.put(SEVERITY_KEY, severity.toPreferenceString());
     }
-
+    
+    public Object getSavedValue(String key) {
+        return id2Saved.get(key);
+    }
 
 
     /** Severity of hint
