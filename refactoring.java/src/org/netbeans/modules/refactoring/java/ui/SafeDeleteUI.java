@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -308,7 +310,8 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
         
         TreePathHandle selectedElement = handles[0];
         Element selected = selectedElement.resolveElement(info);
-        if (selected == null) {
+        TreePath selectedTree = selectedElement.resolve(info);
+        if (selected == null || selectedTree == null) {
             return null;
         }
         if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
@@ -319,7 +322,16 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
             }
             if (file.getName().equals(selected.getSimpleName().toString())) {
                 return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b);
+            }
         }
+        if(selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+            switch (selectedTree.getParentPath().getLeaf().getKind()) {
+                case BLOCK:
+                case METHOD:
+                    break;
+                default:
+                    return null;
+            }
         }
         return new SafeDeleteUI(new TreePathHandle[]{selectedElement});
     }
