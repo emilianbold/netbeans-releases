@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
@@ -924,6 +923,22 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
     
+    public void test241221() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void usage() {\n" +
+                    "        int temp;\n" +
+                    "        int[] a = new int[]{3, 5, 1, 4, 2};\n" +
+                    "        int[] b = new int[5];\n" +
+                    "        for (int i = 0; i < b.length; i++) {\n" +
+                    "            temp = a[i];\n" +
+                    "            b[temp`] = i;\n" +
+                    "        }\n" +
+                    "    }" +
+                    "}\n",
+                    true,
+                    "a[i]");
+    }
     /**
      * Checks that return inside lambda expr does not affect state of enclosing method's variables
      */
@@ -1102,19 +1117,21 @@ public class FlowTest extends NbTestCase {
                 .pathFor(span[0]);
 
         Set<String> actual = new HashSet<String>();
-
-        for (TreePath tp : flow
+        Iterable<? extends TreePath> c = flow
                 .getAssignmentsForUse()
                 .get(sel
-                .getLeaf())) {
-            if (tp == null) {
-                actual
-                        .add("<null>");
-            } else {
-                actual
-                        .add(tp
-                        .getLeaf()
-                        .toString());
+                .getLeaf());
+        if (c != null) {
+            for (TreePath tp : c) {
+                if (tp == null) {
+                    actual
+                            .add("<null>");
+                } else {
+                    actual
+                            .add(tp
+                            .getLeaf()
+                            .toString());
+                }
             }
         }
 
