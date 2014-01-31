@@ -93,24 +93,24 @@ public class ProjectOptionsPanel extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                changed = true;
+                changed = areMakeOptionsChanged();
             }
         });
         makeOptionsTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                changed = true;
+                changed = areMakeOptionsChanged();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                changed = true;
+                changed = areMakeOptionsChanged();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                changed = true;
+                changed = areMakeOptionsChanged();
             }
         });
     }
@@ -166,6 +166,24 @@ public class ProjectOptionsPanel extends JPanel {
     public boolean isChanged() {
         return changed;
     }
+    
+    private boolean areMakeOptionsChanged() {
+        boolean isChanged = false;
+        MakeOptions makeOptions = MakeOptions.getInstance();
+        isChanged |= !makeOptions.getMakeOptions().equals(makeOptionsTextField.getText())
+                || !makeOptions.getPathMode().equals((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
+        if (isChanged) { // no need to iterate further
+            return true;
+        }
+        for (JCheckBox cb : checkBoxes) {
+            NamedOption entry = (NamedOption) cb.getClientProperty("MakeOptionNamedEntity"); //NOI18N
+            isChanged |= NamedOption.getAccessor().getBoolean(entry.getName()) != cb.isSelected();
+            if (isChanged) { // no need to iterate further
+                return true;
+            }
+        }
+        return isChanged;
+    }
 
     private void initAdditionalComponents() {
         checkBoxes = new ArrayList<JCheckBox>();
@@ -186,7 +204,7 @@ public class ProjectOptionsPanel extends JPanel {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    changed = true;
+                    changed = areMakeOptionsChanged();
                 }
             });
         }

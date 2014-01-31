@@ -2,83 +2,76 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Server Instance Wizard: GlassFish Domain Name/Location</title>
+<title>Add Server Instance Wizard: Tomcat Installation and Login Details</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="registering_app_server_hk2_domain" name="registering_app_server_hk2_domain"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref653" name="sthref653"></a>
-<h1>Add Server Instance Wizard: GlassFish Domain Name/Location</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="tomcat_addinstall" name="tomcat_addinstall"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref654" name="sthref654"></a>
+<h1>Add Server Instance Wizard: Tomcat Installation and Login Details</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the Add Server Instance wizard when you specify details to register an instance of GlassFish 3.x with the IDE. To register a server instance, you specify the properties of a local or remote domain.</p>
-<p>Use this page to specify the details of the local or remote domain by selecting one of the following options.</p>
+<p>The Tomcat Installation and Login Details panel of the Add Server Instance wizard enables you to register an instance of the Apache Tomcat web server with the IDE.</p>
+<p>Use this page to specify the details of the web server.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t79">Element</th>
-<th align="left" valign="bottom" id="r1c2-t79">Description</th>
+<th align="left" valign="bottom" id="r1c1-t82">Element</th>
+<th align="left" valign="bottom" id="r1c2-t82">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t79" headers="r1c1-t79">
-<p>Register Local Domain</p>
+<td align="left" id="r2c1-t82" headers="r1c1-t82">
+<p>Server Location</p>
 </td>
-<td align="left" headers="r2c1-t79 r1c2-t79">
-<p>Choose an existing domain from the dropdown list or create a new domain by typing the domain name in the text field.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t79" headers="r1c1-t79">
-<p>Register Remote Domain</p>
-</td>
-<td align="left" headers="r3c1-t79 r1c2-t79">
-<p>Enter the following information for the remote domain:</p>
+<td align="left" headers="r2c1-t82 r1c2-t82">
+<p>Specifies the Tomcat installation directory (Catalina Home) on your local system. Note that the IDE verifies that you have specified a valid Tomcat installation directory.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t79" headers="r1c1-t79">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Host Name</p>
+<td align="left" id="r3c1-t82" headers="r1c1-t82">
+<p>Use Private Configuration Folder (Catalina Base)</p>
 </td>
-<td align="left" headers="r4c1-t79 r1c2-t79">
-<p>Enter the host name or IP address for the remote Glassfish 3 server.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t79" headers="r1c1-t79">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Admin Port</p>
-</td>
-<td align="left" headers="r5c1-t79 r1c2-t79">
-<p>Enter the port number used to communicate with the remote server. The default port is 4848.</p>
+<td align="left" headers="r3c1-t82 r1c2-t82">
+<p>Specifies that you expect to use Tomcat in a multi-user configuration. When you select this option, you can set the Catalina Base directory.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t79" headers="r1c1-t79">
-<p>Target</p>
+<td align="left" id="r4c1-t82" headers="r1c1-t82">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Catalina Base</p>
 </td>
-<td align="left" headers="r6c1-t79 r1c2-t79">
-<p>Optional) Enter a value that is used to identify a cluster and/or stand-alone instance. This value will be used as the value for the target option when running server administration tasks from the IDE. For example, if you have a cluster identified as cluster1 and enter cluster1 as the Target value, when you deploy an application from the IDE to the server the application will be deployed to every instance in the cluster (asadmin deploy --target cluster1 --name myapp myapp.war).</p>
-<p>When no Target value is specified (default) all commands will be applied to the domain administration server instance.</p>
+<td align="left" headers="r4c1-t82 r1c2-t82">
+<p>Specifies the Tomcat base directory.</p>
+<p>Typically, a base directory is placed under a user's directory. If you associate a base directory with the server, the base directory must have the following subdirectories.</p>
+<ul>
+<li><code>conf</code>. Directory for server configuration files. This directory must have a server.xml file.</li>
+<li><code>logs</code>. Directory for log and output files</li>
+<li><code>webapps</code>. Directory for automatically loaded web applications</li>
+<li><code>work</code>. Temporary working directory for web applications</li>
+</ul>
+<p>If the base directory is empty, the IDE creates the subdirectories by copying them from Tomcat's home directory.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t79" headers="r1c1-t79">
+<td align="left" id="r5c1-t82" headers="r1c1-t82">
 <p>Username</p>
 </td>
-<td align="left" headers="r7c1-t79 r1c2-t79">
+<td align="left" headers="r5c1-t82 r1c2-t82">
 <p>Type the username for the server instance.</p>
+<p>The user must be a Tomcat user who has a manager role.</p>
+<p>If the username does not exist, you can select the box to create it.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t79" headers="r1c1-t79">
+<td align="left" id="r6c1-t82" headers="r1c1-t82">
 <p>Password</p>
 </td>
-<td align="left" headers="r8c1-t79 r1c2-t79">
+<td align="left" headers="r6c1-t82 r1c2-t82">
 <p>Type the password for the server instance.</p>
 </td>
 </tr>
@@ -86,9 +79,6 @@
 </table>
 <br />
 <!-- -->
-<p>Click Finish to add the instance to the list of servers in the Services window.</p>
-<p><b>Note</b>: When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</p>
-<p><b>Note</b>: A username and password are required to work with a remote instance of GlassFish Server 3.1.2. To accept remote admin requests the secure administration feature on the remote instance must be enabled. The secure administration feature cannot be enabled if any admin accounts on the remote instance have an empty password.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

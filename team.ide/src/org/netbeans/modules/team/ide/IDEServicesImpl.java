@@ -68,6 +68,7 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -295,6 +296,19 @@ public class IDEServicesImpl implements IDEServices {
             }
         }
         return false;        
+    }
+
+    @Override
+    public boolean providesShutdown(boolean restart) {
+        return true;
+    }
+
+    @Override
+    public void shutdown(boolean restart) {
+        if(restart) {
+            LifecycleManager.getDefault().markForRestart();
+        }
+        LifecycleManager.getDefault().exit();
     }
 
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {

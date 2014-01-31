@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>glassfish-web.xml Visual Editor: General</title>
+<title>Deployment Descriptor Visual Editor: Web Service Clients</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref626" name="sthref626"></a>
-<h1>glassfish-web.xml Visual Editor: General</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.PortInfoNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.PortInfoNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref627" name="sthref627"></a>
+<h1>Deployment Descriptor Visual Editor: Web Service Clients</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to set the context root, additional classpath, the servlet security provider, and configure the class loader for the web application. 
+<p>Use to add descriptor properties for a web service. This pane lists the reference to web services in the project. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1114">
 <param name="text" value="<html><u>How?</u></html>">
@@ -26,92 +26,58 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t49">Element</th>
-<th align="left" valign="bottom" id="r1c2-t49">Description</th>
+<th align="left" valign="bottom" id="r1c1-t50">Element</th>
+<th align="left" valign="bottom" id="r1c2-t50">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t49" headers="r1c1-t49">
-<p>Module</p>
+<td align="left" id="r2c1-t50" headers="r1c1-t50">
+<p>Add Service Reference</p>
 </td>
-<td align="left" headers="r2c1-t49 r1c2-t49">
-<p>Sets the properties for the module.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Context Root</p>
-</td>
-<td align="left" headers="r3c1-t49 r1c2-t49">
-<p>Select the platform folder. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2195">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>The context root is the base directory of the WAR file. The Servlet Context uses the context root to resolve the path to the WAR file. The URL to a JSP page or servlet takes this form:</p>
-<p><code>hostname:port/contextRoot/relative_URLs_in_WAR_file</code></p>
+<td align="left" headers="r2c1-t50 r1c2-t50">
+<p>Adds descriptor properties for a web service.</p>
+<p>Each web service has the following properties: Service Reference Name, WSDL override, Port Information, and Selected Port Information.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Error Url</p>
+<td align="left" id="r3c1-t50" headers="r1c1-t50">
+<p>Service Reference Name</p>
 </td>
-<td align="left" headers="r4c1-t49 r1c2-t49">
-<p>Specifies a redirect URL in case of an error.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;HTTP Servlet Security Provider</p>
-</td>
-<td align="left" headers="r5c1-t49 r1c2-t49">
-<p>Specifies the security provider.</p>
+<td align="left" headers="r3c1-t50 r1c2-t50">
+<p>Specifies the name of the Service reference.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t49" headers="r1c1-t49">
-<p>Class Loader</p>
+<td align="left" id="r4c1-t50" headers="r1c1-t50">
+<p>WSDL override</p>
 </td>
-<td align="left" headers="r6c1-t49 r1c2-t49">
-<p>Sets the properties for a class loader configuration.</p>
-<p>Use the class loader settings to specify additional classes that are to be loaded by the Web module.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Enable Class Loader Configuration</p>
-</td>
-<td align="left" headers="r7c1-t49 r1c2-t49">
-<p>When selected, the Web module loads the additional classes in the Extra Class Path field.</p>
+<td align="left" headers="r4c1-t50 r1c2-t50">
+<p>Specifies the URL to a WSDL document.</p>
+<p>This URL overrides the WSDL document reference in the <code>web-app.xml</code> file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Extra Class Path</p>
+<td align="left" id="r5c1-t50" headers="r1c1-t50">
+<p>Port Information</p>
 </td>
-<td align="left" headers="r8c1-t49 r1c2-t49">
-<p>Specifies the classpath for the additional classes to be loaded by the Web module.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Dynamic Reload Interval</p>
-</td>
-<td align="left" headers="r9c1-t49 r1c2-t49">
-<p>Specifies the interval (in seconds) after which the deployed application is checked for modifications and reloaded if necessary.</p>
+<td align="left" headers="r5c1-t50 r1c2-t50">
+<p>Defines and configures the port information and properties of a Service reference.</p>
+<p>Add a new port for a Service reference by clicking <b>Add Port Information</b>, or expand an existing port node to edit the properties of that port or to remove it.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r10c1-t49" headers="r1c1-t49">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Delegate Class Loader</p>
+<td align="left" id="r6c1-t50" headers="r1c1-t50">
+<p>Selected Port Information</p>
 </td>
-<td align="left" headers="r10c1-t49 r1c2-t49">
-<p>When selected, the Web module follows the standard classloader delegation model and delegates to its parent classloader first before looking in the local classloader.</p>
-<p>If not selected, the Web module follows the delegation model specified in the Servlet specification and looks in its classloader before looking in the parent classloader.</p>
+<td align="left" headers="r6c1-t50 r1c2-t50">
+<p>Adds or modifies the following properties for the port selected in the Port Information combo box:</p>
+<ul>
+<li>Service Endpoint Interface</li>
+<li>WSDL Port Namespace URI</li>
+<li>WSDL Port Localpart - Specifies the local portion of the WSDL namespace.</li>
+<li>Message Security - Enables you to edit the message security binding settings when selected.</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -137,8 +103,8 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1651">
-<param name="text" value="<html><u>&quot;About Working with Web and Application Servers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2719">
+<param name="text" value="<html><u>&quot;Building and Deploying an EJB Module&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

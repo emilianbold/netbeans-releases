@@ -2,92 +2,84 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Web Service from WSDL Wizard: Name and Location</title>
+<title>New Web Service Client Wizard: WSDL and Client Location</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel" name="org.netbeans.modules.websvc.core.dev.wizard.WebServiceFromWSDLPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref656" name="sthref656"></a>
-<h1>New Web Service from WSDL Wizard: Name and Location</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" name="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref657" name="sthref657"></a>
+<h1>New Web Service Client Wizard: WSDL and Client Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Web Service from WSDL wizard creates a new Web Service from a WSDL file.</p>
-<p>In the Name and Location page, you have to set the following properties:</p>
+<p>The New Web Service Client wizard creates a new Web Service Client.</p>
+<p>Use this page to specify the details of the local or remote domain by selecting one of the following options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t84">Element</th>
-<th align="left" valign="bottom" id="r1c2-t84">Description</th>
+<th align="left" valign="bottom" id="r1c1-t85">Element</th>
+<th align="left" valign="bottom" id="r1c2-t85">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t84" headers="r1c1-t84">
-<p>Web Service Name</p>
+<td align="left" id="r2c1-t85" headers="r1c1-t85">
+<p>Specify WSDL file of the Web Service</p>
 </td>
-<td align="left" headers="r2c1-t84 r1c2-t84">
-<p>Specifies the name of the web service. The name is used to name the files that are created by the web service wizard.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t84" headers="r1c1-t84">
-<p>Project</p>
-</td>
-<td align="left" headers="r3c1-t84 r1c2-t84">
-<p>Name of the project.</p>
+<td align="left" headers="r2c1-t85 r1c2-t85">
+<p>Specify one of the following</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t84" headers="r1c1-t84">
-<p>Location</p>
+<td align="left" id="r3c1-t85" headers="r1c1-t85">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Project</p>
 </td>
-<td align="left" headers="r4c1-t84 r1c2-t84">
-<p>Specifies the source root where the web service files will be created. By default, you only have one source root, the src folder. To add additional source roots, right-click the project node in the Projects window, choose Properties, click Sources, and define a new source package folder.</p>
+<td align="left" headers="r3c1-t85 r1c2-t85">
+<p>Select this option to specify an open project where the web service is defined. Click Browse to locate it in the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t84" headers="r1c1-t84">
+<td align="left" id="r4c1-t85" headers="r1c1-t85">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Local File</p>
+</td>
+<td align="left" headers="r4c1-t85 r1c2-t85">
+<p>Select this option to specify a WSDL file in your local filesystem. Click Browse to locate it in your filesystem.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t85" headers="r1c1-t85">
+<p>WSDL URL</p>
+</td>
+<td align="left" headers="r5c1-t85 r1c2-t85">
+<p>Select this option to specify the URL to a running web service's WSDL file. If you use a proxy server, you must click Proxy Settings and set the proxy host and port number, otherwise the IDE will not be able to download the WSDL file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t85" headers="r1c1-t85">
+<p>IDE Registered</p>
+</td>
+<td align="left" headers="r6c1-t85 r1c2-t85">
+<p>Select this option to select a web service that is registered with the IDE. Click Browse to select from a list of registered services.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t85" headers="r1c1-t85">
 <p>Package</p>
 </td>
-<td align="left" headers="r5c1-t84 r1c2-t84">
-<p>Specifies the package name where the web service files will be housed.</p>
+<td align="left" headers="r7c1-t85 r1c2-t85">
+<p>(Optional) Specify the package where the client files will be generated. The generated client files can be found in the Projects window, in the Generated Sources node of the client project, or in the Files window, within the <code>build</code> folder.</p>
+<p>If you do not specify a package name, the IDE generates the client files in the default package, which is based on the namespace in the WSDL. You can change this package name later in the WSDL Customization editor.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t84" headers="r1c1-t84">
-<p>Select Local WSDL File or Enter WSDL URL</p>
+<td align="left" id="r8c1-t85" headers="r1c1-t85">
+<p>Generate Dispatch Code</p>
 </td>
-<td align="left" headers="r6c1-t84 r1c2-t84">
-<p>Type the location or URL of the WSDL file or click Browse to locate the WSDL file on your locat system.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t84" headers="r1c1-t84">
-<p>WSDL Service Port</p>
-</td>
-<td align="left" headers="r7c1-t84 r1c2-t84">
-<p>WSDL service port specified in WSDL file. This field is populated automatically when you specify the WSDL file. You can click Browse to specify a service port if the WSDL file specifies more than one service port.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t84" headers="r1c1-t84">
-<p>Use Provider</p>
-</td>
-<td align="left" headers="r8c1-t84 r1c2-t84">
-<p>When selected, the service endpoint implements the Provider interface as a dynamic alternative to an SEI. Provider implementations receive requests as raw XML data, and must send responses as raw XML data. The class declaration is annotated with @WebServiceProvider. You will need to add the implementation of the invoke method to the class. The element name should be changed to:<code><br />
-Implement javax.ws.xml.Provider Interface</code></p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t84" headers="r1c1-t84">
-<p>Implement Web Service as Stateless Session Bean</p>
-</td>
-<td align="left" headers="r9c1-t84 r1c2-t84">
-<p>When selected the class declaration is annotated with the @Stateless annotation.</p>
+<td align="left" headers="r8c1-t85 r1c2-t85">
+<p>If you want to use raw XML messages when invoking the web service, select Generate Dispatch Code. The client code is generated using the <code>java.xml.ws</code>.Dispatch interface instead of the usual service endpoint interface. This is an advanced feaure and is unselected by default.</p>
 </td>
 </tr>
 </tbody>
