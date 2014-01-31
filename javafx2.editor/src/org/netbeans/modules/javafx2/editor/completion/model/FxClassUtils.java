@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import com.sun.corba.se.impl.oa.toa.TOA;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
