@@ -50,9 +50,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,9 +75,9 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.storage.data.UTF;
 import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Implements FilesAccessStrategy
@@ -83,7 +86,6 @@ import org.openide.util.Exceptions;
  * @author Vladimir Kvashin
  */
 public final class FilesAccessStrategyImpl implements ReadLayerCapability, WriteLayerCapability {
-
     private static final boolean TRACE_CONFLICTS = Boolean.getBoolean("cnd.repository.trace.conflicts");
     private static final long PURGE_OLD_UNITS_TIMEOUT = 14 * 24 * 3600 * 1000l; // 14 days
     private final ConcurrentHashMap<Integer, UnitStorage> unitStorageCache = new ConcurrentHashMap<Integer, UnitStorage>();
@@ -106,7 +108,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             LayerDescriptor layerDescriptor) {
         this.layerIndex = layerIndex;
         this.cacheLocationURI = cacheLocation;
-        this.cacheLocationFile = new File(cacheLocation.getRawPath());
+        this.cacheLocationFile = Utilities.toFile(cacheLocation);
         this.isWritable = layerDescriptor.isWritable();
         KeysListFile f = null;
         RepositoryDataInputImpl din = null;
@@ -359,19 +361,38 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
 
     @Override
     public boolean maintenance(long timeout) {
-        long start = System.currentTimeMillis();
-
-        for (UnitStorage storage : unitStorageCache.values()) {
-            long rest = timeout - (System.currentTimeMillis() - start);
-            if (rest <= 0) {
-                return true;
-            }
-            if (storage.maintenance(rest)) {
-                return true;
-            }
+        if (Stats.traceDefragmentation) {
+            System.out.println("-------layer " + cacheLocationURI + " start defragmenting------");//NOI18N
         }
+        final UnitStorage[] values = unitStorageCache.values().toArray(new UnitStorage[0]);
+        Arrays.sort(values, new MaintenanceStorageComparator());
+        long start = System.currentTimeMillis();
+        long rest = timeout;
+        boolean needMoreTime = false;
+        int counter = 0;
+        int storagesCount = values.length;
+        for (UnitStorage storage : values){
+            counter++;
+            int weight = 0;
+            try {
+                weight = storage.dblStorage.isOpened() ? storage.dblStorage.getFragmentationPercentage() : 0;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (weight < Stats.defragmentationThreashold) {
+                //we are done, no need to go inside, no maintenance is required
+                return needMoreTime;
+            }
+            needMoreTime = storage.maintenance(rest);
+            rest = timeout - (System.currentTimeMillis() - start);
+            if (rest <= 0 && counter < storagesCount) {
+                //do it for at least one
+                needMoreTime = true;
+                break;
+            }
 
-        return false;
+        }
+        return needMoreTime;
     }
 
     private UnitStorage getUnitStorage(int unitID) {
@@ -410,7 +431,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     public int getMaintenanceWeight() throws IOException {
         int weight = 0;
         for (UnitStorage storage : unitStorageCache.values()) {
-            weight += storage.dblStorage.getFragmentationPercentage();
+            weight += storage.dblStorage.isOpened() ? storage.dblStorage.getFragmentationPercentage() : 0;
         }
         return weight;
     }
@@ -543,4 +564,19 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
 
         
     }        
+
+    private static class MaintenanceStorageComparator  implements Comparator<UnitStorage>, Serializable {
+
+        @Override
+        public int compare(UnitStorage storage1, UnitStorage storage2) {
+            try {
+                int weight1 = storage1.dblStorage.isOpened() ? storage1.dblStorage.getFragmentationPercentage() : 0;
+                int weight2 = storage2.dblStorage.isOpened() ? storage2.dblStorage.getFragmentationPercentage() : 0;
+                return weight2 - weight1;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return 0;
+        }
+    }
 }

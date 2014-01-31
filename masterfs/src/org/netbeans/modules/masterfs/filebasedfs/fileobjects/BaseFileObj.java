@@ -59,6 +59,10 @@ import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Date;
@@ -956,8 +960,8 @@ public abstract class BaseFileObj extends FileObject {
         }
 
         public final OutputStream outputStream(final String name) throws IOException {
-            final File file = new File(name);
-            return new FileOutputStream(file);
+            final Path path = Paths.get(name);
+            return Files.newOutputStream(path);
         }
 
         public final void lock(final String name) throws IOException {

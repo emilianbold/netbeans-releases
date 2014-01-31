@@ -52,6 +52,9 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="CodeCompletion">
                 <attr name="position" intvalue="0"/>
+                <file name="GeneralCodeCompletionCustomCustomizer.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.options.editor.completion.GeneralCompletionOptionsPanelController$CustomCustomizerImpl"/>
+                </file>
             </folder>
             <folder name="Hints">
                 <attr name="position" intvalue="0"/>
@@ -177,7 +180,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.CodeTemplates.displayName"/>
             </file>
             <file name="Other">
-                <attr name="include" stringvalue="config/Editors/(?!.*(Macros|CodeTemplates|FontsColors)).+|config/.nbattrs"/>
+                <attr name="include" stringvalue="config/Editors/(?!.*(Macros|CodeTemplates|FontsColors)).+|config/.nbattrs|config/Preferences/org/netbeans/modules/options/editor.properties"/>
                 <attr name="exclude" stringvalue="config/Editors/.*/(macros.xml|Popup.*|Settings\.settings|.*\.instance)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Other.displayName"/>
             </file>

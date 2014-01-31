@@ -1568,9 +1568,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             Collections.sort(infos);
         } catch (IllegalStateException ex) {
-            doLogError226100(infos, ex);
+//            doLogError226100(infos, ex);
         } catch (IllegalArgumentException ex2) {
-            doLogError226100(infos, ex2);
+//            doLogError226100(infos, ex2);
         }
     }
 

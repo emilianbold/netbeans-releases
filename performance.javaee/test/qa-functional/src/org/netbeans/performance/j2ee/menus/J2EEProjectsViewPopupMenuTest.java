@@ -127,6 +127,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     }
 
     public void testWebPagesNodePopupMenu() {
+        expectedTime = 600;
         testNode(getWebProjectNode(), "Web Pages");
     }
 
@@ -139,6 +140,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     }
 
     public void testSessionBeanNodePopupMenu() {
+        expectedTime = 500;
         testNode(getEJBProjectNode(), "Enterprise Beans|TestSessionSB");
     }
 

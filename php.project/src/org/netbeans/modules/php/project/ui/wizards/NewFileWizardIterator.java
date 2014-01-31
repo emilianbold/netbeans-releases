@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 public final class NewFileWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
@@ -79,16 +81,46 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
     private static final Logger LOGGER = Logger.getLogger(NewFileWizardIterator.class.getName());
 
+    private static final RequestProcessor RP = new RequestProcessor(NewFileWizardIterator.class);
+
     private final BottomPanel bottomPanel;
+    final RequestProcessor.Task setTargetFolderTask;
 
     private WizardDescriptor wizard;
     private PhpProject phpProject;
     private WizardDescriptor.Panel<WizardDescriptor>[] wizardPanels;
     private int index;
+    // @GuardedBy("EDT")
+    WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel;
 
 
     private NewFileWizardIterator(BottomPanel bottomPanel) {
         this.bottomPanel = bottomPanel;
+        if (bottomPanel != null) {
+            setTargetFolderTask = RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            assert EventQueue.isDispatchThread();
+                            if (simpleTargetChooserPanel == null) {
+                                // #241005 - already uninitialized
+                                return;
+                            }
+                            WizardDescriptor descriptor = new DummyWizardDescriptor();
+                            assert simpleTargetChooserPanel != null;
+                            simpleTargetChooserPanel.storeSettings(descriptor);
+                            BottomPanel bottomPanelForPhpProject = getBottomPanelForPhpProject();
+                            assert bottomPanelForPhpProject != null;
+                            bottomPanelForPhpProject.targetFolderChanged(Templates.getTargetFolder(descriptor));
+                        }
+                    });
+                }
+            });
+        } else {
+            setTargetFolderTask = null;
+        }
     }
 
     public static NewFileWizardIterator simple() {
@@ -201,6 +233,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
     @Override
     public void uninitialize(WizardDescriptor wizard) {
         wizardPanels = null;
+        simpleTargetChooserPanel = null;
     }
 
     @Override
@@ -273,6 +306,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] getPanels() {
+        assert EventQueue.isDispatchThread();
         Project project = Templates.getProject(wizard);
         SourceGroup[] groups = PhpProjectUtils.getSourceGroups(project);
         // #218437
@@ -311,17 +345,16 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
             targetChooserBuilder
                     .bottomPanel(bottomPanelForPhpProject);
         }
-        final WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = targetChooserBuilder
+        simpleTargetChooserPanel = targetChooserBuilder
                 .freeFileExtension()
                 .create();
         if (bottomPanelForPhpProject != null) {
-            // hack - it is not possible to listen on panel (name and location)
+            // #240917 hack - it is not possible to listen on panel (name and location)
             simpleTargetChooserPanel.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    WizardDescriptor descriptor = new DummyWizardDescriptor();
-                    simpleTargetChooserPanel.storeSettings(descriptor);
-                    bottomPanelForPhpProject.targetFolderChanged(Templates.getTargetFolder(descriptor));
+                    assert setTargetFolderTask != null;
+                    setTargetFolderTask.schedule(300);
                 }
             });
         }

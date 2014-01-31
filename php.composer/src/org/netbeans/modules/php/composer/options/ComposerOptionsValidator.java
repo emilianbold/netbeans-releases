@@ -85,32 +85,32 @@ public final class ComposerOptionsValidator {
         return this;
     }
 
-    @NbBundle.Messages("ComposerOptionsValidator.error.invalidVendor=Vendor is not valid (only lower-cased letters and \"-\" allowed).")
+    @NbBundle.Messages("ComposerOptionsValidator.warning.invalidVendor=Vendor is not valid (only lower-cased letters and \"-\" allowed).")
     ComposerOptionsValidator validateVendor(String vendor) {
         if (!VENDOR_REGEX.matcher(vendor).matches()) {
-            result.addError(new ValidationResult.Message("vendor", Bundle.ComposerOptionsValidator_error_invalidVendor())); // NOI18N
+            result.addWarning(new ValidationResult.Message("vendor", Bundle.ComposerOptionsValidator_warning_invalidVendor())); // NOI18N
         }
         return this;
     }
 
     @NbBundle.Messages({
-        "ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.",
-        "ComposerOptionsValidator.error.authorNameNumber=Author name cannot contain number.",
+        "ComposerOptionsValidator.warning.noAuthorName=Author name cannot be empty.",
+        "ComposerOptionsValidator.warning.authorNameNumber=Author name cannot contain number.",
     })
     ComposerOptionsValidator validateAuthorName(String authorName) {
         if (!StringUtils.hasText(authorName)) {
-            result.addError(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
+            result.addWarning(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_warning_noAuthorName())); // NOI18N
         } else if (!AUTHOR_NAME_REGEX.matcher(authorName).matches()) {
-            result.addError(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_error_authorNameNumber())); // NOI18N
+            result.addWarning(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_warning_authorNameNumber())); // NOI18N
         }
         return this;
     }
 
-    @NbBundle.Messages("ComposerOptionsValidator.error.invalidAuthorEmail=Author e-mail is not valid.")
+    @NbBundle.Messages("ComposerOptionsValidator.warning.invalidAuthorEmail=Author e-mail is not valid.")
     ComposerOptionsValidator validateAuthorEmail(String authorEmail) {
         if (!StringUtils.hasText(authorEmail)
                 || !EMAIL_REGEX.matcher(authorEmail).matches()) {
-            result.addError(new ValidationResult.Message("authorEmail", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail())); // NOI18N
+            result.addWarning(new ValidationResult.Message("authorEmail", Bundle.ComposerOptionsValidator_warning_invalidAuthorEmail())); // NOI18N
         }
         return this;
     }

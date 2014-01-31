@@ -144,6 +144,7 @@ public class ReflectiveCustomizerProvider implements CustomizerProvider {
             int val = prefs.getInt(option.preferencesKey, ((Integer)option.defaultValue).intValue());
             if (iopt.step() > 0) {
                 val = Math.min(iopt.maxValue(), Math.max(iopt.minValue(), val));
+                prefs.putInt(option.preferencesKey, val);
                 JSpinner spinner = new JSpinner(
                         new SpinnerNumberModel(val, iopt.minValue(), iopt.maxValue(), iopt.step()));
                 spinner.addChangeListener(new ActionListenerImpl(option.preferencesKey, prefs));
@@ -193,6 +194,7 @@ public class ReflectiveCustomizerProvider implements CustomizerProvider {
 
             checkBox.setSelected(prefs.getBoolean(option.preferencesKey, 
                     Boolean.TRUE == option.defaultValue));
+            prefs.putBoolean(option.preferencesKey, checkBox.isSelected());
             GridBagConstraints constraints = new GridBagConstraints();
 
             constraints.anchor = GridBagConstraints.WEST;

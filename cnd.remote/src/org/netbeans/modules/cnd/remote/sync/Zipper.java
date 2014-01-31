@@ -91,9 +91,11 @@ public class Zipper {
         byte[] readBuf = new byte[1024*32];
         if (srcDir.isDirectory()) {
             File[] srcFiles = srcDir.listFiles(filter);
-            // Compress the files
-            for (File file : srcFiles) {
-                addImpl(file, readBuf, base, filter);
+            if (srcFiles != null) {
+                // Compress the files
+                for (File file : srcFiles) {
+                    addImpl(file, readBuf, base, filter);
+                }
             }
         } else {
             addImpl(srcDir, readBuf, base, filter);
@@ -122,9 +124,11 @@ public class Zipper {
         //System.err.printf("Zipping %s %s...\n", (file.isDirectory() ? " DIR  " : " FILE "), file.getAbsolutePath());
         if (file.isDirectory()) {
             File[] children = file.listFiles(filter);
-            for (File child : children) {
-                String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
-                addImpl(child, readBuf, newBase, filter);
+            if (children != null) {
+                for (File child : children) {
+                    String newBase = isEmpty(base) ? file.getName() : (base + "/" + file.getName()); // NOI18N
+                    addImpl(child, readBuf, newBase, filter);
+                }
             }
             return;
         }

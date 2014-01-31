@@ -411,7 +411,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                             unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                         }
                     }
-                    HashSet<String> unUnique = new HashSet<String>();
+                    HashSet<CharSequence> unUnique = new HashSet<CharSequence>();
                     for(SourceFileProperties source : getSourcesConfiguration()){
                         if (source instanceof ModelSource){
                             unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
@@ -420,8 +420,8 @@ public class AnalyzeModel implements DiscoveryProvider {
                             progress.increment(null);
                         }
                     }
-                    for(String path : unUnique){
-                        File file = new File(path);
+                    for(CharSequence path : unUnique){
+                        File file = new File(path.toString());
                         if (CndFileUtils.exists(file)) {
                             unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                         }

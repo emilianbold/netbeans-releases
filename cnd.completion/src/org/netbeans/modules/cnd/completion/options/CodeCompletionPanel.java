@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.completion.options;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
@@ -57,6 +59,7 @@ import org.openide.util.NbBundle;
 public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentListener {
 
     private final Preferences preferences;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     /** Creates new form CodeCompletionPanel */
     public CodeCompletionPanel(Preferences preferences) {
@@ -67,6 +70,9 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         autoCompletionTriggersPreprocField.setText(preferences.get(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, "\"<")); //NOI18N
         autoCompletionTriggersField.getDocument().addDocumentListener(this);
         autoCompletionTriggersPreprocField.getDocument().addDocumentListener(this);
+        id2Saved.put(CsmCompletionUtils.CPP_AUTO_INSERT_INCLUDE_DIRECTIVES, autoInsertIncludeDirectives.isSelected());
+        id2Saved.put(CsmCompletionUtils.CPP_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersField.getText());
+        id2Saved.put(CsmCompletionUtils.PREPRPOC_AUTO_COMPLETION_TRIGGERS, autoCompletionTriggersPreprocField.getText());
     }
 
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
@@ -193,6 +199,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private static class CodeCompletionPreferencesCusromizer implements PreferencesCustomizer {
 
         private Preferences preferences;
+        private CodeCompletionPanel component;
 
         private CodeCompletionPreferencesCusromizer(Preferences p) {
             preferences = p;
@@ -215,7 +222,25 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
 
         @Override
         public JComponent getComponent() {
-            return new CodeCompletionPanel(preferences);
+            if (component == null) {
+                component = new CodeCompletionPanel(preferences);
+            }
+            return component;
+        }
+    }
+
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
+    }
+
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof CodeCompletionPreferencesCusromizer) {
+                return ((CodeCompletionPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
         }
     }
 }

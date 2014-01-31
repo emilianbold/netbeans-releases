@@ -125,8 +125,8 @@ public class ODCSPasswordAuthorizer implements ConnectionAuthenticator {
             ProjectHandle<ODCSProject> projectHandle =
                     ProjectHandleRegistry.findProjectHandle(home);
             if (projectHandle != null) {
-                ODCSClient client = ODCSHudsonUtils.getClient(projectHandle);
-                if (client == null) {
+                if (!ODCSHudsonUtils.isLoggedIn(projectHandle)) {
+                    ODCSBuilderAccessor.clearCached(projectHandle);
                     return;
                 }
                 ODCSServer srv = projectHandle.getTeamProject().getServer();

@@ -43,9 +43,9 @@ package org.netbeans.modules.java.hints.jdk;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 
@@ -55,7 +55,7 @@ import javax.swing.JCheckBox;
  */
 public class ConvertToDiamondBulkHintPanel extends javax.swing.JPanel {
 
-    private final Map<String, JCheckBox> settings = new HashMap<String, JCheckBox>();
+    private final Map<String, JCheckBox> settings = new TreeMap<>();
 
     public ConvertToDiamondBulkHintPanel(final Preferences p) {
         initComponents();

@@ -140,6 +140,16 @@ public class PhpAnnotationsPanel extends JPanel {
         resolveDeprecatedCheckBox.setSelected(resolveDeprecatedElements);
     }
 
+    public boolean isUnknownAsType() {
+        assert EventQueue.isDispatchThread();
+        return unknownAsTypeCheckBox.isSelected();
+    }
+
+    public void setUnknownAsType(boolean unknownAsType) {
+        assert EventQueue.isDispatchThread();
+        unknownAsTypeCheckBox.setSelected(unknownAsType);
+    }
+
     private void initTable() {
         // model
         annotationsTable.setModel(tableModel);
@@ -251,6 +261,7 @@ public class PhpAnnotationsPanel extends JPanel {
     private void initComponents() {
 
         resolveDeprecatedCheckBox = new JCheckBox();
+        unknownAsTypeCheckBox = new JCheckBox();
         annotationsLabel = new JLabel();
         annotationsScrollPane = new JScrollPane();
         annotationsTable = new JTable();
@@ -263,6 +274,8 @@ public class PhpAnnotationsPanel extends JPanel {
         warningText = new JLabel();
 
         Mnemonics.setLocalizedText(resolveDeprecatedCheckBox, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.resolveDeprecatedCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(unknownAsTypeCheckBox, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.unknownAsTypeCheckBox.text")); // NOI18N
 
         annotationsLabel.setLabelFor(annotationsTable);
         Mnemonics.setLocalizedText(annotationsLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.annotationsLabel.text")); // NOI18N
@@ -309,7 +322,8 @@ public class PhpAnnotationsPanel extends JPanel {
                         .addGap(21, 21, 21)
                         .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(unknownAsTypeCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -323,6 +337,8 @@ public class PhpAnnotationsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(unknownAsTypeCheckBox)
                 .addGap(18, 18, 18)
                 .addComponent(annotationsLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -351,6 +367,7 @@ public class PhpAnnotationsPanel extends JPanel {
     private JLabel infoLabel;
     private JLabel noteLabel;
     private JCheckBox resolveDeprecatedCheckBox;
+    private JCheckBox unknownAsTypeCheckBox;
     private JLabel warningLabel;
     private JLabel warningText;
     // End of variables declaration//GEN-END:variables

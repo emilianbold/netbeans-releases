@@ -124,6 +124,7 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         codingStandardsFixerLevelComboBox.setSelectedItem(level);
     }
 
+    @CheckForNull
     public String getCodingStandardsFixerConfig() {
         return (String) codingStandardsFixerConfigComboBox.getSelectedItem();
     }
@@ -187,7 +188,7 @@ public class CodingStandardsFixerOptionsPanel extends AnalysisCategoryPanel {
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerConfig();
         current = getCodingStandardsFixerConfig();
-        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+        if (saved == null ? StringUtils.hasText(current) : !saved.equals(current)) {
             return true;
         }
         saved = AnalysisOptions.getInstance().getCodingStandardsFixerOptions();

@@ -149,9 +149,9 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                                 if(!element.equals(variableElement) && element.getEnclosingElement() != method) {
                                     if (!isParameterBeingRemoved(method, name, paramTable)) {
                                         if(element.getKind() == ElementKind.FIELD) {
-                                            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsedField", name)); // NOI18N
+                                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsedField", name)); // NOI18N
                                         } else {
-                                            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
+                                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
                                         }
                                         
                                         break OUTER;

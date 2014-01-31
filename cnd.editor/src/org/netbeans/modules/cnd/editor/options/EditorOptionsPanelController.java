@@ -109,7 +109,7 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
     @Override
     public boolean isChanged() {
         if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
-        return filter == PreviewPreferencesModel.Filter.All ? changed : false; // Filter.All contains all preferences, so skip the individual ones
+        return changed;
     }
 
     @Override

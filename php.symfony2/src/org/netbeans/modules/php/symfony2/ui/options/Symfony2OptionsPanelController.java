@@ -73,6 +73,7 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     private Symfony2OptionsPanel symfony2OptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
 
     public static String getOptionsPath() {
@@ -81,7 +82,8 @@ public class Symfony2OptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void update() {
-        if (!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             symfony2OptionsPanel.setSandbox(getOptions().getSandbox());
             symfony2OptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
         }

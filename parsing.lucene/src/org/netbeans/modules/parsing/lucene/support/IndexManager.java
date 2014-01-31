@@ -252,6 +252,49 @@ public final class IndexManager {
     public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {
         return createTransactionalIndex(cacheFolder, analyzer);
     }
+    
+/**
+     * Creates a new {@link Index} for given folder with given lucene Analyzer.
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link Index}.
+     * @param cacheFolder the folder in which the index is stored
+     * @param analyzer the lucene Analyzer used to split fields into tokens.
+     * @param isWritable <code>false</code> if we will use it as read only
+     * @return the created {@link Index}
+     * @throws IOException in case of IO problem.
+     * @since 2.27.1 
+     */
+    @NonNull
+    public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer, boolean isWritable) throws IOException {
+        return createTransactionalIndex(cacheFolder, analyzer, isWritable);
+    }    
+
+    /**
+     * Creates a new {@link Index.Transactional} for given folder with given lucene Analyzer.
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link Index}.
+     * @param cacheFolder the folder in which the index is stored
+     * @param analyzer the lucene Analyzer used to split fields into tokens.
+     * @param isWritable <code>false</code> if we will use it as read only
+     * @return the created {@link Index.Transactional}
+     * @throws IOException in case of IO problem.
+     * @since 2.27.1
+     */
+    @NonNull
+    public static Index.Transactional createTransactionalIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer, boolean isWritable) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
+        Parameters.notNull("analyzer", analyzer);       //NOI18N
+        if (!cacheFolder.canRead()) {
+            throw new IOException(String.format("Cannot read cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
+        if (isWritable && !cacheFolder.canWrite()) {
+            throw new IOException(String.format("Cannot write to cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
+        final Index.Transactional index = factory.createIndex(cacheFolder, analyzer);
+        assert index != null;
+        indexes.put(cacheFolder, new Ref(cacheFolder,index));
+        return index;
+    }
 
     /**
      * Creates a new {@link Index.Transactional} for given folder with given lucene Analyzer.
@@ -265,20 +308,9 @@ public final class IndexManager {
      */
     @NonNull
     public static Index.Transactional createTransactionalIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {
-        Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
-        Parameters.notNull("analyzer", analyzer);       //NOI18N
-        if (!cacheFolder.canRead()) {
-            throw new IOException(String.format("Cannot read cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
-        }
-        if (!cacheFolder.canWrite()) {
-            throw new IOException(String.format("Cannot write to cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
-        }
-        final Index.Transactional index = factory.createIndex(cacheFolder, analyzer);
-        assert index != null;
-        indexes.put(cacheFolder, new Ref(cacheFolder,index));
-        return index;
+        return createTransactionalIndex(cacheFolder, analyzer, true);
     }
-    
+
     /**
      * Creates a transient {@link Index} stored in the RAM.
      * @param analyzer the lucene Analyzer used to split fields into tokens.
@@ -342,6 +374,19 @@ public final class IndexManager {
         Parameters.notNull("cache", cache);     //NOI18N
         return DocumentIndexImpl.create(index, cache);
     }
+/**
+     * Creates a document based index
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param cacheFolder the folder in which the index should be stored
+     * @param isWritable <code>false</code> if it is read only index
+     * @return the document based index
+     * @since 2.27.1
+     */
+    public static DocumentIndex createDocumentIndex (final @NonNull File cacheFolder, boolean isWritable) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder);
+        return createDocumentIndex(createIndex(cacheFolder, new KeywordAnalyzer(), isWritable));
+    }    
     
     /**
      * Creates a document based index

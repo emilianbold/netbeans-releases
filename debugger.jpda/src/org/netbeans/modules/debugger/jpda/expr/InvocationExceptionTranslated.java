@@ -105,7 +105,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
         if (evm != dvm) {
             logger.log(Level.INFO,
                        invocationMessage+
-                       ", evm = "+evm+", dvm = "+dvm,                           // NOI18N
+                       ",\n evm = "+printVM(evm)+",\n dvm = "+printVM(dvm),     // NOI18N
                        new IllegalStateException("Stack Trace Info"));          // NOI18N
         }
     }
@@ -140,10 +140,10 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         if (currentThread != null) {
                             ctvm = ((JPDAThreadImpl) currentThread).getThreadReference().virtualMachine();
                         }
-                        throw Exceptions.attachMessage(vmMismatchEx, "DBG VM = "+debugger.getVirtualMachine()+
-                                                                   ", preferredThread VM = "+ptvm+
-                                                                   ", currentThread VM = "+ctvm+
-                                                                   ", exeption VM = "+exeption.virtualMachine());
+                        throw Exceptions.attachMessage(vmMismatchEx, "DBG VM = "+printVM(debugger.getVirtualMachine())+
+                                                                   ", preferredThread VM = "+printVM(ptvm)+
+                                                                   ", currentThread VM = "+printVM(ctvm)+
+                                                                   ", exeption VM = "+printVM(exeption.virtualMachine()));
                     }
                 }
             } catch (InternalExceptionWrapper iex) {
@@ -164,8 +164,20 @@ public class InvocationExceptionTranslated extends ApplicationException {
         }
     }
     
-    private String printVM(VirtualMachine vm) {
-        return vm.toString() + "["+vm.name()+", "+vm.description()+", "+vm.version()+"]";
+    static String printVM(VirtualMachine vm) {
+        if (vm == null) {
+            return "null";
+        }
+        String sequenceNumber;
+        try {
+            java.lang.reflect.Field sequenceNumberField = vm.getClass().getDeclaredField("sequenceNumber");
+            sequenceNumberField.setAccessible(true);
+            Object sn = sequenceNumberField.get(vm);
+            sequenceNumber = sn.toString();
+        } catch (Exception ex) {
+            sequenceNumber = "N/A";
+        }
+        return vm.toString() + " #"+sequenceNumber+"["+vm.name()+", "+vm.description()+", "+vm.version()+"]";
     }
 
     @Override

@@ -939,6 +939,8 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                 while (allIterator.hasNext()) {
                     Item item = allIterator.next();
                     if (item == displayed) {
+                        fireAdds(addedStart, addedLast);
+                        addedStart = -1; addedLast = 0;
                         if (!item.isVisible()) {
                             dispIterator.remove();
                             if (removedStart == -1) {
@@ -957,6 +959,8 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                             ++index;
                         }
                     } else {
+                        fireRemovals(removedStart, removedLast);
+                        removedStart = -1; removedLast = 0;
                         if (item.isVisible()) {
                             dispIterator.previous();
                             dispIterator.add(item);

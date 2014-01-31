@@ -71,13 +71,14 @@ public final class DistTextIndexLayerFactory implements TextIndexLayerFactory {
     public TextIndexLayer createLayer(final LayerDescriptor layerDescriptor) {
         try {
             File indexRoot = new File(new File(layerDescriptor.getURI().getPath()), INDEX_FOLDER_NAME);
-            if (!indexRoot.exists() && layerDescriptor.isWritable()) {
+            final boolean isWritable = layerDescriptor.isWritable();
+            if (!indexRoot.exists() && isWritable) {
                 indexRoot.mkdirs();
             }
             if (!indexRoot.exists()) {
                 return null;
             }
-            DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
+            DocumentIndex index = IndexManager.createDocumentIndex(indexRoot, isWritable);
             return new DiskTextIndexLayer(layerDescriptor, index);
         } catch (IOException ex) {
             Logger.getLogger(DistTextIndexLayerFactory.class.getName()).log(Level.SEVERE, null, ex);

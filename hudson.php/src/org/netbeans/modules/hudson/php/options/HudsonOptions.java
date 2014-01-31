@@ -41,16 +41,12 @@
  */
 package org.netbeans.modules.hudson.php.options;
 
-import java.io.File;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.hudson.php.commands.PpwScript;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.modules.InstalledFileLocator;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -68,12 +64,11 @@ public final class HudsonOptions {
     private static final HudsonOptions INSTANCE = new HudsonOptions();
 
     // properties
-    private static final String PPW = "ppw.path"; // NOI18N
+    private static final String BUILD_XML = "build.xml.path"; // NOI18N
     private static final String JOB_CONFIG = "job.config.path"; // NOI18N
+    private static final String PHP_UNIT_CONFIG = "phpunit.config.path"; // NOI18N
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    private volatile boolean ppwSearched = false;
 
 
     private HudsonOptions() {
@@ -97,45 +92,31 @@ public final class HudsonOptions {
         changeSupport.removeChangeListener(listener);
     }
 
-    public String getPpw() {
-        String ppw = getPreferences().get(PPW, null);
-        if (ppw == null && !ppwSearched) {
-            ppwSearched = true;
-            List<String> scripts = FileUtils.findFileOnUsersPath(PpwScript.SCRIPT_NAME, PpwScript.SCRIPT_NAME_LONG);
-            if (!scripts.isEmpty()) {
-                ppw = scripts.get(0);
-                setPpw(ppw);
-            }
-        }
-        return ppw;
+    @CheckForNull
+    public String getBuildXml() {
+        return getPreferences().get(BUILD_XML, null);
     }
 
-    public void setPpw(String ppw) {
-        getPreferences().put(PPW, ppw);
+    public void setBuildXml(String buildXml) {
+        getPreferences().put(BUILD_XML, buildXml);
     }
 
+    @CheckForNull
     public String getJobConfig() {
-        String config = getPreferences().get(JOB_CONFIG, null);
-        if (config == null) {
-            config = getDefaultJobConfig();
-            if (config != null) {
-                setJobConfig(config);
-            }
-        }
-        return config;
+        return getPreferences().get(JOB_CONFIG, null);
     }
 
     public void setJobConfig(String jobConfig) {
         getPreferences().put(JOB_CONFIG, jobConfig);
     }
 
-    public String getDefaultJobConfig() {
-        File configFile = InstalledFileLocator.getDefault().locate("hudson/config.xml", "org.netbeans.modules.hudson.php", false);  // NOI18N
-        if (configFile == null) {
-            LOGGER.info("Hudson job config should be bundled with the IDE");
-            return null;
-        }
-        return configFile.getAbsolutePath();
+    @CheckForNull
+    public String getPhpUnitConfig() {
+        return getPreferences().get(PHP_UNIT_CONFIG, null);
+    }
+
+    public void setPhpUnitConfig(String phpUnitConfig) {
+        getPreferences().put(PHP_UNIT_CONFIG, phpUnitConfig);
     }
 
     private Preferences getPreferences() {

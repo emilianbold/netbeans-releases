@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.angular.Utils;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndex;
 import org.netbeans.modules.html.angular.model.AngularWhenInterceptor;
@@ -112,7 +113,7 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                     }
                     range = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
                     if (range != null) {
-                        return findFileLocation(fo, tokenText);
+                        return findFileLocation(fo, Utils.cutQueryFromTemplateUrl(tokenText));
                     }
                 }
             }

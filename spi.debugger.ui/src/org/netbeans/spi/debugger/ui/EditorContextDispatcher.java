@@ -564,7 +564,20 @@ public final class EditorContextDispatcher {
                 cc = new CoalescedChange();
                 lookupCoalescedChange.set(cc);
             }
-            if (cc.isCoalescing()) {
+            Collection<? extends FileObject> fos = null;
+            boolean doCoalescing = cc.isCoalescing();
+            if (!doCoalescing) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    if (type == FileObject.class) {
+                        fos = resFileObject.allInstances();
+                        if (fos.size() > 1) {
+                            // Do not call an expensive DataObject.find(fo) in AWT thread.
+                            doCoalescing = true;
+                        }
+                    }
+                }
+            }
+            if (doCoalescing) {
                 RequestProcessor.Task task;
                 synchronized (this) {
                     if (cctask == null) {
@@ -579,26 +592,32 @@ public final class EditorContextDispatcher {
                 }
                 task.schedule(2);
             } else {
-                lookupChanged(true);
+                lookupChanged(true, fos);
             }
             cc.done();
         }
 
         private void lookupChanged(final boolean doFire) {
+            lookupChanged(doFire, null);
+        }
+        
+        private void lookupChanged(final boolean doFire, Collection<? extends FileObject> fos) {
             //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type+" in "+Thread.currentThread());
             if (type == FileObject.class) {
-                Collection<? extends FileObject> fos = resFileObject.allInstances();
+                if (fos == null) {
+                    fos = resFileObject.allInstances();
+                }
                 FileObject oldFile;
                 FileObject newFile;
+                if (fos.isEmpty()) {
+                    newFile = null;
+                } else if (fos.size() == 1) {
+                    newFile = fos.iterator().next();
+                } else {
+                    newFile = findPrimary(fos);
+                }
                 synchronized (EditorContextDispatcher.this) {
                     oldFile = currentFile.get();
-                    if (fos.size() == 0) {
-                        newFile = null;
-                    } else if (fos.size() == 1) {
-                        newFile = fos.iterator().next();
-                    } else {
-                        newFile = findPrimary(fos);
-                    }
                     //System.err.println("\nCURRENT FILES = "+fos+"\n");
                     currentFile = newFile == null ? NO_FILE : new WeakReference<FileObject>(newFile);
                     currentURL = null;

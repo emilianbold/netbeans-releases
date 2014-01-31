@@ -123,7 +123,8 @@ public class SassOptions implements CssPreprocessorImplementation.Options {
 
     @Override
     public boolean changed() {
-        return !getComponent().getSassPath().equals(getOptions().getSassPath())
+        String sassPath = getOptions().getSassPath();
+        return !getComponent().getSassPath().equals(sassPath == null ? "" : sassPath)
                 || getComponent().getSassOutputOnError() != getOptions().getSassOutputOnError()
                 || getComponent().getSassDebug()!= getOptions().getSassDebug();
     }

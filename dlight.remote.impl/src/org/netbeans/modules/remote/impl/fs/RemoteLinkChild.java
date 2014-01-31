@@ -89,13 +89,13 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
     
     @Override
-    protected void postDeleteChild(RemoteFileObject child) {
-        getCanonicalDelegate().postDeleteChild(child);
+    protected void postDeleteChild(RemoteFileObject child, DirEntryList entryList) {
+        getCanonicalDelegate().postDeleteChild(child, entryList);
     }
 
     @Override
-    protected void deleteImpl(FileLock lock) throws IOException {
-        getCanonicalDelegate().deleteImpl(lock);
+    protected DirEntryList deleteImpl(FileLock lock) throws IOException {
+        return getCanonicalDelegate().deleteImpl(lock);
     }
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {

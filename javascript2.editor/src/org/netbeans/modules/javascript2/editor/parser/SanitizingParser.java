@@ -66,7 +66,7 @@ public abstract class SanitizingParser extends Parser {
     
     private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.js.parse.big.files"); //NOI18N
     private static final long MAX_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.file.size", 1024 * 1024); //NOI18N
-    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", 1024 * 1024); //NOI18N
+    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", (1024 * 1024) / 3); //NOI18N
 
     private final Language<JsTokenId> language;
 
@@ -166,7 +166,7 @@ public abstract class SanitizingParser extends Parser {
                         countedLines++;
                     }
                     countedLines = 0;
-                    if ((countChars / countedLines) > 300) {
+                    if ((countChars / countedLines) > 200) {
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.log(Level.FINE, "The file {0} was not parsed because the is minimize and size is big.", scriptName);
                         }

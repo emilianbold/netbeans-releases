@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.cnd.repository.storage;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +62,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.util.Lookup;
 
 /**
@@ -92,18 +95,28 @@ public final class StorageManager {
     
     // maintain 
     public boolean maintenance (long interval) {
+        if (Stats.traceDefragmentation) {
+            System.out.println("-------StorageManager start defragmenting------");//NOI18N
+        }
         boolean needMaintence = false;
         long workTime = 0;        
         int storagesCount = storages.size();
+        Storage[] values = storages.values().toArray(new Storage[0]);
+        Arrays.sort(values, new MaintenanceComparator());
         int counter= 0;
-        for (Storage storage : storages.values()) {
+        for (Storage storage : values) {
             counter++;
             long time = System.currentTimeMillis();
+            int weight = storage.getMaintananceWeight();
+            if (weight < Stats.defragmentationThreashold) {
+                //we are done, no need to go inside, no maintenance is required
+                return needMaintence;
+            }
             needMaintence = needMaintence || storage.maintain(interval);
             workTime += System.currentTimeMillis() - time;
             if( counter < storagesCount && workTime > interval ) {
                 return true;
-            }            
+            }
             if (counter == storagesCount) {
                 return needMaintence;
             }
@@ -298,4 +311,13 @@ public final class StorageManager {
             return storageID * DENOM + unitID;
         }
     }    
+
+    private static class MaintenanceComparator implements Comparator<Storage>, Serializable{
+        private static final long serialVersionUID = 7249049246763182397L;
+
+        @Override
+        public int compare(Storage storage1, Storage storage2) {
+            return storage2.getMaintananceWeight() - storage1.getMaintananceWeight();
+        }
+    }
 }

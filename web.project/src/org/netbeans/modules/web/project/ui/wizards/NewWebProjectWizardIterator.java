@@ -325,7 +325,15 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
     
     public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
+        // To be able to trace #240974 a bit better, adding actual values
+        if (!hasNext()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("panelsCount: ");
+            sb.append(panelsCount);
+            sb.append("\n panels size: ");
+            sb.append(panels.length);
+            throw new NoSuchElementException(sb.toString());
+        }
         index++;
     }
     

@@ -229,4 +229,12 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion26.xhtml", "#{v = {\"one\":1, \"two\":2, \"three\":3}; v.^", false);
     }
 
+    public void testIssue241160_1() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/issue241160.xhtml", "#{cc.attrs.muj.^}", false);
+    }
+
+    public void testIssue241160_2() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/issue241160.xhtml", "#{cc.attrs.muj.subSequence(0, 1).^}", false);
+    }
+
 }

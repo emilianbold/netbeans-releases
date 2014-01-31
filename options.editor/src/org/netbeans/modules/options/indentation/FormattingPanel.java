@@ -232,6 +232,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
                     }
                 });
             }
+            jSplitPane1.resetToPreferredSizes();
         }
     }
     

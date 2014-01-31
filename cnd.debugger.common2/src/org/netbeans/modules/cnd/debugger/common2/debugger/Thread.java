@@ -45,10 +45,14 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.ModelEvent;
 
-public abstract class Thread {
+public abstract class Thread implements DebuggingView.DVThread {
 
     private final NativeDebugger debugger;
     private final ModelListener updater;
@@ -56,6 +60,7 @@ public abstract class Thread {
     protected String current_function;
     protected String address;
     protected boolean current;
+    private Frame[] stack;
 
     /**
      * Create a new Thread
@@ -68,7 +73,6 @@ public abstract class Thread {
 	this.updater = updater;
     }
 
-    public abstract String getName();
     public abstract boolean hasEvent();
 
     /**
@@ -113,6 +117,67 @@ public abstract class Thread {
 	return address;
     }
 
+    // interface DVThread
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        // TODO
+    }
+
+    // interface DVThread
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        // TODO
+    }
+
+    // interface DVThread
+    @Override
+    public List<DebuggingView.DVThread> getLockerThreads() {
+        return null;    // TODO
+    }
+
+    // interface DVThread
+    @Override
+    public Breakpoint getCurrentBreakpoint() {
+        return null; // TODO
+    }
+
+    // interface DVThread
+    @Override
+    public boolean isInStep() {
+        return false;   // TODO
+    }
+
+    // interface DVThread
+    @Override
+    public void makeCurrent() {
+        // TODO check that non-ui operations are carried out
+        setCurrent(true);
+    }
+
+    // interface DVThread
+    @Override
+    public void resume() {
+        debugger.resumeThread(this);    // TODO better way to implement this functionality
+    }
+
+    // interface DVThread
+    @Override
+    public void suspend() {
+        debugger.pause();   // TODO better way to implement this functionality | implement pausing a single thread
+    }
+
+    // interface DVThread
+    @Override
+    public void resumeBlockingThreads() {
+        // TODO
+    }
+    
+    // interface DVThread
+    @Override
+    public DebuggingView.DVSupport getDVSupport() {
+        return debugger.session().coreSession().lookupFirst(null, DebuggingView.DVSupport.class);
+    }
+
     public abstract String getFile();
 
     public abstract String getLine();
@@ -121,7 +186,17 @@ public abstract class Thread {
 
     public abstract Integer getPriority();
 
-    public abstract Integer getStackSize();
+    public Integer getStackSize() {
+        return stack.length;
+    }
+    
+    public Frame[] getStack() {
+        return stack;
+    }
+    
+    public void setStack(Frame[] stack) {
+        this.stack = stack;
+    }
 
     public abstract String getStartFunction();
 
@@ -129,5 +204,4 @@ public abstract class Thread {
 
     public abstract String getState();
 
-    public abstract boolean getSuspended();
 }

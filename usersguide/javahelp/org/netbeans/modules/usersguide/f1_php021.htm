@@ -2,60 +2,75 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: PHP: General</title>
+<title>Delete Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" name="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref470" name="sthref470"></a>
-<h1>Options Window: PHP: General</h1>
+<p>Beta Draft: 2014-01-28</p>
+<p><a id="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" name="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref444" name="sthref444"></a>
+<h1>Delete Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this tab you can set the path to the default PHP interpreter and the global Include path.</p>
+<p>When you want to delete a file in a project the IDE displays the following options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t24">Element</th>
-<th align="left" valign="bottom" id="r1c2-t24">Description</th>
+<th align="left" valign="bottom" id="r1c1-t22">Element</th>
+<th align="left" valign="bottom" id="r1c2-t22">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t24" headers="r1c1-t24">
-<p>Command Line</p>
+<td align="left" id="r2c1-t22" headers="r1c1-t22">
+<p>Safely delete (with usage search)</p>
 </td>
-<td align="left" headers="r2c1-t24 r1c2-t24">
-<p>If you set a PHP project to run as a command-line script in the project's Run Configuration properties you can use this panel to specify the default PHP interpreter.</p>
-<p>Note that you can override the default path to the PHP interpreter and set an interpreter for an individual project. Note also that a project can have multiple run configurations.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t24" headers="r1c1-t24">
-<p>PHP 5 Interpreter</p>
-</td>
-<td align="left" headers="r3c1-t24 r1c2-t24">
-<p>The path to the default PHP interpreter. The PHP interpreter is used to execute a PHP script from the command line. Use the Search and Browse buttons to locate the interpreter installation on your local file system.</p>
+<td align="left" headers="r2c1-t22 r1c2-t22">
+<p>Select this option to search your project for all usages of the file before you delete it.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t24" headers="r1c1-t24">
-<p>Open result in</p>
+<td align="left" id="r3c1-t22" headers="r1c1-t22">
+<p>OK</p>
 </td>
-<td align="left" headers="r4c1-t24 r1c2-t24">
-<p>Select where to display the results of running a PHP application from the command-line. Select the appropriate box to display the results in the IDE's Output window, a browser, or the editor's main pane.</p>
+<td align="left" headers="r3c1-t22 r1c2-t22">
+<p>Click to delete the file without searching for usages. This button is enabled only if you do not select Safely delete.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t24" headers="r1c1-t24">
-<p>Global Include Path</p>
+<td align="left" id="r4c1-t22" headers="r1c1-t22">
+<p>Preview and Refactor</p>
 </td>
-<td align="left" headers="r5c1-t24 r1c2-t24">
-<p>The Global Include Path lists the folders that are included in all PHP projects' include paths.</p>
-<p>You can click Add Folder to browse for a folder to add to the global include path. You can use the Move Up and Move Down buttons to change the order of the folders in the global include path. Higher folders are given priority. If you are using a PHP framework, add that framework's library folder to the global include path.</p>
+<td align="left" headers="r4c1-t22 r1c2-t22">
+<p>Click either button to view a list of Warnings and Errors. These buttons appear if you select Safely delete.</p>
+<p>This panel is inherited from Java safe delete, which behaves differently. This is why there are two buttons, Preview and Refactor, that do the same thing.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t22" headers="r1c1-t22">
+<p>List of Errors</p>
+</td>
+<td align="left" headers="r5c1-t22 r1c2-t22">
+<p>Displays a list of warnings and errors. If the IDE finds any errors, you cannot delete the file until the errors are resolved. You can delete the file if there are only warnings.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t22" headers="r1c1-t22">
+<p>Show Usages</p>
+</td>
+<td align="left" headers="r6c1-t22 r1c2-t22">
+<p>Click to open the Usages window to view all occurrences of the file in the project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t22" headers="r1c1-t22">
+<p>Refactor</p>
+</td>
+<td align="left" headers="r7c1-t22 r1c2-t22">
+<p>Click to delete the file. This button is enabled only if no errors are found.</p>
 </td>
 </tr>
 </tbody>

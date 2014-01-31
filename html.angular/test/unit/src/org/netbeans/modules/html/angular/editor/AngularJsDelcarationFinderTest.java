@@ -95,7 +95,7 @@ public class AngularJsDelcarationFinderTest extends JsTestBase {
     public AngularJsDelcarationFinderTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -117,7 +117,15 @@ public class AngularJsDelcarationFinderTest extends JsTestBase {
     public void testDeclaration_01() throws Exception {
         checkDeclaration("angularTestProject/public_html/gotoTest.html", "<body ng-controller=\"Ph^oneListCtrl\">", "controllers.js", 79);
     }
-    
+ 
+    //TODO problem with scanning    
+//    public void testTemplateUrl_01() throws Exception {
+//        checkDeclaration("angularTestProject/public_html/js/app.js", "templateUrl: 'partials/p^hone-detail.html',", "phone-detail.html", 0);
+//    }
+//    
+//    public void testTemplateUrl_02() throws Exception {
+//        checkDeclaration("angularTestProject/public_html/js/app.js", "templateUrl: 'partials^/phone-list.html?v=1',", "phone-list.html", 0);
+//    }
     
     protected DeclarationFinder.DeclarationLocation findDeclaration(String relFilePath, final String caretLine) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
@@ -141,7 +149,7 @@ public class AngularJsDelcarationFinderTest extends JsTestBase {
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        List<FileObject> cpRoots = new LinkedList<FileObject>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
         
         cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/angularTestProject/public_html")));
         return Collections.singletonMap(

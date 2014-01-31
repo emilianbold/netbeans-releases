@@ -86,7 +86,7 @@ public class ModelSource implements SourceFileProperties {
     private final PkgConfig pkgConfig;
     private String itemPath;
     private List<String> userIncludePaths;
-    private final Set<String> includedFiles = new HashSet<String>();
+    private final Set<CharSequence> includedFiles = new HashSet<CharSequence>();
     private Map<String,String> userMacros;
     private final boolean preferLocal;
     
@@ -99,7 +99,7 @@ public class ModelSource implements SourceFileProperties {
         this.preferLocal = preferLocal;
     }
 
-    public Set<String> getIncludedFiles() {
+    public Set<CharSequence> getIncludedFiles() {
         if (userIncludePaths == null) {
             getUserInludePaths();
         }
@@ -256,7 +256,7 @@ public class ModelSource implements SourceFileProperties {
                     }
                 }
                 if (!reResolve) {
-                    includedFiles.add(resolved.getAbsolutePath().toString());
+                    includedFiles.add(resolved.getAbsolutePath());
                 }
                 if (level < 5 && resolved != null) {
                     analyzeUnresolved(res, resolved, level+1);

@@ -138,7 +138,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             if (this.quoteType != other.quoteType) {
                 return false;
             }
-            
+
             return true;
         }
 
@@ -163,7 +163,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     hash = 17 * hash + (quoteType ? 1 : 0);
                     break;
             }
-            
+
             return hash;
         }
 
@@ -197,7 +197,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             sb.append(')'); //NOI18N
             return sb.toString();
         }
-        
+
     }
 
     private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<>();
@@ -228,14 +228,14 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
      */
     private int lexerSubState = INIT;
     private int lexerState    = INIT;
-    
+
     private String attribute;
     private String tag; //tag name of the current context tag
-    
+
     /**
      * Value of the "type" attribute in SCRIPT tag
      */
-    private String scriptType; 
+    private String scriptType;
 
     //tag name with namespace prefix to collection of attributes which should have
     //css class embedding by default
@@ -244,16 +244,16 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     /** indicated whether we are in a script */
     private int lexerEmbeddingState = INIT;
-    
+
     private byte customELIndex = INIT;
-    
+
     /**
      * Indicates the quote type in ISI_VAL_QUOT state.
-     * 
+     *
      * true means double qoute, false single quote.
      */
     private boolean quoteType;
-    
+
     public static final String EL_CONTENT_PROVIDER_INDEX = "elci"; //NOI18N
 
     // internal 'in script' state. 'scriptState' internal state is set to it when the
@@ -309,13 +309,13 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final int ISI_SGML_DECL_WS = 41; //after whitespace in SGML declaration
 
     private static final int ISI_VAL_QUOT_ESC = 42;
-    
+
     private static final int ISA_ARG_UNDERSCORE = 44; //after _ in attribute name
     private static final int ISP_TAG_X_ERROR = 45; //error in tag content
-    
+
     private static final int ISI_XML_PI = 47; //inside <? ... ?>
     private static final int ISI_XML_PI_QM = 48; //after ? in XML PI
-    
+
     private static final int ISI_EL = 49; //EL custom open delimiter: {{.....}}
 
     static final Set<String> EVENT_HANDLER_NAMES = new HashSet<>();
@@ -356,15 +356,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     private static final String IMG_OPEN_TAG_SYMBOL2 = "</"; //NOI18N
 
     private final HtmlPlugins customELQuery = HtmlPlugins.getDefault();
-    
+
     /**
-     * Expression language open delimiter token can be queried for the mime type of 
-     * the content of the expression. 
+     * Expression language open delimiter token can be queried for the mime type of
+     * the content of the expression.
      */
     public static final String EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY = "contentMimeType"; //NOI18N
-    
+
     /**
-     * {@link HtmlLexerPlugin#createAttributeEmbedding(java.lang.String, java.lang.String)} can be used to 
+     * {@link HtmlLexerPlugin#createAttributeEmbedding(java.lang.String, java.lang.String)} can be used to
      * inject a custom embedding to an html tag attribute value. When the plugin returns a non null value
      * then the mimetype is set as a token's property and then used in {@link HTMLTokenId#language.createEmbedding()} method.
      */
@@ -554,7 +554,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             }
                             break;
                     }
-                    
+
                     //custom EL support
                     delimiters: for(byte delimiterIndex = 0; delimiterIndex < customELQuery.getOpenDelimiters().length; delimiterIndex++ ) {
                         String openDelimiter = customELQuery.getOpenDelimiters()[delimiterIndex];
@@ -567,7 +567,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             char delimChar = openDelimiter.charAt(i);
                             if(read != delimChar) {
                                 //no match
-                                input.backup(input.readLength() - alreadyRead); //backup text
+                                input.backup(input.readLengthEOF() - alreadyRead); //backup text
                                 continue delimiters; //and try next one
                             }
                             if((i+1) < openDelimiter.length()) {
@@ -575,7 +575,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                 read = (char)input.read();
                             }
                         }
-                        
+
                         //we've found an open delimiter
                         //check if the there was already something read before checking the delimiter,
                         //if so then return it and re-run this step again so then we can return
@@ -587,15 +587,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //return the open symbol token and switch to "in el" state
                             lexerState = ISI_EL;
                             customELIndex = (byte)(delimiterIndex + 1); //0 is reserved for "no delimiter", 1 means delimiter with index 0
-                            //save the provider's index in the delimiter token's property so once can recognize what should be 
+                            //save the provider's index in the delimiter token's property so once can recognize what should be
                             //the delimiters' content if it is empty
                             //TODO "contentMimetype" INTO API???
-                            return token(HTMLTokenId.EL_OPEN_DELIMITER, 
-                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex])); 
+                            return token(HTMLTokenId.EL_OPEN_DELIMITER,
+                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex]));
                         }
-                        
+
                     }
-                    
+
                     break;
 
                 case ISI_EL:
@@ -625,7 +625,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         if(input.readLength() > closeDelimiter.length()) {
                             input.backup(closeDelimiter.length());
                             //save the provider's index in the token's property so we can set the corresponding embdding in HTMLTokenId.language()
-                            return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1)))); 
+                            return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1))));
                         } else {
                             //return the open symbol token and switch to "in el" state
                             lexerState = INIT;
@@ -633,9 +633,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             return token(HTMLTokenId.EL_CLOSE_DELIMITER);
                         }
                     }
-                    
+
                     break;
-                    
+
                 case ISI_ERROR:      // DONE
                     lexerState = INIT;
                     tag = null;
@@ -677,7 +677,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     //else stay in XML PI
                     break;
-                    
+
                 case ISI_XML_PI_QM:
                     if(actChar == '>') {
                         //XML PI token
@@ -687,7 +687,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         lexerState = ISI_XML_PI;
                         break;
                     }
-                    
+
                 case ISA_SLASH:        // DONE
                     if( isAZ( actChar ) ) {   // </'a..Z'
                         lexerState = ISI_ENDTAG;
@@ -827,7 +827,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     //stay in error
                     break;
-                    
+
                 case ISP_TAG_WS:        // DONE
                     if( isWS( actChar ) ) break;    // eat all WS
                     lexerState = ISP_TAG_X;
@@ -1004,9 +1004,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     break;
 
 
-                case ISI_VAL:                    
+                case ISI_VAL:
                     if(actChar == '/') {
-                        //slash in unquoted value -- may be there but not followed by >. 
+                        //slash in unquoted value -- may be there but not followed by >.
                         //In such case IMO the value should be closed
                         char next = (char)input.read();
                         input.backup(1); //backup the next char
@@ -1017,7 +1017,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     } else if(!isWS(actChar) && actChar != '>' && actChar != '<') {
                         break; //continue lexing the attribute value
                     }
-                    
+
                     //finish lexing the value
                     lexerState = ISP_TAG_X;
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
@@ -1026,7 +1026,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         attribute = null;
                         return resolveValueToken;
                     }
-                    
+
                     break;
 
                 case ISI_VAL_QUOT:
@@ -1050,7 +1050,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                 read = (char)input.read();
                             }
                         }
-                        
+
                         //we've found an open delimiter
                         //check if the there was already something read before checking the delimiter,
                         //if so then return it and re-run this step again so then we can return
@@ -1062,15 +1062,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             //return the open symbol token and switch to "in el" state
                             lexerState = ISI_VAL_QUOT_EL;
                             customELIndex = (byte)(delimiterIndex + 1); //0 is reserved for "no delimiter", 1 means delimiter with index 0
-                            //save the provider's index in the delimiter token's property so once can recognize what should be 
+                            //save the provider's index in the delimiter token's property so once can recognize what should be
                             //the delimiters' content if it is empty
                             //TODO "contentMimetype" INTO API???
-                            return token(HTMLTokenId.EL_OPEN_DELIMITER, 
-                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex])); 
+                            return token(HTMLTokenId.EL_OPEN_DELIMITER,
+                                    new HtmlTokenPropertyProvider(EL_EXPRESSION_CONTENT_MIMETYPE_TOKEN_PROPERTY_KEY, customELQuery.getMimeTypes()[delimiterIndex]));
                         }
-                        
+
                     }
-                    
+
                     switch (actChar) {
                         case '\\':
                             //may be escaped quote
@@ -1122,7 +1122,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                         if(input.readLength() > closeDelimiter.length()) {
                             input.backup(closeDelimiter.length());
                             //save the provider's index in the token's property so we can set the corresponding embdding in HTMLTokenId.language()
-                            return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1)))); 
+                            return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1))));
                         } else {
                             //return the close symbol token and switch to "in value" state
                             lexerState = ISI_VAL_QUOT;
@@ -1130,9 +1130,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                             return token(HTMLTokenId.EL_CLOSE_DELIMITER);
                         }
                     }
-                    
+
                     break;
-                    
+
                 case ISI_VAL_QUOT_ESC:
                     //Just consume the escaped char.
                     //The state prevents the quoted value
@@ -1372,7 +1372,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISA_SGML_DASH:
             case ISI_TAG_SLASH:
                 return token(HTMLTokenId.TEXT);
-                
+
             case ISI_XML_PI:
             case ISI_XML_PI_QM:
                 return token(HTMLTokenId.XML_PI);
@@ -1447,10 +1447,10 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_STYLE_CONTENT_ENDTAG:
             case ISI_STYLE_CONTENT_AFTER_LT:
                 return token(HTMLTokenId.STYLE);
-                
+
             case ISI_EL:
             case ISI_VAL_QUOT_EL:
-                return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1)))); 
+                return token(HTMLTokenId.EL_CONTENT, new HtmlTokenPropertyProvider(EL_CONTENT_PROVIDER_INDEX, new Byte((byte)(customELIndex - 1))));
 
 
         }
@@ -1469,7 +1469,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
 
     private Token<HTMLTokenId> resolveValueToken() {
         assert attribute != null;
-        
+
         //onclick and similar method javascript embedding
         if (isJavascriptEventHandlerName(attribute)) {
             return token(HTMLTokenId.VALUE_JAVASCRIPT);
@@ -1573,7 +1573,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     }
                     break;
             }
-            
+
             return tokenFactory.createToken(tokenId);
 
         }
@@ -1623,9 +1623,9 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         }
 
     }
-    
+
     private static final TokenPropertyProvider CLASS_TOKEN_PP = new HtmlTokenPropertyProvider(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS);
     private static final TokenPropertyProvider ID_TOKEN_PP = new HtmlTokenPropertyProvider(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY, HTMLTokenId.VALUE_CSS_TOKEN_TYPE_ID);
-    
-    
+
+
 }

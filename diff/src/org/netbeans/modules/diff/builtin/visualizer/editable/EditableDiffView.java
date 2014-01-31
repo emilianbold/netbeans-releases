@@ -184,12 +184,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private Integer askedLineLocation;
     private static final String PROP_SMART_SCROLLING_DISABLED = "diff.smartScrollDisabled"; //NOI18N
-    private final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
+    private static final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
     private final JPanel searchContainer;
     private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
+    private final Object DIFFING_LOCK = new Object();
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -1282,11 +1283,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         rp.post(new Runnable() {
             @Override
             public void run() {
-                Document doc = kit.createDefaultDocument();
-                doc.putProperty("mimeType", CONTENT_TYPE_DIFF); //NOI18N
-                StyledDocument sdoc = doc instanceof StyledDocument ? (StyledDocument) doc : null;
-                textualRefreshTask = new TextualDiffRefreshTask(sdoc);
-                textualRefreshTask.refresh(diffs);
+                synchronized (DIFFING_LOCK) {
+                    Document doc = kit.createDefaultDocument();
+                    doc.putProperty("mimeType", CONTENT_TYPE_DIFF); //NOI18N
+                    StyledDocument sdoc = doc instanceof StyledDocument ? (StyledDocument) doc : null;
+                    textualRefreshTask = new TextualDiffRefreshTask(sdoc);
+                    textualRefreshTask.refresh(diffs);
+                }
             }
         });
     }
@@ -1454,7 +1457,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
         @Override
         public void run() {
-            synchronized (RefreshDiffTask.this) {
+            synchronized (DIFFING_LOCK) {
                 final Difference[] differences = computeDiff();
                 if (textualRefreshTask != null) {
                     textualRefreshTask.refresh(differences);

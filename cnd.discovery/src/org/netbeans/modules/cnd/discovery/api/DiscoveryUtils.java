@@ -467,6 +467,7 @@ public class DiscoveryUtils {
                     String next = st.next();
                     if (next.equals("PIC") || next.equals("pic")) { // NOI18N
                         // options = "-K"+next;
+                        importantCandidates.add(option+next);
                     } else {
                         st.previous();
                     }

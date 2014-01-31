@@ -71,6 +71,7 @@ public class ApiGenOptionsPanelController extends OptionsPanelController impleme
 
     private ApiGenOptionsPanel apiGenOptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
 
     public static String getOptionsPath() {
@@ -79,7 +80,8 @@ public class ApiGenOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void update() {
-        if(!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             apiGenOptionsPanel.setApiGen(getOptions().getApiGen());
         }
 

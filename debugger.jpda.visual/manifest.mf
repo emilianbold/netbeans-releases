@@ -5,4 +5,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/debugger/jpda/visual/Bund
 OpenIDE-Module-Layer: org/netbeans/modules/debugger/jpda/visual/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.12
 OpenIDE-Module-Requires: org.netbeans.modules.debugger.jpda.ui
+OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
 

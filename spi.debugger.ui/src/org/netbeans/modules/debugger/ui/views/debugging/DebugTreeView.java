@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -65,6 +66,8 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
 
 import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
@@ -90,6 +93,11 @@ public class DebugTreeView extends BeanTreeView {
     private final Color currentThreadColor;
     
     private DVThread focusedThread;
+    
+    private DebuggingView.DVSupport currentDVSupport;
+    private boolean currentDVSupportSet;
+    private final Object currentDVSupportLock = new Object();
+    private DebuggerManagerListener dmListener;
     
     DebugTreeView() {
         super();
@@ -323,18 +331,39 @@ public class DebugTreeView extends BeanTreeView {
         g.setColor(origColor);
     }
     
-    private DVThread getCurrentThread() {
-        DVThread currentThread = null;
+    private DebuggingView.DVSupport getCurrentDVsupport() {
+        synchronized (currentDVSupportLock) {
+            if (dmListener == null) {
+                dmListener = new CurrentEngineListener();
+                DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_ENGINE, dmListener);
+            }
+            if (currentDVSupportSet) {
+                return currentDVSupport;
+            }
+        }
+        DebuggingView.DVSupport dvSupport;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (currentEngine != null) {
-            DebuggingView.DVSupport dvSupport = currentEngine.lookupFirst(null, DebuggingView.DVSupport.class);
-            if (dvSupport != null) {
-                currentThread = dvSupport.getCurrentThread();
-            }
+            dvSupport = currentEngine.lookupFirst(null, DebuggingView.DVSupport.class);
+        } else {
+            dvSupport = null;
+        }
+        synchronized (currentDVSupportLock) {
+            currentDVSupport = dvSupport;
+            currentDVSupportSet = true;
+        }
+        return dvSupport;
+    }
+    
+    private DVThread getCurrentThread() {
+        DVThread currentThread = null;
+        DebuggingView.DVSupport dvSupport = getCurrentDVsupport();
+        if (dvSupport != null) {
+            currentThread = dvSupport.getCurrentThread();
         }
         return currentThread;
     }
-
+    
     boolean threadFocuseGained(DVThread dvThread) {
         if (dvThread != null && focusedThread != dvThread) {
             focusedThread = dvThread;
@@ -393,6 +422,20 @@ public class DebugTreeView extends BeanTreeView {
                 }
             }
             return component;
+        }
+        
+    }
+    
+    private class CurrentEngineListener extends DebuggerManagerAdapter {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DebuggerManager.PROP_CURRENT_ENGINE.equals(evt.getPropertyName())) {
+                synchronized (currentDVSupportLock) {
+                    currentDVSupport = null;
+                    currentDVSupportSet = false;
+                }
+            }
         }
         
     }

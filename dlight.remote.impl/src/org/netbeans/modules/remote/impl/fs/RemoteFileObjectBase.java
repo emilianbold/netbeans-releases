@@ -259,9 +259,17 @@ public abstract class RemoteFileObjectBase {
 
     abstract protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
 
-    protected abstract void deleteImpl(FileLock lock) throws IOException;
+    /** 
+     * Deletes the file, returns parent directory content.
+     * Returning parent directory content is for the sake of optimization.
+     * For example, fs_server, can do remove and return refreshed content in one call.
+     * It can return null if there is no way of doing that more effective than
+     * just calling RemoteFileSystemTransport.readDirectory
+     * @return parent directory content (can be null - see above)
+     */
+    protected abstract DirEntryList deleteImpl(FileLock lock) throws IOException;
 
-    protected abstract void postDeleteChild(RemoteFileObject child);
+    protected abstract void postDeleteChild(RemoteFileObject child, DirEntryList entryList);
     
     
     public final void delete(FileLock lock) throws IOException {
@@ -281,20 +289,21 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
         }
+        DirEntryList entryList = null;
         if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             if (deleteHandler != null) {
                 deleteHandler.handle();
             } else {
-                deleteImpl(lock);
+                entryList = deleteImpl(lock);
             }
             // TODO remove attributes
             // TODO clear cache?
             // TODO fireFileDeletedEvent()?
             interceptor.deleteSuccess(fileProxy);
         } else {
-            deleteImpl(lock);
+            entryList = deleteImpl(lock);
         }
         RemoteFileObject fo = getOwnerFileObject();
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
@@ -307,7 +316,7 @@ public abstract class RemoteFileObjectBase {
         invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {
-            p.postDeleteChild(getOwnerFileObject());
+            p.postDeleteChild(getOwnerFileObject(), entryList);
         }
     }
     

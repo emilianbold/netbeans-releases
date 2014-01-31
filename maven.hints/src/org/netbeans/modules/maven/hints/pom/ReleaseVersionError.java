@@ -72,6 +72,7 @@ public class ReleaseVersionError implements POMErrorFixProvider {
     static final String PROP_RELEASE = "release";//NOI18N
     static final String PROP_LATEST = "latest";//NOI18N
     static final String PROP_SNAPSHOT = "snapshot";//NOI18N
+    private JComponent component;
 
     public ReleaseVersionError() {
         configuration = new Configuration("ReleaseVersionError", //NOI18N
@@ -162,7 +163,20 @@ public class ReleaseVersionError implements POMErrorFixProvider {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new ReleaseVersionErrorCustomizer(preferences);
+        if (component == null) {
+            component = new ReleaseVersionErrorCustomizer(preferences);
+        }
+        return component;
+    }
+
+    @Override
+    public String getSavedValue(JComponent customCustomizer, String key) {
+        return ((ReleaseVersionErrorCustomizer) customCustomizer).getSavedValue(key);
+    }
+
+    @Override
+    public void cancel() {
+        component = null;
     }
 
     @Override

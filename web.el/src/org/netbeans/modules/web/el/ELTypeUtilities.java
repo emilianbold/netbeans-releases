@@ -224,20 +224,25 @@ public final class ELTypeUtilities {
             }
         }
         if (node != null) {
-            TypeMirror type = ELTypeUtilities.resolveElement(info, elElement, node).asType();
+            Element element = ELTypeUtilities.resolveElement(info, elElement, node);
+            if (element == null) {
+                return method.getReturnType();
+            }
+
+            TypeMirror type = element.asType();
             // interfaces are at the end of the List - first parameter has to be superclass
             TypeMirror directSupertype = info.info().getTypes().directSupertypes(type).get(0);
             if (directSupertype instanceof DeclaredType) {
-                DeclaredType declaredType = (DeclaredType)directSupertype;
+                DeclaredType declaredType = (DeclaredType) directSupertype;
                 // index of involved type argument
                 int indexOfTypeArgument = -1;
                 // list of all type arguments
-                List <? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
+                List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
 
                 // search for the same method in the generic class
                 for (Element enclosedElement : declaredType.asElement().getEnclosedElements()) {
                     if (method.equals(enclosedElement)) {
-                        TypeMirror returnType = ((ExecutableElement)enclosedElement).getReturnType();
+                        TypeMirror returnType = ((ExecutableElement) enclosedElement).getReturnType();
                         // get index of type argument which is returned by involved method
                         indexOfTypeArgument = info.info().getElementUtilities().enclosingTypeElement(method).
                                 getTypeParameters().indexOf(((TypeVariable) returnType).asElement());
@@ -248,8 +253,8 @@ public final class ELTypeUtilities {
                     return typeArguments.get(indexOfTypeArgument);
                 }
             }
-        } 
-        
+        }
+
         return method.getReturnType();
     }
 

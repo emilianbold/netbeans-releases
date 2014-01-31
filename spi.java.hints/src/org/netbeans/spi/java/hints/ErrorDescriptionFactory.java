@@ -552,7 +552,7 @@ public class ErrorDescriptionFactory {
                         path = path.getParentPath();
                     }
 
-                    if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                    if (path == null || path.getLeaf().getKind() == Kind.COMPILATION_UNIT) {
                         return ;
                     }
 

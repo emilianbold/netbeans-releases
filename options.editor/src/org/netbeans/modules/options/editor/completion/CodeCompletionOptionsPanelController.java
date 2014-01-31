@@ -45,8 +45,11 @@ package org.netbeans.modules.options.editor.completion;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,6 +186,43 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
         }
     }
 
+    private void firePrefsChanged() {
+        boolean isChanged = false;
+        for (String mimeType : pf.getAccessedMimeTypes()) {
+            isChanged |= arePrefsChanged(mimeType);
+            if (isChanged) { // no need to iterate further
+                changed = true;
+                return;
+            }
+        }
+        changed = isChanged;
+    }
+
+    private boolean arePrefsChanged(String mimeType) {
+        boolean isChanged = false;
+        Preferences prefs = pf.getPreferences(mimeType);
+        Preferences savedPrefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+        HashSet<String> hashSet = new HashSet<String>();
+        try {
+            hashSet.addAll(Arrays.asList(prefs.keys()));
+            hashSet.addAll(Arrays.asList(savedPrefs.keys()));
+        } catch (BackingStoreException ex) {
+            return false;
+        }
+        for (String key : hashSet) {
+            String current = prefs.get(key, null);
+            String saved = savedPrefs.get(key, null);
+            if (saved == null) {
+                saved = selector.getSavedValue(mimeType, key);
+            }
+            isChanged |= current == null ? saved != null : !current.equals(saved);
+            if (isChanged) { // no need to iterate further
+                return true;
+            }
+        }
+        return isChanged;
+    }
+
     public HelpCtx getHelpCtx() {
         PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
         HelpCtx ctx = c == null ? null : c.getHelpCtx();
@@ -226,12 +266,17 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
         if (fire) {
             pcs.firePropertyChange(PROP_CHANGED, !changed, changed);
         }
+        firePrefsChanged();
     }
 
     static final class PreferencesFactory implements PreferenceChangeListener, NodeChangeListener {
 
         public PreferencesFactory(Callable callback) {
             this.callback = callback;
+        }
+
+        public Set<? extends String> getAccessedMimeTypes() {
+            return mimeTypePreferences.keySet();
         }
 
         public void applyChanges() {

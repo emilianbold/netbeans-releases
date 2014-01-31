@@ -72,9 +72,9 @@ public class StatusResponse extends DbgpResponse {
     public void process(DebugSession dbgSession, DbgpCommand command) {
         Status status = getStatus();
         Reason reason = getReason();
-        assert status != null;
-        assert reason != null;
-        dbgSession.processStatus(status, reason, command);
+        if (status != null && reason != null) {
+            dbgSession.processStatus(status, reason, command);
+        }
     }
 
 }

@@ -99,6 +99,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -161,9 +162,11 @@ public class ImportExecutable implements PropertyChangeListener {
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME);
         dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
+        FileSystem fileSystem;
         if (projectFolder != null) {
             projectFolder = new FSPath(projectFolder.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(projectFolder.getPath(), FileSystemProvider.getExecutionEnvironment(projectFolder.getFileSystem())));
             baseDir = projectFolder.getPath();
+            fileSystem = projectFolder.getFileSystem();
             if (projectName == null) {
                 projectName = CndPathUtilities.getBaseName(baseDir);
             }
@@ -174,14 +177,15 @@ public class ImportExecutable implements PropertyChangeListener {
             }
             ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
             baseDir = projectParentFolder + File.separator + projectName;
-            projectFolder = new FSPath(FileSystemProvider.getFileSystem(ee), RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
+            fileSystem = FileSystemProvider.getFileSystem(ee);
+            projectFolder = new FSPath(fileSystem, RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
         }
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default",  hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilities.naturalizeSlashes(baseDir),  sourcesPath,
-                MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
+        String workingDirRel = ProjectSupport.toProperPath(new FSPath(fileSystem, baseDir),  sourcesPath, MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
+        workingDirRel = CndPathUtilities.naturalizeSlashes(fileSystem, workingDirRel);
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;

@@ -210,7 +210,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
        
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i].trim();
-            String repositoryUrlString = getRepositoryUrl().toString();
+            String repositoryUrlString = SvnUtils.decodeToString(getRepositoryUrl());
             if(path.startsWith("file://")  ||   // NOI18N
                path.startsWith("http://")  ||   // NOI18N
                path.startsWith("https://") ||   // NOI18N

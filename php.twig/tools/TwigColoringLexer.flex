@@ -173,11 +173,6 @@ D_INTERPOLATION={D_NO_INTERPOLATION} {INTERPOLATION_START}
 D_PRE_INTERPOLATION="\"" {D_INTERPOLATION}
 D_NO_INTERPOLATION_INSIDE="\"" {D_NO_INTERPOLATION} "#"* "\""
 D_POST_INTERPOLATION={D_NO_INTERPOLATION} "\""
-S_NO_INTERPOLATION=([^"#""'"] | #[^"{""'"] | "\\'")*
-S_INTERPOLATION={S_NO_INTERPOLATION} {INTERPOLATION_START}
-S_PRE_INTERPOLATION="'" {S_INTERPOLATION}
-S_NO_INTERPOLATION_INSIDE="'" {S_NO_INTERPOLATION} "#"* "'"
-S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
 
 %state ST_BLOCK
 %state ST_BLOCK_START
@@ -269,8 +264,7 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
         pushState(ST_D_STRING);
     }
     {S_STRING} {
-        yypushback(yylength());
-        pushState(ST_S_STRING);
+        return TwigTokenId.T_TWIG_STRING;
     }
     {NAME} {
         return TwigTokenId.T_TWIG_NAME;
@@ -288,22 +282,6 @@ S_POST_INTERPOLATION={S_NO_INTERPOLATION} "'"
         return TwigTokenId.T_TWIG_STRING;
     }
     {D_POST_INTERPOLATION} {
-        popState();
-        return TwigTokenId.T_TWIG_STRING;
-    }
-}
-
-<ST_S_STRING> {
-    {S_PRE_INTERPOLATION} | {S_INTERPOLATION} {
-        yypushback(2);
-        pushState(ST_INTERPOLATION);
-        return TwigTokenId.T_TWIG_STRING;
-    }
-    {S_NO_INTERPOLATION_INSIDE} {
-        popState();
-        return TwigTokenId.T_TWIG_STRING;
-    }
-    {S_POST_INTERPOLATION} {
         popState();
         return TwigTokenId.T_TWIG_STRING;
     }

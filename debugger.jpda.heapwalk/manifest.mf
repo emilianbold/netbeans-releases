@@ -6,4 +6,5 @@ OpenIDE-Module-Specification-Version: 1.26
 OpenIDE-Module-Requires: org.netbeans.api.debugger.jpda.JPDADebuggerEngineImpl,
   org.netbeans.spi.debugger.ui
 OpenIDE-Module-Provides: org.netbeans.modules.debugger.jpda.heapwalk
+OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
 

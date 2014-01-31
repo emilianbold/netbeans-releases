@@ -164,9 +164,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     @Override
-    public int getPriority() {
-        return 100;
-    }
+    public int getPriority() {return 100;}
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {

@@ -46,8 +46,6 @@ package org.netbeans.modules.refactoring.php;
 import java.util.Collection;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI;
 import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
@@ -63,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -97,12 +96,13 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             new RefactoringTask.TextComponentTask(ec) {
 
                 @Override
-                protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
+                protected RefactoringUIHolder createRefactoringUI(final PHPParseResult info, final int offset) {
+                    RefactoringUIHolder result = RefactoringUIHolder.NONE;
                     WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                     if (ctx != null && ctx.getName() != null) {
-                        return new WhereUsedQueryUI(ctx);
+                        result = new RefactoringUIHolderImpl(new WhereUsedQueryUI(ctx));
                     }
-                    return null;
+                    return result;
                 }
             }.run();
         }
@@ -117,7 +117,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     private boolean canRenameFile(Lookup lookup) {
         boolean result = false;
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-	if (nodes.size() == 1) {
+        if (nodes.size() == 1) {
             Node node = nodes.iterator().next();
             EditorCookie ec = node.getLookup().lookup(EditorCookie.class);
             if (ec == null || !RefactoringUtils.isFromEditor(ec)) {
@@ -151,16 +151,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         new RefactoringTask.TextComponentTask(ec) {
 
             @Override
-            protected RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset) {
+            protected RefactoringUIHolder createRefactoringUI(final PHPParseResult info, final int offset) {
+                RefactoringUIHolder result = RefactoringUIHolder.NONE;
                 WhereUsedSupport ctx = WhereUsedSupport.getInstance(info, offset);
                 if (ctx != null && ctx.getName() != null) {
                     final FileObject fileObject = ctx.getModelElement().getFileObject();
-                    FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL)) {
-                        return new PhpRenameRefactoringUI(ctx);
+                    if (RefactoringUtils.isUsersFile(fileObject)) {
+                        result = new RefactoringUIHolderImpl(new PhpRenameRefactoringUI(ctx));
+                    } else {
+                        result = RefactoringUIHolder.NOT_USERS_FILE;
                     }
                 }
-                return null;
+                return result;
             }
         }.run();
     }
@@ -189,17 +191,34 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         new RefactoringTask.NodeToFileTask(currentNode) {
 
             @Override
-            protected RefactoringUI createRefactoringUI(PHPParseResult info) {
+            protected RefactoringUIHolder createRefactoringUIHolder(PHPParseResult info) {
+                RefactoringUIHolder result = RefactoringUIHolder.NONE;
                 SafeDeleteSupport ctx = SafeDeleteSupport.getInstance(info);
                 if (ctx != null) {
                     final FileObject fileObject = ctx.getModel().getFileScope().getFileObject();
-                    FileType fileType = PhpSourcePath.getFileType(fileObject);
-                    if (!fileType.equals(FileType.INTERNAL)) {
-                        return new PhpDeleteRefactoringUI(ctx, regularDelete);
+                    if (RefactoringUtils.isUsersFile(fileObject)) {
+                        result = new RefactoringUIHolderImpl(new PhpDeleteRefactoringUI(ctx, regularDelete));
+                    } else {
+                        result = RefactoringUIHolder.NOT_USERS_FILE;
                     }
                 }
-                return null;
+                return result;
             }
         }.run();
+    }
+
+    static final class RefactoringUIHolderImpl implements RefactoringTask.RefactoringUIHolder {
+        private final RefactoringUI refactoringUI;
+
+        public RefactoringUIHolderImpl(RefactoringUI refactoringUI) {
+            assert refactoringUI != null;
+            this.refactoringUI = refactoringUI;
+        }
+
+        @Override
+        public void processUI(boolean parsingInProgress) {
+            UI.openRefactoringUI(refactoringUI, TopComponent.getRegistry().getActivated());
+        }
+
     }
 }

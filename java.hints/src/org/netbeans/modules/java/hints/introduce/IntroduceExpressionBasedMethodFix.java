@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -98,9 +99,11 @@ import org.openide.util.Union2;
  */
 final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implements Fix {
 
-    static List computeViableTargets(final CompilationInfo info, TreePath commonParent, Iterable<? extends Tree> toInclude, Iterable<? extends Occurrence> duplicates, AtomicBoolean cancel) {
+    static List computeViableTargets(final CompilationInfo info, TreePath commonParent, Iterable<? extends Tree> toInclude, Iterable<? extends Occurrence> duplicates, 
+            AtomicBoolean cancel, AtomicBoolean allIfaces) {
         List<TargetDescription> targets = new ArrayList<>();
         TreePath acceptableParent = commonParent;
+        boolean allInterfaces = true;
         // for each enclosing class-like Tree (not interface !) define a target. Check if all duplicates fall inside the target
         // and if so, mark it as 'duplicatesAcceptable', because all duplicate sites sees that class as an enclosing scope.
         while (acceptableParent != null) {
@@ -120,8 +123,10 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                     break;
                 }
                 Element el = info.getTrees().getElement(acceptableParent);
-                if (el != null && el.getKind().isClass()) {
-                    targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable));
+                boolean isIface = el.getKind().isInterface();
+                if (el != null && (el.getKind().isClass() || isIface)) {
+                    targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable, isIface));
+                    allInterfaces &= isIface;
                 }
             }
             acceptableParent = acceptableParent.getParentPath();
@@ -138,11 +143,17 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
         for (Iterator<TargetDescription> it = targets.iterator(); it.hasNext() && (!usedMembers.isEmpty() || !requiredEnclosing.isEmpty());) {
             TargetDescription td = it.next();
             TypeElement type = td.type.resolve(info);
+            if (type == null) {
+                it.remove();
+                continue;
+            }
             usedMembers.removeAll(info.getElements().getAllMembers(type));
             requiredEnclosing.remove(type);
             if (!usedMembers.isEmpty() || !requiredEnclosing.isEmpty()) {
                 it.remove();
-            }
+                continue;
+            } 
+            allInterfaces &= type.getKind() == ElementKind.INTERFACE;
         }
         if (targets.isEmpty()) {
             TreePath clazz = TreeUtils.findClass(commonParent);
@@ -150,8 +161,10 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
             if (el == null || (!el.getKind().isClass() && !el.getKind().isInterface())) {
                 return null;
             }
-            targets.add(TargetDescription.create(info, (TypeElement) el, true));
+            allInterfaces = el.getKind().isInterface();
+            targets.add(TargetDescription.create(info, (TypeElement) el, true, el.getKind().isInterface()));
         }
+        allIfaces.set(allInterfaces);
         return targets;
     }
     
@@ -180,7 +193,7 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
     public ChangeInfo implement() throws Exception {
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
-        IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets); //NOI18N
+        IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets, targetIsInterface); //NOI18N
         panel.setOkButton(btnOk);
         String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -266,7 +279,10 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                     //handle duplicates end
                 }
                 Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-                if (isStatic) {
+                
+                if (target.iface) {
+                    modifiers.add(Modifier.DEFAULT);
+                } else if (isStatic) {
                     modifiers.add(Modifier.STATIC);
                 }
                 modifiers.addAll(access);

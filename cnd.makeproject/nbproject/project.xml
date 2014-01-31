@@ -373,6 +373,7 @@
                 <friend>com.sun.tools.dlight.target</friend>
                 <friend>com.sun.tools.dlight.xyplot</friend>
                 <friend>com.sun.tools.ide.analysis.analytics</friend>
+                <friend>com.sun.tools.ide.analysis.api</friend>
                 <friend>com.sun.tools.ide.analysis.common</friend>
                 <friend>com.sun.tools.ide.analysis.discover</friend>
                 <friend>com.sun.tools.ide.analysis.parfait</friend>

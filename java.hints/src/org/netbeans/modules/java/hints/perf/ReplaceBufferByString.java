@@ -103,7 +103,7 @@ import org.openide.util.NbBundle;
 @Hint(
     displayName = "#DN_ReplaceBufferByString",
     description = "#DESC_ReplaceBufferByString",
-    category = "perf",
+    category = "performance",
     enabled = true,
     suppressWarnings = { "ReplaceStringBufferByString", "", "StringBufferReplaceableByString" }
 )

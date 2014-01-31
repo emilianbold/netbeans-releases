@@ -93,6 +93,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
@@ -114,8 +115,8 @@ public class NameWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
         
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        proxyConfigButton.setVisible(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY));
         
         ODCSServer server = panel.getServer();
         assert server != null;
@@ -421,9 +422,9 @@ public class NameWizardPanelGUI extends JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
-        if(ide != null && ide.providesProxyConfiguration()) {
-            ide.openProxyConfiguration();
+        SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        if(settings != null && settings.providesOpenSection(SettingsServices.Section.PROXY)) {
+            settings.openSection(SettingsServices.Section.PROXY);
         }
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 

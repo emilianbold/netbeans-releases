@@ -83,7 +83,7 @@ public class RuntimeViewPopupMenuTest extends ValidatePopupMenuOnNodes {
     }
 
     public void testServerRegistryPopupMenuRuntime() {
-        dataObjectNode = new Node(new RuntimeTabOperator().getRootNode(), "Servers");
+        dataObjectNode = new Node(RuntimeTabOperator.invoke().getRootNode(), "Servers");
         doMeasurement();
     }
 }
