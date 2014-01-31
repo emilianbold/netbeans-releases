@@ -49,28 +49,28 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>jar:nbinst://org.apache.commons.logging/modules/org-apache-commons-logging.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.cglib/modules/ext/cglib-2.2.jar!/</resource>
 
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-aop-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-aspects-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-beans-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-build-src-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-context-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-context-support-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-core-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-expression-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-framework-bom-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-instrument-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-instrument-tomcat-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-jdbc-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-jms-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-messaging-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-orm-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-oxm-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-test-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-tx-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-web-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-webmvc-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-webmvc-portlet-4.0.0.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-websocket-4.0.0.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-aop-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-aspects-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-beans-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-build-src-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-context-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-context-support-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-core-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-expression-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-framework-bom-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-instrument-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-instrument-tomcat-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-jdbc-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-jms-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-messaging-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-orm-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-oxm-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-test-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-tx-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-web-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-webmvc-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-webmvc-portlet-4.0.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-4/spring-websocket-4.0.1.RELEASE.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>
@@ -83,28 +83,28 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <property>
             <name>maven-dependencies</name>
             <value>
-                spring-aop-4.0.0.RELEASE:jar
-                spring-aspects-4.0.0.RELEASE:jar
-                spring-beans-4.0.0.RELEASE:jar
-                spring-build-src-4.0.0.RELEASE:jar
-                spring-context-4.0.0.RELEASE:jar
-                spring-context-support-4.0.0.RELEASE:jar
-                spring-core-4.0.0.RELEASE:jar
-                spring-expression-4.0.0.RELEASE:jar
-                spring-framework-bom-4.0.0.RELEASE:jar
-                spring-instrument-4.0.0.RELEASE:jar
-                spring-instrument-tomcat-4.0.0.RELEASE:jar
-                spring-jdbc-4.0.0.RELEASE:jar
-                spring-jms-4.0.0.RELEASE:jar
-                spring-messaging-4.0.0.RELEASE:jar
-                spring-orm-4.0.0.RELEASE:jar
-                spring-oxm-4.0.0.RELEASE:jar
-                spring-test-4.0.0.RELEASE:jar
-                spring-tx-4.0.0.RELEASE:jar
-                spring-web-4.0.0.RELEASE:jar
-                spring-webmvc-4.0.0.RELEASE:jar
-                spring-webmvc-portlet-4.0.0.RELEASE:jar
-                spring-websocket-4.0.0.RELEASE:jar
+                spring-aop-4.0.1.RELEASE:jar
+                spring-aspects-4.0.1.RELEASE:jar
+                spring-beans-4.0.1.RELEASE:jar
+                spring-build-src-4.0.1.RELEASE:jar
+                spring-context-4.0.1.RELEASE:jar
+                spring-context-support-4.0.1.RELEASE:jar
+                spring-core-4.0.1.RELEASE:jar
+                spring-expression-4.0.1.RELEASE:jar
+                spring-framework-bom-4.0.1.RELEASE:jar
+                spring-instrument-4.0.1.RELEASE:jar
+                spring-instrument-tomcat-4.0.1.RELEASE:jar
+                spring-jdbc-4.0.1.RELEASE:jar
+                spring-jms-4.0.1.RELEASE:jar
+                spring-messaging-4.0.1.RELEASE:jar
+                spring-orm-4.0.1.RELEASE:jar
+                spring-oxm-4.0.1.RELEASE:jar
+                spring-test-4.0.1.RELEASE:jar
+                spring-tx-4.0.1.RELEASE:jar
+                spring-web-4.0.1.RELEASE:jar
+                spring-webmvc-4.0.1.RELEASE:jar
+                spring-webmvc-portlet-4.0.1.RELEASE:jar
+                spring-websocket-4.0.1.RELEASE:jar
             </value>
         </property>
     </properties>
