@@ -2,142 +2,113 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Session Bean Wizard</title>
+<title>New EJB Module Wizard: Server and Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor"></a></p>
+<p>Beta Draft: 2014-01-30</p>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EJB" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EJB"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref583" name="sthref583"></a>
-<h1>New Session Bean Wizard</h1>
+<h1>New EJB Module Wizard: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new session bean in an EJB module. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2704">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>You set the following information in the wizard:</p>
+<p>This wizard creates a new standard project containing an EJB module. You open the wizard by opening the New Project wizard and selecting the EJB Module template from the Java EE category.</p>
+<p>In the Server and Settings page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t15">Element</th>
-<th align="left" valign="bottom" id="r1c2-t15">Description</th>
+<th align="left" valign="bottom" id="r1c1-t16">Element</th>
+<th align="left" valign="bottom" id="r1c2-t16">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t15" headers="r1c1-t15">
-<p>EJB Name</p>
+<td align="left" id="r2c1-t16" headers="r1c1-t16">
+<p>Add to Enterprise Application</p>
 </td>
-<td align="left" headers="r2c1-t15 r1c2-t15">
-<p>Set the name of the session bean. The name is used as the basis for the session bean's class and interface names.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t15" headers="r1c1-t15">
-<p>Location</p>
-</td>
-<td align="left" headers="r3c1-t15 r1c2-t15">
-<p>Select the source folder where you want to create the session bean files.</p>
+<td align="left" headers="r2c1-t16 r1c2-t16">
+<p>Lets you add the EJB module to any open enterprise application project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t15" headers="r1c1-t15">
-<p>Package</p>
+<td align="left" id="r3c1-t16" headers="r1c1-t16">
+<p>Server</p>
 </td>
-<td align="left" headers="r4c1-t15 r1c2-t15">
-<p>Select an existing package or type the name of a new package.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t15" headers="r1c1-t15">
-<p>Session Type</p>
-</td>
-<td align="left" headers="r5c1-t15 r1c2-t15">
-<p>Select one of the following:</p>
+<td align="left" headers="r3c1-t16 r1c2-t16">
+<p>Specifies the server to which the EJB module is deployed. You can only deploy EJB modules to a Java EE server such as the GlassFish application server. You can register multiple remote instances of the application server. You can click Add to register a server using the Server Manager.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t15" headers="r1c1-t15">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Stateless</p>
+<td align="left" id="r4c1-t16" headers="r1c1-t16">
+<p>Copy Server JAR Files to Libraries Folder</p>
 </td>
-<td align="left" headers="r6c1-t15 r1c2-t15">
-<p>The bean does not save state information during its conversation with the user. These enterprise beans are useful for simple interactions between client and application service, interactions that are complete in a single method invocation.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t15" headers="r1c1-t15">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Stateful</p>
-</td>
-<td align="left" headers="r7c1-t15 r1c2-t15">
-<p>The bean saves state information during its conversation with the user. These enterprise beans are useful for business processes that require an interaction between client and application service that lasts longer than a single method invocation and requires memory of the state of the interaction.</p>
-<p>An example is an online shopping cart. The end user, through the client program, can order a number of items. The stateful session bean managing the interaction must accumulate items until the end user is ready to review the accumulated order, approve or reject items, and initiate processing of the lot. The stateful session bean has to store the unprocessed items and enable the end user to add more.</p>
+<td align="left" headers="r4c1-t16 r1c2-t16">
+<p>If you are using a dedicated folder for storing libraries, you can select this option to copy the server JAR files required for compilation into the dedicated libraries folder. If not selected, other users will need local copies of the server JAR files to build the project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t15" headers="r1c1-t15">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Singleton</p>
+<td align="left" id="r5c1-t16" headers="r1c1-t16">
+<p>Java EE Version</p>
 </td>
-<td align="left" headers="r8c1-t15 r1c2-t15">
-<p>(Java EE 6) A singleton session bean is instantiated only once per application and exists for the lifecycle of the application. You can create a singleton bean that the container instantiates when the application starts up by using the @Startup annotation.---An example is a bean that is used to intialize data for an application that can be concurrently accessed by many clients.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t15" headers="r1c1-t15">
-<p>Create Interface</p>
-</td>
-<td align="left" headers="r9c1-t15 r1c2-t15">
-<p>Specify which interfaces to create for the session bean:</p>
+<td align="left" headers="r5c1-t16 r1c2-t16">
+<p>Specifies the level of the EJB specification that is used by the EJB.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r10c1-t15" headers="r1c1-t15">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Local</p>
+<td align="left" id="r6c1-t16" headers="r1c1-t16">
+<p>Source Level Recommendations</p>
 </td>
-<td align="left" headers="r10c1-t15 r1c2-t15">
-<p>Allow your session bean to be accessed from clients that are running in the same Java Virtual Machine.</p>
+<td align="left" headers="r6c1-t16 r1c2-t16">
+<p>One of the following checkboxes will appear if JDK 1.5 is set as the default platform in the Java Platform Manager. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r11c1-t15" headers="r1c1-t15">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Remote</p>
+<td align="left" id="r7c1-t16" headers="r1c1-t16">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
 </td>
-<td align="left" headers="r11c1-t15 r1c2-t15">
-<p>Allow your session bean to be accessed from remote clients using remote method calls. This usually means clients that are not running on the session bean's application server. If you select Remote, the IDE can generate a remote interface for the session bean in a Java class library project if the project that you want to contain the interface is open in the IDE. You can choose the project from the dropdown list that lists the open Java class library projects.</p>
+<td align="left" headers="r7c1-t16 r1c2-t16">
+<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t16" headers="r1c1-t16">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r8c1-t16 r1c2-t16">
+<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t16" headers="r1c1-t16">
+<p>Enable Contexts and Dependency Injection</p>
+</td>
+<td align="left" headers="r9c1-t16 r1c2-t16">
+<p>Contexts and Dependency Injection (CDI) is specified by JSR-299. This option is not visible if Java EE 7 Web is set as the Java EE version with Glassfish 4 because it is enabled by default.</p>
+<p>When selected, this option generates a <code>beans.xml</code> file in the project's <code>WEB-INF</code> folder when the project template is created. The <code>beans.xml</code> file is used by CDI to instruct the Java EE-compliant server that the project is a module containing CDI beans.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>When you click <b>Finish</b>, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p><b>Note</b>: If you are creating an EJB module with existing sources, you must click Next to specify existing sources and libraries.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2696">
-<param name="text" value="<html><u>&quot;About Developing with Enterprise Beans&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2697">
-<param name="text" value="<html><u>&quot;Creating an EJB Module Project&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2700">
-<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG207">
+<param name="text" value="<html><u>&quot;Managing and Creating Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

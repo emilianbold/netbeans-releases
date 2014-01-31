@@ -122,7 +122,7 @@ public final class FolderBasedOptionPanel extends JPanel implements ActionListen
     }
     
     String getSelectedLanguage() {
-        return lastSelectedMimeType;
+        return (String)languageCombo.getSelectedItem();
     }
     
     /** This method is called from within the constructor to
