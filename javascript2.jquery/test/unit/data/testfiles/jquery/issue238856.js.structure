@@ -10,7 +10,7 @@ margin:CLASS:[PRIVATE]:ESCAPED{margin}:
   left:FIELD:[PUBLIC]:ESCAPED{left}<font color="#999999">ESCAPED{ : }Number</font>:
   right:FIELD:[PUBLIC]:ESCAPED{right}<font color="#999999">ESCAPED{ : }Number</font>:
   top:FIELD:[PUBLIC]:ESCAPED{top}<font color="#999999">ESCAPED{ : }Number</font>:
-trimester_array:FIELD:[PUBLIC]:ESCAPED{trimester_array}<font color="#999999">ESCAPED{ : }Array</font>:
+trimester_array:VARIABLE:[PRIVATE]:ESCAPED{trimester_array}:
 GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}:
 ovu:CLASS:[PUBLIC]:ESCAPED{ovu}:
   weightGraph:CLASS:[PRIVATE]:ESCAPED{weightGraph}:

@@ -987,6 +987,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue239967.js", "po^ol2[i] = i;", true); 
     }
     
+    public void testIssue241171_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue241171.js", "this.pager.on('empty', this.welco^me, this);", true); 
+    }
+    
+    public void testIssue241171_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue241171.js", "this.pag^er.on('empty', this.welcome, this);", true); 
+    }
+    
+    public void testIssue241171_03() throws Exception {
+        checkOccurrences("testfiles/model/person.js", "Person.prototype.amputate = function(){ this.le^gs-- } ", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
