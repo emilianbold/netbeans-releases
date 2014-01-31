@@ -228,6 +228,9 @@ final class ProjectProperties {
         public boolean put(EditableProperties nue) {
             loaded = true;
             reloadedStackTrace = null;
+            if(!filePropertiesChangedMap.containsKey(path)) {
+                filePropertiesChangedMap.put(path, new AtomicBoolean(false));
+            }
             if (!Utilities.compareObjects(nue, cachedPropertiesFromFile)) {
                 filePropertiesChangedMap.get(path).set(true);
             } else {
