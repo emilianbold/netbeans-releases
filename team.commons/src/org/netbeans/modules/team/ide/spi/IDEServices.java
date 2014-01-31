@@ -190,9 +190,19 @@ public interface IDEServices {
      */
     public void openInFavorites(File workingDir);
 
-
+    /**
+     * Determines whether it is possible to shutdown the IDE or not.
+     * 
+     * @param restart whether it is possible to shutdown with a subsequent restart or without it.
+     * @return <code>true</code> if it is possible to shutdown the IDE, otherwise <code>false</code>. 
+     */
     public boolean providesShutdown(boolean restart);
 
+    /**
+     * Shuts down the IDE. 
+     * 
+     * @param restart <code>true</code> if the IDE is supposed to restart after the shutdown.
+     */
     public void shutdown(boolean restart);
         
     /**
