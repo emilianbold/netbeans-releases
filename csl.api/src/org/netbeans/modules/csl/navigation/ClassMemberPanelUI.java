@@ -50,7 +50,9 @@ import javax.swing.Action;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JLabel;
@@ -106,7 +108,56 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private Lookup lookup;
     private ClassMemberFilters filters;
     
-    private Action[] actions; // General actions for the panel
+    private Action[] actions = new Action[0]; // General actions for the panel
+    
+    private class UpdateFilterState implements Runnable {
+        private final Language language;
+        
+        public UpdateFilterState(Language language) {
+            this.language = language;
+        }
+        
+            @Override
+            public void run() {
+                // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
+                // We don't want filters for all languages. Hardcoded for now.
+                boolean includeFilters = true;
+                if (language != null && language.getStructure() != null) {
+                    StructureScanner scanner = language.getStructure();
+                    Configuration configuration = scanner.getConfiguration();
+                    if (configuration != null) {
+                        includeFilters = configuration.isFilterable();
+                    
+                    List<Action> newActions = new ArrayList<Action>();
+                    
+                    if (configuration.isSortable()) {
+                        newActions.add(new SortByNameAction(filters));
+                        newActions.add(new SortBySourceAction(filters));
+                    }
+                    
+                        if (!includeFilters) {
+                            //issue #132883 workaround
+                            filters.disableFiltering = true;
+                    } else {
+                        filters.disableFiltering = false;
+                        if(! newActions.isEmpty()) {
+                            newActions.add(null);
+                            newActions.add(new FilterSubmenuAction(filters));
+                        }
+                        }
+                    
+                    actions = newActions.toArray(new Action[newActions.size()]);
+                    }
+                }
+            final boolean finalIncludeFilters = includeFilters;
+                    SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                        public void run() {
+                    filtersPanel.setVisible(finalIncludeFilters);
+                }
+            });
+        }
+    };
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI(final Language language) {
@@ -119,41 +170,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                
         filters = new ClassMemberFilters( this );
         filters.getInstance().hookChangeListener(this);
-        
-        actions = new Action[] {            
-            new SortByNameAction( filters ),
-            new SortBySourceAction( filters ),
-            null,
-            new FilterSubmenuAction(filters)            
-        };
 
         // See http://www.netbeans.org/issues/show_bug.cgi?id=186407
         // Making the calls to getStructure() out of AWT EDT
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                // See http://www.netbeans.org/issues/show_bug.cgi?id=128985
-                // We don't want filters for all languages. Hardcoded for now.
-                boolean includeFilters = true;
-                if (language != null && language.getStructure() != null) {
-                    StructureScanner scanner = language.getStructure();
-                    Configuration configuration = scanner.getConfiguration();
-                    if (configuration != null) {
-                        includeFilters = configuration.isFilterable();
-                        if (!includeFilters) {
-                            //issue #132883 workaround
-                            filters.disableFiltering = true;
-                        }
-                        if (!configuration.isSortable()) {
-                            actions = new Action[] {
-                                new FilterSubmenuAction(filters)
-                            };
-                        }
-                    }
-                }
-                if (includeFilters) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+        RP.post(new UpdateFilterState(language));
+        
                             // filters
                             filtersPanel = new TapPanel();
                             filtersLbl = new JLabel(NbBundle.getMessage(ClassMemberPanelUI.class, "LBL_Filter")); //NOI18N
@@ -166,12 +187,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             String keyText = Utilities.keyToString(toggleKey);
                             filtersPanel.setToolTipText(NbBundle.getMessage(ClassMemberPanelUI.class, "TIP_TapPanel", keyText));
                             filtersPanel.add(filters.getComponent());
-                            add(filtersPanel, BorderLayout.SOUTH);
-                        }
-                    });
-                }
-            }
-        });
+                            add(filtersPanel, BorderLayout.SOUTH);  
         manager.setRootContext(ElementNode.getWaitNode());
         
         lookup = ExplorerUtils.createLookup(manager, getActionMap());       
@@ -319,6 +335,9 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                             expandDepth = configuration.getExpandDepth();
                         }
                     }
+                    
+                    new UpdateFilterState(language).run();
+
                     final boolean scrollOnExpand = elementView.getScrollOnExpand();
                     elementView.setScrollOnExpand( false );
                     // impl hack: Node expansion is synced by VisualizerNode to the AWT thread, possibly delayed

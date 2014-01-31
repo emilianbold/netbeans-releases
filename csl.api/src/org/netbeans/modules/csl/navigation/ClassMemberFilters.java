@@ -142,7 +142,7 @@ public final class ClassMemberFilters {
                 result.add(description);
             }
         } else {
-            result = original;
+            result.addAll(original);
         }
 
         Collections.sort(result, isNaturalSort() ? Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR);

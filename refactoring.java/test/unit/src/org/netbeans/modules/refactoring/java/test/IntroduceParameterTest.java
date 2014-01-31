@@ -80,7 +80,7 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                         + "        testMethod();\n"
                         + "    }\n"
                         + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(true, "ERR_NameAlreadyUsedField"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_NameAlreadyUsedField"));
     }
     
     public void test235299b() throws Exception {
