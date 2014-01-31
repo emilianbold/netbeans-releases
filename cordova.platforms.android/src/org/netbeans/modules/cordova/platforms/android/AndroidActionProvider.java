@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
@@ -162,24 +163,29 @@ public class AndroidActionProvider implements ActionProvider {
                             checkDevices = checkDevices(p);
                         }
                     }
-                    try {
-                        build.perform(BuildPerformer.RUN_ANDROID, p);
-                    } catch (UnsupportedOperationException ex) {
-                        NotifyDescriptor not = new NotifyDescriptor(
-                                Bundle.ERR_NO_Cordova(),
-                                Bundle.ERR_Title(),
-                                NotifyDescriptor.OK_CANCEL_OPTION,
-                                NotifyDescriptor.ERROR_MESSAGE,
-                                null,
-                                null);
-                        Object value = DialogDisplayer.getDefault().notify(not);
-                        if (NotifyDescriptor.CANCEL_OPTION != value) {
-                            OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                build.perform(BuildPerformer.RUN_ANDROID, p);
+                            } catch (UnsupportedOperationException ex) {
+                                NotifyDescriptor not = new NotifyDescriptor(
+                                        Bundle.ERR_NO_Cordova(),
+                                        Bundle.ERR_Title(),
+                                        NotifyDescriptor.OK_CANCEL_OPTION,
+                                        NotifyDescriptor.ERROR_MESSAGE,
+                                        null,
+                                        null);
+                                Object value = DialogDisplayer.getDefault().notify(not);
+                                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
+                                }
+                                return;
+                            } catch (IllegalStateException ex) {
+                                StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+                            }
                         }
-                        return;
-                    } catch (IllegalStateException ex) {
-                        StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                    }
+                    });
                 }
             }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
         }

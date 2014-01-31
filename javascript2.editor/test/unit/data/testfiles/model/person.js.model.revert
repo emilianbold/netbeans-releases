@@ -52,7 +52,6 @@ Person        : FUNCTION Person [ANONYMOUS: false, DECLARED: true - Person, MODI
               getRace        : FUNCTION getRace [ANONYMOUS: false, DECLARED: true - getRace, MODIFIERS: PROTECTED, METHOD]
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-              legs           : OBJECT legs [ANONYMOUS: false, DECLARED: false - legs, MODIFIERS: PUBLIC, PROPERTY]
               makeOlder      : FUNCTION makeOlder [ANONYMOUS: false, DECLARED: true - makeOlder, MODIFIERS: PRIVATE, METHOD]
                              # RETURN TYPES
                              @exp;Person@pro;alive, RESOLVED: false

@@ -509,6 +509,23 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 }
             }
         }
+        
+        // Try to find, whether this object is not also property of parent prototype.
+        if (!isDeclared() && getParent() != null) {
+            prototype = getParent().getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                JsObject prototypeProperty = prototype.getProperty(getName());
+                if (prototypeProperty != null && prototypeProperty.isDeclared()) {
+                    // if there is also a property of parent prototype with the same name
+                    // and is declared, move all the occurrences to the declared property
+                    // and this property remove from parent.
+                    for (Occurrence occurrence: getOccurrences()) {
+                        prototypeProperty.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    getParent().getProperties().remove(getName());
+                }
+            } 
+        }
     }
     
     protected void clearOccurrences() {
