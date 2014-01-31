@@ -527,11 +527,13 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             INIT_LOCK.release();
         }
 
-        BorderPane pane = new BorderPane();
-        pane.setCenter( browser );
-        Scene scene = new Scene( pane );
-        scene.setFill( getSceneFillColor() );
-        container.setScene( scene );
+        if( null != container ) {
+            BorderPane pane = new BorderPane();
+            pane.setCenter( browser );
+            Scene scene = new Scene( pane );
+            scene.setFill( getSceneFillColor() );
+            container.setScene( scene );
+        }
 
         if( null != urlToLoad ) {
             _setURL( urlToLoad );

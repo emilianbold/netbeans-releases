@@ -55,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
@@ -117,6 +118,10 @@ public class NbPresenterLeakTest extends NbTestCase {
         assertShowing("button is no longer visible", false, btn);
 
         assertNull ("BufferStrategy was disposed.", dialog.getBufferStrategy ());
+
+        RepaintManager rm = RepaintManager.currentManager(dialog);
+        rm.setDoubleBufferingEnabled(!rm.isDoubleBufferingEnabled());
+        rm.setDoubleBufferingEnabled(!rm.isDoubleBufferingEnabled());
         
         dialog = null;
         wizardDescriptor = null;

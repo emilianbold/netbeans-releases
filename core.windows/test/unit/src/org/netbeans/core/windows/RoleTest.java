@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.junit.*;
+import org.openide.util.Lookup;
 
 import org.openide.windows.*;
 
@@ -128,6 +129,12 @@ public class RoleTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build Unstable #9938, #9950, other builds passed
     public void testKeepDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
+
+        assertNull( wm.getRole() );
+        
+        for( TopComponent tc : TopComponent.getRegistry().getOpened() ) {
+            tc.close();
+        }
 
         TopComponent tc = new TopComponent();
 
