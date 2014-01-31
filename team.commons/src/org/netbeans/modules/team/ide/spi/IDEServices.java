@@ -190,6 +190,11 @@ public interface IDEServices {
      */
     public void openInFavorites(File workingDir);
 
+
+    public boolean providesShutdown(boolean restart);
+
+    public void shutdown(boolean restart);
+        
     /**
      * Creates a date picker component that can be used in task editor UI.
      * May return null.
