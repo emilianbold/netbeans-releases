@@ -867,6 +867,12 @@ final public class WebApplicationPanel extends JPanel
 //                } else {
                     final Node jaxwsClientRoot = jaxwsClientView.createJAXWSClientView( p );
 //                    final Node clientRoot = clientView.createWebServiceClientView(clientSupport.getWsdlFolder());
+                    if (jaxwsClientRoot == null) {
+                        servicesModel = new DefaultComboBoxModel(
+                            new String[]{NbBundle.getMessage(WebApplicationPanel.class, "ERR_NoWebServiceCombo")}); // NOI18N
+                        serviceCombo.setModel(servicesModel);
+                        return;
+                    }
                     final Node[] nodes = jaxwsClientRoot.getChildren().getNodes();
                     if( nodes.length == 0 ){
                         servicesModel = new DefaultComboBoxModel(
