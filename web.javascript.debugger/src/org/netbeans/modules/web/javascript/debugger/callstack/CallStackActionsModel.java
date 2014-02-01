@@ -58,6 +58,7 @@ import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.Models;
@@ -179,10 +180,16 @@ public final class CallStackActionsModel extends ViewModelSupport implements
                     functionName = "(anonymous function)";
                 }
                 frameStr.append(functionName);
-                String sourceName = frame.getScript().getURL().toString();
-                int sourceNameIndex = sourceName.lastIndexOf('/');
-                if (sourceNameIndex > 0) {
-                    sourceName = sourceName.substring(sourceNameIndex + 1);
+                Script script = frame.getScript();
+                String sourceName;
+                if (script != null) {
+                    sourceName = script.getURL().toString();
+                    int sourceNameIndex = sourceName.lastIndexOf('/');
+                    if (sourceNameIndex > 0) {
+                        sourceName = sourceName.substring(sourceNameIndex + 1);
+                    }
+                } else {
+                    sourceName = "?";
                 }
                 frameStr.append(" (");
                 frameStr.append(sourceName);
