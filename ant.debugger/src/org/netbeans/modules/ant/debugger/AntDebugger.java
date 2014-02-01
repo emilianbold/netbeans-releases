@@ -93,6 +93,7 @@ public class AntDebugger extends ActionsProviderSupport {
     
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor     actionsRequestProcessor;
+    private static RequestProcessor     killRequestProcessor;
     
     private AntProjectCookie            antCookie;
     private AntDebuggerEngineProvider   engineProvider;
@@ -153,6 +154,7 @@ public class AntDebugger extends ActionsProviderSupport {
     // ActionsProvider .........................................................
     
     private static final Set actions = new HashSet ();
+    private static final Set actionsToDisable = new HashSet ();
     static {
         actions.add (ActionsManager.ACTION_KILL);
         actions.add (ActionsManager.ACTION_CONTINUE);
@@ -160,6 +162,9 @@ public class AntDebugger extends ActionsProviderSupport {
         actions.add (ActionsManager.ACTION_STEP_INTO);
         actions.add (ActionsManager.ACTION_STEP_OVER);
         actions.add (ActionsManager.ACTION_STEP_OUT);
+        actionsToDisable.addAll(actions);
+        // Ignore the KILL action
+        actionsToDisable.remove(ActionsManager.ACTION_KILL);
     }
     
     @Override
@@ -199,9 +204,25 @@ public class AntDebugger extends ActionsProviderSupport {
     
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        for (Iterator it = actions.iterator(); it.hasNext(); ) {
-            setEnabled (it.next(), false);
+        if (action == ActionsManager.ACTION_KILL) {
+            synchronized (AntDebugger.class) {
+                if (killRequestProcessor == null) {
+                    killRequestProcessor = new RequestProcessor("Ant debugger finish RP", 1);
+                }
+            }
+            killRequestProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doAction(action);
+                    } finally {
+                        actionPerformedNotifier.run();
+                    }
+                }
+            });
+            return ;
         }
+        setDebugActionsEnabled(false);
         synchronized (AntDebugger.class) {
             if (actionsRequestProcessor == null) {
                 actionsRequestProcessor = new RequestProcessor("Ant debugger actions RP", 1);
@@ -214,12 +235,16 @@ public class AntDebugger extends ActionsProviderSupport {
                     doAction(action);
                 } finally {
                     actionPerformedNotifier.run();
-                    for (Iterator it = actions.iterator(); it.hasNext(); ) {
-                        setEnabled (it.next(), true);
-                    }
+                    setDebugActionsEnabled(true);
                 }
             }
         });
+    }
+    
+    private void setDebugActionsEnabled(boolean enabled) {
+        for (Object action : actionsToDisable) {
+            setEnabled(action, enabled);
+        }
     }
     
     

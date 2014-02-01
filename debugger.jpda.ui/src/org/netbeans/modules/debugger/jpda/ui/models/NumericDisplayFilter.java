@@ -103,6 +103,13 @@ NodeActionsProviderFilter, Constants {
             node instanceof Variable && 
             isIntegralType ((Variable) node)
         ) {
+            if (node instanceof JPDAWatch) {
+                JPDAWatch w = (JPDAWatch) node;
+                String e = w.getExceptionDescription ();
+                if (e == null) {
+                    VariablesTableModel.setErrorValueMsg(w, null);
+                }
+            }
             Variable var = (Variable) node;
             NumericDisplaySettings nds = variableToDisplaySettings.get (var);
             if (nds == null && var instanceof Field) {
