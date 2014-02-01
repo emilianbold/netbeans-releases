@@ -76,6 +76,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.refactoring.java.Bundle.*;
 
 @NbBundle.Messages({"WARN_ElementNotFound=The destination was not found."})
 public class WhereUsedElement extends SimpleRefactoringElementImplementation implements FiltersManager.Filterable {
@@ -159,8 +160,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
     @Override
     public void openInEditor() {
         if(parentFile == null || !parentFile.isValid()) {
-             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(SimpleRefactoringElementImplementation.class, "WARN_ElementNotFound"));
+             StatusDisplayer.getDefault().setStatusText(WARN_ElementNotFound());
         } else {
             super.openInEditor();
         }
