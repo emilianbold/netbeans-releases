@@ -71,16 +71,13 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         String source;
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t; public class A {\n"
-                        + "    private final String introduced;\n"
+                        + "    private String introduced;\n"
                         + "    public static void testMethod() {\n"
                         + "         String[] args = null;\n"
-                        + "    }\n"
-                        + "\n"
-                        + "    public static void main(string[] args) {\n"
-                        + "        testMethod();\n"
+                        + "         introduced = \"\";\n"
                         + "    }\n"
                         + "}\n"));
-        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(false, "ERR_NameAlreadyUsedField"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(true, "ERR_NameAlreadyUsed"));
     }
     
     public void test235299b() throws Exception {
@@ -97,6 +94,37 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                         + "    }\n"
                         + "}\n"));
         performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(true, "ERR_NameAlreadyUsed"));
+    }
+    
+    public void test235299c() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    private final String introduced;\n"
+                        + "    public static void testMethod() {\n"
+                        + "         String[] args = null;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(string[] args) {\n"
+                        + "        testMethod();\n"
+                        + "    }\n"
+                        + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false);
+    }
+    
+    public void test235299d() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    public static void testMethod() {\n"
+                        + "         String[] args = null;\n"
+                        + "         introduced();\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void introduced() {\n"
+                        + "    }\n"
+                        + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false);
     }
     
     public void test231635() throws Exception {
