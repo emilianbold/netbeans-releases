@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
  */
 public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
+    private static final EnumSet<ElementKind> VARIABLES = EnumSet.of(ElementKind.FIELD, ElementKind.ENUM_CONSTANT, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER, ElementKind.TYPE_PARAMETER, ElementKind.RESOURCE_VARIABLE);
     private IntroduceParameterRefactoring refactoring;
     private TreePathHandle treePathHandle;
     private Set<ElementHandle<ExecutableElement>> allMethods;
@@ -121,6 +122,16 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 
                         return sameName && element != variableElement;
                     }
+
+                    @Override
+                    public Boolean visitIdentifier(IdentifierTree it, String p) {
+                        super.visitIdentifier(it, p);
+                        TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), it);
+                        Element element = javac.getTrees().getElement(path);
+                        boolean sameName = VARIABLES.contains(element.getKind()) && it.getName().contentEquals(p) && !element.equals(parameterElement);
+                
+                        return sameName && element != variableElement;
+                    }
                 
                     @Override
                     public Boolean reduce(Boolean left, Boolean right) {
@@ -132,35 +143,6 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     if (!isParameterBeingRemoved(method, name, paramTable)) {
                         p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
                     }
-                }
-                
-                Scope s = javac.getTrees().getScope(resolved);
-                OUTER:
-                while (s != null) {
-                    for (Element element : javac.getElementUtilities().getLocalMembersAndVars(s, new ElementUtilities.ElementAcceptor() {
-                        @Override
-                        public boolean accept(Element e, TypeMirror type) {
-                            return true;
-                        }
-                    })) {
-                        if(element.getKind() == ElementKind.FIELD || element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER || element.getKind() == ElementKind.RESOURCE_VARIABLE) {
-                            boolean sameName = element.getSimpleName().contentEquals(name) && !element.equals(parameterElement);
-                            if (sameName) {
-                                if(!element.equals(variableElement) && element.getEnclosingElement() != method) {
-                                    if (!isParameterBeingRemoved(method, name, paramTable)) {
-                                        if(element.getKind() == ElementKind.FIELD) {
-                                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsedField", name)); // NOI18N
-                                        } else {
-                                            p = createProblem(p, false, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
-                                        }
-                                        
-                                        break OUTER;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    s = s.getEnclosingScope();
                 }
                 
                 return p;
