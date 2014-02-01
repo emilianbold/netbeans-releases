@@ -31,14 +31,11 @@
 package org.netbeans.modules.csl.core;
 
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -51,7 +48,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.util.NbBundle;
 
 
 public class GsfReformatTask implements ReformatTask {
@@ -90,46 +86,34 @@ public class GsfReformatTask implements ReformatTask {
         return formatter;
     }
 
-    @Override
     public void reformat () throws BadLocationException {
         final Formatter f = getFormatter();
         
         if (f != null) {
             if (f.needsParserResult()) {
-                final AtomicBoolean cancel = new AtomicBoolean();
-                ProgressUtils.runOffEventDispatchThread(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                    ParserManager.parse(
-                                            Collections.<Source>singleton(source),
-                                            new UserTask() {
-                                                @Override
-                                                public void run(ResultIterator resultIterator) throws ParseException {
-                                                    if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
-                                                        Parser.Result parserResult = (ParserResult) resultIterator.getParserResult();
-                                                        if (!(parserResult instanceof ParserResult)) {
-                                                            return;
-                                                        }
+                try {
+                    ParserManager.parse (
+                        Collections.<Source> singleton (source),
+                        new UserTask () {
+                            public void run (ResultIterator resultIterator) throws ParseException {
+                                if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
+                                    Parser.Result parserResult = (ParserResult) resultIterator.getParserResult();
+                                    if (!(parserResult instanceof ParserResult)) {
+                                        return;
+                                    }
 
-                                                        f.reformat(context, (ParserResult) parserResult);
-                                                    }
+                                    f.reformat(context, (ParserResult)parserResult);
+                                }
 
-                                                    for (Embedding e : resultIterator.getEmbeddings()) {
-                                                        run(resultIterator.getResultIterator(e));
-                                                    }
-                                                }
-                                            }
-                                    );
-                                } catch (ParseException e) {
-                                    LOG.log(Level.WARNING, null, e);
+                                for (Embedding e : resultIterator.getEmbeddings()) {
+                                    run(resultIterator.getResultIterator(e));
                                 }
                             }
-                        },
-                        NbBundle.getMessage(GsfReformatTask.class, "NM_REFORMAT"),
-                        cancel,
-                        false);
+                        }
+                    );
+                } catch (ParseException e) {
+                    LOG.log(Level.WARNING, null, e);
+                }
             } else {
                 f.reformat (context, null);
             }
