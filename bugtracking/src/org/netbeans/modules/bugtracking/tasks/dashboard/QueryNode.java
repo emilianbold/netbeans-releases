@@ -134,12 +134,14 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
-            if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-            } else {
-                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+            synchronized(LOCK) {
+                if (DashboardViewer.getInstance().containsActiveTask(this)) {
+                    lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+                } else {
+                    lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+                }
+                lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
             }
-            lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
         }
     }
 
