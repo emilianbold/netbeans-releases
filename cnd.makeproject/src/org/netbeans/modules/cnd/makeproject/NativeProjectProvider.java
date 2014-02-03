@@ -653,6 +653,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return vec;
     }
 
+    @Override
+    public List<String> getIncludeFiles() {
+        return Collections.emptyList();
+    }
+
     /**
      * Returns a list <String> of compiler defined macro definitions used when parsing 'orpan' source files.
      * @return a list <String> of compiler defined macro definitions.

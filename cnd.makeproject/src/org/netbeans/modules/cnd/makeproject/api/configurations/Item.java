@@ -695,6 +695,11 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
+    public List<String> getIncludeFiles() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public List<String> getSystemMacroDefinitions() {
         List<String> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
