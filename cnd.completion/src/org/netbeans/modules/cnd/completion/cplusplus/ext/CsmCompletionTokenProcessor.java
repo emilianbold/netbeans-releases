@@ -43,14 +43,15 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
-import org.netbeans.api.lexer.TokenId;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.CndTokenProcessor;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression.*;
 
 /**
@@ -321,6 +322,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case GT:
                         lookaheadTokensLtgtsLevel--;
                         break;
+//                    case GTGT:
+//                        lookaheadTokensLtgtsLevel -= 2;
+//                        break;
                     case LPAREN:
                         lookaheadTokensParensLevel++;
                         break;
@@ -375,6 +379,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             case GT:
                 tempLookaheadTokensLtgtsLevel--;
                 break;
+//            case GTGT:
+//                tempLookaheadTokensLtgtsLevel -= 2;
+//                break;
             case LPAREN:
                 tempLookaheadTokensParensLevel++;
                 break;
@@ -1514,31 +1521,23 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
                                 case ARRAY: // chack for "List<String[]" plus ">" case
                                 case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
-                                    int cnt = expStack.size();
-                                    CsmCompletionExpression genTop = null;
-                                    CsmCompletionExpression genBottom = null;
-                                    for (int i = 0; i < cnt; i++) {
-                                        CsmCompletionExpression expr = peekExp(i + 1);
-                                        if (expr.getExpID() == GENERIC_TYPE_OPEN) {
-                                            CsmCompletionExpression expr2 = peekExp(i + 2);
-                                            if (getValidExpID(expr2) == GENERIC_TYPE_OPEN) {
-                                                genTop = expr;
-                                                genBottom = expr2;
-                                                break;
+                                    int gtoIndex = findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN);
+                                    gtoIndex = (gtoIndex >= 0 ? findNextExpr(gtoIndex, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN) : -1);
+                                    if (gtoIndex >= 0) {
+                                        genericType = true;
+                                        for (int iterCount = 0; iterCount < 2; iterCount++) {
+                                            CsmCompletionExpression gen = peekExp(findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN));
+                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                                gen.addParameter(popExp());
+                                            }
+                                            gen.setExpID(GENERIC_TYPE);
+                                            top = gen;
+
+                                            if (iterCount == 0) {
+                                                // TODO: think if this should be refactored
+                                                checkJoin(CppTokenId.GT);
                                             }
                                         }
-                                    }
-                                    if (genTop != null && genBottom != null) {
-                                        while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
-                                            genTop.addParameter(popExp());
-                                        }
-                                        genTop.setExpID(GENERIC_TYPE);
-                                        popExp();
-                                        genBottom.addParameter(genTop);
-                                        genBottom.setExpID(GENERIC_TYPE);
-                                        top = genBottom;
-
-                                        genericType = true;
                                     }
                                     break;
 
@@ -2837,6 +2836,22 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @Override
     public boolean isStopped() {
         return false;
+    }
+
+    private int findNextExpr(int from, int targetId, int ... restrictedIds) {
+        int cnt = expStack.size();
+        for (int i = from; i < cnt; i++) {
+            CsmCompletionExpression expr = peekExp(i + 1);
+            for (int restricted : restrictedIds) {
+                if (expr.getExpID() == restricted) {
+                    return -1;
+                }
+            }                     
+            if (expr.getExpID() == targetId) {
+                return i + 1;
+            }
+        }
+        return -1;
     }
     
     private boolean checkExp(CsmCompletionExpression exp, int expId) {
