@@ -107,12 +107,14 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 @NbBundle.Messages("PHPDocNotFound=PHPDoc not found")
-class DocRenderer {
-
+final class DocRenderer {
     private static final String TD_STYLE = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;\" ";  //NOI18N
     private static final String TD_STYLE_MAX_WIDTH = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;width:80%;\" ";  //NOI18N
     private static final String TABLE_STYLE = "style=\"border: 0px; width: 100%;\""; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+
+    private DocRenderer() {
+    }
 
     static Documentation document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
@@ -240,10 +242,10 @@ class DocRenderer {
             LINK_TAGS.add("@see");
             LINK_TAGS.add("@use");
         }
-        private CCDocHtmlFormatter header;
-        private StringBuilder phpDoc = new StringBuilder();;
-        private PhpElement indexedElement;
-        private List<String> links = new ArrayList<>();
+        private final CCDocHtmlFormatter header;
+        private final StringBuilder phpDoc = new StringBuilder();;
+        private final PhpElement indexedElement;
+        private final List<String> links = new ArrayList<>();
 
         public PHPDocExtractor(CCDocHtmlFormatter header, PhpElement indexedElement) {
             this.header = header;
@@ -347,7 +349,9 @@ class DocRenderer {
                             if (node instanceof PHPDocVarTypeTag) {
                                 PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
                                 String type = composeType(varTypeTag.getTypes());
-                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
+                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>",
+                                        varTypeTag.getDocumentation(),
+                                        type))); //NOI18N
                             } else {
                                 phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
                             }
@@ -484,7 +488,12 @@ class DocRenderer {
         private String composeParameterLine(PHPDocVarTypeTag param) {
             String type = composeType(param.getTypes());
             String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>%n", //NOI18N
-                    TD_STYLE, type, TD_STYLE, param.getVariable().getValue(), TD_STYLE_MAX_WIDTH, param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
+                    TD_STYLE,
+                    type,
+                    TD_STYLE,
+                    param.getVariable().getValue(),
+                    TD_STYLE_MAX_WIDTH,
+                    param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
             return pline;
         }
 
@@ -589,8 +598,8 @@ class DocRenderer {
         }
 
         static final class PhpDocumentationImpl implements PhpDocumentation {
-            private String description;
-            private URL url;
+            private final String description;
+            private final URL url;
 
             private PhpDocumentationImpl(String description, URL url) {
                 this.description = description;
