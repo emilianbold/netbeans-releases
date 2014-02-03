@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -121,7 +123,15 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
         if (webSourceDir == null) {
             webSourceDir = "src/main/webapp"; // NOI18N
         }
-        return projectDir.getFileObject(webSourceDir);
+
+        // Try to find root using relative path
+        FileObject sourceRoot = projectDir.getFileObject(webSourceDir);
+        if (sourceRoot != null) {
+            return sourceRoot;
+        }
+
+        // Try to find resources root using absolute path --> See issue #241205
+        return FileUtil.toFileObject(new File(webSourceDir));
     }
 
     /**
