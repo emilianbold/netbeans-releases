@@ -697,7 +697,10 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
                     if (path != null) {
                         // if the file is inside base folder then remove base folder path prefix
                         // and show only the relative location in the list
-                        final String baseFolderPath = model.getBaseFolder().getAbsolutePath();
+                        String baseFolderPath = model.getBaseFolder().getAbsolutePath();
+                        if (!baseFolderPath.endsWith(File.separator)) {
+                            baseFolderPath = baseFolderPath + File.separatorChar;
+                        }
                         final String absolutePath;
                         if (new File(path).isAbsolute()) {
                             absolutePath = path;
@@ -705,7 +708,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
                             absolutePath = PropertyUtils.resolveFile(model.getNBProjectFolder(), path).getAbsolutePath();
                         }
                         if (absolutePath.startsWith(baseFolderPath)) {
-                            path = absolutePath.substring(baseFolderPath.length() + 1);
+                            path = absolutePath.substring(baseFolderPath.length());
                         }
                         listModel.addElement(path);
                     }
