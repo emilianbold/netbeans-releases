@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="WinSysBrandingOverride">
+    <api name="winsys"/>
+    <summary>Override window system branding properties</summary>
+    <version major="6" minor="69"/>
+    <date day="3" month="2" year="2014"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>It is possible to override boolean window system properties defined in resource bundle <code>org/netbeans/core/windows/Bundle.properties</code>
+        with system properties prefixed with "<i>NB.WinSys.</i>". For example property
+            <code>Mix.Editors.And.Views.Enabled</code> can be overriden with a command-line switch
+            <code>-J-DNB.WinSys.Mix.Editors.And.Views.Enabled=false</code>.
+        </p>
+    </description>
+</change>
 <change id="COS_redirector">
     <api name="winsys"/>
     <summary>Abstract class CloneableOpenSupportRedirector added</summary>
