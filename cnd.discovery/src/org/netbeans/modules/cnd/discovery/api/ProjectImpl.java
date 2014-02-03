@@ -280,6 +280,11 @@ public final class ProjectImpl implements ProjectProperties {
     public List<String> getUserInludePaths() {
         return new ArrayList<String>(userIncludes);
     }
+
+    @Override
+    public List<String> getUserInludeFiles() {
+        return Collections.emptyList();
+    }
     
     @Override
     public List<String> getSystemInludePaths() {
@@ -320,6 +325,7 @@ public final class ProjectImpl implements ProjectProperties {
     private static final class ItemWrapper implements SourceFileProperties {
         private final Item item;
         private final List<String> userIncludePaths;
+        private final List<String> userIncludeFiles;
         private final Map<String, String> userMacroDefinitions;
         private final List<String> userUndefinesMacros;
         private final String importantFlags;
@@ -327,6 +333,7 @@ public final class ProjectImpl implements ProjectProperties {
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
+            userIncludeFiles = new ArrayList<String>(item.getIncludeFiles());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
             userUndefinesMacros =  new ArrayList<String>(item.getUndefinedMacros());
             importantFlags = item.getImportantFlags();
@@ -381,6 +388,11 @@ public final class ProjectImpl implements ProjectProperties {
         @Override
         public List<String> getUserInludePaths() {
             return userIncludePaths;
+        }
+
+        @Override
+        public List<String> getUserInludeFiles() {
+            return userIncludeFiles;
         }
 
         @Override
