@@ -447,7 +447,8 @@ public class ProfilerLauncher {
                 if (platformDelegate == null) {
                     return null;
                 }
-                return platformDelegate.getProperties().get("platform.work.folder");   //NOI18N
+                String workdir = platformDelegate.getProperties().get("platform.work.folder");                
+                return (workdir.endsWith("/"))?(workdir):(workdir+"/");   //NOI18N
             }
         }
         return null;
