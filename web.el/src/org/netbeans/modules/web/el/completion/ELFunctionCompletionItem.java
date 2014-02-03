@@ -45,7 +45,9 @@ package org.netbeans.modules.web.el.completion;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -116,8 +118,8 @@ final class ELFunctionCompletionItem extends DefaultCompletionProposal {
     private class FunctionElementHandle extends ELElementHandle {
 
         @Override
-        String document(ParserResult info) {
-            return description;
+        Documentation document(ParserResult info, Callable<Boolean> cancel) {
+            return Documentation.create(description);
         }
 
         @Override

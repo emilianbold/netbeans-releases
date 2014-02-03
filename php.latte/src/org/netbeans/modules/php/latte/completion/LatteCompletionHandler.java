@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -264,7 +265,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
     }
 
     @Override
-    public Documentation documentElement(ParserResult info, ElementHandle element) {
+    public Documentation documentElement(ParserResult info, ElementHandle element, Callable<Boolean> cancel) {
         Documentation result = null;
         if (element instanceof LatteElement) {
             result = Documentation.create(((LatteElement) element).getDocumentationText(), documentationUrl);
