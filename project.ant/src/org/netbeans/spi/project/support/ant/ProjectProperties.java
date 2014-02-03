@@ -178,7 +178,7 @@ final class ProjectProperties {
         
         //#239999 - preventing properties file from saving, when no changes are done
         private final Map<String,AtomicBoolean> filePropertiesChangedMap = new HashMap<String, AtomicBoolean>();
-        private EditableProperties cachedPropertiesFromFile = null;
+        private final Map<String,EditableProperties> cachedPropertiesFromFile = new HashMap<String, EditableProperties>();
         
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
@@ -214,7 +214,8 @@ final class ProjectProperties {
                         } finally {
                             is.close();
                         }
-                        properties = cachedPropertiesFromFile = p;
+                        properties = p;
+                        cachedPropertiesFromFile.put(path, p);
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
@@ -231,7 +232,7 @@ final class ProjectProperties {
             if(!filePropertiesChangedMap.containsKey(path)) {
                 filePropertiesChangedMap.put(path, new AtomicBoolean(false));
             }
-            if (!Utilities.compareObjects(nue, cachedPropertiesFromFile)) {
+            if (!Utilities.compareObjects(nue, cachedPropertiesFromFile.get(path))) {
                 filePropertiesChangedMap.get(path).set(true);
             } else {
                 filePropertiesChangedMap.get(path).set(false);

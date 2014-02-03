@@ -325,8 +325,9 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             if (locationFO != null) {
                 String targetFolderPath = FileUtil.toFile(locationFO).getAbsolutePath();
                 String className = tfClassName.getText();
-                String packageName = className.substring(0, className.lastIndexOf('.'));
-                String fileName = className.substring(className.lastIndexOf('.')+ 1);
+                int index = className.lastIndexOf('.'); // index == -1 most probably means class is under <default package>
+                String packageName = index == -1 ? "" : className.substring(0, index);
+                String fileName = index == -1 ? className : className.substring(index + 1);
                 FileObject testFolderFO = FileUtil.toFileObject(new File(targetFolderPath.concat(File.separator).concat(packageName.replace(".", "/"))));
                 if(testFolderFO != null) {
                     for(FileObject testClassFO : testFolderFO.getChildren()) {

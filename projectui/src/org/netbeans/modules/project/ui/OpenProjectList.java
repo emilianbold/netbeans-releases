@@ -831,13 +831,21 @@ public final class OpenProjectList {
             }
         }
 
+        final List<Project> openprjs = new ArrayList<Project>();
+        final boolean _recentProjectsChanged = recentProjectsChanged;
+        MUTEX.readAccess(new Mutex.Action<Void>() {
+            public @Override Void run() {
+                openprjs.addAll(openProjects);
+                return null;
+            }
+        });
+        final List<UnloadedProjectInformation> openProjectsData = projects2Unloaded(openprjs);
         Thread.interrupted(); // just to clear status
 
-        final boolean _recentProjectsChanged = recentProjectsChanged;
-            MUTEX.writeAccess(new Mutex.Action<Void>() {
+        MUTEX.writeAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
                 newprjs.addAll(openProjects);
-                saveProjectList(openProjects);
+                saveProjectList(openProjectsData);
                 if (_recentProjectsChanged) {
                     recentProjects.save();
                 }
@@ -930,7 +938,6 @@ public final class OpenProjectList {
                 }
                 if (someClosed.get()) {
                     newprjs.addAll(openProjects);
-                    saveProjectList(openProjects);
                 }
                 if (mainClosed.get()) {
                     mainProject = null;
@@ -939,6 +946,15 @@ public final class OpenProjectList {
                 return null;
             }
             });
+            if (someClosed.get()) {
+                final List<UnloadedProjectInformation> uns = projects2Unloaded(newprjs);
+                MUTEX.writeAccess(new Mutex.Action<Void>() {
+                public @Override Void run() {
+                    saveProjectList(uns);
+                    return null;
+                }
+                });
+            }
             if (!notifyList.isEmpty() && !groupChanging.get()) {
                 MUTEX.writeAccess(new Mutex.Action<Void>() {
                 public @Override Void run() {
@@ -1391,20 +1407,33 @@ public final class OpenProjectList {
         return projects;
     }
     
-  
-    private static void saveProjectList( List<Project> projects ) {
-        assert MUTEX.isWriteAccess();
-        List<URL> URLs = projects2URLs( projects );
-        OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
-        List<String> names = new ArrayList<String>();
-        List<ExtIcon> icons = new ArrayList<ExtIcon>();
+    private static List<UnloadedProjectInformation> projects2Unloaded( List<Project> projects ) {
+        assert !MUTEX.isReadAccess() && !MUTEX.isWriteAccess(); //using ProjectUtils.getInformation() - aquires project mutex
+        List<UnloadedProjectInformation> toRet = new ArrayList<UnloadedProjectInformation>();
         for (Project p : projects) {
             ProjectInformation prjInfo = ProjectUtils.getInformation(p);
-            names.add(prjInfo.getDisplayName());
+            URL u = p.getProjectDirectory().toURL();
+            if (u != null) {
+                toRet.add(ProjectInfoAccessor.DEFAULT.getProjectInfo(prjInfo.getDisplayName(), prjInfo.getIcon(), u));
+            }
+        }
+        return toRet;
+    }
+  
+  
+    private static void saveProjectList( List<UnloadedProjectInformation> projects ) {
+        assert MUTEX.isWriteAccess();
+        List<URL> URLs = new ArrayList<URL>();
+        List<String> names = new ArrayList<String>();
+        List<ExtIcon> icons = new ArrayList<ExtIcon>();
+        for (UnloadedProjectInformation p : projects) {
+            names.add(p.getDisplayName());
+            URLs.add(p.getURL());
             ExtIcon extIcon = new ExtIcon();
-            extIcon.setIcon(prjInfo.getIcon());
+            extIcon.setIcon(p.getIcon());
             icons.add(extIcon);
         }
+        OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
         OpenProjectListSettings.getInstance().setOpenProjectsDisplayNames(names);
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
