@@ -284,45 +284,39 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      * @return Problem returns a generic problem message if the check fails
      */
     @Override
+    @NbBundle.Messages({"# {0} - VariableName", "ERR_VarNotInBlockOrMethod=Variable \"{0}\" is not inside a block or method declaration."})
     public Problem preCheck() {
         cancelRequest = false;
         cancelRequested.set(false);
-//        Element[] refElements = refactoring.getRefactoredObjects();
-//        for(int i = 0;i < refElements.length; ++i) {
-//            Element refactoredObject = refElements[i];
-//            boolean validType = refactoredObject instanceof ClassMember
-//                    || refactoredObject instanceof LocalVariable
-//                    || refactoredObject instanceof Resource;
-//            if(!validType) {
-//                String errMsg = NbBundle.getMessage(SafeDeleteRefactoringPlugin.class,
-//                        "ERR_SafeDel_InvalidType"); // NOI18N
-//                return new Problem(true,errMsg);
-//            }
-//            
-//            if (!CheckUtils.isInOpenProject(refactoredObject)) {
-//                return new Problem(true, NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "ERR_ProjectNotOpened"));
-//            }
-//        }
-        return super.preCheck();
-    }
-
-    @Override
-    @NbBundle.Messages({"# {0} - VariableName", "ERR_VarNotInBlockOrMethod=Variable \"{0}\" is not inside a block or method declaration."})
-    protected Problem preCheck(CompilationController javac) throws IOException {
+        final Problem[] problem = new Problem[1];
         Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        for (TreePathHandle treePathHandle : handles) {
-            TreePath selectedTree = treePathHandle.resolve(javac);
-            if(selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
-                switch (selectedTree.getParentPath().getLeaf().getKind()) {
-                    case BLOCK:
-                    case METHOD:
-                        break;
-                    default:
-                        return new Problem(true, ERR_VarNotInBlockOrMethod(selectedTree.getLeaf().toString()));
-                }
+        for (final TreePathHandle tph : handles) {
+            JavaSource js = JavaSource.forFileObject(tph.getFileObject());
+            if (js==null) {
+                return null;
+            }
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController javac) throws Exception {
+                        TreePath selectedTree = tph.resolve(javac);
+                        if(selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                            switch (selectedTree.getParentPath().getLeaf().getKind()) {
+                                case BLOCK:
+                                case METHOD:
+                                    break;
+                                default:
+                                    problem[0] = new Problem(true, ERR_VarNotInBlockOrMethod(selectedTree.getLeaf().toString()));
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         }
-        return super.preCheck(javac);
+        return problem[0];
     }
     
     /**
@@ -398,13 +392,10 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         }
         return null;
     }
-    
+
     @Override
     protected JavaSource getJavaSource(Phase p) {
-        switch (p) {
-        default: 
-            return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
-        }
+        return null;
     }
     
     private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
