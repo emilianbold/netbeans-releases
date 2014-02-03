@@ -117,12 +117,14 @@ class DocRenderer {
     static Documentation document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
-            return Documentation.create(pHPDOCTagElement.getDoc());
+            String doc = pHPDOCTagElement.getDoc();
+            return Documentation.create(doc == null ? Bundle.PHPDocNotFound() : doc);
         }
 
         if (element instanceof PredefinedSymbolElement) {
             PredefinedSymbolElement predefinedSymbolElement = (PredefinedSymbolElement) element;
-            return Documentation.create(predefinedSymbolElement.getDoc());
+            String doc = predefinedSymbolElement.getDoc();
+            return Documentation.create(doc == null ? Bundle.PHPDocNotFound() : doc);
         }
 
         if (element instanceof PhpElement) {
