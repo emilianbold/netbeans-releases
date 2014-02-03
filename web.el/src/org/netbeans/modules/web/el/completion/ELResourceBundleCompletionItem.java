@@ -44,11 +44,13 @@ package org.netbeans.modules.web.el.completion;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -136,7 +138,7 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     private class ResourceBundleElementHandle extends ELElementHandle {
 
         @Override
-        String document(ParserResult info) {
+        Documentation document(ParserResult info, Callable<Boolean> cancel) {
             StringBuilder buf = new StringBuilder();
             
             Map<String, String> entries = bundles.getEntries(bundle.getVar());
@@ -149,7 +151,7 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
                 buf.append("</font>"); //NOI18N
                 buf.append("<br>"); //NOI18N
             }
-            return buf.toString();
+            return Documentation.create(buf.toString());
         }
 
         @Override

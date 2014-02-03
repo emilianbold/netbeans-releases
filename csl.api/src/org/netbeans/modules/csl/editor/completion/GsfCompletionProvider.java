@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -538,7 +539,12 @@ public class GsfCompletionProvider implements CompletionProvider {
 
         private void resolveDocumentation(ParserResult controller) throws IOException {
             if (element != null) {
-                documentation = GsfCompletionDoc.create(controller, element);
+                documentation = GsfCompletionDoc.create(controller, element, new Callable<Boolean>(){
+                    @Override
+                    public Boolean call() throws Exception {
+                        return isTaskCancelled();
+                    }
+                });
             } else {
                 Env env = getCompletionEnvironment(controller, false);
                 int offset = env.getOffset();
@@ -562,7 +568,12 @@ public class GsfCompletionProvider implements CompletionProvider {
                         for (CompletionProposal proposal : result.getItems()) {
                             ElementHandle el = proposal.getElement();
                             if (el != null) {
-                                documentation = GsfCompletionDoc.create(controller, el);
+                                documentation = GsfCompletionDoc.create(controller, el, new Callable<Boolean>(){
+                                    @Override
+                                    public Boolean call() throws Exception {
+                                        return isTaskCancelled();
+                                    }
+                                });
                                 // TODO - find some way to show the multiple overloaded methods?
                                 if (documentation.getText() != null && documentation.getText().length() > 0) {
                                     // Make sure we at least pick an alternative that has documentation

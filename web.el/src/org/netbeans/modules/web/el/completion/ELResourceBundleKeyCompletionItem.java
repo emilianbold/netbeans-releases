@@ -43,7 +43,9 @@ package org.netbeans.modules.web.el.completion;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -107,8 +109,8 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
     private class ResourceBundleItemElementHandle extends ELElementHandle {
 
         @Override
-        String document(ParserResult info) {
-            return key + "=" + "<font color='#ce7b00'>" + value + "</font>"; //NOI18N
+        Documentation document(ParserResult info, Callable<Boolean> cancel) {
+            return Documentation.create(key + "=" + "<font color='#ce7b00'>" + value + "</font>"); //NOI18N
         }
 
         @Override
