@@ -241,12 +241,12 @@ public class PredefinedPanel extends javax.swing.JPanel {
     }
 
     boolean isChanged() {
-        boolean isChanged = settingsReseted;
+        boolean isChanged = false;
         if (this.includesPanel != null) {
-            isChanged |= this.includesPanel.isChanged();
+            isChanged |= !compiler.getSystemIncludeDirectories().equals(includesPanel.getListData());
         }
         if (this.definitionsPanel != null) {
-            isChanged |= this.definitionsPanel.isChanged();
+            isChanged |= !compiler.getSystemPreprocessorSymbols().equals(definitionsPanel.getListData());
         }
         if (CodeAssistancePanelController.TRACE_CODEASSIST) {
             System.err.println("isChanged for PredefinedPanel " + compiler.getName() + " is " + isChanged); // NOI18N
