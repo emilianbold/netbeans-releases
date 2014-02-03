@@ -81,6 +81,22 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
         verifyContent(src);
     }
     
+    public void testVariable() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    int i;\n"
+                        + "    public A() {\n"
+                        + "    }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("i;") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public A() {\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void testForVariable() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
