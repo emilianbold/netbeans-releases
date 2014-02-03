@@ -130,7 +130,7 @@ public final class TwigTopLexer implements Lexer<TwigTopTokenId> {
 
             switch (state.main) {
                 case RAW:
-                    if (CharSequenceUtilities.endsWith(text, "%}")) { //NOI18N
+                    if (CharSequenceUtilities.endsWith(text, CLOSE_BLOCK)) {
                         Matcher matcher = END_RAW.matcher(text);
                         if (matcher.find()) {
                             String captured = matcher.group();
