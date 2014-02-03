@@ -709,6 +709,7 @@ public abstract class PositionEstimator {
             seq.move(sectionStart);
             seq.moveNext();
             Token<JavaTokenId> token;
+            int fullLineSectionStart = -1;
             while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
                 if (JavaTokenId.LINE_COMMENT == token.id()) {
                     seq.moveNext();
@@ -717,13 +718,14 @@ public abstract class PositionEstimator {
                 } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
                     break;
                 } else if (JavaTokenId.WHITESPACE == token.id()) {
-                    //#196053: not removing leading whitespaces, see ClassMemberTest.test196053b:
-//                    int indexOf = token.text().toString().lastIndexOf('\n');
-//                    if (indexOf > -1) {
-//                        sectionStart = seq.offset() + indexOf + 1;
-//                    } else {
-//                        sectionStart = seq.offset();
-//                    }
+                    //#196053: not removing leading whitespaces, see ClassMemberTest.test196053b
+                    // but save the location at the line start for the case that the annotation section occupies a full line.
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        fullLineSectionStart = seq.offset() + indexOf + 1;
+                    } else {
+                        fullLineSectionStart = seq.offset();
+                    }
                 }
             }
             seq.move(sectionEnd);
@@ -741,6 +743,9 @@ public abstract class PositionEstimator {
                     int indexOf = token.text().toString().lastIndexOf('\n');
                     if (indexOf > -1) {
                         sectionEnd = seq.offset() + indexOf + 1;
+                        if (fullLineSectionStart > -1) {
+                            sectionStart = fullLineSectionStart;
+                        }
                     } else {
                         sectionEnd = seq.offset() + token.text().length();
                     }
