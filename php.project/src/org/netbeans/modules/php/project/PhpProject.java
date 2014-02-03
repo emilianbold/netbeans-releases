@@ -83,6 +83,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -830,6 +831,8 @@ public final class PhpProject implements Project {
 
             // avoid slowness
             readFolders();
+            getTestingProviders();
+            PhpDocumentations.getDocumentations();
 
             getName();
 
