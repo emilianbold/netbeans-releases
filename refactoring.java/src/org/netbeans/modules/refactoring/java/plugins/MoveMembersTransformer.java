@@ -209,7 +209,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                     @Override
                     public boolean accept(Element e, TypeMirror type) { // Type will always be null
-                        return workingCopy.getTypes().isSameType(e.asType(), target.asType());
+                        return workingCopy.getTypes().isSameType(e.asType(), target.asType()) && isElementBeingMoved(e) == null;
                     }
                 });
                 if (!vars.iterator().hasNext()) {
