@@ -2201,6 +2201,21 @@ is divided into following sections:
                         </not>
                     </and>
                 </condition>
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                        <exec failonerror="false" executable="${{platform.java}}" outputproperty="platform.version.output">
+                            <arg value="-version"/>
+                        </exec>
+                        <condition property="bug5101868workaround" value="*.java" else="">
+                            <matches pattern="1\.[56](\..*)?" string="${{platform.version.output}}" multiline="true"/>
+                        </condition>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <condition property="bug5101868workaround" value="*.java" else="">
+                            <matches pattern="1\.[56](\..*)?" string="${{java.version}}"/>
+                        </condition>
+                    </xsl:otherwise>
+                </xsl:choose>
                 <!-- XXX do an up-to-date check first -->
                 <javadoc>
                     <xsl:attribute name="destdir">${dist.javadoc.dir}</xsl:attribute>
@@ -2240,7 +2255,7 @@ is divided into following sections:
                     -->
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
-                        <xsl:with-param name="excludes" select="'*.java'"/>
+                        <xsl:with-param name="excludes">${bug5101868workaround}</xsl:with-param>
                         <xsl:with-param name="includes2">**/*.java</xsl:with-param>
                     </xsl:call-template>
                     <fileset>
