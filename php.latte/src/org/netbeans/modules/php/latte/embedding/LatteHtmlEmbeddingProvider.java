@@ -100,7 +100,9 @@ public class LatteHtmlEmbeddingProvider extends EmbeddingProvider {
     }
 
     private boolean isPureHtmlToken(Token<LatteTopTokenId> token) {
-        return token.id() == LatteTopTokenId.T_HTML && !"{".equals(token.text().toString()) && !"}".equals(token.text().toString()); //NOI18N
+        CharSequence tokenText = token.text();
+        return token.id() == LatteTopTokenId.T_HTML
+                && (tokenText == null || (!tokenText.toString().endsWith("{") && !tokenText.toString().startsWith("}"))); //NOI18N
     }
 
     @Override

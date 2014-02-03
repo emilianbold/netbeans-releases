@@ -59,11 +59,11 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %char
 
 %eofval{
-        if(input.readLength() > 0) {
+        if (input.readLength() > 0) {
             // backup eof
             input.backup(1);
-            //and return the text as error token
-            return LatteTopTokenId.T_LATTE_ERROR;
+            //and return the text as HTML token
+            return LatteTopTokenId.T_HTML;
         } else {
             return null;
         }
@@ -78,7 +78,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     public LatteTopColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
-        if(info.state() != null) {
+        if (info.state() != null) {
             //reset state
             setState((LexerState) info.state());
             this.syntax = ((LexerState) info.state()).syntax;
@@ -242,11 +242,7 @@ SYNTAX_PYTHON_END="%}"
 %state ST_HIGHLIGHTING_ERROR
 
 %%
-<ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_SYNTAX_ATTR>{WHITESPACE}+ {
-}
-
-<YYINITIAL, ST_SYNTAX_CHANGE, ST_IN_HTML_TAG>{WHITESPACE}+ {
-    return LatteTopTokenId.T_HTML;
+<YYINITIAL, ST_SYNTAX_CHANGE, ST_IN_HTML_TAG, ST_COMMENT, ST_LATTE, ST_DOUBLE, ST_ASP, ST_PYTHON, ST_PYTHON_DOUBLE, ST_N_ATTR_DOUBLE, ST_N_ATTR_SINGLE, ST_IN_SYNTAX_ATTR>{WHITESPACE}+ {
 }
 
 <ST_IN_HTML_TAG> {
@@ -256,18 +252,25 @@ SYNTAX_PYTHON_END="%}"
             syntax = Syntax.LATTE;
         }
         popState();
-        return LatteTopTokenId.T_HTML;
     }
 }
 
 <YYINITIAL, ST_IN_HTML_TAG> {
     {PYTHON_COMMENT_START} {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         if (syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
             return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_PYTHON_START}[^ \t\r\n] {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         yypushback(1);
         if (syntax == Syntax.PYTHON) {
             pushState(ST_PYTHON);
@@ -275,12 +278,20 @@ SYNTAX_PYTHON_END="%}"
         }
     }
     {DOUBLE_COMMENT_START} {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         if (syntax == Syntax.DOUBLE || syntax == Syntax.PYTHON) {
             pushState(ST_COMMENT);
             return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_DOUBLE_START}[^ \t\r\n{] {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         yypushback(1);
         if (syntax == Syntax.DOUBLE) {
             pushState(ST_DOUBLE);
@@ -292,16 +303,23 @@ SYNTAX_PYTHON_END="%}"
         }
         if (syntax == Syntax.LATTE) {
             yypushback(1);
-            return LatteTopTokenId.T_HTML;
         }
     }
     {ASP_COMMENT_START} {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         if (syntax == Syntax.ASP) {
             pushState(ST_COMMENT);
             return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
         }
     }
     {SYNTAX_ASP_START}[^ \t\r\n] {
+        if (yylength() > 3) {
+            yypushback(3);
+            return LatteTopTokenId.T_HTML;
+        }
         yypushback(1);
         if (syntax == Syntax.ASP) {
             pushState(ST_ASP);
@@ -309,6 +327,10 @@ SYNTAX_PYTHON_END="%}"
         }
     }
     {LATTE_COMMENT_START} {
+        if (yylength() > 2) {
+            yypushback(2);
+            return LatteTopTokenId.T_HTML;
+        }
         if (syntax == Syntax.LATTE) {
             pushState(ST_COMMENT);
             return LatteTopTokenId.T_LATTE_COMMENT_DELIMITER;
@@ -321,15 +343,16 @@ SYNTAX_PYTHON_END="%}"
     "<""!"?[a-zA-Z0-9:]+ {
         tags.push(new HtmlTag());
         pushState(ST_IN_HTML_TAG);
-        return LatteTopTokenId.T_HTML;
     }
-    ([^nN{<\/ \n]+ ("n" | "n"[^:])* [^nN{<\/]*)+ | . {
-        return LatteTopTokenId.T_HTML;
-    }
+    . {}
 }
 
 <ST_POSSIBLE_LATTE> {
     {SYNTAX_LATTE_START}[a-zA-Z0-9_/\!\?\$] {
+        if (yylength() > 2) {
+            yypushback(2);
+            return LatteTopTokenId.T_HTML;
+        }
         yypushback(1);
         if (syntax == Syntax.LATTE) {
             pushState(ST_LATTE);
@@ -339,9 +362,13 @@ SYNTAX_PYTHON_END="%}"
             return LatteTopTokenId.T_HTML;
         }
     }
-    {SYNTAX_LATTE_START}{WHITESPACE}* {
+    {SYNTAX_LATTE_START}{SYNTAX_LATTE_END} {
+        yypushback(1);
         popState();
         return LatteTopTokenId.T_HTML;
+    }
+    {SYNTAX_LATTE_START}{WHITESPACE}* {
+        popState();
     }
     {WHITESPACE}+ | . {
         yypushback(yylength());
@@ -352,8 +379,8 @@ SYNTAX_PYTHON_END="%}"
 <ST_IN_HTML_TAG> {
     "n:"[a-zA-Z0-9\-]+=\" {
         String text = yytext().toLowerCase().trim();
-        String attributeName = text.substring(2, text.length() - 2);
-        if ("syntax".equals(attributeName)) { //NOI18N
+        String attributeName = text.substring(0, text.length() - 2);
+        if (attributeName.endsWith("n:syntax")) { //NOI18N
             tags.peek().setIsSyntax(true);
             pushState(ST_IN_SYNTAX_ATTR);
         } else {
@@ -363,8 +390,8 @@ SYNTAX_PYTHON_END="%}"
     }
     "n:"[a-zA-Z0-9\-]+=' {
         String text = yytext().toLowerCase().trim();
-        String attributeName = text.substring(2, text.length() - 2);
-        if ("syntax".equals(attributeName)) { //NOI18N
+        String attributeName = text.substring(0, text.length() - 2);
+        if (attributeName.endsWith("n:syntax")) { //NOI18N
             tags.peek().setIsSyntax(true);
             pushState(ST_IN_SYNTAX_ATTR);
         } else {
@@ -380,11 +407,8 @@ SYNTAX_PYTHON_END="%}"
             }
         }
         popState();
-        return LatteTopTokenId.T_HTML;
     }
-    . {
-        return LatteTopTokenId.T_HTML;
-    }
+    . {}
 }
 
 <ST_IN_SYNTAX_ATTR> {
@@ -568,6 +592,7 @@ SYNTAX_PYTHON_END="%}"
     {COMMENT_CONTENT} {
         return LatteTopTokenId.T_LATTE_COMMENT;
     }
+    . {}
 }
 
 <ST_HIGHLIGHTING_ERROR> {
