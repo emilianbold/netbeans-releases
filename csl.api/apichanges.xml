@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="CodeCompletionHandler2.documentElement-cancelable">
+        <api name="csl.api"/>
+        <summary>Provide information that the calling task was canceled.</summary>
+        <version major="2" minor="46"/>
+        <date day="28" month="1" year="2014"/>
+        <author login="marfous"/>
+        <compatibility addition="no" deletion="no" modification="yes" binary="incompatible" source="incompatible" deprecation="no"/>
+        <description>
+            <p>
+                Extend CodeCompletionHandler2.documentElement method to provide information
+                that the calling task was cancelled.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="CodeCompletionHandler2"/>
+        <issue number="240749"/>
+    </change>
     <change id="DocumentationUrl">
         <api name="csl.api"/>
         <summary>Provide a way to configure external documentation URL</summary>
