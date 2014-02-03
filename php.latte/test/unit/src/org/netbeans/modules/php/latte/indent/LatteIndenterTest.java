@@ -95,4 +95,12 @@ public class LatteIndenterTest extends LatteIndenterTestBase {
         indent("testIssue237326_03");
     }
 
+    public void testIssue241118_01() throws Exception {
+        indent("testIssue241118_01");
+    }
+
+    public void testIssue241118_02() throws Exception {
+        indent("testIssue241118_02");
+    }
+
 }

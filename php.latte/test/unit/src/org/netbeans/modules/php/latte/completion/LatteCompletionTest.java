@@ -67,6 +67,22 @@ public class LatteCompletionTest extends LatteCompletionTestBase {
         checkCompletion("testfiles/completion/testCompletion_04.latte", "{$item|l^}", false);
     }
 
+    public void testCompletion_05() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_05.latte", "{^} <!-- first -->", false);
+    }
+
+    public void testCompletion_06() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_06.latte", "{^}{$bar}{}", false);
+    }
+
+    public void testCompletion_07() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_07.latte", "{}{$bar}{^}", false);
+    }
+
+    public void testCompletion_08() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_08.latte", "<!-- second --> {^}", false);
+    }
+
     public void testIterator_01() throws Exception {
         checkCompletion("testfiles/completion/testIterator_01.latte", "{$iterator->^}", false);
     }
