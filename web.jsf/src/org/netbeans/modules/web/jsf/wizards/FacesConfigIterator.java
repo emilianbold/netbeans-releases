@@ -228,6 +228,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                         cpUrls.add(entry.getURL());
                     }
                     jsfVersion = JSFVersion.forClasspath(cpUrls);
+                    jsfVersion = jsfVersion == null ? JSFVersion.JSF_2_2 : jsfVersion;
                     return facesConfigForVersion(jsfVersion);
                 }
             }
