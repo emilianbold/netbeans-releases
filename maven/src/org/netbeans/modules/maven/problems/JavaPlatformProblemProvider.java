@@ -78,6 +78,7 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
     private final ProjectProblemsProviderSupport support;
     private final Project project;
     private final PropertyChangeListener pchListener;
+    private final PropertyChangeListener pchJavaPlatformListener;
     private JavaPlatformManager platformManager;
 
     public JavaPlatformProblemProvider(Project project) {
@@ -90,6 +91,13 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
                 if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     support.fireProblemsChange(); //always fire or first calculate and then fire?
                 }
+            }
+        };
+        this.pchJavaPlatformListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                support.fireProblemsChange();
             }
         };
     }
@@ -114,7 +122,7 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
     public Collection<? extends ProjectProblem> getProblems() {
         if (platformManager == null) {
                 platformManager = JavaPlatformManager.getDefault();
-                platformManager.addPropertyChangeListener(WeakListeners.propertyChange(pchListener, platformManager));
+                platformManager.addPropertyChangeListener(WeakListeners.propertyChange(pchJavaPlatformListener, platformManager));
                 NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
                 watch.addPropertyChangeListener(pchListener);  
         }
