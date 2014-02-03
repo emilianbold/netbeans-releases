@@ -421,7 +421,7 @@ public class ProfilerLauncher {
             activateLinuxPosixThreadTime(pSettings, props);
         }
         
-        props.put("profiler.info.project.dir", project.getProjectDirectory().getPath());
+        props.put("profiler.info.project.dir", project.getProjectDirectory().getPath()); //NOI18N
     }
 
     private static boolean isRemotePlatform(final JavaPlatform platform) {
@@ -447,7 +447,7 @@ public class ProfilerLauncher {
                 if (platformDelegate == null) {
                     return null;
                 }
-                String workdir = platformDelegate.getProperties().get("platform.work.folder");                
+                String workdir = platformDelegate.getProperties().get("platform.work.folder");    //NOI18N            
                 return (workdir.endsWith("/"))?(workdir):(workdir+"/");   //NOI18N
             }
         }
@@ -463,8 +463,8 @@ public class ProfilerLauncher {
 
     private static void activateOOMProtection(ProfilerIDESettings gps, Map<String, String> props, Project project) {
         if (gps.isOOMDetectionEnabled()) {
-            String oldArgs = props.get("profiler.info.jvmargs");
-            oldArgs = (oldArgs != null) ? oldArgs : "";
+            String oldArgs = props.get("profiler.info.jvmargs");//NOI18N
+            oldArgs = (oldArgs != null) ? oldArgs : "";//NOI18N
 
             StringBuilder oomArgsBuffer = new StringBuilder(oldArgs);
             String heapDumpPath = HeapDumpWatch.getHeapDumpPath(project);
@@ -472,7 +472,7 @@ public class ProfilerLauncher {
             if ((heapDumpPath != null) && (heapDumpPath.length() > 0)) {
                 // used as an argument for starting java process
                 if (heapDumpPath.contains(" ")) {
-                    heapDumpPath = "\"" + heapDumpPath + "\"";
+                    heapDumpPath = "\"" + heapDumpPath + "\"";//NOI18N
                 }
 
                 oomArgsBuffer.append(" -XX:+HeapDumpOnOutOfMemoryError"); // NOI18N
