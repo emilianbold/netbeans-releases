@@ -283,16 +283,30 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if (locationPath.contains(" ")) {
                 locationPath = convertPathNamesToShort(locationPath);
             }
-            commands = new String [] {
-                installer.getAbsolutePath(),
-                "/s",
-                "/qn",
-                "/norestart",
-                logFile != null ? "/lv" : EMPTY_STRING,
-                logFile != null ? logPath : EMPTY_STRING,
-                "INSTALLDIR=" + locationPath,
-                "REBOOT=ReallySuppress"            
-            };
+            if (getProduct().getVersion().newerOrEquals(Version.getVersion("1.8.0"))) {                
+                // JDK 1.8
+                commands = new String [] {
+                    installer.getAbsolutePath(),
+                    "/s",
+                    "/qn",
+                    logFile != null ? "/lv" : EMPTY_STRING,
+                    logFile != null ? logPath : EMPTY_STRING,
+                    "INSTALLDIR=" + locationPath,
+                    "REBOOT=ReallySuppress"            
+                };
+            } else {
+                // JDK 1.7
+                commands = new String [] {
+                    installer.getAbsolutePath(),
+                    "/s",
+                    "/qn",
+                    "/norestart",
+                    logFile != null ? "/lv" : EMPTY_STRING,
+                    logFile != null ? logPath : EMPTY_STRING,
+                    "INSTALLDIR=" + locationPath,
+                    "REBOOT=ReallySuppress"            
+                };
+            }
         } else {
              ////////////////////////////for msi////////////////////////////
             LogManager.log("Installing JDK with MSI installer");
