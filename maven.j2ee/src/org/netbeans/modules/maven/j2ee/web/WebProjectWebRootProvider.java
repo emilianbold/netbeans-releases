@@ -44,7 +44,9 @@ package org.netbeans.modules.maven.j2ee.web;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -89,7 +91,7 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     @Override
     public Collection<FileObject> getWebRoots() {
-        List<FileObject> webRootsFO = new ArrayList<>();
+        Set<FileObject> webRootsFO = new HashSet<>();
         List<String> webRoots = WebProjectUtils.getPluginProperty(project, new WebRootsBuilder());
 
         if (webRoots != null) {
