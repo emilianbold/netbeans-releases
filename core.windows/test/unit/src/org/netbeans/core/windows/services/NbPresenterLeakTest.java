@@ -133,6 +133,8 @@ public class NbPresenterLeakTest extends NbTestCase {
                 Frame f = new Frame();
                 f.setPreferredSize( new Dimension(100,100));
                 f.setVisible( true );
+                JDialog dlg = new JDialog(f);
+                dlg.setVisible(true);
             }
         });
 
