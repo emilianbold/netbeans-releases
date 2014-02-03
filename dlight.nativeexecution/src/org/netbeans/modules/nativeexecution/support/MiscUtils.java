@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.support;
 
-package org.netbeans.modules.php.editor.index;
+import com.jcraft.jsch.JSchException;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.csl.api.ElementKind;
+public class MiscUtils {
 
-/**
- *
- * @author tomslot
- */
-public class PHPDOCTagElement extends PHPElement {
-    private final String tagName;
-    private final String documentation;
+    private static final String JSCHReceivedMessageIsTooLongText = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.text");
 
-    public PHPDOCTagElement(String tagName, String documentation) {
-        this.tagName = tagName;
-        this.documentation = documentation;
+    public static boolean isJSCHTooLongException(Exception ex) {
+        return ex.getCause() instanceof JSchException && ex.getCause().getMessage().contains("Received message is too long: ");
     }
 
-    @Override
-    public String getName() {
-        return tagName;
+    public static String getJSCHTooLongMessage() {
+        return JSCHReceivedMessageIsTooLongText;
     }
 
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
+    public static void showJSCHTooLongNotification(String envName) {
+        String title = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.title", envName);
+        String shortText = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.shorttext");
+        String details = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.text");
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
+        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(details), NotificationDisplayer.Priority.NORMAL);
     }
 
-    public String getDoc() {
-        return documentation;
+    public static void showJSCHTooLongNotification() {
+        showJSCHTooLongNotification("");    //NOI18N
     }
 }

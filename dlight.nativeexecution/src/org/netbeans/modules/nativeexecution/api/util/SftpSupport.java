@@ -75,11 +75,8 @@ import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOExce
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
 import org.netbeans.modules.nativeexecution.support.Logger;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.Message;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -248,14 +245,13 @@ class SftpSupport {
                 work(err);
                 rc = 0;
             } catch (JSchException ex) {
-                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
+                if (MiscUtils.isJSCHTooLongException(ex)) {
                     // This is a known issue... but we cannot
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, null);
                     } else {
-                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
-                        DialogDisplayer.getDefault().notifyLater(message);
+                        MiscUtils.showJSCHTooLongNotification();
                     }
                     rc = 7;
                 } else {
@@ -461,14 +457,13 @@ class SftpSupport {
                 work();
                 rc = 0;
             } catch (JSchException ex) {
-                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
+                if (MiscUtils.isJSCHTooLongException(ex)) {
                     // This is a known issue... but we cannot
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, error);
                     } else {
-                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
-                        DialogDisplayer.getDefault().notifyLater(message);
+                        MiscUtils.showJSCHTooLongNotification();
                     }
                     rc = 7;
                 } else {

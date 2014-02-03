@@ -180,7 +180,7 @@ public class RemoteServerRecord implements ServerRecord {
         try {
             ConnectionManager.getInstance().connectTo(executionEnvironment);
         } catch (IOException ex) {
-            RemoteUtil.LOGGER.log(Level.INFO, "Error connecting to " + executionEnvironment, ex);
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RemoteServerRecord.class, "ERR_ConnectingToHost", executionEnvironment, ex.getLocalizedMessage()));
             reason = ex.getMessage();            
             setState(State.OFFLINE);
             return;
