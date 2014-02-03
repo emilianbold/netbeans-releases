@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -180,7 +181,12 @@ public class GoToSupport {
                             if (element != null) {
                                 String documentationContent;
                                 if (completer instanceof CodeCompletionHandler2) {
-                                    Documentation documentation = ((CodeCompletionHandler2) completer).documentElement(info, element);
+                                    Documentation documentation = ((CodeCompletionHandler2) completer).documentElement(info, element, new Callable<Boolean>(){
+                                        @Override
+                                        public Boolean call() throws Exception {
+                                            return cancel.get();
+                                        }
+                                    });
                                     if (documentation != null) {
                                         documentationContent = documentation.getContent();
                                     } else {

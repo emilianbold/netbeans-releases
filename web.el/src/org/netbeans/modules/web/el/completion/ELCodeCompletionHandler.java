@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -77,8 +78,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
@@ -105,7 +108,7 @@ import org.openide.util.Exceptions;
  *
  * @author Erno Mononen
  */
-public final class ELCodeCompletionHandler implements CodeCompletionHandler {
+public final class ELCodeCompletionHandler implements CodeCompletionHandler2 {
 
     private static Set<String> keywordFixedTexts = null;
 
@@ -676,10 +679,16 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, final ElementHandle element) {
-        if (!(element instanceof ELElementHandle)) {
-            return null;
+        Documentation doc = documentElement(info, element, new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return false;
+            }
+        });
+        if (doc != null) {
+            return doc.getContent();
         }
-        return ((ELElementHandle) element).document(info);
+        return null;
     }
 
     @Override
@@ -733,6 +742,14 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
+    }
+
+    @Override
+    public Documentation documentElement(ParserResult info, ElementHandle element, Callable<Boolean> cancel) {
+        if (!(element instanceof ELElementHandle)) {
+            return null;
+        }
+        return ((ELElementHandle) element).document(info, cancel);
     }
 
     /*package*/ static class PrefixMatcher {

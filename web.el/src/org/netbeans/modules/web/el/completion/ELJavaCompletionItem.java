@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
@@ -320,8 +322,8 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
         }
 
         @Override
-        String document(ParserResult info) {
-            final String[] result = new String[1];
+        Documentation document(ParserResult info, final Callable<Boolean> cancel) {
+            final Documentation[] result = new Documentation[1];
             try {
                 FileObject file = info.getSnapshot().getSource().getFileObject();
                 ClasspathInfo cp = ClasspathInfo.create(file);
@@ -334,10 +336,10 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
                     @Override
                     public void run(CompilationController info) throws Exception {
                         Element element = elementHandle.resolve(info);
-                        ElementJavadoc javadoc = ElementJavadoc.create(info, element);
-                        result[0] = javadoc.getText();
+                        ElementJavadoc javadoc = ElementJavadoc.create(info, element, cancel);
+                        result[0] = Documentation.create(javadoc.getText());
                     }
-                    
+
                 }, true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

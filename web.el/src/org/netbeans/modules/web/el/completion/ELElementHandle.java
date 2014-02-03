@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.el.completion;
 
+import java.util.concurrent.Callable;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 
@@ -51,5 +53,5 @@ import org.netbeans.modules.csl.spi.ParserResult;
  */
 abstract class ELElementHandle implements ElementHandle {
 
-    abstract String document(ParserResult info);
+    abstract Documentation document(ParserResult info, Callable<Boolean> cancel);
 }

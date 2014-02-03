@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.csl.api;
 
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -61,8 +62,13 @@ public interface CodeCompletionHandler2 extends CodeCompletionHandler {
      *
      * @param info the parsing information
      * @param element the element for which the documentation is requested
+     * @param cancel a {@link Callable} to signal the cancel request, can be used by clients to check ({@code cancel.call()})
+     *               whether the parent request for documentation is still relevant, not necessary to use in case of not
+     *		     time-consuming job
      * @return the documentation for the element
+     * @since 2.46
      */
     @CheckForNull
-    Documentation documentElement(@NonNull ParserResult info, @NonNull ElementHandle element);
+    Documentation documentElement(@NonNull ParserResult info, @NonNull ElementHandle element, @NonNull Callable<Boolean> cancel);
+
 }

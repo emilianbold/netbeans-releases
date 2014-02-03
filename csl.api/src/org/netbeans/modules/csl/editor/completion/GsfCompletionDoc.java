@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -78,10 +79,12 @@ public class GsfCompletionDoc implements CompletionDocumentation {
     private ElementHandle elementHandle;
     private Language language;
     private ParserResult controller;
+    private Callable<Boolean> cancel;
 
-    private GsfCompletionDoc(final ParserResult controller, final ElementHandle elementHandle, URL url) {
+    private GsfCompletionDoc(final ParserResult controller, final ElementHandle elementHandle, URL url, Callable<Boolean> cancel) {
         this.controller = controller;
         this.language = LanguageRegistry.getInstance().getLanguageByMimeType(controller.getSnapshot().getMimeType());
+        this.cancel = cancel;
         if (elementHandle != null && elementHandle.getMimeType() != null) {
             Language embeddedLanguage = LanguageRegistry.getInstance().getLanguageByMimeType(elementHandle.getMimeType());
             if (embeddedLanguage != null && embeddedLanguage.getParser(Collections.singleton(controller.getSnapshot())) != null) {
@@ -110,7 +113,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
 
         if (completer != null) {
             if (completer instanceof CodeCompletionHandler2) {
-                Documentation doc = ((CodeCompletionHandler2) completer).documentElement(controller, elementHandle);
+                Documentation doc = ((CodeCompletionHandler2) completer).documentElement(controller, elementHandle, cancel);
                 if (doc != null) {
                     this.content = doc.getContent();
                     if (docURL == null) {
@@ -130,8 +133,8 @@ public class GsfCompletionDoc implements CompletionDocumentation {
     }
 
     public static final GsfCompletionDoc create(ParserResult controller,
-        ElementHandle elementHandle) {
-        return new GsfCompletionDoc(controller, elementHandle, null);
+        ElementHandle elementHandle, Callable<Boolean> cancel) {
+        return new GsfCompletionDoc(controller, elementHandle, null, cancel);
     }
 
     public String getText() {
@@ -169,7 +172,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
                 }
             }
             
-            return new GsfCompletionDoc(controller, handle, url);
+            return new GsfCompletionDoc(controller, handle, url, cancel);
         }
         return null;
     }
