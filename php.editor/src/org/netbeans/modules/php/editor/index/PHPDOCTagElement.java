@@ -49,7 +49,7 @@ import org.netbeans.modules.csl.api.ElementKind;
  * @author tomslot
  */
 public class PHPDOCTagElement extends PHPElement {
-    private String tagName;
+    private final String tagName;
     private final String documentation;
 
     public PHPDOCTagElement(String tagName, String documentation) {
