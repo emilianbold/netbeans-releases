@@ -134,7 +134,7 @@ public class ODCSRepository implements PropertyChangeListener {
         this.support = new PropertyChangeSupport(this);
     }
     
-    public ODCSRepository(RepositoryInfo info) {
+    private ODCSRepository(RepositoryInfo info) {
         this();
         this.info = info;
         
@@ -672,9 +672,13 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public boolean needsAndHasNoLogin(ODCSQuery q) {
+        try {
         return (q != getPredefinedQuery(PredefinedTaskQuery.ALL)
                || q != getPredefinedQuery(PredefinedTaskQuery.RECENT))
             && !TeamAccessorUtils.isLoggedIn(project.getWebLocation());
+        } catch(NullPointerException npe) {
+            throw npe;
+        }
     }
     
     public class Cache {
