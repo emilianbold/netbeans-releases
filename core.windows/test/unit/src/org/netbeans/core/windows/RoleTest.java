@@ -129,7 +129,11 @@ public class RoleTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build Unstable #9938, #9950, other builds passed
     public void testKeepDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-
+        
+        WindowManagerImpl.getInstance().resetModel();
+        PersistenceManager.getDefault().reset(); //keep mappings to TopComponents created so far
+        PersistenceHandler.getDefault().clear();
+                
         assertNull( wm.getRole() );
         
         for( TopComponent tc : TopComponent.getRegistry().getOpened() ) {
