@@ -119,9 +119,21 @@ public class AngularJsCodeCompletion implements CompletionProvider {
     }
     
     private TokenSequence<HTMLTokenId> getHtmlTs(CodeCompletionContext ccContext) {
-        Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        return th.tokenSequence(HTMLTokenId.language());
+        final Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
+        TokenSequence<HTMLTokenId> result = null;
+        if (document != null) {
+            final TokenSequence<HTMLTokenId>[] value = new TokenSequence[1];
+            document.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    TokenHierarchy<Document> th = TokenHierarchy.get(document);
+                    value[0] = th.tokenSequence(HTMLTokenId.language());
+                }
+            });
+            result = value[0];
+        }
+        return result;
     }
     
     private AngularContext findHtmlContext(TokenSequence<HTMLTokenId> htmlTs) {
@@ -178,7 +190,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
         if (jsIndex != null) {
             Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(ccContext.getPrefix());
             for (IndexedElement variable : globalVars) {
-                if (!variable.isAnonymous() && variable.getJSKind() == JsElement.Kind.FUNCTION && variable instanceof IndexedElement.FunctionIndexedElement) {
+                if (!variable.isAnonymous() && (variable.getJSKind() == JsElement.Kind.FUNCTION || variable.getJSKind() == JsElement.Kind.CONSTRUCTOR) && variable instanceof IndexedElement.FunctionIndexedElement) {
                     IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)variable;
                     // pick up all functions that has at least one parameter and one of the paramets is $scope
                     if (!function.isAnonymous() && function.getParameters().size() > 0 && function.getParameters().containsKey("$scope")) {

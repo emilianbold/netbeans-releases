@@ -192,9 +192,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
+                        boolean parenRemoved = false;
                         String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
+                            parenRemoved = true;
                             indexStart = 1;
                         }
                         int parenIndex = name.indexOf('('); //NOI18N
@@ -214,6 +216,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
                             name = name.substring(0, indexEnd);
+                            if (parenRemoved) {
+                                indexEnd = name.lastIndexOf(')');
+                                if (indexEnd > -1) {
+                                    name = name.substring(0, indexEnd);
+                                }
+                            }
                             if (name.startsWith("-")) {
                                 indexStart++;
                                 name = name.substring(1);
