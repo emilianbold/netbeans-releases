@@ -860,9 +860,9 @@ public final class NbMavenProjectImpl implements Project {
                     // * a close or open method for a random project/OPH could throw exception skipping our close? 
                     //   while OPL catches RuntimeExceptions, OPH merger bypasses that behaviour and handles all OPH as unit.
                     // * something in OPL or Group is wrong in terms of threading, timing or open/close projects calculation (could be equals/hascode on project related)
-                    LOG.log(Level.INFO, "project opened twice in a row, issue #236211", ex);
+                    LOG.log(Level.INFO, "project opened twice in a row, issue #236211 for " + projectFile.getAbsolutePath(), ex);
                     Thread.dumpStack();
-                    assert false : "project opened twice in a row, issue #236211";
+                    assert false : "project opened twice in a row, issue #236211 for " + projectFile.getAbsolutePath();
                 }
             }
         }
@@ -875,9 +875,9 @@ public final class NbMavenProjectImpl implements Project {
                     try {
                         FileUtil.removeFileChangeListener(this, file);
                     } catch (IllegalArgumentException ex) {
-                        LOG.log(Level.INFO, "project closed twice in a row, issue #236211", ex);
+                        LOG.log(Level.INFO, "project closed twice in a row, issue #236211 for " + projectFile.getAbsolutePath(), ex);
                         Thread.dumpStack();
-                        assert false : "project closed twice in a row, issue #236211";
+                        assert false : "project closed twice in a row, issue #236211 for " + projectFile.getAbsolutePath();
                     }
                 }
             }
