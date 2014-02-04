@@ -68,6 +68,11 @@ import org.openide.util.Utilities;
 */
 public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
+    static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
+         ||Boolean.getBoolean("swing.aatext") // NOI18N
+         ||(isGTK() && gtkShouldAntialias()) // NOI18N
+         || isAqua();
+
     // static .....................................................................................
 
     static final Integer[] sizes = new Integer [] {
@@ -160,6 +165,10 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
     private void paintText (Graphics g, Rectangle rectangle, String text) {
+        if( antialias && g instanceof Graphics2D ) {
+            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         Font originalFont = g.getFont ();
         
         // Fix of 21713, set default value
@@ -553,4 +562,21 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
         return el;
     }
 
+    private static boolean isAqua () {
+        return "Aqua".equals(UIManager.getLookAndFeel().getID());
+    }
+    
+    private static boolean isGTK () {
+        return "GTK".equals(UIManager.getLookAndFeel().getID());
+    }
+
+    private static Boolean gtkAA;
+    private static boolean gtkShouldAntialias() {
+        if (gtkAA == null) {
+            Object o = Toolkit.getDefaultToolkit().getDesktopProperty("gnome.Xft/Antialias"); //NOI18N
+            gtkAA = new Integer(1).equals(o) ? Boolean.TRUE : Boolean.FALSE;
+        }
+
+        return gtkAA.booleanValue();
+    }
 }
