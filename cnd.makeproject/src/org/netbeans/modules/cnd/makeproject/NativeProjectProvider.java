@@ -562,7 +562,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
             if (itemConfiguration != null) { // prevent NPE for corrupted projects IZ#174350
-                if (items[i].isExcluded()) {
+                if (itemConfiguration.getExcluded().getValue()) {
                     deleted.add(items[i]);
                     continue;
                 }
