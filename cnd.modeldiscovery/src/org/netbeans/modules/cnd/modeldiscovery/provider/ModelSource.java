@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -165,6 +166,11 @@ public class ModelSource implements SourceFileProperties {
             userIncludePaths = new ArrayList<String>(res);
         }
         return userIncludePaths;
+    }
+    
+    @Override
+    public List<String> getUserInludeFiles() {
+        return Collections.emptyList();
     }
     
     private String getRelativepath(String path){

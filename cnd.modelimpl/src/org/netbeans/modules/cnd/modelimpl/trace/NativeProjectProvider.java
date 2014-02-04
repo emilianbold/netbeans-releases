@@ -376,6 +376,11 @@ public final class NativeProjectProvider {
         }
 
         @Override
+        public List<String> getIncludeFiles() {
+            return Collections.emptyList();
+        }
+
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
         }
@@ -467,6 +472,11 @@ public final class NativeProjectProvider {
         public List<FSPath> getUserIncludePaths() {
 	    List<FSPath> result = project.getUserIncludePaths();
             return project.pathsRelCurFile ? toAbsolute(result) : result;
+        }
+
+        @Override
+        public List<String> getIncludeFiles() {
+            return project.getIncludeFiles();
         }
 	
 	private List<FSPath> toAbsolute(List<FSPath> orig) {
