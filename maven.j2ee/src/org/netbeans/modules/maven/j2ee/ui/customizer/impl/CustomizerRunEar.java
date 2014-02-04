@@ -62,7 +62,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
 
 
     public CustomizerRunEar(ModelHandle2 handle, Project project) {
-        super(handle, project);
+        super(handle, project, J2eeModule.Type.EAR);
         initComponents();
 
         module = Ear.getEar(project.getProjectDirectory());
@@ -72,7 +72,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
 
         initValues();
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
-        initServerModel(comServer, lblServer, J2eeModule.Type.EAR);
+        initServerModel(comServer, lblServer);
     }
 
     private void initValues() {

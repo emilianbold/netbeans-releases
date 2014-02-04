@@ -146,7 +146,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             + "Java EE jar file etc.)</html>."
     })
     public CustomizerRunWeb(final ModelHandle2 handle, final Project project) {
-        super(handle, project);
+        super(handle, project, J2eeModule.Type.WAR);
         initComponents();
 
         btnLearnMore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -169,7 +169,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         noServer = ExecutionChecker.DEV_NULL.equals(ServerUtils.findServer(project).getServerID());
 
         initValues();
-        initServerModel(jCBServer, serverLabel, J2eeModule.Type.WAR);
+        initServerModel(jCBServer, serverLabel);
         initDeployOnSave(jCBDeployOnSave, dosDescription);
 
         copyStaticResourcesUpdater = CheckBoxUpdater.create(jCBCopyStaticResources, MavenProjectSupport.isCopyStaticResourcesOnSave(project), new CheckBoxUpdater.Store() {

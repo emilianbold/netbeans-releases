@@ -56,7 +56,7 @@ public class CustomizerRunEjb extends BaseRunCustomizer {
 
 
     public CustomizerRunEjb(ModelHandle2 handle, Project project) {
-        super(handle, project);
+        super(handle, project, J2eeModule.Type.EJB);
         initComponents();
 
         module = EjbJar.getEjbJar(project.getProjectDirectory());
@@ -65,7 +65,7 @@ public class CustomizerRunEjb extends BaseRunCustomizer {
         }
 
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
-        initServerModel(comServer, lblServer, J2eeModule.Type.EJB);
+        initServerModel(comServer, lblServer);
     }
 
     @Override
