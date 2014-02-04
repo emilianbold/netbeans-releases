@@ -214,6 +214,11 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public List<String> getUserInludePaths() {
         return userIncludes;
     }
+
+    @Override
+    public List<String> getUserInludeFiles() {
+        return Collections.emptyList();
+    }
     
     @Override
     public List<String> getSystemInludePaths() {

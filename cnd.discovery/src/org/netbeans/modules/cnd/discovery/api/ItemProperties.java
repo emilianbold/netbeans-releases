@@ -59,6 +59,11 @@ public interface ItemProperties {
     List<String> getUserInludePaths();
 
     /**
+     * List of user include files
+     */
+    List<String> getUserInludeFiles();
+
+    /**
      * List of system include paths
      */
     List<String> getSystemInludePaths();
