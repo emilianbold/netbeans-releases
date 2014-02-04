@@ -1515,7 +1515,9 @@ public class Flow {
 
         public Boolean visitArrayAccess(ArrayAccessTree node, ConstructorData p) {
             boolean lv = lValueDereference;
-            super.visitArrayAccess(node, p);
+            scan(node.getExpression(), p);
+            this.lValueDereference = false;
+            scan(node.getIndex(), p);
             this.lValueDereference = lv;
             return null;
         }

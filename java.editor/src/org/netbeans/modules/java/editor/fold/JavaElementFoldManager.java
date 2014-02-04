@@ -57,7 +57,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
@@ -66,16 +65,13 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.editor.fold.Fold;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -84,7 +80,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaFoldManager;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
@@ -95,7 +90,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -354,6 +348,14 @@ public class JavaElementFoldManager extends JavaFoldManager {
                             continue;
                         }
                         FoldInfo fi = infos.get(i);
+                        if (a == caretPos) {
+                            // do not expand comments if the pos is at the start, not within
+                            FoldType ft = fi.getType();
+                            if (ft.isKindOf(FoldType.INITIAL_COMMENT) || ft.isKindOf(FoldType.COMMENT) ||
+                                ft.isKindOf(FoldType.DOCUMENTATION)) {
+                                continue;
+                            }
+                        }
                         if (fi.getEnd() > caretPos) {
                             expandIndex = i;
                             break;

@@ -1692,6 +1692,47 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    /**
+     * In a special case when the whole annotation section is alone on the line the line SHOULD be removed
+     * unlike test196053b. See defect #240072
+     */
+    public void test196053bWith240072() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    @Deprecated\n" + 
+            "    private java.util.List<? super String> b;\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public java.util.List<? super String> c;\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                VariableTree var = (VariableTree) clazz.getMembers().get(1);
+
+                workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PUBLIC)));
+                workingCopy.rewrite(var, make.setLabel(var, "c"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     public void testShuffleConstructorMethod1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,
