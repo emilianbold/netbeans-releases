@@ -1087,7 +1087,7 @@ public class Actions {
 
         public AutoRefreshAction(QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_AutoRefresh"), queryNodes); //NOI18N
-}
+        }
 
         @Override
         public void actionPerformed(ActionEvent e) {
