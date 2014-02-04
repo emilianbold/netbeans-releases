@@ -119,9 +119,21 @@ public class AngularJsCodeCompletion implements CompletionProvider {
     }
     
     private TokenSequence<HTMLTokenId> getHtmlTs(CodeCompletionContext ccContext) {
-        Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        return th.tokenSequence(HTMLTokenId.language());
+        final Document document = ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
+        TokenSequence<HTMLTokenId> result = null;
+        if (document != null) {
+            final TokenSequence<HTMLTokenId>[] value = new TokenSequence[1];
+            document.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    TokenHierarchy<Document> th = TokenHierarchy.get(document);
+                    value[0] = th.tokenSequence(HTMLTokenId.language());
+                }
+            });
+            result = value[0];
+        }
+        return result;
     }
     
     private AngularContext findHtmlContext(TokenSequence<HTMLTokenId> htmlTs) {
