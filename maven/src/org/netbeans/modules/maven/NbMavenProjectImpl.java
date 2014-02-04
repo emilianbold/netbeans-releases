@@ -755,7 +755,6 @@ public final class NbMavenProjectImpl implements Project {
                     problemReporter,
                     watcher,
                     state,
-                    UILookupMergerSupport.createProjectOpenHookMerger(null),
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),
                     UILookupMergerSupport.createProjectProblemsProviderMerger(),
@@ -852,7 +851,19 @@ public final class NbMavenProjectImpl implements Project {
             this.filesToWatch = toWatch;
             
             for (File file : toWatch) {
-                FileUtil.addFileChangeListener(this, file);
+                try {
+                    FileUtil.addFileChangeListener(this, file);
+                } catch (IllegalArgumentException ex) {
+                    //giving up  on ever figuring why OPH is sometimes calls opened() twice in a row on single project.
+                    //There's way too many moving parts. 
+                    // * project lookup could be creating multiple instances of OPH
+                    // * a close or open method for a random project/OPH could throw exception skipping our close? 
+                    //   while OPL catches RuntimeExceptions, OPH merger bypasses that behaviour and handles all OPH as unit.
+                    // * something in OPL or Group is wrong in terms of threading, timing or open/close projects calculation (could be equals/hascode on project related)
+                    LOG.log(Level.INFO, "project opened twice in a row, issue #236211", ex);
+                    Thread.dumpStack();
+                    assert false : "project opened twice in a row, issue #236211";
+                }
             }
         }
 
@@ -861,7 +872,13 @@ public final class NbMavenProjectImpl implements Project {
                 File[] toWatch = filesToWatch;
                 filesToWatch = null;
                 for (File file : toWatch) {
-                    FileUtil.removeFileChangeListener(this, file);
+                    try {
+                        FileUtil.removeFileChangeListener(this, file);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.INFO, "project closed twice in a row, issue #236211", ex);
+                        Thread.dumpStack();
+                        assert false : "project closed twice in a row, issue #236211";
+                    }
                 }
             }
         }
