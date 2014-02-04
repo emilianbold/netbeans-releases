@@ -95,7 +95,7 @@ public class Refactorer {
 
     public Boolean isRefactorable() {
         prospectives = this.getListRepresentation(loop.getStatement());
-        if (prospectives != null) {
+        if (prospectives != null && !prospectives.isEmpty()) {
             prospectives.get(prospectives.size() - 1).eagerize();
             if (this.untrasformable) {
                 return false;

@@ -67,11 +67,7 @@ public class ODCSConnector implements BugtrackingConnector, TeamBugtrackingConne
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        Repository r = createODCSRepository(info);
-        if(r != null) {
-            return r;
-        }
-        return ODCSUtil.createRepository(new ODCSRepository(info));
+        return createODCSRepository(info);
     }
 
     @Override

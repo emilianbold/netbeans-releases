@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -96,15 +97,40 @@ public final class CndParser extends Parser implements CsmProgressListener {
             return;
         }
         long oldVersion;
+        CsmFile oldFile;
+        CharSequence oldText;
         synchronized(lock) {
-            oldVersion = this.cndParserResult == null ? 0 : this.cndParserResult.getFileVersion();
+            if (this.cndParserResult == null) {
+                oldVersion = 0;
+                oldFile = null;
+                oldText = null;
+            } else {
+                oldVersion = this.cndParserResult.getFileVersion();
+                oldFile = this.cndParserResult.getCsmFile();
+                oldText = this.cndParserResult.getSnapshot().getText();
+            }
         }
-        CsmFile file = CsmUtilities.getCsmFile(snapshot.getSource().getFileObject(), true, false);
+        final FileObject fo = snapshot.getSource().getFileObject();
+        CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
+        boolean allowStandalone = true;
+        if (allowStandalone && file == null) {
+            file = CsmStandaloneFileProvider.getDefault().getCsmFile(fo);
+        }
+        if (file != null) {
+            try {
+                file.scheduleParsing(true);
+            } catch (InterruptedException ex) {
+//                Exceptions.printStackTrace(ex);
+            }
+        }
         synchronized(lock) {
             long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-            if (oldVersion != fileVersion) {
+            if (oldVersion != fileVersion || !snapshot.getText().equals(oldText)) {
                 this.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
             }
+        }
+        if (oldFile != null && file != oldFile) {
+            CsmStandaloneFileProvider.getDefault().notifyClosed(oldFile);
         }
     }
     

@@ -80,5 +80,15 @@ public final class GeneralCompletionOptionsPanelController implements  Preferenc
         }
         return generalCompletionOptionsPanel;
     }
+    
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof GeneralCompletionOptionsPanelController) {
+                return ((GeneralCompletionOptionsPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
+        }
+    }
 }
 

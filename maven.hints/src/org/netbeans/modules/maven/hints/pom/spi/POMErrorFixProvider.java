@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.hints.pom.spi;
 
 import java.util.List;
+import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -60,6 +61,20 @@ public interface POMErrorFixProvider extends POMErrorFixBase {
      * @return
      */
     List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj);
-
-
+    
+    /**
+     * Returns the <code>POMErrorFixProvider</code>'s saved value for the
+     * specific key.
+     *
+     * @param customizer the customizer returned from {@link POMErrorFixBase#getCustomizer(Preferences)} method
+     * @param key the key for which the saved value is needed
+     * @return the saved value or null
+     */
+    public String getSavedValue(JComponent customizer, String key);
+    
+    /**
+     * Called when the user presses the Cancel button in the options window.
+     */
+    public void cancel();
+    
 }

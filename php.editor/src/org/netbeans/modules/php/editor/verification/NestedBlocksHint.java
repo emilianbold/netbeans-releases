@@ -338,7 +338,10 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new NestedHintsCustomizer(preferences, this);
+        JComponent customizer = new NestedHintsCustomizer(preferences, this);
+        setNumberOfAllowedNestedBlocks(preferences, getNumberOfAllowedNestedBlocks(preferences));
+        setAllowConditionBlock(preferences, allowConditionBlock(preferences));
+        return customizer;
     }
 
     public void setNumberOfAllowedNestedBlocks(Preferences preferences, Integer value) {

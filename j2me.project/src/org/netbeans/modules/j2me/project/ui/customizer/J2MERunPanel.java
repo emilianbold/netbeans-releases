@@ -63,6 +63,7 @@ import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties.Dat
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -70,7 +71,7 @@ import org.openide.util.Parameters;
  *
  * @author Roman Svitanic
  */
-public class J2MERunPanel extends javax.swing.JPanel {
+public class J2MERunPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
     private final DataSource[] data;
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
@@ -402,6 +403,11 @@ public class J2MERunPanel extends javax.swing.JPanel {
     public void addNotify() {
         super.addNotify();
         configChanged(uiProperties.activeConfig);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.J2MERunPanel"); //NOI18N
     }
 
     private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {

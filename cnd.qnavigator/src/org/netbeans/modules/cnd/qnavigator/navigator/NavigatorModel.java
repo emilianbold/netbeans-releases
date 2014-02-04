@@ -205,7 +205,7 @@ public class NavigatorModel {
         return -1;
     }
 
-    void setSelection(long caretLineNo, JEditorPane jEditorPane, AtomicBoolean canceled) {
+    void setSelection(long caretLineNo, JEditorPane jEditorPane, AtomicBoolean canceled, CharSequence text) {
         synchronized(lock) {
             Node node = fileModel.setSelection(caretLineNo);
             if (node != null) {
@@ -213,7 +213,7 @@ public class NavigatorModel {
                 if (jEditorPane == null) {
                     return;
                 }
-                BreadCrumbsFactory.createBreadCrumbs(caretLineNo, node, jEditorPane, cdo, canceled);
+                BreadCrumbsFactory.createBreadCrumbs(caretLineNo, node, jEditorPane, cdo, canceled, text);
             }
         }
     }
@@ -247,7 +247,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -272,7 +272,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -298,7 +298,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -323,7 +323,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -348,7 +348,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -373,7 +373,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -398,7 +398,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -423,7 +423,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(false);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 
@@ -450,7 +450,7 @@ public class NavigatorModel {
                 int selection = storeSelection();
                 refresh(true);
                 if (selection >= 0) {
-                    setSelection(selection, findCurrentJEditorPane(), null);
+                    setSelection(selection, findCurrentJEditorPane(), null, null);
                 }
             }
         }
@@ -479,7 +479,7 @@ public class NavigatorModel {
                 int selection = storeSelection();
                 refresh(true);
                 if (selection >= 0) {
-                    setSelection(selection, findCurrentJEditorPane(), null);
+                    setSelection(selection, findCurrentJEditorPane(), null, null);
                 }
             }
         }
@@ -505,7 +505,7 @@ public class NavigatorModel {
             int selection = storeSelection();
             refresh(true);
             if (selection >= 0) {
-                setSelection(selection, findCurrentJEditorPane(), null);
+                setSelection(selection, findCurrentJEditorPane(), null, null);
             }
         }
 

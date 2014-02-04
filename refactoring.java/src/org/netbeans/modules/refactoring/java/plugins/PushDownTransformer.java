@@ -229,8 +229,10 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     aThrows.add(thrw);
                                 }
                             }
+                            TreePath mpath = workingCopy.getTrees().getPath(member);
+                            ExecutableElement overriddenMethod = workingCopy.getElementUtilities().getOverriddenMethod((ExecutableElement) member);
                             MethodTree m = make.Method(
-                                    oldOne.getModifiers(),
+                                    overriddenMethod != null && workingCopy.getElementUtilities().isMemberOf(overriddenMethod, (TypeElement) el)? oldOne.getModifiers() : PullUpTransformer.removeAnnotations(workingCopy, make, oldOne.getModifiers(), mpath),
                                     oldOne.getName(), returnType,
                                     oldOne.getTypeParameters(),
                                     oldOne.getParameters(), aThrows,

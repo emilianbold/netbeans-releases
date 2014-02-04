@@ -234,8 +234,14 @@ public final class FoldHierarchyTransactionImpl {
             
             // the following will generate some additions to addedToHierarchySet, but not important
             if (reinsertSet != null) {
+                ApiPackageAccessor acc = ApiPackageAccessor.get();
                 for (Fold f : reinsertSet) {
-                    addFold(f);
+                    acc.foldSetParent(f, null);
+                    if (f.getFoldCount() <= 0) {
+                        addFold(f);
+                    } else {
+                        LOG.warning("Unexpected children for fold: " + f + ", dumping hierarchy: " + execution);
+                    }
                 }
             }
 
@@ -1201,12 +1207,32 @@ public final class FoldHierarchyTransactionImpl {
             reinsertSet = new LinkedHashSet();
         }
         if (bl) {
+            if (f.getFoldCount() > 0 || f.getParent() != null) {
+                LOG.warning("Blocked fold should have no parent and no children: " + f + ", dumping hierarchy: " + execution);
+            }
+            if (lastOperationFold == f) {
+                lastOperationFold = null;
+                lastOperationIndex = -1;
+            }
             reinsertSet.add(f);
         } else {
             Collection<Fold> c = new ArrayList<Fold>();
             ApiPackageAccessor.get().foldTearOut(f, c);
+            if (f.getFoldCount() > 0 || f.getParent() != null) {
+                LOG.warning("Paret fold should have no parent and no children: " + f + ", dumping hierarchy: " + execution);
+            }
             for (Fold x : c) {
+                if (execution.isBlocked(x)) {
+                    execution.unmarkBlocked(x);
+                }
                 unblockBlocked(x);
+                if (lastOperationFold == x) {
+                    lastOperationFold = null;
+                    lastOperationIndex = -1;
+                }
+                if (x.getFoldCount() > 0 || x.getParent() != null) {
+                    LOG.warning("Teared-out fold should have no parent and no children: " + f + ", dumping hierarchy: " + execution);
+                }
             }
             reinsertSet.addAll(c);
         }

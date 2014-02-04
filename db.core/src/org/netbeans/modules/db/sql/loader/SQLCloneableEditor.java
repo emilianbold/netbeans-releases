@@ -737,7 +737,7 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
                     return getText(getEditorPane());
                 }
             });
-            sqlEditorSupport().execute(text, 0, text.length());
+            sqlEditorSupport().execute(text, 0, text.length(), SQLCloneableEditor.this);
         }
 
         @Override
@@ -760,7 +760,7 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
                     return getText(editorPane);
                 }
             });
-            sqlEditorSupport().execute(text, offsets[0], offsets[1]);
+            sqlEditorSupport().execute(text, offsets[0], offsets[1], SQLCloneableEditor.this);
         }
 
         @Override

@@ -115,9 +115,7 @@ public class DocViewCaretAwareFactory extends IndexingAwareParserResultTask<CndP
     }
 
     @Override
-    public int getPriority() {
-        return 1000;
-    }
+    public int getPriority() {return 1000;}
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -430,7 +430,8 @@ public class Utilities {
         return res;
     }
     
-    static void writeUpdateOfUpdaterJar (JarEntry updaterJarEntry, JarFile updaterJar, File targetCluster) {
+    static void writeUpdateOfUpdaterJar (JarEntry updaterJarEntry, File zipFileWithUpdater, File targetCluster) throws IOException {
+        JarFile jf = new JarFile(zipFileWithUpdater);
         String entryPath = updaterJarEntry.getName();
         String entryName = entryPath.contains("/") ? entryPath.substring(entryPath.lastIndexOf("/") + 1) : entryPath;
         File dest = new File (targetCluster, UpdaterDispatcher.UPDATE_DIR + // updater
@@ -446,12 +447,12 @@ public class Utilities {
         try {
             try {
                 fos = new FileOutputStream (dest);
-                is = updaterJar.getInputStream (updaterJarEntry);
+                is = jf.getInputStream (updaterJarEntry);
                 FileUtil.copy (is, fos);
             } finally {
                 if (is != null) is.close();
                 if (fos != null) fos.close();
-                updaterJar.close();
+                jf.close();
             }                
         } catch (java.io.FileNotFoundException fnfe) {
             getLogger ().log (Level.SEVERE, fnfe.getLocalizedMessage (), fnfe);

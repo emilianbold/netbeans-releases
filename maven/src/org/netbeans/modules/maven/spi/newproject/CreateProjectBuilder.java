@@ -59,6 +59,7 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Parent;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -151,6 +152,10 @@ public class CreateProjectBuilder {
                     }
                 }
             }
+            if (parent != null && MavenProjectCache.isFallbackproject(parent)) {
+                //#240989 - guessing that unloadable parent project could be the problem.
+                parent = null;
+            }
             Context context = new Context(parent, groupId, artifactId, version, packaging, projectDirectory, packageName);
             pomOpers.add(new BasicPropertiesOperation(context));
             if (operations != null) {
@@ -168,8 +173,11 @@ public class CreateProjectBuilder {
                     progressHandle.progress("Updating parent pom.xml");
                 }
                 FileObject pom = FileUtil.toFileObject(parent.getFile());
-                ModelSource pmodel = Utilities.createModelSource(pom);
-                Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(pom.getParent(), projectDirectory)));
+                assert pom != null : "parent file:" + parent.getFile() + " for project " + parent.getId() + "  wizard directory: " + projectDirectory; //#240989
+                if (pom != null) {
+                    ModelSource pmodel = Utilities.createModelSource(pom);
+                    Utilities.performPOMModelOperations(pmodel, Collections.singletonList(new AddModuleToParentOperation(pom.getParent(), projectDirectory)));
+                }
             }
         
             if (moreWork != null) {

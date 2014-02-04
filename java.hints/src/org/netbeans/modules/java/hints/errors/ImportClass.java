@@ -119,7 +119,8 @@ public final class ImportClass implements ErrorRule<Void> {
                 "compiler.err.cant.resolve.location",
                 "compiler.err.cant.resolve.location.args",
                 "compiler.err.doesnt.exist",
-                "compiler.err.not.stmt"));
+                "compiler.err.not.stmt", 
+                "compiler.err.not.def.public.cant.access"));
     }
     
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {

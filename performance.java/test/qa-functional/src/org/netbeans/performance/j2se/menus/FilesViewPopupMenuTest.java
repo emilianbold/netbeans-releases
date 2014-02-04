@@ -112,7 +112,7 @@ public class FilesViewPopupMenuTest extends PerformanceTestCase {
 
     @Override
     public void prepare() {
-
+        expectedTime = 500;
     }
 
     @Override

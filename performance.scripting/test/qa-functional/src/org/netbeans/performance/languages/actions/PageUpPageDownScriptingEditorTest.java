@@ -154,7 +154,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         nodePath = "Source Files";
         pgup = true;
-        expectedTime = 100;
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -163,7 +163,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         nodePath = "Source Files";
         pgup = false;
-        expectedTime = 100;
+        expectedTime = 400;
         doMeasurement();
     }
 
@@ -212,7 +212,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = true;
-        expectedTime = 100;
+        expectedTime = 200;
         doMeasurement();
     }
 
@@ -221,7 +221,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = false;
-        expectedTime = 100;
+        expectedTime = 200;
         doMeasurement();
     }
 

@@ -98,6 +98,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -559,8 +561,10 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
 
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
-        dialog.addWindowListener(new DialogBoundsPreserver(preferences, this.getClass().getName())); 
+        WindowListener windowListener = new DialogBoundsPreserver(preferences, this.getClass().getName());
+        dialog.addWindowListener(windowListener);
         dialog.pack();
+        windowListener.windowOpened(new WindowEvent(dialog, WindowEvent.WINDOW_OPENED));
         dialog.setVisible(true);
         
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {

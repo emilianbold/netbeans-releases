@@ -254,9 +254,9 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         return panel;
     }
     
-    void changed() {
+    void changed(boolean isChanged) {
+        changed = isChanged;
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

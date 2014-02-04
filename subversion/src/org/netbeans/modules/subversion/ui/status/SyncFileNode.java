@@ -243,7 +243,8 @@ public class SyncFileNode extends AbstractNode {
                             return;
                         }
                         try {
-                            shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(node.getFile()).toString() : SvnUtils.getRelativePath(node.getFile());
+                            shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                                    ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(node.getFile())) : SvnUtils.getRelativePath(node.getFile());
                         } catch (SVNClientException ex) {
                             if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                                 try {

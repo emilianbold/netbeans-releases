@@ -45,7 +45,8 @@
         scriptEngine = "freemarker", 
         position = 600,
         displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html")
+        description = "gruntdescription.html",
+        targetName = "Gruntfile")
 
 package org.netbeans.modules.web.clientproject.grunt;
 

@@ -2,120 +2,95 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Enterprise Application Wizard: Server and Settings</title>
+<title>Send JMS Message Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref625" name="sthref625"></a>
-<h1>New Enterprise Application Wizard: Server and Settings</h1>
+<p>Beta Draft: 2014-02-04</p>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator" name="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref609" name="sthref609"></a>
+<h1>Send JMS Message Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new standard project&nbsp; containing an enterprise application client module. You open the wizard by opening the New Project wizard and selecting the Enterprise Application Client template from the Java EE category.</p>
-<p>In the Server and Settings page, you have to set the following properties:</p>
+<p>You use this dialog box to send a Java Message Service (JMS) message to a message destination. A JMS message is an object that communicates information between JMS clients. The message is sent from one client to a second client that listens for messages through a JMS destination on an application server.</p>
+<p>The file must be in an EJB module project or a standard web application project. You cannot generate lookup code in a free-form web application project.</p>
+<p>Use the dialog box to select the destination for the JMS message:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t35">Element</th>
-<th align="left" valign="bottom" id="r1c2-t35">Description</th>
+<th align="left" valign="bottom" id="r1c1-t36">Element</th>
+<th align="left" valign="bottom" id="r1c2-t36">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t35" headers="r1c1-t35">
-<p>Add to Enterprise Application</p>
+<td align="left" id="r2c1-t36" headers="r1c1-t36">
+<p>Project Destinations</p>
 </td>
-<td align="left" headers="r2c1-t35 r1c2-t35">
-<p>Lets you add the application client to any open enterprise application project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t35" headers="r1c1-t35">
-<p>Server</p>
-</td>
-<td align="left" headers="r3c1-t35 r1c2-t35">
-<p>Specifies the server to which the application client's enterprise application is deployed. To register servers, choose <b>Tools</b> &gt; <b>Servers</b>.</p>
+<td align="left" headers="r2c1-t36 r1c2-t36">
+<p>Choose from the list of available destinations in your project. If no destination is available in the drop-down list, you can click <b>Add</b> to create a new destination.</p>
+<p>Alternatively, you can create a JMS destination by opening the New File wizard and choosing <b>JMS Resource</b> in the GlassFish category.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t35" headers="r1c1-t35">
-<p>Java EE Version</p>
+<td align="left" id="r3c1-t36" headers="r1c1-t36">
+<p>Server Destinations.</p>
 </td>
-<td align="left" headers="r4c1-t35 r1c2-t35">
-<p>Specifies the level of the Java EE specification that is used for the application client. If you set the Java EE version to 1.4, you should also set the source level to 1.4 in the drop-down list that appears.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t35" headers="r1c1-t35">
-<p>Source Level Recommendations</p>
-</td>
-<td align="left" headers="r5c1-t35 r1c2-t35">
-<p>One of the following checkboxes will appear if the Java EE Version is set to J2EE 1.4 and JDK 1.5 or JDK 1.6 is set as the default platform in the Java Platform Manager. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
+<td align="left" headers="r3c1-t36 r1c2-t36">
+<p>Choose from the list of available destinations that exist on the server.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
+<td align="left" id="r4c1-t36" headers="r1c1-t36">
+<p>Message Driven Bean</p>
 </td>
-<td align="left" headers="r6c1-t35 r1c2-t35">
-<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
-</td>
-<td align="left" headers="r7c1-t35 r1c2-t35">
-<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t35" headers="r1c1-t35">
-<p>Create EJB Module</p>
-</td>
-<td align="left" headers="r8c1-t35 r1c2-t35">
-<p>Sets whether an EJB module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-ejb</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create an EJB Module Project later.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t35" headers="r1c1-t35">
-<p>Create Web Application Module</p>
-</td>
-<td align="left" headers="r9c1-t35 r1c2-t35">
-<p>Sets whether a web application module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-war</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create a Web Application project later.</p>
+<td align="left" headers="r4c1-t36 r1c2-t36">
+<p>Choose a message-driven bean from the drop-down list. The drop-down list displays the message-driven beans in the same project and fills the Destination field with the name of the destination resource found in the bean.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click <b>Finish</b>, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
-<p><b>Note</b>: If you are creating an application client with existing sources, you must click <b>Next</b> to specify existing sources and libraries.</p>
+<p>To specify a Service Locator Strategy choose between generating an inline lookup code or use an existing service locator. You can click <b>Browse</b> to search for the service locator class name. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2709">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>The IDE creates two methods:</p>
+<ul>
+<li><code>createJMSMessageForNewMessageDestination</code>. The method that creates the message that is sent. You should implement your business logic in this method.</li>
+<li><code>sendJMSMessageToNewMessageDestination</code>. The method that handles the message you created in the method above. You should not modify this message.</li>
+</ul>
+<p>The IDE also registers the resource reference and message destination reference in your module's general deployment descriptor.</p>
+<p><b>Note</b>: If your project's target server is the GlassFish server, the IDE automatically configures a destination and connection factory for the message-driven bean when you create the bean. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors and the server resources yourself.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2901">
-<param name="text" value="<html><u>&quot;Creating Application Clients&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2696">
+<param name="text" value="<html><u>&quot;About Developing with Enterprise Beans&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
-<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2700">
+<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG455">
-<param name="text" value="<html><u>&quot;Sharing Libraries with Other Users&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1681">
+<param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

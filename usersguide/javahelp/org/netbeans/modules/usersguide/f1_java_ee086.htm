@@ -2,77 +2,83 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Add Server Instance Wizard: Tomcat Installation and Login Details</title>
+<title>New Web Service Wizard: Name and Location</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="tomcat_addinstall" name="tomcat_addinstall"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref673" name="sthref673"></a>
-<h1>Add Server Instance Wizard: Tomcat Installation and Login Details</h1>
+<p>Beta Draft: 2014-02-04</p>
+<p><a id="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel" name="org.netbeans.modules.websvc.core.dev.wizard.WebServiceTypePanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref657" name="sthref657"></a>
+<h1>New Web Service Wizard: Name and Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Tomcat Installation and Login Details panel of the Add Server Instance wizard enables you to register an instance of the Apache Tomcat web server with the IDE.</p>
-<p>Use this page to specify the details of the web server.</p>
+<p>The New Web Service wizard creates a new Web Service.</p>
+<p>In the Name and Location page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t83">Element</th>
-<th align="left" valign="bottom" id="r1c2-t83">Description</th>
+<th align="left" valign="bottom" id="r1c1-t84">Element</th>
+<th align="left" valign="bottom" id="r1c2-t84">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t83" headers="r1c1-t83">
-<p>Server Location</p>
+<td align="left" id="r2c1-t84" headers="r1c1-t84">
+<p>Web Service Name</p>
 </td>
-<td align="left" headers="r2c1-t83 r1c2-t83">
-<p>Specifies the Tomcat installation directory (Catalina Home) on your local system. Note that the IDE verifies that you have specified a valid Tomcat installation directory.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t83" headers="r1c1-t83">
-<p>Use Private Configuration Folder (Catalina Base)</p>
-</td>
-<td align="left" headers="r3c1-t83 r1c2-t83">
-<p>Specifies that you expect to use Tomcat in a multi-user configuration. When you select this option, you can set the Catalina Base directory.</p>
+<td align="left" headers="r2c1-t84 r1c2-t84">
+<p>Specifies the name of the web service. The name is used to name the files that are created by the web service wizard.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t83" headers="r1c1-t83">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Catalina Base</p>
+<td align="left" id="r3c1-t84" headers="r1c1-t84">
+<p>Project</p>
 </td>
-<td align="left" headers="r4c1-t83 r1c2-t83">
-<p>Specifies the Tomcat base directory.</p>
-<p>Typically, a base directory is placed under a user's directory. If you associate a base directory with the server, the base directory must have the following subdirectories.</p>
-<ul>
-<li><code>conf</code>. Directory for server configuration files. This directory must have a server.xml file.</li>
-<li><code>logs</code>. Directory for log and output files</li>
-<li><code>webapps</code>. Directory for automatically loaded web applications</li>
-<li><code>work</code>. Temporary working directory for web applications</li>
-</ul>
-<p>If the base directory is empty, the IDE creates the subdirectories by copying them from Tomcat's home directory.</p>
+<td align="left" headers="r3c1-t84 r1c2-t84">
+<p>Name of the project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t83" headers="r1c1-t83">
-<p>Username</p>
+<td align="left" id="r4c1-t84" headers="r1c1-t84">
+<p>Location</p>
 </td>
-<td align="left" headers="r5c1-t83 r1c2-t83">
-<p>Type the username for the server instance.</p>
-<p>The user must be a Tomcat user who has a manager role.</p>
-<p>If the username does not exist, you can select the box to create it.</p>
+<td align="left" headers="r4c1-t84 r1c2-t84">
+<p>Specifies the source root where the web service files will be created. By default, you only have one source root, the src folder. To add additional source roots, right-click the project node in the Projects window, choose Properties, click Sources, and define a new source package folder.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t83" headers="r1c1-t83">
-<p>Password</p>
+<td align="left" id="r5c1-t84" headers="r1c1-t84">
+<p>Package</p>
 </td>
-<td align="left" headers="r6c1-t83 r1c2-t83">
-<p>Type the password for the server instance.</p>
+<td align="left" headers="r5c1-t84 r1c2-t84">
+<p>Specifies the package name where the web service files will be housed.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t84" headers="r1c1-t84">
+<p>Create Web Service from Scratch</p>
+</td>
+<td align="left" headers="r6c1-t84 r1c2-t84">
+<p>Use this when you have no code to expose.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t84" headers="r1c1-t84">
+<p>Create Web Service from Existing Session Bean</p>
+</td>
+<td align="left" headers="r7c1-t84 r1c2-t84">
+<p>Use this when you have a session bean in an EJB module or web application that you want to expose. Click Browse and then select the session bean that you want to expose as a web service.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t84" headers="r1c1-t84">
+<p>Implement Web Service as Stateless Session Bean</p>
+</td>
+<td align="left" headers="r8c1-t84 r1c2-t84">
+<p>If you are creating a web service from scratch, you can select this option to create the web service as a stateless session bean.</p>
 </td>
 </tr>
 </tbody>

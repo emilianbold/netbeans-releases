@@ -181,7 +181,7 @@ public class AddExistingItemAction extends NodeAction {
 //	    ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
     }
 
-    private void addFilesWorker(final Project project, final ConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
+    private void addFilesWorker(final Project project, final MakeConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
         RP.post(new Runnable() {
 
             @Override
@@ -189,7 +189,7 @@ public class AddExistingItemAction extends NodeAction {
                 boolean notifySources = false;
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
-                    String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDir(), files[i].getPath(), project);
+                    String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDirFileObject(), files[i].getPath(), project);
                     itemPath = CndPathUtilities.normalizeSlashes(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N

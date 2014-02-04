@@ -97,9 +97,13 @@ public final class JXTableRowHeader extends JComponent {
         Set<TableModelListener> listeners = new HashSet<TableModelListener>();
 
         public void setCount(int count) {
-            this.count = count;
-            for(TableModelListener tml: listeners) {
-                tml.tableChanged(new TableModelEvent(this));
+            // Only invoke tableChanged event if row count really changed
+            // else the selection is cleared (see bug #240958)
+            if (count != this.count) {
+                this.count = count;
+                for (TableModelListener tml : listeners) {
+                    tml.tableChanged(new TableModelEvent(this));
+                }
             }
         }
         

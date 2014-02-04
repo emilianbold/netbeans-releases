@@ -2,18 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New EJB Module with Existing Sources Wizard: Existing Sources and Libraries</title>
+<title>Standard EJB Module Project Properties Dialog Box: Compiling</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders" name="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.PanelSourceFolders"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref605" name="sthref605"></a>
-<h1>New EJB Module with Existing Sources Wizard: Existing Sources and Libraries</h1>
+<p>Beta Draft: 2014-02-04</p>
+<p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerCompile" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerCompile"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref589" name="sthref589"></a>
+<h1>Standard EJB Module Project Properties Dialog Box: Compiling</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new standard project&nbsp; containing an EJB module. You open the wizard by opening the New Project wizard and selecting the EJB Module with Existing Sources template from the Java EE category.</p>
-<p>Your existing EJB module source does not have to adhere to any particular directory structure. You specify the locations of the configuration files, libraries, and source roots. The only requirement is that the module contain a valid <code>ejb-jar.xml</code> deployment descriptor.In the Existing Sources and Libraries page, you specify the following properties:</p>
+<p>The Compiling page lets you set the following general compilation options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,55 +26,58 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t19" headers="r1c1-t19">
-<p>Configuration Files Folder</p>
+<p>Generate Debugging Info</p>
 </td>
 <td align="left" headers="r2c1-t19 r1c2-t19">
-<p>Specifies the location of your deployment descriptors and other configuration files. You must have at least a valid <code>ejb-jar.xml</code> deployment descriptor to complete the wizard.</p>
-<p><b>Note</b>: The IDE does not convert deployment descriptors for unsupported application servers to GlassFish deployment descriptors.</p>
+<p>When selected, line number attributes are generated during compilation. This option sets the debug &lt;javac&gt; Ant task to true. This option is selected by default.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t19" headers="r1c1-t19">
-<p>Libraries Folder</p>
+<p>Report Uses of Deprecated APIs.</p>
 </td>
 <td align="left" headers="r3c1-t19 r1c2-t19">
-<p>Specifies the location of the class libraries that the EJB module depends on. All JAR files in this folder are added to the EJB module project's classpath and packaged with the module for deployment.</p>
-<p><b>Note</b>: The IDE only scans this folder once when you create the project. After the project is created, adding JAR files to this folder outside the IDE does not add them to the module's classpath. You have to add them manually through the Libraries tab of the module's Project Properties dialog box.</p>
+<p>If selected, you are notified in the compilation output of any deprecated APIs that the code uses.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Additional Compiler Options</p>
+</td>
+<td align="left" headers="r4c1-t19 r1c2-t19">
+<p>Enter any compiler options in a space-separated list in the Additional Compiler Options text field.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>You can also specify each of the project's source package folders (containing source packages) and test package folders (containing JUnit tests). You can have multiple source roots in a standard project, with the following exceptions:</p>
+<p><b>Notes:</b></p>
 <ul>
-<li>The source root cannot already exist in another IDE project.</li>
-<li>
-<p>The source root cannot already be added to another compilation unit of the same project. For example, a source root that is registered under Test Packages cannot be added to the list of Source Packages.All of the source roots are packaged into the same JAR file and share the same classpath.</p>
-<p><b>Note</b>: If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects.</p>
-</li>
+<li>Do not use compiler options like <code>-bootclasspath</code> to cross-compile between Java platforms. Instead, register the target Java platform in the Java Platform Manager and set the target JDK for the project.</li>
+<li>To manage the project's classpath click <b>Libraries</b> in the left panel of the dialog box. To set up file filters for JAR file creation click <b>Packaging</b>.</li>
 </ul>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2115">
-<param name="text" value="<html><u>&quot;Working with Ant&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>Developing Applications with NetBeans IDE, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2697">
-<param name="text" value="<html><u>&quot;Creating an EJB Module Project&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG370">
-<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG451">
+<param name="text" value="<html><u>&quot;Sharing a Library with Other Users&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2115">
+<param name="text" value="<html><u>&quot;Working with Ant&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -71,7 +71,7 @@ public class RefreshManager {
     private final RequestProcessor.Task updateTask;
 
     /** one the task was scheduled, this should be true */
-    private volatile boolean updateTaskScheduled = false;
+    private volatile long updateTaskScheduled = 0;
     
     private final LinkedList<String> queue = new LinkedList<String>();
     private final Set<String> set = new HashSet<String>();
@@ -258,11 +258,20 @@ public class RefreshManager {
             }
         }
         updateTask.schedule(0);
-        updateTaskScheduled = true;
+        updateTaskScheduled = System.currentTimeMillis();
     }
 
-    /*package*/ void testWaitLastRefreshFinished() {
-        if (updateTaskScheduled) {
+    /*package*/ void testWaitLastRefreshFinished(long time) {
+        if (updateTaskScheduled < time) {
+            // sleep up to 10 seconds, awaking each 0.1 second and checking whether update was scheduled
+            for (int i = 0; i < 100 && updateTaskScheduled < time; i++) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }
+            }            
+        }
+        if (updateTaskScheduled > 0) {
             updateTask.waitFinished();
         }
     }

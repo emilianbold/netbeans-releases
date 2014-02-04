@@ -53,6 +53,7 @@ import org.openide.util.HelpCtx;
 public class OnSavePreferencesCustomizer implements PreferencesCustomizer {
 
     private final Preferences preferences;
+    private OnSaveCustomizer component;
 
     public OnSavePreferencesCustomizer(Preferences preferences) {
         this.preferences = preferences;
@@ -75,7 +76,10 @@ public class OnSavePreferencesCustomizer implements PreferencesCustomizer {
 
     @Override
     public JComponent getComponent() {
-        return new OnSaveCustomizer(preferences);
+        if (component == null) {
+            component = new OnSaveCustomizer(preferences);
+        }
+        return component;
     }
     
     public static final class FactoryImpl implements Factory {
@@ -85,6 +89,16 @@ public class OnSavePreferencesCustomizer implements PreferencesCustomizer {
             return new OnSavePreferencesCustomizer(preferences);
         }
         
+    }
+    
+    public static final class CustomCustomizerImpl extends CustomCustomizer {
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if (customCustomizer instanceof OnSavePreferencesCustomizer) {
+                return ((OnSaveCustomizer) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
+        }
     }
     
 }

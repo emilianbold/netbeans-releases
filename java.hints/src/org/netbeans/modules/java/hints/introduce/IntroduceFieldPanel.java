@@ -72,6 +72,11 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     private JButton btnOk;
     private int elementType;
     private Preferences preferences;
+    /**
+     * Enables access mods, defaults to true. False now indicates insertion into an interface
+     * and also causes not to show initialize in part.
+     */
+    private boolean allowAccess = true;
     
     /**
      * Constructs the dialog.
@@ -149,9 +154,15 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             accessDefault.setVisible(false);
             accessPrivate.setVisible(false);
         }
-
+        resetAccess();
+        resetInit();
+        adjustInitializeIn();
+        adjustFinal();
+    }
+    
+    private void resetInit() {
         if (supportsInit()) {
-            int init = pref.getInt( "initMethod", INIT_METHOD ); //NOI18N
+            int init = preferences.getInt( "initMethod", INIT_METHOD ); //NOI18N
             switch( init ) {
             case INIT_FIELD:
                 initField.setSelected( true );
@@ -172,9 +183,38 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             // reset the first radio button in the group
             initMethod.setSelected(false);
         }
-        
-        adjustInitializeIn();
-        adjustFinal();
+    }
+    
+    private void resetAccess() {
+        if (supportsAccess()) {
+            int accessModifier = preferences.getInt( "accessModifier", ACCESS_PRIVATE ); //NOI18N
+            switch( accessModifier ) {
+            case ACCESS_PUBLIC:
+                accessPublic.setSelected( true );
+                break;
+            case ACCESS_PROTECTED:
+                accessProtected.setSelected( true );
+                break;
+            case ACCESS_DEFAULT:
+                accessDefault.setSelected( true );
+                break;
+            case ACCESS_PRIVATE:
+                accessPrivate.setSelected( true );
+                break;
+            }
+        } else {
+            lblAccess.setVisible(false);
+            accessPublic.setVisible(false);
+            accessProtected.setVisible(false);
+            accessDefault.setVisible(false);
+            accessPrivate.setVisible(false);
+        }
+    }
+    
+    public void setAllowAccess(boolean allow) {
+        this.allowAccess = allow;
+        resetAccess();
+        resetInit();
     }
     
     private boolean isConstant() {
@@ -182,11 +222,11 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     }
     
     private boolean supportsInit() {
-        return elementType == FIELD;
+        return allowAccess && elementType == FIELD;
     }
     
     private boolean supportsAccess() {
-        return elementType != VARIABLE;
+        return allowAccess && elementType != VARIABLE;
     }
     
     private Preferences getPreferences() {
@@ -502,6 +542,10 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     public int getInitializeIn() {
         if (initializeInTest != null) return initializeInTest;
         int ret;
+        
+        if (!allowAccess) {
+            return INIT_FIELD;
+        }
         if (initMethod.isSelected())
             ret = INIT_METHOD;
         else if (initField.isSelected())
@@ -528,6 +572,9 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if (accessTest != null) return accessTest;
         Set<Modifier> set;
         int val;
+        if (!allowAccess) {
+            return Collections.emptySet();
+        }
         if( accessPublic.isSelected() ) {
             val = ACCESS_PUBLIC;
             set = EnumSet.of(Modifier.PUBLIC);

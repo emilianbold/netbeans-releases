@@ -2,97 +2,75 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Enterprise Application Project Properties Dialog Box: Packaging</title>
+<title>Standard Enterprise Application Project Properties Dialog Box: Run</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerJarContent" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerJarContent"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref618" name="sthref618"></a>
-<h1>Standard Enterprise Application Project Properties Dialog Box: Packaging</h1>
+<p>Beta Draft: 2014-02-04</p>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref602" name="sthref602"></a>
+<h1>Standard Enterprise Application Project Properties Dialog Box: Run</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Packaging panel enables you to define the JARs, folders, libraries, and projects that are packaged in the EAR file. You can set up a filter to exclude files from the EAR file. Use the buttons on the right of the dialog box to add and remove the JARs, folders, libraries, and projects. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2693">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>The Run page lets you configure options for running your project.</p>
+<p>In the Run page, you can set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t29">Element</th>
-<th align="left" valign="bottom" id="r1c2-t29">Description</th>
+<th align="left" valign="bottom" id="r1c1-t30">Element</th>
+<th align="left" valign="bottom" id="r1c2-t30">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t29" headers="r1c1-t29">
-<p>Archive File Name</p>
+<td align="left" id="r2c1-t30" headers="r1c1-t30">
+<p>Client Module</p>
 </td>
-<td align="left" headers="r2c1-t29 r1c2-t29">
-<p>When selected the files of EAR modules are compiled when you save them.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t29" headers="r1c1-t29">
-<p>Content to Exclude</p>
-</td>
-<td align="left" headers="r3c1-t29 r1c2-t29">
-<p>Specify the files or file types that you want to exclude from the packaged EAR.</p>
+<td align="left" headers="r2c1-t30 r1c2-t30">
+<p>Specifies the name of the WAR file or the client module in the EAR file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t29" headers="r1c1-t29">
-<p>Compress Archive</p>
+<td align="left" id="r3c1-t30" headers="r1c1-t30">
+<p>Server</p>
 </td>
-<td align="left" headers="r4c1-t29 r1c2-t29">
-<p>Select to compress files when the EAR is packaged. Deselect if you want to package the EAR file without compression. The default is deselected.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t29" headers="r1c1-t29">
-<p>Additional content to include:</p>
-</td>
-<td align="left" headers="r5c1-t29 r1c2-t29">
-<p>This table lists the JAR and WAR files, folders, libraries, and projects that are part of your project but that are excluded from the classpath.</p>
+<td align="left" headers="r3c1-t30 r1c2-t30">
+<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are registered with the IDE are available to be selected here.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t29" headers="r1c1-t29">
-<p>Add Project</p>
+<td align="left" id="r4c1-t30" headers="r1c1-t30">
+<p>Deploy on Save</p>
 </td>
-<td align="left" headers="r6c1-t29 r1c2-t29">
-<p>Click to select an IDE project that you want to include in the EAR.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t29" headers="r1c1-t29">
-<p>Add Library</p>
-</td>
-<td align="left" headers="r7c1-t29 r1c2-t29">
-<p>Click to select a library that you want to include in the EAR.</p>
+<td align="left" headers="r4c1-t30 r1c2-t30">
+<p>Specifies whether changed files are automatically redeployed. This option saves you time when you run or debug your application in the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t29" headers="r1c1-t29">
-<p>Add JAR/Folder</p>
+<td align="left" id="r5c1-t30" headers="r1c1-t30">
+<p>Display Browser on Run</p>
 </td>
-<td align="left" headers="r8c1-t29 r1c2-t29">
-<p>Click to select a JAR or folder that you want to include in the EAR.</p>
+<td align="left" headers="r5c1-t30 r1c2-t30">
+<p>Specifies whether the browser is displayed. You can edit this if the selected Client Module is a web module.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r9c1-t29" headers="r1c1-t29">
-<p>Remove</p>
+<td align="left" id="r6c1-t30" headers="r1c1-t30">
+<p>Relative URL</p>
 </td>
-<td align="left" headers="r9c1-t29 r1c2-t29">
-<p>Click to remove the item that is selected in the table.</p>
+<td align="left" headers="r6c1-t30 r1c2-t30">
+<p>Specifies the URL relative to the Client Module to run. You can edit this if the selected Client Module is a web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t30" headers="r1c1-t30">
+<p>Client Information</p>
+</td>
+<td align="left" headers="r7c1-t30 r1c2-t30">
+<p>Specifies options for running an enterprise application client. You can edit these fields if the selected Client Module is an application client.</p>
 </td>
 </tr>
 </tbody>

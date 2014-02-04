@@ -95,6 +95,7 @@ public class UseSpecificCatchCustomizer extends javax.swing.JPanel
             }
             m.addElement(s);
         }
+        prefs.put(UseSpecificCatch.OPTION_EXCEPTION_LIST, val);
     }
 
     @Override
@@ -139,7 +140,7 @@ public class UseSpecificCatchCustomizer extends javax.swing.JPanel
         for (Enumeration en = ((DefaultListModel)list.getModel()).elements(); en.hasMoreElements(); ) {
             String s = (String)en.nextElement();
             if (sb.length() > 0) {
-                sb.append(",");
+                sb.append(", ");
             }
             sb.append(s);
         }

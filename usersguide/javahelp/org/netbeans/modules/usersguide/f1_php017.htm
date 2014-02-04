@@ -2,22 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Find Usages Dialog Box</title>
+<title>Remote Synchronization Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" name="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref451" name="sthref451"></a>
-<h1>Find Usages Dialog Box</h1>
+<p>Beta Draft: 2014-02-04</p>
+<p><a id="org.netbeans.modules.php.project.connections.sync.SyncPanel" name="org.netbeans.modules.php.project.connections.sync.SyncPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref442" name="sthref442"></a>
+<h1>Remote Synchronization Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use this dialog box to specify search options for the Find Usages command. You can use the Find Usages command to determine all of the places a class, function, or variable is used in your project's source code.</p>
-<p>The Find Usages dialog box displays the following option for all types of identifiers:</p>
-<ul>
-<li><b>Search in Comments</b>. If selected, occurrences of the identifier that appear in code comments are also displayed.</li>
-</ul>
-<p>For classes and interfaces, the Find Usages dialog box displays the following additional options:</p>
+<p>The Remote Synchronization dialog box enables you to specify the synchronization operations that the IDE performs when synchronizing the contents of a local folder with the contents of a folder on a remote server. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG3011">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You open the dialog box by right-clicking the Source Files folder in the Projects window and choosing Synchronize in the popup menu.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -31,73 +34,228 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t18" headers="r1c1-t18">
-<p>Find Usages</p>
+<p>Show Planned Operations</p>
 </td>
 <td align="left" headers="r2c1-t18 r1c2-t18">
-<p>If selected, all usages of the class are displayed.</p>
+<p>Select the operations that you want the IDE to perform during the synchronization. The IDE can perform multiple operations when synchronizing files.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t18" headers="r1c1-t18">
-<p>Find All Subtypes</p>
+<p>Download</p>
 </td>
 <td align="left" headers="r3c1-t18 r1c2-t18">
-<p>If selected, usages of all subtypes of the class, including subtypes of subtypes, are displayed. Usages of the class itself are not displayed.</p>
+<p>Download the remote version. Overwrite the local version if one exists.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t18" headers="r1c1-t18">
-<p>Find Direct Subtypes Only</p>
+<p>Upload</p>
 </td>
 <td align="left" headers="r4c1-t18 r1c2-t18">
-<p>If selected, only usages of direct subtypes are displayed. Subtypes of those subtypes are ignored.</p>
+<p>Upload the local version to the server. Overwrite the remote version if one exists.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t18" headers="r1c1-t18">
+<p>No Operation</p>
+</td>
+<td align="left" headers="r5c1-t18 r1c2-t18">
+<p>Do not synchronize the file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t18" headers="r1c1-t18">
+<p>Delete</p>
+</td>
+<td align="left" headers="r6c1-t18 r1c2-t18">
+<p>Delete both local and remote versions of the file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t18" headers="r1c1-t18">
+<p>Show Problems</p>
+</td>
+<td align="left" headers="r7c1-t18 r1c2-t18">
+<p>Select the synchronization problems that the IDE displays.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t18" headers="r1c1-t18">
+<p>Warning</p>
+</td>
+<td align="left" headers="r8c1-t18 r1c2-t18">
+<p>Show warning icons. Warnings indicate problems that are not severe enough to prevent synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t18" headers="r1c1-t18">
+<p>Error</p>
+</td>
+<td align="left" headers="r9c1-t18 r1c2-t18">
+<p>Show error icons. Errors are problems severe enough to prevent synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t18" headers="r1c1-t18">
+<p>File Conflict</p>
+</td>
+<td align="left" headers="r10c1-t18 r1c2-t18">
+<p>File Conflict icons indicate that both the local and the remote version of the file changed since the last synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t18" headers="r1c1-t18">
+<p>File vs. Directory Collision</p>
+</td>
+<td align="left" headers="r11c1-t18 r1c2-t18">
+<p>The path to a local file is the path to a directory on the server, or the reverse. For example, there's a local file called /my/file but on the server /my/file/ is a directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t18" headers="r1c1-t18">
+<p>Symbolic Link</p>
+</td>
+<td align="left" headers="r12c1-t18 r1c2-t18">
+<p>File is only a symbolic link pointing to another file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t18" headers="r1c1-t18">
+<p>Check All</p>
+</td>
+<td align="left" headers="r13c1-t18 r1c2-t18">
+<p>Click to show all planned operations.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t18" headers="r1c1-t18">
+<p>Uncheck All</p>
+</td>
+<td align="left" headers="r14c1-t18 r1c2-t18">
+<p>Click Uncheck All to show no planned operations.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t18" headers="r1c1-t18">
+<p>Files Table</p>
+</td>
+<td align="left" headers="r15c1-t18 r1c2-t18">
+<p>This table displays a list of operations that the IDE plans for files, on a per file basis. You can select individual files to modify the planned operation for that file. You can sort the list by clicking a column header.</p>
+<p>Additional information appears at the bottom of the table for any rows you select. For example, if you select 4 rows, you see a summary of the operations and problems for those rows, such as "3 downloads, 0 uploads, 1 no-op, 0 deletions, 0 errors, 0 warnings." If you select a row and there is an error associated with the operation in that row, details about that error appear, such as "Error (FILE_NAME): Non-existing file cannot be updated."</p>
+<p>The table contains the following columns.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t18" headers="r1c1-t18">
+<p>Problem icons</p>
+</td>
+<td align="left" headers="r16c1-t18 r1c2-t18">
+<p>An icon appears if the planned operation has a problem of a type selected in the Show Problems section.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t18" headers="r1c1-t18">
+<p>Remote Path</p>
+</td>
+<td align="left" headers="r17c1-t18 r1c2-t18">
+<p>The path to the remote copy of the file from the project's root directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r18c1-t18" headers="r1c1-t18">
+<p>Planned Operations</p>
+</td>
+<td align="left" headers="r18c1-t18 r1c2-t18">
+<p>The operation planned for the file, if the operation type is selected in the Show Planned Operations section.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r19c1-t18" headers="r1c1-t18">
+<p>Local Path</p>
+</td>
+<td align="left" headers="r19c1-t18 r1c2-t18">
+<p>The path to the local copy of the file from the project's root directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r20c1-t18" headers="r1c1-t18">
+<p>Operations</p>
+</td>
+<td align="left" headers="r20c1-t18 r1c2-t18">
+<p>Use the following buttons to specify the operation that is performed on the selected file or files.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r21c1-t18" headers="r1c1-t18">
+<p>Diff</p>
+</td>
+<td align="left" headers="r21c1-t18 r1c2-t18">
+<p>Review differences between remote and local file. The results of the diff are displayed in a new dialog box.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r22c1-t18" headers="r1c1-t18">
+<p>No operation</p>
+</td>
+<td align="left" headers="r22c1-t18 r1c2-t18">
+<p>Change the planned operation to "no-op."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r23c1-t18" headers="r1c1-t18">
+<p>Download</p>
+</td>
+<td align="left" headers="r23c1-t18 r1c2-t18">
+<p>Change the planned operation to "Download remote version."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r24c1-t18" headers="r1c1-t18">
+<p>Upload</p>
+</td>
+<td align="left" headers="r24c1-t18 r1c2-t18">
+<p>Change the planned operation to "Upload local version."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r25c1-t18" headers="r1c1-t18">
+<p>Delete</p>
+</td>
+<td align="left" headers="r25c1-t18 r1c2-t18">
+<p>Change the planned operation to "Delete both local and remote versions.".</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r26c1-t18" headers="r1c1-t18">
+<p>Reset</p>
+</td>
+<td align="left" headers="r26c1-t18 r1c2-t18">
+<p>Reset all changes to the operations.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r27c1-t18" headers="r1c1-t18">
+<p>Show Summary Before Start</p>
+</td>
+<td align="left" headers="r27c1-t18 r1c2-t18">
+<p>Select this option to show a summary of synchronization operations before the synchronization starts.</p>
+<p>Review the operations in the summary dialog. Click OK in the summary and the synchronization progress dialog opens.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r28c1-t18" headers="r1c1-t18">
+<p>Synchronize</p>
+</td>
+<td align="left" headers="r28c1-t18 r1c2-t18">
+<p>Click to begin synchronization.</p>
+<p>The button is disable if there are any unresolved errors. If Show Summary Before Start is selected, a summary of synchronization operations appears.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>For functions, the Find Usages dialog box sometimes displays the following additional options:</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t19">Element</th>
-<th align="left" valign="bottom" id="r1c2-t19">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t19" headers="r1c1-t19">
-<p>Find Usages</p>
-</td>
-<td align="left" headers="r2c1-t19 r1c2-t19">
-<p>If selected, all usages of that specific function in your project are displayed.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t19" headers="r1c1-t19">
-<p>Find Overriding Functions</p>
-</td>
-<td align="left" headers="r3c1-t19 r1c2-t19">
-<p>If selected, the output will show every usage of a function that overrides this function in your project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t19" headers="r1c1-t19">
-<p>Search from Base Class</p>
-</td>
-<td align="left" headers="r4c1-t19 r1c2-t19">
-<p>This option is only relevant if the function for which you are finding usages overrides another function. If selected, the output will show every usage of that base function.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The Find Usages command is distinct from the Find command, because Find Usages returns only occurrences of the specified identifier in PHP source code. The Find command returns any matching string that you specify in any type of file.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

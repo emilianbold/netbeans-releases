@@ -789,6 +789,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
     
+    @Override
+    public void resumeThread(Thread thread) {
+        sendResumptive("-exec-continue --thread " + ((GdbThread) thread).getId()); // NOI18N
+    }
+
     private boolean targetAttach = false;
     private static final String ATTACH_ID = "ATTACH"; //NOI18N
     
@@ -1682,6 +1687,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (!thread.isCurrent()) {
             String tid = ((GdbThread) thread).getId();
             selectThread(-1, tid, true); // notify gdb to set current thread
+
+            if (get_debugging) {    // TODO maybe better way
+                for (GdbThread debuggingViewThread : threadsWithStacks) {
+                    debuggingViewThread.setCurrent(((GdbThread) thread).getId().equals(debuggingViewThread.getId()));
+                }
+                debuggingViewUpdater.treeChanged();
+            }
         }
     }
 
@@ -1791,12 +1803,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             System.out.println("tid_no " + tid_no); // NOI18N
             System.out.println("frame " + frame.toString()); // NOI18N
         }
-        GdbFrame f = new GdbFrame(this, frame, null);
+        GdbFrame f = new GdbFrame(this, frame, null, null);
 
 	//if (index != -1)
 	    //threads[index] = new GdbThread(this, threadUpdater, tid_no, f);
         if (isCurrent) {
-            selectFrame(f.getNumber()); // notify gdb to change current frame
+//            selectFrame(f.getNumber());   // TODO check // notify gdb to change current frame
 //            if (get_frames || get_locals) { // get Frames for current thread
 //                // would call getMILocals.
 //                showStackFrames();
@@ -1861,8 +1873,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         String id = thrList.getConstValue("id"); //NOI18N
                         String name = thrList.getConstValue("target-id"); //NOI18N
                         MIValue frame = thrList.valueOf("frame");// frame entry // NOI18N
-                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
-                        GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, f);
+                        GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                        f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
+                        String state = thrList.getConstValue("state"); // NOI18N
+                        GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, new Frame[]{f}, state);
                         if (id.equals(currentThreadId)) {
                             gdbThread.setCurrent(true);
                         }
@@ -1908,16 +1922,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                         result = (MIResult) results.get(i++);
                                         if (result.matches("frame")) { //NOI18N
                                             MIValue frame = result.value();
-                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
+                                            f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
                                         }
                                     } else if (result.matches("frame")) { //NOI18N
                                         name = "Thread ".concat(id); //NOI18N
 
                                         MIValue frame = result.value();
-                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null);
+                                        f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
+                                        f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                                     }
 
-                                    GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, f);
+                                    GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, new Frame[]{f}, "");  // TODO investigate thread state for Mac OS
                                     if (id.equals(currentThreadId)) {
                                         gdbThread.setCurrent(true);
                                     }
@@ -1977,6 +1992,91 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    /*
+     * debugging view stuff 
+     */
+    private GdbThread[] threadsWithStacks = new GdbThread[0];
+    private boolean get_debugging = false; // indicates Debugging View open/close
+
+    @Override
+    public void registerDebuggingViewModel(ModelListener model) {
+        super.registerDebuggingViewModel(model);
+        get_debugging = model != null;
+    }
+    
+    private void requestThreadsWithStacks() {
+        if (peculiarity.supports(GdbVersionPeculiarity.Feature.THREAD_INFO)) {
+            MICommand cmd = new MiCommandImpl("-thread-info") { // NOI18N
+                @Override
+                protected void onDone(MIRecord record) {
+                    final List<GdbThread> res = new ArrayList<GdbThread>();
+                    MITList results = record.results();
+                    final String currentThreadId = results.getConstValue("current-thread-id"); //NOI18N
+                    for (MITListItem thr : results.valueOf("threads").asList()) { //NOI18N
+                        MITList thrList = (MITList) thr;
+                        final String id = thrList.getConstValue("id"); //NOI18N
+                        final String name = thrList.getConstValue("target-id"); //NOI18N
+                        final String state = thrList.getConstValue("state"); //NOI18N
+                        
+                        // TODO FIMXE --thread command activates the thread specified!!!!
+                        MICommand cmd2 = new MiCommandImpl("-stack-info-frame --thread " + id) { // NOI18N
+                            @Override
+                            protected void onDone(MIRecord record) {
+                                MITList results = record.results();
+                                MITList frame = results.valueOf("frame").asList(); //NOI18N
+                                final String frameNo = frame.getConstValue("level"); // NOI18N
+                                
+                                MICommand cmd = new MiCommandImpl("-stack-list-frames --thread " + id) { // NOI18N
+                                    @Override
+                                    protected void onDone(MIRecord record) {
+                                        MITList results = record.results();
+                                        MITList stack_list = (MITList) results.valueOf("stack"); // NOI18N
+                                        int size = stack_list.size();
+
+                                        GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
+                                        if (id.equals(currentThreadId)) {
+                                            gdbThread.setCurrent(true);
+                                        }
+                                        // iterate through frame list
+                                        // initialize before assign, see IZ 196318
+                                        GdbFrame[] frames = new GdbFrame[size];
+                                        for (int vx = 0; vx < size; vx++) {
+                                            MIResult frame = (MIResult) stack_list.get(vx);
+                                            GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame.value(), null, gdbThread);    // TODO arguments request
+                                            if (gdbFrame.getNumber().equals(frameNo)) {
+                                                gdbFrame.setCurrent(true);
+                                            }
+                                            frames[vx] = gdbFrame;
+                                        }
+                                        gdbThread.setStack(frames);
+                                        res.add(gdbThread);
+                                        
+                                        threadsWithStacks = res.toArray(new GdbThread[res.size()]);   // TODO better place (this causes several updates at once)
+                                        debuggingViewUpdater.treeChanged(); // TODO update the certain node
+                                        finish();
+                                    }
+                                };
+                                gdb.sendCommand(cmd);
+                                finish();
+                            }
+                        };
+                        gdb.sendCommand(cmd2);
+                        
+                    }
+                    finish();
+                }
+            };
+            gdb.sendCommand(cmd);
+        }
+
+        // TODO non-thread-info way
+    }
+
+    @Override
+    public Thread[] getThreadsWithStacks() {
+        return threadsWithStacks;
+    }
+    
     /*
      * stack stuff
      *
@@ -2062,6 +2162,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             // get full path for current frame from gdb,
             // update source editor, and make frame as current
             getFullPath((GdbFrame) f);
+            
+            if (get_debugging) {    // TODO maybe better way
+                for (Thread thread : threadsWithStacks) {
+                    if (thread.isCurrent()) {
+                        for (Frame frame : thread.getStack()) {
+                            frame.setCurrent(frame.getNumber().equals(fno));
+                        }
+                    }
+                }
+                debuggingViewUpdater.treeChanged();
+            }
         }
         stackUpdater.treeChanged();     // causes a pull
         disassembly.stateUpdated();
@@ -2070,7 +2181,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void visitCurrentSrc(GdbFrame f, MIRecord srcRecord) {
         MITList  srcTuple = srcRecord.results();
         if (f == null)
-            f = new GdbFrame(this, null, null);
+            f = new GdbFrame(this, null, null, null);
 
 	// create a non-visited location because it may be assigned to
 	// homeLoc
@@ -2160,7 +2271,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 frameArgs = (MIResult) args_list.get(vx);
             }
             
-            newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs);
+            newGuiStackFrames[vx] = new GdbFrame(this, frame.value(), frameArgs, null);
             
             if (vx == 0) {
                 newGuiStackFrames[vx].setCurrent(true); // make top frame current
@@ -2351,7 +2462,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             public void actionPerformed(ActionEvent e) {
                 MiCommandImpl cmd = new DeleteMIVarCommand(watch);
                 cmd.dontReportError();
-                sendCommandInt(cmd);
+                if (session() != null) {
+                    sendCommandInt(cmd);
+                }
             }
         };
         
@@ -3311,7 +3424,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (get_locals && frameValue != null) {
                 // needs to get args info
                 // frameValue include args  info
-                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null)};
+                guiStackFrames = new GdbFrame[] {new GdbFrame(this, frameValue, null, null)};
             }
 
 	    if (srcResults != null) {
@@ -3536,6 +3649,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	requestStack(stopRecord);
         
+        if (get_debugging) {
+            requestThreadsWithStacks();
+        }
+
         if (MemoryWindow.getDefault().isShowing()) {
             MemoryWindow.getDefault().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "debugger stopped")); // NOI18N
         }

@@ -37,7 +37,6 @@ enterprise/modules/ext/jsf-2_2                                        CDDL-1.0 (
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/primefaces/primefaces-4.0.jar                  Apache-2.0
-enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
 enterprise/modules/ext/struts/commons-beanutils-1.8.0.jar             Apache-2.0
@@ -170,51 +169,51 @@ java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDO
 java/modules/ext/maven/lucene-core-3.6.2.jar                          Apache-2.0
 java/modules/ext/maven/lucene-highlighter-3.6.2.jar                   Apache-2.0
 java/modules/ext/maven/maven-dependency-tree-2.0.jar                  Apache-2.0
-java/modules/ext/spring-3.0/spring-aop-3.2.3.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-aspects-3.2.3.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-beans-3.2.3.RELEASE.jar            Apache-2.0
-java/modules/ext/spring-3.0/spring-build-src-3.2.3.RELEASE.jar        Apache-2.0
-java/modules/ext/spring-3.0/spring-context-3.2.3.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-3.0/spring-context-support-3.2.3.RELEASE.jar  Apache-2.0
-java/modules/ext/spring-3.0/spring-core-3.2.3.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-expression-3.2.3.RELEASE.jar       Apache-2.0
-java/modules/ext/spring-3.0/spring-instrument-3.2.3.RELEASE.jar       Apache-2.0
-java/modules/ext/spring-3.0/spring-instrument-tomcat-3.2.3.RELEASE.jar   Apache-2.0
-java/modules/ext/spring-3.0/spring-jdbc-3.2.3.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-jms-3.2.3.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-orm-3.2.3.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-oxm-3.2.3.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-struts-3.2.3.RELEASE.jar           Apache-2.0
-java/modules/ext/spring-3.0/spring-test-3.2.3.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-3.0/spring-tx-3.2.3.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-3.0/spring-web-3.2.3.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-3.0/spring-webmvc-3.2.3.RELEASE.jar           Apache-2.0
-java/modules/ext/spring-3.0/spring-webmvc-portlet-3.2.3.RELEASE.jar   Apache-2.0
-java/modules/ext/spring-4/spring-aop-4.0.0.RELEASE.jar                Apache-2.0
-java/modules/ext/spring-4/spring-aspects-4.0.0.RELEASE.jar            Apache-2.0
-java/modules/ext/spring-4/spring-beans-4.0.0.RELEASE.jar              Apache-2.0
-java/modules/ext/spring-4/spring-build-src-4.0.0.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-4/spring-context-4.0.0.RELEASE.jar            Apache-2.0
-java/modules/ext/spring-4/spring-context-support-4.0.0.RELEASE.jar    Apache-2.0
-java/modules/ext/spring-4/spring-core-4.0.0.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-4/spring-expression-4.0.0.RELEASE.jar         Apache-2.0
-java/modules/ext/spring-4/spring-framework-bom-4.0.0.RELEASE.jar      Apache-2.0
-java/modules/ext/spring-4/spring-instrument-4.0.0.RELEASE.jar         Apache-2.0
-java/modules/ext/spring-4/spring-instrument-tomcat-4.0.0.RELEASE.jar  Apache-2.0
-java/modules/ext/spring-4/spring-jdbc-4.0.0.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-4/spring-jms-4.0.0.RELEASE.jar                Apache-2.0
-java/modules/ext/spring-4/spring-messaging-4.0.0.RELEASE.jar          Apache-2.0
-java/modules/ext/spring-4/spring-orm-4.0.0.RELEASE.jar                Apache-2.0
-java/modules/ext/spring-4/spring-oxm-4.0.0.RELEASE.jar                Apache-2.0
-java/modules/ext/spring-4/spring-test-4.0.0.RELEASE.jar               Apache-2.0
-java/modules/ext/spring-4/spring-tx-4.0.0.RELEASE.jar                 Apache-2.0
-java/modules/ext/spring-4/spring-web-4.0.0.RELEASE.jar                Apache-2.0
-java/modules/ext/spring-4/spring-webmvc-4.0.0.RELEASE.jar             Apache-2.0
-java/modules/ext/spring-4/spring-webmvc-portlet-4.0.0.RELEASE.jar     Apache-2.0
-java/modules/ext/spring-4/spring-websocket-4.0.0.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-aop-3.2.7.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-aspects-3.2.7.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-beans-3.2.7.RELEASE.jar            Apache-2.0
+java/modules/ext/spring-3.0/spring-build-src-3.2.7.RELEASE.jar        Apache-2.0
+java/modules/ext/spring-3.0/spring-context-3.2.7.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-context-support-3.2.7.RELEASE.jar  Apache-2.0
+java/modules/ext/spring-3.0/spring-core-3.2.7.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-expression-3.2.7.RELEASE.jar       Apache-2.0
+java/modules/ext/spring-3.0/spring-framework-bom-3.2.7.RELEASE.jar    Apache-2.0
+java/modules/ext/spring-3.0/spring-instrument-3.2.7.RELEASE.jar       Apache-2.0
+java/modules/ext/spring-3.0/spring-instrument-tomcat-3.2.7.RELEASE.jar  Apache-2.0
+java/modules/ext/spring-3.0/spring-jdbc-3.2.7.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-jms-3.2.7.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-orm-3.2.7.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-oxm-3.2.7.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-struts-3.2.7.RELEASE.jar           Apache-2.0
+java/modules/ext/spring-3.0/spring-test-3.2.7.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-tx-3.2.7.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-3.0/spring-web-3.2.7.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-webmvc-3.2.7.RELEASE.jar           Apache-2.0
+java/modules/ext/spring-3.0/spring-webmvc-portlet-3.2.7.RELEASE.jar   Apache-2.0
+java/modules/ext/spring-4/spring-aop-4.0.1.RELEASE.jar                Apache-2.0
+java/modules/ext/spring-4/spring-aspects-4.0.1.RELEASE.jar            Apache-2.0
+java/modules/ext/spring-4/spring-beans-4.0.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-4/spring-build-src-4.0.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-4/spring-context-4.0.1.RELEASE.jar            Apache-2.0
+java/modules/ext/spring-4/spring-context-support-4.0.1.RELEASE.jar    Apache-2.0
+java/modules/ext/spring-4/spring-core-4.0.1.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-4/spring-expression-4.0.1.RELEASE.jar         Apache-2.0
+java/modules/ext/spring-4/spring-framework-bom-4.0.1.RELEASE.jar      Apache-2.0
+java/modules/ext/spring-4/spring-instrument-4.0.1.RELEASE.jar         Apache-2.0
+java/modules/ext/spring-4/spring-instrument-tomcat-4.0.1.RELEASE.jar  Apache-2.0
+java/modules/ext/spring-4/spring-jdbc-4.0.1.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-4/spring-jms-4.0.1.RELEASE.jar                Apache-2.0
+java/modules/ext/spring-4/spring-messaging-4.0.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-4/spring-orm-4.0.1.RELEASE.jar                Apache-2.0
+java/modules/ext/spring-4/spring-oxm-4.0.1.RELEASE.jar                Apache-2.0
+java/modules/ext/spring-4/spring-test-4.0.1.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-4/spring-tx-4.0.1.RELEASE.jar                 Apache-2.0
+java/modules/ext/spring-4/spring-web-4.0.1.RELEASE.jar                Apache-2.0
+java/modules/ext/spring-4/spring-webmvc-4.0.1.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-4/spring-webmvc-portlet-4.0.1.RELEASE.jar     Apache-2.0
+java/modules/ext/spring-4/spring-websocket-4.0.1.RELEASE.jar          Apache-2.0
 php/docs/phpdocdesc.zip                                               LGPL-2.1
 php/docs/predefined_vars.zip                                          LGPL-2.1
-php/hudson/config.xml                                                 BSD-php-jenkins-template
 php/modules/ext/java-cup-11a.jar                                      JavaCUP-LICENSE
 php/phpstubs/phpruntime                                               PHP-LICENSE
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
@@ -3335,44 +3334,6 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-===
-======
-====================== BSD-php-jenkins-template =====================
-
-
-Copyright (c) 2010-2011, Sebastian Bergmann <sebastian@phpunit.de>.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-
- * Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-
- * Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in
-   the documentation and/or other materials provided with the
-   distribution.
-
- * Neither the name of Sebastian Bergmann nor the names of his
-   contributors may be used to endorse or promote products derived
-   from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
 
 
 ===

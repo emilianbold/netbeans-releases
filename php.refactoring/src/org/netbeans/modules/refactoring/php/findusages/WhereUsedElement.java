@@ -70,15 +70,15 @@ import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.Lookups;
 
 /**
- * An element in the refactoring preview list which holds information about the find-usages-match
+ * An element in the refactoring preview list which holds information about the find-usages-match.
  *
  * @author Tor Norbye
  */
 
 public class WhereUsedElement extends SimpleRefactoringElementImplementation {
-    private PositionBounds bounds;
-    private String displayText;
-    private FileObject parentFile;
+    private final PositionBounds bounds;
+    private final String displayText;
+    private final FileObject parentFile;
     private final Icon icon;
     private final String name;
 

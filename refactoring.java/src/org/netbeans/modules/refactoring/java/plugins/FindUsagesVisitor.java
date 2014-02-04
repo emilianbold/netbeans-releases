@@ -217,7 +217,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             }
         } else if (el.equals(elementToFind)) {
             final ElementKind kind = elementToFind.getKind();
-            if(kind.isField() || kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.RESOURCE_VARIABLE) {
+            if(kind.isField() || kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.RESOURCE_VARIABLE || kind == ElementKind.PARAMETER) {
                 JavaWhereUsedFilters.ReadWrite access = JavaWhereUsedFilters.ReadWrite.READ;
                 TreePath parentPath = path.getParentPath();
                 Tree parentTree = parentPath.getLeaf();

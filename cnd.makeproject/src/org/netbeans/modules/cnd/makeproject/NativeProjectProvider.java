@@ -645,7 +645,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 if (CndPathUtilities.isPathAbsolute(path)) {
                     vec.add(new FSPath(fs, path));                    
                 } else {
-                    path = CndPathUtilities.toAbsolutePath(getProjectRoot(), path);
+                    path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
                     vec.add(new FSPath(fs, path));
                 }
             }

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
-import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
@@ -67,7 +67,7 @@ public class RemoteSyncFactoryDefaultProviderImpl implements RemoteSyncFactoryDe
         if (Utilities.isUnix()) {
             return RemoteSyncFactory.fromID(SharedSyncFactory.ID);
         } else {
-            return RemoteSyncFactory.fromID(RfsSyncFactory.ID);
+            return RemoteSyncFactory.fromID(FtpSyncFactory.ID);
         }
     }    
 }

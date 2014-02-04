@@ -107,7 +107,7 @@ public class AutomaticRegistration {
                 printHelpAndExit();
             }
             int status = registerWebLogicInstance(args[1], args[2], args[3],
-                    args[4], args[5]);
+                    args[4], args[5], args.length == 7 ? args[6] : null);
             System.exit(status);
         } else if ("--remove".equals(args[0])) {
             if (args.length < 4) {
@@ -127,14 +127,14 @@ public class AutomaticRegistration {
 
     private static void printHelpAndExit() {
         System.out.println("Available actions:");
-        System.out.println("\t--add <clusterDir> <serverDir> <domainDir> <username> <password>");
+        System.out.println("\t--add <clusterDir> <serverDir> <domainDir> <username> <password> [javaopts]");
         System.out.println("\t--remove <clusterDir> <serverDir> <domainDir>");
         System.out.println("\t--list <clusterDir>");
         System.exit(-1);
     }
 
     private static int registerWebLogicInstance(String clusterDirValue, String serverDirValue,
-            String domainDirValue, String username, String password) {
+            String domainDirValue, String username, String password, String javaOpts) {
         // tell the infrastructure that the userdir is cluster dir
         System.setProperty("netbeans.user", clusterDirValue); // NOI18N
 
@@ -231,7 +231,7 @@ public class AutomaticRegistration {
         String displayName = generateUniqueDisplayName(serverInstanceDir, version);
         boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName,
                 serverDir.getAbsolutePath(), domainDir.getAbsolutePath(), domainName,
-                port, username, password);
+                port, username, password, javaOpts);
         if (ok) {
             return 0;
         } else {
@@ -343,7 +343,7 @@ public class AutomaticRegistration {
      */
     private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url,
             String displayName, String serverRoot, String domainRoot, String domainName,
-            String port, String username, String password) {
+            String port, String username, String password, String javaOpts) {
 
         String name = FileUtil.findFreeFileName(serverInstanceDir, "weblogic_autoregistered_instance", null); // NOI18N
         FileObject instanceFO;
@@ -360,6 +360,9 @@ public class AutomaticRegistration {
                     WLInstantiatingIterator.DEFAULT_DEBUGGER_PORT);
             instanceFO.setAttribute(WLPluginProperties.DOMAIN_NAME, domainName);
             instanceFO.setAttribute(WLPluginProperties.PORT_ATTR, port);
+            if (javaOpts != null) {
+                instanceFO.setAttribute(WLPluginProperties.JAVA_OPTS, javaOpts);
+            }
             if (Utilities.isMac()) {
                 instanceFO.setAttribute(WLPluginProperties.MEM_OPTS,
                         WLInstantiatingIterator.DEFAULT_MAC_MEM_OPTS);

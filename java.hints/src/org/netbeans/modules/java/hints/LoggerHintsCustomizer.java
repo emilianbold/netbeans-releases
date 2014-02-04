@@ -63,6 +63,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
         initComponents();
         this.p = p;
         loggersCheckbox.setSelected(p.getBoolean(CUSTOM_LOGGERS_ENABLED, false));
+        p.putBoolean(CUSTOM_LOGGERS_ENABLED, loggersCheckbox.isSelected());
         enableDisablePanel(loggersCheckbox.isSelected());
         List<String> loadedValues = loadLoggersFromPrefs();
         if (loadedValues != null) {
@@ -238,8 +239,10 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
     private List<String> loadLoggersFromPrefs() {
         String loggers = p.get(CUSTOM_LOGGERS, null);
         if (loggers == null || loggers.equals("")) {
+            p.put(CUSTOM_LOGGERS, "");
             return null;
         }
+        p.put(CUSTOM_LOGGERS, loggers);
         List<String> loggersList = new ArrayList<>();
         String[] tmpArray = loggers.split(",");
         loggersList.addAll(Arrays.asList(tmpArray));

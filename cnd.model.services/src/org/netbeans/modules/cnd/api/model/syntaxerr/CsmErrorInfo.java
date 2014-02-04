@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
-import java.util.List;
-import org.netbeans.spi.editor.hints.Fix;
-
 /**
  * Represents an error or warning
  * @author Vladimir Kvashin

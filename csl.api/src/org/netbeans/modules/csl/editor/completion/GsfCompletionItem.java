@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  * Code completion items originating from the language plugin.
  *
  * Based on JavaCompletionItem by Dusan Balek.
- * 
+ *
  * @author Tor Norbye
  */
 public abstract class GsfCompletionItem implements CompletionItem {
@@ -89,20 +89,20 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
     /** Cache for looking up tip proposal - usually null (shortlived) */
     static org.netbeans.modules.csl.api.CompletionProposal tipProposal;
-    
+
     protected ParserResult info;
     protected CodeCompletionResult completionResult;
-    
+
     protected static int SMART_TYPE = 1000;
-        
+
     private static class DelegatedItem extends GsfCompletionItem {
         private org.netbeans.modules.csl.api.CompletionProposal item;
         private Integer spCache = null;
         private CharSequence stCache = null;
         //private static ImageIcon iconCache[][] = new ImageIcon[2][4];
-        
-        private DelegatedItem(ParserResult info, 
-                CodeCompletionResult completionResult, 
+
+        private DelegatedItem(ParserResult info,
+                CodeCompletionResult completionResult,
                 org.netbeans.modules.csl.api.CompletionProposal item) {
             super(item.getAnchorOffset());
             this.item = item;
@@ -160,8 +160,8 @@ public abstract class GsfCompletionItem implements CompletionItem {
                         break;
                     case KEYWORD: spCache = item.isSmart() ? 600 - SMART_TYPE : 600;
                         break;
-                    case OTHER: 
-                    default: 
+                    case OTHER:
+                    default:
                         spCache = item.isSmart() ? 999 - SMART_TYPE : 999;
                     }
                 }
@@ -192,7 +192,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             defaultAction(component);
             return true;
         }
-        
+
         public CharSequence getSortText() {
             if (stCache == null) {
                 stCache = item.getSortText();
@@ -240,30 +240,30 @@ public abstract class GsfCompletionItem implements CompletionItem {
                     length++;
                 }
             }
-            
+
             return truncateRhs(rhs, length);
         }
-        
+
         @Override
         public CompletionTask createDocumentationTask() {
             final ElementHandle element = item.getElement();
             if (element != null) {
                 return GsfCompletionProvider.createDocTask(element,info);
             }
-            
+
             return null;
         }
-        
+
         protected ImageIcon getIcon() {
             ImageIcon ic = item.getIcon();
             if (ic != null) {
                 return ic;
             }
-            
+
             ImageIcon imageIcon = org.netbeans.modules.csl.navigation.Icons.getElementIcon(item.getKind(), item.getModifiers());
             // TODO - cache!
             return imageIcon;
-//                    
+//
 //
 //            ElementKind kind = item.getKind();
 //            switch (kind) {
@@ -286,10 +286,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //                return getKeywordIcon();
 //            case OTHER:
 //            }
-//            
+//
 //            return null;
         }
-            
+
 //        protected ImageIcon getMethodIcon() {
 //            Set<Modifier> modifiers = item.getModifiers();
 //
@@ -298,10 +298,10 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //
 //            ImageIcon cachedIcon = icon[isStatic?1:0][level];
 //            if (cachedIcon != null) {
-//                return cachedIcon;   
+//                return cachedIcon;
 //            }
 //
-//            String iconPath = METHOD_PUBLIC;            
+//            String iconPath = METHOD_PUBLIC;
 //            if (isStatic) {
 //                switch (level) {
 //                    case PRIVATE_LEVEL:
@@ -344,22 +344,22 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //            return newIcon;
 //        }
 
-    
+
         @Override
         protected void substituteText(final JTextComponent c, int offset, int len, String toAdd) {
             if (completionResult != null) {
                 completionResult.beforeInsert(item);
-                
+
                 if (!completionResult.insert(item)) {
                     defaultSubstituteText(c, offset, len, toAdd);
                 }
-                
+
                 completionResult.afterInsert(item);
             } else {
                 defaultSubstituteText(c, offset, len, toAdd);
             }
         }
-            
+
         private void defaultSubstituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
             final String template = item.getCustomInsertTemplate();
             if (template != null) {
@@ -382,34 +382,34 @@ public abstract class GsfCompletionItem implements CompletionItem {
                         }
                     });
                     ctm.createTemporary(template).insert(c);
-                
-                    // TODO - set the actual method to be used here so I don't have to 
+
+                    // TODO - set the actual method to be used here so I don't have to
                     // work quite as hard...
                     //tipProposal = item;
                     Completion.get().showToolTip();
                 }
-                
+
                 return;
             }
-            
+
             super.substituteText(c, offset, len, toAdd);
-        }        
+        }
     }
 
     public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, ParserResult info) {
         return new DelegatedItem(info, result, proposal);
     }
-    
+
     public static final GsfCompletionItem createTruncationItem() {
         return new TruncationItem();
     }
-    
+
     /**
      * Special code completion item used to show truncated completion results
      * along with a description.
      */
     private static class TruncationItem extends GsfCompletionItem implements CompletionTask, CompletionDocumentation {
-        
+
         private TruncationItem() {
             super(0);
         }
@@ -433,7 +433,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             // Length 0 - won't be inserted
             return ""; // NOI18N
         }
-        
+
         @Override
         protected String getLeftHtmlText() {
             return "<b>" + NbBundle.getMessage(GsfCompletionItem.class, "ListTruncated") + "</b>"; // NOI18N
@@ -445,7 +445,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }
 
         // Implements CompletionTask
-        
+
         public void query(CompletionResultSet resultSet) {
             resultSet.setDocumentation(this);
             resultSet.finish();
@@ -458,9 +458,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
         public void cancel() {
         }
-        
+
         // Implements CompletionDocumentation
-        
+
         public String getText() {
             return NbBundle.getMessage(GsfCompletionItem.class, "TruncatedHelpHtml"); // NOI18N
         }
@@ -487,11 +487,11 @@ public abstract class GsfCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
-    
+
     private GsfCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
-    
+
     @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
@@ -531,29 +531,29 @@ public abstract class GsfCompletionItem implements CompletionItem {
         defaultAction(component);
         return true;
     }
-    
+
     public CompletionTask createDocumentationTask() {
         return null;
     }
-    
+
     public CompletionTask createToolTipTask() {
         return null;
     }
-    
+
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
     }
-    
+
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
 
     protected abstract ImageIcon getIcon();
-    
+
     protected String getLeftHtmlText() {
         return null;
     }
-    
+
     protected String getRightHtmlText() {
         return null;
     }
@@ -596,7 +596,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
             //        }
             //    }
             //}
-        
+
             //  Update the text
             doc.runAtomic(new Runnable() {
                 public void run() {
@@ -641,7 +641,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         return rhs;
     }
 
-    
+
     // TODO: KeywordItem has a postfix:
 //    private static class KeywordItem extends GsfCompletionItem {
 //        private String postfix;
@@ -651,14 +651,14 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
 //            super.substituteText(c, offset, len, toAdd != null ? toAdd : postfix);
 //        }
-    
-    
+
+
 
 //    private static final int PUBLIC_LEVEL = 3;
 //    private static final int PROTECTED_LEVEL = 2;
 //    private static final int PACKAGE_LEVEL = 1;
 //    private static final int PRIVATE_LEVEL = 0;
-//    
+//
 //    private static int getProtectionLevel(Set<Modifier> modifiers) {
 //        if(modifiers.contains(Modifier.PUBLIC))
 //            return PUBLIC_LEVEL;
@@ -667,7 +667,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 //        if(modifiers.contains(Modifier.PRIVATE))
 //            return PRIVATE_LEVEL;
 //        return PACKAGE_LEVEL;
-//    }    
+//    }
 
 
     /** Format parameters in orange etc. */
@@ -696,7 +696,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 sb.append(END_COLOR);
             }
         }
-        
+
         @Override
         public void active(boolean start) {
             if (start) {
@@ -707,7 +707,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 sb.append(END_COLOR);
             }
         }
-        
+
         @Override
         public void name(ElementKind kind, boolean start) {
             assert start != isName;
@@ -756,9 +756,9 @@ public abstract class GsfCompletionItem implements CompletionItem {
                 sb.append(END_COLOR);
             }
         }
-        
+
     }
-    
+
     private static String getHTMLColor(int r, int g, int b) {
         Color c = LFCustoms.shiftColor(new Color(r, g, b));
         return "<font color=#" //NOI18N

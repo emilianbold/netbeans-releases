@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.options.editor.completion;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -58,6 +60,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 public class GeneralCompletionOptionsPanel extends JPanel {
 
     private Preferences preferences;
+    private final Map<String, Boolean> id2Saved = new HashMap<String, Boolean>();
     
     /** 
      * Creates new form GeneralCompletionOptionsPanel.
@@ -72,6 +75,17 @@ public class GeneralCompletionOptionsPanel extends JPanel {
         cbShowDeprecated.setSelected(preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true));
         cbInsertSingleProposalsAutomatically.setSelected(preferences.getBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true));
         cbCaseSensitive.setSelected(preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, true));
+        id2Saved.put("pair-characters-completion", cbInsertClosingBracketsAutomatically.isSelected()); //NOI18N
+        id2Saved.put(SimpleValueNames.COMPLETION_AUTO_POPUP, cbAutoPopup.isSelected());
+        id2Saved.put(SimpleValueNames.JAVADOC_AUTO_POPUP, cbDocsAutoPopup.isSelected());
+        id2Saved.put(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, cbJavadocNextToCC.isSelected());
+        id2Saved.put(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, cbShowDeprecated.isSelected());
+        id2Saved.put(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, cbInsertSingleProposalsAutomatically.isSelected());
+        id2Saved.put(SimpleValueNames.COMPLETION_CASE_SENSITIVE, cbCaseSensitive.isSelected());
+    }
+
+    String getSavedValue(String key) {
+        return Boolean.toString(id2Saved.get(key));
     }
     
     /** This method is called from within the constructor to

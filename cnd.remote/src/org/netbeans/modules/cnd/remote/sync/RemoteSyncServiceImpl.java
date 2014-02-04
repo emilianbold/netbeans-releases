@@ -59,6 +59,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -70,7 +72,6 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
 
     private static class Uploader implements RemoteSyncSupport.Worker {
 
-        private final Project project;
         private final ExecutionEnvironment execEnv;
         private final PathMap pathMap;
         private final FileData fileData;
@@ -79,11 +80,14 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
         private UploadStatus uploadStatus;
 
         public Uploader(Project project, ExecutionEnvironment execEnv) throws IOException {
-            this.project = project;
             this.execEnv = execEnv;
             pathMap = HostInfoProvider.getMapper(this.execEnv);
-            FileObject privProjectStorageDir = RemoteProjectSupport.getPrivateStorage(project);
-            fileData = FileData.get(privProjectStorageDir, execEnv);
+            if (project == null) {
+                fileData = null;
+            } else {
+                FileObject privProjectStorageDir = RemoteProjectSupport.getPrivateStorage(project);
+                fileData = FileData.get(privProjectStorageDir, execEnv);
+            }
         }
 
 
@@ -97,9 +101,13 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
             Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), execEnv, remotePath, 0700);
             uploadStatus = task.get();
             if (uploadStatus.isOK()) {
-                fileData.setState(file, FileState.COPIED);
+                if (fileData != null) {
+                    fileData.setState(file, FileState.COPIED);
+                }
             } else {
-                fileData.setState(file, FileState.ERROR);
+                if (fileData != null) {
+                    fileData.setState(file, FileState.ERROR);
+                }
                 if (err != null) {
                     err.append(uploadStatus.getError());
                 }
@@ -109,7 +117,9 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
 
         @Override
         public void close() {
-            fileData.store();
+            if (fileData != null) {
+                fileData.store();
+            }
         }
 
         private void checkDir(String remoteFilePath) throws InterruptedException, ExecutionException {

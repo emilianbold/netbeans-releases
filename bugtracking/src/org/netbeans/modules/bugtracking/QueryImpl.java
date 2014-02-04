@@ -37,22 +37,19 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -157,19 +154,37 @@ public final class QueryImpl<Q, I>  {
         return data;
     }
 
-    public static final String EVENT_QUERY_STARTED = "bugtracking.query.started";
-    public static final String EVENT_QUERY_FINISHED = "bugtracking.query.finished";
+    public static final String EVENT_QUERY_REFRESH_STARTED = "bugtracking.query.refresh.started";
+    public static final String EVENT_QUERY_REFRESH_FINISHED = "bugtracking.query.refresh.finished";
+    public static final String EVENT_QUERY_RESTORE_STARTED = "bugtracking.query.restore.started";
+    public static final String EVENT_QUERY_RESTORE_FINISHED = "bugtracking.query.restore.finished";
     private class IssueContainerIntern implements IssueContainerImpl<I> {
         private final Set<IssueImpl> issueImpls = new HashSet<IssueImpl>();
+        private  boolean isRunning = false;
+        
         @Override
         public void refreshingStarted() {
             wasRefreshed = true;
-            support.firePropertyChange(EVENT_QUERY_STARTED, null, null);
+            isRunning = true;
+            support.firePropertyChange(EVENT_QUERY_REFRESH_STARTED, null, null);
         }
 
         @Override
         public void refreshingFinished() {
-            support.firePropertyChange(EVENT_QUERY_FINISHED, null, null);
+            isRunning = false;
+            support.firePropertyChange(EVENT_QUERY_REFRESH_FINISHED, null, null);
+        }
+
+        @Override
+        public void restoreStarted() {
+            isRunning = true;
+            support.firePropertyChange(EVENT_QUERY_RESTORE_STARTED, null, null);
+        }
+
+        @Override
+        public void restoreFinished() {
+            isRunning = false;
+            support.firePropertyChange(EVENT_QUERY_RESTORE_FINISHED, null, null);
         }
 
         @Override
@@ -205,6 +220,9 @@ public final class QueryImpl<Q, I>  {
         
         void addPropertyChangeListener(PropertyChangeListener listener) {
             support.addPropertyChangeListener(listener);
+            if(isRunning) {
+                listener.propertyChange(new PropertyChangeEvent(data, EVENT_QUERY_REFRESH_STARTED, null, null));
+            }
         }
 
         void removePropertyChangeListener(PropertyChangeListener listener) {

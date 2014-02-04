@@ -219,7 +219,12 @@ public class AddUnderscores {
     public static final class CustomizerProviderImpl implements CustomizerProvider {
 
         @Override public JComponent getCustomizer(Preferences prefs) {
-            return new AddUnderscoresPanel(prefs);
+            JComponent customizer = new AddUnderscoresPanel(prefs);
+            prefs.putInt(KEY_SIZE_BINARY, getSizeForRadix(prefs, 2));
+            prefs.putInt(KEY_SIZE_DECIMAL, getSizeForRadix(prefs, 10));
+            prefs.putInt(KEY_SIZE_HEXADECIMAL, getSizeForRadix(prefs, 16));
+            prefs.putBoolean(KEY_ALSO_WITH_UNDERSCORES, isReplaceLiteralsWithUnderscores(prefs));
+            return customizer;
         }
 
     }

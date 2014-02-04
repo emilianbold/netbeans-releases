@@ -276,7 +276,7 @@ public class UpdateAction extends ContextAction {
             public void run() {
                 UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
                 VersioningOutputManager vom = VersioningOutputManager.getInstance();
-                vom.addComponent(url.toString() + "-UpdateExecutor", results); // NOI18N
+                vom.addComponent(SvnUtils.decodeToString(url) + "-UpdateExecutor", results); // NOI18N
             }
         });
     }

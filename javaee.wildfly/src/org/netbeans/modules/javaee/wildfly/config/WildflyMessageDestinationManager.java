@@ -66,8 +66,8 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -84,16 +84,16 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
 
     private final FileObject serverDir;
     private final FileObject configFile;
-    private WildFlyDeploymentManager dm;
+    private WildflyDeploymentManager dm;
 
     private final boolean isAs7;
 
-    public WildflyMessageDestinationManager(WildFlyDeploymentManager dm, boolean isAs7) {
+    public WildflyMessageDestinationManager(WildflyDeploymentManager dm, boolean isAs7) {
         this.dm = dm;
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
-        String serverDirPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+        String serverDirPath = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
-        FileObject config = FileUtil.toFileObject(new File(ip.getProperty(JBPluginProperties.PROPERTY_CONFIG_FILE)));
+        FileObject config = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE)));
         if (config == null) {
             config = serverDir.getFileObject("configuration/standalone.xml");
         }

@@ -88,6 +88,9 @@ public class NotificationTableModel extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         NotificationImpl notification = getEntry(rowIndex);
+        if (notification == null) {
+            return null;
+        }
         switch (columnIndex) {
             case PRIORITY_COLUMN:
                 return notification.getPriority();
@@ -101,8 +104,6 @@ public class NotificationTableModel extends AbstractTableModel {
                 throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
         }
     }
-
-
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {

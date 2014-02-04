@@ -650,6 +650,13 @@ public final class FoldOperationImpl {
             return (fi.getStart() + glen <= fi.getEnd());
         }
         
+        private boolean isValidFold(Fold f) {
+            if (f.getParent() != null) {
+                return true;
+            }
+            return execution.isBlocked(f);
+        }
+        
         public void run() throws BadLocationException {
             // first order the supplied folds:
             List ll = new ArrayList<FoldInfo>(foldInfos);
@@ -730,7 +737,7 @@ public final class FoldOperationImpl {
                         // place for insertion of new folds.
                         tran.reinsertFoldTree(ff);
                     }
-                    // update the data
+                    // update the data, if the fold is still valid
                     update(ff, fi);
                 }
                 for (FoldInfo info : toAdd) {
@@ -758,10 +765,10 @@ public final class FoldOperationImpl {
                     execution.checkConsistency();
                 }
             } finally {
+                tran.commit();
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "Updated fold hierarchy: " + getOperation().getHierarchy());
                 }
-                tran.commit();
             }
         }
         
@@ -827,7 +834,6 @@ public final class FoldOperationImpl {
             // check if the fold's boundary does not cross its parent
             if (parent == null) {
                 // return false, if the fold is blocked - will be also reinserted, since it has been updated somehow.
-                assert execution.isBlocked(f) || tran.isReinserting(f);
                 return !execution.isBlocked(f);
             }
             int s = getUpdatedFoldStart(parent);

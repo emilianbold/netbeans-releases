@@ -69,7 +69,7 @@ public final class CsmTypes {
     }
 
     public static CsmType createSimpleType(CsmClassifier cls, OffsetDescriptor offs) {
-        return getProvider().createType(cls, new TypeDescriptor(false, false, 0, 0), offs);
+        return getProvider().createType(cls, new TypeDescriptor(false, 0, 0, 0), offs);
     }
 
     /**
@@ -78,7 +78,7 @@ public final class CsmTypes {
      * @return new type
      */
     public static CsmType createConstType(CsmType orig) {
-        return getProvider().createType(orig, new TypeDescriptor(true, orig.isReference(), orig.getPointerDepth(), orig.getArrayDepth()));
+        return getProvider().createType(orig, new TypeDescriptor(true, TypeDescriptor.getReferenceType(orig), orig.getPointerDepth(), orig.getArrayDepth()));
     }
 
     /**
@@ -95,7 +95,7 @@ public final class CsmTypes {
         } else {
             arrDepth = Math.max(arrDepth - 1, 0);
         }
-        return getProvider().createType(type, new TypeDescriptor(type.isConst(), type.isReference(), ptrDepth, arrDepth));
+        return getProvider().createType(type, new TypeDescriptor(type.isConst(), TypeDescriptor.getReferenceType(type), ptrDepth, arrDepth));
     }
 
     //@Immutable
@@ -125,12 +125,33 @@ public final class CsmTypes {
 
     //@Immutable
     public static final class TypeDescriptor {
+        
+        public static final int NON_REFERENCE = 0;
+        
+        public static final int REFERENCE = 1;
+        
+        public static final int RVALUE_REFERENCE = 2;
+        
+        public static int getReferenceType(CsmType type) {
+            if (type.isRValueReference()) {
+                return RVALUE_REFERENCE;
+            } else if (type.isReference()) {
+                return REFERENCE;
+            }
+            return NON_REFERENCE;
+        }
+        
+        public static int getReferenceType(TypeDescriptor td) {
+            return td._reference;
+        }
+
+        
         private final boolean _const;
-        private final boolean _reference;
+        private final int _reference;
         private final int _ptrDepth;
         private final int _arrDepth;
 
-        public TypeDescriptor(boolean _const, boolean _reference, int _ptrDepth, int _arrDepth) {
+        public TypeDescriptor(boolean _const, int _reference, int _ptrDepth, int _arrDepth) {
             this._const = _const;
             this._reference = _reference;
             this._ptrDepth = _ptrDepth;
@@ -150,7 +171,11 @@ public final class CsmTypes {
         }
 
         public boolean isReference() {
-            return _reference;
+            return _reference > 0;
+        }
+        
+        public boolean isRValueReference() {
+            return _reference > 1;
         }
     }
 

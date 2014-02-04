@@ -45,6 +45,8 @@ package org.netbeans.modules.javascript.karma.exec;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -52,6 +54,8 @@ import org.netbeans.api.project.Project;
 import org.openide.util.RequestProcessor;
 
 public final class KarmaServers {
+
+    private static final Logger LOGGER = Logger.getLogger(KarmaServers.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor(KarmaServers.class.getName(), 2);
     private static final KarmaServers INSTANCE = new KarmaServers();
@@ -146,6 +150,13 @@ public final class KarmaServers {
     void restartServerInternal(Project project) {
         assert RP.isRequestProcessorThread();
         stopServerInternal(project, false);
+        try {
+            // #241111
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+        }
         startServerInternal(project);
     }
 

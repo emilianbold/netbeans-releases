@@ -196,6 +196,12 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         }
     }
 
+    protected void setLoadingVisible(boolean bl) {
+        synchronized (LOCK) {
+            lblLoading.setVisible(bl);
+        }
+    }
+    
     private void startLoading() {
         synchronized (LOCK) {
             loaded = false;

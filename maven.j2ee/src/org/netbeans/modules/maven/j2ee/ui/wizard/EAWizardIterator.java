@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -66,6 +65,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.validation.api.ui.ValidationGroup;
+import org.openide.LifecycleManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,6 +112,10 @@ public class EAWizardIterator extends BaseWizardIterator {
         }
         addEARDependencies((File) wiz.getProperty("ear_projdir"), ejbVersionInfo, webVersionInfo); // NOI18N
 
+        // Save everything before calling ArchetypeWizards.openProjects(..)
+        // Obviously sometimes we don't see all currently created projects/folders --> See issue #240778
+        LifecycleManager.getDefault().saveAll();
+
         // For every single created project we need to setup server correctly
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, earFile);
         for (FileObject projectFile : projects) {
@@ -144,7 +148,7 @@ public class EAWizardIterator extends BaseWizardIterator {
     }
 
     private void generateApplicationXML(Set<FileObject> projects) throws IOException {
-        Set<Project> childProjects = new HashSet<Project>();
+        Set<Project> childProjects = new HashSet<>();
         Project earProject = null;
 
         for (FileObject projectFile : projects) {
@@ -192,7 +196,7 @@ public class EAWizardIterator extends BaseWizardIterator {
         if (earDirFO == null) {
             return;
         }
-        List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
+        List<ModelOperation<POMModel>> operations = new ArrayList<>();
         if (ejbInfo != null) {
             operations.add(ArchetypeWizards.addDependencyOperation(ejbInfo, "ejb")); // NOI18N
         }

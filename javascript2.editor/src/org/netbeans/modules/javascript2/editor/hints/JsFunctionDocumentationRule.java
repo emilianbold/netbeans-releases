@@ -58,6 +58,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.openide.util.NbBundle;
@@ -234,8 +235,8 @@ public class JsFunctionDocumentationRule extends JsAstRule {
                 if (docParameter.isOptional()) {
                     continue;
                 }
-
-                if (!containDocParamName(functionParams, docParameter.getParamName().getName())) {
+                Identifier paramName = docParameter.getParamName();
+                if (paramName != null && !containDocParamName(functionParams, paramName.getName())) {
                     sb.append(delimiter).append(docParameter.getParamName().getName());
                     delimiter = ", "; //NOI18N
                 }

@@ -90,6 +90,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -617,7 +618,14 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
         }
         if (value.length() > 0) {
-            brc.setProperty(MAVENEXTCLASSPATH, jar.getAbsolutePath());
+            String mavenPath = brc.getProperties().get(CosChecker.MAVENEXTCLASSPATH);
+            if (mavenPath == null) {
+                mavenPath = "";
+            } else {
+                mavenPath = mavenPath + (Utilities.isWindows() ? ";" : ":");
+            }
+            mavenPath = mavenPath + jar.getAbsolutePath();
+            brc.setProperty(MAVENEXTCLASSPATH, mavenPath);
         }
         brc.setProperty(NETBEANS_PROJECT_MAPPINGS, value.toString()); //always put ti recognize later and print warnings
     }

@@ -123,9 +123,7 @@ public class OverrideTaskFactory extends IndexingAwareParserResultTask<CndParser
     }
 
     @Override
-    public int getPriority() {
-        return 1000;
-    }
+    public int getPriority() {return 2000;}
 
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {

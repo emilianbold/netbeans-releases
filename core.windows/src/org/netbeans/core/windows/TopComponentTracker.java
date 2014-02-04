@@ -85,6 +85,8 @@ public final class TopComponentTracker {
      */
     void clear() {
         viewIds.clear();
+        editorIds.clear();
+        editors.clear();
     }
     
     /**

@@ -100,6 +100,10 @@ public abstract class AbstractHint implements TreeRule {
      * canceling changes done in the options dialog.<BR>
      * Default implementation return null, which results in no customizer.
      * It is fine to return null (as default implementation does)
+     * 
+     * <p>Be sure to set the default values for the options controlled by the customizer
+     * into the provided {@link Preferences}. This should be done before returning the customizer. 
+     * If you do not, the infrastructure will not be able to correctly enable/disable the Apply button in options window.
      * @param node Preferences node the customizer should work on.
      * @return Component which will be shown in the options dialog.
      */    

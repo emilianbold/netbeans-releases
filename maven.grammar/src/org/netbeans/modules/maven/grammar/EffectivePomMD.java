@@ -45,8 +45,6 @@ package org.netbeans.modules.maven.grammar;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.awt.PopupMenu;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -60,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
@@ -86,9 +83,7 @@ import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -114,7 +109,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -255,7 +249,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void componentClosed() {}
 
-        private JEditorPane pane;
+        private @NullAllowed JEditorPane pane;
         
         private int caretPosition;
         
@@ -265,11 +259,13 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 firstTimeShown = false;
                 getVisualRepresentation().add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
                 task.schedule(0);
-            } else if( pane != null ) {
+            } else {
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
-                        pane.requestFocus();
-                        pane.setCaretPosition(caretPosition);
+                        if (pane != null) {
+                            pane.requestFocus();
+                            pane.setCaretPosition(caretPosition);
+                        }
                     }
                 });
             }
@@ -280,7 +276,9 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         @Override public void componentActivated() {}
 
         @Override public void componentDeactivated() {
-            caretPosition = pane.getCaretPosition();
+            if (pane != null) {
+                caretPosition = pane.getCaretPosition();
+            }
         }
 
         @Override public UndoRedo getUndoRedo() {

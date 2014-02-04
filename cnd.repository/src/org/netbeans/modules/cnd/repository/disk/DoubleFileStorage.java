@@ -37,7 +37,7 @@
  * single choice of license, a recipient has the option to distribute
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
+* However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
@@ -50,6 +50,7 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.disk.index.ChunkInfo;
@@ -57,7 +58,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.testbench.WriteStatistics;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.Exceptions;
 
 /**
  * Stores Persistent objects in two files; the main purpose of the two files is
@@ -68,12 +68,17 @@ import org.openide.util.Exceptions;
  */
 public final class DoubleFileStorage implements FileStorage {
 
+    private static final int MAINTENANCE_PERIOD = 10000;//10 seconds
+    private long NextMaintainanceSize = 512*1024*1024;//512Mb
+    private static final long SIZE_INCREASE_STEP = 256*1024*1024;//256Mb
+    private final AtomicLong lastDefragmentationTime = new AtomicLong(0);
     private final File baseDir;
     private IndexedStorageFile cache_0_dataFile;
     private IndexedStorageFile cache_1_dataFile;
     private final AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean();
     private boolean defragmenting = false;
     private boolean openedForWriting = false;
+    private boolean opened = false;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
@@ -86,6 +91,10 @@ public final class DoubleFileStorage implements FileStorage {
     //TODO: make it so that cache_X_dataFile is never null...
     DoubleFileStorage(File baseDir) {
         this.baseDir = baseDir;
+    }
+
+    boolean isOpened() {
+        return opened;
     }
 
     @Override
@@ -141,6 +150,7 @@ public final class DoubleFileStorage implements FileStorage {
                 openedForWriting = true;
             }
         }
+        opened = true;
         return true;
     }
 
@@ -204,6 +214,32 @@ public final class DoubleFileStorage implements FileStorage {
         }
     }
 
+    private void maintainIfNeeded() {
+        try {
+            //maintain is required if:
+            //one of the files are bigger than 1 Gb and more than 10 seconds (10000 ms since last defragment)
+            boolean activeFlag = getFlag();
+            final IndexedStorageFile activeFile = getFileByFlag(activeFlag);
+            long activeFileSize = activeFile.getSize();
+            long passiveFileSize = getFileByFlag(!activeFlag).getSize();
+            int activeFileFragmentationPercentage = activeFile.getFragmentationPercentage();
+            if ((activeFileSize >= NextMaintainanceSize || passiveFileSize >= NextMaintainanceSize) &&
+                    System.currentTimeMillis() - lastDefragmentationTime.get() >= MAINTENANCE_PERIOD) {
+                //need to maintain
+                defragment(true, Stats.maintenanceInterval);
+                if (activeFileSize >= NextMaintainanceSize && activeFileFragmentationPercentage < 40) {
+                    if (Stats.traceDefragmentation) {
+                        System.out.printf(">>> Active file size %d  total fragmentation %d%%\n", activeFileSize, activeFileFragmentationPercentage); // NOI18N
+                        System.out.printf("\tWill increase file size maintanance trashold on 256Mb\n"); // NOI18N
+                    }       
+                    NextMaintainanceSize += SIZE_INCREASE_STEP;
+                }
+            }
+        } catch (IOException ex) {
+            RepositoryExceptions.throwException(this, ex);
+        }
+    }
+
     @Override
     public void write(final LayerKey key, final ByteBuffer data) throws IOException {
         if (Stats.writeStatistics) {
@@ -211,6 +247,7 @@ public final class DoubleFileStorage implements FileStorage {
         }
         lock.writeLock().lock();
         try {
+            maintainIfNeeded();
             boolean activeFlag = getFlag();
             getFileByFlag(activeFlag).write(key, data);
             getFileByFlag(!activeFlag).remove(key);
@@ -231,7 +268,7 @@ public final class DoubleFileStorage implements FileStorage {
         }
     }
 
-    private boolean defragment(final long timeout) throws IOException {
+    private boolean defragment(boolean doIt, final long timeout) throws IOException {
 
         boolean needMoreTime = false;
 
@@ -247,10 +284,11 @@ public final class DoubleFileStorage implements FileStorage {
 
         if (timeout > 0) {
             if (!defragmenting) {
-                if (getFragmentationPercentage() < Stats.defragmentationThreashold) {
+                if (!doIt && (getFragmentationPercentage() < Stats.defragmentationThreashold)) {
                     if (Stats.traceDefragmentation) {
                         System.out.printf("\tFragmentation is too low\n"); // NOI18N
                     }
+                    lastDefragmentationTime.set(System.currentTimeMillis());
                     return needMoreTime;
                 }
             }
@@ -261,7 +299,7 @@ public final class DoubleFileStorage implements FileStorage {
             defragmenting = true;
             cache_1_dataFileIsActive.set(!cache_1_dataFileIsActive.get());
         }
-
+        long startTime = System.currentTimeMillis();
         needMoreTime = _defragment(timeout);
 
         if (getPassive().getObjectsCount() == 0) {
@@ -269,20 +307,20 @@ public final class DoubleFileStorage implements FileStorage {
         }
 
         if (Stats.traceDefragmentation) {
-            System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", baseDir.getAbsolutePath(), timeout, getFragmentationPercentage()); // NOI18N
+            System.out.printf("<<< Defragmenting %s; timeout %d ms total fragmentation %d%%\n", baseDir.getAbsolutePath(), (System.currentTimeMillis() - startTime), getFragmentationPercentage()); // NOI18N
             System.out.printf("\tActive:  %s\n", getActive().getTraceString()); // NOI18N
             System.out.printf("\tPassive: %s\n", getPassive().getTraceString()); // NOI18N
         }
-
+        lastDefragmentationTime.set(System.currentTimeMillis());
         return needMoreTime;
     }
 
     private void move(IndexedStorageFile from, IndexedStorageFile to, LayerKey key) throws IOException {
         lock.writeLock().lock();
         try {
-                ChunkInfo chunk = from.getChunkInfo(key);
-                to.moveDataFromOtherFile(from, chunk.getOffset(), chunk.getSize(), key);
-                from.remove(key);
+            ChunkInfo chunk = from.getChunkInfo(key);
+            to.moveDataFromOtherFile(from, chunk.getOffset(), chunk.getSize(), key);
+            from.remove(key);
         } finally {
             lock.writeLock().unlock();
         }
@@ -307,12 +345,12 @@ public final class DoubleFileStorage implements FileStorage {
                 move(passiveFile, activeFile, key);
                 cnt++;
 
-                if ((timeout > 0) && (cnt % 10 == 0)) {
-                    if (System.currentTimeMillis() - time >= timeout) {
-                        needMoreTime = true;
-                        break;
-                    }
-                }
+//                if ((timeout > 0) && (cnt % 1000 == 0)) {
+//                    if (System.currentTimeMillis() - time >= timeout) {
+//                        needMoreTime = true;
+//                        break;
+//                    }
+//                }
             }
         }
         if (Stats.traceDefragmentation) {
@@ -384,7 +422,7 @@ public final class DoubleFileStorage implements FileStorage {
         if (cache_0_dataFile == null || cache_1_dataFile == null) {
             return true;
         }
-        return defragment(timeout);
+        return defragment(false, timeout);
     }
 
     @Override

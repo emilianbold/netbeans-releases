@@ -168,8 +168,10 @@ public class DeclarativeHintsParser {
                     break;
                 }
                 String text = token().text().toString();
-                text = text.substring(2, text.endsWith("?>") ? text.length() - 2 : text.length());
-                int[] span = new int[] {token().offset(null) + 2, token().offset(null) + token().length() - 2};
+                int soffs = text.startsWith("<?") ? 2 : 0; // NOI18N
+                int eoffs = text.endsWith("?>") ? text.length() - 2 : text.length(); // NOI18N
+                text = text.substring(soffs, eoffs);
+                int[] span = new int[] {token().offset(null) + soffs, token().offset(null) + eoffs};
                 if (importsBlockCode == null && !wasFirstRule) {
                     importsBlockCode = text;
                     importsBlockSpan = span;

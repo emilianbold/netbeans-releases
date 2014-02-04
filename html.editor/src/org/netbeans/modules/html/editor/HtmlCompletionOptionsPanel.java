@@ -48,6 +48,9 @@
 
 package org.netbeans.modules.html.editor;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
@@ -69,6 +72,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
     public static final boolean HTML_COMPLETION_AUTOPOPUP_WINDOW_DEFAULT = true;
     public static final String HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP = "htmlEndTagAutocompletionAutopopup"; //NOI18N
     public static final boolean HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP_DEFAULT = true;
+    private final Map<String, Boolean> id2Saved = new HashMap<>();
 
     private Preferences preferences;
 
@@ -81,6 +85,11 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
         completionOffersEndTagAfterLt.setSelected(preferences.getBoolean(HTML_COMPLETION_END_TAG_ADTER_LT, HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT));
         autoPopupCompletionWindow.setSelected(preferences.getBoolean(HTML_COMPLETION_AUTOPOPUP_WINDOW, HTML_COMPLETION_AUTOPOPUP_WINDOW_DEFAULT));
         endTagAutocompletionAutoPopupCheckBox.setSelected(preferences.getBoolean(HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP, HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP_DEFAULT));
+        id2Saved.put(HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS, autocompleteQuotesAfterEQSCheckBox.isSelected());
+        id2Saved.put(HTML_AUTOCOMPLETE_QUOTES, autocompleteQuotesCheckBox.isSelected());
+        id2Saved.put(HTML_COMPLETION_END_TAG_ADTER_LT, completionOffersEndTagAfterLt.isSelected());
+        id2Saved.put(HTML_COMPLETION_AUTOPOPUP_WINDOW, autoPopupCompletionWindow.isSelected());
+        id2Saved.put(HTML_END_TAG_AUTOCOMPLETION_AUTOPOPUP, endTagAutocompletionAutoPopupCheckBox.isSelected());
     }
 
     /** This method is called from within the constructor to
@@ -211,6 +220,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
 
         private final Preferences preferences;
         private static final String CUSTOMIZER_NAME = "htmlCodeCompletionPreferencesCustomizer"; //NOI18N
+        private HtmlCompletionOptionsPanel component;
 
         private CodeCompletionPreferencesCustomizer(Preferences p) {
             preferences = p;
@@ -233,9 +243,26 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
 
         @Override
         public JComponent getComponent() {
-            return new HtmlCompletionOptionsPanel(preferences);
+            if (component == null) {
+                component = new HtmlCompletionOptionsPanel(preferences);
         }
+            return component;
+    }
     }
 
+
+    String getSavedValue(String key) {
+        return Boolean.toString(id2Saved.get(key));
+}
+    
+    public static final class CustomCustomizerImpl extends PreferencesCustomizer.CustomCustomizer {
+        @Override
+        public String getSavedValue(PreferencesCustomizer customCustomizer, String key) {
+            if(customCustomizer instanceof CodeCompletionPreferencesCustomizer) {
+                return ((HtmlCompletionOptionsPanel) customCustomizer.getComponent()).getSavedValue(key);
+            }
+            return null;
+        }
+    }
 
 }

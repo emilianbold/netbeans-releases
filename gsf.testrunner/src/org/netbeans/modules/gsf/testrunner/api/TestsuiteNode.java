@@ -65,7 +65,7 @@ public class TestsuiteNode extends AbstractNode {
     /**
      * The max number of output lines to display in the tooltip.
      */
-    private static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 4); //NOI18N
+    static final int MAX_TOOLTIP_LINES = Integer.getInteger("testrunner.max.tooltip.lines", 4); //NOI18N
     /**
      * The max line length to display in the tooltip.
      */
@@ -164,7 +164,7 @@ public class TestsuiteNode extends AbstractNode {
             for (int i = 0; i < lines.size(); i++) {
                 if (i >= MAX_TOOLTIP_LINES) {
                     result.append("<br><i>" +
-                            NbBundle.getMessage(TestsuiteNode.class, "MSG_MoreOutput", lines.size() - i) + "</i>"); //NOI18N
+                            NbBundle.getMessage(TestsuiteNode.class, "MSG_MoreOutput") + "</i>"); //NOI18N
                     break;
                 }
                 String line = lines.get(i).getLine();

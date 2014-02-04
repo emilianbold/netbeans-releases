@@ -306,8 +306,8 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         jPanel1.getAccessibleContext().setAccessibleName("TITLE_AddServerLocationPanel");
         jPanel1.getAccessibleContext().setAccessibleDescription("AddServerLocationPanel_Desc");
 
-        if (JBPluginProperties.getInstance().getInstallLocation() != null) {
-            locationTextField.setText(JBPluginProperties.getInstance().getInstallLocation());
+        if (WildflyPluginProperties.getInstance().getInstallLocation() != null) {
+            locationTextField.setText(WildflyPluginProperties.getInstance().getInstallLocation());
         }
 
     }

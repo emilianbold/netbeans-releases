@@ -850,6 +850,38 @@ public class StatusTest extends AbstractGitTestCase {
         fi = getCache().getStatus(file);
         assertTrue(fi.containsStatus(FileInformation.Status.NEW_INDEX_WORKING_TREE));
     }
+
+    public void testStatusExcludedFiles () throws Exception {
+        File folder = new File(repositoryLocation, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "otherFile");
+        file.createNewFile();
+
+        add();
+        commit();
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+
+        write(file, "hello");
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        GitModuleConfig.getDefault().removeExclusionPaths(Collections.<String>singleton(file.getAbsolutePath()));
+        assertTrue(getCache().containsFiles(Collections.<File>singleton(folder), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE), false));
+        assertEquals(Collections.<File>singletonList(file), Arrays.asList(getCache().listFiles(Collections.<File>singleton(folder), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE))));
+        assertTrue(getCache().containsFiles(Collections.<File>singleton(file), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE), false));
+        assertEquals(Collections.<File>singletonList(file), Arrays.asList(getCache().listFiles(Collections.<File>singleton(file), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE))));
+        
+        // exclude
+        GitModuleConfig.getDefault().addExclusionPaths(Collections.<String>singleton(file.getAbsolutePath()));
+        
+        // now contains on parent should be false
+        assertFalse(getCache().containsFiles(Collections.<File>singleton(folder), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE), false));
+        assertTrue(getCache().containsFiles(Collections.<File>singleton(file), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE), false));
+        assertEquals(Collections.<File>singletonList(file), Arrays.asList(getCache().listFiles(Collections.<File>singleton(file), EnumSet.of(Status.MODIFIED_INDEX_WORKING_TREE))));
+        
+        // clean
+        GitModuleConfig.getDefault().removeExclusionPaths(Collections.<String>singleton(file.getAbsolutePath()));
+    }
     
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {

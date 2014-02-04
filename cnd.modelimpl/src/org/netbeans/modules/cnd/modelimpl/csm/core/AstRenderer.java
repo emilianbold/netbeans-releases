@@ -426,8 +426,11 @@ public class AstRenderer {
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         if (!isAbstractDeclarator(child.getNextSibling())) {
                             CsmType type = TypeFactory.createType(child, file, null, 0);
-                            if (type != null && type.getClassifier().isValid()) {
-                                return true;
+                            if (type != null) {
+                                CsmClassifier cls = type.getClassifier();
+                                if (CsmBaseUtilities.isValid(cls)) {
+                                    return true;
+                                }
                             }
                         }
                     } else {
@@ -2503,8 +2506,9 @@ public class AstRenderer {
             if(planB) {
                 AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
-                    if(token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
-                        token = getTypeToken(token.getNextSibling());
+                    if (token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
+                        token = AstUtil.findSiblingOfType(token.getNextSibling(), CPPTokenTypes.POINTERTO);
+                        token = getTypeToken(token);
                     }
                     ret = AstRenderer.renderType(token, file, null, false); // last two params just dummy ones
                 }
