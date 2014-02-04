@@ -46,7 +46,8 @@
         position = 600,
         displayName = "#Templates.gruntfile.js",
         description = "gruntdescription.html",
-        targetName = "Gruntfile")
+        targetName = "Gruntfile",
+        category = "html5")
 
 package org.netbeans.modules.web.clientproject.grunt;
 
