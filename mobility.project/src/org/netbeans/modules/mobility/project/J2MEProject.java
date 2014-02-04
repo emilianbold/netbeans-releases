@@ -993,6 +993,7 @@ public final class J2MEProject implements Project, AntProjectListener {
                 String s = (String) fo.getAttribute("RecommendedTemplates"); //NOI18N
                 if (s != null) result.addAll(Arrays.asList(s.split(","))); //NOI18N
             }
+            result.add("javame3x_compatibility"); //NOI18N
             return result.toArray(new String[result.size()]);
         }
         

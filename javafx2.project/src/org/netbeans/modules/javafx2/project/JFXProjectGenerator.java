@@ -312,7 +312,6 @@ public class JFXProjectGenerator {
             final String librariesDefinition, final String platformName, final String preloaderClassName) throws IOException {
         Parameters.notNull("dir", dir); //NOI18N
         Parameters.notNull("name", name);   //NOI18N
-        Parameters.notNull("preloaderClassName", preloaderClassName);   //NOI18N
 
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
@@ -347,7 +346,9 @@ public class JFXProjectGenerator {
                 
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
 //                dirFO.createFolder("test"); // NOI18N
-                createPreloaderClass(preloaderClassName, srcFolder);
+                if (preloaderClassName != null) {
+                    createPreloaderClass(preloaderClassName, srcFolder);
+                }
             }
         });
         JavaFXProjectWizardIterator.createManifest(FileUtil.toFileObject(dir), true);

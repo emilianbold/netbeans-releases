@@ -138,7 +138,7 @@ public class JiraStorageManager {
      * @param repository a repository which's queries will be returned
      */
     HashSet<JiraQuery> getQueries (JiraRepository repository) {
-        HashSet<JiraQuery> queries = new HashSet<JiraQuery>(10);
+        HashSet<JiraQuery> queries = new HashSet<>(10);
         for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
             if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));
@@ -162,21 +162,19 @@ public class JiraStorageManager {
                 ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
                 String version = ois.readUTF();
                 if (!JiraQueryData.VERSION.equals(version)) {
-                    Jira.LOG.info("loadQueries: old data format: " + version); //NOI18N
+                    Jira.LOG.log(Level.INFO, "loadQueries: old data format: {0}", version); //NOI18N
                     return;
                 }
                 int size = ois.readInt();
-                Jira.LOG.fine("loadQueries: loading " + size + " queries"); //NOI18N
-                queriesData = new HashMap<String, JiraQueryData>(size + 5);
+                Jira.LOG.log(Level.FINE, "loadQueries: loading {0} queries", size); //NOI18N
+                queriesData = new HashMap<>(size + 5);
                 while (size-- > 0) {
                     String queryIdent = ois.readUTF();
-                    Jira.LOG.fine("loadQueries: loading data for " + queryIdent); //NOI18N
+                    Jira.LOG.log(Level.FINE, "loadQueries: loading data for {0}", queryIdent); //NOI18N
                     JiraQueryData data = (JiraQueryData) ois.readObject();
                     queriesData.put(queryIdent, data);
                 }
-            } catch (IOException ex) {
-                Jira.LOG.log(LOG_LEVEL, null, ex);
-            } catch (ClassNotFoundException ex) {
+            } catch (IOException | ClassNotFoundException ex) {
                 Jira.LOG.log(LOG_LEVEL, null, ex);
             } finally {
                 if (ois != null) {
@@ -188,7 +186,7 @@ public class JiraStorageManager {
             }
         } finally {
             if (queriesData == null) {
-                queriesData = new HashMap<String, JiraQueryData>(5);
+                queriesData = new HashMap<>(5);
             }
         }
     }

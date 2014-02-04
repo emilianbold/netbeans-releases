@@ -657,8 +657,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         txtLibFolder.setVisible(visible);
         btnLibFolder.setVisible(visible);
         lblHint.setVisible(visible);
-        createMainCheckBox.setVisible(visible);
-        mainClassTextField.setVisible(visible);
+        createMainCheckBox.setVisible(type != WizardType.EXTISTING && visible);
+        mainClassTextField.setVisible(type != WizardType.EXTISTING && visible);
     }
 
     @Override

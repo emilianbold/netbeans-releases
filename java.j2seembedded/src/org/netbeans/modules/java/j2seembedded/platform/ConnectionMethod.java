@@ -104,7 +104,12 @@ public final class ConnectionMethod {
                     if (keyStore == null) {
                         throw new IllegalStateException("No pass phrase");    //NOI18N
                     }
-                    return new Key(user, new File(keyStore), String.valueOf(passPhrase));
+                    return new Key(
+                        user,
+                        new File(keyStore),
+                        passPhrase == null ?
+                            "" :    //NOI18N
+                            String.valueOf(passPhrase));
                 }
             };
 

@@ -134,12 +134,14 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
-            if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-            } else {
-                lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+            synchronized(LOCK) {
+                if (DashboardViewer.getInstance().containsActiveTask(this)) {
+                    lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+                } else {
+                    lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+                }
+                lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
             }
-            lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
         }
     }
 
@@ -153,9 +155,9 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             return null;
         }
         updateNodes(data);
-        panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
         synchronized (LOCK) {
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
             labels.clear();
             buttons.clear();
             JLabel lblIcon = new JLabel(getIcon());
@@ -205,7 +207,9 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     public void setStalled(boolean isStalled) {
-        lblStalled.setVisible(isStalled);
+        synchronized (LOCK) {
+            lblStalled.setVisible(isStalled);
+        }
     }
     
     @Override

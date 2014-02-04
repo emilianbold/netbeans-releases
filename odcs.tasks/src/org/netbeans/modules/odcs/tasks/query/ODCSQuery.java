@@ -321,7 +321,6 @@ public abstract class ODCSQuery {
                     firstRun = false;
                     Collection<NbTask> tasks = MylynSupport.getInstance().getTasks(runningQuery);
                     if(tasks != null) {
-                        long t = System.currentTimeMillis();
                         for (NbTask task : tasks) {
                             ODCSIssue issue = repository.getIssueForTask(task);
                             synchronized(ISSUES_LOCK) {

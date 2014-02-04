@@ -2,53 +2,78 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Visual Editor: Message Security Bindings</title>
+<title>Deployment Descriptor Visual Editor: Servlets</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="AS_CFG_WebServiceEndpointMessageSecurity" name="AS_CFG_WebServiceEndpointMessageSecurity"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref623" name="sthref623"></a>
-<h1>Visual Editor: Message Security Bindings</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref624" name="sthref624"></a>
+<h1>Deployment Descriptor Visual Editor: Servlets</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify the message security entries for the <code>message-security-binding</code> property when using Message Security Binding for a web service endpoint or port. 
+<p>Use to configure properties for a servlet. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2873">
-<param name="text" value="<html><u>More</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You also use this dialog box when configuring a message security policy for a port for web service clients. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1715">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>This dialog box enables you to edit the following properties:</p>
-<ul>
-<li><b>Java Method Name</b> (required). Enter this value.</li>
-<li><b>Request Authorization Source</b>. Choose from a dropdown menu.</li>
-<li><b>Request Authorization Recipient</b>. Choose from a dropdown menu.</li>
-<li><b>Response Authorization Source</b>. Choose from a dropdown menu.</li>
-<li><b>Response Authorization Recipient</b>. Choose from a dropdown menu.</li>
-</ul>
+
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t47">Element</th>
+<th align="left" valign="bottom" id="r1c2-t47">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t47" headers="r1c1-t47">
+<p>Servlet Name</p>
+</td>
+<td align="left" headers="r2c1-t47 r1c2-t47">
+<p>(Read only) Displays the servlet name for identification purposes only.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t47" headers="r1c1-t47">
+<p>Run As Role</p>
+</td>
+<td align="left" headers="r3c1-t47 r1c2-t47">
+<p>(Read only) Displays the run-as role value if a run-as role name was designated in the <code>web.xml</code> file</p>
+<p>If no run-as role name was specified in the <code>web.xml</code> file, then this field is blank and disabled.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t47" headers="r1c1-t47">
+<p>Principal Name</p>
+</td>
+<td align="left" headers="r4c1-t47 r1c2-t47">
+<p>Specifies the name of the principal assigned to a security role.</p>
+<p>The name of the principal must match a name specified on the GlassFish application server.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t47" headers="r1c1-t47">
+<p>Class Name</p>
+</td>
+<td align="left" headers="r5c1-t47 r1c2-t47">
+<p>Specifies the implementation class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2873">
-<param name="text" value="<html><u>&quot;Securing an Operation&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2869">
-<param name="text" value="<html><u>&quot;Configuring Quality of Service&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2805">
+<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

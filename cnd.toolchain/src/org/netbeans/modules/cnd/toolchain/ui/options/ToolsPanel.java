@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
@@ -123,8 +125,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private boolean customizeDebugger;
     private volatile ExecutionEnvironment execEnv;
     private volatile CompilerSetManagerImpl csm;
+    private CompilerSetManagerImpl savedCSM;
     private CompilerSet currentCompilerSet;
     private final ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
+    private final ToolsCacheManagerImpl savedTCM = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
@@ -158,6 +162,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     private void initializeLong() {
         csm = (CompilerSetManagerImpl) tcm.getCompilerSetManagerCopy(execEnv, true);
+        savedCSM = csm.deepCopy();
     }
 
     ToolsPanelModel getModel(){
@@ -234,6 +239,52 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private ToolCollectionPanel getToolCollectionPanel(){
         return (ToolCollectionPanel) toolCollectionPanel;
     }
+    
+    private boolean areToolsOptionsChanged() {
+        if(!savedTCM.getDefaultHostRecord().getExecutionEnvironment().equals(tcm.getDefaultHostRecord().getExecutionEnvironment())) {
+            return true;
+        }
+        Collection<? extends ServerRecord> savedHosts = savedTCM.getHosts();
+        Collection<? extends ServerRecord> currentHosts = tcm.getHosts();
+        if (savedHosts.size() != currentHosts.size()) {
+            return true;
+        }
+        Iterator<? extends ServerRecord> savedHostsIter = savedHosts.iterator();
+        Iterator<? extends ServerRecord> currentHostsIter = currentHosts.iterator();
+        while(savedHostsIter.hasNext()) {
+            if (!savedHostsIter.next().getExecutionEnvironment().equals(currentHostsIter.next().getExecutionEnvironment())) {
+                return true;
+            }
+        }
+        
+        if (!savedCSM.getDefaultCompilerSet().getDisplayName().equals(csm.getDefaultCompilerSet().getName())) {
+            return true;
+        }
+        List<CompilerSet> currentCS = csm.getCompilerSets();
+        List<CompilerSet> savedCS = savedCSM.getCompilerSets();
+        if (savedCS.size() != currentCS.size()) {
+            return true;
+        }
+        for (int i = 0; i < savedCS.size(); i++) {
+            CompilerSet saved = savedCS.get(i);
+            CompilerSet current = currentCS.get(i);
+            if (!saved.getDisplayName().equals(current.getDisplayName())
+                    || !saved.getEncoding().equals(current.getEncoding())) {
+                return true;
+            }
+            List<Tool> savedTools = saved.getTools();
+            List<Tool> currentTools = current.getTools();
+            if (savedTools.size() != currentTools.size()) {
+                return true;
+            }
+            for (int j = 0; j < savedTools.size(); j++) {
+                if (!savedTools.get(j).getPath().equals(currentTools.get(j).getPath())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     private void addCompilerSet() {
         if (csm == null) {
@@ -259,7 +310,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             @Override
             public void run() {
                 csm.add(cs);
-                changed = true;
+                changed = areToolsOptionsChanged();
                 SwingUtilities.invokeLater(new Runnable(){
                     @Override
                     public void run() {
@@ -290,7 +341,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet)
                         .createCopy(selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null, false, true);
                 csm.add(cs);
-                changed = true;
+                changed = areToolsOptionsChanged();
                 SwingUtilities.invokeLater(new Runnable(){
                     @Override
                     public void run() {
@@ -319,7 +370,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private void onNewDevHostSelected() {
         if (!execEnv.equals(getSelectedRecord().getExecutionEnvironment())) {
             log.fine("TP.itemStateChanged: About to update");
-            changed = true;
             if (!tcm.hasCache()) {
                 List<ServerRecord> nulist = new ArrayList<ServerRecord>(cbDevHost.getItemCount());
                 for (int i = 0; i < cbDevHost.getItemCount(); i++) {
@@ -334,6 +384,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             update(false);
         }
+        changed = areToolsOptionsChanged();
     }
 
     private void removeCompilerSet() {
@@ -355,14 +406,14 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 getToolCollectionPanel().removeCompilerSet();
                 update(false);
             }
-            changed = true;
+            changed = areToolsOptionsChanged();
         }
     }
 
     private void setSelectedAsDefault() {
         CompilerSet cs = (CompilerSet) lstDirlist.getSelectedValue();
         csm.setDefault(cs);
-        changed = true;
+        changed = areToolsOptionsChanged();
         update(false);
 
     }
@@ -670,6 +721,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     public void setChanged(boolean changed) {
         this.changed = changed;
     }
+    
+    void fireToolColectionPanelChanged() {
+        changed = areToolsOptionsChanged();
+    }
 
     public void fireCompilerSetChange() {
         ToolsPanelSupport.fireCompilerSetChange(currentCompilerSet);
@@ -728,7 +783,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
         if (ServerListUIEx.showServerListDialog(tcm, null)) {
-            changed = true;
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
@@ -1175,7 +1229,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public void run() {
             showHideToolchainInitialization(true);
             if (newCsmCreated.get()) {
-                changed = true;
+                changed = areToolsOptionsChanged();
                 CompilerSet selected = csm.getCompilerSet(selectedName);
                 if (selected != null) {
                     update(false, selected, null);

@@ -135,7 +135,10 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }    
     
     private void saveSelectedLanguage() {
-        NbPreferences.forModule(FolderBasedController.class).put(folder, panel.getSelectedLanguage());
+        String selectedLanguage = panel.getSelectedLanguage();
+        if(selectedLanguage != null) {
+            NbPreferences.forModule(FolderBasedController.class).put(folder, selectedLanguage);
+        }
     }
     
     String getSavedSelectedLanguage() {

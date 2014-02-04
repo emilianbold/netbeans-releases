@@ -163,7 +163,7 @@ public class GenericServiceIterator implements TemplateWizard.Iterator, ChangeLi
             targetFolder = FileUtil.createFolder(targetFolder, packageName);
         }
         
-        final FileObject tempFO = FileUtil.getConfigFile("Templates/MIDP/E2EWebApplication.wsclient"); // NOI18N
+        final FileObject tempFO = FileUtil.getConfigFile("Templates/j2me/E2EWebApplication.wsclient"); // NOI18N
         final DataObject template = DataObject.find(tempFO);
         final E2EDataObject e2eDO = (E2EDataObject) template.createFromTemplate(
                 (DataFolder)DataObject.find(targetFolder),

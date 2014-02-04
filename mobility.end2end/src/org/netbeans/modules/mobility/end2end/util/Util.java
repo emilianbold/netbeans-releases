@@ -73,15 +73,11 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2me.project.api.PropertyEvaluatorProvider;
 import org.netbeans.modules.mobility.javon.JavonMapping;
-import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
-import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -311,34 +307,13 @@ public final class Util {
     }
 
     public static boolean isSuitableProjectConfiguration(final Project project) {
-        if (!(project instanceof J2MEProject)) {
+        PropertyEvaluatorProvider pep = project.getLookup().lookup(PropertyEvaluatorProvider.class);
+        if (pep == null) {
             return false;
         }
-        final String profile = evaluateProjectProperty((J2MEProject) project, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
+        final String profile = pep.getPropertyEvaluator().getProperty("platform.profile"); //NOI18N
 
-        return "MIDP-2.0".equals(profile); // NOI18N
-    }
-
-    /**
-     * Gets currently used device screen size from J2ME project
-     * @param project
-     * @return
-     */
-    private static String evaluateProjectProperty(final J2MEProject project, final String property) {
-        final AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-        final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        final ProjectConfigurationsHelper confs = project.getConfigurationHelper();
-        final String activeConfiguration = confs.getActiveConfiguration() != confs.getDefaultConfiguration() ? confs.getActiveConfiguration().getDisplayName() : null;
-
-        return evaluateProperty(ep, property, activeConfiguration);
-    }
-
-    private static String evaluateProperty(final EditableProperties ep, final String propertyName, final String configuration) {
-        if (configuration == null) {
-            return ep.getProperty(propertyName);
-        }
-        final String value = ep.getProperty("configs." + configuration + "." + propertyName); // NOI18N
-        return value != null ? value : evaluateProperty(ep, propertyName, null);
+        return "MEEP-8.0".equals(profile); // NOI18N
     }
 
     /**

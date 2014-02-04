@@ -203,6 +203,7 @@ public abstract class JiraConnectorProvider {
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus") ||
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion") ||
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.Project") ||
+                className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.Priority") ||
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.Resolution") ||
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.IssueType") ||
                 className.equals("com.atlassian.connector.eclipse.internal.jira.core.model.filter.ComponentFilter") ||

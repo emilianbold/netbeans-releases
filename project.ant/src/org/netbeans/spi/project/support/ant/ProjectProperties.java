@@ -176,6 +176,10 @@ final class ProjectProperties {
         private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
         private final AtomicBoolean fileListenerSet = new AtomicBoolean(false);
         
+        //#239999 - preventing properties file from saving, when no changes are done
+        private final Map<String,AtomicBoolean> filePropertiesChangedMap = new HashMap<String, AtomicBoolean>();
+        private final Map<String,EditableProperties> cachedPropertiesFromFile = new HashMap<String, EditableProperties>();
+        
         public PP(String path, AntProjectHelper helper) {
             this.path = path;
             this.helper = helper;
@@ -197,6 +201,9 @@ final class ProjectProperties {
             if (!loaded) {
                 properties = null;
                 FileObject fo = dir().getFileObject(path);
+                if(!filePropertiesChangedMap.containsKey(path)) {
+                    filePropertiesChangedMap.put(path, new AtomicBoolean(false));
+                }
                 if (fo != null) {
                     try {
                         EditableProperties p;
@@ -208,6 +215,7 @@ final class ProjectProperties {
                             is.close();
                         }
                         properties = p;
+                        cachedPropertiesFromFile.put(path, p);
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }
@@ -221,6 +229,14 @@ final class ProjectProperties {
         public boolean put(EditableProperties nue) {
             loaded = true;
             reloadedStackTrace = null;
+            if(!filePropertiesChangedMap.containsKey(path)) {
+                filePropertiesChangedMap.put(path, new AtomicBoolean(false));
+            }
+            if (!Utilities.compareObjects(nue, cachedPropertiesFromFile.get(path))) {
+                filePropertiesChangedMap.get(path).set(true);
+            } else {
+                filePropertiesChangedMap.get(path).set(false);
+            }
             boolean modifying = !Utilities.compareObjects(nue, properties);
             if (modifying) {
                 if (nue != null) {
@@ -251,7 +267,7 @@ final class ProjectProperties {
             final FileObject f = dir().getFileObject(path);
             final FileLock[] _lock = new FileLock[1];
             try {
-                if (properties != null) {
+                if (properties != null && filePropertiesChangedMap.get(path).compareAndSet(true, false)) {
                     // Supposed to create/modify the file.
                     // Need to use an atomic action - otherwise listeners will first
                     // receive an event that the file has been written to zero length
@@ -315,7 +331,7 @@ final class ProjectProperties {
                             }
                         }
                     });
-                } else {
+                } else if (properties == null) {
                     // We are supposed to remove any existing file.
                     if (f != null) {
                         f.delete();

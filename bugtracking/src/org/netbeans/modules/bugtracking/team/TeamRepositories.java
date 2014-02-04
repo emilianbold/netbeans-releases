@@ -199,9 +199,11 @@ public abstract class TeamRepositories implements PropertyChangeListener {
                 RepositoryInfo info = new RepositoryInfo(project.getName(), null, project.getHost(), project.getDisplayName(), project.getDisplayName());
                 info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
                 Repository repo = (c).createRepository(info);
-                RepositoryImpl repoImpl = APIAccessor.IMPL.getImpl(repo);
-                repoToTeam.put(repoImpl, project);
-                return repoImpl;
+                if(repo != null) { 
+                    RepositoryImpl repoImpl = APIAccessor.IMPL.getImpl(repo);
+                    repoToTeam.put(repoImpl, project);
+                    return repoImpl;
+                }
             }
         }
         return null;

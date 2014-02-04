@@ -2,20 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Deployment Descriptor Visual Editor: Servlets</title>
+<title>Deployment Descriptor Visual Editor: Messaging</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref625" name="sthref625"></a>
-<h1>Deployment Descriptor Visual Editor: Servlets</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref626" name="sthref626"></a>
+<h1>Deployment Descriptor Visual Editor: Messaging</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to configure properties for a servlet. 
+<p>Use to edit the platform-specific deployment descriptors for GlassFish application server. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1114">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2677">
 <param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource from which the application is going to send or receive messages. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2846">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -26,54 +34,46 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t48">Element</th>
-<th align="left" valign="bottom" id="r1c2-t48">Description</th>
+<th align="left" valign="bottom" id="r1c1-t49">Element</th>
+<th align="left" valign="bottom" id="r1c2-t49">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t48" headers="r1c1-t48">
-<p>Servlet Name</p>
+<td align="left" id="r2c1-t49" headers="r1c1-t49">
+<p>Add Message Destination</p>
 </td>
-<td align="left" headers="r2c1-t48 r1c2-t48">
-<p>(Read only) Displays the servlet name for identification purposes only.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t48" headers="r1c1-t48">
-<p>Run As Role</p>
-</td>
-<td align="left" headers="r3c1-t48 r1c2-t48">
-<p>(Read only) Displays the run-as role value if a run-as role name was designated in the <code>web.xml</code> file</p>
-<p>If no run-as role name was specified in the <code>web.xml</code> file, then this field is blank and disabled.</p>
+<td align="left" headers="r2c1-t49 r1c2-t49">
+<p>Adds descriptor properties for a message destination.</p>
+<p>Each message destination has the following properties: Message Destination Name and JNDI Name.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t48" headers="r1c1-t48">
-<p>Principal Name</p>
+<td align="left" id="r3c1-t49" headers="r1c1-t49">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Message Destination Name</p>
 </td>
-<td align="left" headers="r4c1-t48 r1c2-t48">
-<p>Specifies the name of the principal assigned to a security role.</p>
-<p>The name of the principal must match a name specified on the GlassFish application server.</p>
+<td align="left" headers="r3c1-t49 r1c2-t49">
+<p>Specifies the name of a logical message destination defined within the corresponding deployment descriptor file (<code>web.xml</code> or <code>ejb-jar.xml</code>).</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t48" headers="r1c1-t48">
-<p>Class Name</p>
+<td align="left" id="r4c1-t49" headers="r1c1-t49">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;JNDI Name</p>
 </td>
-<td align="left" headers="r5c1-t48 r1c2-t48">
-<p>Specifies the implementation class.</p>
+<td align="left" headers="r4c1-t49 r1c2-t49">
+<p>Displays the JNDI name of the message destination.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p><b>Note:</b> The message destination name must match the corresponding message destination name in the <code>web.xml</code> file.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2805">
-<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2812">
+<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -82,6 +82,14 @@
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1111">
 <param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2700">
+<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -2,114 +2,71 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>glassfish-ejb-jar.xml Visual Editor: General</title>
+<title>New JDBC Connection Pool: Add Connection Pool Properties</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-28</p>
-<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarView,org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref633" name="sthref633"></a>
-<h1>glassfish-ejb-jar.xml Visual Editor: General</h1>
+<p>Beta Draft: 2014-01-31</p>
+<p><a id="AS_Wiz_ConnPool_props" name="AS_Wiz_ConnPool_props"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref634" name="sthref634"></a>
+<h1>New JDBC Connection Pool: Add Connection Pool Properties</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to specify the name of the EJB module. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2677">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>The Visual Editor enables you to configure descriptor settings for an EJB module when your target server is the GlassFish server.</p>
-<p>The Visual Editor groups descriptor settings under the following tabs:</p>
+<p>You see this page of the New File wizard when you are defining a connection pool and you have already named the connection pool and selected the database connection.</p>
+<p>On this (and the Connection Pool Optional Settings page) you specify the properties of the connection pool. After entering the property values, you can do one of the following:</p>
+<ul>
+<li>Click <b>Next</b> if you want to further customize the optional pool properties such as pool size and connection validation.</li>
+<li>Click <b>Finish</b> to create the connection pool, leaving the optional settings at their default values.</li>
+</ul>
+<p>The connection pool properties are added to glassfish-resources.xml. If you want to modify connection pool properties you can open glassfish-resources.xml in the Source Editor by locating the file in your project in the Projects window and double-clicking the file.</p>
 
-<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="36%" />
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="19%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t64">Element</th>
-<th align="left" valign="bottom" id="r1c2-t64">Description</th>
+<th align="left" valign="bottom" id="r1c1-t66">Element</th>
+<th align="left" valign="bottom" id="r1c2-t66">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t64" headers="r1c1-t64">
-<p>General</p>
+<td align="left" id="r2c1-t66" headers="r1c1-t66">
+<p>Datasource classname</p>
 </td>
-<td align="left" headers="r2c1-t64 r1c2-t64">
-<p>Enables you to edit the EJB module name.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t64" headers="r1c1-t64">
-<p>EJB</p>
-</td>
-<td align="left" headers="r3c1-t64 r1c2-t64">
-<p>enables you to set resource references in the EJBs in the module.</p>
+<td align="left" headers="r2c1-t66 r1c2-t66">
+<p>The datasource class name is the JDBC driver that implements the APIs for the datasource. This name is provided according to the database connection selected in the previous screen. If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t64" headers="r1c1-t64">
-<p>Security</p>
+<td align="left" id="r3c1-t66" headers="r1c1-t66">
+<p>Resource type</p>
 </td>
-<td align="left" headers="r4c1-t64 r1c2-t64">
-<p>Enables you to create and set properties for security roles in the EJB module</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t64" headers="r1c1-t64">
-<p>Web Services</p>
-</td>
-<td align="left" headers="r5c1-t64 r1c2-t64">
-<p>Enables you to add web services used by the EJB and specify a WSDL publish location.</p>
+<td align="left" headers="r3c1-t66 r1c2-t66">
+<p>The resource type reflects whether the connection pool enables XA global transactions or is restricted to local transactions. Return to the previous screen to change the resource type.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t64" headers="r1c1-t64">
-<p>Messaging</p>
+<td align="left" id="r4c1-t66" headers="r1c1-t66">
+<p>Description</p>
 </td>
-<td align="left" headers="r6c1-t64 r1c2-t64">
-<p>Enables you to add JMS message destinations used by the EJB and specify the JNDI name of the destination.</p>
+<td align="left" headers="r4c1-t66 r1c2-t66">
+<p>You can enter a description of this connection pool.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t64" headers="r1c1-t64">
-<p>XML</p>
+<td align="left" id="r5c1-t66" headers="r1c1-t66">
+<p>Properties</p>
 </td>
-<td align="left" headers="r7c1-t64 r1c2-t64">
-<p>Enables you to view and edit the xml file directly in the xml editor.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p><b>Module Details</b></p>
-
-<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="36%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t65">Element</th>
-<th align="left" valign="bottom" id="r1c2-t65">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t65" headers="r1c1-t65">
-<p>Name</p>
-</td>
-<td align="left" headers="r2c1-t65 r1c2-t65">
-<p>(Optional) Specifies the name of the module. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1715">
-<param name="text" value="<html><u></u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<td align="left" headers="r5c1-t66 r1c2-t66">
+<p>Connection pool properties may vary according to the database vendor. Common properties include the datasource URL, user name, and password, but other properties may be suggested or required depending on the database connection. If you selected an existing source in the previous screen, some of the property values may already be provided.</p>
+<p>Properties may be changed or removed and additional properties may be added, but each property in the Properties area must have a value entered before you can proceed to the next screen or finish the connection pool configuration.</p>
+<ul>
+<li>To change a property, click a box in the Properties Name column, select a new property from the dropdown list and add a value for that property.</li>
+<li>To add a new property, click the Add button. A new row appears in the properties box. In the new row, click the box in the Properties Name column and select a property from the dropdown list, and add a value for that property.</li>
+<li>To remove a property click the row containing the propertyanc click the Remove button.</li>
+</ul>
+<p><b>Note</b>: To complete the wizard you might need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password.</p>
 </td>
 </tr>
 </tbody>
@@ -119,24 +76,16 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2696">
-<param name="text" value="<html><u>&quot;About Developing with Enterprise Beans&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1651">
+<param name="text" value="<html><u>&quot;About Working with Web Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2742">
-<param name="text" value="<html><u>&quot;Developing EJB 2.1 Entity Beans&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG2805">
-<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1681">
+<param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -238,7 +239,12 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        Documentation doc = documentElement(info, element);
+        Documentation doc = documentElement(info, element, new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return false;
+            }
+        });
         if (doc != null) {
             return doc.getContent();
         }
@@ -246,7 +252,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     }
 
     @Override
-    public Documentation documentElement(ParserResult info, ElementHandle element) {
+    public Documentation documentElement(ParserResult info, ElementHandle element, Callable<Boolean> cancel) {
         if (element == null) {
             return null;
         }

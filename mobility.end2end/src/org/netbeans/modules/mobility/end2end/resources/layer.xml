@@ -45,16 +45,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="RecommendedTemplates">
-        <folder name="org.netbeans.modules.kjava.j2meproject">
-            <file name="e2e">
-                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
-        <folder name="MIDP">
+        <folder name="j2me">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
@@ -63,7 +55,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="800"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="MIDP"/>
+                <attr name="templateCategory" stringvalue="javame,javame3x_compatibility"/>
             </file>
         </folder>
         <!-- Javon templates -->

@@ -50,8 +50,10 @@ import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -73,6 +75,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -365,20 +368,69 @@ public class InfiniteRecursion {
             definitePath = result != null;
             returnIfRecurse(s2 = scan(node.getRightOperand(), p));
             definitePath = saveDefinite;
+            thisTree = null;
             return s2;
         }
         
+        private Tree thisTree;
+        
+        
+
+        @Override
+        public State visitIdentifier(IdentifierTree node, Void p) {
+            if (node.getName().contentEquals("this")) { // NOI18N
+                thisTree = node;
+            }
+            return super.visitIdentifier(node, p);
+        }
+
+        @Override
+        public State visitMemberSelect(MemberSelectTree node, Void p) {
+            this.thisTree = null;
+            State s = super.visitMemberSelect(node, p); 
+            if (this.thisTree != null) {
+                Element el = ci.getTrees().getElement(getCurrentPath());
+                if (el == null || el.getKind() != ElementKind.METHOD) {
+                    this.thisTree = null;
+                }
+            }
+            return s;
+        }
+
         @Override
         public State visitMethodInvocation(MethodInvocationTree node, Void p) {
             Element target = ci.getTrees().getElement(getCurrentPath());
             if (target == null) {
                 return State.NO;
             }
-            if (target != checkMethod || !breakContinueJumps.isEmpty()) {
+            State r = null;
+            if (target == checkMethod && breakContinueJumps.isEmpty()) {
+                if (node.getMethodSelect().getKind() != Tree.Kind.IDENTIFIER) {
+                    this.thisTree = null;
+
+                    returnIfRecurse(r = scan(node.getMethodSelect(), p));
+                    if (this.thisTree != null) {
+                        r = State.MUST;
+                    }
+                } else {
+                    r = State.MUST;
+                }
+            } else {
+                r = scan(node.getMethodSelect(), p);
+            }
+            if (r == null) {
+                for (Tree arg : node.getArguments()) {
+                    if (returnIfRecurse(r = scan(arg, p))) {
+                        break;
+                    }
+                }
+            }
+            this.thisTree = null;
+            if (r == null || r == State.NO) {
                 return State.NO;
             }
             recursionPoints.add(getCurrentPath());
-            return  knownResult = State.MUST;
+            return knownResult = State.MUST;
         }
 
         @Override

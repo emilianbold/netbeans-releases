@@ -812,6 +812,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 if (delegatingIssueContainer != null) {
                     delegatingIssueContainer.restoreFinished();
                 }
+                query.removeNotifyListener(this);
             }
             @Override
             void invokeQueryOperation() {
@@ -833,7 +834,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         synchronized(REFRESH_LOCK) {
             if(refreshTask == null) {
                 String displayName = getQueryProgressName();
-                final String progressTitle =NbBundle.getMessage(ODCSQueryController.class, "MSG_SearchingQuery", new Object[] {displayName}); // NOI18N
+                final String progressTitle = NbBundle.getMessage(ODCSQueryController.class, "MSG_SearchingQuery", new Object[] {displayName}); // NOI18N
                 final String progressText = NbBundle.getMessage(ODCSQueryController.class, "MSG_Searching");  // NOI18N
                
                 refreshTask = new QueryTask() {
@@ -862,6 +863,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                         return progressText;
                     }
                 };
+                query.addNotifyListener(refreshTask);
             }
             t = refreshTask.post();
         }
@@ -1108,9 +1110,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         private long progressMaxWorkunits;
         private int progressWorkunits;
 
-        public QueryTask() {
-            query.addNotifyListener(this);
-        }
+        public QueryTask() { }
 
         private void startQuery() {
 
