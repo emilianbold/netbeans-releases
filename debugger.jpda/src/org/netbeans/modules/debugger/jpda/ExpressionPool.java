@@ -54,10 +54,13 @@ import com.sun.jdi.ThreadReference;
 
 import com.sun.jdi.VirtualMachine;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,8 +102,18 @@ public class ExpressionPool {
         try {
             ExpressionLocation exprLocation = new ExpressionLocation(LocationWrapper.method(loc), LocationWrapper.lineNumber(loc));
             if (!expressions.containsKey(exprLocation)) {
-                Expression expr = createExpressionAt(loc, url);
+                LinkedHashSet<Location> lineLocationsInExpression = new LinkedHashSet<Location>();
+                lineLocationsInExpression.add(loc);
+                Expression expr = createExpressionAt(loc, url, lineLocationsInExpression);
                 expressions.put(exprLocation, expr);
+                // Add the rest of in-expression locations:
+                Iterator<Location> locIt = lineLocationsInExpression.iterator();
+                locIt.next(); // Skip the first one
+                while (locIt.hasNext()) {
+                    loc = locIt.next();
+                    exprLocation = new ExpressionLocation(LocationWrapper.method(loc), LocationWrapper.lineNumber(loc));
+                    expressions.put(exprLocation, expr);
+                }
             }
             return expressions.get(exprLocation);
         } catch (InternalExceptionWrapper ex) {
@@ -163,7 +176,9 @@ public class ExpressionPool {
         expressions.clear();
     }
 
-    private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    private Expression createExpressionAt(final Location loc, final String url,
+                                          final Set<Location> lineLocationsInExpression)
+                throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         VirtualMachine vm = MirrorWrapper.virtualMachine(loc);
         if (!VirtualMachineWrapper.canGetBytecodes(vm)) {
             // Can not analyze expressions without bytecode
@@ -190,6 +205,8 @@ public class ExpressionPool {
             return null;
         }
         
+        final int[] boundingLines = new int[2];
+        final int[][] codeIndexIntervalsPtr = new int[1][];
         Operation[] ops = EditorContextBridge.getContext().getOperations(
                 url, line, new EditorContext.BytecodeProvider() {
             public byte[] constantPool() {
@@ -201,16 +218,27 @@ public class ExpressionPool {
             }
 
             public int[] indexAtLines(int startLine, int endLine) {
-                return getIndexesAtLines(methodLocations, language, startLine, endLine, bytecodes.length);
+                int[] indexes = getIndexesAtLines(methodLocations, language, startLine, endLine,
+                                                  bytecodes.length, lineLocationsInExpression);
+                boundingLines[0] = startLine;
+                boundingLines[1] = endLine;
+                codeIndexIntervalsPtr[0] = indexes;
+                return indexes;
             }
             
         });
+        logger.fine("Operations:");
         if (ops == null) {
             logger.log(Level.FINE, "Unsuccessfull bytecode matching.");
             return null;
         }
         if (ops.length == 0) { // No operations - do a line step instead
             return null;
+        }
+        if (logger.isLoggable(Level.FINE)) {
+            for (Operation op : ops) {
+                logger.fine("  "+op.getMethodName()+"():"+op.getMethodStartPosition().getLine()+", bci = "+op.getBytecodeIndex());
+            }
         }
         Location[] locations = new Location[ops.length];
         for (int i = 0; i < ops.length; i++) {
@@ -221,17 +249,32 @@ public class ExpressionPool {
                 return null;
             }
         }
-        Expression expr = new Expression(new ExpressionLocation(method, line), ops, locations);
+        Expression expr = new Expression(new ExpressionLocation(method, line), ops, locations,
+                                         new Interval(boundingLines[0], boundingLines[1]),
+                                         codeIndexIntervalsPtr[0]);
         return expr;
     }
     
-    private static int[] getIndexesAtLines(List<Location> allLocations, String language, int startLine, int endLine, int methodEndIndex) {
-        Location startLocation;
+    /**
+     * 
+     * @param allLocations all locations in the method
+     * @param language
+     * @param startLine expression start line
+     * @param endLine expression end line
+     * @param methodEndIndex the last code index in the method + 1
+     * @return pairs of code indexes on individual lines.
+     *         Every pair is an interval of code indexes on the respective lines.
+     */
+    private static int[] getIndexesAtLines(List<Location> allLocations, String language,
+                                           int startLine, int endLine, int methodEndIndex,
+                                           Set<Location> lineLocationsInExpression) {
+        
+        
         int startlocline = 0;
         int endlocline;
-        int firstLine;
         try {
-            firstLine = LocationWrapper.lineNumber(allLocations.get(0), language);
+            Location startLocation;
+            int firstLine = LocationWrapper.lineNumber(allLocations.get(0), language);
             do {
                 startLocation = getLocationOfLine(allLocations, language, startLine - startlocline++);
             } while (startLocation == null && (startLine - (startlocline - 1)) >= firstLine);
@@ -240,23 +283,34 @@ public class ExpressionPool {
         } catch (InternalExceptionWrapper e) {
             return null;
         }
-        if (endLine > startLine - (startlocline - 1)) {
+        startLine -= (startlocline - 1);
+        if (endLine > startLine) {
             endlocline = 0;
         } else {
             endlocline = 1;
         }
-        startLine -= (startlocline - 1);
         endLine += endlocline;
         List<int[]> indexes = new ArrayList<int[]>();
         int startIndex = -1;
+        Location locInExpression = null;
         try {
             for (Location l : allLocations) {
                 int line = LocationWrapper.lineNumber(l, language);
                 if (startIndex == -1 && startLine <= line && line < endLine) {
                     startIndex = (int) LocationWrapper.codeIndex(l);
+                    locInExpression = l;
                 } else if (startIndex >= 0) {
-                    indexes.add(new int[] { startIndex, (int) LocationWrapper.codeIndex(l) });
-                    startIndex = -1;
+                    int ci = (int) LocationWrapper.codeIndex(l);
+                    lineLocationsInExpression.add(locInExpression);
+                    if (line <= (endLine - endlocline)) {
+                        indexes.add(new int[] { startIndex, ci });
+                        startIndex = ci;
+                        locInExpression = l;
+                    } else {
+                        indexes.add(new int[] { startIndex, ci });
+                        startIndex = -1;
+                        locInExpression = null;
+                    }
                 }
             }
         } catch (VMDisconnectedExceptionWrapper e) {
@@ -267,16 +321,29 @@ public class ExpressionPool {
         if (indexes.size() == 0) {
             if (startIndex >= 0) {
                 // End of the method
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("getIndexesAtLines("+startLine+", "+endLine+") = "+
+                                Arrays.toString(new int[] { startIndex, methodEndIndex }));
+                }
+                lineLocationsInExpression.add(locInExpression);
                 return new int[] { startIndex, methodEndIndex };
             }
             return null;
         } else if (indexes.size() == 1) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("getIndexesAtLines("+startLine+", "+endLine+") = "+
+                            Arrays.toString(indexes.get(0)));
+            }
             return indexes.get(0);
         } else {
             int[] arr = new int[2*indexes.size()];
             for (int i = 0; i < indexes.size(); i++) {
                 arr[2*i] = indexes.get(i)[0];
                 arr[2*i + 1] = indexes.get(i)[1];
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("getIndexesAtLines("+startLine+", "+endLine+") = "+
+                            Arrays.toString(arr));
             }
             return arr;
         }
@@ -298,11 +365,16 @@ public class ExpressionPool {
         private ExpressionLocation location;
         private Operation[] operations;
         private Location[] locations;
+        private Interval lines;
+        private int[] codeIndexIntervals;
         
-        Expression(ExpressionLocation location, Operation[] operations, Location[] locations) {
+        Expression(ExpressionLocation location, Operation[] operations, Location[] locations,
+                   Interval lines, int[] codeIndexIntervals) {
             this.location = location;
             this.operations = operations;
             this.locations = locations;
+            this.lines = lines;
+            this.codeIndexIntervals = codeIndexIntervals;
         }
         
         public Operation[] getOperations() {
@@ -311,6 +383,14 @@ public class ExpressionPool {
         
         public Location[] getLocations() {
             return locations;
+        }
+        
+        public Interval getInterval() {
+            return lines;
+        }
+        
+        int[] getCodeIndexIntervals() {
+            return codeIndexIntervals;
         }
         
         public int findNextOperationIndex(int codeIndex) {
@@ -460,5 +540,28 @@ public class ExpressionPool {
         }
 
     }
+    
+    public static final class Interval {
         
+        private int i1;
+        private int i2;
+        
+        Interval(int i1, int i2) {
+            this.i1 = i1;
+            this.i2 = i2;
+        }
+        
+        public int begin() {
+            return i1;
+        }
+        
+        public int end() {
+            return i2;
+        }
+        
+        public boolean contains(int i) {
+            return i1 <= i && i <= i2;
+        }
+    }
+
 }
