@@ -84,6 +84,7 @@ import org.openide.util.Union2;
     "HINT_M2RepositoryBrowserTopComponent=Displays contents of local and remote Apache Maven repositories and permits them to be searched and indexed."
 })
 public final class M2RepositoryBrowser extends AbstractNode {
+    private static final RequestProcessor RP = new RequestProcessor(M2RepositoryBrowser.class);
 
     static final String NAME = "M2RepositoryBrowser";
     static final /* XXX javac bug @StaticResource */ String ICON_PATH = "org/netbeans/modules/maven/repository/MavenRepoBrowser.png";
@@ -140,7 +141,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
                     return;
                 }
                 RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                         @Override public void run() {
                             RepositoryIndexer.indexRepo(info);
                         }
