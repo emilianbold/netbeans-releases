@@ -192,9 +192,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
+                        boolean parenRemoved = false;
                         String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
+                            parenRemoved = true;
                             indexStart = 1;
                         }
                         int parenIndex = name.indexOf('('); //NOI18N
@@ -214,6 +216,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
                             name = name.substring(0, indexEnd);
+                            if (parenRemoved) {
+                                indexEnd = name.lastIndexOf(')');
+                                if (indexEnd > -1) {
+                                    name = name.substring(0, indexEnd);
+                                }
+                            }
                             if (name.startsWith("-")) {
                                 indexStart++;
                                 name = name.substring(1);
@@ -484,20 +492,22 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         String[] conditionParts = part.trim().split(":");
                         if(conditionParts.length > 1) {
                             String propName = conditionParts[1].trim();
-                            int position = lastPartPos + part.indexOf(propName) + 1;
-                            if (propName.charAt(0) == '"' || propName.charAt(0) == '\'') {
-                                propName = propName.substring(1);
-                                position++;
-                                if (propName.endsWith("\"") || propName.endsWith("'")) {
-                                    propName = propName.substring(0, propName.length() - 1);
+                            if (!propName.startsWith("//")) {
+                                int position = lastPartPos + part.indexOf(propName) + 1;
+                                if (propName.charAt(0) == '"' || propName.charAt(0) == '\'') {
+                                    propName = propName.substring(1);
+                                    position++;
+                                    if (propName.endsWith("\"") || propName.endsWith("'")) {
+                                        propName = propName.substring(0, propName.length() - 1);
+                                    }
                                 }
+                                if (propertyToFqn.containsKey(propName)) {
+                                    embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                                }
+                                embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                processed = true;
                             }
-                            if (propertyToFqn.containsKey(propName)) {
-                                embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
-                            }
-                            embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
-                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            processed = true;
                         }
                     }
                     lastPartPos = lastPartPos + part.length() + 1;

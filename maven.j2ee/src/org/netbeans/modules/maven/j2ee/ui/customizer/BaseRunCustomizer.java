@@ -72,15 +72,17 @@ import org.openide.util.NbBundle.Messages;
  */
 public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer, HelpCtx.Provider {
 
+    private final J2eeModule.Type type;
     protected final Project project;
     protected final ModelHandle2 handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
     protected ComboBoxUpdater<Server> serverUpdater;
 
 
-    public BaseRunCustomizer(ModelHandle2 handle, Project project) {
+    public BaseRunCustomizer(ModelHandle2 handle, Project project, J2eeModule.Type type) {
         this.handle = handle;
         this.project = project;
+        this.type = type;
     }
 
     @Messages({
@@ -106,7 +108,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
 
             @Override
             public boolean verifyValue(boolean value) {
-                if (!value && WarningPanelSupport.isAutomaticBuildWarningActivated()) {
+                if (!value && WarningPanelSupport.isAutomaticBuildWarningActivated() && type == J2eeModule.Type.WAR) {
                     WarningPanel panel = new WarningPanel(WARNING_ChangingAutomaticBuild());
                     NotifyDescriptor dd = new NotifyDescriptor.Confirmation(panel, NotifyDescriptor.OK_CANCEL_OPTION);
                     DialogDisplayer.getDefault().notify(dd);
@@ -141,8 +143,8 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         });
     }
 
-    protected void initServerModel(JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
-        final List<Server> servers = ServerUtils.findServersFor(projectType);
+    protected void initServerModel(JComboBox serverCBox, JLabel serverLabel) {
+        final List<Server> servers = ServerUtils.findServersFor(type);
         final Server defaultServer = ServerUtils.findServer(project);
 
         serverCBox.setModel(new DefaultComboBoxModel(servers.toArray()));
