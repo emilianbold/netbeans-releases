@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,76 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.api;
+package org.netbeans.modules.cnd.api.script;
 
-import java.util.List;
-import java.util.Map;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.cnd.script.lexer.CMakeLanguageHierarchy;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public interface ItemProperties {
+public enum CMakeTokenId  implements TokenId {
 
-    /**
-     * List of user include paths
-     */
-    List<String> getUserInludePaths();
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    LABEL ("label"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    STRING ("string"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
 
-    /**
-     * List of user include files
-     */
-    List<String> getUserInludeFiles();
-
-    /**
-     * List of system include paths
-     */
-    List<String> getSystemInludePaths();
-
-    /**
-     * List of user macros
-     */
-    Map<String,String> getUserMacros();
-
-    /**
-     * List of undefined macros
-     */
-    List<String> getUndefinedMacros();
-
-    /**
-     * List of system predefined macros
-     */
-    Map<String,String> getSystemMacros();
+    private final String  name;
     
-    /**
-     * Language kind
-     */
-    LanguageKind getLanguageKind();
-
-    /**
-     * Language kind
-     */
-    LanguageStandard getLanguageStandard();
-
-    /**
-     * Compiler name (producer)
-     */
-    String getCompilerName();
-
-    public enum LanguageKind {
-        Unknown,
-        C,
-        CPP,
-        Fortran
+    CMakeTokenId(String  name) {
+        this.name = name;
     }
 
-    public enum LanguageStandard {
-        Unknown,
-        C, C89, C99, C11,
-        CPP, CPP11,
-        F77, F90, F95,
-        Default
+    @Override
+    public String primaryCategory () {
+        return name;
+    }
+
+    private static final Language<CMakeTokenId> LANGUAGE_MAKE =  new CMakeLanguageHierarchy(MIMENames.CMAKE_MIME_TYPE).language();
+    private static final Language<CMakeTokenId> LANGUAGE_INC =  new CMakeLanguageHierarchy(MIMENames.CMAKE_INCLUDE_MIME_TYPE).language();
+
+    public static Language<CMakeTokenId> languageMake() {
+        return LANGUAGE_MAKE;
+    }
+
+    public static Language<CMakeTokenId> languageInc() {
+        return LANGUAGE_INC;
     }
 }

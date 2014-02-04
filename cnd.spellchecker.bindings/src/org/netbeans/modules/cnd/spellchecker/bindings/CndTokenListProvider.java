@@ -69,6 +69,7 @@ import org.netbeans.modules.spellchecker.spi.language.support.MultiTokenList;
     // scripts and make
     @MimeRegistration(mimeType=MIMENames.MAKEFILE_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.CMAKE_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.CMAKE_INCLUDE_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.QTPROJECT_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.SHELL_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.BAT_MIME_TYPE, service=TokenListProvider.class, position=1000)

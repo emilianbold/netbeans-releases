@@ -3410,6 +3410,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
+        public List<String> getIncludeFiles() {
+            if (project != null) {
+                return project.getIncludeFiles();
+            }
+            return Collections.emptyList();
+        }
+        
+        @Override
         public List<String> getSystemMacroDefinitions() {
             if (project != null) {
                 return project.getSystemMacroDefinitions();

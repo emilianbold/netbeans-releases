@@ -48,8 +48,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.cnd.api.script.BatTokenId;
+import org.netbeans.modules.cnd.api.script.CMakeTokenId;
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.cnd.api.script.ShTokenId;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.openide.filesystems.FileObject;
@@ -108,6 +109,12 @@ public class ScriptAndMakeTokenList implements TokenList {
         }
         if (ts == null) {
             ts = h.tokenSequence(ShTokenId.language());
+        }
+        if (ts == null) {
+            ts = h.tokenSequence(CMakeTokenId.languageMake());
+        }
+        if (ts == null) {
+            ts = h.tokenSequence(CMakeTokenId.languageInc());
         }
         if (ts == null) {
             return new int[]{-1, -1};
