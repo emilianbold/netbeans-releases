@@ -50,6 +50,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -119,7 +120,9 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     /** See issue #69440 for more details. */
     private boolean runInAtomicAction;
     private boolean pendingReset = false;   // issue #173792
-
+    
+    private static final Map<String, SoftReference<ModuleEntry>> cachedModuleEntries = new HashMap<String, SoftReference<ModuleEntry>>();
+    
     private static class TestClasspath {
         
         private final String compile;
@@ -241,16 +244,12 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     // but leave old evaluator in place for now
                     return null;
                 }
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        synchronized (Evaluator.this) {
-                            loadedModuleList = true;
-                            delegate.removePropertyChangeListener(Evaluator.this);
-                            delegate = createEvaluator(moduleList);
-                            delegate.addPropertyChangeListener(Evaluator.this);
-                        }
-                    }
-                });
+                synchronized (Evaluator.this) {
+                    loadedModuleList = true;
+                    delegate.removePropertyChangeListener(Evaluator.this);
+                    delegate = createEvaluator(moduleList);
+                    delegate.addPropertyChangeListener(Evaluator.this);
+                }
                 // XXX better to compute diff between previous and new values and fire just those
                 pcs.firePropertyChange(null, null, null);
                 return null;
@@ -659,7 +658,14 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
             String cnb = it.next();
             it.remove();
             if (processed.add(cnb)) {
-                ModuleEntry module = ml.getEntry(cnb);
+                ModuleEntry module = null;
+                if(cachedModuleEntries.get(cnb) != null && cachedModuleEntries.get(cnb).get() != null) {
+                    module = cachedModuleEntries.get(cnb).get();
+                }
+                else {
+                    module = ml.getEntry(cnb);
+                    cachedModuleEntries.put(cnb, new SoftReference<ModuleEntry>(module));
+                }
                 if (module == null) {
                     Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
                     continue;
