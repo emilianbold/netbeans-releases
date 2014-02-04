@@ -54,6 +54,32 @@ public class MoveFieldTest extends MoveBaseTest {
         super(name);
     }
     
+    public void testMoveField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private B t;\n"
+                        + "    public void usage(/* B t */) {\n"
+                        + "        this.t = new B();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t;\n"
+                        + "public class B {\n"
+                        + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.ESCALATE, false, new Problem(false, "WRN_NoAccessor"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public void usage(/* B t */) {\n"
+                        + "        this.t = new B();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t;\n"
+                        + "public class B {\n"
+                        + "    B t;\n"
+                        + "}\n"));
+    }
+    
     public void testMoveEscalate() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -68,6 +68,35 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
         super(name, "1.8");
     }
     
+    public void testPackage() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        for(int i = 0; i< 10; i++) {\n"
+                + "            A a = new A();\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t"), -1, false);
+        verifyContent(src);
+    }
+    
+    public void testVariable() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    int i;\n"
+                        + "    public A() {\n"
+                        + "    }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("i;") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public A() {\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void testForVariable() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
@@ -78,10 +107,10 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf(" i") + 1, false);
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf(" i") + 1, false, new Problem(true, "ERR_VarNotInBlockOrMethod"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
-                + "    public static void main() {\n"
+                + "    public static void main(String[] args) {\n"
                 + "        for(int i = 0; i< 10; i++) {\n"
                 + "            A a = new A();\n"
                 + "        }\n"
@@ -116,10 +145,10 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false);
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false, new Problem(false, "WRN_ImplementsFound"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
-                + "    public static void main(String[] args) {\n"
+                + "    public static void main() {\n"
                 + "        for (int i = 0; i < args.length; i++) {\n"
                 + "            String string = args[i];\n"
                 + "        }\n"
@@ -129,20 +158,26 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
     
     private void performSafeDelete(FileObject source, final int position, final boolean checkInComments, Problem... expectedProblems) throws Exception {
         final SafeDeleteRefactoring[] r = new SafeDeleteRefactoring[1];
+        
+        if(source.isFolder()) {
+            r[0] = new SafeDeleteRefactoring(Lookups.fixed(source));
+            r[0].setCheckInComments(checkInComments);
+        } else {
 
-        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+            JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
-            @Override
-            public void run(CompilationController javac) throws Exception {
-                javac.toPhase(JavaSource.Phase.RESOLVED);
-                CompilationUnitTree cut = javac.getCompilationUnit();
+                @Override
+                public void run(CompilationController javac) throws Exception {
+                    javac.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cut = javac.getCompilationUnit();
 
-                TreePath tp = javac.getTreeUtilities().pathFor(position);
+                    TreePath tp = javac.getTreeUtilities().pathFor(position);
 
-                r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
-                r[0].setCheckInComments(checkInComments);
-            }
-        }, true);
+                    r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
+                    r[0].setCheckInComments(checkInComments);
+                }
+            }, true);
+        }
 
         RefactoringSession rs = RefactoringSession.create("Introduce Parameter");
         List<Problem> problems = new LinkedList<>();
