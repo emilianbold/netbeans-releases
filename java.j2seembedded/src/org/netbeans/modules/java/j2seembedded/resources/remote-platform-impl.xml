@@ -153,7 +153,7 @@
         <property name="profiling.started" value="true"/>
     </target>
     
-    <target name="profile-rp-calibrate-passwd" depends="profile-clean-rp" if="profiling.started">
+    <target name="profile-rp-calibrate-passwd" if="profiling.started">
         <sshexec host="${remote.platform.host}" port="${remote.platform.port}" 
                  username="${remote.platform.user}" password="${remote.platform.password}" 
                  trust="true" usepty="true" 
@@ -163,7 +163,7 @@
          <antcall target="profile-clean-rp"/>
     </target>
         
-    <target name="profile-rp-calibrate-key" depends="profile-clean-rp" if="profiling.started">
+    <target name="profile-rp-calibrate-key" if="profiling.started">
         <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
         <sshexec host="${remote.platform.host}" port="${remote.platform.port}" 
                  username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" 
