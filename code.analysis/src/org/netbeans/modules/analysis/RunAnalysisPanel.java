@@ -154,15 +154,20 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         Icon currentProjectIcon = null;
         NonRecursiveFolder pack = context.lookup(NonRecursiveFolder.class);
         FileObject currentFile = context.lookup(FileObject.class);
+        DataFolder folder = context.lookup(DataFolder.class);
 
         if (currentFile != null && currentFile.isData()) {
             scopes.add(new FileScopeDescription(currentFile));
         }
         
+        if (folder != null) {
+            scopes.add(new FolderScopeDescription(folder));
+        }
+        
         if (pack != null && currentFile == null) {
             currentFile = pack.getFolder();
         }
-        
+
         if (currentFile != null) {
             Project p = FileOwnerQuery.getOwner(currentFile);
 
@@ -960,6 +965,31 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         
         public String getId() {
             return "*currentPackage"; // NOI18N
+        }
+    }
+
+    private static final class FolderScopeDescription implements ScopeDescription {
+        private final DataFolder folder;
+        public FolderScopeDescription(DataFolder folder) {
+            this.folder = folder;
+        }
+        @Override
+        @Messages({"# {0} - folder display name", "DN_CurrentFolder=Current Folder ({0})"})
+        public String getDisplayName() {
+            return Bundle.DN_CurrentFolder(folder.getName());
+        }
+        @Override
+        public Icon getIcon() {
+            return ImageUtilities.image2Icon(folder.getNodeDelegate().getIcon(1));
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            return Scope.create(null, null, folder.files());
+        }
+        
+        public String getId() {
+            return "*currentFolder"; // NOI18N
         }
     }
 
