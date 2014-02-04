@@ -233,7 +233,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         }
         ProjectManager.mutex().readAccess(new Mutex.Action<Void>() {
             public @Override Void run() {
-                ModuleList moduleList;
+                final ModuleList moduleList;
                 try {
                     moduleList = project.getModuleList();
                 } catch (IOException e) {
@@ -241,12 +241,16 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                     // but leave old evaluator in place for now
                     return null;
                 }
-                synchronized (Evaluator.this) {
-                    loadedModuleList = true;
-                    delegate.removePropertyChangeListener(Evaluator.this);
-                    delegate = createEvaluator(moduleList);
-                    delegate.addPropertyChangeListener(Evaluator.this);
-                }
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        synchronized (Evaluator.this) {
+                            loadedModuleList = true;
+                            delegate.removePropertyChangeListener(Evaluator.this);
+                            delegate = createEvaluator(moduleList);
+                            delegate.addPropertyChangeListener(Evaluator.this);
+                        }
+                    }
+                });
                 // XXX better to compute diff between previous and new values and fire just those
                 pcs.firePropertyChange(null, null, null);
                 return null;
