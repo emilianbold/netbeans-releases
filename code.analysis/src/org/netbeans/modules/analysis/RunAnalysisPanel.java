@@ -498,12 +498,13 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 toRun = Collections.singleton((AnalyzerFactory) configurationCombo.getSelectedItem());
             }
         }
-
-        Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
         boolean someOk = false;
 
         for (AnalyzerFactory a : toRun) {
+            Configuration configuration = getConfiguration();
+            Preferences settings = configuration != null ? configuration.getPreferences().node(SPIAccessor.ACCESSOR.getAnalyzerId(a)) : null;
+            Context ctx = SPIAccessor.ACCESSOR.createContext(getSelectedScope(new AtomicBoolean(false)), settings, null, null, -1, -1);
             Collection<? extends MissingPlugin> req = a.requiredPlugins(ctx);
             plugins.addAll(req);
             someOk |= req.isEmpty();
