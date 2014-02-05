@@ -563,7 +563,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         private LogicalFolderNode node;
 
         public ViewFolderTransferable(LogicalFolderNode node, int operation) throws ClassNotFoundException {
-            super(new DataFlavor(FOLDER_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));
+            super(new DataFlavor(FOLDER_VIEW_FLAVOR.format(new Object[]{operation}), null, MakeLogicalViewProvider.class.getClassLoader()));
             this.node = node;
         }
 

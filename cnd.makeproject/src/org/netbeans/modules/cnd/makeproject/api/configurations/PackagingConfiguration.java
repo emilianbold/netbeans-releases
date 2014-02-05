@@ -353,7 +353,7 @@ public class PackagingConfiguration implements Cloneable {
         
         @Override
         public Object getValue() {
-            return Integer.valueOf(PackagerManager.getDefault().getNameIndex(getType().getValue()));
+            return PackagerManager.getDefault().getNameIndex(getType().getValue());
         }
     
         @Override

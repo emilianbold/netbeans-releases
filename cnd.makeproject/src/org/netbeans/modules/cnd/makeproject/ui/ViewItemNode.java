@@ -436,7 +436,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         private final ViewItemNode node;
 
         public ViewItemTransferable(ViewItemNode node, int operation) throws ClassNotFoundException {
-            super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));
+            super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{operation}), null, MakeLogicalViewProvider.class.getClassLoader()));
             this.node = node;
         }
 

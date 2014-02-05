@@ -757,7 +757,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             int baseCount = 1;
             final String formater = name + "_{0}"; // NOI18N
             //put whatever it is and then re-calculate in separate thread
-            final String firstName = MessageFormat.format(formater, new Object[]{Integer.valueOf(baseCount)});
+            final String firstName = MessageFormat.format(formater, new Object[]{baseCount});
             projectNameTextField.setText(firstName);
             projectNameTextField.selectAll();
             validationRP.post(new Runnable() {
@@ -769,7 +769,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                             formater, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(baseCount));
+                    settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, baseCount);
                     //update            
                     if (!project.equals(firstName)) {
                         final String projectNameRecalculated = project;
@@ -824,7 +824,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     // End of variables declaration//GEN-END:variables
 
     private String validFreeProjectName(String parentFolder, final char fs, final String formater, final int index) {
-        String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
+        String projectName = MessageFormat.format(formater, new Object[]{index});
         if (RemoteFileUtil.fileExists(parentFolder + fs + projectName, env)) { //NOI18N
             return null;
         }

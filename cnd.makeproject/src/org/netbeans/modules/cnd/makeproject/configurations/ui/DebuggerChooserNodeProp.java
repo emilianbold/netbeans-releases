@@ -83,7 +83,7 @@ public class DebuggerChooserNodeProp extends Node.Property {
     }
 
     public Object getValue() {
-        return Integer.valueOf(debuggerChooserConfiguration.getValue());
+        return debuggerChooserConfiguration.getValue();
     }
 
     public void setValue(Object v) {

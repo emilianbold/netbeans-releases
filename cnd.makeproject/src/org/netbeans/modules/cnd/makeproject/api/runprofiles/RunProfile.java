@@ -1030,7 +1030,7 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public Boolean getValue() {
-            return Boolean.valueOf(getBuildFirst());
+            return getBuildFirst();
         }
 
         @Override

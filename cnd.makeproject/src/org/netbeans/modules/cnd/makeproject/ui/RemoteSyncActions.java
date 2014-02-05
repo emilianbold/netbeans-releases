@@ -280,7 +280,7 @@ class RemoteSyncActions {
                     Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), err);
                     int rc = task.get().intValue();
                     if (rc != 0) {
-                        throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
+                        throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", rc));
                     }
                 }
                 @Override

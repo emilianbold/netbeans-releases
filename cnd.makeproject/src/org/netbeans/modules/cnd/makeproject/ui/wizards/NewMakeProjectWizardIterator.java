@@ -269,7 +269,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                     return;
                 }
             }
-            lastSimpleMode = Boolean.valueOf(isSimple());
+            lastSimpleMode = isSimple();
 
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
@@ -514,7 +514,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public String name() {
-        return NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName",Integer.valueOf(index + 1), Integer.valueOf(panels.size())); // NOI18N
+        return NbBundle.getMessage(NewMakeProjectWizardIterator.class, "LAB_IteratorName", index + 1,panels.size()); // NOI18N
     }
 
     private boolean isSimple() {

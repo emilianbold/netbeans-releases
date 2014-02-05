@@ -65,7 +65,7 @@ public class BooleanNodeProp extends PropertySupport<Boolean> {
     }
 
     public Boolean getValue() {
-        return Boolean.valueOf(booleanConfiguration.getValue());
+        return booleanConfiguration.getValue();
     }
 
     public void setValue(Boolean v) {
