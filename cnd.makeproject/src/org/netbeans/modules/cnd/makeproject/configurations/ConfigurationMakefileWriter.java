@@ -329,11 +329,11 @@ public class ConfigurationMakefileWriter {
                 if (line == null) {
                     break;
                 }
-                if (line.indexOf("<PN>") >= 0) { // NOI18N
+                if (line.contains("<PN>")) { // NOI18N
                     line = line.replaceFirst("<PN>", projectName); // NOI18N
-                } else if (line.indexOf("<CNS>") >= 0) { // NOI18N
+                } else if (line.contains("<CNS>")) { // NOI18N
                     line = line.replaceFirst("<CNS>", configurations.toString()); // NOI18N
-                } else if (line.indexOf("<CN>") >= 0) { // NOI18N
+                } else if (line.contains("<CN>")) { // NOI18N
                     if (projectDescriptor.getConfs().getConf(0) != null) {
                         line = line.replaceFirst("<CN>", projectDescriptor.getConfs().getConf(0).getName()); // NOI18N
                     } else {
@@ -1185,7 +1185,7 @@ public class ConfigurationMakefileWriter {
 
     private static String changeToNoMain(String target, String name) {
         String nomainTarget;
-        if (target.indexOf("/") >= 0) { // NOI18N
+        if (target.contains("/")) { // NOI18N
             String baseDir = CndPathUtilities.getDirName(target);
             String baseName = CndPathUtilities.getBaseName(target);
             nomainTarget = baseDir + "/" + baseName.replace(name, name + "_nomain"); // NOI18N;

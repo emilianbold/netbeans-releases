@@ -933,7 +933,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CPP_STYLE_COMMENTS_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(OUTPUT_ELEMENT)) {
             String output = currentText;
-            if (descriptorVersion <= 51 && output.indexOf("{PLATFORM}") >= 0) { // NOI18N
+            if (descriptorVersion <= 51 && output.contains("{PLATFORM}")) { // NOI18N
                 output = output.replace("PLATFORM", "CND_PLATFORM"); // See IZ 167305 // NOI18N
             }
             if (currentLinkerConfiguration != null) {

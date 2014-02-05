@@ -597,13 +597,13 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     label.setToolTipText(msg);
                 }
                 String val = elem.getTo();
-                if (val.indexOf("${") >= 0) { // NOI18N
+                if (val.contains("${")) { // NOI18N
                     String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
                     label.setText(expandedVal);
                 }
             } else if (col == 2) {
                 String val = elem.getFrom();
-                if (val.indexOf("${") >= 0) { // NOI18N
+                if (val.contains("${")) { // NOI18N
                     String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
                     label.setText(expandedVal);
                 }

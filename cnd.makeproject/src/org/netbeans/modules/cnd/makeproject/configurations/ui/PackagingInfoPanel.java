@@ -384,7 +384,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
             if (col == 0) {
             } else if (col == 1) {
                 String val = elem.getValue();
-                if (val.indexOf("${") >= 0) { // NOI18N
+                if (val.contains("${")) { // NOI18N
                     String expandedVal = packagingConfiguration.expandMacros(val);
                     label.setText(expandedVal); // NOI18N
                 }

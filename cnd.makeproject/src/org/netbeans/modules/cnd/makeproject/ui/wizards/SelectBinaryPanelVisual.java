@@ -594,7 +594,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private CompilerSet detectCompilerSet(String compiler){
         boolean isSunStudio = true;
         if (compiler != null) {
-            isSunStudio = compiler.indexOf("Sun") >= 0; // NOI18N
+            isSunStudio = compiler.contains("Sun"); // NOI18N
         }
         CompilerSetManager manager = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal());
         if (isSunStudio) {

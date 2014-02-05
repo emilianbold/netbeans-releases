@@ -1118,17 +1118,17 @@ public final class MakeActionProvider implements ActionProvider {
         } else {
             // user command
             String command = compileConfiguration.getCompileCommand().getValue();
-            if (command.indexOf(CompileConfiguration.AUTO_ITEM_PATH) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_ITEM_PATH)) {
                 command = command.replace(CompileConfiguration.AUTO_ITEM_PATH, item.getAbsolutePath());
             }
-            if (command.indexOf(CompileConfiguration.AUTO_ITEM_NAME) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_ITEM_NAME)) {
                 String name = item.getName();
                 if (name.indexOf('.') > 0) {
                     name = name.substring(0, name.lastIndexOf('.'));
                 }
                 command = command.replace(CompileConfiguration.AUTO_ITEM_NAME, name);
             }
-            if (command.indexOf(CompileConfiguration.AUTO_MAKE) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_MAKE)) {
                 String make = "make"; // NOI18N
                 Tool makeTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
                 if (makeTool != null && makeTool.getPath().length() > 0) {

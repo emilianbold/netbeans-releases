@@ -1179,7 +1179,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 return result;
             }
             String makefileName = projectParams.makefileTextField;
-            if (makefileName.indexOf(" ") >= 0) {//NOI18N
+            if (makefileName.contains(" ")) {//NOI18N
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_SpacesInMakefile");// NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
             }

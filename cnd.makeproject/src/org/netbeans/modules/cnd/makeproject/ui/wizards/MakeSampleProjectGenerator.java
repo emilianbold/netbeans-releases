@@ -535,7 +535,7 @@ public class MakeSampleProjectGenerator {
                     OutputStream out = f.getOutputStream();
                     try {
                         String ls;
-                        if (ent.getName().toLowerCase().indexOf("makefile") >= 0) { // NOI18N
+                        if (ent.getName().toLowerCase().contains("makefile")) { // NOI18N
                             ls = "\n"; // NOI18N
                         } else {
                             ls = (String) f.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
