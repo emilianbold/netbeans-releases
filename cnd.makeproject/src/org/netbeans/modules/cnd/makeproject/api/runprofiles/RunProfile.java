@@ -191,8 +191,8 @@ public final class RunProfile implements ConfigurationAuxObject {
             buildFirst = false;
         }
         dorun = getDorunScript();
-        termPaths = new HashMap<String, String>();
-        termOptions = new HashMap<String, String>();
+        termPaths = new HashMap<>();
+        termOptions = new HashMap<>();
         consoleType = getConsoleTypeConfiguration(initialConsoleType);
         terminalType = getDefaultTerminalType();
         removeInstrumentation = getDefaultRemoveInstrumentation();
@@ -258,7 +258,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private String[] setTerminalTypeNames() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         String def = getString("TerminalType_Default"); // NOI18N
         String name;
         String termPath;
@@ -902,7 +902,7 @@ public boolean isSimpleRunCommand() {
             hasTHAModule = thaConfig != null && thaConfig.isFolder();
         }
 
-        return hasTHAModule.booleanValue();
+        return hasTHAModule;
     }
 
     /**
@@ -979,7 +979,7 @@ public boolean isSimpleRunCommand() {
     private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
         private PropertyEnv propenv;
-        private String seed;
+        private final String seed;
 
         public DirEditor(String seed) {
             this.seed = seed;
@@ -1030,12 +1030,12 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public Boolean getValue() {
-            return Boolean.valueOf(getBuildFirst());
+            return getBuildFirst();
         }
 
         @Override
         public void setValue(Boolean v) {
-            setBuildFirst((v).booleanValue());
+            setBuildFirst((v));
         }
     }
 
@@ -1071,7 +1071,7 @@ public boolean isSimpleRunCommand() {
 
     private static class EnvEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private Env env;
+        private final Env env;
         private PropertyEnv propenv;
 
         public EnvEditor(Env env) {

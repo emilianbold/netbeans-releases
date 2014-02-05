@@ -57,8 +57,8 @@ import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
  * @author Alexander Simon
  */
 public class ProjectConfigurationImpl extends NodeConfigurationImpl implements ProjectConfiguration {
-    private ProjectProperties project;
-    private FolderConfigurationImpl root;
+    private final ProjectProperties project;
+    private final FolderConfigurationImpl root;
     
     public ProjectConfigurationImpl(ProjectProperties project, FolderConfigurationImpl root) {
         this.project = project;
@@ -86,7 +86,7 @@ public class ProjectConfigurationImpl extends NodeConfigurationImpl implements P
     }
 
     public List<FileConfiguration> getFiles() {
-        ArrayList<FileConfiguration> list = new ArrayList<FileConfiguration>();
+        ArrayList<FileConfiguration> list = new ArrayList<>();
         gatherFiles(root,list);
         return list;
     }

@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintStream;
-import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.ASTVisitor;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.collections.AST;

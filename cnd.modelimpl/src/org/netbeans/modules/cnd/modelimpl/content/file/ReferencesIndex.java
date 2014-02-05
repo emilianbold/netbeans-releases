@@ -314,8 +314,8 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     }
     
     // value either ref or collection of refs
-    private final Map<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> obj2refs = new HashMap<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>>();
-    private final Map<CsmUID<?>, Set<CsmUID<CsmFile>>> obj2files = new HashMap<CsmUID<?>, Set<CsmUID<CsmFile>>>();
+    private final Map<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> obj2refs = new HashMap<>();
+    private final Map<CsmUID<?>, Set<CsmUID<CsmFile>>> obj2files = new HashMap<>();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     
     private void trace(PrintWriter printOut) {
@@ -328,7 +328,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             return;
         }
         printOut.printf("INDEX has %d referenced objects\n", obj2refs.size()); // NOI18N
-        List<CsmUID<?>> keys = new ArrayList<CsmUID<?>>(obj2refs.keySet());
+        List<CsmUID<?>> keys = new ArrayList<>(obj2refs.keySet());
         Collections.sort(keys, new ComparatorImpl());
         int lastProjectID = -1;
         int lastFileID = -1;
@@ -403,14 +403,14 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             if (ENABLED) {
                 Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(referedObject);
                 if (value == null) {
-                    value = new TreeSet<FileComponentReferences.ReferenceImpl>(REF_COMPARATOR);
+                    value = new TreeSet<>(REF_COMPARATOR);
                     obj2refs.put(referedObject, value);
                 }
                 value.add(ref);
             }
             Set<CsmUID<CsmFile>> files = obj2files.get(referedObject);
             if (files == null) {
-                files = new HashSet<CsmUID<CsmFile>>();
+                files = new HashSet<>();
                 obj2files.put(referedObject, files);
             }
             files.add(fileUID);
@@ -441,7 +441,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
             if (value == null) {
                 return Collections.emptyList();
             } else {
-                return new ArrayList<CsmUID<CsmFile>>(value);
+                return new ArrayList<>(value);
             }
         } finally {
             lock.readLock().unlock();
@@ -486,7 +486,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         for (int i = 0; i < size; i++) {
             CsmUID<CsmObject> key = defaultFactory.readUID(aStream);
-            Collection<FileComponentReferences.ReferenceImpl> value = new TreeSet<FileComponentReferences.ReferenceImpl>(REF_COMPARATOR);
+            Collection<FileComponentReferences.ReferenceImpl> value = new TreeSet<>(REF_COMPARATOR);
             int refSize = aStream.readInt();
             for (int j = 0; j < refSize; j++) {
                 CsmUID<CsmFile> fileUID = defaultFactory.readUID(aStream);
@@ -499,7 +499,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         for (int i = 0; i < size; i++) {
             CsmUID<CsmObject> key = defaultFactory.readUID(aStream);
             int filesSize = aStream.readInt();
-            Set<CsmUID<CsmFile>> value = new HashSet<CsmUID<CsmFile>>(filesSize);
+            Set<CsmUID<CsmFile>> value = new HashSet<>(filesSize);
             for (int j = 0; j < filesSize; j++) {
                 CsmUID<CsmFile> fileUID = defaultFactory.readUID(aStream);
                 value.add(fileUID);

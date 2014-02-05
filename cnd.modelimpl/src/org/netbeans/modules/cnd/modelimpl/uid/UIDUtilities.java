@@ -116,22 +116,22 @@ public class UIDUtilities {
             uid = handleUnnamedDeclaration(declaration);
         } else {
             if (declaration instanceof CsmTypedef) {
-                uid = new TypedefUID<T>(declaration);
+                uid = new TypedefUID<>(declaration);
             } else if (declaration instanceof CsmTypeAlias) {
-                uid = new TypeAliasUID<T>(declaration);
+                uid = new TypeAliasUID<>(declaration);
             } else if (ForwardClass.isForwardClass(declaration)) {
-                uid = new ForwardClassUID<T>(declaration);
+                uid = new ForwardClassUID<>(declaration);
             } else if (declaration instanceof CsmClassifier) {
-                uid = new ClassifierUID<T>(declaration);
+                uid = new ClassifierUID<>(declaration);
             } else {
-                uid = new DeclarationUID<T>(declaration);
+                uid = new DeclarationUID<>(declaration);
             }
         }
         return updateCachedUIDIfNeeded(uid, declaration);
     }
 
     public static <T extends CsmInstantiation> CsmUID<T> createInstantiationUID(T inst) {
-        CsmUID<T> uid = new InstantiationUID<T>(inst);
+        CsmUID<T> uid = new InstantiationUID<>(inst);
         return updateCachedUIDIfNeeded(uid, inst);
     }
     
@@ -443,9 +443,9 @@ public class UIDUtilities {
             new CsmTracer().dumpModel(decl);
         }
         if (decl instanceof CsmClassifier) {
-            return new UnnamedClassifierUID<T>(decl, UnnamedID.incrementAndGet());
+            return new UnnamedClassifierUID<>(decl, UnnamedID.incrementAndGet());
         } else {
-            return new UnnamedOffsetableDeclarationUID<T>(decl, UnnamedID.incrementAndGet());
+            return new UnnamedOffsetableDeclarationUID<>(decl, UnnamedID.incrementAndGet());
         }
     }
     
@@ -457,8 +457,8 @@ public class UIDUtilities {
      * Base UID for cached objects
      */
     /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
-        private static final SoftReference<Object> DUMMY = new SoftReference<Object>(null);
-        private static final SoftReference<Object> EMPTY = new SoftReference<Object>(null);
+        private static final SoftReference<Object> DUMMY = new SoftReference<>(null);
+        private static final SoftReference<Object> EMPTY = new SoftReference<>(null);
         private volatile Reference<Object> weakT;
 
         protected CachedUID(Key key, T obj) {
@@ -489,7 +489,7 @@ public class UIDUtilities {
             }
             out = RepositoryUtils.get(this);
             if (out != null && weak != DUMMY) {
-                weakT = (Reference<Object>) new WeakReference<T>(out);
+                weakT = (Reference<Object>) new WeakReference<>(out);
             }
             return out;
         }

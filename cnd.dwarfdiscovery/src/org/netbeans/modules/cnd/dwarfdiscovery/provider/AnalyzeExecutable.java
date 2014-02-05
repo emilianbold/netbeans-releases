@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class AnalyzeExecutable extends BaseDwarfProvider {
-    private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
+    private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
     public static final String LIBRARIES_KEY = "libraries"; // NOI18N
     public static final String FILE_SYSTEM = "filesystem"; // NOI18N

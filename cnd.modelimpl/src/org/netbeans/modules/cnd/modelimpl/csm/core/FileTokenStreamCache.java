@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 /*package*/ final class FileTokenStreamCache {
     private final List<TSData> cacheData;
     public FileTokenStreamCache() {
-        this.cacheData = new CopyOnWriteArrayList<TSData>();
+        this.cacheData = new CopyOnWriteArrayList<>();
     }
 
     public final TokenStream getTokenStreamInActiveBlock(boolean filtered, int start, int end, int/*CPPTokenTypes*/ firstTokenIDIfExpandMacros) {
@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
         private final FilePreprocessorConditionState pcState;
         private final List<APTToken> tokens;
         private final APTLanguageFilter lang;
-        private final TreeMap<Integer, Integer> knownIndices = new TreeMap<Integer, Integer>();
+        private final TreeMap<Integer, Integer> knownIndices = new TreeMap<>();
         private TSData(FilePreprocessorConditionState pcState, List<APTToken> tokens, APTLanguageFilter lang) {
             this.pcState = pcState;
             this.tokens = tokens;

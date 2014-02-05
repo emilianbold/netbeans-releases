@@ -153,7 +153,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     }
     
     public Collection<CsmMember> _getMembers() {
-        Collection<CsmMember> members = new ArrayList<CsmMember>();
+        Collection<CsmMember> members = new ArrayList<>();
         members.addAll(super.getMembers());
         ClassImpl base = findBaseClassImplInProject();
         if(base != null && base != this) {
@@ -177,9 +177,9 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
             if(p instanceof InstantiationProviderImpl) {
                 CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), false);
                 if(baseInst instanceof ClassImpl) {
-                    return new MultiIterator<CsmMember>(super.getMembers(filter), ((ClassImpl)baseInst).getMembers(filter));
+                    return new MultiIterator<>(super.getMembers(filter), ((ClassImpl)baseInst).getMembers(filter));
                 } else if(baseInst instanceof Instantiation.Class) {
-                    return new MultiIterator<CsmMember>(super.getMembers(filter), ((Instantiation.Class)baseInst).getMembers(filter));
+                    return new MultiIterator<>(super.getMembers(filter), ((Instantiation.Class)baseInst).getMembers(filter));
                 }
 
             }
@@ -328,7 +328,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     private static class MultiIterator<T> implements Iterator<T> {
 
         private int currentIterator;
-        private Iterator<T> iterators[];
+        private final Iterator<T> iterators[];
 
         public MultiIterator(Iterator<T>... iterators) {
             this.iterators = iterators;

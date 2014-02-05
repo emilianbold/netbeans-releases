@@ -68,7 +68,7 @@ public class LayerDescriptorProviderImpl implements LayerDescriptorProvider {
     public List<LayerDescriptor> getLayerDescriptors(UnitDescriptor unitDescriptor) {
         Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
         NativeProject np = findProjectsByDescriptor(projects, unitDescriptor);
-        List<LayerDescriptor> res = new ArrayList<LayerDescriptor>();
+        List<LayerDescriptor> res = new ArrayList<>();
         for (NativeProjectLayerDescriptorProvider provider : Lookup.getDefault().lookupAll(NativeProjectLayerDescriptorProvider.class)) {
             List<URI> uriList = provider.getLayerDescriptors(np);
             if (uriList != null) {

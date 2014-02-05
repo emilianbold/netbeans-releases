@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.util.WeakList;
 public class ParseFinishNotificator {
 
     private static final ParseFinishNotificator instance = new ParseFinishNotificator();
-    private final WeakList<CsmProject> waitingProjects = new WeakList<CsmProject>();
+    private final WeakList<CsmProject> waitingProjects = new WeakList<>();
 
     private ParseFinishNotificator() {
     }
@@ -116,7 +116,7 @@ public class ParseFinishNotificator {
         if (project.equals(lib)) {
             return false;
         }
-        HashSet<CsmProject> visited = new HashSet<CsmProject>();
+        HashSet<CsmProject> visited = new HashSet<>();
         visited.add(project);
         return isProjectInLibs(lib, project.getLibraries(), visited);
     }
@@ -140,7 +140,7 @@ public class ParseFinishNotificator {
         if (!project.isStable(null)) {
             return false;
         }
-        HashSet<CsmProject> visited = new HashSet<CsmProject>();
+        HashSet<CsmProject> visited = new HashSet<>();
         visited.add(project);
         return areProjectLibsParsed(project.getLibraries(), visited);
     }

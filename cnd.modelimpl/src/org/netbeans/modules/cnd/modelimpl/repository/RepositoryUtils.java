@@ -222,7 +222,7 @@ public final class RepositoryUtils {
 
     public static <T> Collection<CsmUID<T>> put(Collection<T> decls) {
         assert decls != null;
-        List<CsmUID<T>> uids = new ArrayList<CsmUID<T>>(decls.size());
+        List<CsmUID<T>> uids = new ArrayList<>(decls.size());
         for (T decl : decls) {
             if (decl instanceof CsmIdentifiable) {
                 CsmUID<T> uid = put(decl);
@@ -380,8 +380,8 @@ public final class RepositoryUtils {
     }
 
     private static class RepositoryListenerProxy implements RepositoryListener, RepositoryExceptionListener {
-        private RepositoryListenerImpl parent = RepositoryListenerImpl.instance();
-        private Map<Integer,Integer> wasErrors = new ConcurrentHashMap<Integer,Integer>();
+        private final RepositoryListenerImpl parent = RepositoryListenerImpl.instance();
+        private final Map<Integer,Integer> wasErrors = new ConcurrentHashMap<>();
         private boolean fatalError = false;
         private RepositoryListenerProxy(){
         }

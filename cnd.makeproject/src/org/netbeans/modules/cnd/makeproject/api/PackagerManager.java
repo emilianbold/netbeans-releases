@@ -57,7 +57,7 @@ public class PackagerManager {
     static {
         instance.addRegisteredPackagers();
     }
-    private final List<PackagerDescriptor> list = new ArrayList<PackagerDescriptor>();
+    private final List<PackagerDescriptor> list = new ArrayList<>();
 
     public static PackagerManager getDefault() {
         return instance;
@@ -91,7 +91,7 @@ public class PackagerManager {
 
     public List<PackagerDescriptor> getPackagerList() {
         synchronized (list) {
-            return new ArrayList<PackagerDescriptor>(list);
+            return new ArrayList<>(list);
         }
     }
 
@@ -147,8 +147,8 @@ public class PackagerManager {
      * Get list of packager providers registered via services
      */
     private static Set<PackagerDescriptorProvider> getPackagerDescriptorProviders() {
-        HashSet<PackagerDescriptorProvider> providers = new HashSet<PackagerDescriptorProvider>();
-        Lookup.Template<PackagerDescriptorProvider> template = new Lookup.Template<PackagerDescriptorProvider>(PackagerDescriptorProvider.class);
+        HashSet<PackagerDescriptorProvider> providers = new HashSet<>();
+        Lookup.Template<PackagerDescriptorProvider> template = new Lookup.Template<>(PackagerDescriptorProvider.class);
         Lookup.Result<PackagerDescriptorProvider> result = Lookup.getDefault().lookup(template);
         Iterator iterator = result.allInstances().iterator();
         while (iterator.hasNext()) {

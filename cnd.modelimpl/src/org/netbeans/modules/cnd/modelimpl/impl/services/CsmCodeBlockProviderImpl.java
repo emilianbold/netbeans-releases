@@ -85,7 +85,7 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
     public Scope getScope(Document doc, int position) {
         final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, true);
         if (csmFile != null) {
-            List<CsmObject> list = new ArrayList<CsmObject>();
+            List<CsmObject> list = new ArrayList<>();
             list.add(csmFile);
             getFunction(list, csmFile, position);
             if (list.size()>1) {
@@ -273,7 +273,7 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
     }
 
     private void findInner(List<CsmObject> list, CsmForStatement stmt, int offset) {
-        List<CsmOffsetable> forList = new ArrayList<CsmOffsetable>();
+        List<CsmOffsetable> forList = new ArrayList<>();
         CsmStatement initStatement = stmt.getInitStatement();
         if (initStatement != null) {
             forList.add(initStatement);
@@ -316,7 +316,7 @@ public class CsmCodeBlockProviderImpl extends CsmCodeBlockProvider {
     }
     
     private void findInner(List<CsmObject> list, CsmRangeForStatement stmt, int offset) {
-        List<CsmOffsetable> forList = new ArrayList<CsmOffsetable>();
+        List<CsmOffsetable> forList = new ArrayList<>();
         CsmStatement declStatement = stmt.getDeclaration();
         if (declStatement != null) {
             forList.add(declStatement);

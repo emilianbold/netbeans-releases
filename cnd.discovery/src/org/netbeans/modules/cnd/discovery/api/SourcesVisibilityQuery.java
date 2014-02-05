@@ -58,10 +58,10 @@ import org.openide.util.ChangeSupport;
 public class SourcesVisibilityQuery implements ChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
-    private static SourcesVisibilityQuery INSTANCE = new SourcesVisibilityQuery();
+    private static final SourcesVisibilityQuery INSTANCE = new SourcesVisibilityQuery();
     private Pattern acceptedFilesPattern = null;
     private static final String DEFAULT_IGNORE_BYNARY_PATTERN = ".*\\.(il|o|a|dll|dylib|lib|lo|la|Po|Plo|so(\\.[0-9]*)*)$"; // NOI18N
-    private Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
+    private final Pattern ignoredFilesPattern = Pattern.compile(DEFAULT_IGNORE_BYNARY_PATTERN);
     
     /** Default instance for lookup. */
     private SourcesVisibilityQuery() {
@@ -98,7 +98,7 @@ public class SourcesVisibilityQuery implements ChangeListener {
     }
 
     private List<Collection<String>> getAcceptedFilesExtensions() {
-        List<Collection<String>> suffixes = new ArrayList<Collection<String>>();
+        List<Collection<String>> suffixes = new ArrayList<>();
         suffixes.add(MIMEExtensions.get(MIMENames.C_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getValues());
         suffixes.add(MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE).getValues());

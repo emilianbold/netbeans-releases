@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -83,12 +84,13 @@ public final class CndParser extends Parser implements CsmProgressListener {
 
     private CndParser(Collection<Snapshot> snapshots) {
         synchronized(lock) {
-            cndParserResult = new CndParserResult(null, snapshots.size() == 1 ? snapshots.iterator().next() : null, 0);
+            cndParserResult = new CndParserResult(null, snapshots.size() == 1 ? snapshots.iterator().next() : null, 0, NO_DOCUMENT_VERSION);
         }
         synchronized(regestry) {
-            regestry.add(this);
+            regestry.add(CndParser.this);
         }
     }
+    private static final int NO_DOCUMENT_VERSION = -1;
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
@@ -99,18 +101,22 @@ public final class CndParser extends Parser implements CsmProgressListener {
         long oldVersion;
         CsmFile oldFile;
         CharSequence oldText;
+        long oldDocVersion;
         synchronized(lock) {
             if (this.cndParserResult == null) {
                 oldVersion = 0;
                 oldFile = null;
                 oldText = null;
+                oldDocVersion = NO_DOCUMENT_VERSION;
             } else {
                 oldVersion = this.cndParserResult.getFileVersion();
                 oldFile = this.cndParserResult.getCsmFile();
                 oldText = this.cndParserResult.getSnapshot().getText();
+                oldDocVersion = this.cndParserResult.getDocumentVersion();
             }
         }
         final FileObject fo = snapshot.getSource().getFileObject();
+        long docVersion = getDocumentVersion(snapshot);
         CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
         boolean allowStandalone = true;
         if (allowStandalone && file == null) {
@@ -125,13 +131,23 @@ public final class CndParser extends Parser implements CsmProgressListener {
         }
         synchronized(lock) {
             long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-            if (oldVersion != fileVersion || !snapshot.getText().equals(oldText)) {
-                this.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
+            if (oldVersion != fileVersion || !snapshot.getText().equals(oldText) || docVersion != oldDocVersion) {
+                this.cndParserResult = new CndParserResult(file, snapshot, fileVersion, docVersion);
             }
         }
         if (oldFile != null && file != oldFile) {
             CsmStandaloneFileProvider.getDefault().notifyClosed(oldFile);
         }
+    }
+
+    private static long getDocumentVersion(Snapshot snapshot) {
+        final Document doc = snapshot.getSource().getDocument(false);
+        long docVersion = NO_DOCUMENT_VERSION;
+        if (doc != null) {
+            // use instance hash code as version number to not hold reference to doc itself
+            docVersion = System.identityHashCode(doc);
+        }
+        return docVersion;
     }
     
     @Override
@@ -189,7 +205,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                         if (file != null) {
                             LOG.log(Level.FINE, "update parse result for {0} because project ready", snapshot); //NOI18N
                             long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                            cndParserResult = new CndParserResult(file, snapshot, fileVersion);
+                            cndParserResult = new CndParserResult(file, snapshot, fileVersion, getDocumentVersion(snapshot));
                             listeners.fireChange();
                         }
                     }
@@ -220,7 +236,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                     if (fo != null && fo.equals(file.getFileObject())) {
                         LOG.log(Level.FINE, "update parse result for {0} because file parsed", snapshot); //NOI18N
                         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                        cndParserResult = new CndParserResult(file, snapshot, fileVersion);
+                        cndParserResult = new CndParserResult(file, snapshot, fileVersion, getDocumentVersion(snapshot));
                         listeners.fireChange();
                     }
                 }
@@ -251,7 +267,7 @@ public final class CndParser extends Parser implements CsmProgressListener {
                             if (file != null) {
                                 LOG.log(Level.FINE, "update parse result for {0} because property changed", snapshot); //NOI18N
                                 long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
-                                parser.cndParserResult = new CndParserResult(file, snapshot, fileVersion);
+                                parser.cndParserResult = new CndParserResult(file, snapshot, fileVersion, getDocumentVersion(snapshot));
                                 parser.listeners.fireChange();
                             }
                         }

@@ -406,7 +406,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     public Collection<CsmTypedef> getEnclosingTypedefs() {
-        Collection<CsmTypedef> out = new ArrayList<CsmTypedef>(0);
+        Collection<CsmTypedef> out = new ArrayList<>(0);
         synchronized(enclosingElements) {
             for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
                 CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
@@ -423,7 +423,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     public Collection<CsmVariable> getEnclosingVariables() {
-        Collection<CsmVariable> out = new ArrayList<CsmVariable>(0);
+        Collection<CsmVariable> out = new ArrayList<>(0);
         synchronized(enclosingElements) {
             for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
                 CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);

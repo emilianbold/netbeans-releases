@@ -438,7 +438,7 @@ public final class FileMapsCollector {
                         name = CharSequences.create(name);
                         ArrayList<CsmObject> list = out.usingDeclarations.get(name);
                         if (list == null) {
-                            list = new ArrayList<CsmObject>();
+                            list = new ArrayList<>();
                             out.usingDeclarations.put(name, list);
                         }
                         list.add(usingDecl);

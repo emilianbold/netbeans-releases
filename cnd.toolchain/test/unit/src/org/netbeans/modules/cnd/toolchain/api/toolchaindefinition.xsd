@@ -123,6 +123,7 @@
                 <xs:element ref="tns:important_flags"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_macros"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_include"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:user_file"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_macro"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:development_mode"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:warning_level"  minOccurs="0" maxOccurs="1"/>
@@ -206,6 +207,7 @@
                 <xs:element ref="tns:important_flags"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:system_macros"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_include"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:user_file"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:user_macro"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:development_mode"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:warning_level"  minOccurs="0" maxOccurs="1"/>
@@ -772,6 +774,12 @@
     </xs:element>
 
     <xs:element name="user_include">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="user_file">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>

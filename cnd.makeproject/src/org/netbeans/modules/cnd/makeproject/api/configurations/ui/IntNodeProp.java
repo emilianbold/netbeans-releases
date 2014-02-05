@@ -93,7 +93,7 @@ public class IntNodeProp extends Node.Property {
 
     @Override
     public Object getValue() {
-        return Integer.valueOf(intConfiguration.getValue());
+        return intConfiguration.getValue();
     }
 
     @Override

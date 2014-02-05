@@ -81,7 +81,7 @@ public class PkgConfigImpl implements PkgConfig {
 
     private static final boolean TRACE = false;
 
-    private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
+    private final HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, List<Pair>> seachBase;
     private String drivePrefix;
     private final ExecutionEnvironment env;
@@ -717,8 +717,8 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     /*package-local*/ class ResolvedPathImpl implements ResolvedPath {
-        private String path;
-        private Set<PackageConfiguration> packages;
+        private final String path;
+        private final Set<PackageConfiguration> packages;
         private ResolvedPathImpl(String path, Set<PackageConfiguration> packages){
             this.path = path;
             this.packages = packages;

@@ -82,8 +82,8 @@ public final class ParserErrorProvider extends CsmErrorProvider {
 
     @Override
     protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
-        Collection<CsmParserProvider.ParserError> errors = new ArrayList<CsmParserProvider.ParserError>();
+        Collection<CsmErrorInfo> errorInfos = new ArrayList<>();
+        Collection<CsmParserProvider.ParserError> errors = new ArrayList<>();
         Thread currentThread = Thread.currentThread();
         FileImpl file = (FileImpl) request.getFile();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N

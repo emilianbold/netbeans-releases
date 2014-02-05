@@ -92,13 +92,11 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
@@ -252,9 +250,9 @@ public class TraceXRef extends TraceModel {
     private static final int FACTOR = 1;
 
     public static void traceProjectRefsStatistics(CsmProject csmPrj, final Map<CharSequence, Long> times, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
-        final XRefResultSet<XRefEntry> bag = new XRefResultSet<XRefEntry>();
+        final XRefResultSet<XRefEntry> bag = new XRefResultSet<>();
         final boolean collect = times.isEmpty();
-        Collection<CsmFile> allFiles = new ArrayList<CsmFile>();
+        Collection<CsmFile> allFiles = new ArrayList<>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
             i++;
@@ -350,7 +348,7 @@ public class TraceXRef extends TraceModel {
     }
 
     public static Collection<CsmReference> sortRefs(Collection<CsmReference> refs) {
-        List<CsmReference> out = new ArrayList<CsmReference>(refs);
+        List<CsmReference> out = new ArrayList<>(refs);
         Collections.sort(out, FILE_NAME_START_OFFSET_COMPARATOR);
         return out;
     }
@@ -540,7 +538,7 @@ public class TraceXRef extends TraceModel {
         if (scope != null) {
             final XRefResultSet.ContextScope funScope = classifyFunctionScope(fun, printOut);
             final ObjectContext<CsmFunctionDefinition> funContext = createContextObject(fun, printOut);
-            final Set<CsmObject> objectsUsedInScope = new HashSet<CsmObject>();
+            final Set<CsmObject> objectsUsedInScope = new HashSet<>();
             bag.incrementScopeCounter(funScope);
             CsmFileReferences.getDefault().accept(
                     scope,
@@ -943,8 +941,8 @@ public class TraceXRef extends TraceModel {
         
         if(params.reportIndex) {
             printOut.println("Index stats:"); // NOI18N
-            Map<CharSequence, Integer> indexStats = new HashMap<CharSequence, Integer>();
-            Map<CharSequence, Integer> allStats = new HashMap<CharSequence, Integer>();
+            Map<CharSequence, Integer> indexStats = new HashMap<>();
+            Map<CharSequence, Integer> allStats = new HashMap<>();
             int totalAll = 0;
             int totalIndex = 0;
             
@@ -1280,7 +1278,7 @@ public class TraceXRef extends TraceModel {
                 break;
             }
         }
-        return new ObjectContext<T>(csmObject, objClass, objFile, objPrj, objNs, objScope);
+        return new ObjectContext<>(csmObject, objClass, objFile, objPrj, objNs, objScope);
     }
 
     public static final class StatisticsParameters {

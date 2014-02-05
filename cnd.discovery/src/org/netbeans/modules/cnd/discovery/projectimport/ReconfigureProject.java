@@ -100,7 +100,7 @@ import org.openide.windows.InputOutput;
  * @author Alexander Simon
  */
 public class ReconfigureProject {
-    private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
+    private static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ReconfigureProject.class.getName(), 1);
     private final Project makeProject;
@@ -115,9 +115,9 @@ public class ReconfigureProject {
     private String cFlags;
     private String cxxFlags;
     private String linkerFlags;
-    private AtomicBoolean canceled = new AtomicBoolean(false);
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
     private Future<Integer> lastTask;
-    private Set<ExecutionListener> listeners = new WeakSet<ExecutionListener>();
+    private final Set<ExecutionListener> listeners = new WeakSet<>();
     private InputOutput tab;
     private boolean configureCodeAssistance = false;
     private File makeLog = null;
@@ -561,7 +561,7 @@ public class ReconfigureProject {
                         execLog = null;
                     }
                 }
-                Map<String, Object> artifacts = new HashMap<String, Object>();
+                Map<String, Object> artifacts = new HashMap<>();
                 if (execLog != null) {
                     artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getAbsolutePath());
                     DiscoveryManagerImpl.projectBuilt(makeProject, artifacts, false);
@@ -918,7 +918,7 @@ public class ReconfigureProject {
             if (ses != null) {
                 String[] args = ses.getEnvironmentVariables();
                 if (args != null && args.length > 0) {
-                    List<String> list = new ArrayList<String>();
+                    List<String> list = new ArrayList<>();
                     for (int i = 0; i < args.length; i++) {
                         list.add(args[i]);
                     }

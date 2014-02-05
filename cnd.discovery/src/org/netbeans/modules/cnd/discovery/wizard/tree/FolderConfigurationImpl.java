@@ -56,9 +56,9 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FolderConfiguration;
  * @author Alexander Simon
  */
 public class FolderConfigurationImpl extends NodeConfigurationImpl implements FolderConfiguration {
-    private String path;
-    private Map<String, FolderConfigurationImpl> folders = new HashMap<String,FolderConfigurationImpl>();
-    private List<FileConfigurationImpl> files = new ArrayList<FileConfigurationImpl>();
+    private final String path;
+    private final Map<String, FolderConfigurationImpl> folders = new HashMap<>();
+    private final List<FileConfigurationImpl> files = new ArrayList<>();
 
     public FolderConfigurationImpl(String path) {
         this.path = path;

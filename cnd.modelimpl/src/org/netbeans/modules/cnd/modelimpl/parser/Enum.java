@@ -50,7 +50,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
  */
 public class Enum {
 
-    private String id;
+    private final String id;
 
     protected Enum(String id) {
         this.id = id;

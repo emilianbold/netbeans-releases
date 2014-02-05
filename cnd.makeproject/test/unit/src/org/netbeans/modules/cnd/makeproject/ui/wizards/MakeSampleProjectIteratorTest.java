@@ -118,16 +118,16 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             }
         }
 
-        allAvailableCompilerSets = new ArrayList<CompilerSet>();
+        allAvailableCompilerSets = new ArrayList<>();
         allAvailableCompilerSets.add(SunStudioSet);
         allAvailableCompilerSets.add(GNUSet);
         allAvailableCompilerSets.add(MinGWSet);
         allAvailableCompilerSets.add(CygwinSet);
 
-        SunStudioCompilerSet = new ArrayList<CompilerSet>();
+        SunStudioCompilerSet = new ArrayList<>();
         SunStudioCompilerSet.add(SunStudioSet);
 
-        GNUCompilerSet = new ArrayList<CompilerSet>();
+        GNUCompilerSet = new ArrayList<>();
         GNUCompilerSet.add(GNUSet);
     }
 
@@ -219,7 +219,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     @Override
     protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
@@ -233,8 +233,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         final DataObject templateDO = DataObject.find(templateFO);
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
-        final AtomicReference<Set<DataObject>> setRef = new AtomicReference<Set<DataObject>>();
+        final AtomicReference<IOException> exRef = new AtomicReference<>();
+        final AtomicReference<Set<DataObject>> setRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {

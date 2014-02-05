@@ -494,7 +494,7 @@ import org.openide.util.Utilities;
 
     private boolean getLastToolValidation(ToolKind tool) {
         Boolean get = lastValid.get(tool);
-        return get != null && get.booleanValue();
+        return get != null && get;
     }
 
     boolean isToolsValid() {

@@ -72,7 +72,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private static final boolean IGNORE_BINARIES = CndUtils.getBoolean("cnd.vcs.ignore.binaries", true);
     private boolean inited = false;
-    private Set<String> skippedFiles = new HashSet<String>();
+    private Set<String> skippedFiles = new HashSet<>();
 
     MakeSharabilityQuery(ConfigurationDescriptorProvider projectDescriptorProvider, FileObject baseDirFile) {
         this.projectDescriptorProvider = projectDescriptorProvider;
@@ -170,7 +170,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation2 {
             MakeConfigurationDescriptor cd = this.projectDescriptorProvider.getConfigurationDescriptor();
             if (cd != null) {
                 Configurations confs = cd.getConfs();
-                Set<String> newSet = new HashSet<String>();
+                Set<String> newSet = new HashSet<>();
                 for (Configuration conf : confs.getConfigurations()) {
                     if (conf instanceof MakeConfiguration) {
                         String outputValue = ((MakeConfiguration) conf).getOutputValue();

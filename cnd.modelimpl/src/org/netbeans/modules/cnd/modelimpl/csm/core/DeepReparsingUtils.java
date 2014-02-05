@@ -197,9 +197,9 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnEdit {0}", toString(toReparse));
         }        
-        Set<CsmUID<CsmFile>> topParents = new HashSet<CsmUID<CsmFile>>();
-        Set<CsmUID<CsmFile>> parents = new HashSet<CsmUID<CsmFile>>();
-        Set<CsmUID<CsmFile>> coherence = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> topParents = new HashSet<>();
+        Set<CsmUID<CsmFile>> parents = new HashSet<>();
+        Set<CsmUID<CsmFile>> coherence = new HashSet<>();
         for(FileImpl fileImpl: toReparse){
             ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
             Set<CsmUID<CsmFile>> units = top.getCompilationUnitsUids();
@@ -214,7 +214,7 @@ public final class DeepReparsingUtils {
             }
         }
         if (topParents.size() > 0) {
-            Set<CsmFile> topParentsImpl = new HashSet<CsmFile>();
+            Set<CsmFile> topParentsImpl = new HashSet<>();
             for (CsmUID<CsmFile> file : coherence) {
                 CsmFile fileImpl = UIDCsmConverter.UIDtoFile(file);
                 if (fileImpl != null) {
@@ -244,7 +244,7 @@ public final class DeepReparsingUtils {
 
     private static void gatherCoherenceLibrary(Set<CsmFile> coherenceLibrary) {
         while (true) {
-            Set<CsmFile> newCoherenceLibrary = new HashSet<CsmFile>();
+            Set<CsmFile> newCoherenceLibrary = new HashSet<>();
             for (CsmFile coherence : coherenceLibrary) {
                 newCoherenceLibrary.add(coherence);
                 ProjectBase coherenceProject = (ProjectBase) coherence.getProject();
@@ -266,10 +266,10 @@ public final class DeepReparsingUtils {
         }        
         try {
             ParserQueue.instance().onStartAddingProjectFiles(changedProject);
-            Map<FileImpl, NativeFileItem> pairs = new HashMap<FileImpl, NativeFileItem>();
-            Set<CsmFile> cuStartFiles = new HashSet<CsmFile>();
-            Set<CsmFile> coherence = new HashSet<CsmFile>();
-            Set<CsmFile> coherenceLibrariesFiles = new HashSet<CsmFile>();
+            Map<FileImpl, NativeFileItem> pairs = new HashMap<>();
+            Set<CsmFile> cuStartFiles = new HashSet<>();
+            Set<CsmFile> coherence = new HashSet<>();
+            Set<CsmFile> coherenceLibrariesFiles = new HashSet<>();
             for (NativeFileItem item : items) {
                 if (Utils.acceptNativeItem(item)) {
                     FileImpl file = changedProject.getFile(item.getAbsolutePath(), false);
@@ -331,7 +331,7 @@ public final class DeepReparsingUtils {
      * Reparse included files at file added.
      */
     static void reparseOnAdded(List<NativeFileItem> toReparse, ProjectBase project) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (NativeFileItem item : toReparse) {
             names.add(item.getName());
         }
@@ -342,13 +342,13 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnAdded {0}", toString(names));
         }
-        Set<CsmFile> resolved = new HashSet<CsmFile>();
+        Set<CsmFile> resolved = new HashSet<>();
         for (CsmFile file : project.getAllFiles()) {
             findResolved(names, resolved, file);
         }
         if (resolved.size() > 0) {
-            Set<CsmFile> top = new HashSet<CsmFile>();
-            Set<CsmFile> coherence = new HashSet<CsmFile>();
+            Set<CsmFile> top = new HashSet<>();
+            Set<CsmFile> coherence = new HashSet<>();
             for (CsmFile file : resolved) {
                 top.addAll(project.getGraph().getTopParentFiles(file).getCompilationUnits());
                 coherence.add(file);
@@ -378,8 +378,8 @@ public final class DeepReparsingUtils {
             LOG.log(Level.INFO, "reparseOnRemoved \nPHYSICAL:{0}\nEXCLUDED:{1}", new Object[] {toString(removedPhysically), toString(removedAsExcluded)});
         }
         CndFileUtils.clearFileExistenceCache();
-        Set<CsmFile> topParents = new HashSet<CsmFile>();
-        Set<CsmFile> coherence = new HashSet<CsmFile>();
+        Set<CsmFile> topParents = new HashSet<>();
+        Set<CsmFile> coherence = new HashSet<>();
         // physically removed can cause broken #includes => we need to reparse parent and coherence files
         for (FileImpl impl : removedPhysically) {
             if (impl != null) {

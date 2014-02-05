@@ -107,8 +107,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
-    private int type;
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final int type;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private static final Object FAKE_ITEM = new Object();
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
@@ -218,9 +218,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     }
 
     private static Collection<ServerRecord> initServerRecords(ToolsCacheManager toolsCacheManager, ExecutionEnvironment ee) {
-        Collection<ServerRecord> out = new ArrayList<ServerRecord>();
+        Collection<ServerRecord> out = new ArrayList<>();
 
-        Collection<ServerRecord> records = new ArrayList<ServerRecord>();
+        Collection<ServerRecord> records = new ArrayList<>();
         if (toolsCacheManager != null && toolsCacheManager.getServerUpdateCache() != null) {
             records.addAll(toolsCacheManager.getServerUpdateCache().getHosts());
         } else {
@@ -757,7 +757,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             int baseCount = 1;
             final String formater = name + "_{0}"; // NOI18N
             //put whatever it is and then re-calculate in separate thread
-            final String firstName = MessageFormat.format(formater, new Object[]{Integer.valueOf(baseCount)});
+            final String firstName = MessageFormat.format(formater, new Object[]{baseCount});
             projectNameTextField.setText(firstName);
             projectNameTextField.selectAll();
             validationRP.post(new Runnable() {
@@ -769,7 +769,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                             formater, baseCount)) == null) {
                         baseCount++;
                     }
-                    settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, Integer.valueOf(baseCount));
+                    settings.putProperty(NewMakeProjectWizardIterator.PROP_NAME_INDEX, baseCount);
                     //update            
                     if (!project.equals(firstName)) {
                         final String projectNameRecalculated = project;
@@ -824,7 +824,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     // End of variables declaration//GEN-END:variables
 
     private String validFreeProjectName(String parentFolder, final char fs, final String formater, final int index) {
-        String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
+        String projectName = MessageFormat.format(formater, new Object[]{index});
         if (RemoteFileUtil.fileExists(parentFolder + fs + projectName, env)) { //NOI18N
             return null;
         }
@@ -955,7 +955,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             this.hostUID = hostUID;
             this.cs = cs;
             this.isDefaultCompilerSet = isDefaultCompilerSet;
-            this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain.booleanValue();
+            this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain;
             this.toolsCacheManager = toolsCacheManager;
         }
 
@@ -1078,7 +1078,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         private long lastEventID = 0;        
         private WizardValidationWorkerCheckState lastCheck = null;
         private ProjectValidationParams projectParams;
-        private AtomicBoolean makefileNameChangedManually = new AtomicBoolean(false);        
+        private final AtomicBoolean makefileNameChangedManually = new AtomicBoolean(false);        
         
 
         WizardValidationWorker() {
@@ -1179,7 +1179,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 return result;
             }
             String makefileName = projectParams.makefileTextField;
-            if (makefileName.indexOf(" ") >= 0) {//NOI18N
+            if (makefileName.contains(" ")) {//NOI18N
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_SpacesInMakefile");// NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
             }

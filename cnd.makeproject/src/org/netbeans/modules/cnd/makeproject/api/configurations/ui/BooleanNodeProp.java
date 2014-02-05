@@ -48,7 +48,7 @@ import org.openide.nodes.PropertySupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 
 public class BooleanNodeProp extends PropertySupport<Boolean> {
-    private BooleanConfiguration booleanConfiguration;
+    private final BooleanConfiguration booleanConfiguration;
 
     public BooleanNodeProp(BooleanConfiguration booleanConfiguration, boolean canWrite, String name1, String name2, String name3) {
         super(name1, Boolean.class, name2, name3, true, canWrite);
@@ -65,11 +65,11 @@ public class BooleanNodeProp extends PropertySupport<Boolean> {
     }
 
     public Boolean getValue() {
-        return Boolean.valueOf(booleanConfiguration.getValue());
+        return booleanConfiguration.getValue();
     }
 
     public void setValue(Boolean v) {
-        booleanConfiguration.setValue(v.booleanValue());
+        booleanConfiguration.setValue(v);
     }
 
     @Override

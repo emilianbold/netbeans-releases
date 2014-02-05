@@ -85,7 +85,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
 
     protected DeclarationContainer(Key key) {
         super(key);
-        declarations = new TreeMap<CharSequence, Object>(CharSequences.comparator());
+        declarations = new TreeMap<>(CharSequences.comparator());
     }
 
     protected DeclarationContainer(RepositoryDataInput input) throws IOException {
@@ -209,7 +209,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsRange(CharSequence from, CharSequence to) {
-        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
         from = CharSequences.create(from);
         to = CharSequences.create(to);
         try {
@@ -224,7 +224,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUIDsFQN(CharSequence fqn, Kind[] kinds) {
-        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
         char maxChar = 255; //Character.MAX_VALUE;
         for(Kind kind : kinds) {
             String prefix = CharSequenceUtils.toString(""+Utils.getCsmDeclarationKindkey(kind), OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR, fqn);
@@ -246,7 +246,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     public SortedMap<CharSequence, Object> getTestDeclarations() {
         try {
             declarationsLock.readLock().lock();
-            return new TreeMap<CharSequence, Object>(declarations);
+            return new TreeMap<>(declarations);
         } finally {
             declarationsLock.readLock().unlock();
         }
@@ -281,7 +281,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarationsUIDs() {
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
         try {
             declarationsLock.readLock().lock();
             for (Object o : declarations.values()) {
@@ -294,7 +294,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     }
 
     public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
-        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<>();
         uniqueName = CharSequences.create(uniqueName);
         try {
             declarationsLock.readLock().lock();

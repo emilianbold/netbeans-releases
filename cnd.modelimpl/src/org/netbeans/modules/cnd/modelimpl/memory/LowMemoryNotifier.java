@@ -72,5 +72,5 @@ public abstract class LowMemoryNotifier {
     public abstract void setThresholdPercentage(double percentage);
     
     
-    private static LowMemoryNotifier instance = new LowMemoryNotifierImpl();
+    private static final LowMemoryNotifier instance = new LowMemoryNotifierImpl();
 }

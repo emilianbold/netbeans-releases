@@ -155,7 +155,7 @@ final class NodeActionFactory {
             if (activatedNodes.length == 0) {
                 return;
             }
-            final List<MakeConfigurationDescriptor> projects = new ArrayList<MakeConfigurationDescriptor>();
+            final List<MakeConfigurationDescriptor> projects = new ArrayList<>();
             final AtomicBoolean isItem = new AtomicBoolean(false);
             for (Node activatedNode : activatedNodes) {
                 Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);

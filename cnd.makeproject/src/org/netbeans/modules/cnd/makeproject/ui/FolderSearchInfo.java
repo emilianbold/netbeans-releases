@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class FolderSearchInfo extends SearchInfoDefinition {
 
-    private Folder folder;
+    private final Folder folder;
 
     FolderSearchInfo(Folder folder) {
         this.folder = folder;
@@ -89,7 +89,7 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
                 return false;
             }
         });
-        Set<FileObject> roots = new HashSet<FileObject>();
+        Set<FileObject> roots = new HashSet<>();
         for (FileObject fo : set) {
             FileObject parent = fo.getParent();
             if (parent == null) {
@@ -105,7 +105,7 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
                 curr = curr.getParent();
             }
             if (!found) {
-                List<FileObject> list = new ArrayList<FileObject>(roots);
+                List<FileObject> list = new ArrayList<>(roots);
                 roots.clear();
                 for (FileObject fo2 : list) {
                      FileObject parent2 = fo2.getParent();
@@ -125,7 +125,7 @@ public final class FolderSearchInfo extends SearchInfoDefinition {
                 roots.add(parent);
             }
         }
-        List<SearchRoot> res = new ArrayList<SearchRoot>();
+        List<SearchRoot> res = new ArrayList<>();
         for (FileObject fo : roots) {
              res.add(new SearchRoot(fo, null));
         }

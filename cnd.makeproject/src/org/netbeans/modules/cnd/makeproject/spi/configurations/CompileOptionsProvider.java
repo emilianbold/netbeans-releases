@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class CompileOptionsProvider {
-    private static CompileOptionsProvider DEFAULT = new Default();
+    private static final CompileOptionsProvider DEFAULT = new Default();
 
     public abstract void onRename(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration, String newName);
     public abstract void onRemove(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration);

@@ -99,7 +99,6 @@ public class DiscoveryProjectGeneratorImpl {
      * -J-Dcnd.discovery.can_violate_paths_order=true
      * </pre>
      */
-    private static final boolean VIOLATE_PATHS_ORDER = Boolean.getBoolean("cnd.discovery.can_violate_paths_order"); // NOI18N
     private final ProjectBridge projectBridge;
     private final DiscoveryDescriptor wizard;
     private final String baseFolder;
@@ -327,32 +326,42 @@ public class DiscoveryProjectGeneratorImpl {
         CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, folder);
         if (cccc != null) {
             List<String> commonFoldersIncludes = cccc.getIncludeDirectories().getValue();
+            List<String> commonFoldersFiles = cccc.getIncludeFiles().getValue();
             List<String> commonFoldersMacros = cccc.getPreprocessorConfiguration().getValue();
             List<String> commonFoldersUndefs = cccc.getUndefinedPreprocessorConfiguration().getValue();
-            projectBridge.setupProject(commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs, lang);
-            projectBridge.setupFolder(Collections.<String>emptyList(), true,
+            projectBridge.setupProject(commonFoldersIncludes, commonFoldersFiles, commonFoldersMacros, commonFoldersUndefs, lang);
+            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true,
                     Collections.<String>emptyList(), true,
                     Collections.<String>emptyList(), true, lang, folder);
-            downConfiguration(folder, lang, commonFoldersIncludes, commonFoldersMacros, commonFoldersUndefs);
+            downConfiguration(folder, lang, commonFoldersIncludes, commonFoldersFiles, commonFoldersMacros, commonFoldersUndefs);
         }
     }
 
-    private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang, List<String> commonFoldersIncludes, List<String> commonFoldersMacros, List<String> commonFoldersUndefs) {
+    private void downConfiguration(Folder folder, ItemProperties.LanguageKind lang, List<String> commonFoldersIncludes, List<String> commonFoldersFiles,
+            List<String> commonFoldersMacros, List<String> commonFoldersUndefs) {
         for(Folder subFolder : folder.getFoldersAsArray()){
             CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
             if (cccc == null) {
                 continue;
             }
             List<String> aCommonFoldersIncludes = new ArrayList<>(commonFoldersIncludes);
+            List<String> aCommonFoldersFiles = new ArrayList<>(commonFoldersFiles);
             List<String> aCommonFoldersMacros = new ArrayList<>(commonFoldersMacros);
             List<String> aCommonFoldersUndefs = new ArrayList<>(commonFoldersUndefs);
             List<String> foldersIncludes = new ArrayList<>();
+            List<String> foldersFiles = new ArrayList<>();
             List<String> foldersMacros = new ArrayList<>();
             List<String> foldersUndefs = new ArrayList<>();
             for(String s : cccc.getIncludeDirectories().getValue()){
                 if (!aCommonFoldersIncludes.contains(s)) {
                     foldersIncludes.add(s);
                     aCommonFoldersIncludes.add(s);
+                }
+            }
+            for(String s : cccc.getIncludeFiles().getValue()){
+                if (!aCommonFoldersFiles.contains(s)) {
+                    foldersFiles.add(s);
+                    aCommonFoldersFiles.add(s);
                 }
             }
             for(String s : cccc.getPreprocessorConfiguration().getValue()){
@@ -367,8 +376,8 @@ public class DiscoveryProjectGeneratorImpl {
                     aCommonFoldersUndefs.add(s);
                 }
             }
-            projectBridge.setupFolder(foldersIncludes, true, foldersMacros, true, foldersUndefs, true, lang, subFolder);
-            downConfiguration(subFolder, lang, aCommonFoldersIncludes, aCommonFoldersMacros, aCommonFoldersUndefs);
+            projectBridge.setupFolder(foldersIncludes, true, foldersFiles, true, foldersMacros, true, foldersUndefs, true, lang, subFolder);
+            downConfiguration(subFolder, lang, aCommonFoldersIncludes, aCommonFoldersFiles, aCommonFoldersMacros, aCommonFoldersUndefs);
         }
     }
 
@@ -457,6 +466,7 @@ public class DiscoveryProjectGeneratorImpl {
 
     private boolean upConfiguration(Folder folder, ItemProperties.LanguageKind lang) {
         Set<String> commonFoldersIncludes = new LinkedHashSet<>();
+        Set<String> commonFoldersFiles = new LinkedHashSet<>();
         MacroMap commonFolderMacroMap = new MacroMap();
         Set<String> commonFoldersUndefs = new HashSet<>();
         boolean haveSubFolders = false;
@@ -468,6 +478,7 @@ public class DiscoveryProjectGeneratorImpl {
                 CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                 if (cccc != null) {
                     commonFoldersIncludes.addAll(cccc.getIncludeDirectories().getValue());
+                    commonFoldersFiles.addAll(cccc.getIncludeFiles().getValue());
                     commonFolderMacroMap.addAll(cccc.getPreprocessorConfiguration().getValue());
                     commonFoldersUndefs.addAll(cccc.getUndefinedPreprocessorConfiguration().getValue());
                     haveSubFolders = true;
@@ -476,27 +487,47 @@ public class DiscoveryProjectGeneratorImpl {
                 if (commonFoldersIncludes.size() > 0) {
                     CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                     if (cccc != null) {
-                        if (VIOLATE_PATHS_ORDER) {
-                            commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
-                        } else {
-                            List<String> itemPaths = cccc.getIncludeDirectories().getValue();
-                            int min = Math.min(commonFoldersIncludes.size(), itemPaths.size());
-                            Iterator<String> it1 = commonFoldersIncludes.iterator();
-                            Iterator<String> it2 = itemPaths.iterator();
-                            int last = min;
-                            for(int i = 0; i < min; i++) {
-                                String next1 = it1.next();
-                                String next2 = it2.next();
-                                if (!next1.equals(next2)) {
-                                    last = i;
-                                    break;
-                                }
+                        List<String> itemPaths = cccc.getIncludeDirectories().getValue();
+                        int min = Math.min(commonFoldersIncludes.size(), itemPaths.size());
+                        Iterator<String> it1 = commonFoldersIncludes.iterator();
+                        Iterator<String> it2 = itemPaths.iterator();
+                        int last = min;
+                        for(int i = 0; i < min; i++) {
+                            String next1 = it1.next();
+                            String next2 = it2.next();
+                            if (!next1.equals(next2)) {
+                                last = i;
+                                break;
                             }
-                            commonFoldersIncludes = new LinkedHashSet<>();
-                            if (last > 0) {
-                                for(int i = 0; i < last; i++) {
-                                    commonFoldersIncludes.add(itemPaths.get(i));
-                                }
+                        }
+                        commonFoldersIncludes = new LinkedHashSet<>();
+                        if (last > 0) {
+                            for(int i = 0; i < last; i++) {
+                                commonFoldersIncludes.add(itemPaths.get(i));
+                            }
+                        }
+                    }
+                }
+                if (commonFoldersFiles.size() > 0) {
+                    CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
+                    if (cccc != null) {
+                        List<String> itemPaths = cccc.getIncludeFiles().getValue();
+                        int min = Math.min(commonFoldersFiles.size(), itemPaths.size());
+                        Iterator<String> it1 = commonFoldersFiles.iterator();
+                        Iterator<String> it2 = itemPaths.iterator();
+                        int last = min;
+                        for(int i = 0; i < min; i++) {
+                            String next1 = it1.next();
+                            String next2 = it2.next();
+                            if (!next1.equals(next2)) {
+                                last = i;
+                                break;
+                            }
+                        }
+                        commonFoldersFiles = new LinkedHashSet<>();
+                        if (last > 0) {
+                            for(int i = 0; i < last; i++) {
+                                commonFoldersFiles.add(itemPaths.get(i));
                             }
                         }
                     }
@@ -516,11 +547,13 @@ public class DiscoveryProjectGeneratorImpl {
             }
         }
         Set<String> commonFilesIncludes = new LinkedHashSet<>();
+        Set<String> commonFilesFiles = new HashSet<>();
         MacroMap commonFilesMacroMap  = new MacroMap();
         Set<String> commonFilesUndefs = new HashSet<>();
         boolean first = true;
         if (haveSubFolders) {
             commonFilesIncludes = new LinkedHashSet<>(commonFoldersIncludes);
+            commonFilesFiles = new HashSet<>(commonFoldersFiles);
             commonFilesMacroMap = new MacroMap(commonFolderMacroMap);
             commonFilesUndefs = new HashSet<>(commonFoldersUndefs);
             first = false;
@@ -543,32 +576,50 @@ public class DiscoveryProjectGeneratorImpl {
             }
             if (first) {
                 commonFilesIncludes.addAll(cccc.getIncludeDirectories().getValue());
+                commonFilesFiles.addAll(cccc.getIncludeFiles().getValue());
                 commonFilesMacroMap.addAll(cccc.getPreprocessorConfiguration().getValue());
                 commonFilesUndefs.addAll(cccc.getUndefinedPreprocessorConfiguration().getValue());
                 first = false;
             } else {
                 if (commonFilesIncludes.size() > 0) {
-                    if (VIOLATE_PATHS_ORDER) {
-                        commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
-                    } else {
-                        List<String> itemPaths = cccc.getIncludeDirectories().getValue();
-                        int min = Math.min(commonFilesIncludes.size(), itemPaths.size());
-                        Iterator<String> it1 = commonFilesIncludes.iterator();
-                        Iterator<String> it2 = itemPaths.iterator();
-                        int last = min;
-                        for(int i = 0; i < min; i++) {
-                            String next1 = it1.next();
-                            String next2 = it2.next();
-                            if (!next1.equals(next2)) {
-                                last = i;
-                                break;
-                            }
+                    List<String> itemPaths = cccc.getIncludeDirectories().getValue();
+                    int min = Math.min(commonFilesIncludes.size(), itemPaths.size());
+                    Iterator<String> it1 = commonFilesIncludes.iterator();
+                    Iterator<String> it2 = itemPaths.iterator();
+                    int last = min;
+                    for(int i = 0; i < min; i++) {
+                        String next1 = it1.next();
+                        String next2 = it2.next();
+                        if (!next1.equals(next2)) {
+                            last = i;
+                            break;
                         }
-                        commonFilesIncludes = new LinkedHashSet<>();
-                        if (last > 0) {
-                            for(int i = 0; i < last; i++) {
-                                commonFilesIncludes.add(itemPaths.get(i));
-                            }
+                    }
+                    commonFilesIncludes = new LinkedHashSet<>();
+                    if (last > 0) {
+                        for(int i = 0; i < last; i++) {
+                            commonFilesIncludes.add(itemPaths.get(i));
+                        }
+                    }
+                }
+                if (commonFilesFiles.size() > 0) {
+                    List<String> itemPaths = cccc.getIncludeFiles().getValue();
+                    int min = Math.min(commonFilesFiles.size(), itemPaths.size());
+                    Iterator<String> it1 = commonFilesFiles.iterator();
+                    Iterator<String> it2 = itemPaths.iterator();
+                    int last = min;
+                    for(int i = 0; i < min; i++) {
+                        String next1 = it1.next();
+                        String next2 = it2.next();
+                        if (!next1.equals(next2)) {
+                            last = i;
+                            break;
+                        }
+                    }
+                    commonFilesFiles = new LinkedHashSet<>();
+                    if (last > 0) {
+                        for(int i = 0; i < last; i++) {
+                            commonFilesFiles.add(itemPaths.get(i));
                         }
                     }
                 }
@@ -580,7 +631,7 @@ public class DiscoveryProjectGeneratorImpl {
                 }
             }
         }
-        if (commonFilesIncludes.size() > 0 || commonFilesMacroMap.size() > 0 || commonFilesUndefs.size() > 0) {
+        if (commonFilesIncludes.size() > 0 || commonFilesFiles.size() > 0 || commonFilesMacroMap.size() > 0 || commonFilesUndefs.size() > 0) {
             for (Item item : folder.getItemsAsArray()) {
                 CCCCompilerConfiguration cccc = projectBridge.getItemConfiguration(item);
                 if (lang == ItemProperties.LanguageKind.CPP) {
@@ -599,6 +650,11 @@ public class DiscoveryProjectGeneratorImpl {
                     list.removeAll(commonFilesIncludes);
                     cccc.getIncludeDirectories().setValue(list);
                 }
+                if (commonFilesFiles.size() > 0) {
+                    List<String> list = new ArrayList<>(cccc.getIncludeFiles().getValue());
+                    list.removeAll(commonFilesFiles);
+                    cccc.getIncludeFiles().setValue(list);
+                }
                 if (commonFilesMacroMap.size() > 0) {
                     List<String> list = new ArrayList<>(cccc.getPreprocessorConfiguration().getValue());
                     list = commonFilesMacroMap.removeCommon(list);
@@ -615,6 +671,9 @@ public class DiscoveryProjectGeneratorImpl {
         if (cccc != null) {
             if (commonFilesIncludes.size() > 0) {
                 cccc.getIncludeDirectories().setValue(new ArrayList<>(commonFilesIncludes));
+            }
+            if (commonFilesFiles.size() > 0) {
+                cccc.getIncludeFiles().setValue(new ArrayList<>(commonFilesFiles));
             }
             if (commonFilesMacroMap.size() > 0) {
                 cccc.getPreprocessorConfiguration().setValue(commonFilesMacroMap.convertToList());
@@ -855,7 +914,7 @@ public class DiscoveryProjectGeneratorImpl {
 
     private void setupCompilerConfiguration(ProjectConfiguration config){
         // cleanup project configuration
-        projectBridge.setupProject(Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), config.getLanguageKind());
+        projectBridge.setupProject(Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), Collections.<String>emptyList(), config.getLanguageKind());
     }
 
     private List<String> buildMacrosString(final Map<String, String> map) {
@@ -873,16 +932,22 @@ public class DiscoveryProjectGeneratorImpl {
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
         ProjectBridge.setSourceTool(item,lang, config.getLanguageStandard(), wizard.isIncrementalMode());
         LinkedHashSet<String> set = new LinkedHashSet<>();
+        LinkedHashSet<String> fileSet = new LinkedHashSet<>();
         Map<String,String> macros = new HashMap<>();
         reConsolidatePaths(set, config);
+        reConsolidateFiles(fileSet, config, set);
         macros.putAll(config.getUserMacros());
-        projectBridge.setupFile(config.getCompilePath(), new ArrayList<>(set), !config.overrideIncludes(),
+        projectBridge.setupFile(config.getCompilePath(), new ArrayList<>(set), !config.overrideIncludes(), config.getUserInludeFiles(), !config.overrideFiles(),
                 buildMacrosString(macros), !config.overrideMacros(),
                 new ArrayList<>(config.getUndefinedMacros()), !config.overrideUndefinedMacros(), item, config.getImportantFlags());
     }
 
     private void reConsolidatePaths(Set<String> set, FileConfiguration file){
         projectBridge.convertIncludePaths(set, file.getUserInludePaths(), file.getCompilePath(), file.getFilePath());
+    }
+
+    private void reConsolidateFiles(Set<String> set, FileConfiguration file, Set<String> paths){
+        projectBridge.convertIncludeFiles(set, file.getUserInludeFiles(), file.getCompilePath(), paths);
     }
 
     private void createFolderStructure(List<ProjectConfiguration> projectConfigurations, Folder sourceRoot ){
@@ -916,7 +981,8 @@ public class DiscoveryProjectGeneratorImpl {
             }
         }
         for(Folder folder : folders){
-            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, conf.getLanguageKind(), folder);
+            projectBridge.setupFolder(Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, 
+                    Collections.<String>emptyList(), true, Collections.<String>emptyList(), true, conf.getLanguageKind(), folder);
         }
         for(Set<Pair> set : configurationStructure.values()){
             for(Pair pair : set){

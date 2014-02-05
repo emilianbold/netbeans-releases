@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
  */
 public class CompilerSettings {
 
-    private ProjectBridge projectBridge;
+    private final ProjectBridge projectBridge;
     private final List<String> systemIncludePathsC;
     private final List<String> systemIncludePathsCpp;
     private final Map<String, String> systemMacroDefinitionsC;

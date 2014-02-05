@@ -109,7 +109,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         // call of this functions from different threads to render twice;
         // key point is non-null value of 'statements' field to prevent recursions
         statements = Collections.emptyList();
-        List<CsmStatement> out = new ArrayList<CsmStatement>();
+        List<CsmStatement> out = new ArrayList<>();
         if (ast != null) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
                 CsmStatement stmt = AstRenderer.renderStatement(token, getContainingFile(), this);
@@ -130,7 +130,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     public static class CompoundStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
-        private List<StatementBuilder> statements = new ArrayList<StatementBuilder>();
+        private final List<StatementBuilder> statements = new ArrayList<>();
         
         @Override
         public void addStatementBuilder(StatementBuilder statement) {
@@ -144,7 +144,7 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         @Override
         public CompoundStatementImpl create() {
             CompoundStatementImpl stmt = new CompoundStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            List<CsmStatement> stmts = new ArrayList<CsmStatement>();
+            List<CsmStatement> stmts = new ArrayList<>();
             for (StatementBuilder statementBuilder : statements) {
                 statementBuilder.setScope(stmt);
                 stmts.add(statementBuilder.create());

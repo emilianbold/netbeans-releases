@@ -162,7 +162,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 // we should try searching not only in namespace resolved found,
                 // but in numspaces with the same name in required projects
                 // iz #140787 cout, endl unresolved in some Loki files
-                Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<CsmNamespace>();
+                Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<>();
                 namespacesToSearch.add(namespace);
                 CharSequence nspQName = namespace.getQualifiedName();
                 final Collection<CsmProject> libraries;
@@ -271,7 +271,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         }
         if (referencedDeclaration == null) {
             referencedDeclaration = UIDCsmConverter.UIDtoDeclaration(referencedDeclarationUID);
-            refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
+            refDeclaration = new WeakReference<>(referencedDeclaration);
         }
         if (referencedDeclarationUID == null) {
             CsmFile csmFile = getContainingFile();
@@ -282,7 +282,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                     CsmObject referencedObject = typeReference.getReferencedObject();
                     if (CsmKindUtilities.isDeclaration(referencedObject)) {
                         referencedDeclaration = (CsmDeclaration) referencedObject;
-                        refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
+                        refDeclaration = new WeakReference<>(referencedDeclaration);
                         //System.out.println("Hit "+referencedDeclaration);
                     }
                 }
@@ -297,7 +297,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         if(csmFile instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) csmFile;
             fileImpl.removeResolvedReference(new CsmUsingReferenceImpl(this));
-            refDeclaration = referencedDeclaration == null ? null : new WeakReference<CsmDeclaration>(referencedDeclaration);
+            refDeclaration = referencedDeclaration == null ? null : new WeakReference<>(referencedDeclaration);
             this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
             if (referencedDeclarationUID != null && referencedDeclaration != null && CsmBaseUtilities.isValid(referencedDeclaration)) {
                 fileImpl.addResolvedReference(new CsmUsingReferenceImpl(this), referencedDeclaration);
@@ -374,7 +374,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
 
         private CsmScope scope;
         private UsingDeclarationImpl instance;
-        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        private final List<CsmOffsetableDeclaration> declarations = new ArrayList<>();
 
         public UsingDeclarationBuilder(FileContent fileContent) {
             assert fileContent != null;

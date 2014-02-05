@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -111,7 +110,7 @@ public final class TemplateDescriptor {
 
     public List<CsmTemplateParameter> getTemplateParameters() {
         if (templateParams != null && !templateParams.isEmpty()) {
-            List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>(templateParams.size());
+            List<CsmTemplateParameter> res = new ArrayList<>(templateParams.size());
             for(CsmTemplateParameter par : UIDCsmConverter.UIDsToCsmObjects(templateParams)){
                 res.add(par);
             }
@@ -185,7 +184,7 @@ public final class TemplateDescriptor {
     
     public static class TemplateDescriptorBuilder extends ScopedDeclarationBuilder {
 
-        private List<TemplateParameterBuilder> parameterBuilders = new ArrayList<TemplateParameterBuilder>();
+        private final List<TemplateParameterBuilder> parameterBuilders = new ArrayList<>();
         private int inheritedTemplateParametersNumber = 0;
         private boolean specialization = false;
         
@@ -205,7 +204,7 @@ public final class TemplateDescriptor {
         }
         
         public TemplateDescriptor create() {
-            List<CsmTemplateParameter> templateParams = new ArrayList<CsmTemplateParameter>();
+            List<CsmTemplateParameter> templateParams = new ArrayList<>();
             for (TemplateParameterBuilder paramBuilder : parameterBuilders) {
                 paramBuilder.setScope(getScope());
                 templateParams.add(paramBuilder.create());

@@ -82,7 +82,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     private final Set<String> standardHeaders;
 
     public IncludeResolverImpl() {
-        standardHeaders = new HashSet<String>();
+        standardHeaders = new HashSet<>();
         
         // C++ headers
         standardHeaders.add("algorithm"); // NOI18N
@@ -221,7 +221,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                 if (nativeFile != null) {
                     if (isSystemHeader(currentFile, ((CsmOffsetable) item).getContainingFile())) {
                         // check is this file included into standard header
-                        HashSet<CsmFile> scannedFiles = new HashSet<CsmFile>();
+                        HashSet<CsmFile> scannedFiles = new HashSet<>();
                         CsmFile stdHeader = getStandardHeaderIfExists(currentFile, nativeFile.getSystemIncludePaths(), ((CsmOffsetable) item).getContainingFile(), scannedFiles);
                         if(stdHeader != null) {
                             incFilePath = stdHeader.getAbsolutePath().toString();
@@ -345,7 +345,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                     //    return true;
                     //}
                     } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                        HashSet<CsmProject> scannedprojects = new HashSet<CsmProject>();
+                        HashSet<CsmProject> scannedprojects = new HashSet<>();
                         if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
                             return true;
                         }

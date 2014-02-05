@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -112,7 +111,7 @@ public final class ParserThread implements Runnable {
                     ProjectBase project = null;
                     try {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
-                        Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
+                        Collection<APTPreprocHandler> preprocHandlers = new ArrayList<>(states.size());
                         project = file.getProjectImpl(true);
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check

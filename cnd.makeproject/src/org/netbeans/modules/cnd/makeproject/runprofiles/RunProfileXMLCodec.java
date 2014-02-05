@@ -56,7 +56,7 @@ import org.xml.sax.Attributes;
 
 public class RunProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private RunProfile profile;
+    private final RunProfile profile;
 
     // was: public RunProfile.PROFILE_ID
     private static final String PROFILE_ID = "runprofile"; // NOI18N

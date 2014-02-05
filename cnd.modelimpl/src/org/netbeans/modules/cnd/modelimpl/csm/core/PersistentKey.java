@@ -58,9 +58,9 @@ public final class PersistentKey {
     private static final byte UID = 1<<0;
     private static final byte DECLARATION = 1<<1;
     
-    private Object key;
+    private final Object key;
     private CsmProject project;
-    private byte kind;
+    private final byte kind;
     
     private PersistentKey(CsmUID id) {
         key = id;

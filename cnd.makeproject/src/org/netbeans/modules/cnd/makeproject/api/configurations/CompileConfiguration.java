@@ -53,9 +53,9 @@ import org.openide.util.NbBundle;
 public class CompileConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private ComboStringConfiguration compileCommandWorkingDir;
-    private DefaultPicklistModel compileCommandWorkingDirPicklist;
+    private final DefaultPicklistModel compileCommandWorkingDirPicklist;
     private ComboStringConfiguration compileCommand;
-    private DefaultPicklistModel compileCommandPicklist;
+    private final DefaultPicklistModel compileCommandPicklist;
     public static final String AUTO_FOLDER = "${AUTO_FOLDER}"; // NOI18N
     public static final String AUTO_COMPILE = "${AUTO_COMPILE}"; // NOI18N
     public static final String AUTO_MAKE = "${MAKE}"; // NOI18N

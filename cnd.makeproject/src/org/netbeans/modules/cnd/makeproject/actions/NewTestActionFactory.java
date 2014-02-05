@@ -97,7 +97,7 @@ public final class NewTestActionFactory {
     }
 
     public static Action[] getTestCreationActions(Project project) {
-        ArrayList<Action> actions = new ArrayList<Action>();
+        ArrayList<Action> actions = new ArrayList<>();
         FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
         // if user deleted all test templates => folder is null
         if (testFiles != null) {
@@ -304,7 +304,7 @@ public final class NewTestActionFactory {
     private final static class CreateTestSubmenuAction extends NodeAction {
 
         private LazyPopupMenu popupMenu;
-        private final Collection<Action> items = new ArrayList<Action>(5);
+        private final Collection<Action> items = new ArrayList<>(5);
 
         @Override
         public JMenuItem getPopupPresenter() {
@@ -371,7 +371,7 @@ public final class NewTestActionFactory {
         }
 
         private Collection<Action> createActions(Project project, FileObject fo) {
-            ArrayList<Action> actions = new ArrayList<Action>();
+            ArrayList<Action> actions = new ArrayList<>();
             FileObject testFiles = FileUtil.getConfigFile("Templates/testFiles"); //NOI18N
             // Bug 195897
             // Templates/testFiles could be deleted

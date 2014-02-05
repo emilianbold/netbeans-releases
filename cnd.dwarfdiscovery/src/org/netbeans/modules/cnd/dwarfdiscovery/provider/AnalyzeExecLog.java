@@ -718,6 +718,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     s = convertCygwinPath(s);
                     userIncludes.add(PathCache.getString(s));
                 }
+                List<String> userFiles = new ArrayList<String>(artifacts.userFiles.size());
+                userFiles.addAll(artifacts.userFiles);
                 Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
                 for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                     if (e.getValue() == null) {
@@ -776,6 +778,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.fullName = fullName;
                     res.language = language;
                     res.userIncludes = userIncludes;
+                    res.userFiles = userFiles;
                     res.userMacros = userMacros;
                     res.undefinedMacros = artifacts.undefinedMacros;
                     res.importantFlags = artifacts.getImportantFlags();
@@ -827,28 +830,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
                     if (resolvedPath == null) {
                         if (root != null) {
-                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
-                                @Override
-                                public boolean exists(String path) {
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid()) {
-                                        return true;
-                                    }
-                                    return false;
-                                }
-
-                                @Override
-                                public List<String> list(String path) {
-                                    List<String> res = new ArrayList<String>();
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                                        for (FileObject f : fo.getChildren()) {
-                                            res.add(f.getPath());
-                                        }
-                                    }
-                                    return res;
-                                }
-                            };
+                            RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
@@ -958,10 +940,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private String compiler;
         private ItemProperties.LanguageKind language;
         private LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> systemIncludes = Collections.<String>emptyList();
+        private final List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
-        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
+        private final Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private final CompileLineStorage storage;
         private int handler = -1;
         private String importantFlags;
@@ -997,7 +979,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
         @Override
         public List<String> getUserInludeFiles() {
-            return Collections.emptyList();
+            return userFiles;
         }
 
         @Override

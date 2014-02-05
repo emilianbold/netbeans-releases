@@ -55,8 +55,8 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class ProjectConfigurationNode extends DefaultMutableTreeNode {
-    private ProjectConfigurationImpl project;
-    private int count;
+    private final ProjectConfigurationImpl project;
+    private final int count;
     
     public ProjectConfigurationNode(ProjectConfigurationImpl project) {
         super(project);

@@ -113,32 +113,32 @@ public class FileElementsCollector {
             visibleUsedDeclarations = null;
             visibleNamespaces = null;
 
-            localDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
-            localDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-            localUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
-            localNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
-            localUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
+            localDirectVisibleNamespaceDefinitions = new LinkedHashSet<>();
+            localDirectVisibleNamespaces = new LinkedHashSet<>();
+            localUsingNamespaces = new LinkedHashSet<>();
+            localNamespaceAliases = new LinkedHashSet<>();
+            localUsingDeclarations = new LinkedHashSet<>();
         } else if (startOffset > destOffset) {
             throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset); // NOI18N
         }
     }
 
-    private final LinkedHashSet<CsmNamespace> globalDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-    private final LinkedHashSet<CsmUsingDirective> globalUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
-    private final LinkedHashSet<CsmNamespaceAlias> globalNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
-    private final LinkedHashSet<CsmUsingDeclaration> globalUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
+    private final LinkedHashSet<CsmNamespace> globalDirectVisibleNamespaces = new LinkedHashSet<>();
+    private final LinkedHashSet<CsmUsingDirective> globalUsingNamespaces = new LinkedHashSet<>();
+    private final LinkedHashSet<CsmNamespaceAlias> globalNamespaceAliases = new LinkedHashSet<>();
+    private final LinkedHashSet<CsmUsingDeclaration> globalUsingDeclarations = new LinkedHashSet<>();
 
-    private LinkedHashSet<CsmNamespace> localDirectVisibleNamespaces = new LinkedHashSet<CsmNamespace>();
-    private LinkedHashSet<CsmUsingDirective> localUsingNamespaces = new LinkedHashSet<CsmUsingDirective>();
-    private LinkedHashSet<CsmNamespaceAlias> localNamespaceAliases = new LinkedHashSet<CsmNamespaceAlias>();
-    private LinkedHashSet<CsmUsingDeclaration> localUsingDeclarations = new LinkedHashSet<CsmUsingDeclaration>();
+    private LinkedHashSet<CsmNamespace> localDirectVisibleNamespaces = new LinkedHashSet<>();
+    private LinkedHashSet<CsmUsingDirective> localUsingNamespaces = new LinkedHashSet<>();
+    private LinkedHashSet<CsmNamespaceAlias> localNamespaceAliases = new LinkedHashSet<>();
+    private LinkedHashSet<CsmUsingDeclaration> localUsingDeclarations = new LinkedHashSet<>();
 
-    private final LinkedHashSet<CsmNamespaceDefinition> globalDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
-    private LinkedHashSet<CsmNamespaceDefinition> localDirectVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
+    private final LinkedHashSet<CsmNamespaceDefinition> globalDirectVisibleNamespaceDefinitions = new LinkedHashSet<>();
+    private LinkedHashSet<CsmNamespaceDefinition> localDirectVisibleNamespaceDefinitions = new LinkedHashSet<>();
 
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
-        Collection<CsmUsingDeclaration> res = new LinkedHashSet<CsmUsingDeclaration>();
+        Collection<CsmUsingDeclaration> res = new LinkedHashSet<>();
         res.addAll(globalUsingDeclarations);
         res.addAll(localUsingDeclarations);
         return Collections.unmodifiableCollection(res);
@@ -146,7 +146,7 @@ public class FileElementsCollector {
 
     public Collection<CsmUsingDirective> getUsingDirectives() {
         initMaps();
-        Collection<CsmUsingDirective> res = new LinkedHashSet<CsmUsingDirective>();
+        Collection<CsmUsingDirective> res = new LinkedHashSet<>();
         res.addAll(globalUsingNamespaces);
         res.addAll(localUsingNamespaces);
         return Collections.unmodifiableCollection(res);
@@ -154,7 +154,7 @@ public class FileElementsCollector {
 
     public Collection<CsmNamespaceAlias> getNamespaceAliases() {
         initMaps();
-        Collection<CsmNamespaceAlias> res = new LinkedHashSet<CsmNamespaceAlias>();
+        Collection<CsmNamespaceAlias> res = new LinkedHashSet<>();
         res.addAll(globalNamespaceAliases);
         res.addAll(localNamespaceAliases);
         return Collections.unmodifiableCollection(res);
@@ -392,7 +392,7 @@ public class FileElementsCollector {
                 }
             }
         } else {
-            LinkedHashSet<CsmNamespaceDefinition> currentDVNDs = new LinkedHashSet<CsmNamespaceDefinition>(localDirectVisibleNamespaceDefinitions);
+            LinkedHashSet<CsmNamespaceDefinition> currentDVNDs = new LinkedHashSet<>(localDirectVisibleNamespaceDefinitions);
             for (CsmNamespaceDefinition nsd : currentDVNDs) {
                 if (nsd.getQualifiedName().equals(nsName)) {
                     gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);

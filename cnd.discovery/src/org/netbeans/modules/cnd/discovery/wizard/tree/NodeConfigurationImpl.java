@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard.tree;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -57,17 +58,20 @@ import org.netbeans.modules.cnd.discovery.wizard.api.NodeConfiguration;
  */
 public abstract class NodeConfigurationImpl implements NodeConfiguration {
     private boolean isOverrideIncludes;
+    private boolean isOverrideFiles;
     private boolean isOverrideMacros;
     private boolean isOverrideUndefinedMacros;
     private NodeConfigurationImpl parent;
-    private Set<String> userIncludes;
-    private Map<String, String> userMacros;
-    private Set<String> undefinedMacros;
+    private final Set<String> userIncludes;
+    private final Set<String> userFiles;
+    private final Map<String, String> userMacros;
+    private final Set<String> undefinedMacros;
 
     public NodeConfigurationImpl() {
-        userIncludes = new LinkedHashSet<String>();
-        userMacros = new HashMap<String,String>();
-        undefinedMacros = new LinkedHashSet<String>();
+        userIncludes = new LinkedHashSet<>();
+        userFiles = new HashSet<>();
+        userMacros = new HashMap<>();
+        undefinedMacros = new LinkedHashSet<>();
     }
 
     @Override
@@ -77,6 +81,15 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
 
     public void setOverrideIncludes(boolean overrideIncludes) {
         isOverrideIncludes = overrideIncludes;
+    }
+
+    @Override
+    public boolean overrideFiles() {
+        return isOverrideFiles;
+    }
+
+    public void setOverrideFiles(boolean overrideFiles) {
+        isOverrideFiles = overrideFiles;
     }
 
     @Override
@@ -122,6 +135,22 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
     }
 
     @Override
+    public Set<String> getUserInludeFiles(boolean resulting) {
+        if (resulting) {
+            return countUserInludeFiles();
+        } else {
+            return userFiles;
+        }
+    }
+
+    public void setUserInludeFiles(Collection<String> set) {
+         userFiles.clear();
+         if (set != null) {
+            userFiles.addAll(set);
+         }
+    }
+
+    @Override
     public Map<String, String> getUserMacros(boolean resulting) {
         if (resulting) {
             return countUserMacros();
@@ -157,7 +186,7 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         if (overrideIncludes()) {
             return userIncludes;
         }
-        Set<String> result = new LinkedHashSet<String>();
+        Set<String> result = new LinkedHashSet<>();
         NodeConfigurationImpl current = this;
         while(current != null){
             result.addAll(current.getUserInludePaths(false));
@@ -169,11 +198,27 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         return result;
     }
     
+    public Set<String> countUserInludeFiles() {
+        if (overrideFiles()) {
+            return userFiles;
+        }
+        Set<String> result = new LinkedHashSet<>();
+        NodeConfigurationImpl current = this;
+        while(current != null){
+            result.addAll(current.getUserInludeFiles(false));
+             if (current.overrideFiles()) {
+                break;
+             }
+            current = current.getParent();
+        }
+        return result;
+    }
+    
     public Map<String, String> countUserMacros() {
         if (overrideMacros()) {
             return userMacros;
         }
-        Map<String, String> result =  new HashMap<String,String>();
+        Map<String, String> result =  new HashMap<>();
         NodeConfigurationImpl current = this;
         while(current != null){
             result.putAll(current.getUserMacros(false));
@@ -189,7 +234,7 @@ public abstract class NodeConfigurationImpl implements NodeConfiguration {
         if (overrideUndefinedMacros()) {
             return undefinedMacros;
         }
-        Set<String> result = new LinkedHashSet<String>();
+        Set<String> result = new LinkedHashSet<>();
         NodeConfigurationImpl current = this;
         while(current != null){
             result.addAll(current.getUndefinedMacros(false));

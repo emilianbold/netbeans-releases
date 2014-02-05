@@ -217,7 +217,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
 
     @Override
     public List<String> getUserInludeFiles() {
-        return Collections.emptyList();
+        return userFiles;
     }
     
     @Override
@@ -407,6 +407,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
 
     private void initSourceSettings(CompilationUnitInterface cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
+        userFiles = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         undefinedMacros = new ArrayList<String>();
         includedFiles = new HashSet<String>();
@@ -516,6 +517,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             String include = PathCache.getString(s);
             addUserIncludePath(include);
         }
+        userFiles.addAll(artifacts.userFiles);
         for(String s : artifacts.undefinedMacros) {
             undefinedMacros.add(PathCache.getString(s));
         }

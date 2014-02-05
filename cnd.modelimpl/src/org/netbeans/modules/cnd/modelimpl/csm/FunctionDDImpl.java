@@ -113,9 +113,9 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
         FunctionDDImpl<T> functionDDImpl;
         if (isLambda) {
-            functionDDImpl = new LambdaFunction<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+            functionDDImpl = new LambdaFunction<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         } else {
-            functionDDImpl = new FunctionDDImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+            functionDDImpl = new FunctionDDImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         }
         temporaryRepositoryRegistration(global, functionDDImpl);
         
@@ -217,7 +217,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
-        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> decls = new ArrayList<>(1);
         for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
             if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {

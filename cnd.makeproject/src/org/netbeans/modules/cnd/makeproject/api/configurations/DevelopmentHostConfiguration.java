@@ -74,7 +74,7 @@ public class DevelopmentHostConfiguration implements Cloneable {
 
     private boolean modified;
     private boolean dirty = false;
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
 
     public DevelopmentHostConfiguration(ExecutionEnvironment execEnv) {
         servers = ServerList.getEnvironments();

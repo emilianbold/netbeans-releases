@@ -297,7 +297,7 @@ public final class Unresolved implements Disposable {
     // doesn't need Repository Keys
     private final UnresolvedNamespace unresolvedNamespace;
     // doesn't need Repository Keys
-    private final Map<CharSequence, Reference<UnresolvedClass>> dummiesForUnresolved = new ConcurrentHashMap<CharSequence, Reference<UnresolvedClass>>();
+    private final Map<CharSequence, Reference<UnresolvedClass>> dummiesForUnresolved = new ConcurrentHashMap<>();
 
     public Unresolved(ProjectBase project) {
         this.projectUID = UIDCsmConverter.projectToUID(project);
@@ -334,7 +334,7 @@ public final class Unresolved implements Disposable {
         UnresolvedClass cls = ref == null ? null : ref.get();
         if( cls == null ) {
             cls = new UnresolvedClass(name);
-            dummiesForUnresolved.put(name, new SoftReference<UnresolvedClass>(cls));
+            dummiesForUnresolved.put(name, new SoftReference<>(cls));
 	    cls.register();
         }
         return cls;

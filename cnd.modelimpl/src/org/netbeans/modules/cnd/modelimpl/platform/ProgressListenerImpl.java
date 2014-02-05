@@ -64,7 +64,7 @@ import org.openide.util.Cancellable;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.model.CsmProgressListener.class)
 public class ProgressListenerImpl implements CsmProgressListener {
 
-    private final Map<CsmProject, ParsingProgress> handles = new HashMap<CsmProject, ParsingProgress>();
+    private final Map<CsmProject, ParsingProgress> handles = new HashMap<>();
     private static final Logger LOG = Logger.getLogger(ProgressListenerImpl.class.getName());
     
     private synchronized ParsingProgress getHandle(final CsmProject project, boolean createIfNeed) {

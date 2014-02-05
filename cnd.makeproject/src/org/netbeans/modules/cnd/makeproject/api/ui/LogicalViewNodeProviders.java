@@ -62,9 +62,9 @@ public class LogicalViewNodeProviders {
 
     public List<LogicalViewNodeProvider> getProviders() {
         if (providers == null) {
-            providers = new ArrayList<LogicalViewNodeProvider>();
+            providers = new ArrayList<>();
         }
-        List<LogicalViewNodeProvider> actualProviders = new ArrayList<LogicalViewNodeProvider>(providers);
+        List<LogicalViewNodeProvider> actualProviders = new ArrayList<>(providers);
         Collection<? extends LogicalViewNodeProvider> mwc = Lookup.getDefault().lookupAll(LogicalViewNodeProvider.class);
         for (LogicalViewNodeProvider lvnp : mwc) {
             if (lvnp != null) {

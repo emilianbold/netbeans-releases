@@ -85,9 +85,9 @@ public class PackagingConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
         verbose = new BooleanConfiguration(true);
-        info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
-        additionalInfo = new VectorConfiguration<String>(null); // NOI18N
-        files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
+        info = new VectorConfiguration<>(null); // NOI18N
+        additionalInfo = new VectorConfiguration<>(null); // NOI18N
+        files = new VectorConfiguration<>(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
@@ -139,7 +139,7 @@ public class PackagingConfiguration implements Cloneable {
     }
     
     public List<PackagerInfoElement> getHeaderSubList(String packager) {
-        List<PackagerInfoElement> list = new ArrayList<PackagerInfoElement>();
+        List<PackagerInfoElement> list = new ArrayList<>();
         List<PackagerInfoElement> headerList = getInfo().getValue();
         for (PackagerInfoElement elem : headerList) {
             if (elem.getPackager().equals(packager)) {
@@ -353,7 +353,7 @@ public class PackagingConfiguration implements Cloneable {
         
         @Override
         public Object getValue() {
-            return Integer.valueOf(PackagerManager.getDefault().getNameIndex(getType().getValue()));
+            return PackagerManager.getDefault().getNameIndex(getType().getValue());
         }
     
         @Override
@@ -371,10 +371,10 @@ public class PackagingConfiguration implements Cloneable {
 
     private class TypePropertyChangeListener implements PropertyChangeListener {
 
-        private JPanel makeCustomizer;
-        private OutputNodeProp outputNodeProp;
-        private StringNodeProp toolNodeProp;
-        private StringNodeProp optionsNodeProp;
+        private final JPanel makeCustomizer;
+        private final OutputNodeProp outputNodeProp;
+        private final StringNodeProp toolNodeProp;
+        private final StringNodeProp optionsNodeProp;
 
         TypePropertyChangeListener(JPanel makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
             this.makeCustomizer = makeCustomizer;

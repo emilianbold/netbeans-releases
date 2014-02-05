@@ -81,7 +81,7 @@ public class IPSPackager implements PackagerDescriptor {
 
     @Override
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
-        List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
+        List<PackagerInfoElement> infoList = new ArrayList<>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "name", packagingConfiguration.getOutputName(), false, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "description", "Package description ...", false, true)); // NOI18N
 
@@ -90,7 +90,7 @@ public class IPSPackager implements PackagerDescriptor {
 
     @Override
     public List<String> getOptionalInfoList() {
-        List<String> entryComboBox = new ArrayList<String>();
+        List<String> entryComboBox = new ArrayList<>();
 
         entryComboBox.add("name"); // NOI18N
         entryComboBox.add("description"); // NOI18N
@@ -170,8 +170,8 @@ public class IPSPackager implements PackagerDescriptor {
 
         private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
             List<PackagerFileElement> fileList = packagingConfiguration.getFiles().getValue();
-            HashSet<String> set = new HashSet<String>();
-            ArrayList<String> list = new ArrayList<String>();
+            HashSet<String> set = new HashSet<>();
+            ArrayList<String> list = new ArrayList<>();
 
             // Already Defined
             for (PackagerFileElement elem : fileList) {

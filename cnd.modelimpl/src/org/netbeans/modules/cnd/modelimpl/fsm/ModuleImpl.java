@@ -71,7 +71,7 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
 
     private ModuleImpl(CsmFile file, int startOffset, int endOffset, String name) {
         super(file, startOffset, endOffset);
-        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        declarations = new ArrayList<>();
         this.name = NameCache.getManager().getString(name);
     }
 
@@ -177,7 +177,7 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
 
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        List<CsmScopeElement> l = new ArrayList<>();
         for (Iterator<CsmOffsetableDeclaration> iter = getDeclarations().iterator(); iter.hasNext();) {
             CsmDeclaration decl = iter.next();
             if (isOfMyScope(decl)) {
@@ -206,7 +206,7 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
         List<CsmUID<CsmOffsetableDeclaration>> uids;
         synchronized (declarations) {
             decls = getDeclarations();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
+            uids = new ArrayList<>(declarations);
             declarations.clear();
         }
         Utils.disposeAll(decls);
@@ -235,9 +235,9 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         int collSize = input.readInt();
         if (collSize < 0) {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new ArrayList<>();
         } else {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize);
+            declarations = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(declarations, input, collSize);
 

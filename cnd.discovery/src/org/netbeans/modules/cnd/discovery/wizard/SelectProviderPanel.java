@@ -80,8 +80,8 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public final class SelectProviderPanel extends JPanel implements CsmProgressListener {
-    private static boolean SHOW_RESTRICT = Boolean.getBoolean("cnd.discovery.wizard.restrictSources"); // NOI18N
-    private SelectProviderWizard wizard;
+    private static final boolean SHOW_RESTRICT = Boolean.getBoolean("cnd.discovery.wizard.restrictSources"); // NOI18N
+    private final SelectProviderWizard wizard;
     public static final boolean USE_PROJECT_PROPERTIES = true;
     private static final String ROOT_PROPERTY_KEY = "rootFolder"; // NOI18N
     /** Creates new form SelectProviderVisualPanel1 */
@@ -337,7 +337,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         };
         DiscoveryProvider defProvider = (DiscoveryProvider) ((WizardDescriptor)wizardDescriptor).getProperty("PreferedProvider"); // NOI18N
         ProviderItem def = null;
-        List<ProviderItem> list = new ArrayList<ProviderItem>();
+        List<ProviderItem> list = new ArrayList<>();
         for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
             if (provider.isApplicable(proxy)) {
                 final ProviderItem providerItem = new ProviderItem(provider);

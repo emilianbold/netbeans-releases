@@ -107,7 +107,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(ToolsPanel.PROP_VALID) &&
                 ev.getSource() instanceof ToolsPanel) {
-            jOK.setEnabled(((Boolean) ev.getNewValue()).booleanValue());
+            jOK.setEnabled(((Boolean) ev.getNewValue()));
         }
     }
     

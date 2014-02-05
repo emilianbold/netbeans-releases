@@ -119,7 +119,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     public MakeCustomizer(Project project, String preselectedNodeName, ConfigurationDescriptor projectDescriptor, Item item, Folder folder, Collection<JComponent> controls) {
         initComponents();
         this.projectDescriptor = projectDescriptor;
-        this.controls = new ArrayList<JComponent>(controls);
+        this.controls = new ArrayList<>(controls);
         this.project = project;
         this.item = item;
         this.folder = folder;
@@ -166,7 +166,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
         allConfigurationComboBox.setToolTipText(getString("ALL_CONFIGURATIONS_TOOLTIP"));
     }
-    private Map<Item, SharedItemConfiguration> itemConfigurations = new HashMap<Item, SharedItemConfiguration>();
+    private final Map<Item, SharedItemConfiguration> itemConfigurations = new HashMap<>();
 
     private SharedItemConfiguration getSharedItemConfiguration(Item item) {
         if (item == null) {
@@ -405,9 +405,9 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     // Private innerclasses ----------------------------------------------------
     private final class CategoryView extends JPanel implements ExplorerManager.Provider {
 
-        private ExplorerManager manager;
-        private BeanTreeView btv;
-        private String preselectedNodeName;
+        private final ExplorerManager manager;
+        private final BeanTreeView btv;
+        private final String preselectedNodeName;
 
         CategoryView(Node rootNode, String preselectedNodeName) {
             this.preselectedNodeName = preselectedNodeName;
@@ -540,7 +540,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     } else if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                         panel.setBorder(new javax.swing.border.EtchedBorder());
                         PropertySheet propertySheet = new PropertySheet(); // See IZ 105525 for details.
-                        List<DummyNode> dummyNodes = new ArrayList<DummyNode>(selectedConfigurations.length*nodes.length);
+                        List<DummyNode> dummyNodes = new ArrayList<>(selectedConfigurations.length*nodes.length);
                         for (Node selNode : nodes) {
                             if (selNode instanceof PropertyNode && ((PropertyNode)selNode).customizerStyle() == CustomizerNode.CustomizerStyle.SHEET) {
                                 PropertyNode propNode = (PropertyNode) selNode;

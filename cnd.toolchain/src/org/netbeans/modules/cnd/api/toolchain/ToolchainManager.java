@@ -158,6 +158,8 @@ public final class ToolchainManager {
 
         String getUserIncludeFlag();
 
+        String getUserFileFlag();
+
         String getIncludeParser();
 
         String getRemoveIncludePathPrefix();

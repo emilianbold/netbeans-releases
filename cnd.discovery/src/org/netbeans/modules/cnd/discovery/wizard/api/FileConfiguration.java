@@ -79,6 +79,8 @@ public interface FileConfiguration extends NodeConfiguration {
 
     List<String> getUserInludePaths();
 
+    List<String> getUserInludeFiles();
+
     Map<String,String> getUserMacros();
     
     List<String> getUndefinedMacros();

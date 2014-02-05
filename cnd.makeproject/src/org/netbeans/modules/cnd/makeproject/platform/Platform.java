@@ -49,9 +49,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public abstract class Platform {
     
-    private String name;
-    private String displayName;
-    private int id;
+    private final String name;
+    private final String displayName;
+    private final int id;
     
     public Platform(String name, String displayName, int id) {
         this.name = name;

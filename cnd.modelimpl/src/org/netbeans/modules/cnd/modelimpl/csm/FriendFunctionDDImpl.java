@@ -148,7 +148,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
     }
 
     public static class FriendFunctionDDBuilder extends FunctionDDBuilder {
-        private List<Token> bodyTokens = new ArrayList<Token>();
+        private final List<Token> bodyTokens = new ArrayList<>();
     
         @Override
         public CsmScope getScope() {

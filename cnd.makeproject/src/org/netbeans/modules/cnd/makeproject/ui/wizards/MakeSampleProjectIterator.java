@@ -116,7 +116,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
             JComponent jc = (JComponent) panel.getComponent();
             steps[i] = ((NamedPanel) panel).getName();
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
     }
     
     public static MakeSamplePanel<WizardDescriptor> getPanel(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote, String helpCtx) {

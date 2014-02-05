@@ -58,6 +58,7 @@ public class RelocatableImpl implements Relocatable {
         protected String compilePath;
         protected String fullName;
         protected List<String> userIncludes;
+        protected List<String> userFiles;
         protected Set<String> includedFiles = Collections.<String>emptySet();
 
         @Override
@@ -104,5 +105,26 @@ public class RelocatableImpl implements Relocatable {
                 newUserIncludes.add(newIncl);
             }
             userIncludes = newUserIncludes;
+            List<String> newUserFiles = new ArrayList<String>();
+            for(String incl : userFiles) {
+                String newIncl = null;
+                if (incl.startsWith("/") || (incl.length() > 2 && incl.charAt(1) == ':')) { //NOI18N
+                    if (!incl.startsWith(root)) {
+                        ResolvedPath resolvedIncluded = mapper.getPath(incl);
+                        if (resolvedIncluded != null) {
+                            newIncl = PathCache.getString(resolvedIncluded.getPath());
+                        } else {
+                            if (mapper.discover(fs, root, incl)) {
+                                newIncl = PathCache.getString(mapper.getPath(incl).getPath());
+                            }
+                        }
+                    }
+                }
+                if (newIncl == null) {
+                    newIncl = incl;
+                }
+                newUserFiles.add(newIncl);
+            }
+            userFiles = newUserFiles;
     }
 }

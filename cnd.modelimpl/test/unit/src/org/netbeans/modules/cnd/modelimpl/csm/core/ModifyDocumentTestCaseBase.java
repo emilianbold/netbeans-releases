@@ -112,11 +112,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST UNDO OF DELETE BLOCK\n");
         }
-        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
         CountDownLatch parse1 = new CountDownLatch(1);
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
-        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -188,11 +188,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("TEST INSERT DEAD BLOCK\n");
         }
-        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
         CountDownLatch parse1 = new CountDownLatch(1);
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
-        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -252,11 +252,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     }
 
     protected final void removeDeadBlock(final File sourceFile, int deadBlocksBeforeRemove, int deadBlocksAfterRemove) throws Exception {
-        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
         CountDownLatch parse1 = new CountDownLatch(1);
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
-        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -474,11 +474,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST INSERT/SAVE then UNDO/REDO\n");
         }
-        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<Exception> exRef = new AtomicReference<>();
         CountDownLatch parse1 = new CountDownLatch(1);
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<>(parse1);
         Semaphore waitParseSemaphore = new Semaphore(0);
-        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<>(waitParseSemaphore);
         final FileImpl fileToModifyImpl = (FileImpl) getCsmFile(modifiedFile);
         final CsmProject project = fileToModifyImpl.getProject();
         final FileImpl fileToCheckImpl = (FileImpl) getCsmFile(checkedFile);
@@ -563,7 +563,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     }
 
     private static final class ObjectsChangeListener implements ChangeListener {
-        private final Set<DataObject> modifiedDOs = new HashSet<DataObject>();
+        private final Set<DataObject> modifiedDOs = new HashSet<>();
         @Override
         public synchronized void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
@@ -576,7 +576,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         }
 
         public synchronized Collection<DataObject> getModified() {
-            return new ArrayList<DataObject>(modifiedDOs);
+            return new ArrayList<>(modifiedDOs);
         }
         
         public synchronized void clear() {

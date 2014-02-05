@@ -53,14 +53,14 @@ import java.util.TreeMap;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public final class SymTab {
-    private final Map<CharSequence, SymTabEntry> entries = new TreeMap<CharSequence, SymTabEntry>();
+    private final Map<CharSequence, SymTabEntry> entries = new TreeMap<>();
     
 //    private final Map<CharSequence, SymTabEntry> imported = new TreeMap<CharSequence, SymTabEntry>();
-    private final List<SymTab> imported = new ArrayList<SymTab>();  
+    private final List<SymTab> imported = new ArrayList<>();  
     private boolean lookupMark;                                     // to avoid loops during lookup
     
     private final int nestingLevel;
-    private CharSequence name;
+    private final CharSequence name;
 
     SymTab(int nestingLevel, CharSequence name) {
         this.nestingLevel = nestingLevel;

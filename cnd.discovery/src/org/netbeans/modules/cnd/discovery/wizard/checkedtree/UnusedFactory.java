@@ -70,7 +70,7 @@ public class UnusedFactory {
         for(AbstractRoot current : root.getChildren()){
             List<String> fp = consolidateRoot(current);
             if (files == null) {
-                files = new ArrayList<String>();
+                files = new ArrayList<>();
                 ((Root)root).setFiles(files);
             }
         }

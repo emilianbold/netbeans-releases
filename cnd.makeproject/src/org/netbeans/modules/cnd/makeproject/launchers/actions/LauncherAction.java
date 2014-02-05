@@ -141,7 +141,7 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
     public class LauncherExecutableAction extends AbstractAction {
 
         private LauncherExecutor executor;
-        private Launcher launcher;
+        private final Launcher launcher;
         private final RunActionItem runActionItem = new RunActionItem();
 
         public LauncherExecutableAction(Launcher launcher) {

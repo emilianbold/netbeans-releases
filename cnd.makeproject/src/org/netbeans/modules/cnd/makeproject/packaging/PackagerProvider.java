@@ -55,7 +55,7 @@ public class PackagerProvider implements PackagerDescriptorProvider {
 
     @Override
     public List<PackagerDescriptor> getPackagerDescriptorProviderList() {
-        ArrayList<PackagerDescriptor> list = new ArrayList<PackagerDescriptor>();
+        ArrayList<PackagerDescriptor> list = new ArrayList<>();
         list.add(new TarPackager());
         list.add(new ZipPackager());
         list.add(new SVR4Packager());

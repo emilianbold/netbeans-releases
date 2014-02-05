@@ -50,7 +50,6 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**

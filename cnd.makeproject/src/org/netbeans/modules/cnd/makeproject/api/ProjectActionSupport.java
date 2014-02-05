@@ -129,7 +129,7 @@ public class ProjectActionSupport {
     private final List<ProjectActionHandlerFactory> handlerFactories;
 
     private ProjectActionSupport() {
-        handlerFactories = new ArrayList<ProjectActionHandlerFactory>(
+        handlerFactories = new ArrayList<>(
                 Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class));
     }
 
@@ -159,8 +159,8 @@ public class ProjectActionSupport {
                 return;
             }
             final Project project = curPAE.getProject();
-            final Set<File> files = new HashSet<File>();
-            final Set<FileObject> fileObjects = new HashSet<FileObject>();
+            final Set<File> files = new HashSet<>();
+            final Set<FileObject> fileObjects = new HashSet<>();
             FileObject projectFileObject = project.getProjectDirectory();
             File f = FileUtil.toFile(projectFileObject);
             if (f != null) {
@@ -321,7 +321,7 @@ public class ProjectActionSupport {
 
         private final TabsGroup tabs;
         private final ProjectActionEvent[] paes;
-        private final AtomicReference<ProjectActionHandler> activeHandlerRef = new AtomicReference<ProjectActionHandler>(null);
+        private final AtomicReference<ProjectActionHandler> activeHandlerRef = new AtomicReference<>(null);
         private final StopAction stopAction = new StopAction(activeHandlerRef);
         private final RerunAction rerunAction = new RerunAction(this);
         private final RerunModAction rerunModAction = new RerunModAction(this);
@@ -338,7 +338,7 @@ public class ProjectActionSupport {
         }
 
         private Action[] getActions(String name) {
-            List<Action> list = new ArrayList<Action>();
+            List<Action> list = new ArrayList<>();
             list.add(stopAction);
             list.add(rerunAction);
             for(int i = 0; i < paes.length; i++) {
@@ -410,7 +410,7 @@ public class ProjectActionSupport {
             stopAction.setEnabled(false);
 
             final AtomicInteger currentEventIndex = new AtomicInteger(-1);
-            final AtomicReference<InputOutputTab> currentIORef = new AtomicReference<InputOutputTab>(null);
+            final AtomicReference<InputOutputTab> currentIORef = new AtomicReference<>(null);
 
             try {
                 for (final ProjectActionEvent currentEvent : paes) {
@@ -580,7 +580,7 @@ public class ProjectActionSupport {
             if (additional == null) {
                 additional = BuildActionsProvider.getDefault().getActions(pae.getActionName(), paes);
             }
-            List<OutputStreamHandler> streamHandlers = new ArrayList<OutputStreamHandler>();
+            List<OutputStreamHandler> streamHandlers = new ArrayList<>();
             for (BuildAction action : additional) {
                 if (action instanceof OutputStreamHandler) {
                     streamHandlers.add((OutputStreamHandler) action);
@@ -590,7 +590,7 @@ public class ProjectActionSupport {
         }
 
         private FileOperationsNotifier getFileOperationsNotifier(ProjectActionEvent[] paes) {
-            Map<Project, ProjectFileOperationsNotifier> prj2Notifier = new HashMap<Project, ProjectFileOperationsNotifier>();
+            Map<Project, ProjectFileOperationsNotifier> prj2Notifier = new HashMap<>();
             for (ProjectActionEvent pae : paes) {
                 if (isFileOperationsIntensive(pae)) {
                     Project project = pae.getProject();
@@ -859,7 +859,7 @@ public class ProjectActionSupport {
 
     private static final class TermAction extends AbstractAction {
 
-        private EventsProcessor handleEvents;
+        private final EventsProcessor handleEvents;
 
         public TermAction(EventsProcessor handleEvents) {
             this.handleEvents = handleEvents;

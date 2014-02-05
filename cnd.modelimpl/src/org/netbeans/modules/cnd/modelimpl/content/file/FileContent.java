@@ -162,7 +162,7 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
     
     public Collection<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        List<CsmScopeElement> l = new ArrayList<>();
         l.addAll(getFileDeclarations().getStaticVariableDeclarations());
         l.addAll(getFileDeclarations().getStaticFunctionDeclarations());
         return l;
@@ -290,7 +290,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         return fakeIncludeRegistrations;
     }
     
-    private final Set<FileContent> includedFileContents = new HashSet<FileContent>(0);
+    private final Set<FileContent> includedFileContents = new HashSet<>(0);
 
     public final void addIncludedFileContent(FileContent includedFileContent) {
         assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
@@ -399,21 +399,21 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
 
     private static List<CsmUID<FunctionImplEx<?>>> createFakeFunctions(List<CsmUID<FunctionImplEx<?>>> in) {
-        return new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>(in);
+        return new CopyOnWriteArrayList<>(in);
     }
     
     private static List<FakeIncludePair> createFakeIncludes(List<FakeIncludePair> in) {
-        return new CopyOnWriteArrayList<FakeIncludePair>(in);
+        return new CopyOnWriteArrayList<>(in);
     }
     
     private static Set<ErrorDirectiveImpl> createErrors(Set<ErrorDirectiveImpl> in) {
-        Set<ErrorDirectiveImpl> out = new TreeSet<ErrorDirectiveImpl>(FileImpl.START_OFFSET_COMPARATOR);
+        Set<ErrorDirectiveImpl> out = new TreeSet<>(FileImpl.START_OFFSET_COMPARATOR);
         out.addAll(in);
         return out;
     }
 
     private static Collection<CsmParserProvider.ParserError> createParserErrors(Collection<CsmParserProvider.ParserError> in) {
-        Collection<CsmParserProvider.ParserError> out = new ArrayList<CsmParserProvider.ParserError>();
+        Collection<CsmParserProvider.ParserError> out = new ArrayList<>();
         out.addAll(in);
         return out;
     }
@@ -478,7 +478,7 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
     
     /* collection to keep fake ASTs during parse phase */
-    private final Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = new HashMap<CsmUID<FunctionImplEx<?>>, AST>();
+    private final Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = new HashMap<>();
 
     private void trackFakeFunctionAST(CsmUID<FunctionImplEx<?>> funUID, AST funAST) {
         if (funAST == null) {

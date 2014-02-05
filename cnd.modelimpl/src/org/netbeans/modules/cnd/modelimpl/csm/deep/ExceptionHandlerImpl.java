@@ -127,7 +127,7 @@ public final class ExceptionHandlerImpl extends CompoundStatementImpl implements
         @Override
         public ExceptionHandlerImpl create() {
             ExceptionHandlerImpl stmt = new ExceptionHandlerImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            List<CsmStatement> stmts = new ArrayList<CsmStatement>();
+            List<CsmStatement> stmts = new ArrayList<>();
             for (StatementBuilder statementBuilder : getStatements()) {
                 statementBuilder.setScope(stmt);
                 stmts.add(statementBuilder.create());

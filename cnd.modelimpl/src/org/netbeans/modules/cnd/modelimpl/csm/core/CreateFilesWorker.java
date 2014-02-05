@@ -85,7 +85,7 @@ final class CreateFilesWorker {
         int chunk = (size/threads) + 1;
         Iterator<NativeFileItem> it = items.iterator();
         for (int i = 0; i < threads; i++) {
-            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(chunk);
+            ArrayList<NativeFileItem> list = new ArrayList<>(chunk);
             for(int j = 0; j < chunk; j++){
                 if(it.hasNext()){
                     list.add(it.next());
@@ -103,7 +103,7 @@ final class CreateFilesWorker {
         if (!failureDetected.get()) {
             // no issues with repository was found so far
             if (validator && !sources) {
-                final Set<CsmUID<CsmFile>> allFilesUID = new HashSet<CsmUID<CsmFile>>(project.getHeaderFilesUID());
+                final Set<CsmUID<CsmFile>> allFilesUID = new HashSet<>(project.getHeaderFilesUID());
                 allFilesUID.removeAll(handledFiles);
                 if (TraceFlags.TRACE_VALIDATION) {
                     for (CsmUID<CsmFile> csmUID : handledFiles) {

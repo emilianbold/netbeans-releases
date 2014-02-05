@@ -101,8 +101,8 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1000)
 public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
-    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Lookup.Provider, Map<Folder, List<CharSequence>>>();
-    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Lookup.Provider, ConcurrentMap<CharSequence, List<CharSequence>>>();
+    private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<>();
     private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
     private static final Logger LOG = Logger.getLogger(MakeProjectFileProviderFactory.class.getName());
 
@@ -116,7 +116,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     public static void updateSearchBase(Project project, Folder folder, List<CharSequence> list){
         Map<Folder, List<CharSequence>> projectSearchBase = searchBase.get(project);
         if (projectSearchBase == null) {
-            projectSearchBase = new ConcurrentHashMap<Folder, List<CharSequence>>();
+            projectSearchBase = new ConcurrentHashMap<>();
             Map<Folder, List<CharSequence>> old = searchBase.putIfAbsent(project, projectSearchBase);
             if (old != null) {
                 projectSearchBase = old;
@@ -206,7 +206,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
     private final static class FileProviderImpl implements FileProvider, NativeFileSearch {
         private final AtomicBoolean cancel = new AtomicBoolean();
-        private final Set<SearchContext> searchedProjects = new HashSet<SearchContext>();
+        private final Set<SearchContext> searchedProjects = new HashSet<>();
         private Context lastContext = null;
         
         public FileProviderImpl() {
@@ -332,7 +332,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         }
         
         private ConcurrentMap<CharSequence,List<CharSequence>> computeProjectFiles(Lookup.Provider project) {
-            ConcurrentMap<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<CharSequence,List<CharSequence>>();
+            ConcurrentMap<CharSequence,List<CharSequence>> result = new ConcurrentHashMap<>();
             ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (provider != null && provider.gotDescriptor()) {
                 MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
@@ -340,7 +340,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     CharSequence name = CharSequences.create(item.getName());
                     List<CharSequence> list = result.get(name);
                     if (list == null) {
-                        List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<CharSequence>(1));
+                        List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
                         if (prev != null) {
                             list = prev;
                         }
@@ -353,7 +353,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         // create copy of data
                         Map<Folder,List<CharSequence>> copy;
                         synchronized (projectSearchBase) {
-                            copy = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
+                            copy = new HashMap<>(projectSearchBase);
                         }
                         for (List<CharSequence> files : copy.values()) {
                             if (files != null) {
@@ -367,7 +367,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                                         CharSequence name = CharSequences.create(absPath.substring(i+1));
                                         List<CharSequence> list = result.get(name);
                                         if (list == null) {
-                                            List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<CharSequence>(1));
+                                            List<CharSequence> prev = result.putIfAbsent(name, list = new ArrayList<>(1));
                                             if (prev != null) {
                                                 list = prev;
                                             }
@@ -414,7 +414,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
             Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
             if (projectSearchBase != null) {
                 synchronized (projectSearchBase) {
-                    projectSearchBase = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
+                    projectSearchBase = new HashMap<>(projectSearchBase);
                 }
                 String baseDir = descriptor.getBaseDir();
                 for (Map.Entry<Folder, List<CharSequence>> entry : projectSearchBase.entrySet()) {

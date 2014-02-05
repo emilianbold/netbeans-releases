@@ -198,7 +198,7 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
 
         private CsmScope scope;
         private UsingDirectiveImpl instance;
-        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        private final List<CsmOffsetableDeclaration> declarations = new ArrayList<>();
 
         public UsingDirectiveBuilder(FileContent fileContent) {
             assert fileContent != null;

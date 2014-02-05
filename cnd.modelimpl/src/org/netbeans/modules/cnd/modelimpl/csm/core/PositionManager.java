@@ -65,7 +65,7 @@ public class PositionManager {
         map
     }
     private static final Impl IMPL = Impl.trivial;
-    private static ConcurrentHashMap<Integer,ConcurrentHashMap<Integer,TreeMap<Integer,Integer>>> map = new ConcurrentHashMap<Integer,ConcurrentHashMap<Integer,TreeMap<Integer,Integer>>>();
+    private static final ConcurrentHashMap<Integer,ConcurrentHashMap<Integer,TreeMap<Integer,Integer>>> map = new ConcurrentHashMap<>();
 
     private PositionManager() {
     }
@@ -153,7 +153,7 @@ public class PositionManager {
         int file = KeyUtilities.getProjectFileIndex(key);
         ConcurrentHashMap<Integer, TreeMap<Integer, Integer>> unitMap = map.get(unit);
         if (unitMap == null) {
-            unitMap = new ConcurrentHashMap<Integer,TreeMap<Integer,Integer>>();
+            unitMap = new ConcurrentHashMap<>();
             ConcurrentHashMap<Integer,TreeMap<Integer,Integer>> old = map.putIfAbsent(unit, unitMap);
             if (old != null) {
                 unitMap = old;
@@ -161,7 +161,7 @@ public class PositionManager {
         }
         TreeMap<Integer, Integer> fileMap = unitMap.get(file);
         if (fileMap == null) {
-            fileMap = new TreeMap<Integer, Integer>();
+            fileMap = new TreeMap<>();
             TreeMap<Integer, Integer> old = unitMap.putIfAbsent(file, fileMap);
             if (old != null) {
                 fileMap = old;

@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
  * @author  thp
  */
 public class PackagingFilesOuterPanel extends javax.swing.JPanel {
-    private PackagingConfiguration packagingConfiguration;
+    private final PackagingConfiguration packagingConfiguration;
 
     /** Creates new form PackagingInfo2Panel */
     public PackagingFilesOuterPanel(PackagingFilesPanel innerPanel, PackagingConfiguration packagingConfiguration) {

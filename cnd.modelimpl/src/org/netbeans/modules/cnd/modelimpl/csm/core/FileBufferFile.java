@@ -170,9 +170,9 @@ public class FileBufferFile extends AbstractFileBuffer {
             }
             performanceEvent.log(readChars.length, lineCount);
             if (CndTraceFlags.WEAK_REFS_HOLDERS || MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
-                cachedArray = new WeakReference<char[]>(readChars);
+                cachedArray = new WeakReference<>(readChars);
             } else {
-                cachedArray = new SoftReference<char[]>(readChars);
+                cachedArray = new SoftReference<>(readChars);
             }
             lastModifiedWhenCachedString = lastModified();
             return readChars;

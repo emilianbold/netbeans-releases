@@ -87,7 +87,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     private final SortedMap<ReferenceImpl, CsmUID<CsmObject>> references;
     private final SortedMap<ReferenceImpl, CsmUID<CsmObject>> type2classifier;
-    private final Map<CsmUID<?>, Collection<ReferenceImpl>> obj2refs = new HashMap<CsmUID<?>, Collection<ReferenceImpl>>();
+    private final Map<CsmUID<?>, Collection<ReferenceImpl>> obj2refs = new HashMap<>();
     private final ReadWriteLock referencesLock = new ReentrantReadWriteLock();
     private final CsmUID<CsmFile> fileUID;
 
@@ -109,9 +109,9 @@ public class FileComponentReferences extends FileComponent implements Persistent
             if (!empty) {
                 other.referencesLock.readLock().lock();
             }
-            references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+            references = new TreeMap<>(
                     empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.references);
-            type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+            type2classifier = new TreeMap<>(
                     empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.type2classifier);
         } finally {
             if (!empty) {
@@ -123,8 +123,8 @@ public class FileComponentReferences extends FileComponent implements Persistent
     
     public FileComponentReferences(FileImpl file) {
         super(new FileReferencesKey(file));
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
-        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
+        references = new TreeMap<>();
+        type2classifier = new TreeMap<>();
         this.fileUID = file.getUID();
     }
 
@@ -138,7 +138,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         for (int i = 0; i < size; i++) {
             CsmUID<CsmObject> key = defaultFactory.readUID(input);
             int refSize = input.readInt();
-            ArrayList<FileComponentReferences.ReferenceImpl> value = new ArrayList<FileComponentReferences.ReferenceImpl>(refSize);
+            ArrayList<FileComponentReferences.ReferenceImpl> value = new ArrayList<>(refSize);
             for (int j = 0; j < refSize; j++) {
                 FileComponentReferences.ReferenceImpl val = new FileComponentReferences.ReferenceImpl(fileUID, key, defaultFactory, input);
                 value.add(val);
@@ -151,8 +151,8 @@ public class FileComponentReferences extends FileComponent implements Persistent
     // only for EMPTY static field
     private FileComponentReferences() {
         super((org.netbeans.modules.cnd.repository.spi.Key)null);
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
-        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
+        references = new TreeMap<>();
+        type2classifier = new TreeMap<>();
         fileUID = null;
     }
 
@@ -170,12 +170,12 @@ public class FileComponentReferences extends FileComponent implements Persistent
     }
 
     public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
-        Set<CsmUID<CsmObject>> searchFor = new HashSet<CsmUID<CsmObject>>(objects.size());
+        Set<CsmUID<CsmObject>> searchFor = new HashSet<>(objects.size());
         for(CsmObject obj : objects) {
             CsmUID<CsmObject> uid = UIDs.get(obj);
             searchFor.add(uid);
         }
-        List<CsmReference> res = new ArrayList<CsmReference>();
+        List<CsmReference> res = new ArrayList<>();
         referencesLock.readLock().lock();
         try {
             for (CsmUID<CsmObject> csmUID : searchFor) {
@@ -191,7 +191,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     }
 
     public Collection<CsmReference> getReferences() {
-        List<CsmReference> res = new ArrayList<CsmReference>();
+        List<CsmReference> res = new ArrayList<>();
         referencesLock.readLock().lock();
         try {
             for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
@@ -314,7 +314,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 }
                 Collection<FileComponentReferences.ReferenceImpl> value = obj2refs.get(referencedUID);
                 if (value == null) {
-                    value = new HashSet<ReferenceImpl>(1);
+                    value = new HashSet<>(1);
                     obj2refs.put(referencedUID, value);
                 }
                 value.add(refImpl);
@@ -396,7 +396,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         int refNum = 0;
         for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {
             printOut.printf("refs on %s:\n", entry.getKey());// NOI18N 
-            Collection<ReferenceImpl> value = new TreeSet<ReferenceImpl>(ReferencesIndex.REF_COMPARATOR);
+            Collection<ReferenceImpl> value = new TreeSet<>(ReferencesIndex.REF_COMPARATOR);
             value.addAll(entry.getValue());
             refNum += value.size();
             int index = 1;

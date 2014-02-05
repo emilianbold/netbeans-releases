@@ -63,7 +63,7 @@ public enum ConnectionHelper implements ConnectionListener {
     INSTANCE;
     
     private final RequestProcessor RP = new RequestProcessor("Check connection", 4); // NOI18N
-    private final Set<ExecutionEnvironment> storage = new HashSet<ExecutionEnvironment>();
+    private final Set<ExecutionEnvironment> storage = new HashSet<>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     
     private ConnectionHelper(){

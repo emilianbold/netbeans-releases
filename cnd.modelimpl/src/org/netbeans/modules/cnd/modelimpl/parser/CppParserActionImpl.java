@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -151,12 +150,12 @@ public class CppParserActionImpl implements CppParserActionEx {
     private final FileContent mainFileContent;
     private Pair currentContext;
     private final Deque<Pair> contexts;
-    private CsmParserProvider.CsmParserParameters params;
-    private CXXParserActionEx wrapper;
+    private final CsmParserProvider.CsmParserParameters params;
+    private final CXXParserActionEx wrapper;
     private CXXParserEx parser;
     
     private static final class Pair {
-        final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
+        final Map<Integer, CsmObject> objects = new HashMap<>();
         final FileImpl file;
 
         public Pair(CsmFile file) {
@@ -172,7 +171,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public CppParserActionImpl(CsmParserProvider.CsmParserParameters params, CXXParserActionEx wrapper) {
         this.params = params;
         this.wrapper = wrapper;
-        this.contexts = new ArrayDeque<Pair>();
+        this.contexts = new ArrayDeque<>();
         currentContext = new Pair(params.getMainFile());
         mainFileContent = currentContext.file.getParsingFileContent();
 //        this.contexts.push(currentContext);

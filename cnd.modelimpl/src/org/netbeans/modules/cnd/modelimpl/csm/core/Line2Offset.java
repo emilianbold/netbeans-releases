@@ -131,7 +131,7 @@ public class Line2Offset {
 
     private int[] init() {
         int length = getLength();
-        ArrayList<Integer> list = new ArrayList<Integer>(length / 10);
+        ArrayList<Integer> list = new ArrayList<>(length / 10);
         list.add(Integer.valueOf(0));
         for (int curOffset = 0; curOffset < length; curOffset++) {
             if (getCharAt(curOffset) == '\n') {

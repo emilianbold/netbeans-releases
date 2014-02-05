@@ -65,7 +65,7 @@ public final class LaunchersRegistry {
     private static final String ENV_TAG = "env";// NOI18N
 
     LaunchersRegistry() {
-        launchers = new ArrayList<Launcher>();
+        launchers = new ArrayList<>();
     }
 
     public void add(Launcher launcher) {
