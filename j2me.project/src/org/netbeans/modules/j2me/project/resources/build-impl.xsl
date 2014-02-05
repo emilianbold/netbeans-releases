@@ -1029,15 +1029,16 @@ is divided into following sections:
                 <parallel>
                     <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
                     <sequential>
-                        <sleep seconds="5"/>
+                        <waitfor maxwait="5" maxwaitunit="second">
+                            <isset property="jpda.port"/>
+                        </waitfor>
                         <antcall target="-nbdebug"/>
                     </sequential>
                 </parallel>
             </target>
 
             <target name="-nbdebug" description="Start NetBeans debugger" if="netbeans.home">
-                <property name="debug.delay" value="5000"/>
-                <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debugger.timeout}}" period="2000"/>
+                <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" timeout="${{debugger.timeout}}" period="500"/>
             </target>
 
             <xsl:comment>
