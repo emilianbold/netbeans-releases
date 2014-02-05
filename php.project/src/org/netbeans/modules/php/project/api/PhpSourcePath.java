@@ -103,7 +103,7 @@ public final class PhpSourcePath {
 
         // #221482, #165738
         // check internal files (perhaps the most common use case)
-        if (isInternalFile(file)) {
+        if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
             return FileType.INTERNAL;
         }
         // then, check sources (typical use-case)
@@ -213,7 +213,7 @@ public final class PhpSourcePath {
         ClassPath classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
         if (classPath != null && classPath.contains(file)) {
             // internal?
-            if (isInternalFile(file)) {
+            if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
                 return FileType.INTERNAL;
             }
             // include
@@ -222,25 +222,13 @@ public final class PhpSourcePath {
         return null;
     }
 
-    private static boolean isInternalFile(FileObject file) {
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir.equals(file)
-                    || FileUtil.isParentOf(dir, file)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // PhpSourcePathImplementation implementation for file which does not belong to any project
     private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
         @Override
         public FileType getFileType(FileObject file) {
-            for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-                if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                    return FileType.INTERNAL;
-                }
+            if (org.netbeans.modules.php.project.util.PhpProjectUtils.isInternalFile(file)) {
+                return FileType.INTERNAL;
             }
             for (FileObject dir : getPlatformPath()) {
                 if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
