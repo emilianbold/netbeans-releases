@@ -530,6 +530,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
+        public List<String> getIncludeFiles() {
+            return Collections.emptyList();
+        }
+        
+        @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
         }
@@ -606,6 +611,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<FSPath> result = project.getUserIncludePaths();
             checkAbsolute(result);
             return result;
+        }
+
+        @Override
+        public List<String> getIncludeFiles() {
+            return project.getIncludeFiles();
         }
 
         private void checkAbsolute(List<FSPath> orig) {

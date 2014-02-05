@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -96,6 +97,11 @@ public final class FolderImpl implements FolderProperties {
     @Override
     public List<String> getUserInludePaths() {
         return new ArrayList<String>(userIncludes);
+    }
+    
+    @Override
+    public List<String> getUserInludeFiles() {
+        return Collections.emptyList();
     }
     
     @Override

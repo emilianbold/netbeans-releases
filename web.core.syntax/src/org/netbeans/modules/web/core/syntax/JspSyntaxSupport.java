@@ -1945,6 +1945,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
             int start; // possition where the matched tag starts
             int end;   // possition where the matched tag ends
             int poss = 0; // how many the same tags is inside the mathed tag
+            boolean singleTag = false;
             String tag = token.getImage().trim();
 
             while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID) {
@@ -1954,8 +1955,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                 return null;
             if ((token.getImage().length() == 2) && token.getImage().charAt(1) == '/'){
                 while ( token != null){
+                    // see issue #229149
+                    if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID) {
+                        if ("/>".equals(token.getImage())) { //NOI18N
+                            singleTag = true;
+                        } else if ("<".equals(token.getImage())) { //NOI18N
+                            singleTag = false;
+                        }
+                    }
                     if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID) {
-                        if (token.getImage().trim().equals(tag)){
+                        if (token.getImage().trim().equals(tag) && !singleTag){
                             while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID) {
                                 token = token.getPrevious();
                             }
@@ -2023,7 +2032,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
                                         }
                                     }
                                     if (token.getImage().length() == 1){
-                                        poss--;
+                                        // see issue #229149
+                                        while (token != null) {
+                                            if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID) {
+                                                if ("/>".equals(token.getImage())) {        //NOI18N
+                                                    break;
+                                                } else if (">".equals(token.getImage())) {  //NOI18N
+                                                    poss--;
+                                                    break;
+                                                }
+                                            }
+                                            token = token.getNext();
+                                        }
                                     }
                                 }
                                 token = hToken;

@@ -932,7 +932,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             try {
                 int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
                 for (int i : blocks) {
-                    if (i > 0) {
+                    if (i >= 0) {
                         numMatches++;
                         if (i < currentpos) {
                             pos++;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-@TemplateRegistration(folder = "ClientSide",
-        content = "Gruntfile.js",
-        scriptEngine = "freemarker", 
-        position = 600,
-        displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html",
-        targetName = "Gruntfile",
-        category = "html5")
+package org.netbeans.modules.cnd.script.lexer;
 
-package org.netbeans.modules.web.clientproject.grunt;
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.modules.cnd.api.script.CMakeTokenId;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
-import org.netbeans.api.templates.TemplateRegistration;
+/**
+ *
+ * @author alsimon
+ */
+public class CMakeLanguageHierarchy  extends LanguageHierarchy<CMakeTokenId> {
+    private final String mime;
+    
+    public CMakeLanguageHierarchy(String mime) {
+        this.mime = mime;
+    }
 
+    @Override
+    protected synchronized Collection<CMakeTokenId> createTokenIds () {
+        return EnumSet.allOf (CMakeTokenId.class);
+    }
+
+    @Override
+    protected Lexer<CMakeTokenId> createLexer (LexerRestartInfo<CMakeTokenId> info) {
+        return new CMakeLexer (info);
+    }
+
+    @Override
+    protected String mimeType () {
+        return mime;
+    }
+}

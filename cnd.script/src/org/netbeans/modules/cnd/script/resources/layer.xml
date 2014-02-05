@@ -387,6 +387,46 @@
                 </folder>
             </folder>
 
+            <folder name="x-cmake">
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.api.script.CMakeTokenId.languageMake"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="cmakeFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cmake.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.cmake.editor.CMakeKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                </file>
+            </folder>
+
+            <folder name="x-cmake-include">
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.api.script.CMakeTokenId.languageInc"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="cmakeIncFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cmake.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.cmake.editor.CMakeIncKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                </file>
+            </folder>
+
             <folder name="sh">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 

@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -302,6 +303,10 @@ public class CompileLineService {
             return userPaths;
         }
 
+        public final List<String> getIncludeFiles() {
+            return Collections.emptyList();
+        }
+        
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {

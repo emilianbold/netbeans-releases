@@ -1161,6 +1161,12 @@ public class LogReader {
         }
 
         @Override
+        public List<String> getUserInludeFiles() {
+            return Collections.emptyList();
+        }
+
+
+        @Override
         public List<String> getSystemInludePaths() {
             return systemIncludes;
         }

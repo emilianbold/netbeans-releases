@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-@TemplateRegistration(folder = "ClientSide",
-        content = "Gruntfile.js",
-        scriptEngine = "freemarker", 
-        position = 600,
-        displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html",
-        targetName = "Gruntfile",
-        category = "html5")
+package org.netbeans.modules.cnd.api.script;
 
-package org.netbeans.modules.web.clientproject.grunt;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.cnd.script.lexer.CMakeLanguageHierarchy;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
-import org.netbeans.api.templates.TemplateRegistration;
+/**
+ *
+ * @author alsimon
+ */
+public enum CMakeTokenId  implements TokenId {
 
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    LABEL ("label"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    STRING ("string"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
+
+    private final String  name;
+    
+    CMakeTokenId(String  name) {
+        this.name = name;
+    }
+
+    @Override
+    public String primaryCategory () {
+        return name;
+    }
+
+    private static final Language<CMakeTokenId> LANGUAGE_MAKE =  new CMakeLanguageHierarchy(MIMENames.CMAKE_MIME_TYPE).language();
+    private static final Language<CMakeTokenId> LANGUAGE_INC =  new CMakeLanguageHierarchy(MIMENames.CMAKE_INCLUDE_MIME_TYPE).language();
+
+    public static Language<CMakeTokenId> languageMake() {
+        return LANGUAGE_MAKE;
+    }
+
+    public static Language<CMakeTokenId> languageInc() {
+        return LANGUAGE_INC;
+    }
+}
