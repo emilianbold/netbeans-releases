@@ -49,18 +49,21 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
+import org.netbeans.modules.cnd.makeproject.EnvProjectProblemsProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author alsimon
  */
 public class ResolveEnvVarPanel extends javax.swing.JPanel {
-    private final BrokenReferencesSupport.UnsetEnvVar unset;
+    private final EnvProjectProblemsProvider.UnsetEnvVar unset;
 
     /**
      * Creates new form ResolveEnvVarPanel
      */
-    public ResolveEnvVarPanel(BrokenReferencesSupport.UnsetEnvVar unset) {
+    public ResolveEnvVarPanel(EnvProjectProblemsProvider.UnsetEnvVar unset) {
         initComponents();
         jTextPane1.setBackground(getBackground());
         this.unset = unset;
@@ -75,7 +78,18 @@ public class ResolveEnvVarPanel extends javax.swing.JPanel {
             gridBagConstraints.insets = new Insets(0, 6, 0, 6);
             add(varLabel, gridBagConstraints);
             
-            JTextField edit = new JTextField();
+            ExecutionEnvironment env = unset.getExecutionEnvironment();
+            String defValue = BrokenReferencesSupport.getTemporaryEnv(env, var);
+            if (defValue != null) {
+                unset.editValue(var, defValue);
+            }
+            if (env.isRemote()) {
+                jTextPane1.setText(NbBundle.getMessage(ResolveEnvVarPanel.class, "env_var_fix.solution.remote.text")); // NOI18N
+            } else {
+                jTextPane1.setText(NbBundle.getMessage(ResolveEnvVarPanel.class, "env_var_fix.solution.local.text")); // NOI18N
+            }
+            
+            JTextField edit = new JTextField(defValue);
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = iy++;
@@ -115,7 +129,7 @@ public class ResolveEnvVarPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jTextPane1.setEditable(false);
-        jTextPane1.setText(org.openide.util.NbBundle.getMessage(ResolveEnvVarPanel.class, "env_var_fix.solution.text")); // NOI18N
+        jTextPane1.setText(org.openide.util.NbBundle.getMessage(ResolveEnvVarPanel.class, "env_var_fix.solution.local.text")); // NOI18N
         jScrollPane1.setViewportView(jTextPane1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

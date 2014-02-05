@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -1583,15 +1584,13 @@ public abstract class CommonConfigurationXMLCodec
         private final Map<String, String> replacements = new HashMap<>();
 
         public IncludeConverterImpl(MakeConfiguration conf, CodeAssistanceConfiguration caConf) {
-            Map<String, String> environment = Collections.emptyMap();
+            final Map<String, String> environment = new HashMap<>();
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
-                environment = hostInfo.getEnvironment();
-                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
-                if (temporaryEnv != null) {
-                    Map<String, String> res = new HashMap<>(temporaryEnv);
-                    res.putAll(environment);
-                    environment = res;
+                environment.putAll(hostInfo.getEnvironment());
+                ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                if (BrokenReferencesSupport.hasTemporaryEnv(env)) {
+                    BrokenReferencesSupport.addTemporaryEnv(env, environment);
                 }
             } catch (    IOException | ConnectionManager.CancellationException ex) {
                 Exceptions.printStackTrace(ex);

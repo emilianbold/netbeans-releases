@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
@@ -206,6 +207,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
             configurationDescriptor.setModified();            
+            BrokenReferencesSupport.updateProblems(project);
         }
         return; // false;
     }
