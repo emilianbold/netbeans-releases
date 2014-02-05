@@ -71,6 +71,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
@@ -121,7 +122,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
     private boolean runInAtomicAction;
     private boolean pendingReset = false;   // issue #173792
     
-    private static final Map<String, SoftReference<ModuleEntry>> cachedModuleEntries = new HashMap<String, SoftReference<ModuleEntry>>();
+    private static final Map<Project,Map<String, SoftReference<ModuleEntry>>> cachedProjectModuleEntries = new HashMap<Project,Map<String, SoftReference<ModuleEntry>>>();
     
     private static class TestClasspath {
         
@@ -653,6 +654,10 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
         unprocessed.add(project.getCodeNameBase());
         Set<String> processed = new HashSet<String>();
         StringBuilder cp = new StringBuilder();
+        if(cachedProjectModuleEntries.get(project) == null) {
+            cachedProjectModuleEntries.put(project, new HashMap<String, SoftReference<ModuleEntry>>());
+        }
+        Map<String, SoftReference<ModuleEntry>> cachedModuleEntries = cachedProjectModuleEntries.get(project);
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();
             String cnb = it.next();
@@ -664,7 +669,7 @@ public final class Evaluator implements PropertyEvaluator, PropertyChangeListene
                 }
                 else {
                     module = ml.getEntry(cnb);
-                    cachedModuleEntries.put(cnb, new SoftReference<ModuleEntry>(module));
+                    cachedProjectModuleEntries.get(project).put(cnb, new SoftReference<ModuleEntry>(module));
                 }
                 if (module == null) {
                     Util.err.log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + FileUtil.getFileDisplayName(project.getProjectDirectory()));
