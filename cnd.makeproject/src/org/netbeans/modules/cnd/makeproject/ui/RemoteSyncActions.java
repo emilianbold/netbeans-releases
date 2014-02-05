@@ -278,7 +278,7 @@ class RemoteSyncActions {
                         throw new RemoteSyncSupport.PathMapperException(file);
                     }
                     Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), err);
-                    int rc = task.get().intValue();
+                    int rc = task.get();
                     if (rc != 0) {
                         throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", rc));
                     }

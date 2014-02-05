@@ -436,7 +436,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
-            if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N
+            if (((Boolean) wiz.getProperty("createMainFile"))) { // NOI18N
                 String fname = (String) wiz.getProperty("mainFileName"); // NOI18N
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
                 mainFile = fname + "|" + template; // NOI18N

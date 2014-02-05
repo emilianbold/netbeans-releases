@@ -73,7 +73,7 @@ public class BooleanReverseNodeProp extends PropertySupport<Boolean> {
     }
 
     public void setValue(Boolean v) {
-        booleanConfiguration.setValue(!v.booleanValue());
+        booleanConfiguration.setValue(!v);
     }
 
     @Override

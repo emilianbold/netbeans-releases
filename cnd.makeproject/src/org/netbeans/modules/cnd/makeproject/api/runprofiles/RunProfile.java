@@ -902,7 +902,7 @@ public boolean isSimpleRunCommand() {
             hasTHAModule = thaConfig != null && thaConfig.isFolder();
         }
 
-        return hasTHAModule.booleanValue();
+        return hasTHAModule;
     }
 
     /**
@@ -1035,7 +1035,7 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public void setValue(Boolean v) {
-            setBuildFirst((v).booleanValue());
+            setBuildFirst((v));
         }
     }
 

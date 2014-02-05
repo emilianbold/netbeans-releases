@@ -1754,7 +1754,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         synchronized (map) {
             Boolean cached = map.get(key);
-            if (cached != null && cached.booleanValue()) {
+            if (cached != null && cached) {
                 return true;
             }
         }
