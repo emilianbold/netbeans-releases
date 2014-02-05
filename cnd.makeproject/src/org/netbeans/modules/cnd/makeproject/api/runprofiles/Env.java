@@ -59,11 +59,11 @@ public final class Env implements Cloneable {
     private Vector<String[]> environ;
 
     public Env() {
-        environ = new Vector<String[]>();
+        environ = new Vector<>();
     }
 
     public void removeAll() {
-        environ = new Vector<String[]>();
+        environ = new Vector<>();
     }
 
     /**
@@ -211,7 +211,7 @@ public final class Env implements Cloneable {
      * Converts the internal representation to a map of variable/value pairs
      */
     public Map<String, String> getenvAsMap() {
-        Map<String, String> res = new HashMap<String, String>(environ.size());
+        Map<String, String> res = new HashMap<>(environ.size());
 
         for (String[] nameValue : environ) {
             res.put(nameValue[0], nameValue[1]);

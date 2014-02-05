@@ -65,7 +65,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     private String name;
     private boolean isValid = false;
     private final BinaryWizardStorage wizardStorage;
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<>(1);
 
     public SelectBinaryPanel(){
         name = NbBundle.getMessage(SelectBinaryPanel.class, "SelectBinaryPanelVisual.Title"); // NOI18N
@@ -157,7 +157,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            it = new HashSet<>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {

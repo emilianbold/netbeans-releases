@@ -93,11 +93,11 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     public static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
     public static final String COMMAND_APPLY = "APPLY";  // NOI18N
     private DialogDescriptor dialogDescriptor;
-    private Map<Project, Dialog> customizerPerProject = new WeakHashMap<Project, Dialog>(); // Is is weak needed here?
+    private Map<Project, Dialog> customizerPerProject = new WeakHashMap<>(); // Is is weak needed here?
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private String currentCommand;
-    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<MakeContext.Kind, String>(MakeContext.Kind.class);
-    private final Set<ActionListener> actionListenerList = new HashSet<ActionListener>();
+    private final Map<MakeContext.Kind, String> lastCurrentNodeName = new EnumMap<>(MakeContext.Kind.class);
+    private final Set<ActionListener> actionListenerList = new HashSet<>();
     private static final RequestProcessor RP = new RequestProcessor("MakeCustomizerProvider", 1); //NOI18N
     private static final RequestProcessor RP_SAVE = new RequestProcessor("MakeCustomizerProviderSave", 1); //NOI18N
 
@@ -185,7 +185,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         // RegisterListener
         ConfigurationDescriptor clonedProjectdescriptor = projectDescriptorProvider.getConfigurationDescriptor().cloneProjectDescriptor();
-        ArrayList<JComponent> controls = new ArrayList<JComponent>();
+        ArrayList<JComponent> controls = new ArrayList<>();
         controls.add(options[OPTION_OK]);
         MakeCustomizer innerPane = new MakeCustomizer(project, preselectedNodeName, clonedProjectdescriptor, item, folder, Collections.unmodifiableCollection(controls));
         ActionListener optionsListener = new OptionListener(project, projectDescriptorProvider.getConfigurationDescriptor(), clonedProjectdescriptor, innerPane, folder, item);
@@ -363,7 +363,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         Iterator<ActionListener> it;
 
         synchronized (actionListenerList) {
-            it = new HashSet<ActionListener>(actionListenerList).iterator();
+            it = new HashSet<>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
             it.next().actionPerformed(e);

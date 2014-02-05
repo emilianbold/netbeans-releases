@@ -223,12 +223,12 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private Map<String, String[]> loadAcrionSteps(String root) {
-        Map<String, String[]> res = new HashMap<String, String[]>();
+        Map<String, String[]> res = new HashMap<>();
         FileObject folder = FileUtil.getConfigFile(root);
         if (folder != null && folder.isFolder()) {
             for (FileObject subFolder : folder.getChildren()) {
                 if (subFolder.isFolder()) {
-                    TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+                    TreeMap<Integer, String> map = new TreeMap<>();
                     for (FileObject file : subFolder.getChildren()) {
                         Integer position = (Integer) file.getAttribute("position"); // NOI18N
                         map.put(position, file.getNameExt());
@@ -308,7 +308,7 @@ public final class MakeActionProvider implements ActionProvider {
             return;
         }
 
-        final List<MakeConfiguration> confs = new ArrayList<MakeConfiguration>();
+        final List<MakeConfiguration> confs = new ArrayList<>();
         if (command.equals(COMMAND_BATCH_BUILD)) {
             BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().toArray());
             String batchCommand = batchConfigurationSelector.getCommand();
@@ -329,7 +329,7 @@ public final class MakeActionProvider implements ActionProvider {
 
             @Override
             protected void runImpl() {
-                final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+                final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
                 for (MakeConfiguration conf : confs) {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
@@ -360,7 +360,7 @@ public final class MakeActionProvider implements ActionProvider {
 
             @Override
             protected void runImpl() {
-                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
                 addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
@@ -448,7 +448,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         for (int i = 0; i < targetNames.length; i++) {
             final String targetName = targetNames[i];
-            List<String> tail = new ArrayList<String>();
+            List<String> tail = new ArrayList<>();
             for (int j = i + 1; j < targetNames.length; j++) {
                 tail.add(targetNames[j]);
             }
@@ -1485,7 +1485,7 @@ public final class MakeActionProvider implements ActionProvider {
             boolean validated, CanceledState cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
-        ArrayList<String> errs = new ArrayList<String>();
+        ArrayList<String> errs = new ArrayList<>();
         CompilerSet cs;
         String csname;
         File file;
@@ -1586,7 +1586,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
 
             // Check compilers
-            List<Tool> tools2check = new ArrayList<Tool>();
+            List<Tool> tools2check = new ArrayList<>();
             if (cRequired) {
                 tools2check.add(cTool);
             }
@@ -1735,9 +1735,9 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
     /** cache for file existence status. */
-    private static Map<String, Boolean> fileExistenceCache = new HashMap<String, Boolean>();
+    private static Map<String, Boolean> fileExistenceCache = new HashMap<>();
     /** cache for valid executables */
-    private static Map<String, Boolean> validExecutablesCache = new HashMap<String, Boolean>();
+    private static Map<String, Boolean> validExecutablesCache = new HashMap<>();
 
     private static boolean isValidExecutable(String path, PlatformInfo pi) {
         return existsImpl(path, pi, true);

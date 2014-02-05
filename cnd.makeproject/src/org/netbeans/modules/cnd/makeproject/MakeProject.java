@@ -195,7 +195,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener;
     private String configurationXMLComment;
-    private final Set<MyInterrupter> interrupters = new WeakSet<MyInterrupter>();
+    private final Set<MyInterrupter> interrupters = new WeakSet<>();
 
     public MakeProject(MakeProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
@@ -364,7 +364,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     }
         
     private static <T> T[] augment(T[] array, T value) {
-        ArrayList<T> newLookups = new ArrayList<T>();
+        ArrayList<T> newLookups = new ArrayList<>();
         newLookups.addAll(Arrays.asList(array));
             newLookups.add(value);            
         return (T[]) newLookups.toArray();
@@ -613,9 +613,9 @@ public final class MakeProject implements Project, MakeProjectListener {
 
     public static Set<String> createExtensionSet() {
         if (CndFileUtils.isSystemCaseSensitive()) {
-            return new TreeSet<String>();
+            return new TreeSet<>();
         } else {
-            return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+            return new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         }
     }
 
@@ -1059,8 +1059,8 @@ public final class MakeProject implements Project, MakeProjectListener {
         // Get a set of projects which this project can be considered to depend upon somehow.
         @Override
         public Set<Project> getSubprojects() {
-            Set<Project> subProjects = new HashSet<Project>();
-            Set<String> subProjectLocations = new HashSet<String>();
+            Set<Project> subProjects = new HashSet<>();
+            Set<String> subProjectLocations = new HashSet<>();
 
             // Try project.xml first if project not already read (this is cheap)
             Element data = project.helper.getPrimaryConfigurationData(true);
@@ -1548,7 +1548,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         public MakeArtifact[] getBuildArtifacts() {
-            List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
+            List<MakeArtifact> artifacts = new ArrayList<>();
 
             MakeConfigurationDescriptor projectDescriptor = project.projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
@@ -1577,7 +1577,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         public List<SearchRoot> getSearchRoots() {
-            List<SearchRoot> roots = new ArrayList<SearchRoot>();
+            List<SearchRoot> roots = new ArrayList<>();
             if (projectDescriptorProvider.gotDescriptor()) {
                 final MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
                 if (configurationDescriptor != null) {
@@ -1738,7 +1738,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                 currentEventId = eventId;
             }
 
-            List<PathResourceImplementation> list = new LinkedList<PathResourceImplementation>();
+            List<PathResourceImplementation> list = new LinkedList<>();
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
                 FileObject rootFolder = g.getRootFolder();

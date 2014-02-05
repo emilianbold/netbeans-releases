@@ -651,7 +651,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         copy.assign(this);
         // copy aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects();
-        List<ConfigurationAuxObject> copiedAuxs = new ArrayList<ConfigurationAuxObject>();
+        List<ConfigurationAuxObject> copiedAuxs = new ArrayList<>();
         for (int i = 0; i < auxs.length; i++) {
             if (auxs[i] instanceof ItemConfiguration) {
                 copiedAuxs.add(((ItemConfiguration) auxs[i]).copy(copy));
@@ -777,7 +777,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         //    clonedAuxObjects.add(clone2);
         //}
         ConfigurationAuxObject[] objects = getAuxObjects();
-        List<ConfigurationAuxObject> clonedAuxObjects = new ArrayList<ConfigurationAuxObject>();
+        List<ConfigurationAuxObject> clonedAuxObjects = new ArrayList<>();
         for (int i = 0; i < objects.length; i++) {
             clonedAuxObjects.add(objects[i].clone(this));
         }
@@ -1050,7 +1050,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     }
 
     public Set<Project> getSubProjects() {
-        Set<Project> subProjects = new HashSet<Project>();
+        Set<Project> subProjects = new HashSet<>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {
@@ -1073,7 +1073,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     }
 
     public Set<String> getSubProjectLocations() {
-        Set<String> subProjectLocations = new HashSet<String>();
+        Set<String> subProjectLocations = new HashSet<>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {
@@ -1085,7 +1085,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     }
 
     public Set<String> getSubProjectOutputLocations() {
-        Set<String> subProjectOutputLocations = new HashSet<String>();
+        Set<String> subProjectOutputLocations = new HashSet<>();
         LibrariesConfiguration librariesConfiguration = getLinkerConfiguration().getLibrariesConfiguration();
         for (LibraryItem item : librariesConfiguration.getValue()) {
             if (item instanceof LibraryItem.ProjectItem) {

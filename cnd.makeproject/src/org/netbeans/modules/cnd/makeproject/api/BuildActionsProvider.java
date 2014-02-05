@@ -94,7 +94,7 @@ public abstract class BuildActionsProvider {
 
         @Override
         public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-            List<BuildAction> list = new ArrayList<BuildAction>();
+            List<BuildAction> list = new ArrayList<>();
             for (BuildActionsProvider provider : res.allInstances()) {
                 list.addAll(provider.getActions(ioTabName, events));
             }

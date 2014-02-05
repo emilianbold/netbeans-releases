@@ -97,7 +97,7 @@ public class CppUtils {
     }
     
     public static ArrayList<String> tokenizeString(String string)  {
-        ArrayList<String> list = new ArrayList<String>(0);
+        ArrayList<String> list = new ArrayList<>(0);
         
         if (string == null || string.length() == 0) {
             return list;

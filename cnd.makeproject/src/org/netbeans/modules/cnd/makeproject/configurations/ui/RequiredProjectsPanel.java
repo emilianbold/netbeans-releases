@@ -111,7 +111,7 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-        return new ArrayList<LibraryItem>(getListData());
+        return new ArrayList<>(getListData());
     }
 
     @Override

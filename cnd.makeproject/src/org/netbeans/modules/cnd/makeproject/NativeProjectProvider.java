@@ -111,7 +111,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private final String projectRoot;
     private final FileSystem fileSystem;
     private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
-    private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
+    private final Set<NativeProjectItemsListener> listeners = new HashSet<>();
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final RequestProcessor RPCC = new RequestProcessor("NativeProjectProvider.CheckConfiguration", 1); // NOI18N
 
@@ -204,7 +204,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (descriptor != null) {
             MakeConfiguration conf = descriptor.getActiveConfiguration();
             if (conf != null) {
-                List<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                List<NativeFileItem> list = new ArrayList<>();
                 Item[] items = descriptor.getProjectItems();
                 for (Item item : items) {
                     ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
@@ -222,13 +222,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return Collections.emptyList();
     }
 
-    private Reference<List<NativeProject>> cachedDependency = new SoftReference<List<NativeProject>>(null);
+    private Reference<List<NativeProject>> cachedDependency = new SoftReference<>(null);
 
     @Override
     public List<NativeProject> getDependences() {
         List<NativeProject> cachedList = cachedDependency.get();
         if (cachedList == null) {
-            cachedList = new ArrayList<NativeProject>(0);
+            cachedList = new ArrayList<>(0);
             MakeConfiguration makeConfiguration = getMakeConfiguration();
             int size = 0;
             NativeProject oneOf = null;
@@ -250,7 +250,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             } else {
                 cachedList = Collections.unmodifiableList(cachedList);
             }
-            cachedDependency = new SoftReference<List<NativeProject>>(cachedList);
+            cachedDependency = new SoftReference<>(cachedList);
         }
         return cachedList;
     }
@@ -280,7 +280,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("fireFileAdded "); // NOI18N
         }
-        ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> actualList = new ArrayList<>();
         // Remove non C/C++ items
         Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
@@ -385,7 +385,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     @SuppressWarnings("unchecked")
     private List<NativeProjectItemsListener> getListenersCopy() {
         synchronized (listeners) {
-            return (listeners.isEmpty()) ? Collections.EMPTY_LIST : new ArrayList<NativeProjectItemsListener>(listeners);
+            return (listeners.isEmpty()) ? Collections.EMPTY_LIST : new ArrayList<>(listeners);
         }
     }
 
@@ -420,9 +420,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private void checkConfigurationChangedWorker(Configuration oldConf, Configuration newConf) {
         MakeConfiguration oldMConf = (MakeConfiguration) oldConf;
         MakeConfiguration newMConf = (MakeConfiguration) newConf;
-        List<NativeFileItem> list = new ArrayList<NativeFileItem>();
-        List<NativeFileItem> added = new ArrayList<NativeFileItem>();
-        List<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> list = new ArrayList<>();
+        List<NativeFileItem> added = new ArrayList<>();
+        List<NativeFileItem> deleted = new ArrayList<>();
 
         synchronized (listeners) {
             if (listeners.isEmpty()) {
@@ -556,8 +556,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (nativeProjectChangeSupport == null) {
             return;
         }
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-        ArrayList<NativeFileItem> deleted = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> list = new ArrayList<>();
+        ArrayList<NativeFileItem> deleted = new ArrayList<>();
         // Handle project and file level changes
         for (int i = 0; i < items.length; i++) {
             ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf);
@@ -604,7 +604,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<FSPath> getSystemIncludePaths() {
-        ArrayList<FSPath> vec = new ArrayList<FSPath>();
+        ArrayList<FSPath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -631,11 +631,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<FSPath> getUserIncludePaths() {
-        ArrayList<FSPath> vec = new ArrayList<FSPath>();
+        ArrayList<FSPath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-            ArrayList<String> vec2 = new ArrayList<String>();
+            ArrayList<String> vec2 = new ArrayList<>();
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             Iterator<String> iter = vec2.iterator();
@@ -687,7 +687,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<String> getSystemMacroDefinitions() {
-        List<String> vec = new ArrayList<String>();
+        List<String> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -701,7 +701,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
         List<String> undefinedMacros = getUndefinedMacros();
         if (undefinedMacros.size() > 0) {
-            List<String> out = new ArrayList<String>();
+            List<String> out = new ArrayList<>();
             for(String macro : vec) {
                 boolean remove = true;
                 for(String undef : undefinedMacros) {
@@ -730,7 +730,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      **/
     @Override
     public List<String> getUserMacroDefinitions() {
-        ArrayList<String> vec = new ArrayList<String>();
+        ArrayList<String> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -740,7 +740,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private List<String> getUndefinedMacros() {
-        ArrayList<String> vec = new ArrayList<String>();
+        ArrayList<String> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -770,7 +770,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (exePath == null) {
                 throw new IOException(getString("NOT_FOUND", executable));  // NOI18N
             }
-            List<String> arguments = new ArrayList<String>(args.length + 1);
+            List<String> arguments = new ArrayList<>(args.length + 1);
             arguments.add(exePath);
             arguments.addAll(Arrays.asList(args));
             StringBuilder output = new StringBuilder();

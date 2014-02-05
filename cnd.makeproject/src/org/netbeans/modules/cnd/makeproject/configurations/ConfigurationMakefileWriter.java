@@ -188,9 +188,9 @@ public class ConfigurationMakefileWriter {
      * a configuration is missing tool collection. See IZ #168540.
      */
     private Collection<MakeConfiguration> getOKConfigurations(boolean showWarning) {
-        List<MakeConfiguration> ok = new ArrayList<MakeConfiguration>();
-        List<MakeConfiguration> noCompilerSet = new ArrayList<MakeConfiguration>();
-        List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
+        List<MakeConfiguration> ok = new ArrayList<>();
+        List<MakeConfiguration> noCompilerSet = new ArrayList<>();
+        List<MakeConfiguration> wrongPlatform = new ArrayList<>();
         Configuration[] confs = projectDescriptor.getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
@@ -831,7 +831,7 @@ public class ConfigurationMakefileWriter {
                     command += "$^" + " "; // NOI18N
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N
 
-                    List<String> additionalDependencies = new ArrayList<String>();
+                    List<String> additionalDependencies = new ArrayList<>();
                     for (LinkerConfiguration lc : linkerConfigurations) {
                         additionalDependencies.addAll(lc.getAdditionalDependencies().getValuesAsList());
                     }
@@ -880,7 +880,7 @@ public class ConfigurationMakefileWriter {
     }
     
     private static List<LinkerConfiguration> getLinkerConfigurations(Folder test, MakeConfiguration conf) {
-        List<LinkerConfiguration> linkerConfigurations = new ArrayList<LinkerConfiguration>();
+        List<LinkerConfiguration> linkerConfigurations = new ArrayList<>();
         if(test == null || conf == null) {
             return linkerConfigurations;
         }
@@ -927,7 +927,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public static Item[] getSortedProjectItems(MakeConfigurationDescriptor projectDescriptor) {
-        List<Item> res = new ArrayList<Item>(Arrays.asList(projectDescriptor.getProjectItems()));
+        List<Item> res = new ArrayList<>(Arrays.asList(projectDescriptor.getProjectItems()));
         Collections.<Item>sort(res, new Comparator<Item>(){
             @Override
             public int compare(Item o1, Item o2) {
@@ -1612,7 +1612,7 @@ public class ConfigurationMakefileWriter {
     }
     
     private Map<String, String> getOldVariables(FileObject nbprojectFileObject) throws IOException {
-        Map<String, String> old = new HashMap<String, String>();
+        Map<String, String> old = new HashMap<>();
         FileObject oldVars = nbprojectFileObject.getFileObject(MakeConfiguration.MAKEFILE_VARIABLES);
         BufferedReader reader = null;
         try {

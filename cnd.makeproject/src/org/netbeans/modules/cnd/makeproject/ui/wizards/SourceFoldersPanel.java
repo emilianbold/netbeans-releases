@@ -91,7 +91,7 @@ import org.openide.util.NbBundle;
 
     void store(WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<>(sourceFilesPanel.getSourceListData())); // NOI18N
         if (sourceFilesPanel.getFoldersFilter().trim().length() == 0) {
             // change empty pattern on "no ignore folder pattern"
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
@@ -99,7 +99,7 @@ import org.openide.util.NbBundle;
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_TEST_FOLDERS, sourceFilesPanel.getTestListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
+        wizardDescriptor.putProperty("testFoldersList", new ArrayList<>(sourceFilesPanel.getTestListData())); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {

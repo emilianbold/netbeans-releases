@@ -111,7 +111,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private final MakeConfigurationDescriptor projectDescriptor;
     private final RemoteProject remoteProject;
     private final Project project;
-    private final List<Configuration> confs = new ArrayList<Configuration>();
+    private final List<Configuration> confs = new ArrayList<>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
     private FolderConfiguration currentFolderConfiguration = null;
@@ -131,13 +131,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
     private int defaultConf = -1;
-    private final Stack<Folder> currentFolderStack = new Stack<Folder>();
+    private final Stack<Folder> currentFolderStack = new Stack<>();
     private Folder currentFolder = null;
     private String relativeOffset;
-    private final Map<String, String> cache = new HashMap<String, String>();
+    private final Map<String, String> cache = new HashMap<>();
     private Map<String, String> dictionary;
-    private final Map<String, String> rootDecoder = new HashMap<String, String>();
-    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
+    private final Map<String, String> rootDecoder = new HashMap<>();
+    private List<XMLDecoder> decoders = new ArrayList<>();
 
     public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
         super(projectDescriptor, true);
@@ -224,7 +224,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
-            decoders = new ArrayList<XMLDecoder>();
+            decoders = new ArrayList<>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
@@ -290,9 +290,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(SOURCE_ROOT_LIST_ELEMENT)) {
-            currentList = new ArrayList<String>();
+            currentList = new ArrayList<>();
         } else if (element.equals(TEST_ROOT_LIST_ELEMENT)) {
-            currentList = new ArrayList<String>();
+            currentList = new ArrayList<>();
         } else if (element.equals(ItemXMLCodec.ITEM_ELEMENT)) {
             String path = atts.getValue(ItemXMLCodec.PATH_ATTR);
             path = getString(adjustOffset(path));
@@ -356,7 +356,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(DICTIONARY_ELEMENTS)) {
-             dictionary = new HashMap<String, String>();
+             dictionary = new HashMap<>();
         } else if (element.equals(DICTIONARY_ELEMENT)) {
             if (dictionary != null) {
                 String id = getString(atts.getValue(CommonConfigurationXMLCodec.DICTIONARY_ELEMENT_ATR_ID));
@@ -853,7 +853,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
                 List<String> list = CppUtils.tokenizeString(currentText);
-                List<String> res = new ArrayList<String>();
+                List<String> res = new ArrayList<>();
                 for (String val : list) {
                     res.add(this.getString(val));
                 }

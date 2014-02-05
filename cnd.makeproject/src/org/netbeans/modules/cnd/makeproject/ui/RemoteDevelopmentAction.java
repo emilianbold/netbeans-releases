@@ -144,7 +144,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         managePlatformsItem.addActionListener(new ActionListener() {
             private Project currProject = project;
             public void actionPerformed(ActionEvent event) {
-                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<ExecutionEnvironment>();
+                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<>();
                 if (ServerListUI.showServerListDialog(selectedEnv)) {
                     ExecutionEnvironment env = selectedEnv.get();
                     if (env != null) {

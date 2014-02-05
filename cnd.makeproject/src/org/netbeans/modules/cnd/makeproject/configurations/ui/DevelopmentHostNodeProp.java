@@ -175,7 +175,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
         @Override
         public String[] getTags() {
-            List<String> l = new ArrayList<String>();
+            List<String> l = new ArrayList<>();
             for (ServerRecord record : ServerList.getRecords()) {
                 l.add(record.getDisplayName());
             }

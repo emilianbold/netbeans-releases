@@ -148,7 +148,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
                     @Override
                     public List<ConvertedLine> converted() {
-                        List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
+                        List<ConvertedLine> lines = new ArrayList<>();
                         lines.add(ConvertedLine.forText(line, new OutputListenerBuildTrace(execEnv, project)));
                         return lines;
                     }
@@ -167,7 +167,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
 
                     @Override
                     public List<ConvertedLine> converted() {
-                        List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
+                        List<ConvertedLine> lines = new ArrayList<>();
                         lines.add(ConvertedLine.forText(line, new OutputListenerRfs(execEnv)));
                         return lines;
                     }

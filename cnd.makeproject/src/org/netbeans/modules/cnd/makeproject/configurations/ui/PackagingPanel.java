@@ -129,7 +129,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
             List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
-            List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
+            List<PackagerInfoElement> newList = new ArrayList<>();
             // Copy all other types over
             for (PackagerInfoElement elem : oldList) {
                 if (!elem.getPackager().equals(packagingConfiguration.getType().getValue())) {
@@ -146,7 +146,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingConfiguration.getAdditionalInfo().setValue(packagingAdditionalInfoPanel.getListData());
         }
 
-        packagingConfiguration.getFiles().setValue(new ArrayList<PackagerFileElement>(packagingFilesPanel.getListData()));
+        packagingConfiguration.getFiles().setValue(new ArrayList<>(packagingFilesPanel.getListData()));
         return packagingConfiguration;
     }
 

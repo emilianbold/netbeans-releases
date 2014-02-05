@@ -96,7 +96,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
 
         @Override
         protected Reference<Cache> initialValue() {
-            return new WeakReference<Cache>(new Cache());
+            return new WeakReference<>(new Cache());
         }
     };
 
@@ -127,7 +127,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             return out[0];
         } else {
             cachedValue = new Cache();
-            cache.set(new WeakReference<Cache>(cachedValue));
+            cache.set(new WeakReference<>(cachedValue));
         }
         FileSystem fs;
         try {

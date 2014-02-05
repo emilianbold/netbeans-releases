@@ -89,7 +89,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private final PathMap mapper;
     private static final RequestProcessor RP = new RequestProcessor("SelectExecutable",1); //NOI18N
     private final AtomicBoolean canceled = new AtomicBoolean(false);
-    private final Map<String,FileObject> searchResult = new TreeMap<String,FileObject>();
+    private final Map<String,FileObject> searchResult = new TreeMap<>();
     private boolean resetList = false;
 
     /** Creates new form SelectExecutable */
@@ -235,10 +235,10 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     private void addExecutables(FileObject dir) {
-        ArrayList<FileObject> downPrev = new ArrayList<FileObject>();
+        ArrayList<FileObject> downPrev = new ArrayList<>();
         downPrev.add(dir);
         while (!downPrev.isEmpty()) {
-            ArrayList<FileObject> downNext = new ArrayList<FileObject>();
+            ArrayList<FileObject> downNext = new ArrayList<>();
             for (FileObject  folder : downPrev) {
                 if (canceled.get()) {
                     return;
@@ -292,7 +292,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     }
 
     private void updateList() {
-        final List<String> keySet = new ArrayList<String>(searchResult.keySet());
+        final List<String> keySet = new ArrayList<>(searchResult.keySet());
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

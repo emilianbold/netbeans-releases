@@ -85,9 +85,9 @@ public class PackagingConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         type = new StringConfiguration(null, "Tar"); // NOI18N // Fixup: better default...
         verbose = new BooleanConfiguration(true);
-        info = new VectorConfiguration<PackagerInfoElement>(null); // NOI18N
-        additionalInfo = new VectorConfiguration<String>(null); // NOI18N
-        files = new VectorConfiguration<PackagerFileElement>(null); // NOI18N
+        info = new VectorConfiguration<>(null); // NOI18N
+        additionalInfo = new VectorConfiguration<>(null); // NOI18N
+        files = new VectorConfiguration<>(null); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
@@ -139,7 +139,7 @@ public class PackagingConfiguration implements Cloneable {
     }
     
     public List<PackagerInfoElement> getHeaderSubList(String packager) {
-        List<PackagerInfoElement> list = new ArrayList<PackagerInfoElement>();
+        List<PackagerInfoElement> list = new ArrayList<>();
         List<PackagerInfoElement> headerList = getInfo().getValue();
         for (PackagerInfoElement elem : headerList) {
             if (elem.getPackager().equals(packager)) {

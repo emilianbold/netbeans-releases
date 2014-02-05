@@ -189,7 +189,7 @@ public class CompilerSetNodeProp extends Node.Property<String> {
         @Override
         public String[] getTags() {
             supportDefault = true;
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             // TODO: this works unpredictable on switching development hosts
             // TODO: should be resolved later on
 //            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {

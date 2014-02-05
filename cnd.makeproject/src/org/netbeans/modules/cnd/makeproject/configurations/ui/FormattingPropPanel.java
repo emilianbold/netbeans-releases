@@ -176,7 +176,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         } else {
             styles = def.toString();
         }
-        Map<String,CodeStyleWrapper> res = new TreeMap<String,CodeStyleWrapper>();
+        Map<String,CodeStyleWrapper> res = new TreeMap<>();
         StringTokenizer st = new StringTokenizer(styles, SEPARATOR); 
         while(st.hasMoreTokens()) {
             String nextToken = st.nextToken();

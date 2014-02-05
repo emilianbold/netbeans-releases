@@ -66,7 +66,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String tag;
     private ConfigurationDescriptor configurationDescriptor;
     private Configuration currentConf;
-    private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
+    private List<XMLDecoder> decoders = new ArrayList<>();
     private int descriptorVersion = -1;
 
     public AuxConfigurationXMLCodec(String tag, ConfigurationDescriptor configurationDescriptor) {
@@ -116,7 +116,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             // switch in new decoders
             ConfigurationAuxObject[] profileAuxObjects =
                     currentConf.getAuxObjects();
-            decoders = new ArrayList<XMLDecoder>();
+            decoders = new ArrayList<>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
                 if (!profileAuxObjects[i].shared()) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();

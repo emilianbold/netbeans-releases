@@ -126,7 +126,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
 
     private static Lookup createLFNLookup(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-        List<Object> elems = new ArrayList<Object>(3);
+        List<Object> elems = new ArrayList<>(3);
         elems.add(folder);
         elems.add(new FolderSearchInfo(folder));
         
@@ -186,7 +186,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 }
             }
             setFiles(newSet);
-            List<Folder> allFolders = new ArrayList<Folder>();
+            List<Folder> allFolders = new ArrayList<>();
             allFolders.add(folder);
             allFolders.addAll(folder.getAllFolders(true));
             Iterator<Folder> iter = allFolders.iterator();

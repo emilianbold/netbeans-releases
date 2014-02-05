@@ -574,7 +574,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public Dictionaries writeDictionary(XMLEncoderStream xes, Configuration conf) {
-        Set<String> dictionary = new HashSet<String>();
+        Set<String> dictionary = new HashSet<>();
         ConfigurationAuxObject[] profileAuxObjects = conf.getAuxObjects();
         for (ConfigurationAuxObject auxObject : profileAuxObjects) {
             if (publicallyVisible(auxObject)) {
@@ -604,7 +604,7 @@ public abstract class CommonConfigurationXMLCodec
         Dictionaries res = null;
         if (dictionary.size() > 0) {
             xes.elementOpen(DICTIONARY_ELEMENTS);
-            final List<String> d = new ArrayList<String>(dictionary);
+            final List<String> d = new ArrayList<>(dictionary);
             Collections.sort(d);
             for(int id = 0; id < d.size(); id++) {
                 xes.element(DICTIONARY_ELEMENT, new AttrValuePair[]{

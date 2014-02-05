@@ -130,7 +130,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         this.wizardtype = wizardtype;
         name = name.replaceAll(" ", ""); // NOI18N
         panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true, helpCtx);
-        advancedPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        advancedPanels = new ArrayList<>();
         advancedPanels.addAll(getPanels(wizardtype, name, wizardTitle, wizardACSD, true));
         
     }
@@ -140,7 +140,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     public static List<WizardDescriptor.Panel<WizardDescriptor>> getPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
-        List<WizardDescriptor.Panel<WizardDescriptor>> out = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> out = new ArrayList<>();
         out.add(new MakefileOrConfigureDescriptorPanel());
         out.add(new BuildActionsDescriptorPanel());
         out.add(new SourceFoldersDescriptorPanel());
@@ -259,7 +259,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private void setupPanelsAndStepsIfNeed() {        
         if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             if (panels == null) {
-                panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                panels = new ArrayList<>();
                 panels.add(panelConfigureProjectTrue);
                 String[] steps = createSteps(panels);
             }
@@ -273,7 +273,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
-            List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+            List<WizardDescriptor.Panel<WizardDescriptor>> panelsList = new ArrayList<>();
             final WizardDescriptor.Panel<WizardDescriptor> modeSelectionPanel = getSelectModePanel();
             panelsList.add(modeSelectionPanel);
             if (!isSimple()) {
@@ -286,7 +286,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 selectBinaryPanel = getSelectBinaryPanel();
             }
             if (panels == null) {
-                panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                panels = new ArrayList<>();
                 panels.add(selectBinaryPanel);
                 //panels.add(advancedPanels.get(1)); // buildActionsDescriptorPanel
                 //panels.add(advancedPanels.get(2)); // sourceFoldersDescriptorPanel
@@ -295,7 +295,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
         } else if(wizardtype == TYPE_DB_APPLICATION) {
             if (panels == null) {
-                panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                panels = new ArrayList<>();
                 panelConfigureProjectTrue.setFinishPanel(false);
                 panels.add(panelConfigureProjectTrue);
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
@@ -363,7 +363,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public Set<FileObject> instantiate() throws IOException {
-        Set<FileObject> resultSet = new HashSet<FileObject>();
+        Set<FileObject> resultSet = new HashSet<>();
         FSPath dirF = (FSPath) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
@@ -478,7 +478,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                     prjParams.setDatabaseConnection((String)connection);
                 }
             }
-            prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
+            prjParams.setTemplateParams(new HashMap<>(wiz.getProperties()));
             
             MakeProjectGeneratorImpl.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
@@ -556,7 +556,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return panels.get(index);
     }
 
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
+    private final Set<ChangeListener> listeners = new HashSet<>(1); // or can use ChangeSupport in NB 6.0
 
     @Override
     public final void addChangeListener(ChangeListener l) {

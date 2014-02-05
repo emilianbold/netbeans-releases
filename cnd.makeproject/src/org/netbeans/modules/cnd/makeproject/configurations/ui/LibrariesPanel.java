@@ -150,7 +150,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private ArrayList<LibraryItem> getPropertyValue() throws IllegalStateException {
-        return new ArrayList<LibraryItem>(getListData());
+        return new ArrayList<>(getListData());
     }
 
     @Override

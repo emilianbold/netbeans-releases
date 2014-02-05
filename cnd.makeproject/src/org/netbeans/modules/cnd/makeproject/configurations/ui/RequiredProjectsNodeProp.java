@@ -110,7 +110,7 @@ public class RequiredProjectsNodeProp extends PropertySupport<List> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<LibraryItem> clone = new ArrayList<LibraryItem>();
+        ArrayList<LibraryItem> clone = new ArrayList<>();
         clone.addAll(vectorConfiguration.getValue());
         return new DirectoriesEditor(clone);
     }

@@ -85,7 +85,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     @Override
     public List<FileObject> getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        List<FileObject> files = new ArrayList<FileObject>();
+        List<FileObject> files = new ArrayList<>();
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         addFile(projectDirectory, MakeConfiguration.NBPROJECT_FOLDER, files);
         if (project.getActiveConfiguration() != null && project.getActiveConfiguration().getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
@@ -100,7 +100,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     public List<FileObject> getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
 
-        List<FileObject> files = new ArrayList<FileObject>();
+        List<FileObject> files = new ArrayList<>();
         FileObject[] children = projectDirectory.getChildren();
         List<FileObject> metadataFiles = getMetadataFiles();
         for (int i = 0; i < children.length; i++) {

@@ -191,8 +191,8 @@ public final class RunProfile implements ConfigurationAuxObject {
             buildFirst = false;
         }
         dorun = getDorunScript();
-        termPaths = new HashMap<String, String>();
-        termOptions = new HashMap<String, String>();
+        termPaths = new HashMap<>();
+        termOptions = new HashMap<>();
         consoleType = getConsoleTypeConfiguration(initialConsoleType);
         terminalType = getDefaultTerminalType();
         removeInstrumentation = getDefaultRemoveInstrumentation();
@@ -258,7 +258,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     private String[] setTerminalTypeNames() {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         String def = getString("TerminalType_Default"); // NOI18N
         String name;
         String termPath;

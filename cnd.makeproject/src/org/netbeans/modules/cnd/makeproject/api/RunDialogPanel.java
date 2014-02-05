@@ -643,7 +643,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     // End of variables declaration//GEN-END:variables
     
     private Project[] getOpenedProjects() {
-        List<Project> res = new ArrayList<Project>();
+        List<Project> res = new ArrayList<>();
         for(Project p :OpenProjects.getDefault().getOpenProjects()) {
             ConfigurationDescriptorProvider conf = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
             if (conf != null && conf.gotDescriptor()) {
@@ -899,7 +899,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
                     conf.getProfile().setBuildFirst(false);
-                    List<Configuration> list = new ArrayList<Configuration>(projectDescriptor.getConfs().getConfigurations());
+                    List<Configuration> list = new ArrayList<>(projectDescriptor.getConfs().getConfigurations());
                     list.add(conf);
                     conf.setDefault(false);
                     Configurations c = new Configurations();
@@ -1131,7 +1131,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
         if (executionEnvironment.isLocal()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                Map<String, Object> map = new HashMap<String, Object>();
+                Map<String, Object> map = new HashMap<>();
                 map.put("DW:buildResult", getExecutablePath()); // NOI18N
                 map.put("DW:consolidationLevel", "file"); // NOI18N
                 map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N

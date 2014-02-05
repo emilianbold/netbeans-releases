@@ -218,9 +218,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     }
 
     private static Collection<ServerRecord> initServerRecords(ToolsCacheManager toolsCacheManager, ExecutionEnvironment ee) {
-        Collection<ServerRecord> out = new ArrayList<ServerRecord>();
+        Collection<ServerRecord> out = new ArrayList<>();
 
-        Collection<ServerRecord> records = new ArrayList<ServerRecord>();
+        Collection<ServerRecord> records = new ArrayList<>();
         if (toolsCacheManager != null && toolsCacheManager.getServerUpdateCache() != null) {
             records.addAll(toolsCacheManager.getServerUpdateCache().getHosts());
         } else {

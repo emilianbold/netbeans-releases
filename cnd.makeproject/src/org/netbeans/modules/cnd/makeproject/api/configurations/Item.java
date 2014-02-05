@@ -282,7 +282,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             // Do nothing (IZ 87557, 94935)
-            if (!((Boolean) evt.getNewValue()).booleanValue()) {
+            if (!((Boolean) evt.getNewValue())) {
 //                getFolder().removeItemAction(this);
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {

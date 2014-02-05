@@ -383,7 +383,7 @@ public class MakefileConfiguration implements Cloneable {
     }
 
     private void setElfFilters(final ExecutionEnvironment execEnv, final JFileChooser chooser) {
-        final List<FileFilter> filters = new ArrayList<FileFilter>();
+        final List<FileFilter> filters = new ArrayList<>();
         // to be run in EDT
         Runnable setFiltersRunner = new Runnable() {
             @Override

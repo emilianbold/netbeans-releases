@@ -134,7 +134,7 @@ public final class CommonUtilities {
         if (i > 0) {
             binaryPath = binary.substring(0, i);
         }
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         for(String s : searchPaths) {
             if (s.indexOf(';') > 0) {  // NOI18N
                 separator = ";";  // NOI18N

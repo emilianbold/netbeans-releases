@@ -108,7 +108,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-        return new ArrayList<String>(getListData());
+        return new ArrayList<>(getListData());
     }
 
     @Override

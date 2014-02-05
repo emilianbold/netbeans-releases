@@ -115,7 +115,7 @@ abstract public class VectorNodeProp extends PropertySupport<List> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<String> clone = new ArrayList<String>();
+        ArrayList<String> clone = new ArrayList<>();
         clone.addAll(vectorConfiguration.getValue());
         return new DirectoriesEditor(clone);
     }

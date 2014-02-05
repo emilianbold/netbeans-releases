@@ -109,7 +109,7 @@ abstract public class StringListNodeProp extends PropertySupport<List> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<String> clone = new ArrayList<String>();
+        ArrayList<String> clone = new ArrayList<>();
         clone.addAll(configuration.getValue());
         return new StringEditor(clone);
     }

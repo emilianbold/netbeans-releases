@@ -71,8 +71,8 @@ import org.openide.util.NbBundle;
 public class SourceFilesPanel extends javax.swing.JPanel {
 
     private final Color defaultTextFieldFg;
-    private List<FolderEntry> sourceData = new ArrayList<FolderEntry>();
-    private List<FolderEntry> testData = new ArrayList<FolderEntry>();
+    private List<FolderEntry> sourceData = new ArrayList<>();
+    private List<FolderEntry> testData = new ArrayList<>();
     private SourceFileTable sourceFileTable = null;
     private SourceFileTable testFileTable = null;
     private String baseDir;

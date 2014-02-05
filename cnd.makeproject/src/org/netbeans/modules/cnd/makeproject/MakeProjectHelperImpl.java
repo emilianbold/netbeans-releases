@@ -154,17 +154,17 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      * Also server as a monitor for {@link #projectXml} and {@link #privateXml} accesses;
      * Xerces' DOM is not thread-safe <em>even for reading<em> (#50198).
      */
-    private final Set<String> modifiedMetadataPaths = new HashSet<String>();
+    private final Set<String> modifiedMetadataPaths = new HashSet<>();
     private Throwable addedProjectXmlPath; // #155010
     /**
      * Registered listeners.
      * Access must be directly synchronized.
      */
-    private final List<MakeProjectListener> listeners = new ArrayList<MakeProjectListener>();
+    private final List<MakeProjectListener> listeners = new ArrayList<>();
     /** Listener to XML files; needs to be held as an instance field so it is not GC'd */
     private final FileChangeListener fileListener;
     /** Atomic actions in use to save XML files. */
-    private final Set<AtomicAction> saveActions = new WeakSet<AtomicAction>();
+    private final Set<AtomicAction> saveActions = new WeakSet<>();
 
     public static MakeProjectHelperImpl create(FileObject dir, Document projectXml, ProjectState state, MakeProjectTypeImpl type) {
         return new MakeProjectHelperImpl(dir, projectXml, state, type);
@@ -644,13 +644,13 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
             //ProjectManager.saveProject() is called when project is deleted externally..
             return;
         }
-        Set<FileLock> locks = new HashSet<FileLock>();
+        Set<FileLock> locks = new HashSet<>();
         try {
             synchronized (modifiedMetadataPaths) {
                 assert !modifiedMetadataPaths.isEmpty();
-                Set<String> toBeCleared = new HashSet<String>();
+                Set<String> toBeCleared = new HashSet<>();
                 try {
-                    for (String path : new TreeSet<String>(modifiedMetadataPaths)) {
+                    for (String path : new TreeSet<>(modifiedMetadataPaths)) {
                         try {
                             if (path.equals(PROJECT_XML_PATH)) {
                                 assert projectXml != null;
@@ -1130,7 +1130,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
 
         /** Compute a list of absolute paths based on some abstract names. */
         private String[] computeFrom(String[] list, boolean excludeProjectLibraryPrivate) {
-            List<String> result = new ArrayList<String>(list.length);
+            List<String> result = new ArrayList<>(list.length);
             for (String val : list) {
                 result.add(h.resolvePath(val));
             }

@@ -89,8 +89,8 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     /** Construct the singleton. */
     public MakeBasedProjectFactorySingleton() {}
 
-    private static final Map<Project,Reference<MakeProjectHelperImpl>> project2Helper = new WeakHashMap<Project,Reference<MakeProjectHelperImpl>>();
-    private static final Map<MakeProjectHelperImpl,Reference<Project>> helper2Project = new WeakHashMap<MakeProjectHelperImpl,Reference<Project>>();
+    private static final Map<Project,Reference<MakeProjectHelperImpl>> project2Helper = new WeakHashMap<>();
+    private static final Map<MakeProjectHelperImpl,Reference<Project>> helper2Project = new WeakHashMap<>();
 
     private static MakeProjectTypeImpl findMakeProjectType(String type) {
         if (MakeProjectTypeImpl.TYPE.equals(type)) {
@@ -172,9 +172,9 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
+        project2Helper.put(project, new WeakReference<>(helper));
         synchronized (helper2Project) {
-            helper2Project.put(helper, new WeakReference<Project>(project));
+            helper2Project.put(helper, new WeakReference<>(project));
         }
 
         return project;
