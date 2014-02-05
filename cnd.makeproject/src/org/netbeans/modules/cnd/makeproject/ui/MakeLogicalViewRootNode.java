@@ -477,7 +477,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
                     int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
-                    list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
+                    lisiewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }
             }

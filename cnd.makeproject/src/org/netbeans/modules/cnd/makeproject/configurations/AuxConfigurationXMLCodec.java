@@ -86,8 +86,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void start(Attributes atts) throws VersionException {
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
-            descriptorVersion = new Integer(versionString).intValue();
-        }
+            descriptorVersion = new Integer(versionString).intValue(}
     }
 
     // interface XMLDecoder
@@ -132,7 +131,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void endElement(String element, String currentText) {
         if (element.equals(DEFAULT_CONF_ELEMENT)) {
             configurationDescriptor.getConfs().setActive(new Integer(currentText).intValue());
-        } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
+       (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             if (currentConf instanceof MakeConfiguration) {
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(currentText);
                 env = CppUtils.convertAfterReading(env, (MakeConfiguration) currentConf);
@@ -141,7 +140,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PLATFORM_ELEMENT)) {
             if (currentConf instanceof MakeConfiguration) {
                 int set = new Integer(currentText).intValue();
-                if (descriptorVersion <= 37 && set == 4) {
+        (descriptorVersion <= 37 && set == 4) {
                     set = PlatformTypes.PLATFORM_GENERIC;
                 }
                 ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(set);
