@@ -43,10 +43,9 @@
 package org.netbeans.modules.php.project;
 
 import java.nio.charset.Charset;
-import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = FileEncodingQueryImplementation.class)
@@ -54,11 +53,8 @@ public final class InternalFilesFileEncodingQuery extends FileEncodingQueryImple
 
     @Override
     public Charset getEncoding(FileObject file) {
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir.equals(file)
-                    || FileUtil.isParentOf(dir, file)) {
-                return Charset.forName("UTF-8"); // NOI18N
-            }
+        if (PhpProjectUtils.isInternalFile(file)) {
+            return Charset.forName("UTF-8"); // NOI18N
         }
         return null;
     }
