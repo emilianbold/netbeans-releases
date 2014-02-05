@@ -106,6 +106,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                         profiles = null;
                         shared = null;
                         nonshared = null;
+                        initialActive = active != null ? active.getId() : null; //#241337
+                        active = DEFAULT;
                     }
                     RP.post(new Runnable() {
                         public @Override void run() {
