@@ -52,22 +52,27 @@ import java.io.OutputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import javax.swing.Icon;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.derby.api.DerbyDatabases;
+import org.netbeans.modules.derby.ui.SecurityManagerBugPanel;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -86,6 +91,13 @@ public class RegisterDerby implements DatabaseRuntime {
     
     private static final Logger LOGGER = Logger.getLogger(RegisterDerby.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    private static final String DISABLE_SECURITY_MANAGER
+            = "disableSecurityManager";                                 //NOI18N
+    private static final String DO_NOT_CHECK_SECURITY_MANAGER_BUG
+            = "doNotCheckSecurityManagerBug";                           //NOI18N
+    private static final String SECURITY_MANAGER_BUG_OUTPUT
+            = "java.security.AccessControlException: "                  //NOI18N
+            + "access denied (\"java.net.SocketPermission\"";           //NOI18N
     
     private static final int START_TIMEOUT = 0; // seconds
     
@@ -287,6 +299,7 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             ExecSupport ee= new ExecSupport();
             ee.setStringToLookFor("" + getPort()); // NOI18N
+            addSecurityBugHandler(ee);
             String java = getJavaExecutable();
             
             // create the derby.properties file
@@ -299,7 +312,7 @@ public class RegisterDerby implements DatabaseRuntime {
               java,
               "-Dderby.system.home=\"" + getDerbySystemHome() + "\" " +
               "-classpath \"" + getNetworkServerClasspath() + "\"" + 
-              " org.apache.derby.drda.NetworkServerControl start"
+              " org.apache.derby.drda.NetworkServerControl start" + startArgs()
             );
             if (LOG) {
                 LOGGER.log(Level.FINE, "Running " + desc.getProcessName() + " " + desc.getArguments());
@@ -332,6 +345,74 @@ public class RegisterDerby implements DatabaseRuntime {
         }
     }
     
+    /**
+     * Add security manager bug handler, if needed. See bug #239962.
+     */
+    private void addSecurityBugHandler(ExecSupport ee) {
+        Preferences prefs = NbPreferences.forModule(RegisterDerby.class);
+        if (!prefs.getBoolean(DISABLE_SECURITY_MANAGER, false)
+                && !prefs.getBoolean(DO_NOT_CHECK_SECURITY_MANAGER_BUG, false)) {
+            ee.addOutputStringHandler(SECURITY_MANAGER_BUG_OUTPUT,
+                    createSecurityManagerBugHandler());
+        }
+    }
+
+    @NbBundle.Messages({
+        "TTL_SecurityBug=JavaDB - Security Manager Problem"
+    })
+    public Runnable createSecurityManagerBugHandler() {
+        return new Runnable() {
+
+            @Override
+            public void run() {
+                if (!EventQueue.isDispatchThread()) {
+                    EventQueue.invokeLater(this);
+                    return;
+                }
+                class NotifyPanel extends SecurityManagerBugPanel {
+
+                    @Override
+                    public void disableSecurityManagerClicked() {
+                        NbPreferences.forModule(RegisterDerby.class).putBoolean(
+                                DISABLE_SECURITY_MANAGER, true);
+                    }
+
+                    @Override
+                    public void doNotShowAgainClicked() {
+                        NbPreferences.forModule(RegisterDerby.class).putBoolean(
+                                DO_NOT_CHECK_SECURITY_MANAGER_BUG, true);
+                    }
+                }
+                NotificationDisplayer.getDefault().notify(
+                        Bundle.TTL_SecurityBug(), getDbIcon(),
+                        new NotifyPanel(), new NotifyPanel(),
+                        NotificationDisplayer.Priority.HIGH);
+            }
+        };
+    }
+
+    /**
+     * Check whether some non-standard arguments are needed to start JavaDB.
+     *
+     * @return String containing non-standard arguments, prefixed by a space
+     * character (if not empty).
+     */
+    private String startArgs() {
+
+        Preferences prefs = NbPreferences.forModule(RegisterDerby.class);
+        if (prefs.getBoolean(DISABLE_SECURITY_MANAGER, false)) {
+            return " -noSecurityManager";                               //NOI18N
+        } else {
+            return "";                                                  //NOI18N
+        }
+    }
+
+    private Icon getDbIcon() {
+        return ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/derby/resources/database.gif", //NOI18N
+                false);
+    }
+
     private boolean waitStart(final ExecSupport execSupport, int waitTime) {
         boolean started = false;
         String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");

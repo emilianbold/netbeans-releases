@@ -49,6 +49,8 @@
 
 package org.netbeans.modules.derby;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.windows.*;
@@ -62,6 +64,7 @@ public class ExecSupport {
     private OutputCopier[] copyMakers;
     private Thread t;
     private Connect connect;
+    private Map<String, Runnable> outputStringHandlers = null;
 
     /** Creates a new instance of ExecSupport */
     public ExecSupport() {
@@ -71,6 +74,20 @@ public class ExecSupport {
         this.lookFor = lookFor;
     }
     
+    /**
+     * Add an output string handler. If the specified string will be found in
+     * the output stream, the handler will be invoked.
+     *
+     * @param string
+     * @param handler
+     */
+    public void addOutputStringHandler(String string, Runnable handler) {
+        if (outputStringHandlers == null) {
+            outputStringHandlers = new HashMap<String, Runnable>();
+        }
+        outputStringHandlers.put(string, handler);
+    }
+
     public boolean isStringFound() {
         if (copyMakers == null)
             return false;
@@ -98,8 +115,8 @@ public class ExecSupport {
         }
         io.select();
         copyMakers = new OutputCopier[3];
-        (copyMakers[0] = new OutputCopier(new InputStreamReader(child.getInputStream()), io.getOut(), true, lookFor)).start();
-        (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true, lookFor)).start();
+        (copyMakers[0] = new OutputCopier(new InputStreamReader(child.getInputStream()), io.getOut(), true, lookFor, outputStringHandlers)).start();
+        (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true, lookFor, outputStringHandlers)).start();
         (copyMakers[2] = new OutputCopier(io.getIn(), new OutputStreamWriter(child.getOutputStream()), true)).start();
         new Thread() {
             @Override
@@ -134,19 +151,21 @@ public class ExecSupport {
         private boolean done = false;
         private String stringToLookFor;
         private boolean stringFound = false;
-        
+        private Map<String, Runnable> outputStreamHandlers;
         
         private static final int FOUND = SearchUtil.FOUND;
         
-        public OutputCopier(Reader is, Writer os, boolean b, String lookFor) {
+        public OutputCopier(Reader is, Writer os, boolean b, String lookFor,
+                Map<String, Runnable> outputStreamHandlers) {
             this.os = os;
             this.is = is;
             autoflush = b;
             this.stringToLookFor = lookFor;
+            this.outputStreamHandlers = outputStreamHandlers;
         }
         
         public OutputCopier(Reader is, Writer os, boolean b) {
-            this(is, os, b, null);
+            this(is, os, b, null, null);
         }
         
         public boolean stringFound() {
@@ -158,6 +177,9 @@ public class ExecSupport {
         public void run() {
             int read;
             int stringFoundChars = 0;
+            Map<String, Integer> stringFoundCharsMap
+                    = outputStreamHandlers != null
+                    ? new HashMap<String, Integer>() : null;
             char[] buff = new char [256];
             try {
                 while ((read = read(is, buff, 0, 256)) > 0x0) {
@@ -168,6 +190,9 @@ public class ExecSupport {
                             stringFound = true;
                         }
                     }
+                    if (outputStreamHandlers != null) {
+                        checkOutputHandlers(stringFoundCharsMap, buff, read);
+                    }
                     if (os!=null){
                         os.write(buff,0,read);
                         if (autoflush) os.flush();
@@ -175,6 +200,36 @@ public class ExecSupport {
                 }
             } catch (IOException ex) {
             } catch (InterruptedException e) {
+            }
+        }
+
+        /**
+         * Check whether the output contains some strings for which a handler
+         * should be invoked.
+         *
+         * @param stringFoundCharsMap Map of pairs [string, prefix found
+         * in previous iterations.]
+         * @param buff Buffer with the current part of the output.
+         * @param read How many characters have been read into the buffer.
+         */
+        private void checkOutputHandlers(
+                Map<String, Integer> stringFoundCharsMap, char[] buff, int read) {
+            assert outputStreamHandlers != null;
+            for (Map.Entry<String, Runnable> e
+                    : outputStreamHandlers.entrySet()) {
+                Integer alreadyFoundOb = stringFoundCharsMap.get(
+                        e.getKey());
+                int alreadyFound = alreadyFoundOb == null ? 0 : alreadyFoundOb;
+                int found = SearchUtil.checkForString(e.getKey(),
+                        alreadyFound, buff, read);
+                if (found == SearchUtil.FOUND) {
+                    stringFoundCharsMap.remove(e.getKey());
+                    e.getValue().run();
+                } else if (found > 0) {
+                    stringFoundCharsMap.put(e.getKey(), found);
+                } else if (found == 0) {
+                    stringFoundCharsMap.remove(e.getKey());
+                }
             }
         }
         
