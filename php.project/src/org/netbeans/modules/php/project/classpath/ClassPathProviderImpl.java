@@ -61,6 +61,7 @@ import org.netbeans.modules.php.project.SourceRoots;
 import org.netbeans.modules.php.project.api.PhpSourcePath.FileType;
 import org.netbeans.modules.php.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -189,10 +190,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
             }
         }
 
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-                return FileType.INTERNAL;
-            }
+        if (PhpProjectUtils.isInternalFile(file)) {
+            return FileType.INTERNAL;
         }
 
         return FileType.UNKNOWN;
