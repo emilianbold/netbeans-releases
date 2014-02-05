@@ -62,7 +62,7 @@ public class AutomaticTimerJavaClient {
 
             InitialContext ic = new InitialContext();
             StatelessSession sless = 
-                (StatelessSession) ic.lookup("java:global/automatic-timer-ejb/StatelessSessionBean");
+                (StatelessSession) ic.lookup("StatelessSessionBean");
 	    return (sless.getRecords());
 
         } catch(Exception e) {

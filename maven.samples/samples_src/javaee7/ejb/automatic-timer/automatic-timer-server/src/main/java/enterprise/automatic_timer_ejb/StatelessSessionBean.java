@@ -53,7 +53,7 @@ import javax.persistence.PersistenceContext;
 
 import enterprise.automatic_timer_ejb.persistence.LogRecord;
 
-@Stateless
+@Stateless(mappedName = "StatelessSessionBean")
 public class StatelessSessionBean implements StatelessSession {
 
     @PersistenceContext EntityManager em;
