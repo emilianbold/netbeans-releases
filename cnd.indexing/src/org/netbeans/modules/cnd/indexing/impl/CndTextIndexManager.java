@@ -87,6 +87,10 @@ public class CndTextIndexManager {
             }
             CacheLocation loc = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
             synchronized (lock) {
+                //no index folder - do not even try to creare index
+                if (!CndTextIndexImpl.hasIndexInLocation(loc)) {
+                    return;
+                }
                 CndTextIndexImpl index = CndTextIndexManager.get(loc);
                 if (index != null) {
                     index.unitRemoved(unitId, unitName);
@@ -117,9 +121,9 @@ public class CndTextIndexManager {
         synchronized (lock) {
             CndTextIndexImpl index = indexMap.get(location);
             if (index == null) {
-                try {                    
+                try {
                     index = CndTextIndexImpl.create(location);
-                    if (validate && !index.isValid()) {
+                    if (index == null || (validate && !index.isValid())) {
                         return null;
                     }
                     indexMap.put(location, index);

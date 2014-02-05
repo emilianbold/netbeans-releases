@@ -89,19 +89,29 @@ public final class CndTextIndexImpl {
     private final CacheLocation location;
 
     public static CndTextIndexImpl create(CacheLocation location) throws IOException {
-        File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
-        indexRoot.mkdirs();
-        File lock = getLockFile(location);
-        lock.createNewFile();
-        DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
-        CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, location);
-        return impl;
+        try{
+            File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
+            indexRoot.mkdirs();
+            File lock = getLockFile(location);
+            lock.createNewFile();
+            DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
+            CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, location);
+            return impl;
+        }catch (IOException ex) {
+            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     private CndTextIndexImpl(DocumentIndex index, File lockFile, CacheLocation location) {
         this.index = index;
         this.lockFile = lockFile;
         this.location = location;
+    }
+    
+    /*package*/ static boolean hasIndexInLocation(CacheLocation location) {
+        File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
+        return indexRoot.exists();
     }
 
     public void put(CndTextIndexKey key, Collection<CharSequence> values) {
@@ -121,7 +131,7 @@ public final class CndTextIndexImpl {
 
     // the syntax is as in RepositoryListener, although it isn't a listener,
     // it's CnTextIndexManager who listens repository and calls this method
-    public void unitRemoved(int unitId, CharSequence unitName) {
+    /* package*/ void unitRemoved(int unitId, CharSequence unitName) {
         if (unitId < 0) {
             return;
         }
