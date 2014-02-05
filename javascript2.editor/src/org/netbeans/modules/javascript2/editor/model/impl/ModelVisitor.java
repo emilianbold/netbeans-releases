@@ -663,7 +663,12 @@ public class ModelVisitor extends PathNodeVisitor {
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {
-                parent = resolveThis(fncScope);
+                Node lastNode = getPreviousFromPath(1);
+                if (lastNode instanceof FunctionNode && !canBeSingletonPattern(1)) {
+                    parent = fncScope;
+                } else { 
+                    parent = resolveThis(fncScope);
+                }
             } else {
                 parent = fncScope;
             }
