@@ -62,6 +62,7 @@ import com.sun.jdi.request.WatchpointRequest;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -153,13 +154,15 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                         NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldModification"));
                 return ;
             }
-            setClassRequests (
+            boolean wasSet = setClassRequests (
                 names,
                 excludedNames,
                 ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
             );
-            for (String cn : names) {
-                checkLoadedClasses (cn, excludedNames);
+            if (wasSet) {
+                for (String cn : names) {
+                    checkLoadedClasses (cn, excludedNames);
+                }
             }
         } catch (InternalExceptionWrapper e) {
         } catch (VMDisconnectedExceptionWrapper e) {
@@ -203,6 +206,9 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                 return ;
             } catch (InvalidRequestStateExceptionWrapper irse) {
                 Exceptions.printStackTrace(irse);
+            } catch (RequestNotSupportedException rnsex) {
+                setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
+                return ;
             }
         }
         if (submitted) {

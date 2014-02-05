@@ -96,14 +96,19 @@ import javax.tools.Diagnostic;
 class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.ExpressionsInfo> {
     
     private int lineNumber;
+    private int statementStart;
+    private int statementEnd;
     private CompilationUnitTree tree;
     private SourcePositions positions;
     private LineMap lineMap;
     private boolean checkBounds = true;
 
-    public ExpressionScanner(int lineNumber, CompilationUnitTree tree, SourcePositions positions) {
+    public ExpressionScanner(int lineNumber, int statementStart, int statementEnd,
+                             CompilationUnitTree tree, SourcePositions positions) {
         this.tree = tree;
         this.lineNumber = lineNumber;
+        this.statementStart = statementStart;
+        this.statementEnd = statementEnd;
         this.positions = positions;
         this.lineMap = tree.getLineMap();
     }
@@ -121,11 +126,9 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
         if (startLine == lineNumber) {
             return true;
         } else {
-            return false;
-            /*
+            //return false;
             return startLine < lineNumber &&
                    lineMap.getLineNumber(positions.getEndPosition(tree, aTree)) >= lineNumber;
-             */
         }
     }
     

@@ -288,15 +288,9 @@ public class TestSession {
      * @return
      */
     public Report getReport(long timeInMillis) {
-        Project prj = project.get();
-        if (prj == null) {
-            prj = FileOwnerQuery.getOwner(projectURI);
-            project = new WeakReference<Project>(prj);
-        }
-	assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
         TestSuite currentSuite = getCurrentSuite();
         assert currentSuite != null : "Currently running suite was null for projectURI: " + projectURI; //NOI18N
-        Report report = new Report(currentSuite.getName(), prj);
+        Report report = new Report(currentSuite.getName(), getProject());
         report.setElapsedTimeMillis(timeInMillis);
 	boolean isTestNG = Manager.getInstance().getTestingFramework().equals(Manager.TESTNG_TF);
         for (Testcase testcase : currentSuite.getTestcases()) {

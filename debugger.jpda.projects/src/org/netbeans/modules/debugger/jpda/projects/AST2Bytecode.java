@@ -278,32 +278,42 @@ class AST2Bytecode {
                                 // There are some extra methods in the bytecode, we have to skip them
                                 int next = from;
                                 next += getInstrSize(opcode, bytecodes, next);
-                                while (next < to) {
-                                    //System.err.println("AST2Bytecode: skipped method in bytecode '"+methodNameInBytecode+"'");
-                                    opcode = bytecodes[next] & 0xFF;
-                                    if (isMethodCall(opcode)) {
-                                        int constantPoolIndex = ((bytecodes[next+1] & 0xFF) << 8) + (bytecodes[next+2] & 0xFF);
-                                        try {
-                                            methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
-                                            methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
-                                        } catch (IndexOutOfBoundsException ioobex) {
-                                            ioobex = Exceptions.attachMessage(ioobex, "While matching "+treeNodes+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
-                                            Exceptions.printStackTrace(ioobex);
-                                            break;
+                                do {
+                                    while (next < to) {
+                                        //System.err.println("AST2Bytecode: skipped method in bytecode '"+methodNameInBytecode+"'");
+                                        opcode = bytecodes[next] & 0xFF;
+                                        if (isMethodCall(opcode)) {
+                                            int constantPoolIndex = ((bytecodes[next+1] & 0xFF) << 8) + (bytecodes[next+2] & 0xFF);
+                                            try {
+                                                methodNameInBytecode = constantPool.getMethodName(constantPoolIndex);
+                                                methodDescriptorInBytecode = constantPool.getMethodDescriptor(constantPoolIndex);
+                                            } catch (IndexOutOfBoundsException ioobex) {
+                                                ioobex = Exceptions.attachMessage(ioobex, "While matching "+treeNodes+". Please attach the code where this happens to http://www.netbeans.org/issues/show_bug.cgi?id=161839");
+                                                Exceptions.printStackTrace(ioobex);
+                                                break;
+                                            }
+                                            if (methodNameInBytecode.equals(methodName)) {
+                                                break;
+                                            } else {
+                                                //System.err.println("AST2Bytecode: skipped method in bytecode '"+methodNameInBytecode+"'");
+                                                methodDescriptorInBytecode = null;
+                                            }
                                         }
-                                        if (methodNameInBytecode.equals(methodName)) {
-                                            break;
-                                        } else {
-                                            //System.err.println("AST2Bytecode: skipped method in bytecode '"+methodNameInBytecode+"'");
-                                            methodDescriptorInBytecode = null;
-                                        }
+                                        next += getInstrSize(opcode, bytecodes, next);
                                     }
-                                    next += getInstrSize(opcode, bytecodes, next);
-                                }
-                                if (next < to) {
-                                    // Method found
-                                    from = next;
-                                }
+                                    if (next < to) {
+                                        // Method found
+                                        from = next;
+                                        break;
+                                    }
+                                    if ((indexesIndex + 2) < indexes.length) {
+                                        indexesIndex += 2;
+                                        from = indexes[indexesIndex];
+                                        to = indexes[indexesIndex + 1];
+                                    } else {
+                                        break;
+                                    }
+                                } while (true);
                             }
                         }
                         //System.err.println("AST2Bytecode: methodNameInBytecode = '"+methodNameInBytecode+"', methodNameInSource = '"+methodName+"'");

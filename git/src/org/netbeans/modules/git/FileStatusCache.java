@@ -310,13 +310,13 @@ public class FileStatusCache {
         // in such case we may end up with just access to io - getting the status of indeed modified file
         // the other way around it would check status for all directories along the path
         for (File root : roots) {
-            if(containsFilesIntern(getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
+            if(containsFilesIntern(getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded, 1)) {
                 return true;
             }
         }
 
         // check to roots if they apply to the given status
-        if (containsFilesIntern(roots, includeStatus, false, addExcluded)) {
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded, 0)) {
             return true;
         }
         return false;
@@ -652,7 +652,7 @@ public class FileStatusCache {
         return retval;
     }
 
-    private boolean containsFilesIntern (Set<File> indexRoots, Set<Status> includeStatus, boolean recursively, boolean addExcluded) {
+    private boolean containsFilesIntern (Set<File> indexRoots, Set<Status> includeStatus, boolean recursively, boolean addExcluded, int depth) {
         if(indexRoots == null || indexRoots.isEmpty()) {
             return false;
         }
@@ -661,13 +661,14 @@ public class FileStatusCache {
         // the other way around it would check status for all directories along the path
         for (File root : indexRoots) {
             Set<File> indexValues = getIndexValues(root, includeStatus);
-            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded, depth + 1)) {
                 return true;
             }
         }
         for (File root : indexRoots) {
             FileInformation fi = getInfo(root);
-            if (fi != null && fi.containsStatus(includeStatus) && (addExcluded || !GitModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))) {
+            if (fi != null && fi.containsStatus(includeStatus) && (addExcluded || depth == 0
+                    || !GitModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))) {
                 return true;
             }
         }
