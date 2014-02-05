@@ -64,7 +64,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class FolderSearchInfo extends SearchInfoDefinition {
 
-    private Folder folder;
+    private final Folder folder;
 
     FolderSearchInfo(Folder folder) {
         this.folder = folder;

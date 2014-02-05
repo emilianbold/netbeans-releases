@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 
 
 public class AddExternalItemAction extends AbstractAction {
-    private Project project;
+    private final Project project;
 
     public AddExternalItemAction(Project project) {
 	putValue(NAME, NbBundle.getBundle(getClass()).getString("CTL_AddExternalItem")); //NOI18N

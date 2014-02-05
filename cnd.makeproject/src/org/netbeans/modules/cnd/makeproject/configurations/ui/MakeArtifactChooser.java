@@ -76,7 +76,7 @@ import org.openide.util.RequestProcessor;
 public class MakeArtifactChooser extends JPanel implements PropertyChangeListener {
     public enum ArtifactType {PROJECT, LIBRARY};
     
-    private ArtifactType artifactType;
+    private final ArtifactType artifactType;
     private static final RequestProcessor RP = new RequestProcessor("MakeArtifactChooser",1); // NOI18N
     private final FSPath baseDir;
     
@@ -277,7 +277,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         private final ArtifactType artifactType;
         private Project project;
         private int def = -1;
-        private AtomicBoolean canceled = new AtomicBoolean(false);
+        private final AtomicBoolean canceled = new AtomicBoolean(false);
         private final FSPath baseDir;
 
         private MyDefaultListModel(File dir, ArtifactType artifactType, FSPath baseDir){

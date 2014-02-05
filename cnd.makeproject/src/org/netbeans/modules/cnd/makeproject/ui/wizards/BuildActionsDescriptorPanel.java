@@ -60,7 +60,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<Wizard
 
     private WizardDescriptor wizardDescriptor;
     private BuildActionsPanel component;
-    private String name;
+    private final String name;
 
     /** Create the wizard panel descriptor. */
     public BuildActionsDescriptorPanel() {

@@ -71,7 +71,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private static final String PREFERENCES_PROVIDER_CLASS = "org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider"; // NOI18N
     private static final String SEPARATOR = ","; // NOI18N
     private final Project project;
-    private MakeConfigurationDescriptor makeConfigurationDescriptor;
+    private final MakeConfigurationDescriptor makeConfigurationDescriptor;
     
     // copy-paste from org.netbeans.modules.cnd.editor.options.EditorOptions
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
@@ -402,7 +402,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
 
     private static final class StylePresentation {
         private CodeStyleWrapper key;
-        private String name;
+        private final String name;
         private StylePresentation(Map.Entry<String, CodeStyleWrapper> entry) {
             name = entry.getKey();
             key = entry.getValue();

@@ -166,7 +166,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
         allConfigurationComboBox.setToolTipText(getString("ALL_CONFIGURATIONS_TOOLTIP"));
     }
-    private Map<Item, SharedItemConfiguration> itemConfigurations = new HashMap<>();
+    private final Map<Item, SharedItemConfiguration> itemConfigurations = new HashMap<>();
 
     private SharedItemConfiguration getSharedItemConfiguration(Item item) {
         if (item == null) {
@@ -405,9 +405,9 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
     // Private innerclasses ----------------------------------------------------
     private final class CategoryView extends JPanel implements ExplorerManager.Provider {
 
-        private ExplorerManager manager;
-        private BeanTreeView btv;
-        private String preselectedNodeName;
+        private final ExplorerManager manager;
+        private final BeanTreeView btv;
+        private final String preselectedNodeName;
 
         CategoryView(Node rootNode, String preselectedNodeName) {
             this.preselectedNodeName = preselectedNodeName;

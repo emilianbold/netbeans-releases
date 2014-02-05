@@ -371,10 +371,10 @@ public class PackagingConfiguration implements Cloneable {
 
     private class TypePropertyChangeListener implements PropertyChangeListener {
 
-        private JPanel makeCustomizer;
-        private OutputNodeProp outputNodeProp;
-        private StringNodeProp toolNodeProp;
-        private StringNodeProp optionsNodeProp;
+        private final JPanel makeCustomizer;
+        private final OutputNodeProp outputNodeProp;
+        private final StringNodeProp toolNodeProp;
+        private final StringNodeProp optionsNodeProp;
 
         TypePropertyChangeListener(JPanel makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
             this.makeCustomizer = makeCustomizer;

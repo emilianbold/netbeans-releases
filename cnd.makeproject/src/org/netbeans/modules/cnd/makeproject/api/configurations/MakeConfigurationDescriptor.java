@@ -1147,7 +1147,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
-        private String extraMessage;
+        private final String extraMessage;
 
         public SaveRunnable(String extraMessage) {
             this.extraMessage = extraMessage;
@@ -1863,8 +1863,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         public static final int ITEM_ADDED = 0;
         public static final int ITEM_REMOVED = 1;
-        private Item item;
-        private int action;
+        private final Item item;
+        private final int action;
 
         public ProjectItemChangeEvent(Object src, Item item, int action) {
             super(src);

@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
 public class PackagingNewEntryPanel extends javax.swing.JPanel {
-    private PackagingConfiguration packagingConfiguration;
+    private final PackagingConfiguration packagingConfiguration;
 
     /** Creates new form PackagingNewEntryPanel */
     public PackagingNewEntryPanel(PackagingConfiguration packagingConfiguration) {

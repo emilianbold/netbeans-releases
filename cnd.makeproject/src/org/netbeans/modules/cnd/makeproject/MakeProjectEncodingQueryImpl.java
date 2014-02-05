@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
  */
 public class MakeProjectEncodingQueryImpl extends FileEncodingQueryImplementation {
     
-    private MakeProject project;
+    private final MakeProject project;
     private String nameCache = null;
     private Charset cache = null;
     

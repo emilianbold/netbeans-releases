@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeListener {
 
-    private DevelopmentHostConfiguration dhconf;
+    private final DevelopmentHostConfiguration dhconf;
     private final PropertyEnv propertyEnv;
     private final PropertyEditorSupport editor;
     private final ExecutionEnvironment oldExecEnv;

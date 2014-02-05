@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfigurat
  * @author Vladimir Voskresensky
  */
 public class BooleanReverseNodeProp extends PropertySupport<Boolean> {
-    private BooleanConfiguration booleanConfiguration;
+    private final BooleanConfiguration booleanConfiguration;
 
     public BooleanReverseNodeProp(BooleanConfiguration booleanConfiguration, boolean canWrite, String name1, String name2, String name3) {
         super(name1, Boolean.class, name2, name3, true, canWrite);

@@ -125,7 +125,7 @@ abstract public class VectorNodeProp extends PropertySupport<List> {
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List<String> value;
+        private final List<String> value;
         private PropertyEnv env;
 
         public DirectoriesEditor(List<String> value) {

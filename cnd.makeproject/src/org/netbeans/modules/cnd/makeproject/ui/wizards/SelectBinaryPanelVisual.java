@@ -1116,9 +1116,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private static final class MyDefaultTableModel extends DefaultTableModel {
-        private List<Boolean> uses = new ArrayList<>();
-        private List<String> names = new ArrayList<>();
-        private List<String> paths = new ArrayList<>();
+        private final List<Boolean> uses = new ArrayList<>();
+        private final List<String> names = new ArrayList<>();
+        private final List<String> paths = new ArrayList<>();
         private final SelectBinaryPanelVisual parent;
         private final boolean searching;
         private MyDefaultTableModel(SelectBinaryPanelVisual parent, Map<String, String> dlls, String root, String binaryRoot, boolean searching){

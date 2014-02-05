@@ -109,8 +109,8 @@ public class MakeActionTest {
             COMMAND_RENAME,
             COMMAND_CUSTOM_ACTION,};
         /** Map from commands to ant targets */
-        private Map<String, String[]> commands;
-        private Map<String, String[]> commandsNoBuild;
+        private final Map<String, String[]> commands;
+        private final Map<String, String[]> commandsNoBuild;
         private static final String SAVE_STEP = "save"; // NOI18N
         private static final String BUILD_STEP = "build"; // NOI18N
         private static final String BUILD_PACKAGE_STEP = "build-package"; // NOI18N

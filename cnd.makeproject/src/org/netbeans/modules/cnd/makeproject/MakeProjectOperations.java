@@ -67,7 +67,7 @@ import org.openide.filesystems.FileObject;
 public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation, MoveOrRenameOperationImplementation {
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
-    private MakeProject project;
+    private final MakeProject project;
     private String storedOriginalPath = null;
 
     public MakeProjectOperations(MakeProject project) {

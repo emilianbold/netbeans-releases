@@ -112,7 +112,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     }
     private DocumentListener modifiedValidateDocumentListener = null;
     private Project[] projectChoices = null;
-    private JButton actionButton;
+    private final JButton actionButton;
     private final boolean isRun;
     private final FileSystem fileSystem;
     private RunProjectAction projectAction;

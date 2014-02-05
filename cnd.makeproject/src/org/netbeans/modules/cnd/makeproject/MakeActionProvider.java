@@ -190,12 +190,12 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_DEBUG_STEP_INTO_TEST,
     };
     // Project
-    private MakeProject project;
+    private final MakeProject project;
     // Project Descriptor
     //private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to make targets */
-    private Map<String, String[]> commands;
-    private Map<String, String[]> commandsNoBuild;
+    private final Map<String, String[]> commands;
+    private final Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
     private static final String SAVE_STEP = "save"; // NOI18N
     private static final String BUILD_STEP = "build"; // NOI18N
@@ -1735,9 +1735,9 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
     /** cache for file existence status. */
-    private static Map<String, Boolean> fileExistenceCache = new HashMap<>();
+    private static final Map<String, Boolean> fileExistenceCache = new HashMap<>();
     /** cache for valid executables */
-    private static Map<String, Boolean> validExecutablesCache = new HashMap<>();
+    private static final Map<String, Boolean> validExecutablesCache = new HashMap<>();
 
     private static boolean isValidExecutable(String path, PlatformInfo pi) {
         return existsImpl(path, pi, true);

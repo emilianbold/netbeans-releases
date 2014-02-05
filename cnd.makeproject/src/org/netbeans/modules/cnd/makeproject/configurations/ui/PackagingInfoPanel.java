@@ -66,11 +66,11 @@ import org.openide.util.NbBundle;
 
 public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
-    private PackagingConfiguration packagingConfiguration;
+    private final PackagingConfiguration packagingConfiguration;
     private JTable targetList;
-    private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
-    private JButton addButton;
-    private JButton addEntryButton;
+    private final MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
+    private final JButton addButton;
+    private final JButton addEntryButton;
     private JTextArea docArea;
 
     public PackagingInfoPanel(List<PackagerInfoElement> infoList, PackagingConfiguration packagingConfiguration) {
@@ -395,7 +395,7 @@ public class PackagingInfoPanel extends ListEditorPanel<PackagerInfoElement> {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {getString("PackagingInfoPanel.column.0.text"), getString("PackagingInfoPanel.column.1.text")};
+        private final String[] columnNames = {getString("PackagingInfoPanel.column.0.text"), getString("PackagingInfoPanel.column.1.text")};
 
         @Override
         public String getColumnName(int col) {

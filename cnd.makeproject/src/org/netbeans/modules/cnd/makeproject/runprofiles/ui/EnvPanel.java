@@ -64,8 +64,8 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
     private ListTableModel envvarModel = null;
     private JTable envvarTable = null;
 
-    private Env env;
-    private PropertyEditorSupport editor;
+    private final Env env;
+    private final PropertyEditorSupport editor;
     
     /** Creates new form EnvPanel */
     public EnvPanel(Env env, PropertyEditorSupport editor, PropertyEnv propenv) {

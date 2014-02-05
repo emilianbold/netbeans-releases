@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
 
 public class StringListNodePropTest {    
   
-    private VectorConfiguration<String> fakeConfiguration = new VectorConfiguration<>(null);
+    private final VectorConfiguration<String> fakeConfiguration = new VectorConfiguration<>(null);
     private StringListNodeProp instance = null;
     
     @Before

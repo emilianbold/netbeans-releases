@@ -63,8 +63,8 @@ import org.xml.sax.Attributes;
 
 class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
-    private String tag;
-    private ConfigurationDescriptor configurationDescriptor;
+    private final String tag;
+    private final ConfigurationDescriptor configurationDescriptor;
     private Configuration currentConf;
     private List<XMLDecoder> decoders = new ArrayList<>();
     private int descriptorVersion = -1;

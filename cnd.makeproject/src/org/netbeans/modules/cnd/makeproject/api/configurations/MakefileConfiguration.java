@@ -262,7 +262,7 @@ public class MakefileConfiguration implements Cloneable {
     
     private class DirEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
-        private String seed;
+        private final String seed;
         
         public DirEditor(String seed) {
             this.seed = seed;
@@ -340,7 +340,7 @@ public class MakefileConfiguration implements Cloneable {
    
     private final class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
-        private String seed;
+        private final String seed;
         
         public ElfEditor(String seed) {
             this.seed = seed;

@@ -79,11 +79,11 @@ import org.openide.util.NbBundle;
 
 public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
-    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"); // NOI18N
-    private FSPath baseDir;
-    private MakeConfiguration conf;
+    private static final Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"); // NOI18N
+    private final FSPath baseDir;
+    private final MakeConfiguration conf;
     private JTable targetList;
-    private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
+    private final MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
 
     @Override
     public char getDownButtonMnemonics() {
@@ -235,7 +235,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private static class MakeArtifactWrapper {
 
-        private MakeArtifact makeArtifact;
+        private final MakeArtifact makeArtifact;
 
         public MakeArtifactWrapper(MakeArtifact makeArtifact) {
             this.makeArtifact = makeArtifact;
@@ -306,7 +306,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
 
     private class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {getString("ITEM"), getString("CONFIGURATION"), getString("BUILD")}; // NOI18N
+        private final String[] columnNames = {getString("ITEM"), getString("CONFIGURATION"), getString("BUILD")}; // NOI18N
 
         @Override
         public String getColumnName(int col) {

@@ -59,11 +59,11 @@ import org.openide.util.NbBundle;
 
 public class DevelopmentHostNodeProp extends Node.Property {
 
-    private DevelopmentHostConfiguration configuration;
-    private boolean canWrite;
-    private String name;
-    private String displayName;
-    private String description;
+    private final DevelopmentHostConfiguration configuration;
+    private final boolean canWrite;
+    private final String name;
+    private final String displayName;
+    private final String description;
 
     @SuppressWarnings("unchecked")
     public DevelopmentHostNodeProp(DevelopmentHostConfiguration configuration, boolean canWrite, String name, String displayName, String description) {

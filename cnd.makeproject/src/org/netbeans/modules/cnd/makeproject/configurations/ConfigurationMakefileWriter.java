@@ -115,7 +115,7 @@ import org.openide.util.NbBundle;
 
 public class ConfigurationMakefileWriter {
 
-    private MakeConfigurationDescriptor projectDescriptor;
+    private final MakeConfigurationDescriptor projectDescriptor;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     public ConfigurationMakefileWriter(MakeConfigurationDescriptor projectDescriptor) {

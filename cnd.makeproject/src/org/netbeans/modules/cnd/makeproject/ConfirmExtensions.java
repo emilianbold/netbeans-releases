@@ -55,9 +55,9 @@ import java.util.Set;
  * @author Alexander Simon
  */
 public class ConfirmExtensions extends javax.swing.JPanel {
-    private Set<String> unknownC;
-    private Set<String> unknownCpp;
-    private Set<String> unknownH;
+    private final Set<String> unknownC;
+    private final Set<String> unknownCpp;
+    private final Set<String> unknownH;
 
     /** Creates new form ConfirmExtensions */
     public ConfirmExtensions(Set<String> unknownC, Set<String> unknownCpp, Set<String> unknownH) {

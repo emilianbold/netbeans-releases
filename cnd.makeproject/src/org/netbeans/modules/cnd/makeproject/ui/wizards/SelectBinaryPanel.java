@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NamedPanel, ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private SelectBinaryPanelVisual component;
-    private String name;
+    private final String name;
     private boolean isValid = false;
     private final BinaryWizardStorage wizardStorage;
     private final Set<ChangeListener> listeners = new HashSet<>(1);

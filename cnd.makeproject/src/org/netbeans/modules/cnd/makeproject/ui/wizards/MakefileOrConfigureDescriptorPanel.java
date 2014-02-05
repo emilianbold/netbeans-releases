@@ -60,7 +60,7 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
 
     private WizardDescriptor wizardDescriptor;
     private MakefileOrConfigurePanel component;
-    private String name;
+    private final String name;
     //private boolean initialized = false;
 
     /** Create the wizard panel descriptor. */

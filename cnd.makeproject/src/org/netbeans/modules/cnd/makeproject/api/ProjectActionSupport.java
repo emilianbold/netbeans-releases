@@ -859,7 +859,7 @@ public class ProjectActionSupport {
 
     private static final class TermAction extends AbstractAction {
 
-        private EventsProcessor handleEvents;
+        private final EventsProcessor handleEvents;
 
         public TermAction(EventsProcessor handleEvents) {
             this.handleEvents = handleEvents;

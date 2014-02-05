@@ -60,7 +60,7 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
 
     private WizardDescriptor wizardDescriptor;
     private ParserConfigurationPanel component;
-    private String name;
+    private final String name;
 
     /** Create the wizard panel descriptor. */
     public ParserConfigurationDescriptorPanel() {

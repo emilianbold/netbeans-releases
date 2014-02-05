@@ -1159,7 +1159,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
      */
     private final static class ManagedIntConfiguration extends IntConfiguration {
 
-        private int offset;
+        private final int offset;
 
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options, int offset) {
             super(master, def, names, options);

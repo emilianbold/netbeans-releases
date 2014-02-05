@@ -75,17 +75,17 @@ import org.openide.util.NbBundle;
 
 public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
-    private Project project;
-    private MakeConfiguration conf;
-    private MyListEditorPanel myListEditorPanel;
-    private FSPath baseDir;
-    private PropertyEditorSupport editor;
-    private JButton addProjectButton;
-    private JButton addStandardLibraryButton;
-    private JButton addPkgConfigLibraryButton;
-    private JButton addLibraryButton;
-    private JButton addLibraryFileButton;
-    private JButton addLibraryOption;
+    private final Project project;
+    private final MakeConfiguration conf;
+    private final MyListEditorPanel myListEditorPanel;
+    private final FSPath baseDir;
+    private final PropertyEditorSupport editor;
+    private final JButton addProjectButton;
+    private final JButton addStandardLibraryButton;
+    private final JButton addPkgConfigLibraryButton;
+    private final JButton addLibraryButton;
+    private final JButton addLibraryFileButton;
+    private final JButton addLibraryOption;
 
     public LibrariesPanel(Project project, MakeConfiguration conf, FSPath baseDir, List<LibraryItem> data, PropertyEditorSupport editor, PropertyEnv env) {
         this.project = project;

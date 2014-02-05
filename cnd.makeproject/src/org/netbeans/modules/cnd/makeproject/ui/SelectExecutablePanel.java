@@ -78,11 +78,11 @@ import org.openide.util.RequestProcessor;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
-    private JList exeList;
-    private FileFilterFactory.AbstractFileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
-    private FileFilterFactory.AbstractFileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
-    private FileFilterFactory.AbstractFileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
-    private DocumentListener documentListener;
+    private final JList exeList;
+    private final FileFilterFactory.AbstractFileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private final FileFilterFactory.AbstractFileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private final FileFilterFactory.AbstractFileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
+    private final DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private final MakeConfiguration conf;
     private final FileObject buildWorkingDirFO;

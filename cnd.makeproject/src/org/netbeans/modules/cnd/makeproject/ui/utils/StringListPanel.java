@@ -60,11 +60,11 @@ import org.openide.util.NbBundle;
 
 public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
-    private MyListEditorPanel myListEditorPanel;
-    private boolean addPathPanel;
-    private BooleanConfiguration inheritValues;
-    private PropertyEditorSupport editor;
-    private HelpCtx helpCtx;
+    private final MyListEditorPanel myListEditorPanel;
+    private final boolean addPathPanel;
+    private final BooleanConfiguration inheritValues;
+    private final PropertyEditorSupport editor;
+    private final HelpCtx helpCtx;
 
     public StringListPanel(String label, List<String> data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
         this.addPathPanel = addPathPanel;

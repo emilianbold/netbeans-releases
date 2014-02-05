@@ -73,7 +73,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
 
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
-    private String name;
+    private final String name;
     private final MyWizardStorage wizardStorage;
     private boolean isValid = false;
     private int generation = 0;
@@ -417,7 +417,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     private static class WizardDescriptorAdapter extends WizardDescriptor{
-        private WizardStorage storage;
+        private final WizardStorage storage;
         public WizardDescriptorAdapter(WizardStorage storage) {
             this.storage = storage;
         }

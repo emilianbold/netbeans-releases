@@ -107,8 +107,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
-    private int type;
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    private final int type;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     private static final Object FAKE_ITEM = new Object();
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
@@ -1078,7 +1078,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         private long lastEventID = 0;        
         private WizardValidationWorkerCheckState lastCheck = null;
         private ProjectValidationParams projectParams;
-        private AtomicBoolean makefileNameChangedManually = new AtomicBoolean(false);        
+        private final AtomicBoolean makefileNameChangedManually = new AtomicBoolean(false);        
         
 
         WizardValidationWorker() {

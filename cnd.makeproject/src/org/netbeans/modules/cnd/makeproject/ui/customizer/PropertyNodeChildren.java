@@ -56,7 +56,7 @@ import org.openide.nodes.Node;
  */
 final class PropertyNodeChildren extends Children.Keys<CustomizerNode> {
 
-    private Collection<CustomizerNode> descriptions;
+    private final Collection<CustomizerNode> descriptions;
 
     public PropertyNodeChildren(CustomizerNode[] descriptions) {
         this.descriptions = Arrays.asList(descriptions);

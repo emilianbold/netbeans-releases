@@ -687,7 +687,7 @@ public class ItemConfiguration implements ConfigurationAuxObject, ConfigurationA
 
     private static class StringRONodeProp extends PropertySupport<String> {
 
-        private String value;
+        private final String value;
 
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);

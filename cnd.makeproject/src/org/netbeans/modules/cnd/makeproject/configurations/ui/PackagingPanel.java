@@ -68,8 +68,8 @@ import org.openide.util.NbBundle;
 public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
     PackagingConfiguration packagingConfiguration;
-    private PropertyEditorSupport editor;
-    private MakeConfiguration conf;
+    private final PropertyEditorSupport editor;
+    private final MakeConfiguration conf;
     private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingAdditionalInfoPanel packagingAdditionalInfoPanel = null;

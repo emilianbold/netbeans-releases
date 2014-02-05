@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  */
 public abstract class BuildActionsProvider {
 
-    private static BuildActionsProvider DEFAULT = new Default();
+    private static final BuildActionsProvider DEFAULT = new Default();
 
     public abstract List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events);
 

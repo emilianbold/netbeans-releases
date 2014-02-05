@@ -118,7 +118,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String root;
     private volatile boolean removed;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
-    private static boolean checkedLogging = checkLogging();
+    private static final boolean checkedLogging = checkLogging();
     private final Kind kind;
 
     public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles, Kind kind) {

@@ -49,7 +49,7 @@ import java.util.List;
 
 public class VectorConfiguration<E> implements Cloneable {
 
-    private VectorConfiguration<E> master;
+    private final VectorConfiguration<E> master;
     private List<E> value;
     private boolean dirty = false;
 

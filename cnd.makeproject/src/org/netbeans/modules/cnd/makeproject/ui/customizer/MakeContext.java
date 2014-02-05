@@ -79,7 +79,7 @@ public class MakeContext {
     private Folder folder;
     private JPanel container;
     private ConfigurationDescriptor configurationDescriptor;
-    private Set<Savable> listeners = new WeakSet<>();
+    private final Set<Savable> listeners = new WeakSet<>();
 
     public MakeContext(Kind kind, Project project, ExecutionEnvironment env, Configuration[] selectedConfigurations){
         this.project = project;
