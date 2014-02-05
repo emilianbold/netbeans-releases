@@ -373,9 +373,13 @@ import org.openide.util.NbBundle;
 
         List<GenerationOptions> intfOptions = getAbstractFacadeMethodOptions(entityFQN, variableName);
         if (hasLocal) {
-            FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), EJB_LOCAL, targetFolder);
-            addMethodToInterface(intfOptions, local);
-            createdFiles.add(local);
+            final SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String simpleName = JavaIdentifiers.unqualify(localInterfaceFQN);
+            if (!interfaceExists(groups, pkg, simpleName)) {
+                FileObject local = createInterface(simpleName, EJB_LOCAL, targetFolder);
+                addMethodToInterface(intfOptions, local);
+                createdFiles.add(local);
+            }
         }
         if (hasRemote) {
             final SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -622,8 +626,8 @@ import org.openide.util.NbBundle;
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
         JavaSource source = JavaSource.forFileObject(sourceFile);
         if (source == null) {
-            LOGGER.log(Level.SEVERE, "JavaSource not created for FileObject: valid={0}, mime-type={1}",
-                    new Object[]{sourceFile.isValid(), sourceFile.getMIMEType()});
+            LOGGER.log(Level.SEVERE, "JavaSource not created for FileObject: path={0}, valid={1}, mime-type={2}",
+                    new Object[]{sourceFile.getPath(), sourceFile.isValid(), sourceFile.getMIMEType()});
         }
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
 
