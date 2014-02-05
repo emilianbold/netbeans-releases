@@ -129,6 +129,7 @@ public class ODCSPasswordAuthorizer implements ConnectionAuthenticator {
                     ODCSBuilderAccessor.clearCached(projectHandle);
                     return;
                 }
+                conn.setAllowUserInteraction(false);
                 ODCSServer srv = projectHandle.getTeamProject().getServer();
                 PasswordAuthentication pa = srv.getPasswordAuthentication();
                 if (pa != null) {

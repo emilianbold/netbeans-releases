@@ -363,15 +363,15 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return fo;
     }
 
-    protected final void setClassRequests (
+    protected final boolean setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType
     ) {
-        setClassRequests(classFilters, classExclusionFilters, breakpointType, true);
+        return setClassRequests(classFilters, classExclusionFilters, breakpointType, true);
     }
     
-    protected final void setClassRequests (
+    protected final boolean setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,
         int breakpointType,
@@ -413,11 +413,20 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 }
             }
         } catch (VMDisconnectedExceptionWrapper e) {
+            return false;
         } catch (InternalExceptionWrapper e) {
+            return false;
         } catch (ObjectCollectedExceptionWrapper e) {
+            return false;
         } catch (InvalidRequestStateExceptionWrapper irse) {
             Exceptions.printStackTrace(irse);
+            setValidity(VALIDITY.INVALID, irse.getLocalizedMessage());
+            return false;
+        } catch (RequestNotSupportedException rnsex) {
+            setValidity(VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
+            return false;
         }
+        return true;
     }
     
     protected boolean checkLoadedClasses (

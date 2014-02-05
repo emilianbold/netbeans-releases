@@ -52,6 +52,7 @@ import com.sun.jdi.request.StepRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.Locatable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
@@ -127,6 +128,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     //private ASTL stepASTL;
     private Operation[] currentOperations;
     private Operation lastOperation;
+    private ExpressionPool.Interval currentExpInterval;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
@@ -134,6 +136,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     private volatile StepPatternDepth stepPatternDepth;
     private boolean ignoreStepFilters = false;
+    private StopHereCheck stopHereCheck;
     private Properties p;
     
     private Session session;
@@ -419,8 +422,48 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         }
         
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
+        /*
+        //Location lastLocation = nextOperationLocations[nextOperationLocations.length - 1].getOperation().getMethod;
+        int[] codeIndexIntervals = expr.getCodeIndexIntervals();
+        int lastCodeIndex = codeIndexIntervals[codeIndexIntervals.length - 1];
+        Location boundaryLocation = MethodWrapper.locationOfCodeIndex(LocationWrapper.method(loc), lastCodeIndex);
+        BreakpointRequest brReq = EventRequestManagerWrapper.createBreakpointRequest(
+                        VirtualMachineWrapper.eventRequestManager(vm),
+                        boundaryLocation);
+        ((JPDADebuggerImpl) debugger).getOperator().register(brReq, this);
+        EventRequestWrapper.setSuspendPolicy(brReq, debugger.getSuspend());
+        BreakpointRequestWrapper.addThreadFilter(brReq, trRef);
+        EventRequestWrapper.putProperty(brReq, "thread", trRef); // NOI18N
+        try {
+            EventRequestWrapper.enable(brReq);
+            requestsToCancel.add(brReq);
+        } catch (InvalidRequestStateExceptionWrapper ex) {
+            Exceptions.printStackTrace(ex);
+            ((JPDADebuggerImpl) debugger).getOperator().unregister(brReq);
+            brReq = null;
+            return false;
+        } finally {
+            boundaryBreakpointRequest = brReq;
+        }
+        */
+        boolean isBSR = setUpBoundaryStepRequest(
+                         VirtualMachineWrapper.eventRequestManager(vm),
+                         trRef,
+                         isNextOperationFromDifferentExpression);
+        if (!isBSR) {
+            return false;
+        }
+        this.currentOperations = ops;
+        this.currentExpInterval = expr.getInterval();
+        return true;
+    }
+    
+    private boolean setUpBoundaryStepRequest(EventRequestManager erm,
+                                             ThreadReference trRef,
+                                             boolean isNextOperationFromDifferentExpression)
+                    throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         boundaryStepRequest = EventRequestManagerWrapper.createStepRequest(
-            VirtualMachineWrapper.eventRequestManager(vm),
+            erm,
             trRef,
             StepRequest.STEP_LINE,
             StepRequest.STEP_OVER
@@ -446,24 +489,23 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             boundaryStepRequest = null;
             return false;
         }
-        
-        this.currentOperations = ops;
         return true;
     }
     
     @Override
-    public boolean exec (Event event) {
+    public boolean exec (final Event event) {
+        final EventRequest eventRequest;
         try {
-            EventRequest er = EventWrapper.request(event);
-            stepDone(er);
+            eventRequest = EventWrapper.request(event);
+            stepDone(eventRequest);
         } catch (InternalExceptionWrapper ex) {
             return false;
         } catch (VMDisconnectedExceptionWrapper ex) {
             return false;
         }
-
+        
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JPDAStepImpl.exec("+event+")");
+            logger.fine("JPDAStepImpl.exec("+event+"), is boundaryStepRequest = "+(eventRequest == boundaryStepRequest));
         }
         // TODO: Check the location, follow the smart-stepping logic!
         SourcePath sourcePath = ((JPDADebuggerImpl) debugger).getEngineContext();
@@ -477,15 +519,50 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (vm == null) {
                 return false; // The session has finished
             }
+            if (currentOperations != null) {
+                if (eventRequest == boundaryStepRequest) {
+                    // A line step was finished, we need to check if the execution
+                    // of current expression has finished or not...
+                    try {
+                        Location loc = LocatableWrapper.location((Locatable) event);
+                        final String language = session == null ? null : session.getCurrentLanguage();
+                        int l = LocationWrapper.lineNumber(loc, language);
+                        if (currentExpInterval.contains(l)) {
+                            // The expression did not finish yet, we're suspended
+                            // somewhere in the middle. Continue...
+                            EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
+                            try {
+                                EventRequestManagerWrapper.deleteEventRequest(erm, eventRequest);
+                            } catch (InvalidRequestStateExceptionWrapper ex) {}
+                            // silently unregister the old boundary step
+                            EventRequestWrapper.putProperty (eventRequest, "executor", null); // NOI18N
+                            boolean isBSR;
+                            try {
+                                isBSR = setUpBoundaryStepRequest(
+                                        erm,
+                                        tr.getThreadReference(),
+                                        false);
+                            } catch (ObjectCollectedExceptionWrapper ex) {
+                                isBSR = false;
+                            }
+                            // We're in the middle of the expression,
+                            // continue if we manage to submit another boundary step
+                            return isBSR;
+                        }
+                    } catch (InternalExceptionWrapper ex) {
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        return false;
+                    }
+                }
+            }
+            
             Variable returnValue = null;
             MethodExitBreakpointListener mebl = lastMethodExitBreakpointListener;
             if (mebl != null) {
                 returnValue = mebl.getReturnValue();
             }
-            EventRequest eventRequest = null;
             try {
                 EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
-                eventRequest = EventWrapper.request(event);
                 try {
                     EventRequestManagerWrapper.deleteEventRequest(erm, eventRequest);
                 } catch (InvalidRequestStateExceptionWrapper ex) {}
@@ -581,9 +658,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             boolean addExprStep = false;
             if (currentOperations != null) {
                 try {
-                    if (EventWrapper.request(event) instanceof BreakpointRequest) {
+                    if (eventRequest instanceof BreakpointRequest) {
                         long codeIndex = LocationWrapper.codeIndex(
-                                BreakpointRequestWrapper.location((BreakpointRequest) EventWrapper.request(event)));
+                                BreakpointRequestWrapper.location((BreakpointRequest) eventRequest));
                         for (int i = 0; i < currentOperations.length; i++) {
                             if (currentOperations[i].getBytecodeIndex() == codeIndex) {
                                 currentOperation = currentOperations[i];
@@ -593,6 +670,8 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     } else {
                         // A line step was finished, the execution of current expression
                         // has finished, we need to check the expression on this line.
+                        // We already know, that currentExpInterval does not contain the line
+                        // Check expressions on this line
                         addExprStep = true;
                     }
                 } catch (InternalExceptionWrapper ex) {
@@ -813,6 +892,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             }
                         }
                     }
+                    
+                    if (stopHereCheck != null) {
+                        doStepAgain = !stopHereCheck.stopHere(!doStepAgain);
+                    }
 
                     if (doStepAgain) {
                         //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
@@ -1024,6 +1107,15 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
 
     public void setIgnoreStepFilters(boolean ignoreStepFilters) {
         this.ignoreStepFilters = ignoreStepFilters;
+    }
+    
+    public void setStopHereCheck(StopHereCheck stopHereCheck) {
+        this.stopHereCheck = stopHereCheck;
+    }
+    
+    public static interface StopHereCheck {
+        
+        public boolean stopHere(boolean willStop);
     }
 
     public static final class MethodExitBreakpointListener implements JPDABreakpointListener {

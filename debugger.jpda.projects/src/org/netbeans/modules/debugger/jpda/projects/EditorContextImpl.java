@@ -1793,7 +1793,14 @@ public class EditorContextImpl extends EditorContext {
                             if (treeStartLine == Diagnostic.NOPOS) {
                                 continue;
                             }
-                            ExpressionScanner scanner = new ExpressionScanner(treeStartLine, cu, ci.getTrees().getSourcePositions());
+                            int treeEndLine =
+                                    (int) cu.getLineMap().getLineNumber(
+                                        sp.getEndPosition(cu, t));
+                            if (treeEndLine == Diagnostic.NOPOS) {
+                                continue;
+                            }
+                            ExpressionScanner scanner = new ExpressionScanner(treeStartLine, treeStartLine, treeEndLine,
+                                                                              cu, ci.getTrees().getSourcePositions());
                             ExpressionScanner.ExpressionsInfo newInfo = new ExpressionScanner.ExpressionsInfo();
                             List<Tree> newExpTrees = methodTree.accept(scanner, newInfo);
                             if (newExpTrees == null) {
@@ -1802,7 +1809,7 @@ public class EditorContextImpl extends EditorContext {
                             treeStartLine =
                                     (int) cu.getLineMap().getLineNumber(
                                         sp.getStartPosition(cu, newExpTrees.get(0)));
-                            int treeEndLine =
+                            treeEndLine =
                                     (int) cu.getLineMap().getLineNumber(
                                         sp.getEndPosition(cu, newExpTrees.get(newExpTrees.size() - 1)));
 
@@ -2695,23 +2702,39 @@ public class EditorContextImpl extends EditorContext {
             return new Operation[] {};
         }
         CompilationUnitTree cu = ci.getCompilationUnit();
-        ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
+        SourcePositions sp = ci.getTrees().getSourcePositions();
+        int statementStart = (int) cu.getLineMap().getLineNumber(sp.getStartPosition(cu, statementTree));
+        int statementEnd = (int) cu.getLineMap().getLineNumber(sp.getEndPosition(cu, statementTree));
+        ExpressionScanner scanner = new ExpressionScanner(lineNumber, statementStart, statementEnd,
+                                                          cu, ci.getTrees().getSourcePositions());
         ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
         List<Tree> expTrees = statementTree.accept(scanner, info);
 
+        logger.log(Level.FINE, "expression trees = {0}", expTrees);
+        
         //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
         if (expTrees == null || expTrees.isEmpty()) {
             return new Operation[] {};
         }
-        SourcePositions sp = ci.getTrees().getSourcePositions();
-        int treeStartLine =
-                (int) cu.getLineMap().getLineNumber(
-                    sp.getStartPosition(cu, expTrees.get(0)));
-        int treeEndLine =
-                (int) cu.getLineMap().getLineNumber(
-                    sp.getEndPosition(cu, expTrees.get(expTrees.size() - 1)));
-
-        if (treeStartLine == Diagnostic.NOPOS || treeEndLine == Diagnostic.NOPOS) {
+        int treeStartLine = Integer.MAX_VALUE;
+        int treeEndLine = 0;
+        for (int i = 0; i < expTrees.size(); i++) {
+            Tree tree = expTrees.get(i);
+            int start = (int) cu.getLineMap().getLineNumber(
+                sp.getStartPosition(cu, tree));
+            int end = (int) cu.getLineMap().getLineNumber(
+                sp.getEndPosition(cu, tree));
+            if (start == Diagnostic.NOPOS || end == Diagnostic.NOPOS) {
+                continue;
+            }
+            if (start < treeStartLine) {
+                treeStartLine = start;
+            }
+            if (end > treeEndLine) {
+                treeEndLine = end;
+            }
+        }
+        if (treeStartLine == Integer.MAX_VALUE) {
             return null;
         }
         //t3 = System.nanoTime();

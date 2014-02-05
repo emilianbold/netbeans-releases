@@ -52,6 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -253,8 +254,19 @@ public class ExpressionStepTest extends NbTestCase {
             assertEquals("Different count of last operations and expected return values.", returnValues.length, ops.size());
             for (int i = 0; i < returnValues.length; i++) {
                 Variable rv = ops.get(i).getReturnValue();
+                String retValue;
+                if (rv instanceof ObjectVariable) {
+                    try {
+                        retValue = ((ObjectVariable) rv).getToStringValue();
+                    } catch (InvalidExpressionException ex) {
+                        Exceptions.printStackTrace(ex);
+                        retValue = rv.getValue();
+                    }
+                } else {
+                    retValue = rv.getValue();
+                }
                 if (rv != null) {
-                    assertEquals("Bad return value", returnValues[i], rv.getValue());
+                    assertEquals("Bad return value", returnValues[i], retValue);
                 }
             }
         }
