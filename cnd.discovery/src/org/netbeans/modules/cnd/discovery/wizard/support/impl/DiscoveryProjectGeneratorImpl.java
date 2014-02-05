@@ -937,7 +937,7 @@ public class DiscoveryProjectGeneratorImpl {
         reConsolidatePaths(set, config);
         reConsolidateFiles(fileSet, config, set);
         macros.putAll(config.getUserMacros());
-        projectBridge.setupFile(config.getCompilePath(), new ArrayList<>(set), !config.overrideIncludes(), config.getUserInludeFiles(), !config.overrideFiles(),
+        projectBridge.setupFile(config.getCompilePath(), new ArrayList<>(set), !config.overrideIncludes(),  new ArrayList<>(fileSet), !config.overrideFiles(),
                 buildMacrosString(macros), !config.overrideMacros(),
                 new ArrayList<>(config.getUndefinedMacros()), !config.overrideUndefinedMacros(), item, config.getImportantFlags());
     }
