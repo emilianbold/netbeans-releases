@@ -65,6 +65,7 @@ import org.netbeans.modules.debugger.ui.views.debugging.DebuggingViewComponent;
 import org.netbeans.modules.debugger.ui.views.debugging.FiltersDescriptor;
 import org.netbeans.modules.debugger.ui.views.debugging.FiltersDescriptor.FilterImpl;
 import org.netbeans.modules.debugger.ui.views.debugging.FiltersDescriptor.FiltersAccessor;
+import static org.netbeans.modules.debugger.ui.views.debugging.FiltersDescriptor.NATURAL_SORT;
 import org.openide.windows.TopComponent;
 
 /**
@@ -464,7 +465,7 @@ public final class DebuggingView {
             showSuspendedThreadsOnly,
         }
         
-        private static final Group sortGroup = new Group();
+        private static Reference<Group> sortGroupRef = new WeakReference<Group>(null);
         
         /**
          * Get an instance of a default filter.
@@ -478,13 +479,30 @@ public final class DebuggingView {
                 case sortAlphabetic:
                 case sortNatural:
                 case sortSuspend:
-                    g = sortGroup;
+                    g = getGroupFor(filter, fimpl); //sortGroup;
                     break;
                 default:
                     g = null;
             }
             fimpl.setGroup(g);
             return new DVFilter(fimpl, g);
+        }
+        
+        private static Group getGroupFor(DefaultFilter filter, FilterImpl fimpl) {
+            Group group = sortGroupRef.get();
+            if (group == null) {
+                group = new Group();
+                sortGroupRef = new WeakReference<Group>(group);
+            } else {
+                for (DVFilter df : group.getItems()) {
+                    if (df.getImpl().getName().equals(fimpl.getName())) {
+                        // The group already contains this item. We need to create a new group...
+                        group = new Group();
+                        sortGroupRef = new WeakReference<Group>(group);
+                    }
+                }
+            }
+            return group;
         }
         
         /**
@@ -577,6 +595,35 @@ public final class DebuggingView {
          * @param state whether to select the filter
          */
         public void setSelected(boolean state) {
+            
+            if (!state && group != null) {
+                // unselecting a grouped item
+                boolean isSomeSelected = false;
+                for (DVFilter dvf : group.getItems()) {
+                    if (dvf.getImpl() != fimpl) {
+                        if (dvf.isSelected()) {
+                            isSomeSelected = true;
+                            break;
+                        }
+                    }
+                }
+                if (!isSomeSelected) {
+                    // We're trying to unselect the only selected item in the group
+                    if (NATURAL_SORT.equals(fimpl.getName())) {
+                        // Ignore unselect
+                        fimpl.setSelected(true);
+                        fimpl.assureButtonSelected(true);
+                        return ;
+                    }
+                    // Else force to select the natural sort
+                    for (DVFilter dvf : group.getItems()) {
+                        if (NATURAL_SORT.equals(dvf.getName())) {
+                            dvf.getImpl().setSelected(true);
+                        }
+                    }
+                }
+            }
+            
             fimpl.setSelected(state);
         }
         
