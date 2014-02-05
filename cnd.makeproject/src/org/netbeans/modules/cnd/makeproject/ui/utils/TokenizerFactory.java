@@ -106,7 +106,7 @@ public final class TokenizerFactory {
             }
         };
 
-    public static Converter getPathConverter(final Project project, final Folder folder, final Item item) {
+    public static Converter getPathConverter(final Project project, final Folder folder, final Item item, final String flag) {
         return new Converter() {
             private final PathResolver resolver = new PathResolver(){
 
@@ -149,7 +149,7 @@ public final class TokenizerFactory {
 
             @Override
             public List<String> convertToList(String text) {
-                return TokenizerFactory.tokenize(text, new String[]{"-I", "-include"}, "; ", resolver); // NOI18N
+                return TokenizerFactory.tokenize(text, new String[]{flag}, "; ", resolver); // NOI18N
             }
         };
     }

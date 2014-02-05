@@ -87,6 +87,11 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
     }
 
     @Override
+    public List<String> getUserInludeFiles() {
+        return sourceFile.getUserInludeFiles();
+    }
+
+    @Override
     public Map<String,String> getUserMacros() {
         return sourceFile.getUserMacros();
     }

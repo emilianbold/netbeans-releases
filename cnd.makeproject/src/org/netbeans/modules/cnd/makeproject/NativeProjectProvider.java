@@ -655,7 +655,26 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     @Override
     public List<String> getIncludeFiles() {
-        return Collections.emptyList();
+        ArrayList<String> vec = new ArrayList<>();
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        if (makeConfiguration != null) {
+            CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
+            ArrayList<String> vec2 = new ArrayList<>();
+            vec2.addAll(cccCompilerConfiguration.getIncludeFiles().getValue());
+            // Convert all paths to absolute paths
+            Iterator<String> iter = vec2.iterator();
+            FileSystem fs = getFileSystem();
+            while (iter.hasNext()) {
+                String path = iter.next();
+                if (CndPathUtilities.isPathAbsolute(path)) {
+                    vec.add(path);                    
+                } else {
+                    path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
+                    vec.add(path);
+                }
+            }
+        }
+        return vec;
     }
 
     /**

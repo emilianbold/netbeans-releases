@@ -51,13 +51,14 @@ public class TraceModelBase {
     private boolean useCppSysDefines = Boolean.getBoolean("cnd.modelimpl.cpp.define"); //NOI18N
     private final ModelImpl model;
     private CsmUID<CsmProject> projectUID;
-    private List<String> quoteIncludePaths = new ArrayList<String>();
-    private List<String> systemIncludePaths = new ArrayList<String>();
-    private List<String> libProjectsPaths = new ArrayList<String>();
-    private final List<File> files = new ArrayList<File>();
+    private List<String> quoteIncludePaths = new ArrayList<>();
+    private final List<String> currentIncludeFiles = new ArrayList<>();
+    private List<String> systemIncludePaths = new ArrayList<>();
+    private List<String> libProjectsPaths = new ArrayList<>();
+    private final List<File> files = new ArrayList<>();
     private List<String> currentIncludePaths = null;
-    private final List<String> macros = new ArrayList<String>();
-    private final List<String> undefinedMacros = new ArrayList<String>();
+    private final List<String> macros = new ArrayList<>();
+    private final List<String> undefinedMacros = new ArrayList<>();
 
     // if true, then relative include paths oin -I option are considered
     // to be based on the file that we currently compile rather then current dir
@@ -297,7 +298,7 @@ public class TraceModelBase {
                     : files.get(0).getParentFile().getAbsolutePath();
             np = NativeProjectProvider.createProject(projectRoot, files,
                     libProjectsPaths,
-                    getSystemIncludes(), quoteIncludePaths, getSysMacros(),
+                    getSystemIncludes(), quoteIncludePaths, currentIncludeFiles, getSysMacros(),
                     macros, undefinedMacros, pathsRelCurFile);
         }
         ProjectBase out = model.addProject(np, np.getProjectDisplayName(), true);

@@ -158,6 +158,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         clone.setLanguageExt(getLanguageExt().clone());
         clone.setIncludeDirectories(getIncludeDirectories().clone());
         clone.setInheritIncludes(getInheritIncludes().clone());
+        clone.setIncludeFiles(getIncludeFiles().clone());
+        clone.setInheritFiles(getInheritFiles().clone());
         clone.setPreprocessorConfiguration(getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor(getInheritPreprocessor().clone());
         clone.setUndefinedPreprocessorConfiguration(getUndefinedPreprocessorConfiguration().clone());
@@ -266,12 +268,37 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         for(int i = list.size() - 1; i > 0; i--) {
             options.append(list.get(i).getIncludeDirectories().toString(visitor)).append(' '); // NOI18N
         }
+        String includeFilesOptions = getIncludeFilesOptions(cs);
+        if (includeFilesOptions.isEmpty()) {
+            return options.toString();
+        }
+        return options.toString()+" "+includeFilesOptions; //NOI18N
+    } 
+
+    private String getIncludeFilesOptions(CompilerSet cs) {
+        List<CCCCompilerConfiguration> list = new ArrayList<>();
+        for(BasicCompilerConfiguration master : getMasters(true)) {
+            list.add((CCCCompilerConfiguration)master);
+            if (!((CCCCompilerConfiguration)master).getInheritFiles().getValue()) {
+                break;
+            }
+        }
+        OptionToString visitor = new OptionToString(cs, getUserFileFlag(cs));
+        StringBuilder options = new StringBuilder(getIncludeFiles().toString(visitor)).append(' '); // NOI18N
+        for(int i = list.size() - 1; i > 0; i--) {
+            options.append(list.get(i).getIncludeFiles().toString(visitor)).append(' '); // NOI18N
+        }
         return options.toString();
     } 
 
     @Override
     protected String getUserIncludeFlag(CompilerSet cs){
         return cs.getCompilerFlavor().getToolchainDescriptor().getCpp().getUserIncludeFlag();
+    }
+
+    @Override
+    protected String getUserFileFlag(CompilerSet cs){
+        return cs.getCompilerFlavor().getToolchainDescriptor().getCpp().getUserFileFlag();
     }
 
     @Override

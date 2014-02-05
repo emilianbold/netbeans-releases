@@ -319,12 +319,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         private final List<FSPath> sysIncludes;
         private final List<FSPath> usrIncludes;
+        private final List<String> usrFiles;
         private final List<String> sysMacros;
         private final List<String> usrMacros;
-        private final List<NativeFileItemImpl> files = new ArrayList<NativeFileItemImpl>();
+        private final List<NativeFileItemImpl> files = new ArrayList<>();
         private final FileObject projectRoot;
         private final FileSystem fileSystem;
-        private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
+        private List<NativeProjectItemsListener> listeners = new ArrayList<>();
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
@@ -351,11 +352,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
             CsmModel model = ModelImpl.instance();
-            List<FSPath> sysIncludes = new ArrayList<FSPath>();
-            List<FSPath> usrIncludes = new ArrayList<FSPath>();
-            List<String> sysMacros = new ArrayList<String>();
-            List<String> usrMacros = new ArrayList<String>();
-            List<String> undefinedMacros = new ArrayList<String>();
+            List<FSPath> sysIncludes = new ArrayList<>();
+            List<FSPath> usrIncludes = new ArrayList<>();
+            List<String> usrFiles = new ArrayList<>();
+            List<String> sysMacros = new ArrayList<>();
+            List<String> usrMacros = new ArrayList<>();
+            List<String> undefinedMacros = new ArrayList<>();
             NativeFileItem.Language lang;
             LanguageFlavor flavor;
             if (itemPrototype != null) {
@@ -396,16 +398,18 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 Exceptions.printStackTrace(ex);
                 fs = CndFileUtils.getLocalFileSystem();
             }
-            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros, undefinedMacros);
+            NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, usrFiles, sysMacros, usrMacros, undefinedMacros);
             if (itemPrototype != null) {
                 sysIncludes.addAll(itemPrototype.getSystemIncludePaths());
                 sysMacros.addAll(itemPrototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(itemPrototype.getUserIncludePaths());
+                usrFiles.addAll(itemPrototype.getIncludeFiles());
                 usrMacros.addAll(itemPrototype.getUserMacroDefinitions());
             } else if (prototype != null) {
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
+                usrFiles.addAll(prototype.getIncludeFiles());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             } else  {
                 sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
@@ -418,13 +422,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<FSPath> sysIncludes, List<FSPath> usrIncludes,
+                List<FSPath> sysIncludes, List<FSPath> usrIncludes, List<String> usrFiles,
                 List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
 
             this.projectRoot = projectRoot;
             this.fileSystem = getFileSystem(projectRoot);
             this.sysIncludes = sysIncludes;
             this.usrIncludes = usrIncludes;
+            this.usrFiles = usrFiles;
             this.sysMacros = sysMacros;
             this.usrMacros = usrMacros;
         }
@@ -531,7 +536,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public List<String> getIncludeFiles() {
-            return Collections.emptyList();
+            return this.usrFiles;
         }
         
         @Override

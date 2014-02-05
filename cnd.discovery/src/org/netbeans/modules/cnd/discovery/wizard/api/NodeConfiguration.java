@@ -55,11 +55,15 @@ public interface NodeConfiguration {
 
     boolean overrideIncludes();
     
+    boolean overrideFiles();
+
     boolean overrideMacros();
 
     boolean overrideUndefinedMacros();
 
     Set<String> getUserInludePaths(boolean resulting);
+
+    Set<String> getUserInludeFiles(boolean resulting);
 
     Map<String,String> getUserMacros(boolean resulting);
 

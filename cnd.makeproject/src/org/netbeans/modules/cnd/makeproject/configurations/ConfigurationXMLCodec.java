@@ -448,6 +448,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCCCCompilerConfiguration != null) {
                 currentList = currentCCCCompilerConfiguration.getIncludeDirectories().getValue();
             }
+        } else if (element.equals(INCLUDE_FILES_ELEMENT)) {
+            if (currentCCCCompilerConfiguration != null) {
+                currentList = currentCCCCompilerConfiguration.getIncludeFiles().getValue();
+            }
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             if (currentCCCCompilerConfiguration != null) {
                 currentList = currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue();
@@ -884,6 +888,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getInheritIncludes().setValue(ds);
+            }
+        } else if (element.equals(INHERIT_FILE_VALUES_ELEMENT)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            if (currentCCCCompilerConfiguration != null) {
+                currentCCCCompilerConfiguration.getInheritFiles().setValue(ds);
             }
         } else if (element.equals(INHERIT_PRE_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
