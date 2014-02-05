@@ -51,7 +51,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
@@ -61,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -164,9 +164,11 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
             findFilesWithEndPath(endPath, sourceGroup.getRootFolder(), filesInGroup);
             int rootPathLength = sourceGroup.getRootFolder().getPath().length();
             for (FileObject fileObject : filesInGroup) {
-                String shortPathName = fileObject.getPath();
-                shortPathName = shortPathName.substring(rootPathLength + 1);
-                files.put(shortPathName, fileObject);
+                if (SearchInfoUtils.SHARABILITY_FILTER.searchFile(fileObject)) {
+                    String shortPathName = fileObject.getPath();
+                    shortPathName = shortPathName.substring(rootPathLength + 1);
+                    files.put(shortPathName, fileObject);
+                }
             }
         }
         
