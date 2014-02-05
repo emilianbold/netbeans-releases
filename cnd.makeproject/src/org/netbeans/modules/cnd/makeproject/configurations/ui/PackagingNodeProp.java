@@ -111,7 +111,7 @@ public class PackagingNodeProp extends PropertySupport<PackagingConfiguration> {
     
     
     private class Editor extends PropertyEditorSupport implements ExPropertyEditor {
-        private PackagingConfiguration packagingConfiguration;
+        private final PackagingConfiguration packagingConfiguration;
         private PropertyEnv env;
         
         public Editor(PackagingConfiguration packagingConfiguration) {

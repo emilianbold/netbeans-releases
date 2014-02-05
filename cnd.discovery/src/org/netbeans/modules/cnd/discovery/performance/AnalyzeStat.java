@@ -67,8 +67,8 @@ public class AnalyzeStat {
     }
 
     static List<Map.Entry<String, AgregatedStat>> getBigUnused(TreeMap<String, AgregatedStat> gatherStat) {
-        List<Map.Entry<String, AgregatedStat>> orphan = new ArrayList<Map.Entry<String, AgregatedStat>>();
-        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
+        List<Map.Entry<String, AgregatedStat>> orphan = new ArrayList<>();
+        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
         while (i < list.size()) {
             Map.Entry<String, AgregatedStat> entry = list.get(i);
@@ -99,8 +99,8 @@ public class AnalyzeStat {
     }
 
     static List<Map.Entry<String, AgregatedStat>> getSlowReading(TreeMap<String, AgregatedStat> gatherStat) {
-        List<Map.Entry<String, AgregatedStat>> slow = new ArrayList<Map.Entry<String, AgregatedStat>>();
-        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
+        List<Map.Entry<String, AgregatedStat>> slow = new ArrayList<>();
+        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
         while (i < list.size()) {
             Map.Entry<String, AgregatedStat> entry = list.get(i);
@@ -131,7 +131,7 @@ public class AnalyzeStat {
     }
     
     static void upEmptyFolder(TreeMap<String, AgregatedStat> gatherStat) {
-        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
+        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
         while(i < list.size()) {
             Map.Entry<String, AgregatedStat> entry = list.get(i);
@@ -188,7 +188,7 @@ public class AnalyzeStat {
     }
     
     private static void getGroupByReadingSpeedImpl(TreeMap<String, AgregatedStat> gatherStat) {
-        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<Map.Entry<String, AgregatedStat>>(gatherStat.entrySet());
+        List<Map.Entry<String, AgregatedStat>> list = new ArrayList<>(gatherStat.entrySet());
         int i = 0;
         while (i < list.size()) {
             Map.Entry<String, AgregatedStat> entry = list.get(i);

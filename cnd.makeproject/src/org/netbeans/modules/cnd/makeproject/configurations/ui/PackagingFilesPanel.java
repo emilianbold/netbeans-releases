@@ -94,13 +94,13 @@ import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
-    private FSPath baseDir;
+    private final FSPath baseDir;
     private JTable targetList;
-    private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
-    private JButton addButton;
-    private JButton addFileOrDirectoryButton;
-    private JButton addFilesButton;
-    private JButton addLinkButton;
+    private final MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
+    private final JButton addButton;
+    private final JButton addFileOrDirectoryButton;
+    private final JButton addFilesButton;
+    private final JButton addLinkButton;
     private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
     public PackagingFilesPanel(List<PackagerFileElement> fileList, FSPath baseDir) {
@@ -335,9 +335,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
         private final class AddFilesFromDir extends Thread {
 
-            private PackagingAddingFilesProgressPanel progressPanel;
-            private Dialog progressDialog;
-            private File dir;
+            private final PackagingAddingFilesProgressPanel progressPanel;
+            private final Dialog progressDialog;
+            private final File dir;
 
             AddFilesFromDir(File dir, PackagingAddingFilesProgressPanel progressPanel, Dialog progressDialog) {
                 this.progressPanel = progressPanel;
@@ -347,7 +347,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
             @Override
             public void run() {
-                final ArrayList<PackagerFileElement> listToAdd = new ArrayList<PackagerFileElement>();
+                final ArrayList<PackagerFileElement> listToAdd = new ArrayList<>();
                 addFilesFromDirectory(listToAdd, dir, dir, progressPanel);
 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -597,13 +597,13 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     label.setToolTipText(msg);
                 }
                 String val = elem.getTo();
-                if (val.indexOf("${") >= 0) { // NOI18N
+                if (val.contains("${")) { // NOI18N
                     String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
                     label.setText(expandedVal);
                 }
             } else if (col == 2) {
                 String val = elem.getFrom();
-                if (val.indexOf("${") >= 0) { // NOI18N
+                if (val.contains("${")) { // NOI18N
                     String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
                     label.setText(expandedVal);
                 }
@@ -621,7 +621,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
     private final class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {
+        private final String[] columnNames = {
             getString("PackagingFilesOuterPanel.column.0.text"),
             getString("PackagingFilesOuterPanel.column.1.text"),
             getString("PackagingFilesOuterPanel.column.2.text"),

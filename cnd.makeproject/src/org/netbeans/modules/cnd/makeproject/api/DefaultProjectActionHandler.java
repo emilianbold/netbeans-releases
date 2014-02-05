@@ -97,7 +97,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     private Collection<OutputStreamHandler> outputHandlers;
     //private volatile ExecutorTask executorTask;
     private volatile Future<Integer> executorTask;
-    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
     // VK: this is just to tie two pieces of logic together:
     // first is in determining the type of console for remote;
     // second is in canCancel
@@ -438,7 +438,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
-        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();
         private final ExecutionListener listener;
         private Writer outputListener;
         private final LineConvertor lineConvertor;

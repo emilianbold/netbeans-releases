@@ -163,16 +163,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private Folder testItems = null;
     private Folder rootFolder = null;
     private Map<String, Item> projectItems = null;
-    private final List<String> sourceRoots = new ArrayList<String>();
-    private final List<String> testRoots = new ArrayList<String>();
-    private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
+    private final List<String> sourceRoots = new ArrayList<>();
+    private final List<String> testRoots = new ArrayList<>();
+    private final Set<ChangeListener> projectItemsChangeListeners = new HashSet<>();
     private volatile NativeProjectChangeSupport nativeProjectChangeSupport = null;
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     
-    private static ConcurrentHashMap<String, AtomicBoolean> projectWriteLocks = new ConcurrentHashMap<String, AtomicBoolean>();
+    private static ConcurrentHashMap<String, AtomicBoolean> projectWriteLocks = new ConcurrentHashMap<>();
 
     public MakeConfigurationDescriptor(FileObject projectDirFO) {
         this(null, projectDirFO, projectDirFO);
@@ -203,7 +203,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         RP = new RequestProcessor("MakeConfigurationDescriptor " + projectDirFO.getPath(), 1); // NOI18N
         RP_LISTENER =  new RequestProcessor("Add listeners " + projectDirFO.getPath(), 1); // NOI18N
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
-        projectItems = new ConcurrentHashMap<String, Item>();
+        projectItems = new ConcurrentHashMap<>();
         setModified();
     }
 
@@ -456,7 +456,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Iterator<ChangeListener> it;
 
         synchronized (projectItemsChangeListeners) {
-            it = new HashSet<ChangeListener>(projectItemsChangeListeners).iterator();
+            it = new HashSet<>(projectItemsChangeListeners).iterator();
         }
         ChangeEvent ev = new ProjectItemChangeEvent(this, item, action);
         while (it.hasNext()) {
@@ -466,7 +466,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Set<ChangeListener> getProjectItemsChangeListeners() {
         synchronized (projectItemsChangeListeners) {
-            return new HashSet<ChangeListener>(projectItemsChangeListeners);
+            return new HashSet<>(projectItemsChangeListeners);
         }
     }
 
@@ -599,7 +599,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     // Project Files
     public Item[] getProjectItems() {
-        List<Item> res = new ArrayList<Item>(projectItems.values());
+        List<Item> res = new ArrayList<>(projectItems.values());
         return res.toArray(new Item[res.size()]);
     }
 
@@ -727,12 +727,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         boolean projectChanged = false;
         VectorConfiguration<String> cIncludeDirectories = null;
         BooleanConfiguration cInheritIncludes = null;
+        VectorConfiguration<String> cIncludeFiles = null;
+        BooleanConfiguration cInheritFiles = null;
         VectorConfiguration<String> cPreprocessorOption = null;
         BooleanConfiguration cInheritMacros = null;
         VectorConfiguration<String> cPreprocessorUndefinedOption = null;
         BooleanConfiguration cInheritUndefinedMacros = null;
         VectorConfiguration<String> ccIncludeDirectories = null;
         BooleanConfiguration ccInheritIncludes = null;
+        VectorConfiguration<String> ccIncludeFiles = null;
+        BooleanConfiguration ccInheritFiles = null;
         VectorConfiguration<String> ccPreprocessorOption = null;
         BooleanConfiguration ccInheritMacros = null;
         VectorConfiguration<String> ccPreprocessorUndefinedOption = null;
@@ -761,12 +765,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
+            cIncludeFiles = folderConfiguration.getCCompilerConfiguration().getIncludeFiles();
+            cInheritFiles = folderConfiguration.getCCompilerConfiguration().getInheritFiles();
             cPreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             cPreprocessorUndefinedOption = folderConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             cInheritUndefinedMacros = folderConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = folderConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = folderConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+            ccIncludeFiles = folderConfiguration.getCCCompilerConfiguration().getIncludeFiles();
+            ccInheritFiles = folderConfiguration.getCCCompilerConfiguration().getInheritFiles();
             ccPreprocessorOption = folderConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = folderConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             ccPreprocessorUndefinedOption = folderConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
@@ -793,6 +801,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
+                cIncludeFiles = itemConfiguration.getCCompilerConfiguration().getIncludeFiles();
+                cInheritFiles = itemConfiguration.getCCompilerConfiguration().getInheritFiles();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
                 cPreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
                 cPreprocessorUndefinedOption = itemConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
@@ -813,6 +823,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
                 ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+                ccIncludeFiles = itemConfiguration.getCCCompilerConfiguration().getIncludeFiles();
+                ccInheritFiles = itemConfiguration.getCCCompilerConfiguration().getInheritFiles();
                 ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
                 ccInheritMacros = itemConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
                 ccPreprocessorUndefinedOption = itemConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
@@ -832,7 +844,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             if (itemConfiguration.getExcluded().getDirty()) {
                 itemConfiguration.getExcluded().setDirty(false);
-                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                ArrayList<NativeFileItem> list = new ArrayList<>();
                 list.add(item);
                 if (itemConfiguration.getExcluded().getValue()) {
                     fireFilesRemoved(list);
@@ -846,6 +858,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
+            cIncludeFiles = makeConfiguration.getCCompilerConfiguration().getIncludeFiles();
+            cInheritFiles = makeConfiguration.getCCompilerConfiguration().getInheritFiles();
             cPreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cPreprocessorUndefinedOption = makeConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
@@ -864,6 +878,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             cInheritUndefinedMacros = makeConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
             ccInheritIncludes = makeConfiguration.getCCCompilerConfiguration().getInheritIncludes();
+            ccIncludeFiles = makeConfiguration.getCCCompilerConfiguration().getIncludeFiles();
+            ccInheritFiles = makeConfiguration.getCCCompilerConfiguration().getInheritFiles();
             ccPreprocessorOption = makeConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
             ccInheritMacros = makeConfiguration.getCCCompilerConfiguration().getInheritPreprocessor();
             ccPreprocessorUndefinedOption = makeConfiguration.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
@@ -890,23 +906,29 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         if (cIncludeDirectories != null
-                && (cIncludeDirectories.getDirty() || cPreprocessorOption.getDirty()
-                || cInheritIncludes.getDirty() || cInheritMacros.getDirty() || cPreprocessorUndefinedOption.getDirty() || cInheritUndefinedMacros.getDirty())) {
+                && (cIncludeDirectories.getDirty() || cIncludeFiles.getDirty() ||cPreprocessorOption.getDirty()
+                || cInheritIncludes.getDirty() || cInheritFiles.getDirty()|| cInheritMacros.getDirty() 
+                || cPreprocessorUndefinedOption.getDirty() || cInheritUndefinedMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
+            cIncludeFiles.setDirty(false);
             cPreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
+            cInheritFiles.setDirty(false);
             cInheritMacros.setDirty(false);
             cPreprocessorUndefinedOption.setDirty(false);
             cInheritUndefinedMacros.setDirty(false);
         }
         if (ccIncludeDirectories != null
-                && (ccIncludeDirectories.getDirty() || ccPreprocessorOption.getDirty()
-                || ccInheritIncludes.getDirty() || ccInheritMacros.getDirty() || ccPreprocessorUndefinedOption.getDirty() || ccInheritUndefinedMacros.getDirty())) {
+                && (ccIncludeDirectories.getDirty() || ccIncludeFiles.getDirty() || ccPreprocessorOption.getDirty()
+                || ccInheritIncludes.getDirty() || ccInheritFiles.getDirty() || ccInheritMacros.getDirty() 
+                || ccPreprocessorUndefinedOption.getDirty() || ccInheritUndefinedMacros.getDirty())) {
             ccFiles = true;
             ccIncludeDirectories.setDirty(false);
+            ccIncludeFiles.setDirty(false);
             ccPreprocessorOption.setDirty(false);
             ccInheritIncludes.setDirty(false);
+            ccInheritFiles.setDirty(false);
             ccInheritMacros.setDirty(false);
             ccPreprocessorUndefinedOption.setDirty(false);
             ccInheritUndefinedMacros.setDirty(false);
@@ -1125,7 +1147,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
-        private String extraMessage;
+        private final String extraMessage;
 
         public SaveRunnable(String extraMessage) {
             this.extraMessage = extraMessage;
@@ -1190,7 +1212,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         // Check metadata files are writable
-        List<String> notOkFiles = new ArrayList<String>();
+        List<String> notOkFiles = new ArrayList<>();
         FileObject[] metadataFileObjects = new FileObject[] {
             getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_FOLDER),
             getBaseDirFileObject().getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER)
@@ -1494,7 +1516,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Returns project locations (rel or abs) or all subprojects in all configurations.
      */
     public Set<String> getSubprojectLocations() {
-        Set<String> subProjects = new HashSet<String>();
+        Set<String> subProjects = new HashSet<>();
 
         Configuration[] confs = getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
@@ -1568,7 +1590,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         String relPath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
-        ArrayList<String> toBeRemoved = new ArrayList<String>();
+        ArrayList<String> toBeRemoved = new ArrayList<>();
 
         synchronized (sourceRoots) {
             if (canonicalPath != null) {
@@ -1686,13 +1708,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 return;
             }
 
-            List<String> toBeAdded = new ArrayList<String>();
+            List<String> toBeAdded = new ArrayList<>();
             for (String s : sourceRoots) {
                 if (!inList(oldList, s)) {
                     toBeAdded.add(s);
                 }
             }
-            List<String> toBeRemoved = new ArrayList<String>();
+            List<String> toBeRemoved = new ArrayList<>();
             for (String s : oldList) {
                 if (!inList(sourceRoots, s)) {
                     toBeRemoved.add(s);
@@ -1738,13 +1760,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 addTestRoot(l);
             }
 
-            List<String> toBeAdded = new ArrayList<String>();
+            List<String> toBeAdded = new ArrayList<>();
             for (String s : testRoots) {
                 if (!inList(oldList, s)) {
                     toBeAdded.add(s);
                 }
             }
-            List<String> toBeRemoved = new ArrayList<String>();
+            List<String> toBeRemoved = new ArrayList<>();
             for (String s : oldList) {
                 if (!inList(testRoots, s)) {
                     toBeRemoved.add(s);
@@ -1754,7 +1776,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             // Notify source root notifiers
             // FIXUP: hack to get the tree updated! Need to only refresh actual nodes.
             if (toBeAdded.size() > 0 || toBeRemoved.size() > 0) {
-                List<String> sourceRootsSave = new ArrayList<String>();
+                List<String> sourceRootsSave = new ArrayList<>();
                 sourceRootsSave.addAll(sourceRoots);
                 checkForChangedSourceRoots(sourceRootsSave, new ArrayList<String>());
                 checkForChangedSourceRoots(new ArrayList<String>(), sourceRootsSave);
@@ -1773,7 +1795,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getSourceRoots() {
         List<String> copy;
         synchronized (sourceRoots) {
-            copy = new ArrayList<String>(sourceRoots);
+            copy = new ArrayList<>(sourceRoots);
         }
         return copy;
     }
@@ -1784,7 +1806,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public List<String> getTestRoots() {
         List<String> copy;
         synchronized (testRoots) {
-            copy = new ArrayList<String>(testRoots);
+            copy = new ArrayList<>(testRoots);
         }
         return copy;
     }
@@ -1793,7 +1815,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * return copy and convert to absolute
      */
     public List<String> getAbsoluteSourceRoots() {
-        List<String> copy = new ArrayList<String>();
+        List<String> copy = new ArrayList<>();
         synchronized (sourceRoots) {
             for (String sr : sourceRoots) {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, sr));
@@ -1806,7 +1828,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * return copy and convert to absolute
      */
     public List<String> getAbsoluteTestRoots() {
-        List<String> copy = new ArrayList<String>();
+        List<String> copy = new ArrayList<>();
         synchronized (testRoots) {
             for (String s : testRoots) {
                 copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, s));
@@ -1841,8 +1863,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         public static final int ITEM_ADDED = 0;
         public static final int ITEM_REMOVED = 1;
-        private Item item;
-        private int action;
+        private final Item item;
+        private final int action;
 
         public ProjectItemChangeEvent(Object src, Item item, int action) {
             super(src);
@@ -1866,7 +1888,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folder == null || dir == null || !dir.isValid()) {
             return;
         }
-        ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> filesAdded = new ArrayList<>();
         Folder srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
         String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
@@ -1913,7 +1935,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     
     private Folder addFilesFromDirImpl(Folder folder, FileObject dir, ProgressHandle handle, Interrupter interrupter,
             boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
-        ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
+        ArrayList<NativeFileItem> filesAdded = new ArrayList<>();
         Folder subFolder = folder.findFolderByName(dir.getNameExt());
         if (subFolder == null) {
             subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
@@ -1933,7 +1955,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             final ArrayList<NativeFileItem> filesAdded, final boolean notify, final boolean setModified,
             @NullAllowed final FileObjectFilter fileFilter, final boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
-        List<AntiLoop> down = new ArrayList<AntiLoop>();
+        List<AntiLoop> down = new ArrayList<>();
         String canPath;
         try {
             canPath = RemoteFileUtil.getCanonicalPath(aDir);
@@ -1944,7 +1966,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         antiLoop.push(canPath);
         down.add(antiLoop);
         while (!down.isEmpty()) {
-            List<AntiLoop> next = new ArrayList<AntiLoop>();
+            List<AntiLoop> next = new ArrayList<>();
             for (AntiLoop loop : down) {
                 FileObject dir = loop.getFile();
                 Folder folder = loop.getFolder();
@@ -2086,7 +2108,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     static class AntiLoop {
         private final Folder currentFolder;
         private final FileObject currentFile;
-        private final List<String> antiLoop = new ArrayList<String>();
+        private final List<String> antiLoop = new ArrayList<>();
         AntiLoop(Folder folder, FileObject file, AntiLoop prev){
             if (prev != null) {
                 antiLoop.addAll(prev.antiLoop);

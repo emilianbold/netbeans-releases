@@ -52,8 +52,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,9 +89,9 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     
     private final CharSequence absPath;
     private final FileSystem fileSystem;    
-    private Reference<Document> docRef = new WeakReference<Document>(null);
+    private Reference<Document> docRef = new WeakReference<>(null);
     private final FileImpl fileImpl;
-    private SoftReference<FileBufferSnapshot> snapRef = new SoftReference<FileBufferSnapshot>(null);
+    private SoftReference<FileBufferSnapshot> snapRef = new SoftReference<>(null);
     private final APTFileBuffer.BufferType bufType;
     
     FileBufferImpl(FileObject fileObject, FileImpl fileImpl) {
@@ -173,7 +171,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
             return null;
         }
         Document doc = ec.getDocument();
-        docRef = new WeakReference<Document>(doc);
+        docRef = new WeakReference<>(doc);
         return doc;
     }
     
@@ -226,8 +224,8 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
     }
 
     private FileBufferSnapshot getCharBufferDoc(final Document doc) throws IOException {
-        final AtomicReference<BadLocationException> exc = new AtomicReference<BadLocationException>(null);
-        final AtomicReference<FileBufferSnapshot> out = new AtomicReference<FileBufferSnapshot>(null);
+        final AtomicReference<BadLocationException> exc = new AtomicReference<>(null);
+        final AtomicReference<FileBufferSnapshot> out = new AtomicReference<>(null);
         doc.render(new Runnable() {
 
             @Override
@@ -390,7 +388,7 @@ public class FileBufferImpl implements FileBuffer, PropertyChangeListener {
                     LOG.log(Level.WARNING, "Can''t create snapshot of file based {0}", getUrl()); //NOI18N
                 }
             }
-            snapRef = new SoftReference<FileBufferSnapshot>(out);
+            snapRef = new SoftReference<>(out);
         }
         return out;
     }

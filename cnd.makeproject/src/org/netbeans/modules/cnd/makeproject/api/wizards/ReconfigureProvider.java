@@ -50,7 +50,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class ReconfigureProvider {
-    private static ReconfigureProvider DEFAULT = new Default();
+    private static final ReconfigureProvider DEFAULT = new Default();
 
     public abstract void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags);
     public abstract String getLastFlags(Project makeProject);

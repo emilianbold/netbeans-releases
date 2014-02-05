@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     private static final int CACHE_SIZE = 10;
     private static int stateCacheAttempt = 0;
     private static int stateCacheSuccessAttempt = 0;
-    private final Map<APTPreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<APTPreprocHandler.StateKey, Value>();
+    private final Map<APTPreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<>();
     private final ReadWriteLock stateCacheLock = new ReentrantReadWriteLock();
     private final FileImpl file;
 
@@ -158,9 +158,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         private int count;
         private Value(PreprocessorStatePair value){
             if (CndTraceFlags.WEAK_REFS_HOLDERS_FILE_STATE) {
-                this.value = new WeakReference<PreprocessorStatePair>(value);
+                this.value = new WeakReference<>(value);
             } else {
-                this.value = new SoftReference<PreprocessorStatePair>(value);
+                this.value = new SoftReference<>(value);
             }
         }
     }

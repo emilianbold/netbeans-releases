@@ -90,7 +90,7 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
 
     public static<T> SubroutineImpl<T> create(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope,
             DummyParametersListImpl parameterList) {
-        SubroutineImpl<T> subroutineImpl = new SubroutineImpl<T>(name, file, startOffset, endOffset, type, scope, parameterList);
+        SubroutineImpl<T> subroutineImpl = new SubroutineImpl<>(name, file, startOffset, endOffset, type, scope, parameterList);
         postObjectCreateRegistration(true, subroutineImpl);
         return subroutineImpl;
     }

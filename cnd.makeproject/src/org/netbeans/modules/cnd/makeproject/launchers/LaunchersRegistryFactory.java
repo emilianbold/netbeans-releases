@@ -14,7 +14,7 @@ import org.openide.filesystems.FileObject;
  * @author mtishkov
  */
 public final class LaunchersRegistryFactory {
-    private static final HashMap<FileObject, LaunchersRegistry> instances = new HashMap<FileObject, LaunchersRegistry>();
+    private static final HashMap<FileObject, LaunchersRegistry> instances = new HashMap<>();
     private static final Logger LOG = Logger.getLogger("LaunchersRegistry");//NOI18N
 
     public static synchronized LaunchersRegistry getInstance(FileObject projectDirectory) {

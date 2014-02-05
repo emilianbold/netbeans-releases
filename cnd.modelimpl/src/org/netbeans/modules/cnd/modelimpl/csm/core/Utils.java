@@ -154,7 +154,7 @@ public class Utils {
     }
       
     public static CharSequence[] splitQualifiedName(String qualified) {
-        List<CharSequence> v = new ArrayList<CharSequence>();
+        List<CharSequence> v = new ArrayList<>();
         for (StringTokenizer t = new StringTokenizer(qualified, ": \t\n\r\f", false); t.hasMoreTokens(); ) {// NOI18N 
             v.add(NameCache.getManager().getString(t.nextToken()));
         }
@@ -406,7 +406,7 @@ public class Utils {
     }
 
     public static <T> LinkedList<T> reverse(LinkedList<T> original) {
-        LinkedList<T> reverse = new LinkedList<T>();
+        LinkedList<T> reverse = new LinkedList<>();
         ListIterator<T> it = original.listIterator(original.size());
         while(it.hasPrevious()){
            reverse.addLast(it.previous());

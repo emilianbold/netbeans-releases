@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 final class BrokenViewItemRefreshSupport {
 
     private static final BrokenViewItemRefreshSupport inst = new BrokenViewItemRefreshSupport();
-    private final Set<BrokenViewItemListener> listeners = new HashSet<BrokenViewItemListener>();
+    private final Set<BrokenViewItemListener> listeners = new HashSet<>();
 
     private BrokenViewItemRefreshSupport() {
     }

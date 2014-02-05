@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  * @author alsimon
  */
 public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptorProvider{
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
     // for unit tests only
     public ConfigurationDescriptorProviderImpl(FileObject projectDirectory) {

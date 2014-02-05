@@ -137,7 +137,7 @@ public final class LabelResolverImpl extends CsmLabelResolver {
     }
     
     private static final class Context{
-        private final Collection<CsmReference> collection = new ArrayList<CsmReference>();
+        private final Collection<CsmReference> collection = new ArrayList<>();
         private final CharSequence label;
         private final Set<LabelKind> kinds;
 //        private CsmFunctionDefinition owner;

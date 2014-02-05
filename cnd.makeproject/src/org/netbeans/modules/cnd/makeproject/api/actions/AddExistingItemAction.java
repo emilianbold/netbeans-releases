@@ -187,7 +187,7 @@ public class AddExistingItemAction extends NodeAction {
             @Override
             public void run() {
                 boolean notifySources = false;
-                ArrayList<Item> items = new ArrayList<Item>();
+                ArrayList<Item> items = new ArrayList<>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDirFileObject(), files[i].getPath(), project);
                     itemPath = CndPathUtilities.normalizeSlashes(itemPath);

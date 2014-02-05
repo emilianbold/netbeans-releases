@@ -50,7 +50,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;

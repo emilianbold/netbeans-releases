@@ -94,7 +94,7 @@ public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
                 }
                 @Override
                 public List<Parameter> getParametes() {
-                    List<Parameter> list = new ArrayList<Parameter>();
+                    List<Parameter> list = new ArrayList<>();
                     for (final CsmParameter par : ((CsmFunction)decl).getParameters()){
                         list.add(new Parameter(){
                             @Override

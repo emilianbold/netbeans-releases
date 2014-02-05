@@ -114,7 +114,7 @@ public class ExecuteCommand {
         }
         // Executable
         String executable = hostInfo.getShell();
-        if (command.indexOf("${MAKE}") >= 0) { //NOI18N
+        if (command.contains("${MAKE}")) { //NOI18N
             String make = "make"; //NOI18N
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
@@ -314,7 +314,7 @@ public class ExecuteCommand {
     }
 
     private Map<String, String> getEnv(List<String> additionalEnvironment) {
-        Map<String, String> envMap = new HashMap<String, String>(getDefaultEnvironment());
+        Map<String, String> envMap = new HashMap<>(getDefaultEnvironment());
         if (additionalEnvironment != null) {
             envMap.putAll(parseEnvironmentVariables(additionalEnvironment));
         }
@@ -325,7 +325,7 @@ public class ExecuteCommand {
         if (vars.isEmpty()) {
             return Collections.emptyMap();
         } else {
-            Map<String, String> envMap = new HashMap<String, String>();
+            Map<String, String> envMap = new HashMap<>();
             for (String s : vars) {
                 int i = s.indexOf('='); // NOI18N
                 if (i > 0) {
@@ -361,7 +361,7 @@ public class ExecuteCommand {
     
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
-        private final AtomicReference<NativeProcess> processRef = new AtomicReference<NativeProcess>();
+        private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();
         private final ExecutionListener listener;
         private Writer outputListener;
         private final LineConvertor lineConvertor;

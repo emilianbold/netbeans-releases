@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -63,7 +61,7 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public class SourceRootContainer {
-    private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<CharSequence,Integer>();
+    private final Map<CharSequence,Integer> projectRoots = new ConcurrentHashMap<>();
     private final boolean isFixedRoots;
     
     public SourceRootContainer(boolean isFixedRoots) {

@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -133,7 +132,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private boolean isClosedImpl(Key proj) {
-        Collection<CsmUID<CsmProject>> vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
+        Collection<CsmUID<CsmProject>> vals = new ArrayList<>(platf2csm.values());
         for (CsmUID<CsmProject> csmUID : vals) {
             if (proj.equals(RepositoryUtils.UIDtoKey(csmUID))) {
                 return false;
@@ -365,8 +364,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public Collection<CsmProject> projects() {
-        Collection<CsmUID<CsmProject>> vals = new ArrayList<CsmUID<CsmProject>>(platf2csm.values());
-        Collection<CsmProject> out = new ArrayList<CsmProject>(vals.size());
+        Collection<CsmUID<CsmProject>> vals = new ArrayList<>(platf2csm.values());
+        Collection<CsmProject> out = new ArrayList<>(vals.size());
         for (CsmUID<CsmProject> uid : vals) {
             ProjectBase prj = (ProjectBase) UIDCsmConverter.UIDtoProject(uid);
             assert prj != null : "null project for UID " + uid;
@@ -430,7 +429,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     public CsmFile[] findFiles(FSPath absPath, boolean createIfPossible, boolean snapShot) {
         CndUtils.assertAbsolutePathInConsole(absPath.getPath());
         Collection<CsmProject> projects = projects();
-        Set<CsmFile> ret = new HashSet<CsmFile>();
+        Set<CsmFile> ret = new HashSet<>();
         for (CsmProject curPrj : projects) {
             if (curPrj instanceof ProjectBase) { // file system check is inside ProjectBase.findFileProject(FSPath..)
                 ProjectBase ownerPrj = ((ProjectBase) curPrj).findFileProject(absPath, createIfPossible);
@@ -555,7 +554,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
 
         Collection<CsmProject> prjsColl;
-        Collection<CsmProject> libs = new HashSet<CsmProject>();
+        Collection<CsmProject> libs = new HashSet<>();
 
         synchronized (lock) {
             prjsColl = projects();
@@ -826,8 +825,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CndFileUtils.clearFileExistenceCache();
         ParserQueue.instance().clearParseWatch();
         APTFileCacheManager.invalidateAll();
-        Collection<LibProjectImpl> libs = new HashSet<LibProjectImpl>();
-        Collection<ProjectBase> toReparse = new HashSet<ProjectBase>();
+        Collection<LibProjectImpl> libs = new HashSet<>();
+        Collection<ProjectBase> toReparse = new HashSet<>();
         for (CsmProject csmProject : projects) {
             if (csmProject instanceof ProjectBase) {
                 ProjectBase project = (ProjectBase) csmProject;
@@ -857,7 +856,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (LibProjectImpl lib : libs) {
             lib.initFields();
         }
-        Collection<Object> platformProjects = new ArrayList<Object>();
+        Collection<Object> platformProjects = new ArrayList<>();
         for (ProjectBase projectBase : toReparse) {
             final Object platformProject = projectBase.getPlatformProject();
             if (platformProject != null) {
@@ -886,16 +885,16 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private static final class Lock {}
     private final Object lock = new Lock();
     /** maps platform project to project */
-    private final Map<Object, CsmUID<CsmProject>> platf2csm = new ConcurrentHashMap<Object, CsmUID<CsmProject>>();
+    private final Map<Object, CsmUID<CsmProject>> platf2csm = new ConcurrentHashMap<>();
     private volatile CsmModelState state;
-    private double warningThreshold = 0.98;
+    private final double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
-    private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());
+    private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<>());
     private final Set<NativeProject> projectsBeingCreated = Collections.synchronizedSet(new HashSet<NativeProject>());
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
-    private final Set<Runnable> modelProcessorTasks = new HashSet<Runnable>();
+    private final Set<Runnable> modelProcessorTasks = new HashSet<>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
-    private final Set<Runnable> userProcessorTasks = new HashSet<Runnable>();
+    private final Set<Runnable> userProcessorTasks = new HashSet<>();
         
     /////////// 
     // tracing

@@ -113,7 +113,7 @@ public class DebianPackager implements PackagerDescriptor {
                 }
             }
         }
-        List<PackagerInfoElement> infoList = new ArrayList<PackagerInfoElement>();
+        List<PackagerInfoElement> infoList = new ArrayList<>();
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Package", packagingConfiguration.getOutputName(), true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Version", "1.0", true, true)); // NOI18N
         infoList.add(new PackagerInfoElement(PACKAGER_NAME, "Architecture", defArch, false, true)); // NOI18N
@@ -124,7 +124,7 @@ public class DebianPackager implements PackagerDescriptor {
 
     @Override
     public List<String> getOptionalInfoList() {
-        List<String> entryComboBox = new ArrayList<String>();
+        List<String> entryComboBox = new ArrayList<>();
 
         entryComboBox.add("Section"); // NOI18N
         entryComboBox.add("Priority"); // NOI18N

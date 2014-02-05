@@ -216,7 +216,7 @@ public final class ConfigureUtils {
     }
 
     private static void appendIfNeed(String key, String flags, StringBuilder buf, String flag){
-        if (flags.indexOf(key) < 0 ){
+        if (!flags.contains(key) ){
             if (buf.length() > 0) {
                 buf.append(' '); // NOI18N
             }

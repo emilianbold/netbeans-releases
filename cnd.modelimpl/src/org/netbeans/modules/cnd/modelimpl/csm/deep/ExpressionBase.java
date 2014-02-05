@@ -54,12 +54,10 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -162,7 +160,7 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
     @Override
     public List<CsmExpression> getOperands() {
         if( operands == null ) {
-            operands = new ArrayList<CsmExpression>(0);
+            operands = new ArrayList<>(0);
         }
         return Collections.unmodifiableList(operands);
     }

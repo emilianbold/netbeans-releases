@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -103,26 +102,26 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     protected ClassImpl(NameHolder name, AST ast, CsmFile file, int start, int end) {
         // we call findId(..., true) because there might be qualified name - in the case of nested class template specializations
         super(name, file, start, end);
-        members = new ArrayList<CsmUID<CsmMember>>();
-        friends = new ArrayList<CsmUID<CsmFriend>>(0);
-        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        members = new ArrayList<>();
+        friends = new ArrayList<>(0);
+        inheritances = new ArrayList<>(0);
         kind = findKind(ast);
     }
 
     protected ClassImpl(NameHolder name, CsmDeclaration.Kind kind, int leftBracketPos, CsmFile file, int startOffset, int endOffset) {
         super(name, file, startOffset, endOffset);
-        members = new ArrayList<CsmUID<CsmMember>>();
-        friends = new ArrayList<CsmUID<CsmFriend>>(0);
-        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        members = new ArrayList<>();
+        friends = new ArrayList<>(0);
+        inheritances = new ArrayList<>(0);
         this.kind = kind;
         this.leftBracketPos = leftBracketPos;
     }
     
     private ClassImpl(CsmFile file, CsmScope scope, CharSequence name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
-        members = new ArrayList<CsmUID<CsmMember>>();
-        friends = new ArrayList<CsmUID<CsmFriend>>(0);
-        inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+        members = new ArrayList<>();
+        friends = new ArrayList<>(0);
+        inheritances = new ArrayList<>(0);
         this.kind = kind;
         initScope(scope);
     }
@@ -253,7 +252,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @Override
     public Iterator<CsmMember> getMembers(CsmFilter filter) {
-        Collection<CsmUID<CsmMember>> uids = new ArrayList<CsmUID<CsmMember>>();
+        Collection<CsmUID<CsmMember>> uids = new ArrayList<>();
         synchronized (members) {
             uids.addAll(members);
         }
@@ -446,9 +445,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     public static class ClassBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
-        private List<MemberBuilder> memberBuilders = new ArrayList<MemberBuilder>();
-        private List<SimpleDeclarationBuilder> friendBuilders = new ArrayList<SimpleDeclarationBuilder>();
-        private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
+        private List<MemberBuilder> memberBuilders = new ArrayList<>();
+        private List<SimpleDeclarationBuilder> friendBuilders = new ArrayList<>();
+        private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<>();
         
         private ClassImpl instance;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
@@ -625,24 +624,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         int collSize = input.readInt();
         if (collSize <= 0) {
-            members = new ArrayList<CsmUID<CsmMember>>(0);
+            members = new ArrayList<>(0);
         } else {
-            members = new ArrayList<CsmUID<CsmMember>>(collSize);
+            members = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(this.members, input, collSize);
         collSize = input.readInt();
         if (collSize <= 0) {
-            friends = new ArrayList<CsmUID<CsmFriend>>(0);
+            friends = new ArrayList<>(0);
         } else {
-            friends = new ArrayList<CsmUID<CsmFriend>>(collSize);
+            friends = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(this.friends, input, collSize);
 
         collSize = input.readInt();
         if (collSize <= 0) {
-            inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
+            inheritances = new ArrayList<>(0);
         } else {
-            inheritances = new ArrayList<CsmUID<CsmInheritance>>(collSize);
+            inheritances = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(this.inheritances, input, collSize);
     }

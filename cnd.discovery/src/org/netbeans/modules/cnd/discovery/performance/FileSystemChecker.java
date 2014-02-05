@@ -223,7 +223,7 @@ public class FileSystemChecker {
     private static final class MyFileVisitor implements FileVisitor<Path> {
 
         private final Path root;
-        private boolean checkLinks;
+        private final boolean checkLinks;
         private long currStart;
         private final HashMap<FileStore, Statistic> stores = new HashMap<>();
 

@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 @Deprecated
 public class APTFindUnusedBlocksWalker extends APTSelfWalker {
 
-    private final List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+    private final List<CsmOffsetable> blocks = new ArrayList<>();
     private final CsmFile csmFile;
     public List<CsmOffsetable> getBlocks() {
         return blocks;

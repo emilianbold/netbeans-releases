@@ -247,7 +247,7 @@ public class SplitRegistryTestCase extends NbTestCase {
     private FileContent readToolchain(FileObject file) throws FileNotFoundException, IOException {
         FileContent content = new FileContent();
         content.name = file.getName();
-        content.position = ((Integer) file.getAttribute("position")).intValue(); // NOI18N
+        content.position = ((Integer) file.getAttribute("position")); // NOI18N
         content.base = (String) file.getAttribute("extends"); // NOI18N
         BufferedReader stream = new BufferedReader(new InputStreamReader(file.getInputStream()));
         String line = null;

@@ -80,7 +80,7 @@ public class ProjectNodeFactory {
         }
         
         List<CustomizerNode> uncheckedCustomizers = CustomizerRootNodeProvider.getInstance().getCustomizerNodes(lookup);
-        List<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> descriptions = new ArrayList<>();
         CustomizerNode node = createGeneralDescription(lookup);
         if (node != null) {
             descriptions.add(node);
@@ -181,7 +181,7 @@ public class ProjectNodeFactory {
             includeArchiverDescription &= makeConfiguration.isLibraryConfiguration() && !makeConfiguration.isDynamicLibraryConfiguration() && !makeConfiguration.isQmakeConfiguration();
         }
 
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
+        ArrayList<CustomizerNode> descriptions = new ArrayList<>();
         if (includeMakefileDescription) {
             descriptions.add(createMakefileDescription(lookup));
             descriptions.add(createCompileDescription(lookup));
@@ -222,7 +222,7 @@ public class ProjectNodeFactory {
     // C/C++/Fortran Node
     private static ArrayList<CustomizerNode> createCompilerNodes(Lookup lookup) {
         MakeContext context = lookup.lookup(MakeContext.class);
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
+        ArrayList<CustomizerNode> descriptions = new ArrayList<>();
         if (!context.isQtMode()) {
             descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         }
@@ -262,10 +262,10 @@ public class ProjectNodeFactory {
     private static List<CustomizerNode> getVisibleDebuggerNodes(List<CustomizerNode> debuggerNodes, Lookup lookup) {
         MakeContext context = lookup.lookup(MakeContext.class);
         Configuration[] selectedConfigurations = context.getSelectedConfigurations();
-        List<CustomizerNode> res = new ArrayList<CustomizerNode>();
+        List<CustomizerNode> res = new ArrayList<>();
         if (debuggerNodes.size() > 1) {
             // Figure out toolchain families
-            Set<String> families = new HashSet<String>();
+            Set<String> families = new HashSet<>();
             for (Configuration conf : selectedConfigurations) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
                 CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -295,7 +295,7 @@ public class ProjectNodeFactory {
 
     // Code Assistant Node
     private static CustomizerNode createCodeAssistantDescription(Lookup lookup) {
-        ArrayList<CustomizerNode> descriptions = new ArrayList<CustomizerNode>();
+        ArrayList<CustomizerNode> descriptions = new ArrayList<>();
         descriptions.add(ItemNodeFactory.createCCompilerDescription(lookup));
         descriptions.add(ItemNodeFactory.createCCCompilerDescription(lookup));
         String nodeLabel = getString("LBL_PARSER_NODE");

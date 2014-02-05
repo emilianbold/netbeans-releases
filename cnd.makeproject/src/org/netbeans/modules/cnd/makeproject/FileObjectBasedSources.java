@@ -71,12 +71,12 @@ public class FileObjectBasedSources implements Sources, FileChangeListener {
 
     private final ChangeSupport cs = new ChangeSupport(this);
     private boolean haveAttachedListeners;
-    private final Set<CharSequence> rootsListenedTo = new HashSet<CharSequence>();
-    private final Map<String, List<SourceGroup>> groups = new HashMap<String, List<SourceGroup>>();
+    private final Set<CharSequence> rootsListenedTo = new HashSet<>();
+    private final Map<String, List<SourceGroup>> groups = new HashMap<>();
     /**
      * The root URLs which were computed last, keyed by group type.
      */
-    private final Map<String,List<CharSequence>> lastComputedRoots = new ConcurrentHashMap<String, List<CharSequence>>();
+    private final Map<String,List<CharSequence>> lastComputedRoots = new ConcurrentHashMap<>();
 
     @Override
     public SourceGroup[] getSourceGroups(String type) {
@@ -84,7 +84,7 @@ public class FileObjectBasedSources implements Sources, FileChangeListener {
             List<SourceGroup> l = groups.get(type);
             SourceGroup[] result = (l == null) ? new SourceGroup[0] : l.toArray(new SourceGroup[l.size()]);
             // Remember what we computed here so we know whether to fire changes later.
-            List<CharSequence> rootURLs = new ArrayList<CharSequence>(groups.size());
+            List<CharSequence> rootURLs = new ArrayList<>(groups.size());
             for (SourceGroup g : result) {
                 rootURLs.add(CndFileUtils.fileObjectToUrl(g.getRootFolder()));
             }
@@ -100,7 +100,7 @@ public class FileObjectBasedSources implements Sources, FileChangeListener {
             }
             List<SourceGroup> l = groups.get(type);
             if (l == null) {
-                l = new ArrayList<SourceGroup>();
+                l = new ArrayList<>();
                 groups.put(type, l);
             }
             SourceGroup group = GenericSources.group(project, fo, fo.getPath(), displayName, null, null);
@@ -174,8 +174,8 @@ public class FileObjectBasedSources implements Sources, FileChangeListener {
     private void maybeFireChange() {
         boolean change = false;
         // Cannot iterate over entrySet, as the map will be modified by getSourceGroups.
-        for (String type : new HashSet<String>(lastComputedRoots.keySet())) {
-            List<CharSequence> previous = new ArrayList<CharSequence>(lastComputedRoots.get(type));
+        for (String type : new HashSet<>(lastComputedRoots.keySet())) {
+            List<CharSequence> previous = new ArrayList<>(lastComputedRoots.get(type));
             getSourceGroups(type);
             List<CharSequence> nue = lastComputedRoots.get(type);
             if (!nue.equals(previous)) {

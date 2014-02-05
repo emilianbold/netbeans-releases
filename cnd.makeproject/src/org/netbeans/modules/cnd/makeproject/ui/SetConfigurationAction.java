@@ -68,7 +68,7 @@ public class SetConfigurationAction extends AbstractAction implements Presenter.
     
     private JMenu subMenu;
 
-    private Project project;
+    private final Project project;
     
     /** Creates a new instance of BrowserAction */
     public SetConfigurationAction(Project project) {

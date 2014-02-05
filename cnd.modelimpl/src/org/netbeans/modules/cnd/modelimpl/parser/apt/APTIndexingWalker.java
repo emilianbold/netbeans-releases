@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  * @author Vladimir Voskresensky
  */
 public final class APTIndexingWalker extends APTWalker {
-    private final Set<CharSequence> ids = new HashSet<CharSequence>();
+    private final Set<CharSequence> ids = new HashSet<>();
     private final CndTextIndexKey key;
     
     public APTIndexingWalker(APTFile apt, CndTextIndexKey key) {

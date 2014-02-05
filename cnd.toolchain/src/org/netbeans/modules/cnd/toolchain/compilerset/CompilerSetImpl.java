@@ -471,6 +471,14 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public String getUserFileFlag() {
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getUserFileFlag();
+        }
+
+        @Override
         public String getIncludeParser() {
             if (proxy == null) {
                 return "";//NOI18N

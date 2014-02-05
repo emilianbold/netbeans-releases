@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
  */
 public abstract class BuildActionsProvider {
 
-    private static BuildActionsProvider DEFAULT = new Default();
+    private static final BuildActionsProvider DEFAULT = new Default();
 
     public abstract List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events);
 
@@ -94,7 +94,7 @@ public abstract class BuildActionsProvider {
 
         @Override
         public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
-            List<BuildAction> list = new ArrayList<BuildAction>();
+            List<BuildAction> list = new ArrayList<>();
             for (BuildActionsProvider provider : res.allInstances()) {
                 list.addAll(provider.getActions(ioTabName, events));
             }

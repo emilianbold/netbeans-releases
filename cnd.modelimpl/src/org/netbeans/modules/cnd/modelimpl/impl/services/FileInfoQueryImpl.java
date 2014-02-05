@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.Exceptions;
 
 /**
  * CsmFileInfoQuery implementation
@@ -135,7 +134,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
             Collection<PreprocessorStatePair> statePairs = fileImpl.getPreprocStatePairs();
-            List<CsmOffsetable> result = new ArrayList<CsmOffsetable>();
+            List<CsmOffsetable> result = new ArrayList<>();
             // to have visible code, we prefer non-error directive based dead blocks
             boolean first = true;
             for (PreprocessorStatePair pair : statePairs) {
@@ -179,7 +178,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     private static List<CsmOffsetable> intersection(Collection<CsmOffsetable> first, Collection<CsmOffsetable> second) {
-        List<CsmOffsetable> result = new ArrayList<CsmOffsetable>(Math.max(first.size(), second.size()));
+        List<CsmOffsetable> result = new ArrayList<>(Math.max(first.size(), second.size()));
         for (CsmOffsetable o1 : first) {
             for (CsmOffsetable o2 : second) {
                 if (o1 != null) { //paranoia
@@ -219,7 +218,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return UIDUtilities.getFileName(fileUID);
     }
     
-    private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<CsmFile, Object>();
+    private final ConcurrentMap<CsmFile, Object> macroUsagesLocks = new ConcurrentHashMap<>();
 
     @Override
     public boolean isDocumentBasedFile(CsmFile file) {
@@ -299,8 +298,8 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                 // remember walk info
                                 fileImpl.setAPTCacheEntry(state, cacheEntry, false);
                             } else {
-                                Comparator<CsmReference> comparator = new OffsetableComparator<CsmReference>();
-                                TreeSet<CsmReference> result = new TreeSet<CsmReference>(comparator);
+                                Comparator<CsmReference> comparator = new OffsetableComparator<>();
+                                TreeSet<CsmReference> result = new TreeSet<>(comparator);
                                 for (APTPreprocHandler handler : handlers) {
                                     // ask for concurrent entry if absent
                                     State state = handler.getState();
@@ -310,7 +309,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                                     // remember walk info
                                     fileImpl.setAPTCacheEntry(state, cacheEntry, false);
                                 }
-                                out = new ArrayList<CsmReference>(result);
+                                out = new ArrayList<>(result);
                             }
                         }
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
@@ -378,14 +377,14 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
     public Collection<CsmCompilationUnit> getCompilationUnits(CsmFile file, int contextOffset) {
-        Collection<CsmCompilationUnit> out = new ArrayList<CsmCompilationUnit>(1);
+        Collection<CsmCompilationUnit> out = new ArrayList<>(1);
         boolean addBackup = true;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             ProjectBase prjImpl = (ProjectBase) impl.getProject();
             Collection<State> states = prjImpl.getIncludedPreprocStates(impl);
             // put TUs from other projects at the end of out list
-            Collection<CsmCompilationUnit> otherPrjCUs = new ArrayList<CsmCompilationUnit>(1);
+            Collection<CsmCompilationUnit> otherPrjCUs = new ArrayList<>(1);
             for (State state : states) {
                 StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
                 ProjectBase startProject = Utils.getStartProject(startEntry);
@@ -448,7 +447,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (startProject != null) {
             CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
             if (startFile != null) {
-                List<CsmInclude> res = new ArrayList<CsmInclude>();
+                List<CsmInclude> res = new ArrayList<>();
                 Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
                 while(it.hasNext()){
                     APTIncludeHandler.IncludeInfo info = it.next();

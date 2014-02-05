@@ -97,21 +97,21 @@ public class DeclarationContainerProject extends DeclarationContainer {
 
     public DeclarationContainerProject(ProjectBase project) {
         super(new ProjectDeclarationContainerKey(project.getUnitId()));
-        friends = new HashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
+        friends = new HashMap<>();
         put();
     }
 
     public DeclarationContainerProject(RepositoryDataInput input) throws IOException {
         super(input);
         int colSize = input.readInt();
-        friends = new HashMap<CharSequence, Set<CsmUID<CsmFriend>>>(colSize);
+        friends = new HashMap<>(colSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMapSet(friends, input, UniqueNameCache.getManager(), colSize);
     }
 
     // only for EMPTY static field
     private DeclarationContainerProject() {
         super((Key) null);
-        friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<CsmFriend>>>();
+        friends = new ConcurrentHashMap<>();
     }
 
     public static DeclarationContainerProject empty() {
@@ -298,7 +298,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
                 friendsLock.writeLock().lock();
                 Set<CsmUID<CsmFriend>> set = friends.get(name);
                 if (set == null) {
-                    set = new HashSet<CsmUID<CsmFriend>>();
+                    set = new HashSet<>();
                     friends.put(name, set);
                 }
                 set.add(UIDs.get(cls));
@@ -312,7 +312,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
                 friendsLock.writeLock().lock();
                 Set<CsmUID<CsmFriend>> set = friends.get(name);
                 if (set == null) {
-                    set = new HashSet<CsmUID<CsmFriend>>();
+                    set = new HashSet<>();
                     friends.put(name, set);
                 }
                 set.add(UIDs.get(fun));
@@ -325,9 +325,9 @@ public class DeclarationContainerProject extends DeclarationContainer {
     public SortedMap<CharSequence, Set<CsmUID<CsmFriend>>> getTestFriends(){
         try {
             friendsLock.readLock().lock();
-            TreeMap<CharSequence, Set<CsmUID<CsmFriend>>> res = new TreeMap<CharSequence, Set<CsmUID<CsmFriend>>>();
+            TreeMap<CharSequence, Set<CsmUID<CsmFriend>>> res = new TreeMap<>();
             for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : friends.entrySet()) {
-                res.put(entry.getKey(), new HashSet<CsmUID<CsmFriend>>(entry.getValue()));
+                res.put(entry.getKey(), new HashSet<>(entry.getValue()));
             }
             return res;
         } finally {
@@ -346,7 +346,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
         }
         if (name != null) {
             name = CharSequences.create(name);
-            List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
+            List<CsmUID<? extends CsmFriend>> list = new ArrayList<>();
             try {
                 friendsLock.readLock().lock();
                 Set<CsmUID<CsmFriend>> set = friends.get(name);
@@ -357,7 +357,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
                 friendsLock.readLock().unlock();
             }
             if (list.size() > 0) {
-                Collection<CsmFriend> res = new ArrayList<CsmFriend>();
+                Collection<CsmFriend> res = new ArrayList<>();
                 for (CsmUID<? extends CsmFriend> friendUID : list) {
                     CsmFriend friend = friendUID.getObject();
                     if (CsmKindUtilities.isFriendClass(friend)) {

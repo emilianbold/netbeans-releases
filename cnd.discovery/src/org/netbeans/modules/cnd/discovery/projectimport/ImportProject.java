@@ -1458,7 +1458,7 @@ public class ImportProject implements PropertyChangeListener {
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);

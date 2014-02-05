@@ -255,7 +255,7 @@ public class ProviderControl {
             case BinaryFiles:
                 String text = getComboBoxText();
                 StringTokenizer st = new StringTokenizer(text,LIST_LIST_DELIMITER); // NOI18N
-                List<String> list = new ArrayList<String>();
+                List<String> list = new ArrayList<>();
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
                 }
@@ -359,7 +359,7 @@ public class ProviderControl {
     
     private void additionalLibrariesButtonActionPerformed(ActionEvent evt) {
         StringTokenizer tokenizer = new StringTokenizer(getComboBoxText(), LIST_LIST_DELIMITER); // NOI18N
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
         }

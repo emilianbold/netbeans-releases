@@ -116,12 +116,12 @@ public class RepositoryListenerImpl implements RepositoryListener, RepositoryExc
      * Implicitly opened units.
      * Access only under the lock!
      */
-    private Map<Integer, UnitTimer> unitTimers = new HashMap<Integer, UnitTimer>();
+    private final Map<Integer, UnitTimer> unitTimers = new HashMap<>();
     /** 
      * Explicitly opened units.
      * Access only under the lock!
      */
-    private Set<Integer> explicitelyOpened = new HashSet<Integer>();
+    private final Set<Integer> explicitelyOpened = new HashSet<>();
 
     private RepositoryListenerImpl() {
         Runtime.getRuntime().addShutdownHook(new RepositoryShutdownHook());

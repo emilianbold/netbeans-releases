@@ -122,7 +122,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     @Override
     public void addObjectAction(String newObject) {
         if (newObject != null) {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             StringTokenizer st = new StringTokenizer(newObject, ";"); // NOI18N
             while(st.hasMoreTokens()) {
                 list.add(st.nextToken());

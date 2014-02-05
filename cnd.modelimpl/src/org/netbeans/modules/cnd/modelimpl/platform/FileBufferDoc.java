@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 
 /**
  * FileBuffer implementation

@@ -57,7 +57,7 @@ public abstract class KnownProject {
     /** path to created netbeans projects */
     public static final String NB_ROOT = "netbeans-project"; // NOI18N
 
-    private static Default DEFAULT = new Default();
+    private static final Default DEFAULT = new Default();
 
     public abstract boolean canCreate(Map<String,String> parameters);
     public abstract boolean create(Map<String,String> parameters);

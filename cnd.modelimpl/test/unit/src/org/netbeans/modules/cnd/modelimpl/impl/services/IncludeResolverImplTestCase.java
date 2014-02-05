@@ -153,7 +153,7 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             CsmProject project = currentFile.getProject();
             assertNotNull(project);
             
-            List<CsmFile> files = new ArrayList<CsmFile>();
+            List<CsmFile> files = new ArrayList<>();
             files.addAll(project.getAllFiles());
             Collections.sort(files, new Comparator<CsmFile>() {
                 @Override
@@ -166,7 +166,7 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             
             for (CsmFile file : files) {
                 assertNotNull(file);
-                List<CsmOffsetableDeclaration> decls = new ArrayList<CsmOffsetableDeclaration>();
+                List<CsmOffsetableDeclaration> decls = new ArrayList<>();
                 decls.addAll(file.getDeclarations());
                 Collections.sort(decls, FileImpl.START_OFFSET_COMPARATOR);
                 for (CsmOffsetableDeclaration decl : decls) {

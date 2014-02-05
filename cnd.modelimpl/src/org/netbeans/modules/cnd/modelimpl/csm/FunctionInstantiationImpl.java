@@ -52,12 +52,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -150,7 +148,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
     
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        Collection<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        Collection<CsmScopeElement> l = new ArrayList<>();
         l.addAll(getParameters());
         return l;
     }

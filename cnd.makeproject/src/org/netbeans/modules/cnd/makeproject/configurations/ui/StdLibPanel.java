@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 
 public class StdLibPanel extends javax.swing.JPanel {
 
-    private MyListCellRenderer myListCellRenderer = new MyListCellRenderer();
+    private final MyListCellRenderer myListCellRenderer = new MyListCellRenderer();
 
     /** Creates new form StdLibPanel */
     public StdLibPanel(LibraryItem.StdLibItem[] stdLibs) {

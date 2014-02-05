@@ -80,15 +80,15 @@ import org.openide.util.CharSequences;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider.class)
 public class UserOptionsProviderImpl implements UserOptionsProvider {
-    private final Map<String,PkgConfig> pkgConfigs = new HashMap<String,PkgConfig>();
-    private final Map<ExecutionEnvironment, Map<String,PackageConfiguration>> commandCache = new WeakHashMap<ExecutionEnvironment, Map<String,PackageConfiguration>>();
+    private final Map<String,PkgConfig> pkgConfigs = new HashMap<>();
+    private final Map<ExecutionEnvironment, Map<String,PackageConfiguration>> commandCache = new WeakHashMap<>();
 
     public UserOptionsProviderImpl(){
     }
 
     @Override
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<String>();
+        List<String> res =new ArrayList<>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
@@ -109,7 +109,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     
     @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
@@ -160,20 +160,23 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                if (options.indexOf("-xc99") >= 0) { // NOI18N
+                if (options.contains("-xc99")) { // NOI18N
                     return LanguageFlavor.C99;
-                } else if (options.indexOf("-std=c89") >= 0) { // NOI18N
+                } else if (options.contains("-std=c89")) { // NOI18N
                     return LanguageFlavor.C89;
-                } else if (options.indexOf("-std=c99") >= 0) { // NOI18N
+                } else if (options.contains("-std=c99")) { // NOI18N
                     return LanguageFlavor.C99;
-                } else if (options.indexOf("-std=c11") >= 0) { // NOI18N
+                } else if (options.contains("-std=c11")) { // NOI18N
                     return LanguageFlavor.C11;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                if (options.indexOf("-std=c++0x") >= 0 || // NOI18N
-                        options.indexOf("-std=c++11") >= 0 || // NOI18N
-                        options.indexOf("-std=gnu++0x") >= 0 || // NOI18N
-                        options.indexOf("-std=gnu++11") >= 0) { // NOI18N
+                if (options.contains("-std=c++0x") || // NOI18N
+                                                // NOI18N
+                        options.contains("-std=c++11") || // NOI18N
+                                                // NOI18N
+                        options.contains("-std=gnu++0x") || // NOI18N
+                                                // NOI18N
+                        options.contains("-std=gnu++11")) { // NOI18N
                     return LanguageFlavor.CPP11;
                 //} else {
                 //    return LanguageFlavor.CPP;
@@ -186,7 +189,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
     
     private List<PackageConfiguration> getPackages(String s, MakeConfiguration conf){
-        List<PackageConfiguration> res = new ArrayList<PackageConfiguration>();
+        List<PackageConfiguration> res = new ArrayList<>();
         while(true){
             int i = s.indexOf('`'); // NOI18N
             if (i >= 0) {
@@ -239,7 +242,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 @Override
                 public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
                     Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
-                    ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                    ArrayList<CharSequence> res = new ArrayList<>(1);
                     if (resolvedPath != null) {
                         for(ResolvedPath path : resolvedPath) {
                             res.add(CharSequences.create(CharSequenceUtils.concatenate(path.getIncludePath(),File.separator,fileName)));
@@ -285,13 +288,13 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         ExecutionEnvironment env = getExecutionEnvironment(conf);
         Map<String, PackageConfiguration> map = commandCache.get(env);
         if (map == null) {
-            map = new HashMap<String, PackageConfiguration>();
+            map = new HashMap<>();
             commandCache.put(env, map);
         }
         if (map.containsKey(command)) {
             return map.get(command);
         }
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(command," "); // NOI18N
         String executable = null;
         while(st.hasMoreTokens()) {
@@ -313,8 +316,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
 
     private static final class MyPackageConfiguration implements PackageConfiguration {
         private final String executable;
-        private final List<String> macros = new ArrayList<String>();
-        private final List<String> paths = new ArrayList<String>();
+        private final List<String> macros = new ArrayList<>();
+        private final List<String> paths = new ArrayList<>();
 
         private MyPackageConfiguration(String executable, String flags) {
             this.executable = executable;

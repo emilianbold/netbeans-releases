@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 abstract public class DwarfProvider extends BaseDwarfProvider {
-    private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String EXECUTABLES_KEY = "binaries"; // NOI18N
     
     public DwarfProvider() {

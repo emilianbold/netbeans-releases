@@ -98,6 +98,8 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V93 - NB 8.0
+ *    Introduce included files (-include flag)
  * V92 - NB 8.0
  *    Introduce important flags and dictionaries
  * V91 - NB 8.0
@@ -283,7 +285,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 92;
+    public final static int CURRENT_VERSION = 93;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -347,6 +349,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ADDITIONAL_OPTIONS_ELEMENT = "additionalOptions"; // NOI18N
     public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
+    protected final static String INHERIT_FILE_VALUES_ELEMENT = "inheritFileValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     protected final static String INHERIT_UNDEF_VALUES_ELEMENT = "inheritUndefValues"; // NOI18N
     protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
@@ -360,6 +363,7 @@ public abstract class CommonConfigurationXMLCodec
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
+    protected final static String INCLUDE_FILES_ELEMENT = "incFile"; // NOI18N
     protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11 // NOI18N
     protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols"; // NOI18N
     protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel"; // NOI18N
@@ -570,7 +574,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public Dictionaries writeDictionary(XMLEncoderStream xes, Configuration conf) {
-        Set<String> dictionary = new HashSet<String>();
+        Set<String> dictionary = new HashSet<>();
         ConfigurationAuxObject[] profileAuxObjects = conf.getAuxObjects();
         for (ConfigurationAuxObject auxObject : profileAuxObjects) {
             if (publicallyVisible(auxObject)) {
@@ -600,7 +604,7 @@ public abstract class CommonConfigurationXMLCodec
         Dictionaries res = null;
         if (dictionary.size() > 0) {
             xes.elementOpen(DICTIONARY_ELEMENTS);
-            final List<String> d = new ArrayList<String>(dictionary);
+            final List<String> d = new ArrayList<>(dictionary);
             Collections.sort(d);
             for(int id = 0; id < d.size(); id++) {
                 xes.element(DICTIONARY_ELEMENT, new AttrValuePair[]{
@@ -924,6 +928,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (cCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, cCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
+        }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -941,6 +952,13 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (cCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }
@@ -1090,6 +1108,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (ccCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, ccCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
+            } else {
+                return true;
+            }
+        }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -1107,6 +1132,13 @@ public abstract class CommonConfigurationXMLCodec
         if (ccCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (ccCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }

@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfigurati
 
 public class StringNodeProp extends PropertySupport<String> {
 
-    private StringConfiguration stringConfiguration;
+    private final StringConfiguration stringConfiguration;
     private String def = null;
     private boolean canWrite = true;
 

@@ -46,11 +46,9 @@ package org.netbeans.modules.cnd.modelimpl;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

@@ -137,9 +137,9 @@ public class RecoverySuiteTestBase extends NbTestSuite {
     }
     
     private List<Test> createTests(Constructor<?> ctor, String name, Method method) {
-        List<Test> res = new ArrayList<Test>();
-        List<Grammar> gList = new ArrayList<Grammar>();
-        List<Diff> dList = new ArrayList<Diff>();
+        List<Test> res = new ArrayList<>();
+        List<Grammar> gList = new ArrayList<>();
+        List<Diff> dList = new ArrayList<>();
         Grammars grammars = method.getAnnotation(Grammars.class);
         if (grammars != null) {
             gList.addAll(Arrays.asList(grammars.value()));
@@ -216,7 +216,7 @@ public class RecoverySuiteTestBase extends NbTestSuite {
     }
     
     private List<String> balancedType(String type) {
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         for(int i = 1; i < type.length(); i++) {
             String beg = type.substring(0, i);
             String rest = type.substring(i);
@@ -233,7 +233,7 @@ public class RecoverySuiteTestBase extends NbTestSuite {
     }
 
     private List<String> simpleType(String type) {
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         for(int i = 1; i < type.length(); i++) {
             res.add(type.substring(0, i));
         }
@@ -279,7 +279,7 @@ public class RecoverySuiteTestBase extends NbTestSuite {
 
     private static class TestClassData {
 
-        public Map<String, Method> testMethods = new TreeMap<String, Method>();
+        public Map<String, Method> testMethods = new TreeMap<>();
         public Constructor<?> constructor = null;
 
         public boolean containsMethod(String name) {

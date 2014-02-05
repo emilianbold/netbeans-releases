@@ -82,7 +82,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RemoteDevelopmentAction", 1); // NOI18N
     private JMenu subMenu;
-    private Project project;
+    private final Project project;
 
     public RemoteDevelopmentAction(Project project) {
         super(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"), // NOI18N
@@ -142,9 +142,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         final JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         subMenu.add(managePlatformsItem);
         managePlatformsItem.addActionListener(new ActionListener() {
-            private Project currProject = project;
+            private final Project currProject = project;
             public void actionPerformed(ActionEvent event) {
-                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<ExecutionEnvironment>();
+                AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<>();
                 if (ServerListUI.showServerListDialog(selectedEnv)) {
                     ExecutionEnvironment env = selectedEnv.get();
                     if (env != null) {

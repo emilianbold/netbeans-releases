@@ -57,11 +57,11 @@ import org.openide.util.HelpCtx;
 
 abstract public class StringListNodeProp extends PropertySupport<List> {
 
-    private VectorConfiguration<String> configuration;
-    private BooleanConfiguration inheritValues;
-    private String[] texts;
+    private final VectorConfiguration<String> configuration;
+    private final BooleanConfiguration inheritValues;
+    private final String[] texts;
     boolean addPathPanel;
-    private HelpCtx helpCtx;
+    private final HelpCtx helpCtx;
 
     public StringListNodeProp(VectorConfiguration<String> configuration, BooleanConfiguration inheritValues, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
@@ -109,7 +109,7 @@ abstract public class StringListNodeProp extends PropertySupport<List> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        ArrayList<String> clone = new ArrayList<String>();
+        ArrayList<String> clone = new ArrayList<>();
         clone.addAll(configuration.getValue());
         return new StringEditor(clone);
     }
@@ -119,7 +119,7 @@ abstract public class StringListNodeProp extends PropertySupport<List> {
 
     private class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
-        private List<String> value;
+        private final List<String> value;
         private PropertyEnv env;
 
         public StringEditor(List<String> value) {

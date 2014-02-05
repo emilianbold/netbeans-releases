@@ -118,7 +118,7 @@ public class MoreBuildActionsAction extends MakeProjectContextAwareAction implem
         }
         MakeConfigurationDescriptor descriptor = pdp.getConfigurationDescriptor();
         MakeConfiguration active = (descriptor == null) ? null : descriptor.getActiveConfiguration();
-        ArrayList<Action> actionsList = new ArrayList<Action>();
+        ArrayList<Action> actionsList = new ArrayList<>();
         boolean isDiskFolder = descriptor == null || active == null || active.isMakefileConfiguration();
         actionsList.addAll(Utilities.actionsForPath("Projects/org-netbeans-modules-cnd-makeproject/MoreBuildActions"));//NOI18N
         actionsList.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/" + (isDiskFolder ? "DiskFolder" : "LogicalFolder")));//NOI18N               

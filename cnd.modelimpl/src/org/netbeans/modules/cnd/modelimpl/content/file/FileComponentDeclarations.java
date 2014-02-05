@@ -114,7 +114,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             if (!empty) {
                 other.declarationsLock.readLock().lock();
             }
-            declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(
+            declarations = new TreeMap<>(
                     empty ? Collections.<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>emptyMap() : other.declarations);
         } finally {
             if (!empty) {
@@ -125,9 +125,9 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             if (!empty) {
                 other.staticLock.readLock().lock();
             }
-            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(
+            staticFunctionDeclarationUIDs = new ArrayList<>(
                     empty ? Collections.<CsmUID<CsmFunction>>emptyList() : other.staticFunctionDeclarationUIDs);
-            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(
+            staticVariableUIDs = new ArrayList<>(
                     empty ? Collections.<CsmUID<CsmVariable>>emptyList() : other.staticVariableUIDs);
         } finally {
             if (!empty) {
@@ -138,9 +138,9 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     
     public FileComponentDeclarations(FileImpl file) {
         super(new FileDeclarationsKey(file));
-        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
-        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
-        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+        declarations = new TreeMap<>();
+        staticFunctionDeclarationUIDs = new ArrayList<>(0);
+        staticVariableUIDs = new ArrayList<>(0);
     }
 
     public FileComponentDeclarations(RepositoryDataInput input) throws IOException {
@@ -149,16 +149,16 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         this.declarations = factory.readOffsetSortedToUIDMap(input, null);
         int collSize = input.readInt();
         if (collSize <= 0) {
-            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
+            staticFunctionDeclarationUIDs = new ArrayList<>(0);
         } else {
-            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(collSize);
+            staticFunctionDeclarationUIDs = new ArrayList<>(collSize);
         }
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticFunctionDeclarationUIDs, input, collSize);
         collSize = input.readInt();
         if (collSize <= 0) {
-            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+            staticVariableUIDs = new ArrayList<>(0);
         } else {
-            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(collSize);
+            staticVariableUIDs = new ArrayList<>(collSize);
         }
         UIDObjectFactory.getDefaultFactory().readUIDCollection(staticVariableUIDs, input, collSize);
     }
@@ -166,16 +166,16 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     // only for EMPTY static field
     private FileComponentDeclarations() {
         super((org.netbeans.modules.cnd.repository.spi.Key)null);
-        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
-        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
-        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
+        declarations = new TreeMap<>();
+        staticFunctionDeclarationUIDs = new ArrayList<>(0);
+        staticVariableUIDs = new ArrayList<>(0);
     }
 
     Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
         try {
             declarationsLock.writeLock().lock();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
+            uids = new ArrayList<>(declarations.values());
             sortedDeclarations = null;
             declarations.clear();
         } finally {
@@ -239,19 +239,19 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
                 map = sortedDeclarations.get();
             }
             if (map == null) {
-                map = new EnumMap<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>(CsmDeclaration.Kind.class);
+                map = new EnumMap<>(CsmDeclaration.Kind.class);
                 for(CsmUID<CsmOffsetableDeclaration> anUid : declarations.values()){
                     CsmDeclaration.Kind kind = UIDUtilities.getKind(anUid);
                     SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
                     if (val == null){
-                        val = new TreeMap<NameKey, CsmUID<CsmOffsetableDeclaration>>();
+                        val = new TreeMap<>();
                         map.put(kind, val);
                     }
                     val.put(new NameKey(anUid), anUid);
                 }
-                sortedDeclarations = new WeakReference<Map<CsmDeclaration.Kind, SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>>(map);
+                sortedDeclarations = new WeakReference<>(map);
             }
-            out = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            out = new ArrayList<>();
             for(CsmDeclaration.Kind kind : kinds) {
                  SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>> val = map.get(kind);
                  if (val != null) {
@@ -344,7 +344,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
     // call under read lock
     private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
-        List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<>();
         OffsetSortedKey key = new OffsetSortedKey(offset+1,0); // NOI18N
         outer : while(true) {
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
@@ -582,7 +582,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
     public static final class NameKey implements Comparable<NameKey> {
         private int start = 0;
-        private CharSequence name;
+        private final CharSequence name;
         public NameKey(CsmUID<CsmOffsetableDeclaration> anUid) {
             name = UIDUtilities.getName(anUid);
             start = UIDUtilities.getStartOffset(anUid);

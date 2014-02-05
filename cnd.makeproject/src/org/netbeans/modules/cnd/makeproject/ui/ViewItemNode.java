@@ -271,7 +271,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         // Replace DeleteAction with Remove Action
         // Replace PropertyAction with customizeProjectAction
         Action[] oldActions = super.getActions(false);
-        List<Action> newActions = new ArrayList<Action>();
+        List<Action> newActions = new ArrayList<>();
         if (getItem().getFolder() == null) {
             return oldActions;
         } else if (getItem().getFolder().isDiskFolder()) {
@@ -354,7 +354,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         return image;
     }
 
-    private static final Map<BufferedImage,Image> grayImageCache = new WeakHashMap<BufferedImage, Image>();
+    private static final Map<BufferedImage,Image> grayImageCache = new WeakHashMap<>();
     private static Image getGrayImage(BufferedImage image) {
         Image gray = grayImageCache.get(image);
         if (gray == null) {
@@ -436,7 +436,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         private final ViewItemNode node;
 
         public ViewItemTransferable(ViewItemNode node, int operation) throws ClassNotFoundException {
-            super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));
+            super(new DataFlavor(ITEM_VIEW_FLAVOR.format(new Object[]{operation}), null, MakeLogicalViewProvider.class.getClassLoader()));
             this.node = node;
         }
 

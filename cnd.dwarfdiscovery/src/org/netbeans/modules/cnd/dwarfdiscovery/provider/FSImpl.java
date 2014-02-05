@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.api;
+
+package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
- *
+ * 
  * @author Alexander Simon
  */
-public abstract class DiscoveryProviderFactory {
-    public static DiscoveryProvider findProvider(String providerID) {
-        Lookup.Result<DiscoveryProviderFactory> res = Lookup.getDefault().lookupResult(DiscoveryProviderFactory.class);
-        for(DiscoveryProviderFactory factory : res.allInstances()) {
-            DiscoveryProvider provider = factory.createProvider(providerID);
-            if (provider != null) {
-                return provider;
+final class FSImpl implements RelocatablePathMapper.FS {
+    private final FileSystem fileSystem;
+
+    public FSImpl(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
+
+    @Override
+    public boolean exists(String path) {
+        FileObject fo = fileSystem.findResource(path);
+        return fo != null && fo.isValid();
+    }
+
+    @Override
+    public List<String> list(String path) {
+        List<String> res = new ArrayList<String>();
+        FileObject fo = fileSystem.findResource(path);
+        if (fo != null && fo.isValid() && fo.isFolder()) {
+            for (FileObject f : fo.getChildren()) {
+                res.add(f.getPath());
             }
         }
-        return null;
-    }
-
-    public static Collection<DiscoveryProvider> findAllProviders() {
-        Lookup.Result<DiscoveryProviderFactory> res = Lookup.getDefault().lookupResult(DiscoveryProviderFactory.class);
-        List<DiscoveryProvider> list = new ArrayList<>();
-        for(DiscoveryProviderFactory factory : res.allInstances()) {
-            list.addAll(factory.getAllProviders());
-        }
-        return list;
-    }
-    
-    public abstract DiscoveryProvider createProvider(String providerID);
-
-    public abstract Collection<DiscoveryProvider> getAllProviders();
+        return res;
+    }   
 }

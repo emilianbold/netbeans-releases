@@ -68,8 +68,8 @@ import org.openide.util.NbBundle;
 public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
 
     PackagingConfiguration packagingConfiguration;
-    private PropertyEditorSupport editor;
-    private MakeConfiguration conf;
+    private final PropertyEditorSupport editor;
+    private final MakeConfiguration conf;
     private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingAdditionalInfoPanel packagingAdditionalInfoPanel = null;
@@ -129,7 +129,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
             List<PackagerInfoElement> oldList = packagingConfiguration.getInfo().getValue();
-            List<PackagerInfoElement> newList = new ArrayList<PackagerInfoElement>();
+            List<PackagerInfoElement> newList = new ArrayList<>();
             // Copy all other types over
             for (PackagerInfoElement elem : oldList) {
                 if (!elem.getPackager().equals(packagingConfiguration.getType().getValue())) {
@@ -146,7 +146,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingConfiguration.getAdditionalInfo().setValue(packagingAdditionalInfoPanel.getListData());
         }
 
-        packagingConfiguration.getFiles().setValue(new ArrayList<PackagerFileElement>(packagingFilesPanel.getListData()));
+        packagingConfiguration.getFiles().setValue(new ArrayList<>(packagingFilesPanel.getListData()));
         return packagingConfiguration;
     }
 

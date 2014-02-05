@@ -116,7 +116,7 @@ public class DataRenderer {
 
     DummyParametersListImpl renderDummyParameters(FortranParserEx.SubroutineData data) {
         if (data.args != null) {
-            List<CsmParameter> list = new ArrayList<CsmParameter>();
+            List<CsmParameter> list = new ArrayList<>();
             for (String string : data.args) {
                 list.add(DummyParameterImpl.create(file, data.startOffset, data.endOffset, string, null));
 

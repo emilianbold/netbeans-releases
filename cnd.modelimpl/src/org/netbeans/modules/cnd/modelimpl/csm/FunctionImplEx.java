@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
@@ -120,7 +119,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        FunctionImplEx<T> functionImplEx = new FunctionImplEx<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        FunctionImplEx<T> functionImplEx = new FunctionImplEx<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         functionImplEx.setFlags(FUNC_LIKE_VARIABLE, ast.getType() == CPPTokenTypes.CSM_FUNCTION_LIKE_VARIABLE_DECLARATION);
         temporaryRepositoryRegistration(global, functionImplEx);
         
@@ -194,7 +193,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 next = AstRenderer.skipTemplateParameters(next);
 	    }
 	    if( next != null && next.getType() == CPPTokenTypes.SCOPE ) {
-		List<CharSequence> l = new ArrayList<CharSequence>();
+		List<CharSequence> l = new ArrayList<>();
                 APTStringManager manager = NameCache.getManager();
 		l.add(manager.getString(AstUtil.getText(child)));
 		begin:
@@ -223,7 +222,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List<CharSequence> l = new ArrayList<CharSequence>();
+            List<CharSequence> l = new ArrayList<>();
             APTStringManager manager = NameCache.getManager();
             StringBuilder id = new StringBuilder(""); // NOI18N
             int level = 0;

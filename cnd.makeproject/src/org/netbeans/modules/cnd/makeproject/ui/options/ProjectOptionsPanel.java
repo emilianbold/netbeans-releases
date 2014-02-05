@@ -186,7 +186,7 @@ public class ProjectOptionsPanel extends JPanel {
     }
 
     private void initAdditionalComponents() {
-        checkBoxes = new ArrayList<JCheckBox>();
+        checkBoxes = new ArrayList<>();
         int row = 20;
         GridBagConstraints gridBagConstraints;
         for (NamedOption entry : getEntries()) {
@@ -219,7 +219,7 @@ public class ProjectOptionsPanel extends JPanel {
     }
     
     private List<NamedOption> getEntries() {
-        List<NamedOption> result = new ArrayList<NamedOption>();
+        List<NamedOption> result = new ArrayList<>();
         for(NamedOption option: Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class)) {
             if (option.isVisible()) {
                 result.add(option);

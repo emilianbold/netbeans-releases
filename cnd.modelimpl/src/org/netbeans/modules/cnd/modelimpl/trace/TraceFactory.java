@@ -97,7 +97,7 @@ public class TraceFactory {
 
     private static class SimpleTraceWriter implements TraceWriter {
 
-        private final LinkedList<String> stack = new LinkedList<String>();
+        private final LinkedList<String> stack = new LinkedList<>();
         private int level = 0;
         protected final CppParserActionImpl parser;
 
@@ -375,7 +375,7 @@ public class TraceFactory {
 
     private static class ASTFrame extends JFrame {
         private final JTree tree;
-        private JTextArea text;
+        private final JTextArea text;
 
         private ASTFrame(String lab, MyTreeNode root) {
             super(lab);

@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
-import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -166,10 +165,10 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
             CsmFile file, AtomicBoolean visible, boolean classesOnly) {
         Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
-        List<CsmClassifier> visibles = new ArrayList<CsmClassifier>();
+        List<CsmClassifier> visibles = new ArrayList<>();
         CsmClassifier first = null;
         final CsmIncludeResolver ir = CsmIncludeResolver.getDefault();
-        List<CsmObject> td = new ArrayList<CsmObject>();
+        List<CsmObject> td = new ArrayList<>();
         AtomicBoolean hasClassifier = new AtomicBoolean(false);
         for (CsmClassifier decl : decls) {
             if (!classesOnly || CsmKindUtilities.isClass(decl)) {
@@ -246,7 +245,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
             return Collections.emptyList();
         }
         if (project.isArtificial()) {
-            Collection<CsmProject> out = new HashSet<CsmProject>(2);
+            Collection<CsmProject> out = new HashSet<>(2);
             for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, contextOffset)) {
                 out.addAll(cu.getStartProject().getLibraries());
             }

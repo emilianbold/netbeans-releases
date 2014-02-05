@@ -79,11 +79,11 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
         initComponents();
 	list.setCellRenderer(myListCellRenderer);
         PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
-        TreeMap<String, PackageConfiguration> map = new TreeMap<String, PackageConfiguration>();
+        TreeMap<String, PackageConfiguration> map = new TreeMap<>();
         for(PackageConfiguration conf : pkgConfig.getAvaliablePkgConfigs()) {
             map.put(conf.getName(), conf);
         }
-        avaliablePkgConfigs = new ArrayList<PackageConfiguration>(map.values());
+        avaliablePkgConfigs = new ArrayList<>(map.values());
         list.setModel(new AbstractListModel() {
             @Override
             public int getSize() {
@@ -115,7 +115,7 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
 
     private void updateModel() {
         String pattern = filter.getText().trim().toLowerCase();
-        final List<PackageConfiguration> res = new ArrayList<PackageConfiguration>();
+        final List<PackageConfiguration> res = new ArrayList<>();
         for(PackageConfiguration conf : avaliablePkgConfigs) {
             if (conf.getName().toLowerCase().contains(pattern)){
                 res.add(conf);

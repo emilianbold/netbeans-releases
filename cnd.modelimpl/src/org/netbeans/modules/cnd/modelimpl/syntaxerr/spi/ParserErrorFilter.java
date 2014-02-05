@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.syntaxerr.spi;
 
-import org.netbeans.modules.cnd.antlr.RecognitionException;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;

@@ -78,7 +78,7 @@ public final class MemberResolverImpl {
                 ResolverFactory.releaseResolver(aResolver);
             }
             if (CsmKindUtilities.isClass(cls)){
-                List<CsmMember> res = new ArrayList<CsmMember>();
+                List<CsmMember> res = new ArrayList<>();
                 getClassMembers((CsmClass)cls, name, res);
                 getSuperClasses((CsmClass)cls, name, res, new AntiLoop());
                 return res.iterator();
@@ -120,7 +120,7 @@ public final class MemberResolverImpl {
     
     public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
         Iterator<CsmMember> it =  getDeclarations(cls, name);
-        List<CsmClassifier> res = new ArrayList<CsmClassifier>();
+        List<CsmClassifier> res = new ArrayList<>();
         while(it.hasNext()){
             CsmMember m = it.next();
             if (CsmKindUtilities.isClassifier(m)){

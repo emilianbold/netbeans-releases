@@ -79,7 +79,7 @@ public class SpecializationDescriptor {
     private final List<CsmSpecializationParameter> specializationParams;
 
     public SpecializationDescriptor(List<CsmSpecializationParameter> specializationParams, boolean global) {
-        this.specializationParams = new ArrayList<CsmSpecializationParameter>(specializationParams);
+        this.specializationParams = new ArrayList<>(specializationParams);
     }
 
     public static SpecializationDescriptor create(List<CsmSpecializationParameter> specializationParams, boolean global) {
@@ -88,7 +88,7 @@ public class SpecializationDescriptor {
 
     public List<CsmSpecializationParameter> getSpecializationParameters() {
         if (specializationParams != null) {
-            return new ArrayList<CsmSpecializationParameter>(specializationParams);
+            return new ArrayList<>(specializationParams);
         }
     	return Collections.<CsmSpecializationParameter>emptyList();
     }
@@ -119,14 +119,14 @@ public class SpecializationDescriptor {
 
     public static class SpecializationDescriptorBuilder extends ScopedDeclarationBuilder {
 
-        private List<SpecializationParameterBuilder> parameterBuilders = new ArrayList<SpecializationParameterBuilder>();
+        private final List<SpecializationParameterBuilder> parameterBuilders = new ArrayList<>();
         
         public void addParameterBuilder(SpecializationParameterBuilder parameterBuilser) {
             parameterBuilders.add(parameterBuilser);
         }
         
         public SpecializationDescriptor create() {
-            List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+            List<CsmSpecializationParameter> params = new ArrayList<>();
             for (SpecializationParameterBuilder paramBuilder : parameterBuilders) {
                 paramBuilder.setScope(getScope());
                 params.add(paramBuilder.create());

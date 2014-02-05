@@ -67,9 +67,9 @@ public final class FileBufferSnapshot implements APTFileBuffer {
         this.buffer = buffer;
         this.timeStamp = timeStamp;
         if (linesCache != null) {
-             lines = new WeakReference<Line2Offset>(new Line2Offset(buffer, linesCache));
+             lines = new WeakReference<>(new Line2Offset(buffer, linesCache));
         } else {
-             lines = new WeakReference<Line2Offset>(null);
+             lines = new WeakReference<>(null);
         }
         this.bufType = bufType;
     }
@@ -115,7 +115,7 @@ public final class FileBufferSnapshot implements APTFileBuffer {
         }
         if (lines2Offset == null) {
             lines2Offset = new Line2Offset(getText());
-            lines = new WeakReference<Line2Offset>(lines2Offset);
+            lines = new WeakReference<>(lines2Offset);
         }
         return lines2Offset;
     }

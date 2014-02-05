@@ -289,7 +289,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List<CharSequence> l = new ArrayList<CharSequence>();
+            List<CharSequence> l = new ArrayList<>();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.IDENT ) {
                     if( token.getNextSibling() != null ) {

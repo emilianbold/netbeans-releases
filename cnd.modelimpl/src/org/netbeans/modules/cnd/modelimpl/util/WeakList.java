@@ -52,13 +52,13 @@ import java.util.*;
  */
 public class WeakList<T> implements Iterable<T> {
 
-    private final List<WeakReference<T>> list = new ArrayList<WeakReference<T>>();
+    private final List<WeakReference<T>> list = new ArrayList<>();
 
     /**
      * Adds a weak reference to the given element to this list
      */
     public synchronized void add(T element) {
-        list.add(new WeakReference<T>(element));
+        list.add(new WeakReference<>(element));
     }
 
     /**
@@ -66,7 +66,7 @@ public class WeakList<T> implements Iterable<T> {
      */
     public synchronized void addAll(Iterator<T> elements) {
         while (elements.hasNext()) {
-            list.add(new WeakReference<T>(elements.next()));
+            list.add(new WeakReference<>(elements.next()));
         }
     }
 
@@ -93,13 +93,13 @@ public class WeakList<T> implements Iterable<T> {
      */
     @Override
     public synchronized Iterator<T> iterator() {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         addTo(result);
         return result.iterator();
     }
 
     public synchronized Collection<T> join(Collection<? extends T> collection) {
-        List<T> result = new ArrayList<T>(collection.size() + list.size());
+        List<T> result = new ArrayList<>(collection.size() + list.size());
         result.addAll(collection);
         addTo(result);
         return result;

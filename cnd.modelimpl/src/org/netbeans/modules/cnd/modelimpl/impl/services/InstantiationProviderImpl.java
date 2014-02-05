@@ -161,12 +161,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
                 
                 List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
-                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();
                 Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
                 int i = 0;
                 for (CsmTemplateParameter templateParam : templateParams) {
                     if(templateParam.isVarArgs() && i == templateParams.size() - 1 && paramsIter.hasNext()) {
-                        List<CsmSpecializationParameter> args = new ArrayList<CsmSpecializationParameter>();
+                        List<CsmSpecializationParameter> args = new ArrayList<>();
                         while(paramsIter.hasNext()) {
                             args.add(paramsIter.next());
                         }
@@ -510,7 +510,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>();
+                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<>();
                         
                         for (ProjectBase proj : projects) {
                             StringBuilder fqn = new StringBuilder();
@@ -527,7 +527,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
                         }
                         
-                        Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<CsmOffsetableDeclaration>();
+                        Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<>();
                         for (CsmOffsetableDeclaration spec : specs) {
                             if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
                                 visibleSpecs.add(spec);
@@ -675,7 +675,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
         boolean variadic = false;
         
-        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params2 = new ArrayList<Pair<CsmSpecializationParameter, List<CsmInstantiation>>>();
+        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params2 = new ArrayList<>();
         for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
             CsmSpecializationParameter param = pair.first();
             if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
@@ -701,8 +701,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 }
             }
 
-            List<CharSequence> paramsText = new ArrayList<CharSequence>();
-            List<CsmType> paramsType = new ArrayList<CsmType>();
+            List<CharSequence> paramsText = new ArrayList<>();
+            List<CsmType> paramsType = new ArrayList<>();
             for (Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair : params) {
                 CsmSpecializationParameter param = pair.first();
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
@@ -817,7 +817,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                         // It is safe to get classifier from param type which is not instantiation
                                         CsmClassifier instCls = instSpecParam.getClassifier();
                                         if (CsmKindUtilities.isTypedefOrTypeAlias(instCls)) {                                            
-                                            final List<String> nestedQualifiedNames = new ArrayList<String>();                                            
+                                            final List<String> nestedQualifiedNames = new ArrayList<>();                                            
                                             
                                             CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
 
@@ -1062,7 +1062,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return Collections.emptyList();
         }
         long time = System.currentTimeMillis();
-        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> res = new ArrayList<Pair<CsmSpecializationParameter, List<CsmInstantiation>>>();
+        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> res = new ArrayList<>();
         CsmInstantiation i = (CsmInstantiation) o;
         Map<CsmTemplateParameter, CsmSpecializationParameter> m = i.getMapping();
         CsmOffsetableDeclaration decl = i.getTemplateDeclaration();

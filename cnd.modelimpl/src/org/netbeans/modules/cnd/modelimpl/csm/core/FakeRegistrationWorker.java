@@ -82,7 +82,7 @@ public class FakeRegistrationWorker {
         int chunk = (size/threads) + 1;
         Iterator<CsmUID<CsmFile>> it = files.iterator();
         for (int i = 0; i < threads; i++) {
-            ArrayList<CsmUID<CsmFile>> list = new ArrayList<CsmUID<CsmFile>>(chunk);
+            ArrayList<CsmUID<CsmFile>> list = new ArrayList<>(chunk);
             for(int j = 0; j < chunk; j++) {
                 if (it.hasNext()) {
                     list.add(it.next());

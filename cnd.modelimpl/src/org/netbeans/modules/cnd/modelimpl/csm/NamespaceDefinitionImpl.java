@@ -90,7 +90,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, CsmFile file, int startOffset, int endOffset, int leftBracketPos, boolean inline) {
         super(file, startOffset, endOffset);
-        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        declarations = new ArrayList<>();
         this.name = name;
         this.inline = inline;
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
@@ -107,7 +107,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     private NamespaceDefinitionImpl(CharSequence name, NamespaceImpl parent, NamespaceImpl ns, CsmFile file, int startOffset, int endOffset, int leftBracketPos, boolean inline) {
         super(file, startOffset, endOffset);
-        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        declarations = new ArrayList<>();
         this.name = name;
         this.inline = inline;
         // set parent ns, do it in constructor to have final fields
@@ -250,7 +250,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        List<CsmScopeElement> l = new ArrayList<>();
         for (Iterator<CsmOffsetableDeclaration> iter = getDeclarations().iterator(); iter.hasNext();) {
             CsmDeclaration decl = iter.next();
             if (isOfMyScope(decl)) {
@@ -280,7 +280,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         List<CsmUID<CsmOffsetableDeclaration>> uids;
         synchronized (declarations) {
             decls = getDeclarations();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
+            uids = new ArrayList<>(declarations);
             declarations.clear();
             //declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
         }
@@ -337,7 +337,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
         private NamespaceImpl namespace;
         private NamespaceDefinitionImpl instance;
-        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        private final List<CsmOffsetableDeclaration> declarations = new ArrayList<>();
         
         public void setName(CharSequence name) {
             this.name = name;
@@ -456,9 +456,9 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         int collSize = input.readInt();
         if (collSize < 0) {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new ArrayList<>();
         } else {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize);
+            declarations = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(declarations, input, collSize);
         
