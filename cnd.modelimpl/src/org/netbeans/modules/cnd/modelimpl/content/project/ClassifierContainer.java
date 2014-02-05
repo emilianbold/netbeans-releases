@@ -113,36 +113,36 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer(ProjectBase project) {
         super(new ClassifierContainerKey(project.getUnitId()));
-        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
+        classifiers = new HashMap<>();
+        shortClassifiers = new HashMap<>();
+        typedefs = new HashMap<>();
+        inheritances = new HashMap<>();
         put();
     }
 
     public ClassifierContainer(RepositoryDataInput input) throws IOException {
         super(input);
         int collSize = input.readInt();
-        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        classifiers = new HashMap<>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.classifiers, input, QualifiedNameCache.getManager(), collSize);
         collSize = input.readInt();
-        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        shortClassifiers = new HashMap<>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.shortClassifiers, input, QualifiedNameCache.getManager(), collSize);
         collSize = input.readInt();
-        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>(collSize);
+        typedefs = new HashMap<>(collSize);
         UIDObjectFactory.getDefaultFactory().readStringToUIDMap(this.typedefs, input, QualifiedNameCache.getManager(), collSize);
         collSize = input.readInt();
-        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
+        inheritances = new HashMap<>();
         UIDObjectFactory.getDefaultFactory().readStringToUIDMapSet(this.inheritances, input, NameCache.getManager(), collSize);
     }
 
     // only for EMPTY static field
     private ClassifierContainer() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
-        classifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        shortClassifiers = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        typedefs = new HashMap<CharSequence, CsmUID<CsmClassifier>>();
-        inheritances = new HashMap<CharSequence, Set<CsmUID<CsmInheritance>>>();
+        classifiers = new HashMap<>();
+        shortClassifiers = new HashMap<>();
+        typedefs = new HashMap<>();
+        inheritances = new HashMap<>();
     }
     
     public CsmClassifier getClassifier(CharSequence qualifiedName) {
@@ -172,7 +172,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
             declarationsLock.readLock().lock();
             inh = inheritances.get(name);
             if (inh != null) {
-                inh = new ArrayList<CsmUID<CsmInheritance>>(inh);
+                inh = new ArrayList<>(inh);
             } else {
                 return Collections.<CsmInheritance>emptyList();
             }
@@ -199,7 +199,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     }
 
     private Map<CharSequence, CsmClassifier> convertTestMap(Map<CharSequence, CsmUID<CsmClassifier>> map) {
-        Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
+        Map<CharSequence, CsmClassifier> res = new TreeMap<>();
         try {
             declarationsLock.readLock().lock();
             for (Map.Entry<CharSequence, CsmUID<CsmClassifier>> entry : map.entrySet()) {
@@ -232,7 +232,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
                             CharSequence id = inheritanceName(inh);
                             Set<CsmUID<CsmInheritance>> set = inheritances.get(id);
                             if (set == null) {
-                                set = new HashSet<CsmUID<CsmInheritance>>();
+                                set = new HashSet<>();
                                 inheritances.put(id, set);
                             }
                             set.add(UIDCsmConverter.inheritanceToUID(inh));

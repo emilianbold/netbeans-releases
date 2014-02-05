@@ -101,7 +101,7 @@ public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
         // Parse it once more with macros unset
         //
         NativeProject nativeProject = (NativeProject)project.getPlatformProject();
-        List<String> macros = new ArrayList<String>();
+        List<String> macros = new ArrayList<>();
         macros.add("START=");
         macros.add("END=");
         NativeProjectProvider.setUserMacros(nativeProject, macros /*Collections.<String>emptyList()*/);

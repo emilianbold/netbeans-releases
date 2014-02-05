@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;

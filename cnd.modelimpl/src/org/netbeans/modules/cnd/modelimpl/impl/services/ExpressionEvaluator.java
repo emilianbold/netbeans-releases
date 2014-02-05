@@ -72,10 +72,8 @@ import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParame
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
-import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -97,7 +95,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     
     private static final Logger LOG = Logger.getLogger(ExpressionEvaluator.class.getSimpleName());
 
-    private int level;
+    private final int level;
     
     public ExpressionEvaluator() {
         this.level = 0;
@@ -210,7 +208,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                 });
                                 
                 for (CsmTemplateParameter param : orderedParamsList) {
-                    Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
+                    Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
                     CsmSpecializationParameter spec = inst.getMapping().get(param);
                     if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
                         Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapHierarchy);

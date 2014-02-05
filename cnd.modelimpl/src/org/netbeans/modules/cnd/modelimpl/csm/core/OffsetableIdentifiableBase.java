@@ -112,7 +112,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     public static class NameBuilder extends OffsetableBuilder {
         
         boolean global = false;
-        final List<NamePart> nameParts = new ArrayList<NamePart>();
+        final List<NamePart> nameParts = new ArrayList<>();
         
         public void addNamePart(CharSequence part) {
             // detect and merge ~ in destructor name
@@ -128,7 +128,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         }
 
         public List<CharSequence> getNameParts() {
-            List<CharSequence> names = new ArrayList<CharSequence>();
+            List<CharSequence> names = new ArrayList<>();
             for (NamePart namePart : nameParts) {
                 names.add(namePart.part);
             }
@@ -169,7 +169,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         public static final class NamePart {
             final CharSequence part;
             
-            final List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
+            final List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<>();
 
             public NamePart(CharSequence part) {
                 this.part = part;

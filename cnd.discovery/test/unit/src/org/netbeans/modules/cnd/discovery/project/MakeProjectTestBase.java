@@ -98,7 +98,7 @@ import org.openide.util.Utilities;
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
     protected static final String LOG_POSTFIX = ".discoveryLog";
     private static final boolean TRACE = false;
-    private Logger logger1;
+    private final Logger logger1;
 
     public MakeProjectTestBase(String name) {
         super(name);
@@ -139,7 +139,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
 
     @Override
     protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
@@ -418,7 +418,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     }
 
     protected List<String> requiredTools(){
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("wget");
         list.add("gzip");
         list.add("tar");
@@ -428,7 +428,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     }
 
     protected Map<String, String> findTools(){
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         for(String t: requiredTools()){
             map.put(t, null);
         }

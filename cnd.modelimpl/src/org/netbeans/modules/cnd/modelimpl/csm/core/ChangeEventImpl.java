@@ -84,7 +84,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmFile> getNewFiles() {
 	if( newFiles == null ) {
-	    newFiles = new HashSet<CsmFile>();
+	    newFiles = new HashSet<>();
 	}
 	return newFiles;
     }
@@ -92,7 +92,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmFile> getRemovedFiles() {
 	if( removedFiles == null ) {
-	    removedFiles = new HashSet<CsmFile>();
+	    removedFiles = new HashSet<>();
 	}
 	return removedFiles;
     }
@@ -100,7 +100,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmFile> getChangedFiles() {
 	if( changedFiles == null ) {
-	    changedFiles = new HashSet<CsmFile>();
+	    changedFiles = new HashSet<>();
 	}
 	return changedFiles;
     }
@@ -108,7 +108,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmOffsetableDeclaration> getNewDeclarations() {
 	if( newDeclarations == null ) {
-	    newDeclarations = new HashSet<CsmOffsetableDeclaration>();
+	    newDeclarations = new HashSet<>();
 	}
 	return newDeclarations;
     }
@@ -116,7 +116,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmOffsetableDeclaration> getRemovedDeclarations() { 
 	if( removedDeclarations == null ) { 
-	    removedDeclarations = new HashSet<CsmOffsetableDeclaration>(); 
+	    removedDeclarations = new HashSet<>(); 
 	} 
 	return removedDeclarations; 
     }
@@ -124,7 +124,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Map<CsmOffsetableDeclaration,CsmOffsetableDeclaration> getChangedDeclarations() { 
 	if( changedDeclarations == null ) { 
-	    changedDeclarations = new HashMap<CsmOffsetableDeclaration,CsmOffsetableDeclaration>(); 
+	    changedDeclarations = new HashMap<>(); 
 	} 
 	return changedDeclarations; 
     }
@@ -132,7 +132,7 @@ public class ChangeEventImpl extends CsmChangeEvent {
     @Override
     public Collection<CsmProject> getChangedProjects() {
         if( changedProjects == null ) {
-            changedProjects = new HashSet<CsmProject>();
+            changedProjects = new HashSet<>();
         }
         return changedProjects;
     }
@@ -227,21 +227,21 @@ public class ChangeEventImpl extends CsmChangeEvent {
     
     public void addProjectThatChangedLibs(CsmProject project) {
         if (projectsWithChangedLibs == null) {
-            projectsWithChangedLibs = new HashSet<CsmProject>();
+            projectsWithChangedLibs = new HashSet<>();
         }        
         projectsWithChangedLibs.add(project);
     }
 
     private Map<CharSequence, CsmNamespace> _getRemovedNamespaces() {
         if (removedNamespaces == null) {
-            removedNamespaces = new HashMap<CharSequence, CsmNamespace>();            
+            removedNamespaces = new HashMap<>();            
         }
         return removedNamespaces;
     }
     
     private Map<CharSequence,CsmNamespace> _getNewNamespaces() {
         if (newNamespaces == null) {
-            newNamespaces = new HashMap<CharSequence, CsmNamespace>();            
+            newNamespaces = new HashMap<>();            
         }
         return newNamespaces;
     }    

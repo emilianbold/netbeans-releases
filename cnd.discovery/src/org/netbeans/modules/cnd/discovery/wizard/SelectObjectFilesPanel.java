@@ -57,8 +57,8 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public final class SelectObjectFilesPanel extends JPanel {
-    private SelectObjectFilesWizard wizard;
-    private List<ProviderControl> controls = new ArrayList<ProviderControl>();
+    private final SelectObjectFilesWizard wizard;
+    private final List<ProviderControl> controls = new ArrayList<>();
     
     /** Creates new form DiscoveryVisualPanel1 */
     public SelectObjectFilesPanel(SelectObjectFilesWizard wizard) {

@@ -132,7 +132,7 @@ public final class ToolchainManagerImpl {
                         position = indefinedID++;
                     }
                     String displayName = (String) file.getAttribute("displayName"); // NOI18N
-                    CompilerVendor v = new CompilerVendor(file.getNameExt(), position.intValue());
+                    CompilerVendor v = new CompilerVendor(file.getNameExt(), position);
                     if (read(file, files, v, new HashSet<FileObject>(), cache)) {
                         if (displayName != null && !displayName.isEmpty()) {
                             v.toolChainDisplay = displayName;
@@ -183,7 +183,7 @@ public final class ToolchainManagerImpl {
                             ex.printStackTrace(System.err);
                         }
                     }
-                    CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position.intValue()); // NOI18N
+                    CompilerVendor v = new CompilerVendor(file.getNameExt()+".xml", position); // NOI18N
                     if (read2(file, files, v, cache)) {
                         if (displayName != null && !displayName.isEmpty()) {
                             v.toolChainDisplay = displayName;

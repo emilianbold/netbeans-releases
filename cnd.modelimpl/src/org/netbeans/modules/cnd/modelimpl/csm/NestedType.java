@@ -122,7 +122,7 @@ public final class NestedType extends TypeImpl {
                 CsmClassifier parentClassifier;
                 if(parentType instanceof TypeImpl) {
                     if (instantiations == null) {
-                        instantiations = new ArrayList<CsmInstantiation>();
+                        instantiations = new ArrayList<>();
                     }
                     parentClassifier = ((TypeImpl)parentType).getClassifier(instantiations, false);
                 } else {
@@ -151,7 +151,7 @@ public final class NestedType extends TypeImpl {
                         obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) classifier, this, specialize);
                         if(CsmKindUtilities.isInstantiation(obj)) {
                             if (instantiations == null) {
-                                instantiations = new ArrayList<CsmInstantiation>();
+                                instantiations = new ArrayList<>();
                             }
                             instantiations.add((CsmInstantiation)obj);
                         }
@@ -171,7 +171,7 @@ public final class NestedType extends TypeImpl {
     }
     
     private List<CharSequence> getFullQName() {
-        List<CharSequence> res = new ArrayList<CharSequence>();
+        List<CharSequence> res = new ArrayList<>();
         if (parentType instanceof NestedType) {
             res.addAll(((NestedType)parentType).getFullQName());
         } else if (parentType instanceof TypeImpl) {
@@ -217,7 +217,7 @@ public final class NestedType extends TypeImpl {
             }
             // Fixed IZ#155112 : False positive error highlighting errors on inner types of templates
             // Check for isTemplateBased parent type and then this
-            HashSet<CsmType> t = new HashSet<CsmType>(visited);
+            HashSet<CsmType> t = new HashSet<>(visited);
             t.add(this);
             boolean result = ((SafeTemplateBasedProvider)parentType).isTemplateBased(t);
             if (!result) {

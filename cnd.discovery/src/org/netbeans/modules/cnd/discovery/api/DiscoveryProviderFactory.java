@@ -64,7 +64,7 @@ public abstract class DiscoveryProviderFactory {
 
     public static Collection<DiscoveryProvider> findAllProviders() {
         Lookup.Result<DiscoveryProviderFactory> res = Lookup.getDefault().lookupResult(DiscoveryProviderFactory.class);
-        List<DiscoveryProvider> list = new ArrayList<DiscoveryProvider>();
+        List<DiscoveryProvider> list = new ArrayList<>();
         for(DiscoveryProviderFactory factory : res.allInstances()) {
             list.addAll(factory.getAllProviders());
         }

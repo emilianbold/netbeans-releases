@@ -136,7 +136,7 @@ public class UIDManager {
             @SuppressWarnings("unchecked")
             WeakSet<CsmUID<?>>[] ar = new WeakSet[ssize];
             for (int i = 0; i < ar.length; i++) {
-                ar[i] = new WeakSet<CsmUID<?>>(initialCapacity);
+                ar[i] = new WeakSet<>(initialCapacity);
             }
             instances = ar;
         }
@@ -176,8 +176,8 @@ public class UIDManager {
                     if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                         Object[] arr = instances[i].toArray();
                         System.out.println("Dispose UID cache " + instances[i].size()); // NOI18N
-                        Map<Class, Integer> uidClasses = new HashMap<Class, Integer>();
-                        Map<Class, Integer> keyClasses = new HashMap<Class, Integer>();
+                        Map<Class, Integer> uidClasses = new HashMap<>();
+                        Map<Class, Integer> keyClasses = new HashMap<>();
                         for (Object o : arr) {
                             if (o != null) {
                                 incCounter( uidClasses, o);

@@ -92,7 +92,7 @@ public class Diagnostic {
 
     public static class ProjectStat {
         private static final int SLOW_FILE_NUMBER = Math.max(1, Integer.getInteger("cnd.modelimpl.slow.file.number", 5)); // NOI18N
-        private final ConcurrentMap<CsmUID<CsmProject>, SlowFilesCollection> projectStats = new ConcurrentHashMap<CsmUID<CsmProject>, SlowFilesCollection>();
+        private final ConcurrentMap<CsmUID<CsmProject>, SlowFilesCollection> projectStats = new ConcurrentHashMap<>();
         public void addParseFileStatistics(ProjectBase project, FileImpl file, long parseTime) {
             if (project != null && !project.isArtificial()) {
                 CsmUID<CsmProject> uID = project.getUID();
@@ -130,7 +130,7 @@ public class Diagnostic {
         }
         
         private final static class SlowFilesCollection {
-            private final LinkedList<Entry> times = new LinkedList<Entry>();
+            private final LinkedList<Entry> times = new LinkedList<>();
 
             private void put(FileImpl file, long parseTime) {
                 synchronized (this) {
@@ -422,10 +422,10 @@ public class Diagnostic {
      *
      */
     private static class FileStatistics {
-        private Map<ExceptionWrapper, ExceptionWrapper> lexerProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
-        private Map<ExceptionWrapper, ExceptionWrapper> parserProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
-        private Map<ExceptionWrapper, ExceptionWrapper> otherProblems = new HashMap<ExceptionWrapper, ExceptionWrapper>();
-        private Map<String, IncludeInfo> includes = new HashMap<String, IncludeInfo>();
+        private final Map<ExceptionWrapper, ExceptionWrapper> lexerProblems = new HashMap<>();
+        private final Map<ExceptionWrapper, ExceptionWrapper> parserProblems = new HashMap<>();
+        private final Map<ExceptionWrapper, ExceptionWrapper> otherProblems = new HashMap<>();
+        private final Map<String, IncludeInfo> includes = new HashMap<>();
         
         /** first and last errors could be interesting */
         private ExceptionWrapper lastError = null;
@@ -583,7 +583,7 @@ public class Diagnostic {
         private void dumpExceptions(PrintStream dumpFile,
                 Map<ExceptionWrapper, ExceptionWrapper> errors) {
             // sort errors
-            List<ExceptionWrapper> values = new ArrayList<ExceptionWrapper>(errors.keySet());
+            List<ExceptionWrapper> values = new ArrayList<>(errors.keySet());
             Collections.sort(values, ExceptionWrapper.COMPARATOR);
             for (Iterator<ExceptionWrapper> it = values.iterator(); it.hasNext();) {
                 ExceptionWrapper elem = it.next();
@@ -592,7 +592,7 @@ public class Diagnostic {
         }
         
         private void dumpIncludes(PrintStream dumpFile, Map<String, IncludeInfo> includes) {
-            List<IncludeInfo> values = new ArrayList<IncludeInfo>(includes.values());
+            List<IncludeInfo> values = new ArrayList<>(includes.values());
             // sort to have failed first
             Collections.sort(values, IncludeInfo.COMPARATOR);
             for (Iterator<IncludeInfo> it = values.iterator(); it.hasNext();) {
@@ -619,9 +619,9 @@ public class Diagnostic {
             /** amount of includes from all places*/
             private int     counter = 0;
             /** set of files from which was this include */
-            private Map<String, Integer> includedFrom = new HashMap<String, Integer>();
+            private final Map<String, Integer> includedFrom = new HashMap<>();
             /** set of files from which was recursion include */
-            private Set<String> recursionFrom = new HashSet<String>();
+            private Set<String> recursionFrom = new HashSet<>();
             
             /** comparator */
             static final Comparator<IncludeInfo> COMPARATOR = new Comparator<IncludeInfo>() {
@@ -717,7 +717,7 @@ public class Diagnostic {
                     }
                 } else {
                     // sort "from" files
-                    List<String> files = new ArrayList<String>(this.includedFrom.keySet());
+                    List<String> files = new ArrayList<>(this.includedFrom.keySet());
                     Collections.sort(files);
                     for (Iterator<String> it = files.iterator(); it.hasNext();) {
                         String from = it.next();
@@ -753,9 +753,9 @@ public class Diagnostic {
             // the first recognition exception of the same types
             private Exception e;
             // collection of error messages
-            private Set<String> errorMessages = new HashSet<String>();
+            private final Set<String> errorMessages = new HashSet<>();
             private int counter = 0;
-            private String source;
+            private final String source;
             
             /** comparator */
             static final Comparator<ExceptionWrapper> COMPARATOR = new Comparator<ExceptionWrapper>() {
@@ -846,7 +846,7 @@ public class Diagnostic {
                         String indent = indentBuffer.toString() + indentBuffer.toString();
                         retValue.append("\n").append(indent); // NOI18N
                         retValue.append("+++ all error messages:"); // NOI18N
-                        List<String> values = new ArrayList<String>(errorMessages);
+                        List<String> values = new ArrayList<>(errorMessages);
                         Collections.sort(values);
                         for (Iterator<String> it = values.iterator(); it.hasNext();) {
                             String elem = it.next();

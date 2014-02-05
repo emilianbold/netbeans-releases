@@ -77,7 +77,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
     private ExecutionEnvironment execEnv;
-    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
+    private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
     private Collection<OutputStreamHandler> outputHandlers;
 
     /* package-local */
@@ -224,7 +224,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         if (provider == null) {
             return;
         }
-        HashMap<String, Object> map = new HashMap<String, Object>();
+        HashMap<String, Object> map = new HashMap<>();
         if ("exec-log".equals(provider.getID())) { // NOI18N
             map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
         } else {

@@ -56,13 +56,13 @@ import javax.swing.event.ListDataListener;
  * @author Alexander Simon
  */
 public class MacrosListModel implements ListModel {
-    private NodeConfigurationImpl configuration;
-    private Map<String,String> map;
-    private List<String> names;
+    private final NodeConfigurationImpl configuration;
+    private final Map<String,String> map;
+    private final List<String> names;
     public MacrosListModel(NodeConfigurationImpl configuration, boolean resulting){
         this.configuration = configuration;
         map = configuration.getUserMacros(resulting);
-        names = new ArrayList<String>(map.keySet());
+        names = new ArrayList<>(map.keySet());
         Collections.<String>sort(names);
     }
     public int getSize() {

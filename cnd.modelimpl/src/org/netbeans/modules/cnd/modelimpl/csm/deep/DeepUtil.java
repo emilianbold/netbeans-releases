@@ -49,9 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
-import static org.netbeans.modules.cnd.modelimpl.csm.TypeImpl.visitPointerOperator;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * Misc static methods used by deep impls
@@ -75,7 +72,7 @@ public class DeepUtil {
             List<CsmScopeElement> out = (List) statements;
             return out;
         } else {
-            List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+            List<CsmScopeElement> l = new ArrayList<>();
             l.add(var);
             l.addAll(statements);
             return l;
@@ -96,7 +93,7 @@ public class DeepUtil {
     }
 
     public static List<CsmScopeElement> merge(CsmVariable var, CsmStatement statement) {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+        List<CsmScopeElement> l = new ArrayList<>();
         if (var != null) {
             l.add(var);
         }

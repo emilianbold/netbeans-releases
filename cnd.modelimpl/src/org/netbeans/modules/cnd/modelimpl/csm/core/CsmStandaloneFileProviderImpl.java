@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -96,7 +95,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
     private static final class Lock{}
     private static final Lock lock = new Lock();
-    private static final Set<String> toBeRmoved = new HashSet<String>();
+    private static final Set<String> toBeRmoved = new HashSet<>();
 
     private final CsmModelListener listener = new CsmModelListener() {
 
@@ -325,7 +324,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private final List<NativeFileItemImpl> files = new ArrayList<>();
         private final FileObject projectRoot;
         private final FileSystem fileSystem;
-        private List<NativeProjectItemsListener> listeners = new ArrayList<>();
+        private final List<NativeProjectItemsListener> listeners = new ArrayList<>();
 
         private static final class Lock {}
         private final Object listenersLock = new Lock();
@@ -624,7 +623,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private void checkAbsolute(List<FSPath> orig) {
-            List<FSPath> result = new ArrayList<FSPath>(orig.size());
+            List<FSPath> result = new ArrayList<>(orig.size());
             for (FSPath path : orig) {
                 CndUtils.assertAbsolutePathInConsole(path.getPath());
             }

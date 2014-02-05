@@ -94,7 +94,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         super(type, pointerDepth, reference, arrayDepth, _const);
         if(type.functionParameters != null) {
-            functionParameters = new ArrayList<CsmParameter>(type.functionParameters);
+            functionParameters = new ArrayList<>(type.functionParameters);
         } else {
             functionParameters = null;
         }
@@ -106,7 +106,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     TypeFunPtrImpl(TypeFunPtrImpl type, List<CsmSpecializationParameter> instantiationParams) {
         super(type, instantiationParams);
         if(type.functionParameters != null) {
-            functionParameters = new ArrayList<CsmParameter>(type.functionParameters);
+            functionParameters = new ArrayList<>(type.functionParameters);
         } else {
             functionParameters = null;
         }

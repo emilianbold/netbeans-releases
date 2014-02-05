@@ -89,7 +89,7 @@ public final class MapHierarchy<K, V> {
     }
     
     public List<Map<K, V>> getMaps(Filter<Map<K, V>> filter) {
-        List<Map<K, V>> result = new ArrayList<Map<K, V>>();
+        List<Map<K, V>> result = new ArrayList<>();
         for (Map<K, V> map : maps) {
             if (filter.accept(map)) {
                 result.add(map);

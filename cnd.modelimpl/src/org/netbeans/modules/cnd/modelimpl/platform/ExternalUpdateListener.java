@@ -91,7 +91,7 @@ import org.openide.filesystems.FileUtil;
             return "Pair{" + "kind=" + kind + ", fe=" + fe + '}'; // NOI18N
         }
     }
-    private volatile LinkedList<Pair> events = new LinkedList<Pair>();
+    private volatile LinkedList<Pair> events = new LinkedList<>();
     private final Object eventsLock = new Object();
     
     ExternalUpdateListener(final ModelSupport outer) {
@@ -165,7 +165,7 @@ import org.openide.filesystems.FileUtil;
                     return;
                 }
                 curEvents = events;
-                events = new LinkedList<Pair>();
+                events = new LinkedList<>();
             }            
             for (Pair pair : curEvents) {
                 ModelImpl model = modelSupport.theModel;
@@ -179,7 +179,7 @@ import org.openide.filesystems.FileUtil;
                         LOG.log(Level.INFO, "External updates: Updating for {0} {1}", new Object[]{curKind, fo});
                     }
                     CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
-                    Set<ProjectBase> handledProjects = new HashSet<ProjectBase>();
+                    Set<ProjectBase> handledProjects = new HashSet<>();
                             
                     for (int i = 0; i < files.length; ++i) {
                         FileImpl file = (FileImpl) files[i];

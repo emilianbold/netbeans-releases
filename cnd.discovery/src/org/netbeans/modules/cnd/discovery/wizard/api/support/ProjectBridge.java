@@ -435,7 +435,7 @@ public class ProjectBridge {
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
-            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
+            if (path.contains("/../") || path.contains("/./")) { // NOI18N
                 path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
                 if (Utilities.isWindows()) {
                     path = path.replace('\\', '/');
@@ -860,9 +860,9 @@ public class ProjectBridge {
         boolean isChanged = false;
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            Set<String> set = new HashSet<String>(item.getUserMacroDefinitions());
+            Set<String> set = new HashSet<>(item.getUserMacroDefinitions());
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            List<String> list = new ArrayList<String>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            List<String> list = new ArrayList<>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
             for(Map.Entry<String,String> entry : macros.entrySet()) {
                 String s;
                 if (entry.getValue() != null) {
@@ -892,7 +892,7 @@ public class ProjectBridge {
         return isChanged;
     }
 
-    private Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> cache = new HashMap<>();
     private String getString(String s) {
         String res = cache.get(s);
         if (res == null) {

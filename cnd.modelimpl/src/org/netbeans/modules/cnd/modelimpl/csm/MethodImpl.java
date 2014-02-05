@@ -128,7 +128,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImpl<T> methodImpl = new MethodImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
+        MethodImpl<T> methodImpl = new MethodImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -192,8 +192,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     
     public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
         
-        private boolean _virtual = false;
-        private boolean _explicit = false;
+        private final boolean _virtual = false;
+        private final boolean _explicit = false;
         private CsmVisibility visibility = CsmVisibility.PUBLIC;
 
         protected MethodBuilder() {

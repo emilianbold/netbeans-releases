@@ -95,10 +95,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
-    private final Map<String, TestModelHelper> projectHelpers = new HashMap<String, TestModelHelper>();
-    private final Map<String, List<String>>    sysIncludes = new HashMap<String, List<String>>();
-    private final Map<String, List<String>>    usrIncludes = new HashMap<String, List<String>>();
-    private final Map<String, List<String>> projectDependencies = new HashMap<String, List<String>>();
+    private final Map<String, TestModelHelper> projectHelpers = new HashMap<>();
+    private final Map<String, List<String>>    sysIncludes = new HashMap<>();
+    private final Map<String, List<String>>    usrIncludes = new HashMap<>();
+    private final Map<String, List<String>> projectDependencies = new HashMap<>();
 
     protected PrintWriter outputWriter  = null;
     

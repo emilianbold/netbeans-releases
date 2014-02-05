@@ -60,8 +60,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     // 0 - not counted
     // -1 - counted false
     // 1 - counted true
-    private AtomicInteger simpleModeApplicable = new AtomicInteger(0);
-    private SelectModeWizard wizard;
+    private final AtomicInteger simpleModeApplicable = new AtomicInteger(0);
+    private final SelectModeWizard wizard;
     
     /** Creates new form SelectModePanel */
     public SelectModePanel(SelectModeWizard wizard) {

@@ -144,8 +144,8 @@ public final class DiscoveryProjectGenerator {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             SnapShot delta = pdp.startModifications();
             boolean isChanged = false;
-            Set<String> needCheck = new HashSet<String>();
-            Set<String> needAdd = new HashSet<String>();
+            Set<String> needCheck = new HashSet<>();
+            Set<String> needAdd = new HashSet<>();
             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DiscoveryProjectGenerator.class, "FixInclude.Progress.AnalyzeRoot")); // NOI18N
             handle.start();
             try {
@@ -208,7 +208,7 @@ public final class DiscoveryProjectGenerator {
                                     String folderPath = path.substring(0, i);
                                     Folder prefferedFolder = prefferedFolders.get(folderPath);
                                     if (prefferedFolder == null) {
-                                        LinkedList<String> mkFolder = new LinkedList<String>();
+                                        LinkedList<String> mkFolder = new LinkedList<>();
                                         while (true) {
                                             i = folderPath.lastIndexOf('/'); // NOI18N
                                             if (i > 0) {
@@ -287,7 +287,7 @@ public final class DiscoveryProjectGenerator {
     }
     
     public static HashMap<String, Item> initNormalizedNames(Project makeProject) {
-        HashMap<String, Item> normalizedItems = new HashMap<String, Item>();
+        HashMap<String, Item> normalizedItems = new HashMap<>();
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();

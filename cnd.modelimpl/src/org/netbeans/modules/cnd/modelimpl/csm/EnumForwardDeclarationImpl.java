@@ -301,7 +301,7 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
         if (CsmKindUtilities.isQualified(scope)) {
             CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if (scopeQName != null && scopeQName.length() > 0) {
-                List<CharSequence> l = new ArrayList<CharSequence>();
+                List<CharSequence> l = new ArrayList<>();
                 for (StringTokenizer stringTokenizer = new StringTokenizer(scopeQName.toString()); stringTokenizer.hasMoreTokens();) {
                     l.add(NameCache.getManager().getString(stringTokenizer.nextToken()));
                 }

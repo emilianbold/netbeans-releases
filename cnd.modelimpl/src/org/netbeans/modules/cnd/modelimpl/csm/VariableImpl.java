@@ -98,7 +98,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     private ExpressionBase initExpr;
 
     public static<T> VariableImpl<T> create(CsmFile file, int startOffset, int endOffset, CsmType type, CharSequence name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
-        VariableImpl<T> variableImpl = new VariableImpl<T>(file, startOffset, endOffset, type, name, scope, _static, _extern);
+        VariableImpl<T> variableImpl = new VariableImpl<>(file, startOffset, endOffset, type, name, scope, _static, _extern);
         postObjectCreateRegistration(registerInProject, variableImpl);
         return variableImpl;
     }
@@ -124,7 +124,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     }
     
     public static<T> VariableImpl<T> create(AST ast, CsmFile file, CsmType type, NameHolder name, CsmScope scope,  boolean _static, boolean _extern, boolean global) {
-        VariableImpl<T> variableImpl = new VariableImpl<T>(ast, file, type, name, scope, _static, _extern);
+        VariableImpl<T> variableImpl = new VariableImpl<>(ast, file, type, name, scope, _static, _extern);
         postObjectCreateRegistration(global, variableImpl);
         return variableImpl;
     }
@@ -272,7 +272,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             int templateLevel = 0;
             int parenLevel = 0;
             
-            List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
+            List<CsmStatement> lambdas = new ArrayList<>();
             
             while (tok != null) {
                 if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {

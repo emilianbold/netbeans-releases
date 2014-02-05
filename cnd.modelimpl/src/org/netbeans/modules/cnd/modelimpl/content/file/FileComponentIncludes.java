@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public class FileComponentIncludes extends FileComponent implements Persistent, SelfPersistent {
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
-    private Set<CsmUID<CsmInclude>> brokenIncludes = new LinkedHashSet<CsmUID<CsmInclude>>(0);
+    private final Set<CsmUID<CsmInclude>> brokenIncludes = new LinkedHashSet<>(0);
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
     // empty stub
@@ -190,7 +190,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
     }
 
     private Set<CsmUID<CsmInclude>> createIncludes() {
-        return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
+        return new TreeSet<>(UID_START_OFFSET_COMPARATOR);
     }
 
     @Override

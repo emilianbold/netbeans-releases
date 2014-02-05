@@ -72,7 +72,7 @@ public class UtilTest extends ModelBasedTestCase {
 
     @Test
     public void testConsistency() throws Exception {
-        Set<Character> set = new HashSet<Character>();
+        Set<Character> set = new HashSet<>();
         for(CsmDeclaration.Kind kind : CsmDeclaration.Kind.values()) {
             char csmDeclarationKindkey = Utils.getCsmDeclarationKindkey(kind);
             if (set.contains(csmDeclarationKindkey)) {

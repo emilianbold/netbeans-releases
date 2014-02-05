@@ -63,8 +63,8 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmListeners.class)
 public class ListenersImpl extends CsmListeners {
 
-    private final WeakList<CsmModelListener> modelListeners = new WeakList<CsmModelListener>();
-    private final WeakList<CsmModelStateListener> modelStateListeners = new WeakList<CsmModelStateListener>();
+    private final WeakList<CsmModelListener> modelListeners = new WeakList<>();
+    private final WeakList<CsmModelStateListener> modelStateListeners = new WeakList<>();
     
     @Override
     public void addModelListener(CsmModelListener listener) {

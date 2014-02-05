@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver.class)
 public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
 
-    private static Map<CsmUID<CsmProject>, Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>> cache = new HashMap<CsmUID<CsmProject>, Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>>();
+    private static final Map<CsmUID<CsmProject>, Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>> cache = new HashMap<>();
     private static long lastVersion = -1;
 
     public TypeHierarchyResolverImpl() {
@@ -95,7 +95,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
         CsmProject project = file.getProject();
         Map<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>> fullMap = getOrCreateFullMap(project, fileVersion);
-        Collection<CsmReference> res = new ArrayList<CsmReference>();
+        Collection<CsmReference> res = new ArrayList<>();
         for(CsmUID<CsmClass> cls : getSubTypesImpl(referencedClass, fullMap, directSubtypesOnly)) {
             CsmClass clsObj = cls.getObject();
             if (clsObj != null) {
@@ -109,12 +109,12 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         if (directSubtypesOnly) {
             return getSubTypesImpl(referencedClass, map);
         }
-        Set<CsmUID<CsmClass>> antiLoop = new HashSet<CsmUID<CsmClass>>();
-        Set<CsmUID<CsmClass>> res = new HashSet<CsmUID<CsmClass>>(getSubTypesImpl(referencedClass, map));
+        Set<CsmUID<CsmClass>> antiLoop = new HashSet<>();
+        Set<CsmUID<CsmClass>> res = new HashSet<>(getSubTypesImpl(referencedClass, map));
         antiLoop.add(UIDs.get(referencedClass));
         while(true) {
             int size = res.size();
-            Set<CsmUID<CsmClass>> step = new HashSet<CsmUID<CsmClass>>();
+            Set<CsmUID<CsmClass>> step = new HashSet<>();
             for(CsmUID<CsmClass> reference : res) {
                 if (!antiLoop.contains(reference)) {
                     CsmClass cls = reference.getObject();
@@ -142,7 +142,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         if (res != null) {
             return res;
         }
-        res = new HashSet<CsmUID<CsmClass>>();
+        res = new HashSet<>();
         if (CsmBaseUtilities.isValid(referencedClass)) {
             CsmFile file = referencedClass.getContainingFile();
             CsmProject project = file.getProject();
@@ -178,8 +178,8 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         Reference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>> outRef = cache.get(prjUID);
         Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> out = (outRef == null) ? null : outRef.get();
         if (out == null) {
-            out = new ConcurrentHashMap<CsmUID<CsmClass>,Set<CsmUID<CsmClass>>>();
-            cache.put(prjUID, new SoftReference<Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>>>(out));
+            out = new ConcurrentHashMap<>();
+            cache.put(prjUID, new SoftReference<>(out));
         }
         return out;
     }

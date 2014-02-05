@@ -111,7 +111,7 @@ public final class ParserQueue {
             if (ppStates.size() == 1) {
                 this.ppState = ppStates.iterator().next();
             } else {
-                this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
+                this.ppState = new ArrayList<>(ppStates);
             }
 
             this.position = position;
@@ -160,7 +160,7 @@ public final class ParserQueue {
         private synchronized void addStates(Collection<APTPreprocHandler.State> ppStates) {
             if (this.ppState instanceof APTPreprocHandler.State) {
                 APTPreprocHandler.State oldState = (APTPreprocHandler.State) ppState;
-                this.ppState = new ArrayList<APTPreprocHandler.State>();
+                this.ppState = new ArrayList<>();
                 if (oldState != FileImpl.DUMMY_STATE && oldState != FileImpl.PARTIAL_REPARSE_STATE) {
                     ((Collection<APTPreprocHandler.State>) this.ppState).add(oldState);
                 } else {
@@ -202,7 +202,7 @@ public final class ParserQueue {
                         " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
             // we don't need check here - all logic is in ProjectBase.onFileIncluded            
-            this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
+            this.ppState = new ArrayList<>(ppStates);
         }
 
         @Override
@@ -303,10 +303,10 @@ public final class ParserQueue {
 
     private static final class ProjectData {
 
-        private final Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
+        private final Set<FileImpl> filesInQueue = new HashSet<>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
+        private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<>();
         private volatile int pendingActivity;
         ProjectData() {
             this.pendingActivity = 0;
@@ -328,8 +328,8 @@ public final class ParserQueue {
 
         ON, OFF, SUSPENDED
     }
-    private static ParserQueue instance = new ParserQueue(false);
-    private final PriorityQueue<Entry> queue = new PriorityQueue<Entry>();
+    private static final ParserQueue instance = new ParserQueue(false);
+    private final PriorityQueue<Entry> queue = new PriorityQueue<>();
     private volatile State state;
     private static final class SuspendLock { 
         private final AtomicInteger counter = new AtomicInteger(0);
@@ -338,15 +338,15 @@ public final class ParserQueue {
     private final SuspendLock suspendLock = new SuspendLock();
 
     // do not need UIDs for ProjectBase in parsing data collection
-    private final Map<ProjectBase, ProjectData> projectData = new HashMap<ProjectBase, ProjectData>();
-    private final Map<CsmProject, ProjectWaitLatch> projectsAwaitLatches = new HashMap<CsmProject, ProjectWaitLatch>();
+    private final Map<ProjectBase, ProjectData> projectData = new HashMap<>();
+    private final Map<CsmProject, ProjectWaitLatch> projectsAwaitLatches = new HashMap<>();
     private final AtomicInteger serial = new AtomicInteger(0);
     private static final class Lock {}
     private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
     private final Diagnostic.ProjectStat parseWatch = TraceFlags.TIMING ? new Diagnostic.ProjectStat() : null;
-    private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<ProjectBase, AtomicInteger>();
+    private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<>();
 
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
@@ -390,7 +390,7 @@ public final class ParserQueue {
     public void add(FileImpl file, Collection<APTPreprocHandler> ppHandlers, Position position) {
         assert ppHandlers != FileImpl.DUMMY_HANDLERS : "dummy handlers can not be added directly (only through shiftToBeParsedNext)";
         assert ppHandlers != FileImpl.PARTIAL_REPARSE_HANDLERS : "partial reparse handlers can not be added directly (only through addForPartialReparse)";
-        Collection<APTPreprocHandler.State> ppStates = new ArrayList<APTPreprocHandler.State>(ppHandlers.size());
+        Collection<APTPreprocHandler.State> ppStates = new ArrayList<>(ppHandlers.size());
         for (APTPreprocHandler handler : ppHandlers) {
             ppStates.add(handler.getState());
         }
@@ -669,7 +669,7 @@ public final class ParserQueue {
         synchronized (lock) {
             state = State.OFF;
             queue.clear();
-            copiedProjects = new ArrayList<ProjectBase>(projectData.keySet());
+            copiedProjects = new ArrayList<>(projectData.keySet());
             lock.notifyAll();
         }
         for (ProjectBase prj : copiedProjects) {

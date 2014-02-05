@@ -109,7 +109,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         AST krList = null;
         AST prev = null;
         AST token;
-        LinkedList<AST> lParens = new LinkedList<AST>();
+        LinkedList<AST> lParens = new LinkedList<>();
         for (token = funAST.getFirstChild(); token != null; token = token.getNextSibling()) {
             if (token.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 paramList = token;
@@ -145,7 +145,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
     
     public static class FunctionParameterListBuilder extends ScopedDeclarationBuilder {
                 
-        private List<ParameterBuilder> parameterBuilsers = new ArrayList<ParameterBuilder>();
+        private List<ParameterBuilder> parameterBuilsers = new ArrayList<>();
         
         public void addParameterBuilder(ParameterBuilder parameterBuilser) {
             parameterBuilsers.add(parameterBuilser);
@@ -156,7 +156,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         }
 
         public FunctionParameterListImpl create() {
-            List<CsmParameter> parameters = new ArrayList<CsmParameter>();
+            List<CsmParameter> parameters = new ArrayList<>();
             for (ParameterBuilder parameterBuilder : parameterBuilsers) {
                 parameterBuilder.setScope(getScope());
                 parameters.add(parameterBuilder.create());

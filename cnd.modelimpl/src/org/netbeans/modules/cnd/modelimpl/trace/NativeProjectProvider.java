@@ -182,7 +182,7 @@ public final class NativeProjectProvider {
         private final String projectRoot;
 	private final boolean pathsRelCurFile;
 	private final String name;
-	private List<NativeProjectItemsListener> listeners = new ArrayList<>();
+	private final List<NativeProjectItemsListener> listeners = new ArrayList<>();
         private final List<NativeProject> libProjects;
 
         private static final class Lock {}
@@ -319,7 +319,7 @@ public final class NativeProjectProvider {
             NativeFileItem item = findFileItem(fo);
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
             List<NativeFileItem> list = Collections.singletonList(item);            
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -334,7 +334,7 @@ public final class NativeProjectProvider {
             }
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
             List<NativeFileItem> list = Collections.singletonList(item);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -345,7 +345,7 @@ public final class NativeProjectProvider {
 	private void fireAllFilesChanged() {
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
-		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+		listenersCopy = new ArrayList<>(listeners);
 	    }
 	    List<NativeFileItem> items = Collections.unmodifiableList(files);
 	    for( NativeProjectItemsListener listener : listenersCopy ) {
@@ -483,7 +483,7 @@ public final class NativeProjectProvider {
 	
 	private List<FSPath> toAbsolute(List<FSPath> orig) {
 	    File base = file.getParentFile();
-	    List<FSPath> result = new ArrayList<FSPath>(orig.size());
+	    List<FSPath> result = new ArrayList<>(orig.size());
 	    for( FSPath path : orig ) {
 		File pathFile = new File(path.getPath());
 		if( pathFile.isAbsolute() ) {

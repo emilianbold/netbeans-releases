@@ -940,10 +940,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private String compiler;
         private ItemProperties.LanguageKind language;
         private LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> systemIncludes = Collections.<String>emptyList();
+        private final List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
-        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
+        private final Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private final CompileLineStorage storage;
         private int handler = -1;
         private String importantFlags;

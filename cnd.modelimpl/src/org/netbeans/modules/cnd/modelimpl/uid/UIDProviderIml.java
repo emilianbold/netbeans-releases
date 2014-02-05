@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.UIDProvider.class)
 public final class UIDProviderIml implements UIDProvider {
 
-    private static final Set<Class<?>> nonIdentifiable = new HashSet<Class<?>>();
+    private static final Set<Class<?>> nonIdentifiable = new HashSet<>();
     private static final boolean debugMode = CndUtils.isDebugMode();
 
     public static boolean isSelfUID(CsmUID<?> uid) {
@@ -154,7 +154,7 @@ public final class UIDProviderIml implements UIDProvider {
     }
 
     public static <T> CsmUID<T> createSelfUID(T obj) {
-        return new SelfUID<T>(obj);
+        return new SelfUID<>(obj);
     }
 
     private static final class SelfUID<T> implements CsmUID<T> {

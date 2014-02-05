@@ -220,7 +220,7 @@ public final class FilePreprocessorConditionState {
     }
 
     public final List<CsmOffsetable> createBlocksForFile(CsmFile file) {
-        List<CsmOffsetable> blocks = new ArrayList<CsmOffsetable>();
+        List<CsmOffsetable> blocks = new ArrayList<>();
         for (int i = 0; i < offsets.length; i+=2) {
             blocks.add(org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(file, offsets[i], offsets[i+1]));
         }
@@ -236,7 +236,7 @@ public final class FilePreprocessorConditionState {
 
     public static final class Builder implements APTParseFileWalker.EvalCallback {
 
-        private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
+        private final SortedSet<int[]> blocks = new TreeSet<>(COMPARATOR);
         private final CharSequence name;
         public Builder(CharSequence name) {
             this.name = name;

@@ -83,7 +83,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             LOG.log(Level.INFO, title + "\n" +DeepReparsingUtils.toString(fileItems), new Exception(title));
         }
         if (enabledEventsHandling) {
-            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+            ArrayList<NativeFileItem> list = new ArrayList<>();
             for (NativeFileItem item : fileItems) {
                 if (!item.isExcluded()) {
                     list.add(item);
@@ -155,7 +155,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             LOG.log(Level.INFO, title, new Exception(title));
         }
         if (enabledEventsHandling) {
-            ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+            ArrayList<NativeFileItem> list = new ArrayList<>();
             for(NativeFileItem item : allFiles){
                 if (!item.isExcluded()) {
                     switch(item.getLanguage()){

@@ -67,7 +67,7 @@ public class Terminator implements Runnable {
     
     private static final RequestProcessor RP = new RequestProcessor("CND.Terminator", 1); // NOI18N
     
-    private ProjectBase project;
+    private final ProjectBase project;
     private static boolean timeout = false;
     
     private Terminator(ProjectBase project) {

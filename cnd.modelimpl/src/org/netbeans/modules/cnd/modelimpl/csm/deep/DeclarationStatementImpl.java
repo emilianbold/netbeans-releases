@@ -120,7 +120,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
     }
 
     private class DSRenderer extends AstRenderer {
-        private List<CsmDeclaration> declarators = new ArrayList<CsmDeclaration>();
+        private List<CsmDeclaration> declarators = new ArrayList<>();
 
         public DSRenderer() {
             super((FileImpl) DeclarationStatementImpl.this.getContainingFile());
@@ -305,7 +305,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
     
     public static class DeclarationStatementBuilder extends StatementBuilder {
 
-        private List<SimpleDeclarationBuilder> declarations = new ArrayList<SimpleDeclarationBuilder>();
+        private final List<SimpleDeclarationBuilder> declarations = new ArrayList<>();
         
         public void addDeclarationBuilder(SimpleDeclarationBuilder decl) {
             declarations.add(decl);
@@ -314,7 +314,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         public DeclarationStatementImpl create() {
             DeclarationStatementImpl stmt = new DeclarationStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            List<CsmDeclaration> decls = new ArrayList<CsmDeclaration>();
+            List<CsmDeclaration> decls = new ArrayList<>();
             for (SimpleDeclarationBuilder declBuilder : declarations) {
                 declBuilder.setScope(getScope());
                 decls.add(declBuilder.create());

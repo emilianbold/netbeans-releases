@@ -109,7 +109,7 @@ public class SelectImpl implements CsmSelectProvider {
             if (implName.caseSensitive && implName.match && !implName.allowEmptyName) {
                 // can be optimized
                 Collection<CsmUID<CsmMacro>>res = file.findMacroUids(implName.strPrefix);
-                return new LazyCsmCollection<CsmMacro,CsmMacro>(res, true).iterator(filter);
+                return new LazyCsmCollection<>(res, true).iterator(filter);
             }
         }
         return null;
@@ -162,7 +162,7 @@ public class SelectImpl implements CsmSelectProvider {
         if (implName != null && implKind != null) {
             if (implName.caseSensitive && implName.match) {
                 // can be optimized
-                res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+                res = new ArrayList<>();
                 StringBuilder from = new StringBuilder();
                 for(int i = 0; i < implKind.kinds.length; i++){
                     from.setLength(0);
@@ -195,7 +195,7 @@ public class SelectImpl implements CsmSelectProvider {
                     res.addAll(namespace.getUnnamedUids());
                 }
             } else {
-                res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+                res = new ArrayList<>();
                 for(int i = 0; i < implKind.kinds.length; i++){
                     String from = ""+Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
                     res.addAll(namespace.findUidsByPrefix(from));
@@ -205,7 +205,7 @@ public class SelectImpl implements CsmSelectProvider {
                 }
             }
         } else if (implKind != null) {
-            res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            res = new ArrayList<>();
             for(int i = 0; i < implKind.kinds.length; i++){
                 String from = ""+Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
                 res.addAll(namespace.findUidsByPrefix(from));
