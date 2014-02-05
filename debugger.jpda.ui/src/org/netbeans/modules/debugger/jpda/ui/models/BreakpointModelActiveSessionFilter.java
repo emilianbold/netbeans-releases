@@ -113,9 +113,7 @@ public class BreakpointModelActiveSessionFilter implements ExtendedNodeModelFilt
 
     @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
-        if (debugger.getBreakpointsActive()) {
-            return original.getIconBaseWithExtension(node);
-        } else {
+        if (!debugger.getBreakpointsActive()) {
             if (node instanceof LineBreakpoint) {
                 LineBreakpoint breakpoint = (LineBreakpoint)node;
                 if (!breakpoint.isEnabled()) {
@@ -131,8 +129,8 @@ public class BreakpointModelActiveSessionFilter implements ExtendedNodeModelFilt
                     return DEACTIVATED_NONLINE_BREAKPOINT;
                 }
             }
-            throw new UnknownTypeException(node);
         }
+        return original.getIconBaseWithExtension(node);
     }
 
     @Override
