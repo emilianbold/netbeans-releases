@@ -596,6 +596,12 @@ is divided into following sections:
                         <pathelement path="${{libs.j2me_common_ant.classpath}}"/>
                     </classpath>
                 </taskdef>
+                <condition property="contains.manifest.configuration">
+                    <matches pattern="MicroEdition-Configuration" string="${{manifest.others}}"/>
+                </condition>
+                <condition property="contains.manifest.profile">
+                    <matches pattern="MicroEdition-Profile" string="${{manifest.others}}"/>
+                </condition>
             </target>
 
             <target name="init">
