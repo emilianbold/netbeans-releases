@@ -2,27 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>MIDP Project Properties: MIDlets</title>
+<title>Java ME Embedded Project Properties Dialog Box: Platform</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-02-04</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets" name="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets"></a></p>
+<p>Beta Draft: 2014-02-05</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MEPlatformPanel"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref731" name="sthref731"></a>
-<h1>MIDP Project Properties: MIDlets</h1>
+<h1>Java ME Embedded Project Properties Dialog Box: Platform</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to add, remove, or change the order of MIDlets within a MIDlet suite for the active project configuration. 
+<p>Use to view and modify the emulator platform properties of a project configuration. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1618">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1615">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of elements on MIDlets tab of Application Descriptor page." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="33%" />
+<table summary="Descriptions of elements on the Platform page of the project properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -33,54 +33,79 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t33" headers="r1c1-t33">
-<p>Use Values from "DefaultConfiguration"</p>
+<p>JDK Path</p>
 </td>
 <td align="left" headers="r2c1-t33 r1c2-t33">
-<p>Enables you to customize the properties for a project configuration other than the default configuration if this option is unchecked.</p>
+<p>Specifies the target JDK.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t33" headers="r1c1-t33">
-<p>Name</p>
+<p>Java ME Platform</p>
 </td>
 <td align="left" headers="r3c1-t33 r1c2-t33">
-<p>Shows the displayable name of the MIDlet that the user sees when the MIDlet is run on a mobile device.</p>
+<p>Selects the emulator platform from all platforms that have been added to the IDE.</p>
+<p>Click <b>Manage Platforms</b> to perform the following operations:</p>
+<ul>
+<li>Add or remove available platforms</li>
+<li>View the platform classpath</li>
+<li>View the list of devices provided by the platform</li>
+<li>Add or remove platform source files</li>
+<li>Add or remove java documentation sources</li>
+</ul>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t33" headers="r1c1-t33">
-<p>Class</p>
+<p>Configuration</p>
 </td>
 <td align="left" headers="r4c1-t33 r1c2-t33">
-<p>Displays the Java class that for the MIDlet.</p>
+<p>Enables you to create a project configuration other than the default configuration.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t33" headers="r1c1-t33">
-<p>Icon</p>
+<p>Device</p>
 </td>
 <td align="left" headers="r5c1-t33 r1c2-t33">
-<p>Displays an icon (a <code>.png</code> file), representing the MIDlet, that the user sees when the MIDlet is run on a mobile device.</p>
+<p>Selects the device emulator the IDE uses to simulate application performance when the project is executed.</p>
+<p>The drop-down menu lists all device emulators available on the selected emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t33" headers="r1c1-t33">
+<p>Configuration</p>
+</td>
+<td align="left" headers="r6c1-t33 r1c2-t33">
+<p>Specifies the version of the Connected, Limited Device Connection (CLDC) supported by the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t33" headers="r1c1-t33">
+<p>Profile</p>
+</td>
+<td align="left" headers="r7c1-t33 r1c2-t33">
+<p>Specifies the version of the Micro Edition Embedded Profile (MEEP) supported by the emulator platform.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t33" headers="r1c1-t33">
+<p>Optional Packages</p>
+</td>
+<td align="left" headers="r8c1-t33 r1c2-t33">
+<p>Lists the optional packages and APIs supported by the selected emulator platform and emulator device.</p>
+<p>You can select or deselect any of the listed packages to test your target device under differing conditions.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Java classes and icons that are not valid are highlighted in red.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1582">
-<param name="text" value="<html><u>&quot;Customizing MIDlet Properties&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1610">
-<param name="text" value="<html><u>&quot;Working with Java ME Project Configurations&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
