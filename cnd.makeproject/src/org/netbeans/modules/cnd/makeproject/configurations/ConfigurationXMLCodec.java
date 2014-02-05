@@ -163,7 +163,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void start(Attributes atts) throws VersionException {
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
-            descriptorVersion = new Integer(versionString);
+            descriptorVersion = new Integer(versionString).intValue();
             projectDescriptor.setVersion(descriptorVersion);
         }
     }
@@ -304,7 +304,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentConf.addAuxObject(itemConfiguration);
                 if (descriptorVersion >= 57) {
                     String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
-                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR));
+                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
                     String flavor = atts.getValue(ItemXMLCodec.FLAVOR2_ATTR);
@@ -486,7 +486,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String op = getString(atts.getValue(CommonConfigurationXMLCodec.MAKE_ARTIFACT_OP_ELEMENT));
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
-                    pl, new Integer(ct),
+                    pl,
+                    new Integer(ct).intValue(),
                     cn,
                     ac.equals(TRUE_VALUE),
                     bl != null ? bl.equals(TRUE_VALUE) : true,
@@ -573,7 +574,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ASSEMBLER_REQUIRED_ELEMENT)) {
             ((MakeConfiguration) currentConf).getAssemblerRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
-            int set = new Integer(currentText);
+            int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {
                 set = PlatformTypes.PLATFORM_GENERIC;
             }
@@ -585,11 +586,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getRebuildPropChanged().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
-            defaultConf = new Integer(currentText);
+            defaultConf = new Integer(currentText).intValue();
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
             projectDescriptor.setProjectMakefileName(getString(currentText));
         } else if (element.equals(OPTIMIZATION_LEVEL_ELEMENT)) { // FIXUP <= version 21
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentCCCCompilerConfiguration != null) {
                 if (ol == 0) {
                     currentCCCCompilerConfiguration.getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
@@ -609,7 +610,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(DEVELOPMENT_MODE_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getDevelopmentMode().setValue(ol);
             }
@@ -682,13 +683,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
             CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {
-                int tool = new Integer(currentText);
+                int tool = new Integer(currentText).intValue();
                 currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
             }
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             currentCCCompilerConfiguration.getLibraryLevel().setValue(ol);
         } else if (element.equals(CUSTOMTOOL_COMMANDLINE_ELEMENT)) {
             currentCustomToolConfiguration.getCommandLine().setValue(getString(currentText));
@@ -829,7 +830,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 String type;
                 if (descriptorVersion <= 50) {
                     int i;
-                    i = new Integer(currentText);
+                    i = new Integer(currentText).intValue();
                     if (i == 0) {
                         type = "Tar"; // NOI18N
                     } else if (i == 1) {
@@ -872,12 +873,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentBasicCompilerConfiguration.getSixtyfourBits().setValue(ds ? BasicCompilerConfiguration.BITS_64 : BasicCompilerConfiguration.BITS_DEFAULT);
             }
         } else if (element.equals(ARCHITECTURE_ELEMENT)) {
-            int val = new Integer(currentText);
+            int val = new Integer(currentText).intValue();
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getSixtyfourBits().setValue(val);
             }
         } else if (element.equals(STANDARD_ELEMENT)) {
-            int val = new Integer(currentText);
+            int val = new Integer(currentText).intValue();
             if (currentCCCompilerConfiguration != null) {
                 currentCCCompilerConfiguration.setCppStandardExternal(val);
             } else if (currentCCompilerConfiguration != null) {
@@ -911,22 +912,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(WARNING_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getWarningLevel().setValue(ol);
             }
         } else if (element.equals(MT_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getMTLevel().setValue(ol);
             }
         } else if (element.equals(STANDARDS_EVOLUTION_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getStandardsEvolution().setValue(ol);
             }
         } else if (element.equals(LANGUAGE_EXTENSION_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = new Integer(currentText).intValue();
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getLanguageExt().setValue(ol);
             }

@@ -69,7 +69,7 @@ public class BooleanNodeProp extends PropertySupport<Boolean> {
     }
 
     public void setValue(Boolean v) {
-        booleanConfiguration.setValue(v);
+        booleanConfiguration.setValue(v.booleanValue());
     }
 
     @Override

@@ -1039,7 +1039,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             if (value == null) {
                 result = emptyLabel;
             } else {
-                setSelected(((Boolean)value));
+                setSelected(((Boolean)value).booleanValue());
                 setEnabled(table.getModel().isCellEditable(row, column));
                 result = this;
             }

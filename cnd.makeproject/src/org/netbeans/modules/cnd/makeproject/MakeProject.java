@@ -919,7 +919,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             if (typeNode != null) {
                 String type = typeNode.getNodeValue();
                 try {
-                    return new Integer(type);
+                    return new Integer(type).intValue();
                 } catch (NumberFormatException nfe) {
                 }
             }
@@ -936,7 +936,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
-                return new Integer(node.getTextContent());
+                return new Integer(node.getTextContent()).intValue();
             }
         }
         return -1;
@@ -953,7 +953,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         if (nodeList != null && nodeList.getLength() > 0) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
-                return new Integer(node.getTextContent());
+                return new Integer(node.getTextContent()).intValue();
             }
         }
 

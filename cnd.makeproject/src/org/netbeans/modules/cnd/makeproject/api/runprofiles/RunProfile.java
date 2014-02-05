@@ -906,7 +906,7 @@ public boolean isSimpleRunCommand() {
     }
 
     /**
-  e arguments
+     * @return the arguments
      * This property is hidden by default. Don't use it!
      */
     public StringConfiguration getConfigurationArguments() {
@@ -1038,7 +1038,8 @@ public boolean isSimpleRunCommand() {
             setBuildFirst((v).booleanValue());
         }
     }
-ass EnvNodeProp extends PropertySupport<Env> {
+
+    private class EnvNodeProp extends PropertySupport<Env> {
 
         public EnvNodeProp() {
             super("Environment", Env.class, getString("EnvironmentName"), getString("EnvironmentHint"), true, true); // NOI18N

@@ -439,7 +439,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N
                 String fname = (String) wiz.getProperty("mainFileName"); // NOI18N
                 String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
-                mainFile = fname + "|" + templat          }
+                mainFile = fname + "|" + template; // NOI18N
+            }
             MakeConfiguration debug = MakeConfiguration.createConfiguration(dirF, "Debug", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);

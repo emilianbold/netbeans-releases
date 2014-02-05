@@ -429,14 +429,16 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
-                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();          list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
+                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                    list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }
             } else if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE_FOLDER)) {
                 try {
                     LogicalFolderNode viewFolderNode = (LogicalFolderNode) transferable.getTransferData(flavors[i]);
                     if (viewFolderNode != this) {
-                        int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();              list.add(new ViewFolderPasteType(folder, viewFolderNode, type, provider));
+                        int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                        list.add(new ViewFolderPasteType(folder, viewFolderNode, type, provider));
                     }
                 } catch (Exception e) {
                 }

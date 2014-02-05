@@ -955,7 +955,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             this.hostUID = hostUID;
             this.cs = cs;
             this.isDefaultCompilerSet = isDefaultCompilerSet;
-            this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain;
+            this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain.booleanValue();
             this.toolsCacheManager = toolsCacheManager;
         }
 
