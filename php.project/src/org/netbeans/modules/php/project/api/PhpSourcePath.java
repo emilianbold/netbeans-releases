@@ -138,24 +138,13 @@ public final class PhpSourcePath {
                         "phpstubs/phpruntime"); // NOI18N
                 assert phpStubs.exists() && phpStubs.isDirectory() : "No stubs found";
                 phpStubsFolder = FileUtil.toFileObject(phpStubs);
-            } else {
-                // During test?
-                // HACK - TODO use mock
-                String phpDir = System.getProperty("xtest.php.home");   //NOI18N
-                if (phpDir == null) {
-                    throw new RuntimeException("xtest.php.home property has to be set when running within binary distribution");  //NOI18N
-                }
-                File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime"); // NOI18N
-                if (phpStubs.exists()) {
-                    phpStubsFolder = FileUtil.toFileObject(phpStubs);
-                } else {
-                    // avoid null
-                    phpStubsFolder = FileUtil.toFileObject(new File(phpDir));
-                    assert phpStubsFolder != null;
-                }
+                assert phpStubsFolder != null : "FileObject for stubs " + phpStubs + " not found";
             }
         }
-
+        if (phpStubsFolder == null) {
+            // during tests
+            return Collections.emptyList();
+        }
         return Collections.singletonList(phpStubsFolder);
     }
 
