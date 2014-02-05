@@ -107,6 +107,9 @@ public final class HighlightProviderTaskFactory extends TaskFactory {
                     return;
                 }
                 final Document doc = result.getSnapshot().getSource().getDocument(false);
+                if (doc == null) {
+                    return;
+                }
                 DataObject dobj = DataObject.find(fo);
                 HighlightProvider.getInstance().update(csmFile, doc, dobj, interrupter);
             } catch (DataObjectNotFoundException ex) {
