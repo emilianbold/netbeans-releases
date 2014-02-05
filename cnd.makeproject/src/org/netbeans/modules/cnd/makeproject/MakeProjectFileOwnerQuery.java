@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -71,7 +72,6 @@ import org.openide.util.Lookup.Provider;
  *
  * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=98)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     private static final String PATH_SEPARATOR = "/"; //NOI18N
     private static final class Cache {
@@ -224,5 +224,24 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             }
         }
         return false;
+    }
+
+    // see bug #240182
+    @org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.project.FileOwnerQueryImplementation.class, position = 98)
+    public static class HighPriorityProvider extends MakeProjectFileOwnerQuery {
+
+        @Override
+        public Project getOwner(FileObject fo) {
+            if (fo == null || !MIMENames.isCndMimeType(fo.getMIMEType())) {
+                return null;
+            }
+            return super.getOwner(fo);
+        }
+
+    }
+
+    @org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.project.FileOwnerQueryImplementation.class, position = 102)
+    public static class LowPriorityProvider extends MakeProjectFileOwnerQuery {
+
     }
 }

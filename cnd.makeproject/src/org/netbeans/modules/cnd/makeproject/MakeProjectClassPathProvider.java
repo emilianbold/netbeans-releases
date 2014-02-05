@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
@@ -91,7 +92,7 @@ public class MakeProjectClassPathProvider implements ClassPathProvider {
             PROJECT_LOCK.readLock().lock();
             try {
                 for (ClassPath spc : PROJECT_CPS) {
-                    if (spc.contains(file)) {
+                    if ((MIMENames.isFortranOrHeaderOrCppOrC(file.getMIMEType()) || file.isFolder()) && spc.contains(file)) {
                         return spc;
                     }
                 }
