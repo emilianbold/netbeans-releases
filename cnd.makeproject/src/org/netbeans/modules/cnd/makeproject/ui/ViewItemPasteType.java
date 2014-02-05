@@ -51,9 +51,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
 
@@ -111,7 +112,16 @@ final class ViewItemPasteType extends PasteType {
                 try {
                     pasteImpl();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    String message = null;
+                    if (type == DnDConstants.ACTION_MOVE) {
+                        message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_move", fromItem.getAbsPath()); //NOI18N
+                    } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
+                        message = NbBundle.getMessage(ViewItemPasteType.class, "paste_operation_copy", fromItem.getAbsPath()); //NOI18N
+                    }
+                    if (message != null) {
+                        StatusDisplayer.getDefault().setStatusText(message);
+                    }
+                    ex.printStackTrace(System.err);
                 }
             }
         });
