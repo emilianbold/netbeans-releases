@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 public class FileElementsCollector {
     // use big negative instead of 0 as minimal start file offset
     // because CsmInclude associated with "-include file" has negative start offset
-    private static final int MIN_FILE_OFFSET = Integer.MIN_VALUE;
+    private static final int MIN_FILE_OFFSET = Short.MIN_VALUE; // use Short.MIN_VALUE to prevent overflow
     private static final int MAX_FILE_OFFSET = Integer.MAX_VALUE;
     private final CsmFile destFile;
     private int startOffset;
