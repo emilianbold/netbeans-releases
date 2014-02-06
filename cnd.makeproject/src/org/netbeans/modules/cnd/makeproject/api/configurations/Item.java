@@ -683,13 +683,11 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     }
                     p = macroConverter.expand(p);
                 }
-                if (!p.contains("$")) { //NOI18N
-                    if (CndPathUtilities.isPathAbsolute(p)) {
-                        result.add(new FSPath(compilerFS, p));
-                    } else {
-                        String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                        result.add(new FSPath(projectFS, p));
-                    }
+                if (CndPathUtilities.isPathAbsolute(p)) {
+                    result.add(new FSPath(compilerFS, p));
+                } else {
+                    String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                    result.add(new FSPath(projectFS, absPath));
                 }
             }
             List<String> vec3 = new ArrayList<>();
@@ -739,7 +737,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     p = macroConverter.expand(p);
                 }
                 String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                result.add(p);
+                result.add(absPath);
             }
             return result;
         }
