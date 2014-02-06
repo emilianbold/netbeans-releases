@@ -310,7 +310,7 @@ public final class StatementNode implements BreadcrumbsElement {
                     if (c.getKind() == CsmStatement.Kind.CASE) {
                         currElement.decoration = "case "; //NOI18N
                     } else {
-                        currElement.decoration = "default "; //NOI18N
+                        currElement.decoration = ""; //NOI18N
                     }
                     currElement.body = new ArrayList<CsmOffsetable>();
                     lastTrueStart = c.getEndOffset()+1;
