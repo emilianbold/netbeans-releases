@@ -307,6 +307,8 @@ public class OutlineView extends JScrollPane {
             }
 
         });
+        outline.setSelectionBackground(SheetCell.getNoFocusSelectionBackground());
+        outline.setSelectionForeground(SheetCell.getNoFocusSelectionForeground());
         TableColumnSelector tcs = Lookup.getDefault ().lookup (TableColumnSelector.class);
         if (tcs != null) {
             outline.setColumnSelector(tcs);
