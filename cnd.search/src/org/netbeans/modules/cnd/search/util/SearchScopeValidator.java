@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.util.Exceptions;
 
 public class SearchScopeValidator {
 
@@ -80,7 +79,7 @@ public class SearchScopeValidator {
                 ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(searchRoot.getFileObject());
 
                 if (env.isLocal()) {
-                    if (!localhostOSFamily.isUnix()) {
+                    if (localhostOSFamily == null || !localhostOSFamily.isUnix()) {
                         return false;
                     }
                 } else {

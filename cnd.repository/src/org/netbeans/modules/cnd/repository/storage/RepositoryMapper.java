@@ -64,21 +64,30 @@ public final class RepositoryMapper {
     public static boolean matches(UnitDescriptor descriptor1, UnitDescriptor descriptor2) {
         return instance.matchesImpl(descriptor1, descriptor2);
     }
-
-    public static UnitDescriptor map(FileSystem targetFileSystem, UnitDescriptor sourceUnitDescriptor) {
-        return instance.mapImpl(targetFileSystem, sourceUnitDescriptor);
+//    public static UnitDescriptor map(FileSystem targetFileSystem, UnitDescriptor layerUnitDescriptor) {
+//        return instance.mapImpl(targetFileSystem, layerUnitDescriptor);
+//    }
+    
+    public static UnitDescriptor mapToClient(FileSystem targetFileSystem, UnitDescriptor layerUnitDescriptor) {
+        return instance.mapToClientImpl(targetFileSystem, layerUnitDescriptor);
     }
 
-    public static CharSequence map(FileSystem targetFileSystem, FilePath sourceFilePath) {
-        return instance.mapImpl(targetFileSystem, sourceFilePath);
+    public static UnitDescriptor mapToLayer(FileSystem targetFileSystem, UnitDescriptor clientUnitDescriptor) {
+        //in fact if we support relocation of both (project and repository)
+        //we should map layer unit descriptor to client
+        return instance.mapToLayerImpl(targetFileSystem, clientUnitDescriptor);
     }
 
-    public CharSequence mapImpl(FileSystem targetFileSystem, FilePath sourceFilePath) {
+    public static CharSequence map(UnitDescriptor clientUnitDescriptor, FilePath sourceFilePath) {
+        return instance.mapImpl(clientUnitDescriptor, sourceFilePath);
+    }
+
+    public CharSequence mapImpl(UnitDescriptor clientUnitDescriptor, FilePath sourceFilePath) {
         Collection<? extends RepositoryPathMapperImplementation> impls =
                 Lookup.getDefault().lookupAll(RepositoryPathMapperImplementation.class);
 
         for (RepositoryPathMapperImplementation impl : impls) {
-            CharSequence result = impl.map(targetFileSystem, sourceFilePath);
+            CharSequence result = impl.map(clientUnitDescriptor, sourceFilePath);
             if (result != null) {
                 return CharSequences.create(result);
             }
@@ -103,8 +112,35 @@ public final class RepositoryMapper {
 
         return false;
     }
+    
+    
+    private UnitDescriptor mapToLayerImpl(FileSystem destFileSystem, UnitDescriptor sourceUnitDescriptor) {
+        return new UnitDescriptor(sourceUnitDescriptor.getName(), destFileSystem);
+    }
+    
+    private UnitDescriptor mapToClientImpl(FileSystem destFileSystem, UnitDescriptor layerUnitDescriptor) {
+        //leyerUnitDescriptor is source, nned to find deestination
+        Collection<? extends UnitDescriptorsMatcherImplementation> matchers =
+                Lookup.getDefault().lookupAll(UnitDescriptorsMatcherImplementation.class);
+         for (UnitDescriptorsMatcherImplementation unitDescriptorsMatcher : matchers) {
+            UnitDescriptor clientUnitDescriptor = unitDescriptorsMatcher.destinationDescriptor(destFileSystem, layerUnitDescriptor);
+            if (clientUnitDescriptor != null) {
+                return clientUnitDescriptor;
+            }
+        }
+        return new UnitDescriptor(layerUnitDescriptor.getName(), destFileSystem);
+    }    
 
-    private UnitDescriptor mapImpl(FileSystem clientFileSystem, UnitDescriptor layerUnitDescriptor) {
-        return new UnitDescriptor(layerUnitDescriptor.getName(), clientFileSystem);
+    private UnitDescriptor mapImpl(FileSystem destFileSystem, UnitDescriptor sourceUnitDescriptor) {
+        Collection<? extends UnitDescriptorsMatcherImplementation> matchers =
+                Lookup.getDefault().lookupAll(UnitDescriptorsMatcherImplementation.class);
+         for (UnitDescriptorsMatcherImplementation unitDescriptorsMatcher : matchers) {
+            UnitDescriptor clientUnitDescriptor = unitDescriptorsMatcher.destinationDescriptor(destFileSystem, sourceUnitDescriptor);
+            if (clientUnitDescriptor != null) {
+                return clientUnitDescriptor;
+            }
+        }
+         //default
+        return new UnitDescriptor(sourceUnitDescriptor.getName(), destFileSystem);
     }
 }

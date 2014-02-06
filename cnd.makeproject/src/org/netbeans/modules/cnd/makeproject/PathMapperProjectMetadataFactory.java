@@ -2,14 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.netbeans.modules.cnd.makeproject.launchers;
+package org.netbeans.modules.cnd.makeproject;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import org.netbeans.modules.cnd.makeproject.NativeProjectRelocationMapperProviderImpl.ProjectMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
-import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -21,24 +21,16 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author mtishkov
  */
-@ServiceProvider(service = ProjectMetadataFactory.class, path = "Projects/org-netbeans-modules-cnd-makeproject/" + ProjectMetadataFactory.LAYER_PATH, position = 100)
-public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
+@ServiceProvider(service = ProjectMetadataFactory.class, path = "Projects/org-netbeans-modules-cnd-makeproject/" + ProjectMetadataFactory.LAYER_PATH, position = 90)
+public class PathMapperProjectMetadataFactory implements ProjectMetadataFactory {
 
-    public static final String NAME = "launcher.properties"; //NOI18N
-    private static final String USG_CND_LAUNCHERS = "USG_CND_LAUNCHERS"; //NOI18N
+    public static final String NAME = "path_mapper.properties"; //NOI18N
 
     @Override
     public void read(FileObject projectDir) {
-        if (projectDir == null || !projectDir.isValid()) {
-            //there could be the situation when nbproject is invalid, for example when
-            //project is remote and it was opened, no cache exists and opening IDE no connection is established
-            return;
-        }
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
         FileChangeListenerImpl fileChangeListener = new FileChangeListenerImpl(projectDir);
-        if (nbproject != null && nbproject.isValid()) {
-            nbproject.addFileChangeListener(fileChangeListener);
-        }
+        nbproject.addFileChangeListener(fileChangeListener);
         initListeners(fileChangeListener, projectDir);
         reload(projectDir);
 
@@ -47,19 +39,19 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
     private void initListeners(FileChangeListener fileChangeListener, FileObject projectDir) {
         FileObject nbproject = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        FileObject publicLaunchers = nbproject.getFileObject(NAME);
-        if (publicLaunchers != null) {
-            publicLaunchers.removeFileChangeListener(fileChangeListener);
-            publicLaunchers.addFileChangeListener(fileChangeListener);
+        FileObject publicPathMapper = nbproject.getFileObject(NAME);
+        if (publicPathMapper != null) {
+            publicPathMapper.removeFileChangeListener(fileChangeListener);
+            publicPathMapper.addFileChangeListener(fileChangeListener);
         }        
         final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
         if (privateNbFolder != null && privateNbFolder.isValid()) {
             privateNbFolder.removeFileChangeListener(fileChangeListener);
             privateNbFolder.addFileChangeListener(fileChangeListener);
-            FileObject privateLaunchers = privateNbFolder.getFileObject(NAME);
-            if (privateLaunchers != null) {
-                privateLaunchers.removeFileChangeListener(fileChangeListener);
-                privateLaunchers.addFileChangeListener(fileChangeListener);
+            FileObject privatePathMapper = privateNbFolder.getFileObject(NAME);
+            if (privatePathMapper != null) {
+                privatePathMapper.removeFileChangeListener(fileChangeListener);
+                privatePathMapper.addFileChangeListener(fileChangeListener);
             }
         }
     }
@@ -69,34 +61,33 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
     }
 
     private static void reload(FileObject projectDir) {
-        LaunchersRegistry launchersRegistry = LaunchersRegistryFactory.getInstance(projectDir);
+        ProjectMapper projectMapper = NativeProjectRelocationMapperProviderImpl.get(projectDir);
         Properties properties = new Properties();
         final FileObject nbProjectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
-        if (nbProjectFolder == null || !nbProjectFolder.isValid()) {  // LaunchersRegistry shouldn't be updated in case the project has been deleted.
+        if (nbProjectFolder == null) {  
             return;
         }
-        FileObject publicLaunchers = nbProjectFolder.getFileObject(NAME);
+        FileObject publicMappers = nbProjectFolder.getFileObject(NAME);
         final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        FileObject privateLaunchers = null;
+        FileObject privateMappers = null;
         if (privateNbFolder != null && privateNbFolder.isValid()) {
-            privateLaunchers = privateNbFolder.getFileObject(NAME);
+            privateMappers = privateNbFolder.getFileObject(NAME);
         }
         try {
-            if (publicLaunchers != null && publicLaunchers.isValid()) {
-                final InputStream inputStream = publicLaunchers.getInputStream();
+            if (publicMappers != null && publicMappers.isValid()) {
+                final InputStream inputStream = publicMappers.getInputStream();
                 properties.load(inputStream);
                 inputStream.close();
             }
-            if (privateLaunchers != null && privateLaunchers.isValid()) {
-                final InputStream inputStream = privateLaunchers.getInputStream();
+            if (privateMappers != null && privateMappers.isValid()) {
+                final InputStream inputStream = privateMappers.getInputStream();
                 properties.load(inputStream);
                 inputStream.close();
             }
         } catch (IOException ex) {
             //Exceptions.printStackTrace(ex);
         }
-        launchersRegistry.load(properties);
-        UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
+        projectMapper.load(properties, projectDir);
     }
 
     private class FileChangeListenerImpl implements FileChangeListener {
