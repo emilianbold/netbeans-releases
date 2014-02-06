@@ -307,6 +307,8 @@ public class OutlineView extends JScrollPane {
             }
 
         });
+        outline.setSelectionBackground(SheetCell.getNoFocusSelectionBackground());
+        outline.setSelectionForeground(SheetCell.getNoFocusSelectionForeground());
         TableColumnSelector tcs = Lookup.getDefault ().lookup (TableColumnSelector.class);
         if (tcs != null) {
             outline.setColumnSelector(tcs);
@@ -1519,6 +1521,10 @@ public class OutlineView extends JScrollPane {
             return null;
         }
 
+        /**
+         * Set column model. If some properties were added or removed, also
+         * update the row model.
+         */
         @Override
         public void setColumnModel(TableColumnModel columnModel) {
             super.setColumnModel(columnModel);
@@ -1535,18 +1541,64 @@ public class OutlineView extends JScrollPane {
             
             int cc = columns.size();
             if (cc > 0) {
-                Property[] properties = new Property[cc - 1];
-                for (int ic = 1; ic < cc; ic++) {
-                    TableColumn column = columns.get(ic);
+                final String nodesName = getNodesColumnName();
+                final Property[] origProperties = rowModel.getProperties();
+                Property[] newProperties = new Property[cc - 1];
+                int foundOrigProperties = 0;
+                int columnIndex = 0;
+                for (TableColumn column : columns) {
                     String name = column.getHeaderValue().toString();
-                    properties[ic - 1] = new PrototypeProperty(name, name);
+                    Property origProperty = findProperty(origProperties, name);
+                    foundOrigProperties += origProperty == null ? 0 : 1;
+                    if ((nodesName == null && columnIndex == 0)
+                            || (nodesName != null && nodesName.equals(name))) {
+                        continue;
+                    }
+                    newProperties[columnIndex++] = origProperty == null
+                            ? new PrototypeProperty(name, name)
+                            : origProperty;
                 }
-                rowModel.setProperties(properties);
+                if (foundOrigProperties != cc - 1) {
+                    rowModel.setProperties(newProperties);
+                }
             } else {
                 rowModel.setProperties(new Property[] {});
             }
         }
         
+        /**
+         * Try to find a property of given display name in an array of
+         * properties. If the property is not present, return null.
+         *
+         * @param props Array of currently used properties.
+         * @param displayName Display name of the property to find.
+         * @return Property found in {@code properties}, or null.
+         */
+        private Property findProperty(Property[] props, String displayName) {
+            if (props != null) {
+                for (Property property : props) {
+                    if (property != null
+                            && property.getDisplayName() != null
+                            && property.getDisplayName().equals(displayName)) {
+                        return property;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Get name of the column that contains outline nodes, or null if it is
+         * not available.
+         */
+        private String getNodesColumnName() {
+            OutlineModel outlineModel = getOutlineModel();
+            if (outlineModel != null && outlineModel.getColumnCount() > 0) {
+                return outlineModel.getColumnName(0);
+            }
+            return null;
+        }
+
         private static List<TableColumn> getAllColumns(ETableColumnModel etcm) {
             try {
                 Method getAllColumnsMethod = ETableColumnModel.class.getDeclaredMethod("getAllColumns");
