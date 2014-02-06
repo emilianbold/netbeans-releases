@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -112,6 +113,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
     private int selectedIndex = -1;
     private Operation[] operations;
     private Location[] locations;
+    private ExpressionPool.Interval expressionLines;
     private boolean[] isCertainlyReachable;
 
     MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine) {
@@ -191,7 +193,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                RunIntoMethodActionProvider.doAction(debugger, name, locations[index], true);
+                RunIntoMethodActionProvider.doAction(debugger, name, locations[index], expressionLines, true);
             }
         });
     }
@@ -219,6 +221,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         if (expr == null) {
             return false;
         }
+        expressionLines = expr.getInterval();
         Operation currOp = currentThread.getCurrentOperation();
         List<Operation> lastOpsList = currentThread.getLastOperations();
         Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
@@ -230,12 +233,24 @@ public class MethodChooserSupport implements PropertyChangeListener {
         Location[] tempLocs = expr.getLocations();
         operations = new Operation[tempOps.length];
         locations = new Location[tempOps.length];
+        int l1 = Integer.MAX_VALUE;
+        int l2 = 0;
         for (int x = 0; x < tempOps.length; x++) {
-            operations[x] = tempOps[x];
+            Operation op = tempOps[x];
+            operations[x] = op;
             locations[x] = tempLocs[x];
+            int sl = op.getMethodStartPosition().getLine();
+            int el = op.getMethodEndPosition().getLine();
+            if (sl < l1) {
+                l1 = sl;
+            }
+            if (el > l2) {
+                l2 = el;
+            }
         }
-        startLine = operations[0].getMethodStartPosition().getLine();
-        endLine = operations[operations.length - 1].getMethodEndPosition().getLine();
+        startLine = l1;
+        endLine = l2;
+        /*
         for (int i = 1; i < (operations.length - 1); i++) {
             int line = operations[i].getMethodStartPosition().getLine();
             if (line < startLine) {
@@ -244,7 +259,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
             if (line > endLine) {
                 endLine = line;
             }
-        }
+        }*/
 
         int currOpIndex = -1;
         int lastOpIndex = -1;
@@ -359,7 +374,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
             if ("<init>".equals(name)) {
                 name = operations[selectedIndex].getMethodClassType();
             }
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], expr.getInterval(), true);
             return true;
         }
         return false;

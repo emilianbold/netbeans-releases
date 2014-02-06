@@ -269,15 +269,16 @@ public class I18nServiceImpl implements I18nService {
             rh.setLocalization(localeSuffix);
             if (!isValueUpToDate(rh, newI18nString)) {
                 if (newI18nString.allData != null) { // restore complete data across all locales
+                    if (oldI18nString != null && newI18nString.getValue() != null) {
+                        // besides changing place (key/file) there might also be a new value/comment
+                        updateAllData(newI18nString, localeSuffix);
+                    }
                     rh.setAllData(key, newI18nString.allData);
                     newI18nString.allData = null;
                     if (oldI18nString == null) {
                         // update also the current value - might have come from a different locale
                         newI18nString.setValue(rh.getValueForKey(key));
                         newI18nString.setComment(rh.getCommentForKey(key));
-                    } else if (newI18nString.getValue() != null) {
-                        // besides changing place (key/file) there might also be a new value
-                        rh.addProperty(key, newI18nString.getValue(), newI18nString.getComment(), true);
                     }
                 }
                 else {
@@ -299,6 +300,24 @@ public class I18nServiceImpl implements I18nService {
             newComment = null;
         return (storedValue == newValue || (storedValue != null && storedValue.equals(newValue)))
             && (storedComment == newComment || (storedComment != null && storedComment.equals(newComment)));
+    }
+
+    private static void updateAllData(FormI18nString newI18nString, String localeSuffix) {
+        // Not nice we deal with the data format that is internal to the properties
+        // module, but need to workaround bug 240650 somehow - by applying all the changes
+        // at once. Trying to modify the added item subsequently might happen when the
+        // PropertiesStructure is in an inconsistent state and add the item for the second time.
+        String[] allData = (newI18nString.allData instanceof String[]) ? (String[]) newI18nString.allData : null;
+        if (allData != null) {
+            for (int i=0; i < allData.length; i+=3) {
+                String locale = allData[i];
+                if (localeSuffix.equals(locale)) {
+                    allData[i+1] = newI18nString.getValue();
+                    allData[i+2] = newI18nString.getComment();
+                    break;
+                }
+            }
+        }
     }
 
     /**

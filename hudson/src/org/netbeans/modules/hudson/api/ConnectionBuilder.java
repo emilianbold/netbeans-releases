@@ -64,6 +64,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.HostnameVerifier;
@@ -79,6 +80,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.api.Bundle.*;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NetworkSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -350,7 +352,7 @@ public final class ConnectionBuilder {
                 break;
             }
             if (home != null) {
-                List<String> cookies = conn.getHeaderFields().get("Set-Cookie"); // NOI18N
+                List<String> cookies = getHeaderFields(conn).get("Set-Cookie"); // NOI18N
                 if (cookies != null) {
                     LOG.log(Level.FINE, "Cookies set for domain {0}: {1}", new Object[] {home, cookies});
                     COOKIES.put(home.toString(), cookies.toArray(new String[cookies.size()]));
@@ -416,6 +418,43 @@ public final class ConnectionBuilder {
             }
         }
         return conn;
+    }
+
+    /**
+     * Call {@link URLConnection#getHeaderFields()}, supppress authentication
+     * dialog if user interaction is forbidden.
+     */
+    private Map<String, List<String>> getHeaderFields(
+            final URLConnection conn) throws IOException {
+        return callSilentlyIfNeeded(conn,
+                new Callable<Map<String, List<String>>>() {
+                    @Override
+                    public Map<String, List<String>> call() throws Exception {
+                        return conn.getHeaderFields();
+                    }
+                });
+    }
+
+    /**
+     * Call a callable. If user interaction is forbidden by the connection,
+     * disable authentication dialog.
+     */
+    private <R> R callSilentlyIfNeeded(URLConnection conn, Callable<R> call)
+            throws IOException {
+
+        if (conn.getAllowUserInteraction()) {
+            try {
+                return call.call();
+            } catch (Exception ex) {
+                throw new IOException(ex);
+            }
+        } else {
+            try {
+                return NetworkSettings.suppressAuthenticationDialog(call);
+            } catch (Exception ex) {
+                throw new IOException(ex);
+            }
+        }
     }
 
     /**

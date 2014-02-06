@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-31</p>
+<p>Beta Draft: 2014-02-05</p>
 <p><a id="ThreadsWindow.HelpCtx" name="ThreadsWindow.HelpCtx"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref423" name="sthref423"></a>
 <h1>Profiling Threads Window</h1>
@@ -72,7 +72,7 @@
 </table>
 <br />
 <!-- -->
-<p>The Threads window contains the following tabs:</p>
+<p>The table in the Threads window contains columns that provide details about thread states and statistics about each thread. You can click the triangle in the far right column to invoke a menu to hide or display table columns. The following columns are available in the menu:</p>
 
 <table summary="Descriptions of Profiling Threads window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="34%" />
@@ -86,46 +86,68 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t61" headers="r1c1-t61">
-<p>Threads (Timeline)</p>
+<p>Name</p>
 </td>
 <td align="left" headers="r2c1-t61 r1c2-t61">
-<p>Displays thread states over time.</p>
-<p>States can be displayed for all threads, all live threads, or all finished threads according to the drop-down list selection. You can also define a subset of threads to be displayed using a (multi)selection.</p>
-<p>Double-click a thread to display the details of that thread in the Threads (Details) tab.</p>
-<p>You can zoom in or out on the current view, or switch to the Scale to Fit mode.</p>
+<p>Name of thread.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t61" headers="r1c1-t61">
-<p>Table</p>
+<p>Thread States Timeline</p>
 </td>
 <td align="left" headers="r3c1-t61 r1c2-t61">
-<p>Displays a table view of the thread states and statistics about the threads.</p>
+<p>Displays thread states over time.</p>
+<p>States can be displayed for all threads, all live threads, or all finished threads according to the option that is selected in the View drop-down list in the toolbar.</p>
+<p>The status of each thread is represented by a color. The legend for the colors is located at the bottom of the Threads window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t61" headers="r1c1-t61">
-<p>Threads (Details)</p>
+<p>Running</p>
 </td>
 <td align="left" headers="r4c1-t61 r1c2-t61">
-<p>Displays more detailed information about individual threads.</p>
-<p>Use the drop-down list in the Threads tab toolbar to select which threads to display. The name, classname and current status (alive or finished) of each thread is displayed. A short description of the thread is also provided. The tab contains the following two tabs: <b>General</b> and <b>Details</b>.</p>
+<p>Time spent in running state. The data is presented as total time and as a percentage of the total time.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t61" headers="r1c1-t61">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;General</p>
+<p>Sleeping</p>
 </td>
 <td align="left" headers="r5c1-t61 r1c2-t61">
-<p>Displays a pie graph illustrating thread state statistics.</p>
+<p>Time spent in sleeping state. The data is presented as total time and as a percentage of the total time.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t61" headers="r1c1-t61">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Details</p>
+<p>Wait</p>
 </td>
 <td align="left" headers="r6c1-t61 r1c2-t61">
-<p>Displays a full listing of the thread's states, with timestamps. A timeline for each thread provides a quick overview of that thread's activity while it is being monitoring.</p>
+<p>Time spent in waiting state. The data is presented as total time and as a percentage of the total time.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t61" headers="r1c1-t61">
+<p>Park</p>
+</td>
+<td align="left" headers="r7c1-t61 r1c2-t61">
+<p>Time spent in parked state. The data is presented as total time and as a percentage of the total time.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t61" headers="r1c1-t61">
+<p>Monitor</p>
+</td>
+<td align="left" headers="r8c1-t61 r1c2-t61">
+<p>Time spent in monitor state. The data is presented as total time and as a percentage of the total time.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t61" headers="r1c1-t61">
+<p>Total</p>
+</td>
+<td align="left" headers="r9c1-t61 r1c2-t61">
+<p>Total of time spent in all states.</p>
 </td>
 </tr>
 </tbody>

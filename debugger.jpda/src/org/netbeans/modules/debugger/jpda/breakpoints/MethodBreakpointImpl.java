@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -138,13 +139,15 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
             return ;
         }
         String[] excludedNames = classNames.getExcludedClassNames();
-        setClassRequests (
+        boolean wasSet = setClassRequests (
             names,
             excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        for(String filter : names) {
-            checkLoadedClasses (filter, excludedNames);
+        if (wasSet) {
+            for(String filter : names) {
+                checkLoadedClasses (filter, excludedNames);
+            }
         }
     }
     
@@ -358,8 +361,15 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 locationEntry = true;
                             } else {
                                 if (entryReq == null) {
-                                    entryReq = EventRequestManagerWrapper.
-                                            createMethodEntryRequest(getEventRequestManager());
+                                    try {
+                                        entryReq = EventRequestManagerWrapper.
+                                                createMethodEntryRequest(getEventRequestManager());
+                                    } catch (UnsupportedOperationException unsupported) {
+                                        invalidMessage =
+                                                NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodEntry");
+                                        setValidity(VALIDITY.INVALID, invalidMessage);
+                                        return ;
+                                    }
                                     MethodEntryRequestWrapper.addClassFilter(entryReq, referenceType);
                                     JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
                                     if (threadFilters != null && threadFilters.length > 0) {
@@ -382,8 +392,15 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                         }
                         if (methodExitType) {
                             if (exitReq == null) {
-                                exitReq = EventRequestManagerWrapper.
-                                        createMethodExitRequest(getEventRequestManager());
+                                try {
+                                    exitReq = EventRequestManagerWrapper.
+                                            createMethodExitRequest(getEventRequestManager());
+                                } catch (UnsupportedOperationException unsupported) {
+                                    invalidMessage =
+                                            NbBundle.getMessage(MethodBreakpointImpl.class, "MSG_NoMethodExit");
+                                    setValidity(VALIDITY.INVALID, invalidMessage);
+                                    return ;
+                                }
                                 MethodExitRequestWrapper.addClassFilter(exitReq, referenceType);
                                 JPDAThread[] threadFilters = breakpoint.getThreadFilters(getDebugger());
                                 if (threadFilters != null && threadFilters.length > 0) {
@@ -410,6 +427,8 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     Exceptions.printStackTrace(irse);
                 } catch (VMDisconnectedExceptionWrapper e) {
                     return ;
+                } catch (RequestNotSupportedException rnsex) {
+                    setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
                 }
             }
             try {
@@ -438,6 +457,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     }
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
+                return ;
+            } catch (RequestNotSupportedException rnsex) {
+                setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
                 return ;
             }
             if (locationEntry || entryReq != null || exitReq != null) {
