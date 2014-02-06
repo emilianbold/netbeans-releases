@@ -73,8 +73,8 @@ public class APTHandlersSupport {
         APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
     }
  
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
-        return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, fileSearch);
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+        return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, includeFileEntries, fileSearch);
     }
 
     public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
