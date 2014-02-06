@@ -346,6 +346,61 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals("Last column short description", shortDescription, shortDescription2);
     }
 
+    /**
+     * Test for bug 236331 - After reading the persistence settings all the
+     * OutlineView property cells become empty.
+     *
+     * @throws Exception
+     */
+    public void testPropertiesPersistence2() throws Exception {
+
+        TestNode[] childrenNodes = new TestNode[2];
+        childrenNodes[0] = new TestNode(Children.LEAF, "First");
+        childrenNodes[1] = new TestNode(Children.LEAF, "Second");
+        Children.Array children = new Children.Array();
+        children.add(childrenNodes);
+        Node rootNode = new TestNode(children, "Invisible Root");
+
+        OutlineViewComponentWithLabels comp
+                = new OutlineViewComponentWithLabels(rootNode);
+        OutlineView ov = comp.getOutlineView();
+        Outline o = ov.getOutline();
+
+        ov.expandNode(rootNode);
+        o.moveColumn(1, 0);
+        assertEquals("First", getDummyValue(o.getValueAt(0, 0)));
+        assertEquals("Second", getDummyValue(o.getValueAt(1, 0)));
+
+        Properties p = new Properties();
+        o.writeSettings(p, "test");
+
+        OutlineViewComponentWithLabels comp2
+                = new OutlineViewComponentWithLabels(rootNode);
+        OutlineView ov2 = comp2.getOutlineView();
+        Outline o2 = ov2.getOutline();
+
+        ov2.readSettings(p, "test");
+        ov2.expandNode(rootNode);
+        assertNotSame(o, o2);
+
+        // ensure the order of columns was restored
+        assertEquals("First", getDummyValue(o2.getValueAt(0, 0)));
+        assertEquals("Second", getDummyValue(o2.getValueAt(1, 0)));
+    }
+
+    private String getDummyValue(Object prop) {
+        if (prop instanceof TestNode.DummyProperty) {
+            TestNode.DummyProperty dummyProp = (TestNode.DummyProperty) prop;
+            Object val = dummyProp.getValue("unitTestPropName");
+            return val == null ? null : val.toString();
+        } else {
+            fail("DummyProperty expected, but was " + prop
+                    + " (" + (prop == null ? "null" : prop.getClass()) + "). "
+                    + "The order of columns is probably incorrect.");
+            return null;
+        }
+    }
+
     private class OutlineViewComponent extends JPanel implements ExplorerManager.Provider {
 
         private final ExplorerManager manager = new ExplorerManager ();
@@ -369,6 +424,38 @@ public final class OutlineViewTest extends NbTestCase {
         }
 
         public OutlineView getOutlineView () {
+            return view;
+        }
+    }
+
+    /**
+     * View component with outline where column display names are different from
+     * column property names. Used in {@link #testPropertiesPersistence2()}.
+     */
+    private class OutlineViewComponentWithLabels extends JPanel implements
+            ExplorerManager.Provider {
+
+        private final ExplorerManager manager = new ExplorerManager();
+        private OutlineView view;
+
+        private OutlineViewComponentWithLabels(Node rootNode) {
+            setLayout(new BorderLayout());
+            manager.setRootContext(rootNode);
+
+            view = new OutlineView("test-outline-view-component");
+            view.setPropertyColumns("unitTestPropName", "TestProperty");
+
+            view.getOutline().setRootVisible(false);
+
+            add(view, BorderLayout.CENTER);
+        }
+
+        @Override
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
+
+        public OutlineView getOutlineView() {
             return view;
         }
     }
