@@ -298,6 +298,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                             currentThreadsHistory.remove(dvThread);
                         }
                         dvThread.removePropertyChangeListener(this);
+                        removeBreakpointHit(dvThread);
                         // System.out.println("RELEASED: " + dvThread.getName());
                     }
                 } else if (DVSupport.PROP_CURRENT_THREAD.equals(propName)) {
