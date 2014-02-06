@@ -58,22 +58,20 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 public enum TwigTopTokenId implements TokenId {
+    T_TWIG_OTHER("twig_error"), //NOI18N
+    T_TWIG_COMMENT("twig_comment"), //NOI18N
+    T_TWIG_BLOCK_START("twig_block_delimiter"), //NOI18N
+    T_TWIG_BLOCK("twig_block"), //NOI18N
+    T_TWIG_BLOCK_END("twig_block_delimiter"), //NOI18N
+    T_TWIG_VAR_START("twig_var_delimiter"), //NOI18N
+    T_TWIG_VAR("twig_var"), //NOI18N
+    T_TWIG_VAR_END("twig_var_delimiter"), //NOI18N
+    T_HTML("twig_html"); //NOI18N
 
-    T_HTML(null, "twig_html"), //NOI18N
-    T_ERROR(null, "twig_error"), //NOI18N
-    T_TWIG(null, "twig"), //NOI18N
-    T_TWIG_RAW(null, "twig_raw"); //NOI18N
+    private final String primaryCategory;
 
-    private String fixedText;
-    private String primaryCategory;
-
-    TwigTopTokenId(String fixedText, String primaryCategory) {
-        this.fixedText = fixedText;
+    TwigTopTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
-    }
-
-    public String fixedText() {
-        return fixedText;
     }
 
     @Override
@@ -95,7 +93,7 @@ public enum TwigTopTokenId implements TokenId {
 
                 @Override
                 protected Lexer<TwigTopTokenId> createLexer(LexerRestartInfo<TwigTopTokenId> info) {
-                    return TwigTopLexer.create(info);
+                    return new TwigTopLexer(info);
                 }
 
                 @Override
@@ -108,10 +106,12 @@ public enum TwigTopTokenId implements TokenId {
                         LanguagePath languagePath, InputAttributes inputAttributes) {
 
                     TwigTopTokenId id = token.id();
-                    if (id == T_HTML || id == T_TWIG_RAW) {
+                    if (id == T_HTML) {
                         return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                    } else if (id == T_TWIG) {
-                        return LanguageEmbedding.create(TwigTokenId.language(), 0, 0);
+                    } else if (id == T_TWIG_BLOCK) {
+                        return LanguageEmbedding.create(TwigBlockTokenId.language(), 0, 0);
+                    } else if (id == T_TWIG_VAR) {
+                        return LanguageEmbedding.create(TwigVariableTokenId.language(), 0, 0);
                     }
 
                     return null;

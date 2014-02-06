@@ -44,6 +44,7 @@ package org.netbeans.modules.php.twig.editor.lexer;
 import java.io.File;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.twig.editor.util.TestUtils;
 
@@ -520,6 +521,10 @@ public class TwigLexerTest extends TwigLexerTestBase {
         performTest("tags-use-multiple");
     }
 
+    public void testTagsVerbatimBasic() throws Exception {
+        performTest("tags-verbatim-basic");
+    }
+
     public void testTestsArray() throws Exception {
         performTest("tests-array");
     }
@@ -608,8 +613,10 @@ public class TwigLexerTest extends TwigLexerTestBase {
         StringBuilder result = new StringBuilder();
         while (ts.moveNext()) {
             TwigTopTokenId tokenId = ts.token().id();
-            if (TwigTopTokenId.T_TWIG.equals(tokenId)) {
-                result.append(getEmbeddedResult(ts.token().text()));
+            if (TwigTopTokenId.T_TWIG_BLOCK.equals(tokenId)) {
+                result.append(getEmbeddedBlockResult(ts.token().text()));
+            } else if (TwigTopTokenId.T_TWIG_VAR.equals(tokenId)) {
+                result.append(getEmbeddedVariableResult(ts.token().text()));
             } else {
                 CharSequence text = ts.token().text();
                 result.append("TOP token #");
@@ -629,16 +636,22 @@ public class TwigLexerTest extends TwigLexerTestBase {
         return result.toString();
     }
 
-    private String getEmbeddedResult(final CharSequence text) throws Exception {
-        Language<TwigTokenId> language = TwigTokenId.language();
+    private String getEmbeddedBlockResult(final CharSequence text) throws Exception {
+        Language<TwigBlockTokenId> language = TwigBlockTokenId.language();
         TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, language);
         return createEmbeddedResult(hierarchy.tokenSequence(language));
     }
 
-    private String createEmbeddedResult(TokenSequence<TwigTokenId> ts) throws Exception {
+    private String getEmbeddedVariableResult(final CharSequence text) throws Exception {
+        Language<TwigVariableTokenId> language = TwigVariableTokenId.language();
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, language);
+        return createEmbeddedResult(hierarchy.tokenSequence(language));
+    }
+
+    private String createEmbeddedResult(TokenSequence<? extends TokenId> ts) throws Exception {
         StringBuilder result = new StringBuilder();
         while (ts.moveNext()) {
-            TwigTokenId tokenId = ts.token().id();
+            TokenId tokenId = ts.token().id();
             CharSequence text = ts.token().text();
             result.append("token #");
             result.append(ts.index());

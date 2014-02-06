@@ -21,6 +21,9 @@
     </fontcolor>
     <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>
     <fontcolor name="number" default="number" foreColor="ff00ff" />
+    <fontcolor name="htmltag" default="comment" foreColor="9999FF">
+        <font style="bold"/>
+    </fontcolor>
 
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" waveUnderlined="999999"/>

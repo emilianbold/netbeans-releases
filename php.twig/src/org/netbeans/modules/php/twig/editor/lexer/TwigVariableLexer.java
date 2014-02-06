@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.twig.editor.lexer;
@@ -50,27 +50,30 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
-public class TwigLexer implements Lexer<TwigTokenId> {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class TwigVariableLexer implements Lexer<TwigVariableTokenId> {
+    private final TwigVariableColoringLexer scanner;
+    private final TokenFactory<TwigVariableTokenId> tokenFactory;
 
-    private final TwigColoringLexer scanner;
-    private final TokenFactory<TwigTokenId> tokenFactory;
-
-    public TwigLexer(LexerRestartInfo<TwigTokenId> info) {
-        scanner = new TwigColoringLexer(info);
+    public TwigVariableLexer(LexerRestartInfo<TwigVariableTokenId> info) {
+        scanner = new TwigVariableColoringLexer(info);
         tokenFactory = info.tokenFactory();
     }
 
     @Override
-    public Token<TwigTokenId> nextToken() {
+    public Token<TwigVariableTokenId> nextToken() {
         try {
-            TwigTokenId tokenId = scanner.findNextToken();
-            Token<TwigTokenId> token = null;
+            TwigVariableTokenId tokenId = scanner.findNextToken();
+            Token<TwigVariableTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }
             return token;
         } catch (IOException ex) {
-            Logger.getLogger(TwigLexer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TwigVariableLexer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

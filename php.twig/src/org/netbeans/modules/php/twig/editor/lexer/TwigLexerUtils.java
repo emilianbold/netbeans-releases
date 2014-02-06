@@ -49,6 +49,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -62,13 +63,24 @@ public final class TwigLexerUtils {
     private TwigLexerUtils() {
     }
 
-    public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Snapshot snapshot, final int offset) {
-        return getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigTokenId.language());
+    public static TokenSequence<? extends TokenId> getTwigMarkupTokenSequence(final Snapshot snapshot, final int offset) {
+        TokenSequence<? extends TwigBlockTokenId> twigBlockTokenSequence = getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigBlockTokenId.language());
+        return twigBlockTokenSequence == null ? getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigVariableTokenId.language()) : twigBlockTokenSequence;
     }
 
-    public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Document document, final int offset) {
+    public static TokenSequence<? extends TokenId> getTwigMarkupTokenSequence(final Document document, final int offset) {
+        TokenSequence<? extends TwigBlockTokenId> twigBlockTokenSequence = getTwigBlockTokenSequence(document, offset);
+        return twigBlockTokenSequence == null ? getTwigVariableTokenSequence(document, offset) : twigBlockTokenSequence;
+    }
+
+    public static TokenSequence<? extends TwigBlockTokenId> getTwigBlockTokenSequence(final Document document, final int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        return getTokenSequence(th, offset, TwigTokenId.language());
+        return getTokenSequence(th, offset, TwigBlockTokenId.language());
+    }
+
+    public static TokenSequence<? extends TwigVariableTokenId> getTwigVariableTokenSequence(final Document document, final int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        return getTokenSequence(th, offset, TwigVariableTokenId.language());
     }
 
     public static TokenSequence<? extends TwigTopTokenId> getTwigTokenSequence(final Snapshot snapshot, final int offset) {
@@ -103,14 +115,6 @@ public final class TwigLexerUtils {
         return ts;
     }
 
-    public static boolean isDelimiter(final TwigTokenId tokenId) {
-        return TwigTokenId.T_TWIG_VAR_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || isEndingDelimiter(tokenId);
-    }
-
-    public static boolean isEndingDelimiter(final TwigTokenId tokenId) {
-        return TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId);
-    }
-
     public static List<OffsetRange> findForwardMatching(TokenSequence<? extends TwigTopTokenId> topTs, TwigTokenText start, TwigTokenText end) {
         return findForwardMatching(topTs, start, end, Collections.<TwigTokenText>emptyList());
     }
@@ -126,12 +130,12 @@ public final class TwigLexerUtils {
         int balance = 1;
         while (topTs.moveNext()) {
             Token<? extends TwigTopTokenId> token = topTs.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
+            if (token != null && (token.id() == TwigTopTokenId.T_TWIG_BLOCK || token.id() == TwigTopTokenId.T_TWIG_VAR)) {
+                TokenSequence<TwigBlockTokenId> markupTs = topTs.embedded(TwigBlockTokenId.language());
                 if (markupTs != null) {
                     markupTs.moveNext();
                     while (markupTs.moveNext()) {
-                        Token<? extends TwigTokenId> markupToken = markupTs.token();
+                        Token<? extends TwigBlockTokenId> markupToken = markupTs.token();
                         if (start.matches(markupToken)) {
                             balance++;
                         } else if (end.matches(markupToken)) {
@@ -157,7 +161,7 @@ public final class TwigLexerUtils {
         return result;
     }
 
-    private static boolean matchesToken(List<TwigTokenText> middle, Token<? extends TwigTokenId> markupToken) {
+    private static boolean matchesToken(List<TwigTokenText> middle, Token<? extends TwigBlockTokenId> markupToken) {
         boolean result = false;
         for (TwigTokenText twigTokenText : middle) {
             if (twigTokenText.matches(markupToken)) {
@@ -179,12 +183,12 @@ public final class TwigLexerUtils {
         int balance = 1;
         while (topTs.movePrevious()) {
             Token<? extends TwigTopTokenId> token = topTs.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> markupTs = topTs.embedded(TwigTokenId.language());
+            if (token != null && (token.id() == TwigTopTokenId.T_TWIG_BLOCK || token.id() == TwigTopTokenId.T_TWIG_VAR)) {
+                TokenSequence<TwigBlockTokenId> markupTs = topTs.embedded(TwigBlockTokenId.language());
                 if (markupTs != null) {
                     markupTs.moveEnd();
                     while (markupTs.movePrevious()) {
-                        Token<? extends TwigTokenId> markupToken = markupTs.token();
+                        Token<? extends TwigBlockTokenId> markupToken = markupTs.token();
                         if (start.matches(markupToken)) {
                             balance++;
                         } else if (end.matches(markupToken)) {
@@ -214,111 +218,33 @@ public final class TwigLexerUtils {
         return findBackwardMatching(topTs, start, end, Collections.<TwigTokenText>emptyList());
     }
 
-    public static OffsetRange findForwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenText tokenText) {
-        assert ts != null;
-        assert tokenText != null;
-        OffsetRange result = OffsetRange.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.moveNext()) {
-            Token<? extends TwigTopTokenId> token = ts.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> twigMarkup = ts.embedded(TwigTokenId.language());
-                if (twigMarkup != null) {
-                    result = findForwardInTwigMarkup(twigMarkup, tokenText);
-                }
-                if (result != OffsetRange.NONE) {
-                    break;
-                }
-            }
-        }
-        ts.move(originalOffset);
-        return result;
-    }
-
-    public static OffsetRange findForwardInTwigMarkup(TokenSequence<? extends TwigTokenId> ts, TwigTokenText tokenText) {
-        assert ts != null;
-        assert tokenText != null;
-        OffsetRange result = OffsetRange.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.moveNext()) {
-            Token<? extends TwigTokenId> token = ts.token();
-            if (tokenText.matches(token)) {
-                result = new OffsetRange(ts.offset(), ts.offset() + token.length());
-                break;
-            }
-        }
-        ts.move(originalOffset);
-        return result;
-    }
-
-    public static OffsetRange findBackwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenText tokenText) {
-        assert ts != null;
-        assert tokenText != null;
-        OffsetRange result = OffsetRange.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.movePrevious()) {
-            Token<? extends TwigTopTokenId> token = ts.token();
-            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
-                TokenSequence<TwigTokenId> twigMarkup = ts.embedded(TwigTokenId.language());
-                if (twigMarkup != null) {
-                    result = findForwardInTwigMarkup(twigMarkup, tokenText);
-                }
-                if (result != OffsetRange.NONE) {
-                    break;
-                }
-            }
-        }
-        ts.move(originalOffset);
-        return result;
-    }
-
-    public static OffsetRange findBackwardInTwigMarkup(TokenSequence<? extends TwigTokenId> ts, TwigTokenText tokenText) {
-        assert ts != null;
-        assert tokenText != null;
-        OffsetRange result = OffsetRange.NONE;
-        ts.moveNext();
-        int originalOffset = ts.offset();
-        while (ts.movePrevious()) {
-            Token<? extends TwigTokenId> token = ts.token();
-            if (tokenText.matches(token)) {
-                result = new OffsetRange(ts.offset(), ts.offset() + token.length());
-                break;
-            }
-        }
-        ts.move(originalOffset);
-        return result;
-    }
-
     public interface TwigTokenText {
         TwigTokenText NONE = new TwigTokenText() {
 
             @Override
-            public boolean matches(Token<? extends TwigTokenId> token) {
+            public boolean matches(Token<? extends TwigBlockTokenId> token) {
                 return false;
             }
         };
 
-        boolean matches(Token<? extends TwigTokenId> token);
+        boolean matches(Token<? extends TwigBlockTokenId> token);
     }
 
     public static final class TwigTokenTextImpl implements TwigTokenText {
-        private final TwigTokenId tokenId;
+        private final TwigBlockTokenId tokenId;
         private final String tokenText;
 
-        public static TwigTokenText create(TwigTokenId tokenId, String tokenText) {
+        public static TwigTokenText create(TwigBlockTokenId tokenId, String tokenText) {
             return new TwigTokenTextImpl(tokenId, tokenText);
         }
 
-        private TwigTokenTextImpl(TwigTokenId tokenId, String tokenText) {
+        private TwigTokenTextImpl(TwigBlockTokenId tokenId, String tokenText) {
             this.tokenId = tokenId;
             this.tokenText = tokenText;
         }
 
         @Override
-        public boolean matches(Token<? extends TwigTokenId> token) {
+        public boolean matches(Token<? extends TwigBlockTokenId> token) {
             return token != null && token.id() == tokenId && tokenText.equals(token.text().toString());
         }
 

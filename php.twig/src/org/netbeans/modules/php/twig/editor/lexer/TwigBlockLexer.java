@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,72 +35,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.twig.editor.lexer;
 
-public class TwigTopLexerState {
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
-    public enum Main {
-        INIT,
-        HTML,
-        OPEN,
-        TWIG,
-        CLOSE,
-        CLOSE_RAW,
-        RAW
-    };
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class TwigBlockLexer implements Lexer<TwigBlockTokenId> {
+    private final TwigBlockColoringLexer scanner;
+    private final TokenFactory<TwigBlockTokenId> tokenFactory;
 
-    public enum Type {
-        NONE,
-        BLOCK,
-        VAR,
-        COMMENT
-    };
-
-    Main main;
-    Type type;
-
-    public TwigTopLexerState() {
-        main = Main.INIT;
-        type = Type.NONE;
-    }
-
-    public TwigTopLexerState(TwigTopLexerState copy) {
-        main = copy.main;
-        type = copy.type;
-    }
-
-    public TwigTopLexerState(Main main, Type type) {
-        this.main = main;
-        this.type = type;
+    public TwigBlockLexer(LexerRestartInfo<TwigBlockTokenId> info) {
+        scanner = new TwigBlockColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.main != null ? this.main.hashCode() : 0);
-        hash = 97 * hash + (this.type != null ? this.type.hashCode() : 0);
-        return hash;
+    public Token<TwigBlockTokenId> nextToken() {
+        try {
+            TwigBlockTokenId tokenId = scanner.findNextToken();
+            Token<TwigBlockTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(TwigBlockLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (getClass() != object.getClass()) {
-            return false;
-        }
-        TwigTopLexerState compare = (TwigTopLexerState) object;
-        if (main != compare.main) {
-            return false;
-        }
-        if (type != compare.type) {
-            return false;
-        }
-        return true;
+    public Object state() {
+        return scanner.getState();
     }
+
+    @Override
+    public void release() {
+    }
+
 }
