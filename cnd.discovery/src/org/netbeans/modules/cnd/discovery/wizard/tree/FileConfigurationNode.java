@@ -51,7 +51,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * @author Alexander Simon
  */
 public class FileConfigurationNode extends DefaultMutableTreeNode {
-    private FileConfigurationImpl file;
+    private final FileConfigurationImpl file;
     
     public FileConfigurationNode(FileConfigurationImpl file) {
         super(file);

@@ -141,7 +141,7 @@ public final class LineDiff {
             File tmpDiffFile = File.createTempFile("cnd_diff_lines", ".diff");// NOI18N
             printResults(passLines, refLines, results, tmpDiffFile);
             FileObject fo = FileUtil.toFileObject(tmpDiffFile);
-            List<String> asLines = new ArrayList<String>(fo.asLines());
+            List<String> asLines = new ArrayList<>(fo.asLines());
             try {
                 tmpDiffFile.delete();
             } catch (Exception e) {
@@ -180,7 +180,7 @@ public final class LineDiff {
         String[] refLines, passLines;
         
         //read golden file
-        List<String> tmp = new ArrayList<String>(64);
+        List<String> tmp = new ArrayList<>(64);
         while ((line = second.readLine()) != null) {
             if (ignoreEmptyLines && line.trim().length() == 0) {
                 continue;
@@ -191,7 +191,7 @@ public final class LineDiff {
         tmp.clear();
         second.close();
         //read ref file
-        tmp = new ArrayList<String>(64);
+        tmp = new ArrayList<>(64);
         while ((line = first.readLine()) != null) {
             if (ignoreEmptyLines && line.trim().length() == 0) {
                 continue;
@@ -222,7 +222,7 @@ public final class LineDiff {
         int stepRight = 0;
         boolean jump = false;
         //test is left, pass is right
-        List<Result> results = new ArrayList<Result>(64);
+        List<Result> results = new ArrayList<>(64);
         //start right
         boolean right = true;
         

@@ -434,7 +434,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
         if (paramTokens != null) {
-            params = new ArrayList<CharSequence>(paramTokens.size());
+            params = new ArrayList<>(paramTokens.size());
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
                     params.add(NameCache.getManager().getString(elem.getTextID()));

@@ -148,7 +148,7 @@ public class SuspiciousToArray {
                 return null;
             }
         }
-        if (resType == null || resType.getKind() == TypeKind.ERROR) {
+        if (resType == null || resType.getKind() == TypeKind.ERROR || resType.getKind() == TypeKind.OTHER) {
             return null;
         }
         String msg = argType == null ? Bundle.TEXT_SuspiciousToArrayCast(compType, resType) : 

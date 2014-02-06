@@ -52,6 +52,7 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.text.DateFormat;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -66,7 +67,7 @@ class UpdateResults extends JComponent {
     public UpdateResults(List<FileUpdateInfo> results, SVNUrl url, String contextDisplayName) {
         this.results = results;
         String time = DateFormat.getTimeInstance().format(new Date());
-        setName(NbBundle.getMessage(UpdateResults.class, "CTL_UpdateResults_Title", url.toString(), contextDisplayName, time)); // NOI18N
+        setName(NbBundle.getMessage(UpdateResults.class, "CTL_UpdateResults_Title", SvnUtils.decodeToString(url), contextDisplayName, time)); // NOI18N
         setLayout(new BorderLayout());
         if (results.size() == 0) {
             add(new NoContentPanel(NbBundle.getMessage(UpdateResults.class, "MSG_NoFilesUpdated"))); // NOI18N

@@ -85,8 +85,8 @@ import org.openide.util.Utilities;
 public class DwarfSource extends RelocatableImpl implements SourceFileProperties {
     public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());
     private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
-    private static boolean ourGatherMacros = true;
-    private static boolean ourGatherIncludes = true;
+    private static final boolean ourGatherMacros = true;
+    private static final boolean ourGatherIncludes = true;
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N
     private static final String CYG_DRIVE_WIN = "\\cygdrive\\"; // NOI18N
     private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
@@ -107,6 +107,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private final CompileLineStorage storage;
     private int handler = -1;
     private final CompilerSettings compilerSettings;
+    private String importantFlags;
     
     DwarfSource(CompilationUnitInterface cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         language = lang;
@@ -213,6 +214,11 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public List<String> getUserInludePaths() {
         return userIncludes;
     }
+
+    @Override
+    public List<String> getUserInludeFiles() {
+        return userFiles;
+    }
     
     @Override
     public List<String> getSystemInludePaths() {
@@ -256,6 +262,11 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         return compilerName;
     }
     
+    @Override
+    public String getImportantFlags() {
+        return importantFlags;
+    }
+
     private String fixFileName(String fileName) {
         if (fileName == null){
             return fileName;
@@ -396,6 +407,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
 
     private void initSourceSettings(CompilationUnitInterface cu, ItemProperties.LanguageKind lang) throws IOException{
         userIncludes = new ArrayList<String>();
+        userFiles = new ArrayList<String>();
         userMacros = new HashMap<String,String>();
         undefinedMacros = new ArrayList<String>();
         includedFiles = new HashSet<String>();
@@ -476,6 +488,14 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             if (cu instanceof CompilationUnit) {
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
+                switch(standard) {
+                    case C89:
+                        importantFlags = "-std=c89";// NOI18N
+                        break;
+                    case C99:
+                        importantFlags = "-std=c99";// NOI18N
+                        break;
+                }
             }
         }
     }
@@ -497,12 +517,14 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             String include = PathCache.getString(s);
             addUserIncludePath(include);
         }
+        userFiles.addAll(artifacts.userFiles);
         for(String s : artifacts.undefinedMacros) {
             undefinedMacros.add(PathCache.getString(s));
         }
         for(Map.Entry<String, String> entry : artifacts.userMacros.entrySet()) {
             userMacros.put(PathCache.getString(entry.getKey()), entry.getValue());
         }
+        importantFlags = artifacts.getImportantFlags();
     }
     
     private String fixCygwinPath(String path){

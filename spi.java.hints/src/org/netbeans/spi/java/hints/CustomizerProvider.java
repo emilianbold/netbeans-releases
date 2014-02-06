@@ -56,6 +56,10 @@ public interface CustomizerProvider {
      * {@link Preferences}. The customizer can write into the provided {@link Preferences}
      * immediately, the values will be persisted or rolled-back automatically
      * based on the user's gesture.
+     * 
+     * <p>Be sure to set the default values for the options controlled by the customizer
+     * into the provided {@link Preferences}. This should be done before returning the customizer. 
+     * If you do not, the infrastructure will not be able to correctly enable/disable the Apply button in options window.
      *
      * @param prefs the hints preferences from which the data to show should be read,
      *              and to which the new settings should be written

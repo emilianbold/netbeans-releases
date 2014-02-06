@@ -47,8 +47,8 @@ package org.netbeans.modules.javaee.wildfly.ide;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 
 /**
  *
@@ -56,15 +56,15 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.JBPluginProperties;
  */
 public class WildFlyFindJSPServlet implements FindJSPServlet {
     
-    private final WildFlyDeploymentManager dm;
+    private final WildflyDeploymentManager dm;
     
-    public WildFlyFindJSPServlet(WildFlyDeploymentManager manager) {
+    public WildFlyFindJSPServlet(WildflyDeploymentManager manager) {
         dm = manager;
     }
 
     public File getServletTempDirectory(String moduleContextPath) {
         InstanceProperties ip = dm.getInstanceProperties();
-        String domainPath = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
+        String domainPath = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
         File servletRoot = new File(domainPath, "work/jboss.web/localhost".replace('/', File.separatorChar)); // NOI18N
         String contextRootPath = getContextRootPath(moduleContextPath);
         File workDir = new File(servletRoot, contextRootPath);

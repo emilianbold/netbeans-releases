@@ -75,9 +75,10 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
     static final String PROP_SELECTED = "selectedOnly";
     static final String PROP_URLS = "urls";
     
-    static final String DEFAULT_URLS = "http://download.java.net/maven/2/ http://download.java.net/maven/1/";
+    static final String DEFAULT_URLS = "http://download.java.net/maven/2/ http://download.java.net/maven/1/ ";
     
     private final Configuration configuration;
+    private JComponent component;
 
     @NbBundle.Messages({
         "TIT_JavaNetRepositoryError=Uses blacklisted repository",
@@ -141,9 +142,22 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new JavaNetRepositoryErrorCustomizer(preferences);
+        if (component == null) {
+            component = new JavaNetRepositoryErrorCustomizer(preferences);
+        }
+        return component;
+    }
+    
+    @Override
+    public String getSavedValue(JComponent customCustomizer, String key) {
+        return ((JavaNetRepositoryErrorCustomizer) customCustomizer).getSavedValue(key);
     }
 
+    @Override
+    public void cancel() {
+        component = null;
+    }
+    
     @Override
     public Configuration getConfiguration() {
         return configuration;
@@ -161,7 +175,7 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
         }
         return toRet;
     }
-
+    
     private static class OverrideFix implements Fix, Runnable {
         private final Repository repository;
         private final RepositoryContainer container;

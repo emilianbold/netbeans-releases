@@ -124,7 +124,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(global, methodDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -185,7 +185,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
 
         private CompoundStatementBuilder bodyBuilder;
         
-        private List<Token> bodyTokens = new ArrayList<Token>();
+        private final List<Token> bodyTokens = new ArrayList<>();
         
         public void setBodyBuilder(CompoundStatementBuilder builder) {
             bodyBuilder = builder;

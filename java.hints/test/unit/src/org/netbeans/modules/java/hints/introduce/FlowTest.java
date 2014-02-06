@@ -65,6 +65,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,6 +90,14 @@ public class FlowTest extends NbTestCase {
         super
                 .setUp();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = false;
+        super.tearDown(); 
+    }
+    
+    
 
     public void testSimple() throws Exception {
         performTest("package test;\n" +
@@ -914,6 +923,53 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
     
+    public void test241221() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    public void usage() {\n" +
+                    "        int temp;\n" +
+                    "        int[] a = new int[]{3, 5, 1, 4, 2};\n" +
+                    "        int[] b = new int[5];\n" +
+                    "        for (int i = 0; i < b.length; i++) {\n" +
+                    "            temp = a[i];\n" +
+                    "            b[temp`] = i;\n" +
+                    "        }\n" +
+                    "    }" +
+                    "}\n",
+                    true,
+                    "a[i]");
+    }
+    /**
+     * Checks that return inside lambda expr does not affect state of enclosing method's variables
+     */
+    public void test241034ReturnFromLambda() throws Exception {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+        sourceLevel = "1.8";
+        performTest("package test;\n" +
+                    "import java.io.*;\n" +
+                    "import java.util.*;\n" +
+                    "public class Test {\n" +
+                    "    public int foo() {\n" +
+                    "        final int r = 123; \n" +
+                    "        BooleanSupplier x = () -> { \n" +
+                    "            return true;\n" +
+                    "        };\n" +
+                    "        return r`;\n" +
+                    "    }\n" +
+                    "public interface BooleanSupplier {\n" +
+                    "\n" +
+                    "    /**\n" +
+                    "     * Gets a result.\n" +
+                    "     *\n" +
+                    "     * @return a result\n" +
+                    "     */\n" +
+                    "    boolean getAsBoolean();\n" +
+                    "}\n"+ 
+                    "}\n",
+                    false,
+                    "123");
+    }
+    
     public void testLoops() throws Exception {
         performTest("package test;\n" +
                     "public class Test {\n" +
@@ -971,6 +1027,8 @@ public class FlowTest extends NbTestCase {
                               "    private final java.util.concurrent.atomic.AtomicBoolean i = new java.util.concurrent.atomic.AtomicBoolean();\n" +
                               "}\n");
     }
+    
+    private String sourceLevel = null;
 
     private void prepareTest(String code, boolean allowErrors) throws Exception {
         clearWorkDir();
@@ -997,6 +1055,9 @@ public class FlowTest extends NbTestCase {
         data
                 .refresh();
 
+        if (sourceLevel != null) {
+            SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
+        }
         SourceUtilsTestUtil
                 .prepareTest(sourceRoot, buildRoot, cache);
 
@@ -1056,19 +1117,21 @@ public class FlowTest extends NbTestCase {
                 .pathFor(span[0]);
 
         Set<String> actual = new HashSet<String>();
-
-        for (TreePath tp : flow
+        Iterable<? extends TreePath> c = flow
                 .getAssignmentsForUse()
                 .get(sel
-                .getLeaf())) {
-            if (tp == null) {
-                actual
-                        .add("<null>");
-            } else {
-                actual
-                        .add(tp
-                        .getLeaf()
-                        .toString());
+                .getLeaf());
+        if (c != null) {
+            for (TreePath tp : c) {
+                if (tp == null) {
+                    actual
+                            .add("<null>");
+                } else {
+                    actual
+                            .add(tp
+                            .getLeaf()
+                            .toString());
+                }
             }
         }
 

@@ -66,6 +66,12 @@ public final class MapHierarchy<K, V> {
         push(map);
     }    
     
+    public MapHierarchy(MapHierarchy<K, V> mapHierarchy) {
+        for (Map<K, V> map : mapHierarchy.maps) {
+            push(map);
+        }
+    }        
+    
     public void push(Map<K, V> map) {
         maps.push(map);
     }
@@ -83,7 +89,7 @@ public final class MapHierarchy<K, V> {
     }
     
     public List<Map<K, V>> getMaps(Filter<Map<K, V>> filter) {
-        List<Map<K, V>> result = new ArrayList<Map<K, V>>();
+        List<Map<K, V>> result = new ArrayList<>();
         for (Map<K, V> map : maps) {
             if (filter.accept(map)) {
                 result.add(map);

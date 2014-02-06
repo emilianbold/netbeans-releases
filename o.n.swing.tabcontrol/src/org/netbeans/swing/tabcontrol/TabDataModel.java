@@ -187,7 +187,7 @@ public interface TabDataModel {
      * Remove a range of tabs
      *
      * @param start the start index
-     * @param end   the end index
+     * @param end   the end index (exclusive)
      */
     public void removeTabs(int start, int end);
 

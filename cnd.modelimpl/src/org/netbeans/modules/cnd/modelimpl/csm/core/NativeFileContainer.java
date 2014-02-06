@@ -42,7 +42,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
  * @author Alexander Simon
  */
 public class NativeFileContainer {
-    private final Map<CsmUID<CsmFile>, NativeFileItem> myFiles = new ConcurrentHashMap<CsmUID<CsmFile>, NativeFileItem>();
+    private final Map<CsmUID<CsmFile>, NativeFileItem> myFiles = new ConcurrentHashMap<>();
 
     /*package-local*/ NativeFileContainer(){
     }

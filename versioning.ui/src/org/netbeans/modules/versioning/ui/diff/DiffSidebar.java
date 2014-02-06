@@ -622,7 +622,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             DiffSidebarManager.getInstance().createDiffSidebarTask(new Runnable() {
                 @Override
                 public void run () {
-                    fileObject.addFileChangeListener(DiffSidebar.this);
+                    fo.addFileChangeListener(DiffSidebar.this);
                 }
             }).schedule(0);
         }
@@ -636,7 +636,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             DiffSidebarManager.getInstance().createDiffSidebarTask(new Runnable() {
                 @Override
                 public void run () {
-                    fileObject.removeFileChangeListener(DiffSidebar.this);
+                    fo.removeFileChangeListener(DiffSidebar.this);
                 }
             }).schedule(0);
         }

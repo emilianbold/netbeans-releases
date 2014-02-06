@@ -627,32 +627,34 @@ public class ModelVisitor extends PathNodeVisitor {
             if ("this".equals(name.get(0).getName())) {
                 name.remove(0);
             }
-            fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous, parent);
-            if (fncScope != null) {
-                Set<Modifier> modifiers = fncScope.getModifiers();
-                if (isPrivate || isPrivilage) {
-                    modifiers.remove(Modifier.PUBLIC);
-                    if (isPrivate) {
-                        modifiers.add(Modifier.PRIVATE);
-                    } else {
-                        modifiers.add(Modifier.PROTECTED);
+            if (!name.isEmpty()) {
+                fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous, parent);
+                if (fncScope != null) {
+                    Set<Modifier> modifiers = fncScope.getModifiers();
+                    if (isPrivate || isPrivilage) {
+                        modifiers.remove(Modifier.PUBLIC);
+                        if (isPrivate) {
+                            modifiers.add(Modifier.PRIVATE);
+                        } else {
+                            modifiers.add(Modifier.PROTECTED);
+                        }
                     }
+                    if (isStatic) {
+                        modifiers.add(Modifier.STATIC);
+                    }
+                    scope.addDeclaredScope(fncScope);
+                    // push the current function in the model builder stack
+                    modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
                 }
-                if (isStatic) {
-                    modifiers.add(Modifier.STATIC);
-                }
-                scope.addDeclaredScope(fncScope);
-                // push the current function in the model builder stack
-                modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
-            }
-            if (previousUsage != null) {
-                // move all occurrences here
-                for (Occurrence occurrence : previousUsage.getOccurrences()) {
-                    fncScope.addOccurrence(occurrence.getOffsetRange());
-                }
-                Collection<? extends JsObject> propertiesCopy = new ArrayList(previousUsage.getProperties().values());
-                for (JsObject property : propertiesCopy) {
-                    ModelUtils.moveProperty(fncScope, property);
+                if (previousUsage != null) {
+                    // move all occurrences here
+                    for (Occurrence occurrence : previousUsage.getOccurrences()) {
+                        fncScope.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    Collection<? extends JsObject> propertiesCopy = new ArrayList(previousUsage.getProperties().values());
+                    for (JsObject property : propertiesCopy) {
+                        ModelUtils.moveProperty(fncScope, property);
+                    }
                 }
             }
         }
@@ -661,7 +663,12 @@ public class ModelVisitor extends PathNodeVisitor {
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {
-                parent = resolveThis(fncScope);
+                Node lastNode = getPreviousFromPath(1);
+                if (lastNode instanceof FunctionNode && !canBeSingletonPattern(1)) {
+                    parent = fncScope;
+                } else { 
+                    parent = resolveThis(fncScope);
+                }
             } else {
                 parent = fncScope;
             }

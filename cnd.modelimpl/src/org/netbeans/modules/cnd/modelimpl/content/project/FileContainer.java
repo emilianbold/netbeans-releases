@@ -103,8 +103,8 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     private static final class Lock {}
     private final Object lock = new Lock();
-    private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileEntry>();
-    private final ConcurrentMap<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*CharSequence or CharSequence[]*/>();
+    private final Map<CharSequence, FileEntry> myFiles = new ConcurrentHashMap<>();
+    private final ConcurrentMap<CharSequence, Object/*CharSequence or CharSequence[]*/> canonicFiles = new ConcurrentHashMap</*CharSequence or CharSequence[]*/>();
     private final FileSystem fileSystem;
             
     // empty stub
@@ -276,7 +276,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     
     public void debugClearState(){
         List<FileEntry> files;
-        files = new ArrayList<FileEntry>(myFiles.values());
+        files = new ArrayList<>(myFiles.values());
         for (FileEntry file : files){
             synchronized (file.getLock()) {
                 file.debugClearState();
@@ -286,26 +286,26 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     }
     
     public Collection<CsmFile> getFiles() {
-	List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+	List<CsmUID<CsmFile>> uids = new ArrayList<>(myFiles.values().size());
 	getFiles2(uids);
-	return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
+	return new LazyCsmCollection<>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
 
     public Collection<CsmUID<CsmFile>> getFilesUID() {
-        List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+        List<CsmUID<CsmFile>> uids = new ArrayList<>(myFiles.values().size());
         getFiles2(uids);
         return uids;
     }
     
     public Collection<FileImpl> getFileImpls() {
-	List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>(myFiles.values().size());
+	List<CsmUID<CsmFile>> uids = new ArrayList<>(myFiles.values().size());
 	getFiles2(uids);
-	return new LazyCsmCollection<CsmFile, FileImpl>(uids, TraceFlags.SAFE_UID_ACCESS);
+	return new LazyCsmCollection<>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
     
     private void getFiles2(List<CsmUID<CsmFile>> res) {
         List<FileEntry> files;
-        files = new ArrayList<FileEntry>(myFiles.values());
+        files = new ArrayList<>(myFiles.values());
         for(FileEntry f : files){
             res.add(f.fileNew);
         }
@@ -592,12 +592,12 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 
     //for unit test only
     public Map<CharSequence, FileEntry> getFileStorage() {
-        return new TreeMap<CharSequence, FileEntry>(myFiles);
+        return new TreeMap<>(myFiles);
     }
 
     //for unit test only
     public Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
-        return new TreeMap<CharSequence, Object>(canonicFiles);
+        return new TreeMap<>(canonicFiles);
     }
 
     public static FileEntry createFileEntryForMerge(CharSequence fileKey) {
@@ -631,7 +631,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                     }
                     data = pair;
                 } else {
-                    data = new ArrayList<PreprocessorStatePair>(cnt);
+                    data = new ArrayList<>(cnt);
                     for (int i = 0; i < cnt; i++) {
                         PreprocessorStatePair pair = readStatePair(fs, input, unitIndex);
                         if (TRACE && pair != null && !pair.state.isValid()) {
@@ -815,7 +815,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 assert yetOneMore != null;
                 data = yetOneMore;
             } else {
-                ArrayList<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>(pairs.size()+1);
+                ArrayList<PreprocessorStatePair> newData = new ArrayList<>(pairs.size()+1);
                 newData.addAll(pairs);
                 if (yetOneMore != null) {
                     newData.add(yetOneMore);
@@ -904,7 +904,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 if (data instanceof PreprocessorStatePair) {
                     data = createInvalidState((PreprocessorStatePair) data);
                 } else {
-                    Collection<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>();
+                    Collection<PreprocessorStatePair> newData = new ArrayList<>();
                     for (PreprocessorStatePair pair : (Collection<PreprocessorStatePair>) data) {
                         newData.add(createInvalidState(pair));
                     }
@@ -923,7 +923,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 if (data instanceof PreprocessorStatePair) {
                     data = createMarkedAsParsingState((PreprocessorStatePair) data);
                 } else {
-                    Collection<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>();
+                    Collection<PreprocessorStatePair> newData = new ArrayList<>();
                     for (PreprocessorStatePair pair : (Collection<PreprocessorStatePair>) data) {
                         newData.add(createMarkedAsParsingState(pair));
                     }
@@ -967,7 +967,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             } else {
                 @SuppressWarnings("unchecked")
                 Collection<PreprocessorStatePair> array = (Collection<PreprocessorStatePair>) data;
-                return new ArrayList<PreprocessorStatePair>(array);
+                return new ArrayList<>(array);
             }
         }
         
@@ -979,7 +979,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             } else {
                 @SuppressWarnings("unchecked")
                 Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>) data;
-                Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
+                Collection<APTPreprocHandler.State> result = new ArrayList<>(pairs.size());
                 for (PreprocessorStatePair pair : pairs) {
                     result.add(pair.state);
                 }

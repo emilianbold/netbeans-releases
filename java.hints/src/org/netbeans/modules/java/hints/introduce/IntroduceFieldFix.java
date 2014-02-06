@@ -123,7 +123,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
         this.permitDuplicates = allowDuplicates;
     }
-
+    
     public String getText() {
         return NbBundle.getMessage(IntroduceHint.class, "FIX_IntroduceField");
     }
@@ -160,6 +160,9 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
         btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_Cancel"));
         IntroduceFieldPanel panel = createPanel(btnOk);
+        if (targetIsInterface) {
+            panel.setAllowAccess(false);
+        }
         DialogDescriptor dd = new DialogDescriptor(panel, getCaption(), true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel

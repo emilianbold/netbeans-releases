@@ -75,11 +75,11 @@ public class DummyPackager implements PackagerDescriptor {
     }
 
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
-        return new ArrayList<PackagerInfoElement>();
+        return new ArrayList<>();
     }
 
     public List<String> getOptionalInfoList() {
-        return new ArrayList<String>();
+        return new ArrayList<>();
     }
 
     public String getDefaultOptions() {

@@ -76,7 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class MakeProjectLayerDescriptorProvider implements NativeProjectLayerDescriptorProvider {
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-    private static final ConcurrentHashMap<NativeProject, List<URI>> cache = new ConcurrentHashMap<NativeProject, List<URI>>();
+    private static final ConcurrentHashMap<NativeProject, List<URI>> cache = new ConcurrentHashMap<>();
     private static final PropertyChangeListener listener = new ProjectsListener();
 
     static {
@@ -119,7 +119,7 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
             MakeProjectHelper.PRIVATE_PROPERTIES_PATH
         };
 
-        SortedMap<String, String> map = new TreeMap<String, String>();
+        SortedMap<String, String> map = new TreeMap<>();
 
         for (int i = 0; i < propertyPaths.length; i++) {
             FileObject propsFO = projectDirectory.getFileObject(propertyPaths[i]);
@@ -148,7 +148,7 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
             }
         }
         if (!map.isEmpty()) {
-            List<URI> res = new ArrayList<URI>();
+            List<URI> res = new ArrayList<>();
             for (String uriString : map.values()) {
                 try {
                     URI uri = new URI(uriString);
@@ -210,7 +210,7 @@ public final class MakeProjectLayerDescriptorProvider implements NativeProjectLa
         public void propertyChange(PropertyChangeEvent evt) {
             if (NativeProjectRegistry.PROPERTY_OPEN_NATIVE_PROJECTS.equals(evt.getPropertyName())) {
                 Collection<NativeProject> newList = (Collection<NativeProject>) evt.getNewValue();
-                Collection<NativeProject> oldList = new ArrayList<NativeProject>((Collection<NativeProject>) evt.getOldValue());
+                Collection<NativeProject> oldList = new ArrayList<>((Collection<NativeProject>) evt.getOldValue());
                 oldList.removeAll(newList);
                 for (NativeProject p : oldList) {
                     cache.remove(p);

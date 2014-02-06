@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeListener {
 
-    private DevelopmentHostConfiguration dhconf;
+    private final DevelopmentHostConfiguration dhconf;
     private final PropertyEnv propertyEnv;
     private final PropertyEditorSupport editor;
     private final ExecutionEnvironment oldExecEnv;
@@ -87,7 +87,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         this.editor = editor;
         this.propertyEnv = propertyEnv;
         this.oldExecEnv = (dhconf == null) ? null : dhconf.getExecutionEnvironment();
-        this.selectedEnv = new AtomicReference<ExecutionEnvironment>(this.oldExecEnv);
+        this.selectedEnv = new AtomicReference<>(this.oldExecEnv);
         this.cacheManager = ToolsCacheManager.createInstance(true);
         this.setLayout(new BorderLayout());
         component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);

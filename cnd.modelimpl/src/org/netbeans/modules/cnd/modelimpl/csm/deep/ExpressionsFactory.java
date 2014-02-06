@@ -47,7 +47,6 @@ import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -68,7 +67,7 @@ public final class ExpressionsFactory {
         }
                 
         AST token = ast.getFirstChild();
-        List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
+        List<CsmStatement> lambdas = new ArrayList<>();
         while (token != null) {
             if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
                 lambdas.add(AstRenderer.renderStatement(token, file, scope));

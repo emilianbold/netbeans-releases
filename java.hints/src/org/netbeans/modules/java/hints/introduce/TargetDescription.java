@@ -56,16 +56,18 @@ public final class TargetDescription {
     public final ElementHandle<TypeElement> type;
     public final boolean allowForDuplicates;
     public final boolean anonymous;
+    public final boolean iface;
 
-    private TargetDescription(String displayName, ElementHandle<TypeElement> type, boolean allowForDuplicates, boolean anonymous) {
+    private TargetDescription(String displayName, ElementHandle<TypeElement> type, boolean allowForDuplicates, boolean anonymous, boolean iface) {
         this.displayName = displayName;
         this.type = type;
         this.allowForDuplicates = allowForDuplicates;
         this.anonymous = anonymous;
+        this.iface = iface;
     }
 
-    public static TargetDescription create(CompilationInfo info, TypeElement type, boolean allowForDuplicates) {
-        return new TargetDescription(Utilities.target2String(type), ElementHandle.create(type), allowForDuplicates, type.getSimpleName().length() == 0);
+    public static TargetDescription create(CompilationInfo info, TypeElement type, boolean allowForDuplicates, boolean iface) {
+        return new TargetDescription(Utilities.target2String(type), ElementHandle.create(type), allowForDuplicates, type.getSimpleName().length() == 0, iface);
     }
 
     public String toDebugString() {

@@ -54,11 +54,10 @@
  */
 package org.netbeans.modules.cnd.navigation.macroview.impl.services;
 
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -69,7 +68,6 @@ import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.navigation.macroview.MacroExpansionTopComponent;
 import org.netbeans.modules.cnd.navigation.macroview.MacroExpansionViewUtils;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -139,6 +137,13 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                         view.requestActive();
                         view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", MacroExpansionViewUtils.getDocumentName(mainDoc))); // NOI18N
                         view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
+                        int offset2 = MacroExpansionViewUtils.getDocumentOffset(expandedContextDoc, MacroExpansionViewUtils.getFileOffset(mainDoc, offset));
+                        for(JTextComponent comp : EditorRegistry.componentList()) {
+                            if (expandedContextDoc.equals(comp.getDocument())) {
+                                comp.setCaretPosition(offset2);
+                                break;
+                            }
+                        }
                     }
                 };
                 if (SwingUtilities.isEventDispatchThread()) {

@@ -81,7 +81,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -91,7 +90,7 @@ import org.openide.util.Utilities;
  */
 public class AnalyzeExecLog extends BaseDwarfProvider {
 
-    private Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
+    private final Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
     private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N
@@ -280,7 +279,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myBuildArtifacts;
-                private List<String> myIncludedFiles = new ArrayList<String>();
+                private final List<String> myIncludedFiles = new ArrayList<String>();
 
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
@@ -689,7 +688,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 args.add(next);
               }
             Artifacts artifacts = new Artifacts();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.iterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.listIterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             if (cu != null) {
                 sourcesList.clear();
                 sourcesList.add(cu);
@@ -719,6 +718,8 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     s = convertCygwinPath(s);
                     userIncludes.add(PathCache.getString(s));
                 }
+                List<String> userFiles = new ArrayList<String>(artifacts.userFiles.size());
+                userFiles.addAll(artifacts.userFiles);
                 Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
                 for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                     if (e.getValue() == null) {
@@ -777,8 +778,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.fullName = fullName;
                     res.language = language;
                     res.userIncludes = userIncludes;
+                    res.userFiles = userFiles;
                     res.userMacros = userMacros;
                     res.undefinedMacros = artifacts.undefinedMacros;
+                    res.importantFlags = artifacts.getImportantFlags();
                     for(String lang : artifacts.languageArtifacts) {
                         if ("c89".equals(lang)) { //NOI18N
                             res.standard = ItemProperties.LanguageStandard.C89;
@@ -827,28 +830,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
                     if (resolvedPath == null) {
                         if (root != null) {
-                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
-                                @Override
-                                public boolean exists(String path) {
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid()) {
-                                        return true;
-                                    }
-                                    return false;
-                                }
-
-                                @Override
-                                public List<String> list(String path) {
-                                    List<String> res = new ArrayList<String>();
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                                        for (FileObject f : fo.getChildren()) {
-                                            res.add(f.getPath());
-                                        }
-                                    }
-                                    return res;
-                                }
-                            };
+                            RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
@@ -958,12 +940,13 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private String compiler;
         private ItemProperties.LanguageKind language;
         private LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> systemIncludes = Collections.<String>emptyList();
+        private final List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
-        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
+        private final Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private final CompileLineStorage storage;
         private int handler = -1;
+        private String importantFlags;
 
         private ExecSource(CompileLineStorage storage) {
             this.storage = storage;
@@ -992,6 +975,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;
+        }
+
+        @Override
+        public List<String> getUserInludeFiles() {
+            return userFiles;
         }
 
         @Override
@@ -1031,6 +1019,11 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         @Override
         public LanguageStandard getLanguageStandard() {
             return standard;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return importantFlags;
         }
     }
 }

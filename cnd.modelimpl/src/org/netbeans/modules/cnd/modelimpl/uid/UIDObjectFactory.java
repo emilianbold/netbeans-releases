@@ -286,7 +286,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static <T> Collection<CsmUID<T>> copySyncCollection(Collection<CsmUID<T>> col) {
         Collection<CsmUID<T>> out;
         synchronized (col) {
-            out = new ArrayList<CsmUID<T>>(col);
+            out = new ArrayList<>(col);
         }
         return out;
     }
@@ -294,7 +294,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static <K, V> Map<K, V> copySyncMap(Map<K, V> map) {
         Map<K, V> out;
         synchronized (map) {
-            out = new HashMap<K, V>(map);
+            out = new HashMap<>(map);
         }
         return out;
     }
@@ -314,7 +314,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CharSequence key = PersistentUtils.readUTF(aStream, manager);
             assert key != null;
             int aSize = aStream.readInt();
-            Set<CsmUID<T>> set = new HashSet<CsmUID<T>>(aSize);
+            Set<CsmUID<T>> set = new HashSet<>(aSize);
             for(int j = 0; j < aSize; j++) {
                 CsmUID<T> uid = readUID(aStream);
                 assert uid != null;
@@ -327,38 +327,38 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     public TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> readOffsetSortedToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperDeclarationsSortedMap helper = new HelperDeclarationsSortedMap(this, aStream, manager);
-        return new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(helper);
+        return new TreeMap<>(helper);
     }
 
     public TreeMap<NameSortedKey, CsmUID<CsmMacro>> readNameSortedToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperMacrosSortedMap helper = new HelperMacrosSortedMap(this, aStream, manager);
-        return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>(helper);
+        return new TreeMap<>(helper);
     }
 
     public TreeMap<ReferenceImpl, CsmUID<CsmObject>> readReferencesSortedToUIDMap(RepositoryDataInput aStream, CsmUID<CsmFile> fileUID) throws IOException {
         assert aStream != null;
         HelperReferencesSortedMap helper = new HelperReferencesSortedMap(this, aStream, fileUID);
-        return new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(helper);
+        return new TreeMap<>(helper);
     }
 
 
     public TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> readNameSortedToUIDMap2(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperNamespaceDefinitionSortedMap helper = new HelperNamespaceDefinitionSortedMap(this, aStream, manager);
-        return new TreeMap<NamespaceImpl.FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>(helper);
+        return new TreeMap<>(helper);
     }
 
     public TreeMap<CharSequence, Object> readStringToArrayUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperCharSequencesSortedMap helper = new HelperCharSequencesSortedMap(this, aStream, manager);
-        return new TreeMap<CharSequence, Object>(helper);
+        return new TreeMap<>(helper);
     }
 
     public TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>> readStringToUIDMap(RepositoryDataInput aStream, APTStringManager manager) throws IOException {
         assert aStream != null;
         HelperCharSequencesSortedMap2 helper = new HelperCharSequencesSortedMap2(this, aStream, manager);
-        return new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(helper);
+        return new TreeMap<>(helper);
     }
 
     @Override
@@ -434,15 +434,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
 
             case UID_CLASSIFIER_UID:
-                anUID = new ClassifierUID<CsmOffsetableDeclaration>(aStream);
+                anUID = new ClassifierUID<>(aStream);
                 break;
 
             case UID_FORWARD_CLASS_UID:
-                anUID = new ForwardClassUID<CsmOffsetableDeclaration>(aStream);
+                anUID = new ForwardClassUID<>(aStream);
                 break;
 
             case UID_UNNAMED_CLASSIFIER_UID:
-                anUID = new UnnamedClassifierUID<CsmOffsetableDeclaration>(aStream);
+                anUID = new UnnamedClassifierUID<>(aStream);
                 break;
 
             case UID_MACRO_UID:
@@ -463,11 +463,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             // no reason to cache declaration and more detailed uids.
 
             case UID_UNNAMED_OFFSETABLE_DECLARATION_UID:
-                anUID = new UnnamedOffsetableDeclarationUID<CsmOffsetableDeclaration>(aStream);
+                anUID = new UnnamedOffsetableDeclarationUID<>(aStream);
                 break;
 
             case UID_DECLARATION_UID:
-                anUID = new DeclarationUID<CsmOffsetableDeclaration>(aStream);
+                anUID = new DeclarationUID<>(aStream);
                 break;
 
             case UID_BUILT_IN_UID:

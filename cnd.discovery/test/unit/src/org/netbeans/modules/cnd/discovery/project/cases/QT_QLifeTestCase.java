@@ -63,7 +63,7 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
 
     @Override
     protected List<String> requiredTools() {
-        List<String> res = new ArrayList<String>(super.requiredTools());
+        List<String> res = new ArrayList<>(super.requiredTools());
         res.add("qmake");
         res.add("sed");
         return res;
@@ -71,7 +71,7 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
 
     @Test
     public void testQLife() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         //list.add("qmake qlife.pro");
         if (Utilities.isWindows()) {
             // There are troubles with generated Makefile on Windows - attempt to fix it.

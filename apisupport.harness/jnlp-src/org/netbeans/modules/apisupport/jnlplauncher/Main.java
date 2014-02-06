@@ -70,6 +70,9 @@ public class Main extends Object {
     final static void fixNetBeansUser() {
         String userDir = System.getProperty("netbeans.user"); // NOI18N
         if (userDir == null) {
+            userDir = System.getProperty("jnlp.netbeans.user"); // NOI18N
+        }
+        if (userDir == null) {
             return;
         }
         final String PREFIX = "${user.home}/"; // NOI18N

@@ -88,11 +88,11 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         } catch (AstRendererException ex) {
             Exceptions.printStackTrace(ex);
         }
-        declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        declarations = new ArrayList<>();
     }
 
     public static<T> ProgramImpl<T> create(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope) {
-        ProgramImpl<T> programImpl = new ProgramImpl<T>(name, file, startOffset, endOffset, type, scope);
+        ProgramImpl<T> programImpl = new ProgramImpl<>(name, file, startOffset, endOffset, type, scope);
         postObjectCreateRegistration(true, programImpl);
         return programImpl;
     }
@@ -269,7 +269,7 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         List<CsmUID<CsmOffsetableDeclaration>> uids;
         synchronized (declarations) {
             decls = getDeclarations();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations);
+            uids = new ArrayList<>(declarations);
             declarations.clear();
         }
         Utils.disposeAll(decls);
@@ -957,9 +957,9 @@ public final class ProgramImpl<T> extends OffsetableDeclarationBase<T>
         
         int collSize = input.readInt();
         if (collSize < 0) {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new ArrayList<>();
         } else {
-            declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(collSize);
+            declarations = new ArrayList<>(collSize);
         }
         factory.readUIDCollection(declarations, input, collSize);
         

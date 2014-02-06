@@ -72,6 +72,7 @@ import org.netbeans.modules.php.dbgp.models.WatchesModel;
 import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
+import org.netbeans.modules.php.dbgp.packets.Error;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
 import org.netbeans.modules.php.dbgp.packets.Reason;
 import org.netbeans.modules.php.dbgp.packets.StackGetCommand;
@@ -270,6 +271,11 @@ public class DebugSession extends SingleThread {
         return null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - Error code",
+        "# {1} - Error message",
+        "XdebugError=Response from XDebug contains errors:\n\n Code: {0}\n Message: {1}"
+    })
     private void handleMessage(DbgpCommand command, DbgpMessage message)
             throws IOException {
         if (message == null) {
@@ -285,6 +291,12 @@ public class DebugSession extends SingleThread {
         boolean awaited = false;
         if (message instanceof DbgpResponse) {
             DbgpResponse response = (DbgpResponse) message;
+            Error error = response.getError();
+            if (error != null) {
+                String errorMessage = Bundle.XdebugError(error.getErrorCode(), error.getMessage());
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMessage, NotifyDescriptor.WARNING_MESSAGE));
+                LOGGER.log(Level.INFO, "PHP_XDEBUG_ERROR - code: {0}, message: {1}", new Object[]{error.getErrorCode(), error.getMessage()});
+            }
             String id = response.getTransactionId();
             if (id.equals(command.getTransactionId())) {
                 awaited = true;

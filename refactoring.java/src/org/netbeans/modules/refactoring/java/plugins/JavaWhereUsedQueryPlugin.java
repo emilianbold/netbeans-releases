@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -346,6 +347,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
                     set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType));
+                } else if((el.getKind().equals(ElementKind.LOCAL_VARIABLE) || el.getKind().equals(ElementKind.PARAMETER))
+                        || el.getModifiers().contains(Modifier.PRIVATE)) {
+                    set.add(file);
                 }
             }
         };

@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -310,7 +311,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler2 {
     }
 
     @Override
-    public Documentation documentElement(ParserResult parserResult, ElementHandle elementHandle) {
+    public Documentation documentElement(ParserResult parserResult, ElementHandle elementHandle, Callable<Boolean> cancel) {
         Documentation result = null;
         if (elementHandle instanceof TwigElement) {
             result = Documentation.create(((TwigElement) elementHandle).getDocumentation().asText(), documentationUrl);

@@ -112,13 +112,13 @@ public class Folder implements FileChangeListener, ChangeListener {
     private final ArrayList<Object> items; // Folder or Item
     private final ReentrantReadWriteLock itemsLock = new ReentrantReadWriteLock();
     private HashMap<String, HashMap<Configuration, DeletedConfiguration>> deletedItems;
-    private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
+    private final Set<ChangeListener> changeListenerList = new WeakSet<>(1);
     private final boolean projectFiles;
     private String id = null;
     private String root;
     private volatile boolean removed;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
-    private static boolean checkedLogging = checkLogging();
+    private static final boolean checkedLogging = checkLogging();
     private final Kind kind;
 
     public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles, Kind kind) {
@@ -142,7 +142,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 log.log(Level.FINE, "------------Non Physical Folder {0}", getPath()); // NOI18N
             }
         }
-        this.items = new ArrayList<Object>();
+        this.items = new ArrayList<>();
     }
 
     /**
@@ -239,8 +239,8 @@ public class Folder implements FileChangeListener, ChangeListener {
             // files/folders to be added
             FileObject files[] = folderFile.getChildren();
             if (files != null) {
-                List<FileObject> fileList = new ArrayList<FileObject>();
-                ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
+                List<FileObject> fileList = new ArrayList<>();
+                ArrayList<CharSequence> otherFileList = new ArrayList<>();
                 for (int i = 0; i < files.length; i++) {
                     if (interrupter != null && interrupter.cancelled()) {
                         return;
@@ -565,7 +565,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public List<Object> getElements() {
         itemsLock.readLock().lock();
         try {
-            return new ArrayList<Object>(items);
+            return new ArrayList<>(items);
         } finally {
             itemsLock.readLock().unlock();
         }
@@ -710,7 +710,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (addedItem != item) {
             return addedItem; // Nothing new was added
         }
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
+        ArrayList<NativeFileItem> list = new ArrayList<>(1);
         list.add(item);
         configurationDescriptor.fireFilesAdded(list);
         return item;
@@ -933,7 +933,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeItemAction(Item item) {
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
+        ArrayList<NativeFileItem> list = new ArrayList<>(1);
         list.add(item);
         boolean ret = removeItemImpl(item, true, true);
         if (isProjectFiles()) {
@@ -943,7 +943,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private boolean removePhysicalItem(Item item, boolean setModified) {
-        ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
+        ArrayList<NativeFileItem> list = new ArrayList<>(1);
         list.add(item);
         boolean ret = removeItemImpl(item, setModified, false);
         if (isProjectFiles()) {
@@ -1004,9 +1004,9 @@ public class Folder implements FileChangeListener, ChangeListener {
 
             // Remove it form all configurations
             if (deletedItems == null) {
-                deletedItems = new HashMap<String, HashMap<Configuration, DeletedConfiguration>>();
+                deletedItems = new HashMap<>();
             }
-            HashMap<Configuration, DeletedConfiguration> map = new HashMap<Configuration, DeletedConfiguration>();
+            HashMap<Configuration, DeletedConfiguration> map = new HashMap<>();
             deletedItems.put(item.getPath(), map);
             Configuration[] configurations = configurationDescriptor.getConfs().toArray();
             for (int i = 0; i < configurations.length; i++) {
@@ -1216,8 +1216,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item[] getItemsAsArray() {
-        ArrayList<Item> found = new ArrayList<Item>();
-        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        ArrayList<Item> found = new ArrayList<>();
+        Iterator<?> iter = new ArrayList<>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -1234,7 +1234,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (this.getRoot() != null) {
             return true;
         }
-        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -1252,8 +1252,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private List<NativeFileItem> getAllItemsAsList() {
-        ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
-        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        ArrayList<NativeFileItem> found = new ArrayList<>();
+        Iterator<?> iter = new ArrayList<>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -1276,7 +1276,7 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all files in this logical folder and subfolders as FileObjetc's
      */
     public Set<FileObject> getAllItemsAsFileObjectSet(boolean projectFilesOnly, FileObjectNameMatcher matcher) {
-        LinkedHashSet<FileObject> files = new LinkedHashSet<FileObject>();
+        LinkedHashSet<FileObject> files = new LinkedHashSet<>();
         getAllItemsAsFileObjectSet(files, projectFilesOnly, matcher);
         return files;
     }
@@ -1286,7 +1286,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (matcher.isTerminated()) {
                 return;
             }
-            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<>(getElements()).iterator();
             while (iter.hasNext()) {
                 if (matcher.isTerminated()) {
                     return;
@@ -1316,8 +1316,8 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all logical folder in this folder
      */
     public List<Folder> getFolders() {
-        List<Folder> folders = new ArrayList<Folder>();
-        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        List<Folder> folders = new ArrayList<>();
+        Iterator<?> iter = new ArrayList<>(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
             if (item instanceof Folder) {
@@ -1331,14 +1331,14 @@ public class Folder implements FileChangeListener, ChangeListener {
      * Returns a set of all logical folder and subfolders in this folder
      */
     public List<Folder> getAllFolders(boolean projectFilesOnly) {
-        List<Folder> folders = new ArrayList<Folder>();
+        List<Folder> folders = new ArrayList<>();
         getAllFolders(folders, projectFilesOnly);
         return folders;
     }
 
     private void getAllFolders(List<Folder> folders, boolean projectFilesOnly) {
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
@@ -1353,7 +1353,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public List<Folder> getAllTests() {
-        List<Folder> list = new ArrayList<Folder>();
+        List<Folder> list = new ArrayList<>();
         getTests(list);
         return list;
     }
@@ -1362,7 +1362,7 @@ public class Folder implements FileChangeListener, ChangeListener {
      * recursive!
      */
     private void getTests(List<Folder> list) {
-        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Folder) {
@@ -1398,7 +1398,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Iterator<ChangeListener> it;
 
         synchronized (changeListenerList) {
-            it = new HashSet<ChangeListener>(changeListenerList).iterator();
+            it = new HashSet<>(changeListenerList).iterator();
         }
         ChangeEvent ev = new ChangeEvent(source);
         while (it.hasNext()) {

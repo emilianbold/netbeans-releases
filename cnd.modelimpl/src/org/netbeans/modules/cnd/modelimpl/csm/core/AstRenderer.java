@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -426,8 +425,11 @@ public class AstRenderer {
                     } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                         if (!isAbstractDeclarator(child.getNextSibling())) {
                             CsmType type = TypeFactory.createType(child, file, null, 0);
-                            if (type != null && type.getClassifier().isValid()) {
-                                return true;
+                            if (type != null) {
+                                CsmClassifier cls = type.getClassifier();
+                                if (CsmBaseUtilities.isValid(cls)) {
+                                    return true;
+                                }
                             }
                         }
                     } else {
@@ -1013,7 +1015,7 @@ public class AstRenderer {
     }
 
     protected static class Pair {
-        protected List<CsmTypedef> typedefs = new ArrayList<CsmTypedef>();
+        protected List<CsmTypedef> typedefs = new ArrayList<>();
         protected ClassEnumBase<?> enclosing;
         private Pair(){
         }
@@ -1411,7 +1413,7 @@ public class AstRenderer {
     public static CharSequence[] getNameTokens(AST qid) {
         if (qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
             int templateDepth = 0;
-            List<CharSequence> l = new ArrayList<CharSequence>();
+            List<CharSequence> l = new ArrayList<>();
             for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
                 if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.IDENT) {
                     l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
@@ -1487,8 +1489,8 @@ public class AstRenderer {
                     
                     if (scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
-                        MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                        MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                        MutableObject<CsmNamespace> targetScope = new MutableObject<>();
+                        MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
                         getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(tokenTypeStart), targetScope, targetDefinitionContainer);
                                                 
                         FakeAST fakeParent = new FakeAST();
@@ -1799,8 +1801,8 @@ public class AstRenderer {
                     processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                 }
                 if (createForwardClass) {
-                    MutableObject<CsmNamespace> targetScope = new MutableObject<CsmNamespace>();
-                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<MutableDeclarationsContainer>();
+                    MutableObject<CsmNamespace> targetScope = new MutableObject<>();
+                    MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
                     getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer);                    
                     
                     ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetDefinitionContainer.value, !isRenderingLocalContext(), true);
@@ -1926,7 +1928,7 @@ public class AstRenderer {
     }
 
     public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, FileContent fileContent, CsmScope scope) {
-        ArrayList<CsmParameter> parameters = new ArrayList<CsmParameter>();
+        ArrayList<CsmParameter> parameters = new ArrayList<>();
         if (ast != null && (ast.getType() == CPPTokenTypes.CSM_PARMLIST ||
                 ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -1967,7 +1969,7 @@ public class AstRenderer {
         // we can split this function into two (for K&R and "normal" parameters)
         // if we found this ineffective; but now I vote for more clear and readable - i.e. single for both cases - code
 
-        final List<ParameterImpl> result = new ArrayList<ParameterImpl>();
+        final List<ParameterImpl> result = new ArrayList<>();
         AST firstChild = ast.getFirstChild();
         if (firstChild != null) {
             if (firstChild.getType() == CPPTokenTypes.ELLIPSIS) {
@@ -2297,7 +2299,7 @@ public class AstRenderer {
                     if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
                         CsmExpression initializer = ExpressionsFactory.create(initializerToken, file,/* null,*/ scope);
                         if (initializers == null) {
-                            initializers = new ArrayList<CsmExpression>();
+                            initializers = new ArrayList<>();
                         }
                         initializers.add(initializer);
                     }
@@ -2503,8 +2505,9 @@ public class AstRenderer {
             if(planB) {
                 AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
-                    if(token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
-                        token = getTypeToken(token.getNextSibling());
+                    if (token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
+                        token = AstUtil.findSiblingOfType(token.getNextSibling(), CPPTokenTypes.POINTERTO);
+                        token = getTypeToken(token);
                     }
                     ret = AstRenderer.renderType(token, file, null, false); // last two params just dummy ones
                 }

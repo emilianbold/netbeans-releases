@@ -666,10 +666,17 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 case METHOD:
                     if (ex == null || !(types.isAssignable(ex.asType(), error)
                             || types.isAssignable(ex.asType(), runtime))) {
-                    ExecutableElement ee = (ExecutableElement) currentElement;
-                    String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
-                    checkThrowsDeclared(tree, ex, fqn, ee.getThrownTypes(), dtph, start, end, errors);
-                }
+                        ExecutableElement ee = (ExecutableElement) currentElement;
+                        String fqn;
+                        if (ex != null) {
+                            fqn = ((TypeElement) ex).getQualifiedName().toString();
+                        } else {
+                            ExpressionTree referenceClass = javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName));
+                            if(referenceClass == null) break;
+                            fqn = referenceClass.toString();
+                        }
+                        checkThrowsDeclared(tree, ex, fqn, ee.getThrownTypes(), dtph, start, end, errors);
+                    }
                     break;
                 default:
 //                        env.messages.error(REFERENCE, tree, "dc.invalid.throws");

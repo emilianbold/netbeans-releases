@@ -105,7 +105,7 @@ public class ModelSupport implements PropertyChangeListener {
     private static final AtomicBoolean hasOpenedProjects = new AtomicBoolean(false);
     private static final ModelSupport instance = new ModelSupport();
     /*package*/volatile ModelImpl theModel;
-    private final Set<Lookup.Provider> openedProjects = new HashSet<Lookup.Provider>();
+    private final Set<Lookup.Provider> openedProjects = new HashSet<>();
     final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
     private SuspendableFileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = Boolean.getBoolean("cnd.modelsupport.startup.trace");// NOI18N
@@ -281,13 +281,13 @@ public class ModelSupport implements PropertyChangeListener {
             if (TRACE_STARTUP) {
                 System.out.println("Model support: closeProjects new=" + projects.size() + " now=" + openedProjects.size()); // NOI18N
             }
-            Set<Lookup.Provider> nowOpened = new HashSet<Lookup.Provider>();
+            Set<Lookup.Provider> nowOpened = new HashSet<>();
             for(NativeProject project : projects) {
                 Provider makeProject = project.getProject();
                 nowOpened.add(makeProject);
             }
 
-            Set<Lookup.Provider> toClose = new HashSet<Lookup.Provider>();
+            Set<Lookup.Provider> toClose = new HashSet<>();
             for (Lookup.Provider project : openedProjects) {
                 if (!nowOpened.contains(project)) {
                     toClose.add(project);
@@ -332,8 +332,8 @@ public class ModelSupport implements PropertyChangeListener {
         for (Iterator<String> it = nativeProject.getUserMacroDefinitions().iterator(); it.hasNext();) {
             System.err.println("    " + it.next());
         }
-        List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
-        List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> sources = new ArrayList<>();
+        List<NativeFileItem> headers = new ArrayList<>();
         for (NativeFileItem item : nativeProject.getAllFiles()) {
             if (!item.isExcluded()) {
                 switch (item.getLanguage()) {
@@ -429,8 +429,8 @@ public class ModelSupport implements PropertyChangeListener {
     private void dumpProjectFiles(NativeProject nativeProject) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("+++ Sources:"); // NOI18N
-            List<NativeFileItem> sources = new ArrayList<NativeFileItem>();
-            List<NativeFileItem> headers = new ArrayList<NativeFileItem>();
+            List<NativeFileItem> sources = new ArrayList<>();
+            List<NativeFileItem> headers = new ArrayList<>();
             for (NativeFileItem item : nativeProject.getAllFiles()) {
                 if (!item.isExcluded()) {
                     switch (item.getLanguage()) {
@@ -545,7 +545,7 @@ public class ModelSupport implements PropertyChangeListener {
 
     class ModifiedObjectsChangeListener implements ChangeListener {
 
-        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
+        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<>();
 
         private Collection<BufAndProj> getBufNP(DataObject dao) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
@@ -555,7 +555,7 @@ public class ModelSupport implements PropertyChangeListener {
         private void addBufNP(DataObject dao, BufAndProj bufNP) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
             if (bufNPcoll == null) {
-                bufNPcoll = new ArrayList<BufAndProj>();
+                bufNPcoll = new ArrayList<>();
                 buffers.put(dao, bufNPcoll);
             }
             bufNPcoll.add(bufNP);
@@ -642,7 +642,7 @@ public class ModelSupport implements PropertyChangeListener {
 
                 DataObject[] objs = DataObject.getRegistry().getModified();
 
-                Set<DataObject> toDelete = new HashSet<DataObject>();
+                Set<DataObject> toDelete = new HashSet<>();
 
                 // find all files, which stopped editing
                 for (Iterator<DataObject> iter = buffers.keySet().iterator(); iter.hasNext();) {

@@ -54,7 +54,7 @@ public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> imp
     @Override
     public LibrariesConfiguration clone() {
         LibrariesConfiguration clone = new LibrariesConfiguration();
-        clone.setValue(new ArrayList<LibraryItem>(getValue()));
+        clone.setValue(new ArrayList<>(getValue()));
         return clone;
     }
 }

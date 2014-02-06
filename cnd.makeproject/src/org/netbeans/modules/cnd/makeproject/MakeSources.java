@@ -122,7 +122,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
     private List<String> getSourceRootsFromProjectXML() {
         Element data = helper.getPrimaryConfigurationData(true);
         if (data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT).getLength() > 0) {
-            List<String> list = new ArrayList<String>();
+            List<String> list = new ArrayList<>();
             NodeList nl4 = data.getElementsByTagName(MakeProjectTypeImpl.SOURCE_ROOT_ELEMENT);
             if (nl4.getLength() > 0) {
                 for (int i = 0; i < nl4.getLength(); i++) {
@@ -145,7 +145,7 @@ public final class MakeSources implements Sources, MakeProjectListener {
         List<String> sourceRoots = getSourceRootsFromProjectXML();
         List<String> absSourceRoots = null;
         if (sourceRoots != null) {
-            absSourceRoots = new ArrayList<String>();
+            absSourceRoots = new ArrayList<>();
             for (String sRoot : sourceRoots) {
                 absSourceRoots.add(sRoot);
             }
@@ -164,12 +164,12 @@ public final class MakeSources implements Sources, MakeProjectListener {
             if (absSourceRoots != null) {
                 // mark source info as valid (got it from project.xml directly)
                 completeSouces.set(true);
-                sourceRootList = new LinkedHashSet<String>();
+                sourceRootList = new LinkedHashSet<>();
                 sourceRootList.addAll(absSourceRoots);
             }
         }
         if (sourceRootList == null) {
-            sourceRootList = new LinkedHashSet<String>();
+            sourceRootList = new LinkedHashSet<>();
             MakeConfigurationDescriptor pd = pdp.getConfigurationDescriptor();
             if (pd != null) {
                 // mark source info as valid
@@ -223,11 +223,10 @@ public final class MakeSources implements Sources, MakeProjectListener {
         }
         ExecutionEnvironment fsEnv = project.getFileSystemHost();                
         FileObjectBasedSources sources = new FileObjectBasedSources();
-        String baseDir = project.getProjectDirectory().getPath();
-        Set<FileObject> added = new HashSet<FileObject>();
-        sourceRootList.add(baseDir); // add remote project itself to the tail
+        Set<FileObject> added = new HashSet<>();
+        sourceRootList.add(project.getProjectDirectory().getPath()); // add remote project itself to the tail
         for (String name : sourceRootList) {
-            String path = CndPathUtilities.toAbsolutePath(baseDir, name);
+            String path = CndPathUtilities.toAbsolutePath(project.getProjectDirectory(), name);
             path = RemoteFileUtil.normalizeAbsolutePath(path, fsEnv);
             String displayName = (fsEnv.isLocal() ? "" : fsEnv.getDisplayName() + ":") + path; //NOI18N
             FileObject fo = RemoteFileUtil.getFileObject(path, fsEnv);

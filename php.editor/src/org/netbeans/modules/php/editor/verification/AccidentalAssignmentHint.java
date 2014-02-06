@@ -336,7 +336,10 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return new AccidentalAssignmentCustomizer(preferences, this);
+        JComponent customizer = new AccidentalAssignmentCustomizer(preferences, this);
+        setCheckAssignmentsInSubStatements(preferences, checkAssignmentsInSubStatements(preferences));
+        setCheckAssignmentsInWhileStatements(preferences, checkAssignmentsInWhileStatements(preferences));
+        return customizer;
     }
 
     public void setCheckAssignmentsInSubStatements(Preferences preferences, boolean isEnabled) {

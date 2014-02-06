@@ -76,11 +76,12 @@ public final class ProjectImpl implements ProjectProperties {
     private static final boolean gatherFolders = true;
     
     private final ItemProperties.LanguageKind language;
-    private final Set<String> userIncludes = new LinkedHashSet<String>();
-    private final Set<String> systemIncludes = new LinkedHashSet<String>();
-    private final Map<String,String> userMacros = new HashMap<String,String>();
-    private final Set<String> undefinedMacros = new LinkedHashSet<String>();
-    private final Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
+    private final Set<String> userIncludes = new LinkedHashSet<>();
+    private final Set<String> userFiles = new HashSet<>();
+    private final Set<String> systemIncludes = new LinkedHashSet<>();
+    private final Map<String,String> userMacros = new HashMap<>();
+    private final Set<String> undefinedMacros = new LinkedHashSet<>();
+    private final Map<String,FolderProperties> folders = new HashMap<>();
     
     /** Creates a new instance of DwarfProject */
     public ProjectImpl(ItemProperties.LanguageKind language) {
@@ -96,6 +97,7 @@ public final class ProjectImpl implements ProjectProperties {
         for (String path : source.getUserInludePaths()) {
             userIncludes.add(DiscoveryUtils.convertRelativePathToAbsolute(source,path));
         }
+        userFiles.addAll(source.getUserInludeFiles());
         userMacros.putAll(source.getUserMacros());
         undefinedMacros.addAll(source.getUndefinedMacros());
         if (gatherFolders) {
@@ -140,7 +142,7 @@ public final class ProjectImpl implements ProjectProperties {
             }
             current.update(source);
         }
-        List<ProjectProperties> languages = new ArrayList<ProjectProperties>();
+        List<ProjectProperties> languages = new ArrayList<>();
         if (cProp != null) {
             languages.add(cProp);
         }
@@ -155,8 +157,8 @@ public final class ProjectImpl implements ProjectProperties {
     
     private static List<SourceFileProperties> mergeLists(List<SourceFileProperties> discovered, ProjectProxy project) {
         ProjectBridge bridge = new ProjectBridge(project.getProject());
-        Map<String, SourceFileProperties> map = new HashMap<String, SourceFileProperties>();
-        List<SourceFileProperties> res = new ArrayList<SourceFileProperties>(discovered);
+        Map<String, SourceFileProperties> map = new HashMap<>();
+        List<SourceFileProperties> res = new ArrayList<>(discovered);
         for(SourceFileProperties source : discovered) {
             map.put(source.getItemPath(), source);
         }
@@ -177,27 +179,36 @@ public final class ProjectImpl implements ProjectProperties {
     }
 
     private static boolean isSourcesEquals(SourceFileProperties newSource, SourceFileProperties oldSource, ProjectBridge bridge) {
-        List<String> l1 = newSource.getUserInludePaths();
-        List<String> l2 = oldSource.getUserInludePaths();
-        HashSet<String> set1 = new HashSet<String>();
-        bridge.convertIncludePaths(set1, l1, newSource.getCompilePath(), newSource.getItemPath());
-        HashSet<String> set2 = new HashSet<String>();
-        for(String s : l2) {
+        HashSet<String> set1 = new HashSet<>();
+        bridge.convertIncludePaths(set1, newSource.getUserInludePaths(), newSource.getCompilePath(), newSource.getItemPath());
+        HashSet<String> set2 = new HashSet<>();
+        for(String s : oldSource.getUserInludePaths()) {
             set2.add(bridge.getRelativepath(s));
         }
         if (!set1.equals(set2)) {
             return false;
         }
+        
+        set1 = new HashSet<>();
+        bridge.convertIncludeFiles(set1, newSource.getUserInludeFiles(), newSource.getCompilePath(), newSource.getUserInludePaths());
+        set2 = new HashSet<>();
+        for(String s : oldSource.getUserInludeFiles()) {
+            set2.add(bridge.getRelativepath(s));
+        }
+        if (!set1.equals(set2)) {
+            return false;
+        }
+        
         Map<String, String> m1 = newSource.getUserMacros();
         Map<String, String> m2 = oldSource.getUserMacros();
         if (m1.size() != m2.size()) {
             return false;
         }
-        if (!new HashMap<String, String>(m1).equals(m2)) {
+        if (!new HashMap<>(m1).equals(m2)) {
             return false;
         }
-        Set<String> u1 = new HashSet<String>(newSource.getUndefinedMacros());
-        Set<String> u2 = new HashSet<String>(oldSource.getUndefinedMacros());
+        Set<String> u1 = new HashSet<>(newSource.getUndefinedMacros());
+        Set<String> u2 = new HashSet<>(oldSource.getUndefinedMacros());
         if (u1.size() != u2.size()) {
             return false;
         }
@@ -205,12 +216,12 @@ public final class ProjectImpl implements ProjectProperties {
     }
     
     private static List<SourceFileProperties> getExistingProjectItems(ProjectProxy project) {
-        List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
+        List<SourceFileProperties> res = new ArrayList<>();
         Project makeProject = project.getProject();
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         Item[] items = makeConfigurationDescriptor.getProjectItems();
-        Map<String, Item> projectSearchBase = new HashMap<String, Item>();
+        Map<String, Item> projectSearchBase = new HashMap<>();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
             String path = item.getNormalizedPath();
@@ -258,7 +269,7 @@ public final class ProjectImpl implements ProjectProperties {
     
     @Override
     public List<FolderProperties> getConfiguredFolders(){
-        return new ArrayList<FolderProperties>(folders.values());
+        return new ArrayList<>(folders.values());
     }
     
     @Override
@@ -278,12 +289,17 @@ public final class ProjectImpl implements ProjectProperties {
     
     @Override
     public List<String> getUserInludePaths() {
-        return new ArrayList<String>(userIncludes);
+        return new ArrayList<>(userIncludes);
+    }
+
+    @Override
+    public List<String> getUserInludeFiles() {
+        return new ArrayList<>(userFiles);
     }
     
     @Override
     public List<String> getSystemInludePaths() {
-        return new ArrayList<String>(systemIncludes);
+        return new ArrayList<>(systemIncludes);
     }
     
     @Override
@@ -293,7 +309,7 @@ public final class ProjectImpl implements ProjectProperties {
 
     @Override
     public List<String> getUndefinedMacros() {
-        return new ArrayList<String>(undefinedMacros);
+        return new ArrayList<>(undefinedMacros);
     }
     
     @Override
@@ -320,18 +336,22 @@ public final class ProjectImpl implements ProjectProperties {
     private static final class ItemWrapper implements SourceFileProperties {
         private final Item item;
         private final List<String> userIncludePaths;
+        private final List<String> userIncludeFiles;
         private final Map<String, String> userMacroDefinitions;
         private final List<String> userUndefinesMacros;
+        private final String importantFlags;
         
         private ItemWrapper(Item item) {
             this.item = item;
             userIncludePaths = convertFSPaths(item.getUserIncludePaths());
+            userIncludeFiles = new ArrayList<>(item.getIncludeFiles());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
-            userUndefinesMacros =  new ArrayList<String>(item.getUndefinedMacros());
+            userUndefinesMacros =  new ArrayList<>(item.getUndefinedMacros());
+            importantFlags = item.getImportantFlags();
         }
 
         private List<String> convertFSPaths(List<FSPath> list) {
-            List<String> res = new ArrayList<String>(list.size());
+            List<String> res = new ArrayList<>(list.size());
             for(FSPath p : list) {
                 res.add(p.getPath());
             }
@@ -339,7 +359,7 @@ public final class ProjectImpl implements ProjectProperties {
         }
         
         private Map<String, String> convertToMap(List<String> list) {
-            Map<String, String> res = new HashMap<String, String>();
+            Map<String, String> res = new HashMap<>();
             for(String macro : list){
                 int i = macro.indexOf('=');
                 if (i>0){
@@ -367,6 +387,11 @@ public final class ProjectImpl implements ProjectProperties {
         }
 
         @Override
+        public String getImportantFlags() {
+            return importantFlags;
+        }
+
+        @Override
         public String getItemName() {
             return item.getFileObject().getNameExt();
         }
@@ -374,6 +399,11 @@ public final class ProjectImpl implements ProjectProperties {
         @Override
         public List<String> getUserInludePaths() {
             return userIncludePaths;
+        }
+
+        @Override
+        public List<String> getUserInludeFiles() {
+            return userIncludeFiles;
         }
 
         @Override

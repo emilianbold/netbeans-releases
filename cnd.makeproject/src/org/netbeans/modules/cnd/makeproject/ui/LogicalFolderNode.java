@@ -126,7 +126,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     }
 
     private static Lookup createLFNLookup(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
-        List<Object> elems = new ArrayList<Object>(3);
+        List<Object> elems = new ArrayList<>(3);
         elems.add(folder);
         elems.add(new FolderSearchInfo(folder));
         
@@ -166,7 +166,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     private final class FileAnnotationUpdater implements Runnable {
 
-        private LogicalFolderNode logicalFolderNode;
+        private final LogicalFolderNode logicalFolderNode;
 
         FileAnnotationUpdater(LogicalFolderNode logicalFolderNode) {
             this.logicalFolderNode = logicalFolderNode;
@@ -186,7 +186,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 }
             }
             setFiles(newSet);
-            List<Folder> allFolders = new ArrayList<Folder>();
+            List<Folder> allFolders = new ArrayList<>();
             allFolders.add(folder);
             allFolders.addAll(folder.getAllFolders(true));
             Iterator<Folder> iter = allFolders.iterator();
@@ -429,7 +429,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
-                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                     list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }
@@ -437,7 +437,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 try {
                     LogicalFolderNode viewFolderNode = (LogicalFolderNode) transferable.getTransferData(flavors[i]);
                     if (viewFolderNode != this) {
-                        int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK)).intValue();
+                        int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                         list.add(new ViewFolderPasteType(folder, viewFolderNode, type, provider));
                     }
                 } catch (Exception e) {
@@ -560,10 +560,10 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     
     private static final class ViewFolderTransferable extends ExTransferable.Single {
 
-        private LogicalFolderNode node;
+        private final LogicalFolderNode node;
 
         public ViewFolderTransferable(LogicalFolderNode node, int operation) throws ClassNotFoundException {
-            super(new DataFlavor(FOLDER_VIEW_FLAVOR.format(new Object[]{Integer.valueOf(operation)}), null, MakeLogicalViewProvider.class.getClassLoader()));
+            super(new DataFlavor(FOLDER_VIEW_FLAVOR.format(new Object[]{operation}), null, MakeLogicalViewProvider.class.getClassLoader()));
             this.node = node;
         }
 

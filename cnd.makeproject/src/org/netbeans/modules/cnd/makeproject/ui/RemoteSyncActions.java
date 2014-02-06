@@ -92,7 +92,7 @@ class RemoteSyncActions {
     private static DownloadAction downloadAction;
 
     /* A common active nodes cache to be used by all actions */
-    private static final AtomicReference<Node[]> activatedNodesCache = new AtomicReference<Node[]>();
+    private static final AtomicReference<Node[]> activatedNodesCache = new AtomicReference<>();
     
     private static final RequestProcessor RP = new RequestProcessor("RemoteSyncActions", 1); // NOI18N
 
@@ -278,9 +278,9 @@ class RemoteSyncActions {
                         throw new RemoteSyncSupport.PathMapperException(file);
                     }
                     Future<Integer> task = CommonTasksSupport.downloadFile(remotePath, execEnv, file.getAbsolutePath(), err);
-                    int rc = task.get().intValue();
+                    int rc = task.get();
                     if (rc != 0) {
-                        throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
+                        throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", rc));
                     }
                 }
                 @Override
@@ -483,12 +483,12 @@ class RemoteSyncActions {
     }
 
     private static Map<Project, Set<File>> gatherFiles(Node[] nodes) {
-        Map<Project, Set<File>> result = new HashMap<Project, Set<File>>();
+        Map<Project, Set<File>> result = new HashMap<>();
         for (Node node : nodes) {
             Project project = getNodeProject(node);
             Set<File> files = result.get(project);
             if (files == null) {
-                files = new HashSet<File>();
+                files = new HashSet<>();
                 result.put(project, files);
             }
             gatherFiles(files, node);

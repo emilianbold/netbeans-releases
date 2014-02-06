@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.Sim
  */
 public class CppParserBuilderContext {
     
-    List<CsmObjectBuilder> builders = new ArrayList<CsmObjectBuilder>();
+    List<CsmObjectBuilder> builders = new ArrayList<>();
  
     public void push(CsmObjectBuilder builder) {
         builders.add(builder);

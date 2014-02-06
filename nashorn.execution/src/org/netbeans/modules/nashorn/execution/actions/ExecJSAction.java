@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -144,7 +145,7 @@ abstract class ExecJSAction extends AbstractAction implements ContextAwareAction
         Project p = findProject(fo);
         if (p != null) {
             ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-            if (ap != null) {
+            if (ap != null && ap.getSupportedActions() != null && Arrays.asList(ap.getSupportedActions()).contains(command)) {
                 return ap.isActionEnabled(command, actionContext);
             }
         }

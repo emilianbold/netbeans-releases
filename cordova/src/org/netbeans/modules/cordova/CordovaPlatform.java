@@ -121,7 +121,7 @@ public class CordovaPlatform {
     public static boolean isCordovaProject(Project project) {
         final FileObject root = project.getProjectDirectory();
         root.refresh();
-        return root.getFileObject(".cordova") != null; // NOI18N
+        return root.getFileObject("hooks") != null || root.getFileObject(".cordova") != null; // NOI18N
     }
 
     private boolean isGitReady() {
@@ -145,27 +145,52 @@ public class CordovaPlatform {
         return isGitReady;
     }
 
-    public static class Version implements Comparable<Version> {
-
-        String version;
+    public static class Version {
         
+        private SubVersion api;
+        private SubVersion cli;
+
         public Version(String version) {
-            this.version = version;
+            assert version.contains("-");
+            api = new SubVersion(version.substring(0, version.indexOf("-")));
+            cli = new SubVersion(version.substring(version.indexOf("-")+1));
         }
 
-
-        @Override
-        public int compareTo(Version o) {
-            return version.compareTo(o.version);
-        }
 
         @Override
         public String toString() {
-            return version;
+            return api.toString() + "-" + cli.toString();
         }
         
         public boolean isSupported() {
-            return compareTo(new Version(("3.0")))>0; // NOI18N
+            return api.compareTo(new SubVersion(("3.0")))>0; // NOI18N
+        }
+
+        public final SubVersion getApiVersion() {
+            return api;
+        }
+
+        public final SubVersion getCliVersion() {
+            return cli;
+        }
+        
+        public static class SubVersion implements Comparable<SubVersion> {
+
+            private final String version;
+
+            public SubVersion(String version) {
+                this.version = version;
+            }
+
+            @Override
+            public int compareTo(SubVersion o) {
+                return version.compareTo(o.version);
+            }
+
+            @Override
+            public String toString() {
+                return version;
+            }
         }
     }
 }

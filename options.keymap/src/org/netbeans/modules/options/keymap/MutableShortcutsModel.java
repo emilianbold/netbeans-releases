@@ -63,6 +63,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
+import org.netbeans.core.options.keymap.spi.KeymapManager;
+import static org.netbeans.modules.options.keymap.KeymapModel.getKeymapManagerInstances;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -201,10 +203,49 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     
     void setDirty() {
         boolean old = this.dirty;
-        this.dirty = true;
+        this.dirty = isDirty();
         if (old != dirty) {
             fireChanged();
         }
+    }
+    
+    private boolean isDirty() {
+        boolean isChanged = !getCurrentProfile().equals(model.getCurrentProfile());
+        if (isChanged) { // currently selected profile is modified, so no need to iterate futher
+            return true;
+        }
+        for (KeymapManager m : getKeymapManagerInstances()) {
+            List<String> profiles = m.getProfiles();
+            if (profiles != null) {
+                if(!modifiedProfiles.isEmpty()) {
+                    isChanged |= !profiles.containsAll(modifiedProfiles.keySet());
+                }
+                if (isChanged) { // one or more profiles have been dublicated, so no need to iterate futher
+                    return true;
+                }
+                if(!deletedProfiles.isEmpty()) {
+                    isChanged |= profiles.containsAll(deletedProfiles);
+                }
+                if (isChanged) { // one or more profiles have been deleted, so no need to iterate futher
+                    return true;
+                }
+                for (String profile : profiles) {
+                    Map<ShortcutAction, Set<String>> saved = m.getKeymap(profile);
+                    Map<ShortcutAction, Set<String>> current = modifiedProfiles.get(profile);
+                    if(current != null) {
+                        for(Map.Entry<ShortcutAction, Set<String>> entry : current.entrySet()) {
+                            Set<String> savedShortcut = saved.get(entry.getKey());
+                            Set<String> currentShortcut = current.get(entry.getKey());
+                            isChanged |= savedShortcut == null ? !currentShortcut.isEmpty() : !savedShortcut.equals(currentShortcut);
+                            if (isChanged) { // a shortcut is found to be modified, so no need to iterate futher
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     synchronized void cloneProfile (String newProfileName) {
@@ -539,7 +580,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     }
     
     public boolean isChanged () {
-        return dirty || (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty () || !revertedProfiles.isEmpty() || !revertedActions.isEmpty();
+        return dirty;
     }
     
     private synchronized void clearState() {

@@ -105,12 +105,11 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
      * @param cancel cancel flag
      * @return
      */
-    static Fix createConstant(TreePath resolved, CompilationInfo info, TreePath value, String guessedName, int numDuplicates, int offset, boolean variableRewrite, AtomicBoolean cancel) {
+    static IntroduceFieldFix createConstant(TreePath resolved, CompilationInfo info, TreePath value, String guessedName, int numDuplicates, int offset, boolean variableRewrite, AtomicBoolean cancel) {
         CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
         boolean isConstant = checkConstantExpression(info, value);
         TreePath constantTarget = isConstant ? findAcceptableConstantTarget(info, resolved) : null;
-        isConstant &= constantTarget != null;
-        if (!isConstant || cancel.get()) {
+        if (!isConstant || constantTarget == null || cancel.get()) {
             return null;
         }
         TreePathHandle h = TreePathHandle.create(resolved, info);
@@ -121,7 +120,10 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
             String proposed = Utilities.toConstantName(guessedName);
             varName = Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), proposed, cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix());
         }
-        return new IntroduceConstantFix(h, info.getJavaSource(), varName, numDuplicates, offset);
+        ClassTree clazz = (ClassTree)constantTarget.getLeaf();
+        IntroduceConstantFix fix = new IntroduceConstantFix(h, info.getJavaSource(), varName, numDuplicates, offset);
+        fix.setTargetIsInterface(clazz.getKind() == Tree.Kind.INTERFACE);
+        return fix;
     }
 
     static boolean checkConstantExpression(final CompilationInfo info, TreePath path) {

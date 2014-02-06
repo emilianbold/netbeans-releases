@@ -60,13 +60,13 @@ public final class ParserThreadManager {
     private static ParserThreadManager instance;
     private static final String threadNameBase = "Code Model Parser"; // NOI18N
     private RequestProcessor processor;
-    private final Set<Wrapper> wrappers = new CopyOnWriteArraySet<Wrapper>();
+    private final Set<Wrapper> wrappers = new CopyOnWriteArraySet<>();
     private int currThread = 0;
     private boolean started = false;
 
     private class Wrapper implements Runnable {
 
-        private ParserThread delegate;
+        private final ParserThread delegate;
         private Thread thread;
 
         public Wrapper(ParserThread delegate) {

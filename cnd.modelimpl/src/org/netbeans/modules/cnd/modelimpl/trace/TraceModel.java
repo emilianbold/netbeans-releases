@@ -219,9 +219,9 @@ public class TraceModel extends TraceModelBase {
     private boolean memBySize = false;
     private boolean doCleanRepository = Boolean.getBoolean("cnd.clean.repository");
 //    private boolean testFolding = false;
-    private Map<String, Long> cacheTimes = new HashMap<String, Long>();
+    private Map<String, Long> cacheTimes = new HashMap<>();
     private int lap = 0;
-    private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<CsmFile, APTPreprocHandler>();
+    private final Map<CsmFile, APTPreprocHandler> states = new ConcurrentHashMap<>();
     public interface TestHook {
 
         void parsingFinished(CsmFile file, APTPreprocHandler preprocHandler);
@@ -574,7 +574,7 @@ public class TraceModel extends TraceModelBase {
             }
             if (listFilesAtEnd) {
                 print("\n========== User project files =========="); // NOI18N
-                List<CharSequence> l = new ArrayList<CharSequence>(getProject().getAllFiles().size());
+                List<CharSequence> l = new ArrayList<>(getProject().getAllFiles().size());
                 for (Iterator it = getProject().getAllFiles().iterator(); it.hasNext();) {
                     CsmFile file = (CsmFile) it.next();
                     l.add(file.getAbsolutePath());
@@ -584,7 +584,7 @@ public class TraceModel extends TraceModelBase {
                     print((String) it.next());
                 }
                 print("\n========== Library files =========="); // NOI18N
-                l = new ArrayList<CharSequence>();
+                l = new ArrayList<>();
                 for (Iterator it1 = getProject().getLibraries().iterator(); it1.hasNext();) {
                     ProjectBase lib = (ProjectBase) it1.next();
                     for (Iterator it2 = lib.getAllFiles().iterator(); it2.hasNext();) {
@@ -782,7 +782,7 @@ public class TraceModel extends TraceModelBase {
         List<IncludeDirEntry> sysIncludes = sysAPTData.getIncludes(systemIncludes.toString(), systemIncludes); // NOI18N
         List<String> qInc = getQuoteIncludePaths();
         if (isPathsRelCurFile()) {
-            qInc = new ArrayList<String>(getQuoteIncludePaths().size());
+            qInc = new ArrayList<>(getQuoteIncludePaths().size());
             for (Iterator<String> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
                 String path = it.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
@@ -1462,7 +1462,7 @@ public class TraceModel extends TraceModelBase {
     }
 
     private List<NativeFileItem> getFileItems() {
-        List<NativeFileItem> result = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> result = new ArrayList<>();
 
         Object platformProject = getProject().getPlatformProject();
         if (platformProject instanceof NativeProject) {

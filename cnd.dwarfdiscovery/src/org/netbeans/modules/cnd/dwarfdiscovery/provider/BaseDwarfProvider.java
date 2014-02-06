@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -194,28 +193,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (!(f instanceof Relocatable)) {
             return fo;
         }
-        FS fs = new RelocatablePathMapperImpl.FS() {
-            @Override
-            public boolean exists(String path) {
-                FileObject fo = fileSystem.findResource(path);
-                if (fo != null && fo.isValid()) {
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public List<String> list(String path) {
-                List<String> res = new ArrayList<String>();
-                FileObject fo = fileSystem.findResource(path);
-                if (fo != null && fo.isValid() && fo.isFolder()) {
-                    for (FileObject f : fo.getChildren()) {
-                        res.add(f.getPath());
-                    }
-                }
-                return res;
-            }
-        };
+        FS fs = new FSImpl(fileSystem);
         String sourceRoot = null;
         if (project != null) {
             sourceRoot = project.getSourceRoot();

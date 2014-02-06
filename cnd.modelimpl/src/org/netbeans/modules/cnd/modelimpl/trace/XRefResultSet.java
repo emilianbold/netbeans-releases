@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef.RefLink;
 public final class XRefResultSet<T> {
 
     public static Collection<ContextScope> sortedContextScopes(XRefResultSet bag, boolean byEntries) {
-        List<ContextScope> out = new ArrayList<ContextScope>(ContextScope.values().length);
+        List<ContextScope> out = new ArrayList<>(ContextScope.values().length);
         for (ContextScope scope : ContextScope.values()) {
             boolean added = false;
             int scopeNum;
@@ -99,10 +98,10 @@ public final class XRefResultSet<T> {
     private long time = 0;
     
     public XRefResultSet() {
-        scopeEntries = new HashMap<ContextScope, Collection<ContextEntry>>(ContextScope.values().length);
-        scopes = new HashMap<ContextScope, AtomicInteger>(ContextScope.values().length);
-        unresolved = new ConcurrentHashMap<CharSequence, T>(100);
-        indexed = new ConcurrentHashMap<RefLink, T>(100);
+        scopeEntries = new HashMap<>(ContextScope.values().length);
+        scopes = new HashMap<>(ContextScope.values().length);
+        unresolved = new ConcurrentHashMap<>(100);
+        indexed = new ConcurrentHashMap<>(100);
         for (ContextScope scopeContext : ContextScope.values()) {
             scopeEntries.put(scopeContext, Collections.synchronizedList(new ArrayList<ContextEntry>(1024))); // sync access
             scopes.put(scopeContext, new AtomicInteger(0));
@@ -156,7 +155,7 @@ public final class XRefResultSet<T> {
     }
 
     public Collection<T> getUnresolvedEntries(Comparator<? super T> comparator) {
-        List<T> out = new ArrayList<T>(unresolved.values());
+        List<T> out = new ArrayList<>(unresolved.values());
         Collections.sort(out, comparator);
         return out;
     }
@@ -171,7 +170,7 @@ public final class XRefResultSet<T> {
     }
 
     public Collection<T> getIndexedEntries(Comparator<? super T> comparator) {
-        List<T> out = new ArrayList<T>(indexed.values());
+        List<T> out = new ArrayList<>(indexed.values());
         Collections.sort(out, comparator);
         return out;
     }

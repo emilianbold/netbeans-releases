@@ -58,13 +58,14 @@ import java.util.Set;
  * @author Alexander Simon
  */
 public final class FolderImpl implements FolderProperties {
-    private String path;
-    private ItemProperties.LanguageKind language;
-    private Set<String> userIncludes = new LinkedHashSet<String>();
-    private Set<String> systemIncludes = new LinkedHashSet<String>();
-    private Map<String, String> userMacros = new HashMap<String,String>();
-    private Set<String> undefinedMacros = new LinkedHashSet<String>();
-    private List<SourceFileProperties> files = new ArrayList<SourceFileProperties>();
+    private final String path;
+    private final ItemProperties.LanguageKind language;
+    private final Set<String> userIncludes = new LinkedHashSet<>();
+    private final Set<String> userFiles = new LinkedHashSet<>();
+    private final Set<String> systemIncludes = new LinkedHashSet<>();
+    private final Map<String, String> userMacros = new HashMap<>();
+    private final Set<String> undefinedMacros = new LinkedHashSet<>();
+    private final List<SourceFileProperties> files = new ArrayList<>();
     
     public FolderImpl(String path, SourceFileProperties source) {
         this.path = path;
@@ -78,6 +79,7 @@ public final class FolderImpl implements FolderProperties {
         for (String currentPath : source.getUserInludePaths()) {
             userIncludes.add(DiscoveryUtils.convertRelativePathToAbsolute(source,currentPath));
         }
+        userFiles.addAll(source.getUserInludeFiles());
         systemIncludes.addAll(source.getSystemInludePaths());
         userMacros.putAll(source.getUserMacros());
         undefinedMacros.addAll(source.getUndefinedMacros());
@@ -95,12 +97,17 @@ public final class FolderImpl implements FolderProperties {
     
     @Override
     public List<String> getUserInludePaths() {
-        return new ArrayList<String>(userIncludes);
+        return new ArrayList<>(userIncludes);
+    }
+    
+    @Override
+    public List<String> getUserInludeFiles() {
+        return new ArrayList<>(userFiles);
     }
     
     @Override
     public List<String> getSystemInludePaths() {
-        return new ArrayList<String>(systemIncludes);
+        return new ArrayList<>(systemIncludes);
     }
     
     @Override
@@ -110,7 +117,7 @@ public final class FolderImpl implements FolderProperties {
 
     @Override
     public List<String> getUndefinedMacros() {
-        return new ArrayList<String>(undefinedMacros);
+        return new ArrayList<>(undefinedMacros);
     }
     
     @Override

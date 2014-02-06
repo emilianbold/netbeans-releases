@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard.api.support;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -61,8 +63,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -168,16 +168,23 @@ public class ProjectBridge {
         return Item.createInFileSystem(baseFolderFileSystem, getRelativepath(path));
     }
     
-    public static void excludeItemFromOtherConfigurations(Item item) {
+    // return true if state was changed
+    public static boolean excludeItemFromOtherConfigurations(Item item) {
+        boolean changed = false;
         for(Configuration c : item.getFolder().getConfigurationDescriptor().getConfs().getConfigurations()) {
             if (!c.isDefault()) {
                 MakeConfiguration makeConfiguration = (MakeConfiguration) c;
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
                 if (itemConfiguration != null) {
-                    itemConfiguration.getExcluded().setValue(true);
+                    BooleanConfiguration excl =itemConfiguration.getExcluded();
+                    if (!excl.getValue()){
+                        excl.setValue(true);
+                        changed = true;
+                    }
                 }
             }
         }
+        return changed;
     }
     
     /**
@@ -187,7 +194,7 @@ public class ProjectBridge {
         Item item = makeConfigurationDescriptor.findProjectItemByPath(path);
         if (item == null){
             if (!CndPathUtilities.isPathAbsolute(path)) {
-                path = CndPathUtilities.toAbsolutePath(baseFolder, path);
+                path = CndPathUtilities.toAbsolutePath(baseFolderFileSystem, baseFolder, path);
             }
             item = findByCanonicalName(path);
         }
@@ -267,7 +274,6 @@ public class ProjectBridge {
     
     public void convertIncludePaths(Set<String> set, List<String> paths, String compilePath, String filePath){
         List<String> ordinary = new ArrayList<>();
-        List<Integer> incuded = new ArrayList<>();
         for (String path : paths){
             if ( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) {  // NOI18N
                 String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
@@ -279,13 +285,6 @@ public class ProjectBridge {
                 } else {
                     String aPath = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                     aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
-                    if (!CndFileUtils.isExistingDirectory(baseFolderFileSystem, aPath)) {
-                        if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
-                            // it looks like -include <relative path>
-                            // try to resolve include directive later
-                            incuded.add(ordinary.size());
-                        }
-                    }
                     ordinary.add(getRelativepath(aPath));
                 }
             }
@@ -294,17 +293,37 @@ public class ProjectBridge {
         if (isDifferentCompilePath(filePath, compilePath)){
             ordinary.add(getRelativepath(compilePath));
         }
-        for(int i : incuded) {
-            String inc = paths.get(i);
-            for(String p : ordinary) {
-                if ( !(p.startsWith("/") || (p.length()>1 && p.charAt(1)==':') ) ) {  // NOI18N
-                    p = CndPathUtilities.toAbsolutePath(makeConfigurationDescriptor.getBaseDirFileObject(), p);
-                }
-                String aPath = p + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + inc;
+        set.addAll(ordinary);
+    }
+
+    public void convertIncludeFiles(Set<String> set, List<String> files, String compilePath, Collection<String> paths) {
+        List<String> ordinary = new ArrayList<>();
+        for (String path : files){
+            if ( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) {  // NOI18N
+                String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
+                ordinary.add(getRelativepath(aPath));
+            } else {
+                String aPath = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                 aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
                 if (CndFileUtils.isExistingFile(baseFolderFileSystem, aPath)) {
-                    ordinary.set(i, getRelativepath(aPath));
-                    break;
+                    ordinary.add(getRelativepath(aPath));
+                } else {
+                    boolean found = false;
+                    for(String p : paths) {
+                        if ( !(p.startsWith("/") || (p.length()>1 && p.charAt(1)==':') ) ) {  // NOI18N
+                            p = CndPathUtilities.toAbsolutePath(makeConfigurationDescriptor.getBaseDirFileObject(), p);
+                        }
+                        aPath = p + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
+                        aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
+                        if (CndFileUtils.isExistingFile(baseFolderFileSystem, aPath)) {
+                            ordinary.add(getRelativepath(aPath));
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        ordinary.add(getRelativepath(aPath));
+                    }
                 }
             }
         }
@@ -416,7 +435,7 @@ public class ProjectBridge {
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
-            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
+            if (path.contains("/../") || path.contains("/./")) { // NOI18N
                 path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
                 if (Utilities.isWindows()) {
                     path = path.replace('\\', '/');
@@ -520,7 +539,7 @@ public class ProjectBridge {
     }
     
 
-    public void setupProject(List<String> includes, List<String> macros, List<String> undefs, ItemProperties.LanguageKind lang){
+    public void setupProject(List<String> includes, List<String> files, List<String> macros, List<String> undefs, ItemProperties.LanguageKind lang){
         MakeConfiguration extConf = makeConfigurationDescriptor.getActiveConfiguration();
         if (extConf != null) {
             for(int i = 0; i < includes.size(); i++) {
@@ -531,16 +550,20 @@ public class ProjectBridge {
             }
             if (lang == ItemProperties.LanguageKind.CPP) {
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCCompilerConfiguration().getIncludeFiles().setValue(files);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCCompilerConfiguration().getIncludeFiles().setDirty(true);
                 extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
                 extConf.getCCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.C) {
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includes);
+                extConf.getCCompilerConfiguration().getIncludeFiles().setValue(files);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macros);
                 extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setValue(undefs);
                 extConf.getCCompilerConfiguration().getIncludeDirectories().setDirty(true);
+                extConf.getCCompilerConfiguration().getIncludeFiles().setDirty(true);
                 extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setDirty(true);
                 extConf.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration().setDirty(true);
             } else if (lang == ItemProperties.LanguageKind.Fortran) {
@@ -568,7 +591,8 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, ItemProperties.LanguageKind lang, Folder folder) {
+    public void setupFolder(List<String> includes, boolean inheriteIncludes, List<String> files, boolean inheriteFiles,
+            List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, ItemProperties.LanguageKind lang, Folder folder) {
         CCCCompilerConfiguration cccc = getFolderConfiguration(lang, folder);
         if (cccc == null) {
             return;
@@ -581,22 +605,26 @@ public class ProjectBridge {
         }
         cccc.getIncludeDirectories().setValue(includes);
         cccc.getInheritIncludes().setValue(inheriteIncludes);
+        cccc.getIncludeFiles().setValue(files);
+        cccc.getInheritFiles().setValue(inheriteFiles);
         cccc.getPreprocessorConfiguration().setValue(macros);
         cccc.getInheritPreprocessor().setValue(inheriteMacros);
         cccc.getUndefinedPreprocessorConfiguration().setValue(undefs);
         cccc.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
     }
-    
-    public static void setExclude(Item item, boolean exclude){
+
+    // return true if state was changed
+    public static boolean setExclude(Item item, boolean exclude){
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
-            return;
+            return false;
         }
         BooleanConfiguration excl =itemConfiguration.getExcluded();
         if (excl.getValue() ^ exclude){
             excl.setValue(exclude);
+            return true;
         }
-        //itemConfiguration.setTool(Tool.CustomTool);
+        return false;
     }
 
     public static boolean getExclude(Item item){
@@ -793,7 +821,8 @@ public class ProjectBridge {
         return null;
     }
 
-    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item) {
+    public void setupFile(String compilepath, List<String> includes, boolean inheriteIncludes, List<String> files, boolean inheriteFiles,
+            List<String> macros, boolean inheriteMacros, List<String> undefs, boolean inheriteUndefs, Item item, String importantFlags) {
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
             return;
@@ -813,10 +842,13 @@ public class ProjectBridge {
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             cccCompilerConfiguration.getIncludeDirectories().setValue(includes);
             cccCompilerConfiguration.getInheritIncludes().setValue(inheriteIncludes);
+            cccCompilerConfiguration.getIncludeFiles().setValue(files);
+            cccCompilerConfiguration.getInheritFiles().setValue(inheriteFiles);
             cccCompilerConfiguration.getPreprocessorConfiguration().setValue(macros);
             cccCompilerConfiguration.getInheritPreprocessor().setValue(inheriteMacros);
             cccCompilerConfiguration.getUndefinedPreprocessorConfiguration().setValue(undefs);
             cccCompilerConfiguration.getInheritUndefinedPreprocessor().setValue(inheriteUndefs);
+            cccCompilerConfiguration.getImportantFlags().setValue(getString(importantFlags));
         }
     }
 
@@ -828,9 +860,9 @@ public class ProjectBridge {
         boolean isChanged = false;
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            Set<String> set = new HashSet<String>(item.getUserMacroDefinitions());
+            Set<String> set = new HashSet<>(item.getUserMacroDefinitions());
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            List<String> list = new ArrayList<String>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
+            List<String> list = new ArrayList<>(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
             for(Map.Entry<String,String> entry : macros.entrySet()) {
                 String s;
                 if (entry.getValue() != null) {
@@ -860,7 +892,7 @@ public class ProjectBridge {
         return isChanged;
     }
 
-    private Map<String, String> cache = new HashMap<>();
+    private final Map<String, String> cache = new HashMap<>();
     private String getString(String s) {
         String res = cache.get(s);
         if (res == null) {
@@ -908,6 +940,51 @@ public class ProjectBridge {
         return null;
     }
     
+    private Pattern cPattern;
+    private boolean cPatternInited;
+    private Pattern cppPattern;
+    private boolean cppPatternInited;
+    public boolean isImportantFlag(String flag, boolean isCPP) {
+        if (isCPP) {
+            if (!cppPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cppPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cppPatternInited = true;
+            }
+            if (cppPattern != null) {
+                return cppPattern.matcher(flag).find();
+            }
+        } else {
+            if (!cPatternInited) {
+                CompilerSet compilerSet = getCompilerSet();
+                AbstractCompiler compiler;
+                if (compilerSet != null) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    if (compiler != null) {
+                        String importantFlags = compiler.getDescriptor().getImportantFlags();
+                        if (importantFlags != null && importantFlags.length() > 0) {
+                            cPattern = Pattern.compile(importantFlags);
+                        }
+                    }
+                }
+                cPatternInited = true;
+            }
+            if (cPattern != null) {
+                return cPattern.matcher(flag).find();
+            }
+        }
+        return false;
+    }
+    
     private List<String> systemIncludePathsC;
     private List<String> systemIncludePathsCpp;
     public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -940,99 +1017,6 @@ public class ProjectBridge {
             }
         }
         return systemIncludePaths;
-    }
-
-    private Map<String, List<String>> optionToMacrosC;
-    private Map<String, List<String>> optionToMacrosCpp;
-    public List<String> getOptionToMacros(String option, boolean isCPP) {
-        Map<String, List<String>> macros;
-        if (isCPP) {
-            macros = optionToMacrosCpp;
-        } else {
-            macros = optionToMacrosC;
-        }
-        if (macros == null) {
-            macros = new HashMap<>();
-            CompilerSet compilerSet = getCompilerSet();
-            if (compilerSet != null) {
-            AbstractCompiler compiler;
-                if (isCPP) {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                } else {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                }
-                if (compiler != null && compiler.getDescriptor() != null) {
-                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                    if (predefinedMacros != null) {
-                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                            if (macro.getFlags() != null) {
-                                if (!macro.isHidden()) {
-                                    List<String> list = macros.get(macro.getFlags());
-                                    if (list == null) {
-                                        list = new ArrayList<>();
-                                        macros.put(macro.getFlags(), list);
-                                    }
-                                    list.add(macro.getMacro());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (isCPP) {
-                optionToMacrosCpp = macros;
-            } else {
-                optionToMacrosC = macros;
-            }
-        }
-        return macros.get(option);
-    }
-
-    
-    private Map<String, List<String>> optionToUndefinedMacrosC;
-    private Map<String, List<String>> optionToUndefinedMacrosCpp;
-    public List<String> getOptionToUndefinedMacros(String option, boolean isCPP) {
-        Map<String, List<String>> macros;
-        if (isCPP) {
-            macros = optionToUndefinedMacrosCpp;
-        } else {
-            macros = optionToUndefinedMacrosC;
-        }
-        if (macros == null) {
-            macros = new HashMap<>();
-            CompilerSet compilerSet = getCompilerSet();
-            if (compilerSet != null) {
-                AbstractCompiler compiler;
-                if (isCPP) {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                } else {
-                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                }
-                if (compiler != null && compiler.getDescriptor() != null) {
-                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                    if (predefinedMacros != null) {
-                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                            if (macro.getFlags() != null) {
-                                if (macro.isHidden()) {
-                                    List<String> list = macros.get(macro.getFlags());
-                                    if (list == null) {
-                                        list = new ArrayList<>();
-                                        macros.put(macro.getFlags(), list);
-                                    }
-                                    list.add(macro.getMacro());
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (isCPP) {
-                optionToUndefinedMacrosCpp = macros;
-            } else {
-                optionToUndefinedMacrosC = macros;
-            }
-        }
-        return macros.get(option);
     }
     
     private static final String CYG_DRIVE_UNIX = "/cygdrive/"; // NOI18N

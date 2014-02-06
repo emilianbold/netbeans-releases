@@ -54,9 +54,9 @@ import org.openide.util.NbBundle;
 
 public class ConfSelectorPanel extends javax.swing.JPanel {
 
-    private Configuration[] configurationItems;
-    private JCheckBox[] checkBoxes;
-    private JButton[] actionButtons;
+    private final Configuration[] configurationItems;
+    private final JCheckBox[] checkBoxes;
+    private final JButton[] actionButtons;
 
     public ConfSelectorPanel(String labelText, char mn, Configuration[] configurationItems, JButton[] actionButtons) {
         initComponents();
@@ -144,7 +144,7 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
     }
 
     public Configuration[] getSelectedConfs() {
-        List<Configuration> vector = new ArrayList<Configuration>();
+        List<Configuration> vector = new ArrayList<>();
         for (int i = 0; i < configurationItems.length; i++) {
             if (checkBoxes[i].isSelected()) {
                 vector.add(configurationItems[i]);

@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.hints.pom;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 
 /**
@@ -52,6 +54,7 @@ import java.util.prefs.Preferences;
  */
 public class ParentVersionErrorCustomizer extends javax.swing.JPanel {
     private Preferences preferences;
+    private final Map<String, Object> id2Saved = new HashMap<String, Object>();
 
     /** Creates new form ParentVersionErrorCustomizer */
     public ParentVersionErrorCustomizer(Preferences prefs) {
@@ -60,7 +63,7 @@ public class ParentVersionErrorCustomizer extends javax.swing.JPanel {
         buttonGroup1.add(rbLatest);
         buttonGroup1.add(rbSources);
         rbSources.setSelected(preferences.getBoolean(ParentVersionError.PROP_SOURCES, true));
-        rbSources.setSelected(!preferences.getBoolean(ParentVersionError.PROP_SOURCES, true));
+        rbLatest.setSelected(!preferences.getBoolean(ParentVersionError.PROP_SOURCES, true));
         cbSnapshots.setSelected(preferences.getBoolean(ParentVersionError.PROP_SNAPSHOT, false));
         enableSnapshots();
         ActionListener al = new ActionListener() {
@@ -78,6 +81,13 @@ public class ParentVersionErrorCustomizer extends javax.swing.JPanel {
                 preferences.putBoolean(ParentVersionError.PROP_SNAPSHOT, cbSnapshots.isSelected());
             }
         });
+    
+        id2Saved.put(ParentVersionError.PROP_SOURCES, rbSources.isSelected());
+        id2Saved.put(ParentVersionError.PROP_SNAPSHOT, cbSnapshots.isSelected());
+    }
+    
+    String getSavedValue(String key) {
+        return id2Saved.get(key).toString();
     }
 
     private void enableSnapshots() {

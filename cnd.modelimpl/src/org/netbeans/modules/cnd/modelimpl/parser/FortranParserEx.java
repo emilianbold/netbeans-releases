@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
@@ -73,7 +71,7 @@ public class FortranParserEx {
     public static final int FREE_FORM = 1;
     public static final int FIXED_FORM = 2;
 
-    public List<Object> parsedObjects = new ArrayList<Object>();
+    public List<Object> parsedObjects = new ArrayList<>();
 
     private FortranParser parser;
 
@@ -164,7 +162,7 @@ public class FortranParserEx {
             t.printStackTrace(System.out);
         }
         
-        parser.inputStreams = new Stack<String>();
+        parser.inputStreams = new Stack<>();
 
         parser.action = new IFortranParserAction() {
 
@@ -179,7 +177,7 @@ public class FortranParserEx {
                     programData.name = id.getText();
                     programData.startOffset = ((APTToken) ((MyToken) programKeyword).t).getOffset();
                     
-                    programData.members = new ArrayList<Object>();
+                    programData.members = new ArrayList<>();
                     // System.out.println("program " + id);
                 }
             }
@@ -328,12 +326,12 @@ public class FortranParserEx {
             public void dummy_arg_list__begin() {
                 if(subroutineData != null) {
                     if(subroutineData.args == null) {
-                        subroutineData.args = new ArrayList<String>();
+                        subroutineData.args = new ArrayList<>();
                     }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
-                        functionData.args = new ArrayList<String>();
+                        functionData.args = new ArrayList<>();
                     }
                 }
             }
@@ -358,12 +356,12 @@ public class FortranParserEx {
             public void generic_name_list__begin() {
                 if(subroutineData != null) {
                     if(subroutineData.args == null) {
-                        subroutineData.args = new ArrayList<String>();
+                        subroutineData.args = new ArrayList<>();
                     }
                 }
                 if(functionData != null) {
                     if(functionData.args == null) {
-                        functionData.args = new ArrayList<String>();
+                        functionData.args = new ArrayList<>();
                     }
                 }
             }
@@ -391,7 +389,7 @@ public class FortranParserEx {
                 if (moduleData != null && id != null && moduleKeyword instanceof MyToken && ((MyToken) moduleKeyword).t instanceof APTToken) {
                     moduleData.name = id.getText();
                     moduleData.startOffset = ((APTToken) ((MyToken) moduleKeyword).t).getOffset();
-                    moduleData.members = new ArrayList<Object>();
+                    moduleData.members = new ArrayList<>();
                 }
             }
 

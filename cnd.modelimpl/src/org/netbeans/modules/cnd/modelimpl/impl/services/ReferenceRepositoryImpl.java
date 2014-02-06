@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -121,13 +120,13 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             List<CsmReference> out;
             Collection<FileImpl> files;
             if (scopeFile instanceof FileImpl) {
-                out = new ArrayList<CsmReference>(10);
+                out = new ArrayList<>(10);
                 CsmOffsetable offs = (CsmOffsetable)scope;
                 out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
             } else {
                 if (Boolean.getBoolean("cnd.model.index.enabled")) {
                     Collection<CsmUID<CsmFile>> allFiles = ReferencesIndex.getRelevantFiles(UIDCsmConverter.objectToUID(target));
-                    files = new ArrayList<FileImpl>(allFiles.size());
+                    files = new ArrayList<>(allFiles.size());
                     for (CsmUID<CsmFile> csmUID : allFiles) {
                         files.add((FileImpl)UIDCsmConverter.UIDtoFile(csmUID));
                     }
@@ -148,7 +147,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                             }
                         }
                         final Collection<CsmFile> relevantFiles = findRelevantFiles(Collections.<CsmProject>singletonList(basePrj), name);
-                        files = new ArrayList<FileImpl>(relevantFiles.size());
+                        files = new ArrayList<>(relevantFiles.size());
                         for(CsmFile f : relevantFiles) {
                             if (f instanceof FileImpl) {
                                 files.add((FileImpl)f);
@@ -158,7 +157,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                         files = basePrj.getAllFileImpls();
                     }
                 }
-                out = new ArrayList<CsmReference>(files.size() * 10);
+                out = new ArrayList<>(files.size() * 10);
                 for (FileImpl file : files) {
                     if (interrupter != null && interrupter.cancelled()) {
                         break;
@@ -196,7 +195,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     }
     
     public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
-        Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
+        Map<CsmObject, Collection<CsmReference>> out = new HashMap<>(targets.length);
         for (CsmObject target : targets) {
             if (interrupter != null && interrupter.cancelled()) {
                 break;
@@ -208,14 +207,14 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     @Override
     public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
+        Collection<CsmReference> refs = new LinkedHashSet<>(1024);
         // TODO: optimize performance
         for (CsmObject target : targets) {            
             refs.addAll(getReferences(target, file, kinds, interrupter));
         }
         if (!refs.isEmpty() && targets.length > 1) {
             // if only one target, then collection is already sorted
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            List<CsmReference> sortedRefs = new ArrayList<>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
                 @Override
                 public int compare(CsmReference o1, CsmReference o2) {
@@ -269,7 +268,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             //time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");
         }
-        Collection<CsmReference> refs = new ArrayList<CsmReference>(20);
+        Collection<CsmReference> refs = new ArrayList<>(20);
         for (APTToken token : tokens) {
             if (interrupter != null && interrupter.cancelled()){
                 break;
@@ -280,7 +279,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 refs.add(ref);
             }
         }
-        final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
+        final Collection<CsmReference> out = new ArrayList<>(20);
         ReferenceVisitor visitor = new ReferenceVisitor() {
             @Override
             public void visit(CsmReference ref) {
@@ -373,7 +372,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     
     private Collection<APTToken> getTokensToResolve(FileImpl file, CharSequence name, int startOffset, int endOffset) {
         TokenStream ts = getTokenStream(file);
-        Collection<APTToken> tokens = new ArrayList<APTToken>(100);
+        Collection<APTToken> tokens = new ArrayList<>(100);
         boolean destructor = false;
         if (name.charAt(0) == '~') { // NOI18N
             destructor = true;
@@ -477,7 +476,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
 
     @Override
     public Collection<CsmFile> findRelevantFiles(Collection<CsmProject> projects, CharSequence id) {
-        Collection<CsmFile> res = new HashSet<CsmFile>();
+        Collection<CsmFile> res = new HashSet<>();
         for (CsmProject project : projects) {
             if (project instanceof ProjectBase) {
                 ProjectBase prjBase = (ProjectBase)project;

@@ -48,6 +48,8 @@ package org.netbeans.test.java.editor.lib;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.diff.LineDiff;
 
@@ -72,22 +74,25 @@ public class JavaEditorTestCase extends EditorTestCase {
      * @param oper
      * @throws IOException
      */
-    public void compareGoldenFile(EditorOperator oper) throws IOException {
-        File fGolden = null;
-        fGolden = getGoldenFile();
-        String refFileName = getName() + ".ref";
-        String diffFileName = getName() + ".diff";
-        File fRef = new File(getWorkDir(), refFileName);
-        FileWriter fw = new FileWriter(fRef);
-        fw.write(oper.getText());
-        fw.close();
-        LineDiff diff = new LineDiff(false);
-        File fDiff = new File(getWorkDir(), diffFileName);
-        if (diff.diff(fGolden, fRef, fDiff)) {
-            fail("Golden files differ");
-        }
+    public void compareGoldenFile(EditorOperator oper) throws IOException {        
+        ref(oper.getText());        
+        compareGoldenFile();
     }
-
+    
+    public void checkContentOfEditorRegexp(EditorOperator editor, String regExp) {
+        Pattern p = Pattern.compile(regExp, Pattern.DOTALL | Pattern.MULTILINE);
+        String code = editor.getText();        
+        Matcher matcher = p.matcher(code);
+        boolean match = matcher.matches();
+        if(!match) {
+            System.out.println(regExp);
+            System.out.println("-------------------");
+            System.out.println(code);
+            
+        }
+        assertTrue("Editor does not contain "+regExp,match);
+    }
+    
     /**
      * Compare goldenfile with ref file, which was created during the test
      * @throws IOException

@@ -161,7 +161,7 @@ public final class FileImpl implements CsmFile,
 
         @Override
         protected AtomicReference<FileContent> initialValue() {
-            return new AtomicReference<FileContent>(null);
+            return new AtomicReference<>(null);
         }
     };
 
@@ -250,10 +250,10 @@ public final class FileImpl implements CsmFile,
      * it invokes ensureParsed(DUMMY_HANDLERS), which parses the file with all valid states from container.
      * This (2) might happen only when there are NO other states in queue
      */
-    static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
+    static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<>();
     static final APTPreprocHandler.State DUMMY_STATE = new SpecialStateImpl();
     static final APTPreprocHandler.State PARTIAL_REPARSE_STATE = new SpecialStateImpl();
-    static final Collection<APTPreprocHandler> PARTIAL_REPARSE_HANDLERS = new EmptyCollection<APTPreprocHandler>();
+    static final Collection<APTPreprocHandler> PARTIAL_REPARSE_HANDLERS = new EmptyCollection<>();
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
@@ -280,7 +280,7 @@ public final class FileImpl implements CsmFile,
             if (projectRef instanceof Reference<?> && ((Reference) projectRef).get() == project) {
                 return;
             }
-            projectRef = new WeakReference<ProjectBase>(project);
+            projectRef = new WeakReference<>(project);
         } finally {
             projectLock.writeLock().unlock();
         }
@@ -342,7 +342,10 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
-        this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
+        this.projectRef = new WeakReference<>(project); // Suppress Warnings
+        if (fileType == FileType.UNDEFINED_FILE && nativeFileItem != null) {
+            fileType = Utils.getFileType(nativeFileItem);
+        }
         this.fileType = fileType;
         if (nativeFileItem != null) {
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -382,7 +385,7 @@ public final class FileImpl implements CsmFile,
                 if (assertNotNull) {
                     assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
                 }
-                projectRef = new WeakReference<ProjectBase>(prj);
+                projectRef = new WeakReference<>(prj);
             }
             return prj;
         } finally {
@@ -1151,8 +1154,8 @@ public final class FileImpl implements CsmFile,
         }
         APTPreprocHandler.State ppState = preprocHandler.getState();
         // ask for cache and pcBuilder as well
-        AtomicReference<APTFileCacheEntry> cacheEntry = new AtomicReference<APTFileCacheEntry>(null);
-        AtomicReference<FilePreprocessorConditionState.Builder> pcBuilder = new AtomicReference<FilePreprocessorConditionState.Builder>(null);
+        AtomicReference<APTFileCacheEntry> cacheEntry = new AtomicReference<>(null);
+        AtomicReference<FilePreprocessorConditionState.Builder> pcBuilder = new AtomicReference<>(null);
         TokenStream tokenStream = createParsingTokenStreamForHandler(preprocHandler, false, cacheEntry, pcBuilder);
         if (tokenStream == null) {
             return false;
@@ -1195,7 +1198,7 @@ public final class FileImpl implements CsmFile,
     
     private static final class TokenStreamLock {}
     private final Object tokStreamLock = new TokenStreamLock();
-    private Reference<FileTokenStreamCache> tsRef = new SoftReference<FileTokenStreamCache>(null);
+    private Reference<FileTokenStreamCache> tsRef = new SoftReference<>(null);
     /**
      *
      * @param startOffset
@@ -1223,7 +1226,7 @@ public final class FileImpl implements CsmFile,
                 cache = tsRef.get();
                 if (cache == null) {
                     cache = new FileTokenStreamCache();
-                    tsRef = new WeakReference<FileTokenStreamCache>(cache);
+                    tsRef = new WeakReference<>(cache);
                 } else {
                     // could be already created by parallel thread
                     stream = cache.getTokenStreamInActiveBlock(filtered, startContextOffset, endContextOffset, firstTokenIDIfExpandMacros);
@@ -1312,7 +1315,7 @@ public final class FileImpl implements CsmFile,
 
     /** For test purposes only */
     /*package*/ void testErrors(TraceModel.ErrorListener errorListener) {
-        Collection<ParserError> parserErrors = new ArrayList<ParserError>();
+        Collection<ParserError> parserErrors = new ArrayList<>();
         getErrors(parserErrors);
         for (ParserError e : parserErrors) {
             errorListener.error(e.message, e.line, e.column);
@@ -1507,7 +1510,7 @@ public final class FileImpl implements CsmFile,
     }
 
     public void setLastMacroUsages(List<CsmReference> res) {
-        lastMacroUsages = new SoftReference<List<CsmReference>>(Collections.unmodifiableList(res));
+        lastMacroUsages = new SoftReference<>(Collections.unmodifiableList(res));
     }
 
     public long getLastParsedTime() {
@@ -1542,7 +1545,7 @@ public final class FileImpl implements CsmFile,
         }
         if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
             if(parsingErrors == null) {
-                parsingErrors = new ArrayList<ParserError>();
+                parsingErrors = new ArrayList<>();
             }
             parsingErrors.clear();
             if(currentFileContent != null) {
@@ -1556,7 +1559,7 @@ public final class FileImpl implements CsmFile,
                 fileImplIncluded.parsingFileContentRef.get().set(null);
                 if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
                     if(fileImplIncluded.parsingErrors == null) {
-                        fileImplIncluded.parsingErrors = new ArrayList<ParserError>();
+                        fileImplIncluded.parsingErrors = new ArrayList<>();
                     }
                     fileImplIncluded.parsingErrors.clear();
                     if(includedFileContent != null) {
@@ -1640,7 +1643,7 @@ public final class FileImpl implements CsmFile,
     @Override
     public Collection<CsmErrorDirective> getErrors() {
         checkNotInParsingThreadImpl();
-        return new ArrayList<CsmErrorDirective>(currentFileContent.getErrors());
+        return new ArrayList<>(currentFileContent.getErrors());
     }
 
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {

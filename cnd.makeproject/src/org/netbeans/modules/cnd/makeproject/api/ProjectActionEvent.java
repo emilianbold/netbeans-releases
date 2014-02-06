@@ -253,7 +253,7 @@ public final class ProjectActionEvent {
     }
 
     public ArrayList<String> getArguments() {
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         if (type == PredefinedType.RUN) {
             String[] params = getRunCommand();
             if (params.length > 1) {

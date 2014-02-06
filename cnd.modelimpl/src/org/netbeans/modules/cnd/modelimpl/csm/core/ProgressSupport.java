@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 public class ProgressSupport {
 
     private static final ProgressSupport instance = new ProgressSupport();
-    private final WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
+    private final WeakList<CsmProgressListener> progressListeners = new WeakList<>();
     /** Creates a new instance of ProgressSupport */
     private ProgressSupport() {
     }

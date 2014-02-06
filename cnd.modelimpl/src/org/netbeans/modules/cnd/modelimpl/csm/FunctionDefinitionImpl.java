@@ -112,7 +112,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        FunctionDefinitionImpl<T> functionDefinitionImpl = new FunctionDefinitionImpl<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
         temporaryRepositoryRegistration(global, functionDefinitionImpl);
         
@@ -226,7 +226,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
             uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
             prjDecls = getContainingFile().getProject().findDeclarations(uname);
         }
-        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> decls = new ArrayList<>(1);
         if (prjDecls.isEmpty()) {
             CsmObject owner = findOwner();
             if(owner == null) {
@@ -255,9 +255,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     private Collection<CsmDeclaration> findByNameAndParamsNumber(Iterator<? extends CsmObject> declarations, CharSequence name, int paramsNumber) {
-        Collection<CsmDeclaration> out = new ArrayList<CsmDeclaration>(1);
-        Collection<CsmDeclaration> best = new ArrayList<CsmDeclaration>(1);
-        Collection<CsmDeclaration> otherVisible = new ArrayList<CsmDeclaration>(1);
+        Collection<CsmDeclaration> out = new ArrayList<>(1);
+        Collection<CsmDeclaration> best = new ArrayList<>(1);
+        Collection<CsmDeclaration> otherVisible = new ArrayList<>(1);
         for (Iterator<? extends CsmObject> it = declarations; it.hasNext();) {
             CsmObject o = it.next();
             if (CsmKindUtilities.isFunction(o)) {

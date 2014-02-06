@@ -54,11 +54,11 @@ import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FriendResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
-import org.openide.filesystems.FileUtil;
 
 /**
  * base class for friends tests
@@ -122,6 +122,15 @@ public class FriendTestCase extends TraceModelTestBase {
     }
 
     private void checkFriend() {
+        CsmCacheManager.enter();
+        try {
+            checkFriendImpl();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private void checkFriendImpl() {
         ProjectBase project = getProject();
         assertNotNull("Project must be valid", project); // NOI18N
         CsmClass clsB = (CsmClass) project.findClassifier("B"); // NOI18N
@@ -177,7 +186,7 @@ public class FriendTestCase extends TraceModelTestBase {
         assertEquals("Friend declaration for function soo has wrong instance", friendSoo, list.iterator().next());
 
         Collection<CsmOffsetableDeclaration> declarations = project.findDeclarationsByPrefix("");
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new HashSet<>();
         for (CsmOffsetableDeclaration decl : declarations) {
             String uName = decl.getUniqueName().toString();
             if (TRACE) {

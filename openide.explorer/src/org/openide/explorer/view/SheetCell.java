@@ -212,7 +212,6 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
     /** Default header renderer */
     private TableCellRenderer headerRenderer = (new JTableHeader()).getDefaultRenderer();
-    private TableCellRenderer defaultTableRenderer = new DefaultTableCellRenderer();
 
     /** Null panel is used if cell value is null */
     private NullPanel nullPanel;
@@ -272,8 +271,9 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             table.isAncestorOf(focusOwner) ||
             (focusOwner instanceof Container &&
              ((Container) focusOwner).isAncestorOf(table));
-        Component defaultRendererComponent = defaultTableRenderer.getTableCellRendererComponent(
-                table, value, isSelected, tableHasFocus, row, column);
+        Component defaultRendererComponent = table.getDefaultRenderer(
+                Object.class).getTableCellRendererComponent(table, value,
+                        isSelected, tableHasFocus, row, column);
         Color bg = getRealColor(defaultRendererComponent.getBackground());
         Color fg = defaultRendererComponent.getForeground();
 

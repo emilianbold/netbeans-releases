@@ -296,14 +296,14 @@ public class ImportProject implements PropertyChangeListener {
     public Set<FileObject> create() throws IOException {
         Set<FileObject> resultSet = new HashSet<>();
         MakeConfiguration extConf = MakeConfiguration.createConfiguration(projectFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, null, hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
+        String workingDirRel = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(workingDir), pathMode);
         workingDirRel = CndPathUtilities.normalizeSlashes(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommand().setValue(buildCommand);
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+            buildResult = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
             buildResult = CndPathUtilities.normalizeSlashes(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
@@ -336,13 +336,13 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
+            makefilePath = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(makefilePath), pathMode);
             makefilePath = CndPathUtilities.normalizeSlashes(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             String normPath = RemoteFileUtil.normalizeAbsolutePath(configurePath, fileSystemExecutionEnvironment);
             configureFileObject = RemoteFileUtil.getFileObject(normPath, fileSystemExecutionEnvironment);
-            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(configurePath), pathMode);
+            configurePath = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(configurePath), pathMode);
             configurePath = CndPathUtilities.normalizeSlashes(configurePath);
             importantItems.add(configurePath);
         }
@@ -1442,7 +1442,7 @@ public class ImportProject implements PropertyChangeListener {
                 String value = activeConfiguration.getMakefileConfiguration().getOutput().getValue();
                 if (value == null || value.isEmpty()) {
                     buildResult = buildArtifacts.get(0);
-                    buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+                    buildResult = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
                     buildResult = CndPathUtilities.normalizeSlashes(buildResult);
                     activeConfiguration.getMakefileConfiguration().getOutput().setValue(buildResult);
                 }
@@ -1458,7 +1458,7 @@ public class ImportProject implements PropertyChangeListener {
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
-            final Map<String, Object> map = new HashMap<String, Object>();
+            final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);

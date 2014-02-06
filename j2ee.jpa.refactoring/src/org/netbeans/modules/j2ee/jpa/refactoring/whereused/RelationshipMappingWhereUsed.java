@@ -124,53 +124,55 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
             if(checkFoMappedBy){
                 TypeMirror tm = var.asType();
                 TypeElement oppEntEl = RefactoringUtil.getCompilationInfo(handle, whereUsedQuery).getElements().getTypeElement(tm.toString());
-                for (VariableElement field : ElementFilter.fieldsIn(oppEntEl.getEnclosedElements())) {
-                    String fqn = field.asType().toString();
-                    if(fqn.endsWith("<"+mainEnt+">") && fqn.startsWith("java.util.")){//it's 99% some generic collection
-                        ans = field.getAnnotationMirrors();
-                        for(AnnotationMirror an : ans){
-                            String tp = an.getAnnotationType().toString();
-                            if("javax.persistence.OneToMany".equals(tp) || "javax.persistence.ManyToMany".equals(tp)) {//NOI18N
-                                for(ExecutableElement el : an.getElementValues().keySet()) {
-                                    if(el.getSimpleName().toString().equals("mappedBy")) {
-                                        if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
-                                            FileObject fo;
-                                            try {
-                                                //it's usage
-                                                 fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
-                                            } catch (IOException ex) {
-                                                LOG.log(Level.INFO, "Can't get fileobject.", ex);//NOI18N
-                                                continue;
-                                            }
-                                            TreePathHandle ph;
-                                            try {
-                                                ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
-                                            } catch (IOException ex) {
-                                                LOG.log(Level.INFO, "Can't get tree path handle.", ex);//NOI18N
-                                                continue;
-                                            }
-                                            CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, whereUsedQuery);
-                                            TreePath tree = ph.resolve(ci);
-                                            CompilationUnitTree unit = tree.getCompilationUnit();
-                                            Tree t= tree.getLeaf();
-                                            List<? extends AnnotationTree> aList = ((VariableTree)t).getModifiers().getAnnotations();
-                                            for(AnnotationTree at:aList)
-                                            {
-                                                for(ExpressionTree et:at.getArguments())
+                if (oppEntEl != null) {
+                    for (VariableElement field : ElementFilter.fieldsIn(oppEntEl.getEnclosedElements())) {
+                        String fqn = field.asType().toString();
+                        if(fqn.endsWith("<"+mainEnt+">") && fqn.startsWith("java.util.")){//it's 99% some generic collection
+                            ans = field.getAnnotationMirrors();
+                            for(AnnotationMirror an : ans){
+                                String tp = an.getAnnotationType().toString();
+                                if("javax.persistence.OneToMany".equals(tp) || "javax.persistence.ManyToMany".equals(tp)) {//NOI18N
+                                    for(ExecutableElement el : an.getElementValues().keySet()) {
+                                        if(el.getSimpleName().toString().equals("mappedBy")) {
+                                            if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
+                                                FileObject fo;
+                                                try {
+                                                    //it's usage
+                                                     fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
+                                                } catch (IOException ex) {
+                                                    LOG.log(Level.INFO, "Can't get fileobject.", ex);//NOI18N
+                                                    continue;
+                                                }
+                                                TreePathHandle ph;
+                                                try {
+                                                    ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
+                                                } catch (IOException ex) {
+                                                    LOG.log(Level.INFO, "Can't get tree path handle.", ex);//NOI18N
+                                                    continue;
+                                                }
+                                                CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, whereUsedQuery);
+                                                TreePath tree = ph.resolve(ci);
+                                                CompilationUnitTree unit = tree.getCompilationUnit();
+                                                Tree t= tree.getLeaf();
+                                                List<? extends AnnotationTree> aList = ((VariableTree)t).getModifiers().getAnnotations();
+                                                for(AnnotationTree at:aList)
                                                 {
-                                                    if(et instanceof AssignmentTree)
+                                                    for(ExpressionTree et:at.getArguments())
                                                     {
-                                                        AssignmentTree ast = ((AssignmentTree)et);
-                                                        if(ast.toString().startsWith("mappedBy")) {//NOI18N
-                                                            t = ast.getExpression();
+                                                        if(et instanceof AssignmentTree)
+                                                        {
+                                                            AssignmentTree ast = ((AssignmentTree)et);
+                                                            if(ast.toString().startsWith("mappedBy")) {//NOI18N
+                                                                t = ast.getExpression();
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                            SourcePositions sp = ci.getTrees().getSourcePositions();
-                                            sp.getStartPosition(unit, t);
-                                            if(fo!=null) {
-                                                refactoringElementsBag.add(whereUsedQuery, new RelationshipAnnotationWhereUsedRefactoringElement(fo, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                                SourcePositions sp = ci.getTrees().getSourcePositions();
+                                                sp.getStartPosition(unit, t);
+                                                if(fo!=null) {
+                                                    refactoringElementsBag.add(whereUsedQuery, new RelationshipAnnotationWhereUsedRefactoringElement(fo, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                                }
                                             }
                                         }
                                     }

@@ -104,7 +104,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
     }
 
     private void render(AST ast, boolean global) {
-        handlers = new ArrayList<CsmExceptionHandler>();
+        handlers = new ArrayList<>();
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
@@ -119,7 +119,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
 
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-	Collection<CsmScopeElement> elements = new ArrayList<CsmScopeElement>();
+	Collection<CsmScopeElement> elements = new ArrayList<>();
         if (tryStatement != null) {
             elements.add(tryStatement);
         }
@@ -131,7 +131,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
  
     public static class TryCatchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
-        private List<ExceptionHandlerBuilder> handlers = new ArrayList<ExceptionHandlerBuilder>();
+        private final List<ExceptionHandlerBuilder> handlers = new ArrayList<>();
         private StatementBuilder tryStatement;
         
         public void addHandlerBuilder(ExceptionHandlerBuilder statement) {
@@ -145,7 +145,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         @Override
         public TryCatchStatementImpl create() {
             TryCatchStatementImpl stmt = new TryCatchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
-            List<CsmExceptionHandler> stmts = new ArrayList<CsmExceptionHandler>();
+            List<CsmExceptionHandler> stmts = new ArrayList<>();
             for (ExceptionHandlerBuilder statementBuilder : handlers) {
                 statementBuilder.setScope(stmt);
                 stmts.add(statementBuilder.create());

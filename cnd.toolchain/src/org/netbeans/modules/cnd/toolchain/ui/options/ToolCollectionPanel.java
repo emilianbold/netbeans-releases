@@ -494,7 +494,7 @@ import org.openide.util.Utilities;
 
     private boolean getLastToolValidation(ToolKind tool) {
         Boolean get = lastValid.get(tool);
-        return get != null && get.booleanValue();
+        return get != null && get;
     }
 
     boolean isToolsValid() {
@@ -725,6 +725,7 @@ import org.openide.util.Utilities;
             manager.fireCompilerSetChange();
             manager.fireCompilerSetModified();
         }
+        manager.fireToolColectionPanelChanged();
     }
 
     @Override
@@ -1365,11 +1366,18 @@ import org.openide.util.Utilities;
     private void btInstallActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btInstallActionPerformed
         CompilerSet cs = manager.getCurrentCompilerSet();
         DownloadUtils.downloadCompilerSet(cs);
+        manager.fireToolColectionPanelChanged();
     }//GEN-LAST:event_btInstallActionPerformed
 
     private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
         if (!update) {
-            manager.setChanged(true);
+            if (encodingComboBox.getSelectedItem() instanceof Charset) {
+                CompilerSet currentCompilerSet = manager.getCurrentCompilerSet();
+                if(currentCompilerSet != null) {
+                    APIAccessor.get().setCharset((Charset) encodingComboBox.getSelectedItem(), currentCompilerSet);
+                    manager.fireToolColectionPanelChanged();
+                }
+            }
         }
     }//GEN-LAST:event_encodingComboBoxActionPerformed
 

@@ -190,12 +190,12 @@ public final class MakeActionProvider implements ActionProvider {
         COMMAND_DEBUG_STEP_INTO_TEST,
     };
     // Project
-    private MakeProject project;
+    private final MakeProject project;
     // Project Descriptor
     //private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to make targets */
-    private Map<String, String[]> commands;
-    private Map<String, String[]> commandsNoBuild;
+    private final Map<String, String[]> commands;
+    private final Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
     private static final String SAVE_STEP = "save"; // NOI18N
     private static final String BUILD_STEP = "build"; // NOI18N
@@ -223,12 +223,12 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private Map<String, String[]> loadAcrionSteps(String root) {
-        Map<String, String[]> res = new HashMap<String, String[]>();
+        Map<String, String[]> res = new HashMap<>();
         FileObject folder = FileUtil.getConfigFile(root);
         if (folder != null && folder.isFolder()) {
             for (FileObject subFolder : folder.getChildren()) {
                 if (subFolder.isFolder()) {
-                    TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+                    TreeMap<Integer, String> map = new TreeMap<>();
                     for (FileObject file : subFolder.getChildren()) {
                         Integer position = (Integer) file.getAttribute("position"); // NOI18N
                         map.put(position, file.getNameExt());
@@ -308,7 +308,7 @@ public final class MakeActionProvider implements ActionProvider {
             return;
         }
 
-        final List<MakeConfiguration> confs = new ArrayList<MakeConfiguration>();
+        final List<MakeConfiguration> confs = new ArrayList<>();
         if (command.equals(COMMAND_BATCH_BUILD)) {
             BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(project, pd.getConfs().toArray());
             String batchCommand = batchConfigurationSelector.getCommand();
@@ -329,7 +329,7 @@ public final class MakeActionProvider implements ActionProvider {
 
             @Override
             protected void runImpl() {
-                final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+                final ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
                 for (MakeConfiguration conf : confs) {
                     addAction(actionEvents, pd, conf, finalCommand, context, cancelled);
                 }
@@ -360,7 +360,7 @@ public final class MakeActionProvider implements ActionProvider {
 
             @Override
             protected void runImpl() {
-                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<ProjectActionEvent>();
+                ArrayList<ProjectActionEvent> actionEvents = new ArrayList<>();
                 addAction(actionEvents, pd, conf, MakeActionProvider.COMMAND_CUSTOM_ACTION, null, cancelled);
                 ProjectActionSupport.getInstance().fireActionPerformed(
                         actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]),
@@ -448,7 +448,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         for (int i = 0; i < targetNames.length; i++) {
             final String targetName = targetNames[i];
-            List<String> tail = new ArrayList<String>();
+            List<String> tail = new ArrayList<>();
             for (int j = i + 1; j < targetNames.length; j++) {
                 tail.add(targetNames[j]);
             }
@@ -538,7 +538,7 @@ public final class MakeActionProvider implements ActionProvider {
                 if (compilerSet != null) {
                     path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                     path = conf.expandMacros(path);
-                    path = CndPathUtilities.toAbsolutePath(conf.getBaseDir(), path);
+                    path = CndPathUtilities.toAbsolutePath(conf.getBaseFSPath(), path);
                     
                     conf = conf.clone();    //  Replacing output path with test output path
                     StringConfiguration sc = new StringConfiguration(null, "OutputPath"); // NOI18N
@@ -639,7 +639,7 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             } else {
                 // Always absolute
-                path = CndPathUtilities.toAbsolutePath(conf.getBaseDir(), makeArtifact.getOutput());
+                path = CndPathUtilities.toAbsolutePath(conf.getBaseFSPath(), makeArtifact.getOutput());
             }
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, runProfile, false, context);
             actionEvents.add(projectActionEvent);
@@ -1118,17 +1118,17 @@ public final class MakeActionProvider implements ActionProvider {
         } else {
             // user command
             String command = compileConfiguration.getCompileCommand().getValue();
-            if (command.indexOf(CompileConfiguration.AUTO_ITEM_PATH) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_ITEM_PATH)) {
                 command = command.replace(CompileConfiguration.AUTO_ITEM_PATH, item.getAbsolutePath());
             }
-            if (command.indexOf(CompileConfiguration.AUTO_ITEM_NAME) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_ITEM_NAME)) {
                 String name = item.getName();
                 if (name.indexOf('.') > 0) {
                     name = name.substring(0, name.lastIndexOf('.'));
                 }
                 command = command.replace(CompileConfiguration.AUTO_ITEM_NAME, name);
             }
-            if (command.indexOf(CompileConfiguration.AUTO_MAKE) >= 0) {
+            if (command.contains(CompileConfiguration.AUTO_MAKE)) {
                 String make = "make"; // NOI18N
                 Tool makeTool = compilerSet.findTool(PredefinedToolKind.MakeTool);
                 if (makeTool != null && makeTool.getPath().length() > 0) {
@@ -1485,7 +1485,7 @@ public final class MakeActionProvider implements ActionProvider {
             boolean validated, CanceledState cancelled) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(conf.getDevelopmentHost().getHostKey());
-        ArrayList<String> errs = new ArrayList<String>();
+        ArrayList<String> errs = new ArrayList<>();
         CompilerSet cs;
         String csname;
         File file;
@@ -1586,7 +1586,7 @@ public final class MakeActionProvider implements ActionProvider {
             }
 
             // Check compilers
-            List<Tool> tools2check = new ArrayList<Tool>();
+            List<Tool> tools2check = new ArrayList<>();
             if (cRequired) {
                 tools2check.add(cTool);
             }
@@ -1735,9 +1735,9 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
     /** cache for file existence status. */
-    private static Map<String, Boolean> fileExistenceCache = new HashMap<String, Boolean>();
+    private static final Map<String, Boolean> fileExistenceCache = new HashMap<>();
     /** cache for valid executables */
-    private static Map<String, Boolean> validExecutablesCache = new HashMap<String, Boolean>();
+    private static final Map<String, Boolean> validExecutablesCache = new HashMap<>();
 
     private static boolean isValidExecutable(String path, PlatformInfo pi) {
         return existsImpl(path, pi, true);
@@ -1754,7 +1754,7 @@ public final class MakeActionProvider implements ActionProvider {
 
         synchronized (map) {
             Boolean cached = map.get(key);
-            if (cached != null && cached.booleanValue()) {
+            if (cached != null && cached) {
                 return true;
             }
         }

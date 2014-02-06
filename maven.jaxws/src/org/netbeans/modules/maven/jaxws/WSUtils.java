@@ -827,7 +827,9 @@ public class WSUtils {
         
         Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"}, //NOI18N
                 new Object[]{endpointName, SERVLET_CLASS_NAME}, "ServletName"); //NOI18N
-        servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+        if (servlet != null) {
+            servlet.setLoadOnStartup(new java.math.BigInteger("1")); //NOI18N
+        }
         webApp.addBean("ServletMapping", new String[] {"ServletName", "UrlPattern"}, //NOI18N
                 new Object[]{endpointName, "/" + endpointName}, "ServletName"); //NOI18N
     }

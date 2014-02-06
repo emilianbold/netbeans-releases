@@ -62,12 +62,12 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
-import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblemResourceBundle;
+import org.eclipse.persistence.jpa.jpql.parser.DefaultEclipseLinkJPQLGrammar;
 import org.eclipse.persistence.jpa.jpql.tools.DefaultJPQLQueryHelper;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
@@ -187,7 +187,7 @@ public class JPQLValidation {
         if (ctx == null || hc.isCanceled()) {
             return null;
         }
-        final DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultJPQLGrammar.instance());
+        final DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultEclipseLinkJPQLGrammar.instance());
         Project project = FileOwnerQuery.getOwner(hc.getInfo().getFileObject());
         final List<JPQLQueryProblem> problems = new ArrayList<>();
         ManagedTypeProvider mtp = ModelUtils.getOrCreateCachedMTP(hc, project, ctx.getMetaData(), ctx.getCompilationInfo().getElements());

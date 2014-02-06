@@ -557,6 +557,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          Name of resource bundle property which disables the drag and drop of window
          TopComponents when its value is set to <code>false</code>, the default value is <code>true</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.DragAndDrop.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Undocking.Enabled" category="stable">
@@ -565,6 +566,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          When this feature is disabled then there is no 'Undock' item in TopComponent popup menu
          and 'Undock Window' action the main menu is disabled.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.Undocking.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Sliding.Enabled" category="stable">
@@ -573,6 +575,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          When this feature is disabled then there is no 'Minimize Window' item in TopComponent popup menu
          and also the Minimize button in TopComponent's header is hidden.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.Sliding.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Resizing.Enabled" category="stable">
@@ -581,6 +584,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          When this feature is disabled then it is not possible to drag splitter bars
          to change the size of TopComponents.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.Resizing.Enabled=false command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="org.netbeans.core.windows.View.TopComponent.Closing.Enabled" category="stable">
@@ -590,6 +594,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          there is no close button in TopComponent's header and also 'Close Window' action in 
          the main menu is disabled when a view TopComponent is activated.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.View.TopComponent.Closing.Enabled=false command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="org.netbeans.core.windows.Editor.TopComponent.Closing.Enabled" category="stable">
@@ -600,6 +605,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          there is no close button in editor's header and also Close actions in 
          the main menu are disabled when an editor TopComponent is activated.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Editor.TopComponent.Closing.Enabled=false command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Maximization.Enabled" category="stable">
@@ -609,6 +615,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          in TopComponent's popup menu and also 'Maximize Window' action in 
          the main menu is disabled.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.Maximization.Enabled=false command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="org.netbeans.core.windows.Splitter.Respect.MinimumSize.Enabled" category="stable">
@@ -618,6 +625,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          When this feature is enabled then the splitter bars will not move beyond
          the minimum size of its TopComponents.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Splitter.Respect.MinimumSize.Enabled=true command-line switch to override.
     </api>
 
     <api type="export" group="property" name="NbMainWindow.showCustomBackground" category="stable">
@@ -634,13 +642,15 @@ Yes. Component can control its persistence and way how they are displayed in con
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.View.DragAndDrop.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Editor.DragAndDrop.Enabled" category="stable">
          Name of resource bundle property which allows to drag and drop the whole
-         group of document windows when its value is set to <code>true</code>,
+         group of document windows when its value is set to <code>false</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.Editor.DragAndDrop.Enabled=true command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.Mode.View.Undocking.Enabled" category="stable">
@@ -648,13 +658,15 @@ Yes. Component can control its persistence and way how they are displayed in con
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.View.Undocking.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Editor.Undocking.Enabled" category="stable">
          Name of resource bundle property which allows to float the whole
-         group of document windows when its value is set to <code>true</code>,
+         group of document windows when its value is set to <code>false</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.Editor.Undocking.Enabled=true command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Sliding.Enabled" category="stable">
@@ -662,6 +674,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.Sliding.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.TopComponent.Auto.Slide.In.Minimized.Mode.Enabled" category="stable">
@@ -671,6 +684,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          will open also minimized (slided-out). When set to false a window will open
          docked even though the whole group (Mode) has been minimized.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.TopComponent.Auto.Slide.In.Minimized.Mode.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="org.netbeans.core.windows.Mode.Closing.Enabled" category="stable">
@@ -678,6 +692,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          group of non-document windows when its value is set to <code>true</code>,
          which is also the default value.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.Mode.Closing.Enabled=false command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="WinSys.Show.Hide.MainWindow.While.Switching.Role" category="stable">
@@ -686,6 +701,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          layout role or whether the main window should stay visible when switching
          roles (<code>false</code>). The default value is <code>false</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.WinSys.Show.Hide.MainWindow.While.Switching.Role=true command-line switch to override.
     </api>
     
     <api type="export" group="branding" name="WinSys.Open.New.Editors.Docked" category="stable">
@@ -695,6 +711,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          with the last active editor window (which may be floating).
          The default value is <code>false</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.WinSys.Open.New.Editors.Docked=true command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="WinSys.DragAndDrop.Sliding.Enabled" category="stable">
@@ -703,6 +720,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          drag a TopComponent and drop it into a sliding bar to minimize it.
          The default value is <code>false</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.WinSys.DragAndDrop.Sliding.Enabled=true command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="WinSys.TabControl.SimpleTabs.Enabled" category="stable">
@@ -710,6 +728,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          with plain Swing JTabbedPane implementation when the property value is <code>true</code>.
          The default value is <code>false</code>.
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.WinSys.TabControl.SimpleTabs.Enabled=true command-line switch to override.
     </api>
 
     <api type="export" group="branding" name="WinSys.TabControl.SimpleTabs.Placement" category="stable">
@@ -743,6 +762,7 @@ Yes. Component can control its persistence and way how they are displayed in con
          Ctrl+Tab and Ctrl+Shift+Tab key strokes to transfer focus out of JTable or
          out of JTabbedPane.<br/>
          The property value can be adjusted by branding of <code>org.netbeans.core.windows</code> module.
+         Or use -J-DNB.WinSys.WinSys.CtrlTabSwitching.In.JTable.Enabled=true command-line switch to override.
     </api>
 </answer>
 

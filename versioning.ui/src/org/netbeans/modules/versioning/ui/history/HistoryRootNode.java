@@ -110,11 +110,10 @@ public class HistoryRootNode extends AbstractNode {
     }
         
     synchronized HistoryEntry getPreviousEntry(HistoryEntry entry) {
-        Enumeration<Node> en = getChildren().nodes();
+        Node[] nodes = getChildren().getNodes();
         boolean hit = false;
-        while(en.hasMoreElements()) {
-            Node n = en.nextElement();
-            HistoryEntry he = n.getLookup().lookup(HistoryEntry.class);
+        for (int i = nodes.length - 1; i >= 0; i--) {
+            HistoryEntry he = nodes[i].getLookup().lookup(HistoryEntry.class);
             if(he != null) {
                 if(!entry.isLocalHistory() && he.isLocalHistory()) {
                     continue;

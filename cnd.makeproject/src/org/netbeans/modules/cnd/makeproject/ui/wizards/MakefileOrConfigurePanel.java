@@ -627,7 +627,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
 
     private class RefreshRunnable implements Runnable {
 
-        private AtomicInteger generation = new AtomicInteger(0);
+        private final AtomicInteger generation = new AtomicInteger(0);
         private final Object lock = new Object();
         private WizardDescriptor settings;
         private boolean configureScriptChanged;

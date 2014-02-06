@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -83,6 +85,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.Presenter;
 
 /**
  *
@@ -903,6 +906,10 @@ public class Actions {
         DeleteQueryAction deleteQueryAction = new DeleteQueryAction(queryNodes);
         deleteQueryAction.setEnabled(deletePossible);
         actions.add(deleteQueryAction);
+        
+        actions.add(null);
+        actions.add(new AutoRefreshAction(queryNodes));
+        
         //actions.add(new NotificationQueryAction(queryNodes));
         return actions;
     }
@@ -1074,4 +1081,56 @@ public class Actions {
 
         }
     }
+    
+    public static class AutoRefreshAction extends QueryAction implements Presenter.Popup {
+        private JCheckBoxMenuItem item;
+
+        public AutoRefreshAction(QueryNode... queryNodes) {
+            super(NbBundle.getMessage(OpenQueryAction.class, "CTL_AutoRefresh"), queryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Boolean autoRefreshOn = getAutoRefresh();
+            if(autoRefreshOn == null) {
+                return;
+            }
+            for(QueryNode qn : getQueryNodes()) {
+                item.setState(!autoRefreshOn);
+                DashboardUtils.setQueryAutoRefresh(qn.getQuery(), !autoRefreshOn);
+                qn.setStalled(autoRefreshOn);
+            }
+        }
+                
+        @Override
+        public boolean isEnabled() {
+            return getAutoRefresh() != null;
+        }
+
+        public Boolean getAutoRefresh() {
+            Boolean b = null;
+            for (QueryNode qn : getQueryNodes()) {
+                QueryImpl q = qn.getQuery();
+                boolean state = DashboardUtils.isQueryAutoRefresh(q);
+                if (b == null) {
+                    b = state;
+                } else if (b != state) {
+                    return null;
+                }
+            }
+            return b;
+        }
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            if(item == null) {
+                item = new JCheckBoxMenuItem(this);
+                Boolean b = getAutoRefresh();
+                if(b != null) {
+                    item.setState(b);
+                }
+            }
+            return item;
+        }
+    }    
 }

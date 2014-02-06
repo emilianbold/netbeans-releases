@@ -97,7 +97,7 @@ public final class TokenizerFactory {
 
             @Override
             public List<String> convertToList(String text) {
-                List<String> newList = new ArrayList<String>();
+                List<String> newList = new ArrayList<>();
                 StringTokenizer st = new StringTokenizer(text, ";"); // NOI18N
                 while (st.hasMoreTokens()) {
                     newList.add(st.nextToken());
@@ -106,7 +106,7 @@ public final class TokenizerFactory {
             }
         };
 
-    public static Converter getPathConverter(final Project project, final Folder folder, final Item item) {
+    public static Converter getPathConverter(final Project project, final Folder folder, final Item item, final String flag) {
         return new Converter() {
             private final PathResolver resolver = new PathResolver(){
 
@@ -149,7 +149,7 @@ public final class TokenizerFactory {
 
             @Override
             public List<String> convertToList(String text) {
-                return TokenizerFactory.tokenize(text, new String[]{"-I", "-include"}, "; ", resolver); // NOI18N
+                return TokenizerFactory.tokenize(text, new String[]{flag}, "; ", resolver); // NOI18N
             }
         };
     }
@@ -174,7 +174,7 @@ public final class TokenizerFactory {
     // If token is started with -D, then -D is removed.
     private static List<String> tokenize(String text, String[] keys, String SEPARATOR, PathResolver resolver) {
         final char QUOTE = '\"'; // NOI18N
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         boolean inQuote = false;
         boolean innerQuote = false;
         int start = 0;

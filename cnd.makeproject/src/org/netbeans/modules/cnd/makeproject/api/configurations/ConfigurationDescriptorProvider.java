@@ -199,7 +199,7 @@ public abstract class ConfigurationDescriptorProvider {
     }
 
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
-        HashSet<ConfigurationAuxObjectProvider> auxObjectProviders = new HashSet<ConfigurationAuxObjectProvider>();
+        HashSet<ConfigurationAuxObjectProvider> auxObjectProviders = new HashSet<>();
         Collection<? extends ConfigurationAuxObjectProvider> collection =
                 Lookup.getDefault().lookupAll(ConfigurationAuxObjectProvider.class);
 //      System.err.println("-------------------------------collection " + collection);
@@ -565,13 +565,13 @@ public abstract class ConfigurationDescriptorProvider {
     
     public static final class Delta implements SnapShot {
 
-        private final Map<String, Pair> oldState = new HashMap<String, Pair>();
-        private final List<Item> included = new ArrayList<Item>();
-        private final List<Item> added = new ArrayList<Item>(); 
-        private final List<Item> excluded = new ArrayList<Item>(); 
-        private final List<Item> deleted = new ArrayList<Item>(); 
-        private final List<Item> changed = new ArrayList<Item>(); 
-        private final List<Item> replaced = new ArrayList<Item>(); 
+        private final Map<String, Pair> oldState = new HashMap<>();
+        private final List<Item> included = new ArrayList<>();
+        private final List<Item> added = new ArrayList<>(); 
+        private final List<Item> excluded = new ArrayList<>(); 
+        private final List<Item> deleted = new ArrayList<>(); 
+        private final List<Item> changed = new ArrayList<>(); 
+        private final List<Item> replaced = new ArrayList<>(); 
 
         private Delta(MakeConfigurationDescriptor oldDescriptor) {
             if (oldDescriptor != null) {
@@ -582,7 +582,7 @@ public abstract class ConfigurationDescriptorProvider {
         }
         
         private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
-            Set<Item> oldSet = new HashSet<Item>();
+            Set<Item> oldSet = new HashSet<>();
             for (Map.Entry<String, Delta.Pair> entry : oldState.entrySet()) {
                 oldSet.add(entry.getValue().item);
             }

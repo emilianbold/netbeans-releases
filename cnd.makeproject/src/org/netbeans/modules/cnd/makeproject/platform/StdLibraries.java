@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class StdLibraries {
-    private static final HashMap<String, LibraryItem.StdLibItem> libraries = new HashMap<String, LibraryItem.StdLibItem>();
+    private static final HashMap<String, LibraryItem.StdLibItem> libraries = new HashMap<>();
 
     static {
         addLibrary("Motif", new String[] {"Xm", "Xt", "Xext", "X11"}); // NOI18N

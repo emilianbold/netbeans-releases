@@ -161,6 +161,18 @@ public final class OnSaveTabSelector {
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }
+    
+    String getSavedValue(String mimeType, String key) {
+        PreferencesCustomizer prefsCustomizer = getCustomizer(mimeType);
+        if (prefsCustomizer != null) {
+            Lookup l = Lookups.forPath(ON_SAVE_CUSTOMIZERS_FOLDER + mimeType);
+            PreferencesCustomizer.CustomCustomizer customizer = l.lookup(PreferencesCustomizer.CustomCustomizer.class);
+            if (customizer != null) {
+                return customizer.getSavedValue(prefsCustomizer, key);
+            }
+        }
+        return null;
+    }
 
     private PreferencesCustomizer getCustomizer(String mimeType) {
         PreferencesCustomizer customizer = allCustomizers.get(mimeType);

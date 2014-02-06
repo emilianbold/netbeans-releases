@@ -92,7 +92,7 @@ public class MakeProjectUtils {
     
     public static String getDiskFolderId(Project project, Folder folder) {
         String name;
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for(Folder f : folder.getFolders()) {
             if (f.isDiskFolder()) {
                 names.add(f.getName());

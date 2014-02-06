@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,8 +67,11 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import org.netbeans.modules.javaee.wildfly.WildFlyDeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -93,13 +98,15 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
 
     private MODE mode;
 
-    private final WildFlyDeploymentManager dm;
+    private final WildflyDeploymentManager dm;
+    
+    private boolean consoleConfigured = false;
 
     private static final Set<String> IS_DEBUG_MODE_URI = Collections.synchronizedSet(
             new HashSet<String>(AVERAGE_SERVER_INSTANCES));
 
     public WildflyStartServer(DeploymentManager dm) {
-        this.dm = (WildFlyDeploymentManager) dm;
+        this.dm = (WildflyDeploymentManager) dm;
     }
 
     private void addDebugModeUri() {
@@ -114,37 +121,41 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
         return IS_DEBUG_MODE_URI.contains(dm.getUrl());
     }
 
+    @Override
     public ProgressObject startDebugging(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
+        fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.DEBUG;
         SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        consoleConfigured = true;
         addDebugModeUri();
         return this;
     }
 
+    @Override
     public boolean isDebuggable(Target target) {
         if (!existsDebugModeUri()) {
             return false;
         }
-        if (!isRunning()) {
-            return false;
-        }
-        return true;
+        return isRunning();
     }
 
+    @Override
     public boolean supportsStartDebugging(Target target) {
         return true;
     }
 
+    @Override
     public boolean supportsStartProfiling(Target target) {
         return true;
     }
 
+    @Override
     public boolean isAlsoTargetServer(Target target) {
         return true;
     }
 
+    @Override
     public ServerDebugInfo getDebugInfo(Target target) {
         return new ServerDebugInfo("localhost", dm.getDebuggingPort());
     }
@@ -152,11 +163,13 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
     /**
      * Starts the server in profiling mode.
      */
+    @Override
     public ProgressObject startProfiling(Target target) {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_PROFILED_SERVER_IN_PROGRESS", serverName))); //NOI18N
+        fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_PROFILED_SERVER_IN_PROGRESS", serverName))); //NOI18N
         mode = MODE.PROFILE;
         SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        consoleConfigured = true;
         removeDebugModeUri();
         return this;
     }
@@ -177,7 +190,7 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
     @Override
     public ProgressObject stopDeploymentManager() {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
+        fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName)));//NOI18N
         SERVER_CONTROL_RP.post(new WildflyStopRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         removeDebugModeUri();
         return this;
@@ -186,23 +199,28 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
     /**
      * Starts the server
      */
+    @Override
     public ProgressObject startDeploymentManager() {
         String serverName = dm.getInstanceProperties().getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
+        fireHandleProgressEvent(null, new WildflyDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(WildflyStartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)));//NOI18N
         mode = MODE.RUN;
         SERVER_CONTROL_RP.post(new WildflyStartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        consoleConfigured = true;
         removeDebugModeUri();
         return this;
     }
 
+    @Override
     public boolean needsStartForTargetList() {
         return false;
     }
 
+    @Override
     public boolean needsStartForConfigure() {
         return false;
     }
 
+    @Override
     public boolean needsStartForAdminConfig() {
         return false;
     }
@@ -264,13 +282,39 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
         }
 
         if (!isReallyRunning()) {
-            WildFlyDeploymentManager.setRunningLastCheck(ip, Boolean.FALSE);
+            WildflyDeploymentManager.setRunningLastCheck(ip, Boolean.FALSE);
             return false;
         }
 
-        WildFlyDeploymentManager.setRunningLastCheck(ip, Boolean.TRUE);
+        WildflyDeploymentManager.setRunningLastCheck(ip, Boolean.TRUE);
+        if(!consoleConfigured) {
+            WildflyOutputSupport outputSupport = WildflyOutputSupport.getInstance(ip, true);
+            try {
+                outputSupport.start(openConsole(), new File(dm.getClient().getServerLog()));
+                consoleConfigured = true;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         return true;
     }
+    
+    private InputOutput openConsole() {
+        InputOutput io = UISupport.getServerIO(dm.getUrl());
+        if (io == null) {
+            return null; // finish, it looks like this server instance has been unregistered
+        }
+
+        // clear the old output
+        try {
+            io.getOut().reset();
+        } catch (IOException ioe) {
+            // no op
+        }
+        io.select();
+        
+        return io;
+    }            
 
     // ----------  Implementation of ProgressObject interface
     private Vector listeners = new Vector();
@@ -348,4 +392,8 @@ public class WildflyStartServer extends StartServer implements ProgressObject {
         return mode;
     }
 
+    
+    void setConsoleConfigured(boolean console){
+        this.consoleConfigured = console;
+    }
 }

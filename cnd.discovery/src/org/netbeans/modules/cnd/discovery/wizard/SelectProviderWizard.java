@@ -62,7 +62,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     
     private DiscoveryDescriptor wizardDescriptor;
     private SelectProviderPanel component;
-    private String name;
+    private final String name;
     private boolean inited = false;
 
     public SelectProviderWizard(){
@@ -92,7 +92,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
         return ((SelectProviderPanel)getComponent()).valid(wizardDescriptor);
     }
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private final Set<ChangeListener> listeners = new HashSet<>(1);
     @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
@@ -108,7 +108,7 @@ public class SelectProviderWizard implements WizardDescriptor.Panel, ChangeListe
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
+            it = new HashSet<>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {

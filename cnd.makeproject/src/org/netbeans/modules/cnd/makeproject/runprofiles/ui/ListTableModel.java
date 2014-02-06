@@ -79,8 +79,8 @@ public class ListTableModel extends AbstractTableModel {
 
         header0 = h1;
         header1 = h2;
-        column0 = new ArrayList<String>(5);
-        column1 = new ArrayList<String>(5);
+        column0 = new ArrayList<>(5);
+        column1 = new ArrayList<>(5);
 
         // Start out with one empty row
         column0.add(""); // NOI18N

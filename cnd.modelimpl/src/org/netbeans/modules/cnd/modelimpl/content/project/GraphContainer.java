@@ -195,7 +195,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      * gets all direct or indirect included files into the  referenced file.
      */
     public Set<CsmUID<CsmFile>> getIncludedFilesUids(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> res = new HashSet<>();
         CsmUID<CsmFile> keyFrom = UIDCsmConverter.fileToUID(referencedFile);
         if (keyFrom != null) {
             graphLock.readLock().lock();
@@ -215,7 +215,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         return convertToFiles(getIncludedFilesUids(referencedFile));
     }
 
-    private final LinkedList<WeakReference<HotSpotFile>> hotSpot = new LinkedList<WeakReference<HotSpotFile>>();
+    private final LinkedList<WeakReference<HotSpotFile>> hotSpot = new LinkedList<>();
     private final static int HOT_SPOT_SIZE = 10;
 
     public boolean isFileIncluded(CsmFile sourceFile, CsmFile headerFile) {
@@ -236,8 +236,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                     }
                 }
             }
-            Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
-            Map<Integer, GraphContainer> map = new HashMap<Integer, GraphContainer>();
+            Set<CsmUID<CsmFile>> res = new HashSet<>();
+            Map<Integer, GraphContainer> map = new HashMap<>();
             try {
                 gatherIncludedFiles(map, res, keyFrom);
             } finally {
@@ -249,7 +249,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
                 if (hotSpot.size() > HOT_SPOT_SIZE) {
                     hotSpot.removeFirst();
                 }
-                hotSpot.addLast(new WeakReference<HotSpotFile>(new HotSpotFile(keyFrom, res)));
+                hotSpot.addLast(new WeakReference<>(new HotSpotFile(keyFrom, res)));
                 return res.contains(keyTo);
             }
         }
@@ -284,7 +284,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      * gets all files that direct or indirect include the referenced file.
      */
     public Set<CsmUID<CsmFile>> getParentFilesUids(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> res = new HashSet<>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
             graphLock.readLock().lock();
@@ -310,8 +310,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      * If set empty then return set with the referenced file.
      */
     public ParentFiles getTopParentFiles(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> parent = new HashSet<CsmUID<CsmFile>>();
-        Set<CsmUID<CsmFile>> top = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> parent = new HashSet<>();
+        Set<CsmUID<CsmFile>> top = new HashSet<>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
             graphLock.readLock().lock();
@@ -338,8 +338,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      * If set empty then return set with the referenced file.
      */
     public CoherenceFiles getCoherenceFiles(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> parent = new HashSet<CsmUID<CsmFile>>();
-        Set<CsmUID<CsmFile>> coherence = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> parent = new HashSet<>();
+        Set<CsmUID<CsmFile>> coherence = new HashSet<>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
             graphLock.readLock().lock();
@@ -363,7 +363,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      *  Returns set files that direct include referenced file.
      */
     public Set<CsmUID<CsmFile>> getInLinksUids(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> res = new HashSet<>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
             graphLock.readLock().lock();
@@ -392,7 +392,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
      *  Returns set of direct included files in the referenced file.
      */
     public Set<CsmUID<CsmFile>> getOutLinksUids(CsmFile referencedFile){
-        Set<CsmUID<CsmFile>> res = new HashSet<CsmUID<CsmFile>>();
+        Set<CsmUID<CsmFile>> res = new HashSet<>();
         CsmUID<CsmFile> keyTo = UIDCsmConverter.fileToUID(referencedFile);
         if (keyTo != null) {
             graphLock.readLock().lock();
@@ -418,7 +418,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     }
 
     public static Set<CsmFile> convertToFiles(Set<CsmUID<CsmFile>> res) {
-        Set<CsmFile> res2= new HashSet<CsmFile>();
+        Set<CsmFile> res2= new HashSet<>();
         for(CsmUID<CsmFile> uid : res) {
             CsmFile file = UIDCsmConverter.UIDtoFile(uid);
             if (file != null) {
@@ -525,7 +525,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         
     }
     
-    private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
+    private final Map<CsmUID<CsmFile>,NodeLink> graph = new HashMap<>();
     private final ReadWriteLock graphLock = new ReentrantReadWriteLock();
 
     @Override
@@ -577,8 +577,8 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         final Set<CsmUID<CsmFile>> out;
         
         private NodeLink(){
-            in = new HashSet<CsmUID<CsmFile>>();
-            out = new HashSet<CsmUID<CsmFile>>();
+            in = new HashSet<>();
+            out = new HashSet<>();
         }
         
         private NodeLink(final RepositoryDataInput input) throws IOException {
@@ -588,16 +588,16 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
             assert factory != null;
             int collSize = input.readInt();
             if (collSize < 0) {
-                in = new HashSet<CsmUID<CsmFile>>(0);
+                in = new HashSet<>(0);
             } else {
-                in = new HashSet<CsmUID<CsmFile>>(collSize);
+                in = new HashSet<>(collSize);
             }
             factory.readUIDCollection(in, input, collSize);
             collSize = input.readInt();
             if (collSize < 0) {
-                out = new HashSet<CsmUID<CsmFile>>(0);
+                out = new HashSet<>(0);
             } else {
-                out = new HashSet<CsmUID<CsmFile>>(collSize);
+                out = new HashSet<>(collSize);
             }
             factory.readUIDCollection(out, input, collSize);
         }

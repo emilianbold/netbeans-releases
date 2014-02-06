@@ -48,10 +48,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
-import java.util.Collections;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 

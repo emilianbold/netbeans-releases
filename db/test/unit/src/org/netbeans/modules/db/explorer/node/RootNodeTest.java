@@ -68,7 +68,7 @@ public class RootNodeTest extends TestCase {
     public RootNodeTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     public void setUp() throws Exception {
         Util.clearConnections();
@@ -82,27 +82,12 @@ public class RootNodeTest extends TestCase {
         // Initialize the tree with a driver and a connection
         JDBCDriver driver = Util.createDummyDriver();
         JDBCDriverManager.getDefault().addDriver(driver);
-        
-        ConnectionManager.getDefault().addConnectionListener(new ConnectionListener() {
-            @Override
-            public void connectionsChanged() {
-                synchronized (CONNECTIONS_CHANGE_FIRED) {
-                    CONNECTIONS_CHANGE_FIRED.notifyAll();
-                    CONNECTIONS_CHANGE_FIRED.set(true);
-                }
-            }
-        });
 
+        addListener();
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
-        // wait until lookup result is not refreshed and subsequently 
-        // ConnectionList.fireListeners is called
-        synchronized (CONNECTIONS_CHANGE_FIRED) {
-            if (!CONNECTIONS_CHANGE_FIRED.get()) {
-                CONNECTIONS_CHANGE_FIRED.wait(10000);
-            }
-        }
+        waitChanged();
 
         RootNode rootNode = RootNode.instance();
 
@@ -123,14 +108,17 @@ public class RootNodeTest extends TestCase {
         JDBCDriver driver = Util.createDummyDriver();
         JDBCDriverManager.getDefault().addDriver(driver);
 
+        addListener();
         DatabaseConnection conn2 = DatabaseConnection.create(
                 driver, "jdbc:mark//twain/conn2", "tomsawyer", null, "whitewash", true, "B2");
         ConnectionManager.getDefault().addConnection(conn2);
+        waitChanged();
 
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain/conn", "tomsawyer", null, "whitewash", true, "A1");
         ConnectionManager.getDefault().addConnection(conn);
-
+        waitChanged();
+        
         RootNode rootNode = RootNode.instance();
 
         List<? extends Node> children = new ArrayList(rootNode.getChildNodesSync());
@@ -189,5 +177,37 @@ public class RootNodeTest extends TestCase {
                 return;
             }
         }
+    }
+
+    private static final ConnectionListener CONN_LISTENER = new ConnectionListener() {
+        @Override
+        public void connectionsChanged() {
+            synchronized (CONNECTIONS_CHANGE_FIRED) {
+                CONNECTIONS_CHANGE_FIRED.notifyAll();
+                CONNECTIONS_CHANGE_FIRED.set(true);
+            }
+        }
+    };
+    
+    private static void addListener() {
+        CONNECTIONS_CHANGE_FIRED.set(false);
+        ConnectionManager.getDefault().removeConnectionListener(CONN_LISTENER);
+        ConnectionManager.getDefault().addConnectionListener(CONN_LISTENER);
+    }
+
+    /**
+     * Waits until lookup result is not refreshed and subsequently
+     * ConnectionList.fireListeners is called
+     *
+     * @throws InterruptedException
+     */
+    private static void waitChanged() throws InterruptedException {
+        synchronized (CONNECTIONS_CHANGE_FIRED) {
+            if (!CONNECTIONS_CHANGE_FIRED.get()) {
+                CONNECTIONS_CHANGE_FIRED.wait(10000);
+            }
+        }
+        // reset property
+        CONNECTIONS_CHANGE_FIRED.set(false);
     }
 }

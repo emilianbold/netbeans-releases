@@ -100,6 +100,7 @@ public class SmartyOptionsPanel extends JPanel {
     private static final int MAX_SCANNING_DEPTH = 3;
 
     private static final String LINK_QUICK_START = "http://www.smarty.net/quick_install"; //NOI18N
+    private boolean firstOpening = true;
 
     public SmartyOptionsPanel() {
         initComponents();
@@ -183,7 +184,8 @@ public class SmartyOptionsPanel extends JPanel {
     }
 
     protected void update() {
-        if(!changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !changed()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             setSmartyVersion(getOptions().getSmartyVersion());
             setOpenDelimiter(getOptions().getDefaultOpenDelimiter());
             setCloseDelimiter(getOptions().getDefaultCloseDelimiter());

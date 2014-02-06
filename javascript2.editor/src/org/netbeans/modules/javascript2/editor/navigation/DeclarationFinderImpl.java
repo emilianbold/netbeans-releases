@@ -42,17 +42,20 @@
 package org.netbeans.modules.javascript2.editor.navigation;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javascript2.editor.EditorExtender;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -71,6 +74,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -255,7 +260,29 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
 
         private  String getStringLocation() {
-            return iResult.getRelativePath() + " : " + offset; //NOI18N
+            int lineNumber = 0;
+            int count = 0;
+            List<String> asLines;
+            try {
+                asLines = element.getFileObject().asLines();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                asLines = null;
+            }
+            if (asLines != null) {
+                for (String line : asLines) {
+                    lineNumber++;
+                    count = count + line.length();
+                    if (count >= offset) {
+                        break;
+                    }
+                }
+            }
+            String result = iResult.getRelativePath();
+            if (lineNumber > 0) {
+                result = result + " : " + lineNumber; //NOI18N
+            }
+            return result;
         }
         
         @Override

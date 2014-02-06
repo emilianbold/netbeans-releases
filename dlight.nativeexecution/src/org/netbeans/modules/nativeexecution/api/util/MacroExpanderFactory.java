@@ -46,12 +46,12 @@ import java.text.ParseException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
-import org.netbeans.modules.nativeexecution.support.Logger;
 
 public final class MacroExpanderFactory {
 
@@ -67,46 +67,54 @@ public final class MacroExpanderFactory {
     }
 
     public static MacroExpander getExpander(ExecutionEnvironment execEnv) {
-        return getExpander(execEnv, ExpanderStyle.DEFAULT_STYLE);
+        return getExpander(execEnv, ExpanderStyle.DEFAULT_STYLE, true);
+    }
+
+    public static MacroExpander getExpander(ExecutionEnvironment execEnv, boolean connectIfNeed) {
+        return getExpander(execEnv, ExpanderStyle.DEFAULT_STYLE, connectIfNeed);
     }
 
     public static synchronized MacroExpander getExpander(
-            ExecutionEnvironment execEnv, ExpanderStyle style) {
+            ExecutionEnvironment execEnv, ExpanderStyle style) {        
+        return getExpander(execEnv, style, true);
+    }
 
-        if (!HostInfoUtils.isHostInfoAvailable(execEnv)) {
-            Logger.assertNonUiThread("Don't call getExpander() from the UI thread while info is not known. " + // NOI18N
-                    "Use quick isHostInfoAvailable() to detect whether info is available or not and go out of EDT if not"); // NOI18N
+    public static synchronized MacroExpander getExpander(
+            ExecutionEnvironment execEnv, ExpanderStyle style, boolean connectIfNeed) {
+
+        if (connectIfNeed && !HostInfoUtils.isHostInfoAvailable(execEnv)) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                // otherwuse we'll hang forever in the attempt to connect
+                throw new IllegalThreadStateException("Should never be called from AWT thread"); // NOI18N
+            }
         }
 
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;
         MacroExpander result = expanderCache.get(key);
-
-        if (result == null) {
-            try {
-                result = new MacroExpanderImpl(HostInfoUtils.getHostInfo(execEnv), style);
-                expanderCache.put(key, result);
-            } catch (IOException ex) {
-                // should not occur - as info is available
-            } catch (CancellationException ex) {
-                // should not occur - as info is available
-            }
+        
+        if (result != null) {
+            return result;
         }
-        if (result == null) {
-            // avoid unexpected NPE in clients
-            // TODO: fix empty cathces above
-            result = new MacroExpander() {
 
-                @Override
-                public String expandPredefinedMacros(String string) throws ParseException {
-                    return  string;
-                }
-
-                @Override
-                public String expandMacros(String string, Map<String, String> envVariables) throws ParseException {
-                    return  string;
-                }
-            };
+        HostInfo hostInfo = null;        
+        try {
+            if (connectIfNeed || HostInfoUtils.isHostInfoAvailable(execEnv)) {
+                hostInfo = HostInfoUtils.getHostInfo(execEnv);
+            }            
+        } catch (IOException ex) {
+            // ideally, the method should throw IOException, 
+            // but it's to dangerous to change signature right now
+            ex.printStackTrace(System.err);
+        } catch (CancellationException ex) {
+            // ideally, the method should throw CancellationException, 
+            // but it's to dangerous to change signature right now
         }
+
+        result = new MacroExpanderImpl(hostInfo, style);
+        if (hostInfo != null) {
+            expanderCache.put(key, result);
+        }
+        
         return result;
     }
 
@@ -251,6 +259,9 @@ public final class MacroExpanderFactory {
         }
 
         protected final void setupPredefined(ExpanderStyle style) {
+            if (hostInfo == null) {
+                return;
+            }
             String soext;
             String osname;
             switch (hostInfo.getOSFamily()) {

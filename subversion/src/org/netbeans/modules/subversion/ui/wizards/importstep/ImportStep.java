@@ -360,7 +360,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 if (info != null) {
                     // target folder exists, ask user for confirmation
                     final boolean flags[] = {true};
-                    NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ImportStep.class, "MSG_ImportIntoExisting", repositoryFileUrl.toString()), //NOI18N
+                    NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ImportStep.class, "MSG_ImportIntoExisting", SvnUtils.decodeToString(repositoryFileUrl)), //NOI18N
                             NbBundle.getMessage(ImportStep.class, "CTL_TargetFolderExists"), NotifyDescriptor.YES_NO_CANCEL_OPTION, //NOI18N
                             NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
                     if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) {

@@ -144,7 +144,7 @@ public class MakeSampleProjectGenerator {
             }
             FileObject[] subProjectLocations = null;
             if (subProjects != null) {
-                List<FileObject> subProjectsFiles = new ArrayList<FileObject>();
+                List<FileObject> subProjectsFiles = new ArrayList<>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
                     subProjectsFiles.add(FileUtil.createFolder(parentFolderLocation, st.nextToken()));
@@ -465,7 +465,7 @@ public class MakeSampleProjectGenerator {
     }
 
     private static Set<DataObject> createProjectWithSubprojectsFromTemplate(InputStream templateResourceStream, FileObject parentFolderLocation, FileObject mainProjectLocation, FileObject[] subProjectLocations, ProjectGenerator.ProjectParameters prjParams) throws IOException {
-        List<DataObject> set = new ArrayList<DataObject>();
+        List<DataObject> set = new ArrayList<>();
         unzip(templateResourceStream, parentFolderLocation);
         addToSet(set, mainProjectLocation, prjParams, prjParams.getProjectName());
         if (subProjectLocations != null) {
@@ -475,7 +475,7 @@ public class MakeSampleProjectGenerator {
         }
         FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
         customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
-        return new LinkedHashSet<DataObject>(set);
+        return new LinkedHashSet<>(set);
     }
 
     private static void changeXmlFileByNameNS(Document doc, String tagNameNS, String tagName, String newText, String regex) throws IOException {
@@ -535,7 +535,7 @@ public class MakeSampleProjectGenerator {
                     OutputStream out = f.getOutputStream();
                     try {
                         String ls;
-                        if (ent.getName().toLowerCase().indexOf("makefile") >= 0) { // NOI18N
+                        if (ent.getName().toLowerCase().contains("makefile")) { // NOI18N
                             ls = "\n"; // NOI18N
                         } else {
                             ls = (String) f.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);

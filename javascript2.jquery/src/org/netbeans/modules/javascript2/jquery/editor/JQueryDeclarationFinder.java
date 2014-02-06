@@ -116,15 +116,23 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
     }
 
     @Override
-    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange result = OffsetRange.NONE;
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        final OffsetRange[] value = new OffsetRange[1];
+        doc.render(new Runnable() {
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
-        Rule rule = getRule(ts, caretOffset);
-        if (rule != null) {
-            return new OffsetRange(rule.startOffset, rule.endOffset);
-        }
-        return result;
+            @Override
+            public void run() {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+                Rule rule = getRule(ts, caretOffset);
+                if (rule != null) {
+                    value[0] = new OffsetRange(rule.startOffset, rule.endOffset);
+                } else {
+                    value[0] = OffsetRange.NONE;
+                }   
+            }
+        });
+        
+        return value[0];
     }
    
     private static class Rule {

@@ -47,8 +47,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -61,10 +64,14 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectWithDictionary;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectWithDictionary.Dictionaries;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
@@ -72,6 +79,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -81,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -90,6 +99,10 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V93 - NB 8.0
+ *    Introduce included files (-include flag)
+ * V92 - NB 8.0
+ *    Introduce important flags and dictionaries
  * V91 - NB 8.0
  *    introduce "Include Additional Files in the Code Assistance"
  *    don't write project folder name, just "."
@@ -273,7 +286,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 91;
+    public final static int CURRENT_VERSION = 93;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -319,6 +332,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String BUILD_COMMAND_WORKING_DIR_ELEMENT = "buildCommandWorkingDir"; // NOI18N
     protected final static String CLEAN_COMMAND_ELEMENT = "cleanCommand"; // NOI18N
     protected final static String EXECUTABLE_PATH_ELEMENT = "executablePath"; // NOI18N
+    protected final static String DICTIONARY_ELEMENTS = "flagsDictionary"; // NOI18N
+    protected final static String DICTIONARY_ELEMENT = "element"; // NOI18N
+    protected final static String DICTIONARY_ELEMENT_ATR_ID = "flagsID"; // NOI18N
+    protected final static String DICTIONARY_ELEMENT_ATR_VALUE = "commonFlags"; // NOI18N
     // Compile
     protected static final String COMPILE_ID = "compile"; // NOI18N
     protected final static String COMPILE_DIR_ELEMENT = "compiledir"; // NOI18N
@@ -333,6 +350,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ADDITIONAL_OPTIONS_ELEMENT = "additionalOptions"; // NOI18N
     public final static String OUTPUT_ELEMENT = "output"; // NOI18N
     protected final static String INHERIT_INC_VALUES_ELEMENT = "inheritIncValues"; // NOI18N
+    protected final static String INHERIT_FILE_VALUES_ELEMENT = "inheritFileValues"; // NOI18N
     protected final static String INHERIT_PRE_VALUES_ELEMENT = "inheritPreValues"; // NOI18N
     protected final static String INHERIT_UNDEF_VALUES_ELEMENT = "inheritUndefValues"; // NOI18N
     protected final static String USE_LINKER_PKG_CONFIG_LIBRARIES = "useLinkerLibraries"; // NOI18N
@@ -346,6 +364,7 @@ public abstract class CommonConfigurationXMLCodec
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
+    protected final static String INCLUDE_FILES_ELEMENT = "incFile"; // NOI18N
     protected final static String COMPILERTOOL_ELEMENT = "compilerTool"; // OLD style. FIXUP < version 11 // NOI18N
     protected final static String DEBUGGING_SYMBOLS_ELEMENT = "debuggingSymbols"; // NOI18N
     protected final static String OPTIMIZATION_LEVEL_ELEMENT = "optimizationLevel"; // NOI18N
@@ -369,6 +388,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CCOMPILERTOOL_ELEMENT2 = "cTool"; // NOI18N
     protected final static String CONFORMANCE_LEVEL_ELEMENT = "conformanceLevel"; // FIXUP: <=21 // NOI18N
     protected final static String CPP_STYLE_COMMENTS_ELEMENT = "cppstylecomments"; // FIXUP: <=21 // NOI18N
+    protected final static String IMPORTANT_FLAGS_ATTR = "flags"; //SINCE V92 // NOI18N
     // CC Compiler Tool
     protected final static String SUN_CCCOMPILERTOOL_OLD_ELEMENT = "sunCCCompilerTool"; // FIXUP <=23 // NOI18N
     protected final static String CCCOMPILERTOOL_ELEMENT = "ccCompilerTool"; // NOI18N
@@ -518,9 +538,11 @@ public abstract class CommonConfigurationXMLCodec
                 if (makeConfiguration.isQmakeConfiguration()) {
                     writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
                 }
+                Dictionaries dictionaries = null;
                 if (makeConfiguration.isMakefileConfiguration()) {
+                    dictionaries = writeDictionary(xes, confs.getConf(i));
                     writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
-                    writeMakefileProjectConfBlock(xes, makeConfiguration);
+                    writeMakefileProjectConfBlock(xes, makeConfiguration, dictionaries);
                 } else {
                     writeCompiledProjectConfBlock(xes, makeConfiguration);
                 }
@@ -528,7 +550,12 @@ public abstract class CommonConfigurationXMLCodec
                 ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
                 for (ConfigurationAuxObject auxObject : profileAuxObjects) {
                     if (publicallyVisible(auxObject)) {
-                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        XMLEncoder encoder;
+                        if (auxObject instanceof ConfigurationAuxObjectWithDictionary) {
+                            encoder = ((ConfigurationAuxObjectWithDictionary)auxObject).getXMLEncoder(dictionaries);
+                        } else {
+                            encoder = auxObject.getXMLEncoder();
+                        }
                         encoder.encode(xes);
                     }
                 }
@@ -547,14 +574,71 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(CONFS_ELEMENT);
     }
 
+    public Dictionaries writeDictionary(XMLEncoderStream xes, Configuration conf) {
+        Set<String> dictionary = new HashSet<>();
+        ConfigurationAuxObject[] profileAuxObjects = conf.getAuxObjects();
+        for (ConfigurationAuxObject auxObject : profileAuxObjects) {
+            if (publicallyVisible(auxObject)) {
+                if (auxObject instanceof ItemConfiguration) {
+                    ItemConfiguration ic = (ItemConfiguration) auxObject;
+                    CCCCompilerConfiguration cc = null;
+                    if (ic.getTool() == PredefinedToolKind.CCompiler) {
+                        CCompilerConfiguration cCompilerConfiguration = ic.getCCompilerConfiguration();
+                        if (cCompilerConfiguration != null) {
+                            cc = cCompilerConfiguration;
+                        }
+                    } else if (ic.getTool() == PredefinedToolKind.CCCompiler) {
+                        CCCompilerConfiguration ccCompilerConfiguration = ic.getCCCompilerConfiguration();
+                        if (ccCompilerConfiguration != null) {
+                            cc = ccCompilerConfiguration;
+                        }
+                    }
+                    if (cc != null) {
+                        String flags = cc.getImportantFlags().getValue();
+                        if (flags != null && flags.length() > 0) {
+                            dictionary.add(flags);
+                        }
+                    }
+                }
+            }
+        }
+        Dictionaries res = null;
+        if (dictionary.size() > 0) {
+            xes.elementOpen(DICTIONARY_ELEMENTS);
+            final List<String> d = new ArrayList<>(dictionary);
+            Collections.sort(d);
+            for(int id = 0; id < d.size(); id++) {
+                xes.element(DICTIONARY_ELEMENT, new AttrValuePair[]{
+                        new AttrValuePair(DICTIONARY_ELEMENT_ATR_ID, ""+id),
+                        new AttrValuePair(DICTIONARY_ELEMENT_ATR_VALUE, d.get(id)),
+                });
+            }
+            xes.elementClose(DICTIONARY_ELEMENTS);
+            res = new Dictionaries() {
+                @Override
+                public String getId(String dictionaryID, String value) {
+                    String id = null;
+                    if ("flags".equals(dictionaryID)) { // NOI18N
+                        int i = d.indexOf(value);
+                        if ( i>=0 ) {
+                            return ""+i;  // NOI18N
+                        }
+                    }
+                    return id;
+                }
+            };
+        }
+        return res;
+    }
+
     protected abstract void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration);
 
     protected abstract void writeCompileConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration);
 
     private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
         xes.elementOpen(COMPILE_TYPE_ELEMENT);
-            writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-            writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
+            writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL, null);
+            writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL, null);
             writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
             writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         switch (makeConfiguration.getConfigurationType().getValue()) {
@@ -613,15 +697,15 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
-            MakeConfiguration makeConfiguration) {
+            MakeConfiguration makeConfiguration, Dictionaries dictionaries) {
         xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
         xes.elementOpen(MAKETOOL_ELEMENT);
         xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
         xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
         xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
         xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
-        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL, dictionaries);
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL, dictionaries);
         writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
         writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
         //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
@@ -631,7 +715,6 @@ public abstract class CommonConfigurationXMLCodec
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }
-
 
     private void writePrivatePhysicalFoldersForUnmanagedProject(XMLEncoderStream xes) {
         Folder root = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
@@ -773,18 +856,34 @@ public abstract class CommonConfigurationXMLCodec
 //    private void writeSourceEncoding(XMLEncoderStream xes) {
 //        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
 //    }
-    public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind) {
+    public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind, Dictionaries dictionaries) {
         if (!cCompilerConfiguration.getModified()) {
             return;
         }
-        if (writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, false)) {
-            writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, true);
+        if (writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, false, dictionaries)) {
+            writeCCompilerConfigurationImpl(xes, cCompilerConfiguration, kind, true, dictionaries);
         }
     }
 
-    private static boolean writeCCompilerConfigurationImpl(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind, boolean write) {
+    private static boolean writeCCompilerConfigurationImpl(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration, int kind, boolean write, Dictionaries dictionaries) {
         if (write) {
-            xes.elementOpen(CCOMPILERTOOL_ELEMENT2);
+            String importantFlags = cCompilerConfiguration.getImportantFlags().getValue();
+            if (importantFlags != null && importantFlags.length() > 0) {
+                if (dictionaries != null) {
+                    String candidate = dictionaries.getId("flags", importantFlags); // NOI18N
+                    if (candidate != null) {
+                        importantFlags = candidate;
+                    }
+                }
+                xes.elementOpen(CCOMPILERTOOL_ELEMENT2, new AttrValuePair[]{
+                new AttrValuePair(IMPORTANT_FLAGS_ATTR, importantFlags)});
+            } else {
+                xes.elementOpen(CCOMPILERTOOL_ELEMENT2);
+            }
+        } else {
+            if (cCompilerConfiguration.getImportantFlags().getModified()) {
+                return true;
+            }
         }
         if (cCompilerConfiguration.getDevelopmentMode().getModified()) {
             if (write) {
@@ -830,6 +929,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (cCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, cCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
+            } else {
+                return true;
+            }
+        }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -847,6 +953,13 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (cCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }
@@ -923,18 +1036,34 @@ public abstract class CommonConfigurationXMLCodec
         return false;
     }
 
-    public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind) {
+    public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind, Dictionaries dictionaries) {
         if (!ccCompilerConfiguration.getModified()) {
             return;
         }
-        if (writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, false)) {
-            writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, true);
+        if (writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, false, dictionaries)) {
+            writeCCCompilerConfigurationImpl(xes, ccCompilerConfiguration, kind, true, dictionaries);
         }
     }
 
-    private static boolean writeCCCompilerConfigurationImpl(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind, boolean write) {
+    private static boolean writeCCCompilerConfigurationImpl(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration, int kind, boolean write, Dictionaries dictionaries) {
         if (write) {
-            xes.elementOpen(CCCOMPILERTOOL_ELEMENT2);
+            String importantFlags = ccCompilerConfiguration.getImportantFlags().getValue();
+            if (importantFlags != null && importantFlags.length() > 0) {
+                if (dictionaries != null) {
+                    String candidate = dictionaries.getId("flags", importantFlags); // NOI18N
+                    if (candidate != null) {
+                        importantFlags = candidate;
+                    }
+                }
+                xes.elementOpen(CCCOMPILERTOOL_ELEMENT2, new AttrValuePair[]{
+                new AttrValuePair(IMPORTANT_FLAGS_ATTR, importantFlags)});
+            } else {
+                xes.elementOpen(CCCOMPILERTOOL_ELEMENT2);
+            }
+        } else {
+            if (ccCompilerConfiguration.getImportantFlags().getModified()) {
+                return true;
+            }
         }
         if (ccCompilerConfiguration.getDevelopmentMode().getModified()) {
             if (write) {
@@ -980,6 +1109,13 @@ public abstract class CommonConfigurationXMLCodec
                 return true;
             }
         }
+        if (ccCompilerConfiguration.getIncludeFiles().getModified()) {
+            if (write) {
+                writeDirectoriesWithConversion(xes, INCLUDE_FILES_ELEMENT, ccCompilerConfiguration.getIncludeFiles().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
+            } else {
+                return true;
+            }
+        }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             if (write) {
                 xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -997,6 +1133,13 @@ public abstract class CommonConfigurationXMLCodec
         if (ccCompilerConfiguration.getInheritIncludes().getModified()) {
             if (write) {
                 xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+            } else {
+                return true;
+            }
+        }
+        if (ccCompilerConfiguration.getInheritFiles().getModified()) {
+            if (write) {
+                xes.element(INHERIT_FILE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritFiles().getValue()); // NOI18N
             } else {
                 return true;
             }
@@ -1441,15 +1584,13 @@ public abstract class CommonConfigurationXMLCodec
         private final Map<String, String> replacements = new HashMap<>();
 
         public IncludeConverterImpl(MakeConfiguration conf, CodeAssistanceConfiguration caConf) {
-            Map<String, String> environment = Collections.emptyMap();
+            final Map<String, String> environment = new HashMap<>();
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
-                environment = hostInfo.getEnvironment();
-                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
-                if (temporaryEnv != null) {
-                    Map<String, String> res = new HashMap<>(temporaryEnv);
-                    res.putAll(environment);
-                    environment = res;
+                environment.putAll(hostInfo.getEnvironment());
+                ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+                if (BrokenReferencesSupport.hasTemporaryEnv(env)) {
+                    BrokenReferencesSupport.addTemporaryEnv(env, environment);
                 }
             } catch (    IOException | ConnectionManager.CancellationException ex) {
                 Exceptions.printStackTrace(ex);

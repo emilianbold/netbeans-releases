@@ -433,8 +433,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
                 AttributeSet savedAS = savedMap.get(name);
                 isChanged |= (Color) currentAS.getAttribute(StyleConstants.Foreground) != (Color) savedAS.getAttribute(StyleConstants.Foreground)
                         || (Color) currentAS.getAttribute(StyleConstants.Background) != (Color) savedAS.getAttribute(StyleConstants.Background)
+                        || (Color) currentAS.getAttribute(StyleConstants.Underline) != (Color) savedAS.getAttribute(StyleConstants.Underline)
+                        || (Color) currentAS.getAttribute(StyleConstants.StrikeThrough) != (Color) savedAS.getAttribute(StyleConstants.StrikeThrough)
                         || (Color) currentAS.getAttribute(EditorStyleConstants.WaveUnderlineColor) != (Color) savedAS.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-
+                
             }
         }
         return isChanged;
@@ -488,6 +490,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             cbEffects.setSelectedIndex(2);
             cbEffectColor.setEnabled(true);
             ((ColorComboBox) cbEffectColor).setSelectedColor((Color) category.getAttribute(EditorStyleConstants.WaveUnderlineColor));
+        } else if (category.getAttribute(StyleConstants.StrikeThrough) != null) {
+            cbEffects.setSelectedIndex(3);
+            cbEffectColor.setEnabled(true);
+            ((ColorComboBox) cbEffectColor).setSelectedColor((Color) category.getAttribute(StyleConstants.StrikeThrough));
         } else {
             cbEffects.setSelectedIndex(0);
             cbEffectColor.setEnabled(false);

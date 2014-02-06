@@ -83,7 +83,7 @@ final class MakeLogicalViewRootNodeBroken extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         actions.add(CommonProjectActions.closeProjectAction());
         return actions.toArray(new Action[actions.size()]);
     }

@@ -340,22 +340,26 @@ public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
          */
         private void waitReady() throws InterruptedException {
             if( Stats.maintenanceInterval > 0 ) {
-                if( Stats.allowMaintenance && maintenanceIsNeeded) {
-                    lock.lock();
-                    try {
+                while (true) {
+                    if( Stats.allowMaintenance && maintenanceIsNeeded) {
+                        lock.lock();
+                        try {
 
-                       if (!map_large.isEmpty() || !map_small.isEmpty()) {
-                           return;
-                       }
-                        //try to invoke maintainence
-                        maintenanceIsNeeded = storage.maintenance(Stats.maintenanceInterval);
-                    } finally {
-                        lock.unlock();
-                    }                    
-                }
-                if (!map_large.isEmpty() || !map_small.isEmpty()) {
-                    return;
-                }              
+                           if (!map_large.isEmpty() || !map_small.isEmpty()) {
+                               return;
+                           }
+                            //try to invoke maintainence
+                            maintenanceIsNeeded = storage.maintenance(Stats.maintenanceInterval);
+                        } finally {
+                            lock.unlock();
+                        }                    
+                    } else {
+                        break;
+                    }
+                    if (!map_large.isEmpty() || !map_small.isEmpty()) {
+                        return;
+                    }              
+                }                
                 mapIsNotEmpty.await();
             } else {
                 if (!map_large.isEmpty() || !map_small.isEmpty()) {

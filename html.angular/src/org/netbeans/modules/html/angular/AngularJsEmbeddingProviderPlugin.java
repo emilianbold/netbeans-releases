@@ -75,17 +75,16 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private static class StackItem {
 
         final String tag;
-        final String finishText;
-        int balance;
+        String finishText;
 
-        public StackItem(String tag, String finishText) {
+        public StackItem(String tag) {
             this.tag = tag;
-            this.balance = 1;
-            this.finishText = finishText;
+            this.finishText = ""; //NOI18N
         }
     }
+    
     private final LinkedList<StackItem> stack;
-    private String lastTagOpen = null;
+    
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
@@ -142,25 +141,19 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         CharSequence tokenText = tokenSequence.token().text();        
         switch (tokenSequence.token().id()) {
             case TAG_OPEN:
-                lastTagOpen = tokenText.toString();
-                StackItem top = stack.peek();
-                if (top != null && LexerUtils.equals(top.tag, lastTagOpen, false, false)) {
-                    top.balance++;
-                }
+                stack.push(new StackItem(tokenText.toString()));
                 break;
             case TAG_CLOSE:
-                top = stack.peek();
-                if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
-                    top.balance--;
-                    if (top.balance == 0) {
-                        processed = true;
-                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
-                        stack.pop();
-                        top = stack.peek();
-                        if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
-                            top.balance--;
+                if (!stack.isEmpty()) {
+                    StackItem top = stack.pop();
+                    while (!stack.isEmpty() && !LexerUtils.equals(top.tag, tokenText, false, false)) {
+                        if (!top.finishText.isEmpty()) {
+                            embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));
                         }
-                        
+                        top = stack.pop();
+                    }
+                    if (!top.finishText.isEmpty()) {
+                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));
                     }
                 }
                 break;
@@ -173,12 +166,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 break;
             case VALUE:
-                if (interestedAttr != null) {
+                 if (interestedAttr != null) {
                     String value = WebUtils.unquotedValue(tokenText);
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
-                            stack.push(new StackItem(lastTagOpen, "}\n});\n")); //NOI18N
+                            stack.peek().finishText = "}\n});\n"; //NOI18N
                             break;
                         case model:
                         case disabled:
@@ -187,7 +180,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             break;
                         case repeat:
                             processed = processRepeat(value);
-                            stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
+                            stack.peek().finishText = "}\n"; //NOI18N
                             break;
                         default:   
                             processed = processExpression(value);
@@ -199,9 +192,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
+                        boolean parenRemoved = false;
                         String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
+                            parenRemoved = true;
                             indexStart = 1;
                         }
                         int parenIndex = name.indexOf('('); //NOI18N
@@ -221,6 +216,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
                             name = name.substring(0, indexEnd);
+                            if (parenRemoved) {
+                                indexEnd = name.lastIndexOf(')');
+                                if (indexEnd > -1) {
+                                    name = name.substring(0, indexEnd);
+                                }
+                            }
                             if (name.startsWith("-")) {
                                 indexStart++;
                                 name = name.substring(1);
@@ -299,7 +300,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
         } else {
-             embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+             embeddings.add(snapshot.create(tokenSequence.offset() + 1, 
+                     value.length() - (tokenSequence.index() == tokenSequence.tokenCount() - 1 ? 1 : 0) , Constants.JAVASCRIPT_MIMETYPE));
              embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
 //            int parenStart = value.indexOf('('); //NOI18N
 //            String name = value;
@@ -464,6 +466,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             processed = true;
         } else {
             int lastPartPos = 0;
+            int valueTrimPos = 0;
             if (value.startsWith("{")) {
                 value = value.substring(1);
                 lastPartPos = 1;
@@ -471,10 +474,17 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             String valueTrim = value.trim();
             if (valueTrim.endsWith("}")) {
                 value = valueTrim.substring(0, valueTrim.length() - 1);
+                valueTrim = "";
+            } else if (valueTrim.contains("}")) {
+                valueTrimPos = valueTrim.indexOf('}');
+                value = valueTrim.substring(0, valueTrimPos);
+                valueTrim = valueTrim.substring(valueTrimPos + 1);
+                valueTrimPos = valueTrimPos + lastPartPos + 2;
+            } else {
+                valueTrim = "";
             }
             int index = value.indexOf(':'); // are there pairs like name: expr?
             if (index > -1) {
-                
                 String[] parts = value.split(","); // example: ng-class="{completed: todo.completed, editing: todo == editedTodo}"
                 for (String part : parts) {
                     index = value.indexOf(':');
@@ -482,17 +492,30 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         String[] conditionParts = part.trim().split(":");
                         if(conditionParts.length > 1) {
                             String propName = conditionParts[1].trim();
-                            int position = lastPartPos + part.indexOf(propName) + 1;
-                            if (propertyToFqn.containsKey(propName)) {
-                                embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                            if (!propName.startsWith("//")) {
+                                int position = lastPartPos + part.indexOf(propName) + 1;
+                                if (propName.charAt(0) == '"' || propName.charAt(0) == '\'') {
+                                    propName = propName.substring(1);
+                                    position++;
+                                    if (propName.endsWith("\"") || propName.endsWith("'")) {
+                                        propName = propName.substring(0, propName.length() - 1);
+                                    }
+                                }
+                                if (propertyToFqn.containsKey(propName)) {
+                                    embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                                }
+                                embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                processed = true;
                             }
-                            embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
-                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            processed = true;
                         }
                     }
                     lastPartPos = lastPartPos + part.length() + 1;
                 }
+            }
+            if (!valueTrim.isEmpty()) {
+                embeddings.add(snapshot.create(tokenSequence.offset() + lastPartPos + 1, valueTrim.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }
         }
         return processed;

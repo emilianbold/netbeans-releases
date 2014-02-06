@@ -51,7 +51,7 @@ public class UndocumentedParameterRule extends JsFunctionDocumentationRule {
 
     @Override
     public String getId() {
-        return "jsundocumentedparameter.hint";
+        return "UndocumentedParameterRule.hint";
     }
 
     @NbBundle.Messages("UndocumentedParameterRuleDesc=Undocumented Parameter hint informs you about missing documentation of the function parameter.")

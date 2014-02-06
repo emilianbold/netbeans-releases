@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>MIDP Project Properties: Running</title>
+<title>Java ME Embedded Project Properties Dialog Box: Signing</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2014-01-16</p>
-<p><a id="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" name="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref753" name="sthref753"></a>
-<h1>MIDP Project Properties: Running</h1>
+<p>Beta Draft: 2014-02-06</p>
+<p><a id="org.netbeans.modules.j2me.project.ui.customizer.J2MESigningPanel" name="org.netbeans.modules.j2me.project.ui.customizer.J2MESigningPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref735" name="sthref735"></a>
+<h1>Java ME Embedded Project Properties Dialog Box: Signing</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to configure options for running your project and setting security options. 
+<p>Use to set up security for your MIDlet suite. In this page you enable signing and assign key pairs to a MIDlet suite. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1595">
 <param name="text" value="<html><u>How?</u></html>">
@@ -21,7 +21,7 @@
 </object>
 </p>
 
-<table summary="Descriptions of elements on the Running page of the project properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
@@ -33,52 +33,46 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t37" headers="r1c1-t37">
-<p>Use Values from "DefaultConfiguration"</p>
+<p>Sign JAR</p>
 </td>
 <td align="left" headers="r2c1-t37 r1c2-t37">
-<p>Enables you to customize the properties for a project configuration other than the default configuration if this option is unchecked.</p>
+<p>Enables signing for the MIDlet suite.</p>
+<p>If unchecked, this page is disabled.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t37" headers="r1c1-t37">
-<p>Emulator Command Line Options</p>
+<p>Open Keystores Manager button</p>
 </td>
 <td align="left" headers="r3c1-t37 r1c2-t37">
-<p>Specifies command line options to run when the emulator is launched.</p>
+<p>Click to manage the security keystores for your project.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t37" headers="r1c1-t37">
-<p>Regular Execution</p>
+<p>Keystore</p>
 </td>
 <td align="left" headers="r4c1-t37 r1c2-t37">
-<p>Runs the project on an emulator device.</p>
-<p>You can also set a security domain for the application to test its security.</p>
+<p>Displays a file that stores one or more key pairs as a keystore (<code>.ks</code>) file.</p>
+<p>The drop-down menu lists all available keystores. Click <b>Unlock</b> to unlock a keystore for use.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t37" headers="r1c1-t37">
-<p>Specify the Security Domain</p>
+<p>Alias</p>
 </td>
 <td align="left" headers="r5c1-t37 r1c2-t37">
-<p>Sets a security domain for the application to test its security.</p>
-<p>This option only available in Regular Execution mode.</p>
+<p>Displays the name assigned to a key pair within a keystore.</p>
+<p>The drop-down menu lists the aliases available for the selected keystore. Click <b>Unlock</b> to unlock a key pair for use.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t37" headers="r1c1-t37">
-<p>Execute Through OTA</p>
+<p>Certificate Details</p>
 </td>
 <td align="left" headers="r6c1-t37 r1c2-t37">
-<p>Runs the project using Over-The-Air provisioning, which simulates the process of deploying an application from a server to a mobile device.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t37" headers="r1c1-t37">
-<p>Debugger timeout</p>
-</td>
-<td align="left" headers="r7c1-t37 r1c2-t37">
-<p>Sets the length of time (in milliseconds) that a launch waits to complete the launch process before terminating.</p>
+<p>Displays information about the certificate assigned to the key pair</p>
+<p>Click <b>Export Key into Java ME SDK/Platform/Emulator</b> to export a key into the emulator platform you intend to use to test the MIDlet.</p>
 </td>
 </tr>
 </tbody>
@@ -88,16 +82,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1625">
-<param name="text" value="<html><u>&quot;Running MIDP Applications&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1591">
-<param name="text" value="<html><u>&quot;Working with Security MIDlet Signing&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1558">
+<param name="text" value="<html><u>&quot;Creating Java ME Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

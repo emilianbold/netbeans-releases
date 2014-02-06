@@ -263,7 +263,7 @@ import org.openide.util.NbBundle;
 
         //create the abstract facade class
         Task<CompilationController> waiter = null;
-        final String afName = pkg + "." + FACADE_ABSTRACT;
+        final String afName = pkg.isEmpty() ? FACADE_ABSTRACT : pkg + "." + FACADE_ABSTRACT; //NOI18N
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
         if (afFO == null){
             afFO = GenerationUtils.createClass(targetFolder, FACADE_ABSTRACT, null);
@@ -373,35 +373,41 @@ import org.openide.util.NbBundle;
 
         List<GenerationOptions> intfOptions = getAbstractFacadeMethodOptions(entityFQN, variableName);
         if (hasLocal) {
-            FileObject local = createInterface(JavaIdentifiers.unqualify(localInterfaceFQN), EJB_LOCAL, targetFolder);
-            addMethodToInterface(intfOptions, local);
-            createdFiles.add(local);
+            final SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String simpleName = JavaIdentifiers.unqualify(localInterfaceFQN);
+            if (!interfaceExists(groups, pkg, simpleName)) {
+                FileObject local = createInterface(simpleName, EJB_LOCAL, targetFolder);
+                addMethodToInterface(intfOptions, local);
+                createdFiles.add(local);
+            }
         }
         if (hasRemote) {
-            FileObject remotePackage = SessionGenerator.createRemoteInterfacePackage(remoteProject, pkg, targetFolder);
-            FileObject remote = createInterface(JavaIdentifiers.unqualify(remoteInterfaceFQN), EJB_REMOTE, remotePackage);
-            addMethodToInterface(intfOptions, remote);
-            createdFiles.add(remote);
-            if (entityProject != null && !entityProject.getProjectDirectory().equals(remoteProject.getProjectDirectory())) {
-                SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (groups != null && groups.length > 0) {
-                    FileObject fo = groups[0].getRootFolder();
-                    ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                    if (cp != null) {
-                        try {
-                            ProjectClassPathModifier.addProjects(new Project[]{entityProject}, fo, ClassPath.COMPILE);
-                        } catch (Throwable e) {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(
-                                    NbBundle.getMessage(EjbFacadeWizardIterator.class, "WARN_UpdateClassPath",
-                                    ProjectUtils.getInformation(remoteProject).getDisplayName(),
-                                    ProjectUtils.getInformation(entityProject).getDisplayName()),
-                                    NotifyDescriptor.INFORMATION_MESSAGE);
-                            DialogDisplayer.getDefault().notify(d);
+            final SourceGroup[] groups = ProjectUtils.getSources(remoteProject).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            String simpleName = JavaIdentifiers.unqualify(remoteInterfaceFQN);
+            if (!interfaceExists(groups, pkg, simpleName)) {
+                FileObject remotePackage = SessionGenerator.createRemoteInterfacePackage(remoteProject, pkg, targetFolder);
+                FileObject remote = createInterface(simpleName, EJB_REMOTE, remotePackage);
+                addMethodToInterface(intfOptions, remote);
+                createdFiles.add(remote);
+                if (entityProject != null && !entityProject.getProjectDirectory().equals(remoteProject.getProjectDirectory())) {
+                    if (groups != null && groups.length > 0) {
+                        FileObject fo = groups[0].getRootFolder();
+                        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                        if (cp != null) {
+                            try {
+                                ProjectClassPathModifier.addProjects(new Project[]{entityProject}, fo, ClassPath.COMPILE);
+                            } catch (IOException | UnsupportedOperationException e) {
+                                NotifyDescriptor d = new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(EjbFacadeWizardIterator.class, "WARN_UpdateClassPath",
+                                        ProjectUtils.getInformation(remoteProject).getDisplayName(),
+                                        ProjectUtils.getInformation(entityProject).getDisplayName()),
+                                        NotifyDescriptor.INFORMATION_MESSAGE);
+                                DialogDisplayer.getDefault().notify(d);
+                            }
                         }
                     }
                 }
             }
-
         }
 
         final FileObject abstractFacadeFO = afFO;
@@ -411,7 +417,8 @@ import org.openide.util.NbBundle;
             @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
-                TypeElement classElement = wc.getElements().getTypeElement(pkg + "." + entitySimpleName + FACADE_SUFFIX);
+                String fqn = pkg.isEmpty() ? entitySimpleName + FACADE_SUFFIX : pkg + "." + entitySimpleName + FACADE_SUFFIX;
+                TypeElement classElement = wc.getElements().getTypeElement(fqn);
                 ClassTree classTree = wc.getTrees().getTree(classElement);
                 if (classTree == null) {
                     StringBuilder message = new StringBuilder();
@@ -619,8 +626,8 @@ import org.openide.util.NbBundle;
         FileObject sourceFile = GenerationUtils.createInterface(targetFolder, name, null);
         JavaSource source = JavaSource.forFileObject(sourceFile);
         if (source == null) {
-            LOGGER.log(Level.SEVERE, "JavaSource not created for FileObject: valid={0}, mime-type={1}",
-                    new Object[]{sourceFile.isValid(), sourceFile.getMIMEType()});
+            LOGGER.log(Level.SEVERE, "JavaSource not created for FileObject: path={0}, valid={1}, mime-type={2}",
+                    new Object[]{sourceFile.getPath(), sourceFile.isValid(), sourceFile.getMIMEType()});
         }
         ModificationResult result = source.runModificationTask(new Task<WorkingCopy>() {
 
@@ -856,5 +863,18 @@ import org.openide.util.NbBundle;
     public static  int getProgressStepCount(int numEntites)
     {
         return numEntites;
+    }
+
+    private static boolean interfaceExists(SourceGroup[] groups, String pkg, String simpleName) {
+        String path = pkg.replace(".", "/"); //NOIN18N
+        for (SourceGroup sourceGroup : groups) {
+            FileObject pkgFO = sourceGroup.getRootFolder().getFileObject(path);
+            if (pkgFO != null) {
+                if (pkgFO.getFileObject(simpleName + ".java") != null) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

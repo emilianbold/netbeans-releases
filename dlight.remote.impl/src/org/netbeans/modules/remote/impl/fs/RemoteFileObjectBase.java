@@ -259,9 +259,17 @@ public abstract class RemoteFileObjectBase {
 
     abstract protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
 
-    protected abstract boolean deleteImpl(FileLock lock) throws IOException;
+    /** 
+     * Deletes the file, returns parent directory content.
+     * Returning parent directory content is for the sake of optimization.
+     * For example, fs_server, can do remove and return refreshed content in one call.
+     * It can return null if there is no way of doing that more effective than
+     * just calling RemoteFileSystemTransport.readDirectory
+     * @return parent directory content (can be null - see above)
+     */
+    protected abstract DirEntryList deleteImpl(FileLock lock) throws IOException;
 
-    protected abstract void postDeleteChild(FileObject child);
+    protected abstract void postDeleteChild(RemoteFileObject child, DirEntryList entryList);
     
     
     public final void delete(FileLock lock) throws IOException {
@@ -281,41 +289,34 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
         }
-        boolean result;
+        DirEntryList entryList = null;
         if (interceptor != null) {
             FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
             IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
             if (deleteHandler != null) {
                 deleteHandler.handle();
-                result = true;
             } else {
-                result = deleteImpl(lock);
-            }
-            if (!result) {
-                throw new IOException("Cannot delete "+getPath()); // NOI18N
+                entryList = deleteImpl(lock);
             }
             // TODO remove attributes
             // TODO clear cache?
             // TODO fireFileDeletedEvent()?
             interceptor.deleteSuccess(fileProxy);
         } else {
-            result = deleteImpl(lock);
-            if (!result) {
-                throw new IOException("Cannot delete "+getPath()); // NOI18N
-            }
+            entryList = deleteImpl(lock);
         }
         RemoteFileObject fo = getOwnerFileObject();
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
             fo.fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(fo, fo, entry.getKey(), entry.getValue(), null));
         }
-        FileEvent fe = new FileEvent(fo, fo, true);
-        for(RemoteFileObjectBase child: getExistentChildren(true)) {
-            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
-        }        
+//        FileEvent fe = new FileEvent(fo, fo, true);
+//        for(RemoteFileObjectBase child: getExistentChildren(true)) {
+//            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
+//        }        
         invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {
-            p.postDeleteChild(getOwnerFileObject());
+            p.postDeleteChild(getOwnerFileObject(), entryList);
         }
     }
     

@@ -88,7 +88,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class AnalyzeModel implements DiscoveryProvider {
-    private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
     public static final String PREFER_LOCAL_FILES = "prefer-local"; // NOI18N
     public static final String MODEL_FOLDER_PROVIDER_ID = "model-folder"; // NOI18N
@@ -295,10 +295,10 @@ public class AnalyzeModel implements DiscoveryProvider {
     private class MyConfiguration implements Configuration{
         private List<SourceFileProperties> myFileProperties;
         private List<String> myIncludedFiles;
-        private MakeConfigurationDescriptor makeConfigurationDescriptor;
-        private CsmProject langProject;
-        private ProjectProxy project;
-        private Progress progress;
+        private final MakeConfigurationDescriptor makeConfigurationDescriptor;
+        private final CsmProject langProject;
+        private final ProjectProxy project;
+        private final Progress progress;
         
         private MyConfiguration(ProjectProxy project, Progress progress){
             Project makeProject = project.getProject();
@@ -348,10 +348,10 @@ public class AnalyzeModel implements DiscoveryProvider {
         
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
-            if (root != null) {
+            if (root != null && langProject != null) {
                 Map<String,List<String>> searchBase = search(root);
                 PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment());
-                boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
+                boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue());
                 Item[] items = makeConfigurationDescriptor.getProjectItems();
                 Map<String,Item> projectSearchBase = new HashMap<String,Item>();
                 for (int i = 0; i < items.length; i++){
@@ -371,8 +371,10 @@ public class AnalyzeModel implements DiscoveryProvider {
                         Language lang = item.getLanguage();
                         if (lang == Language.C || lang == Language.CPP){
                             CsmFile langFile = langProject.findFile(item, true, false);
-                            SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
-                            res.add(source);
+                            if (langFile != null) {
+                                SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
+                                res.add(source);
+                            }
                         }
                     }
                 }
@@ -411,7 +413,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                             unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                         }
                     }
-                    HashSet<String> unUnique = new HashSet<String>();
+                    HashSet<CharSequence> unUnique = new HashSet<CharSequence>();
                     for(SourceFileProperties source : getSourcesConfiguration()){
                         if (source instanceof ModelSource){
                             unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
@@ -420,8 +422,8 @@ public class AnalyzeModel implements DiscoveryProvider {
                             progress.increment(null);
                         }
                     }
-                    for(String path : unUnique){
-                        File file = new File(path);
+                    for(CharSequence path : unUnique){
+                        File file = new File(path.toString());
                         if (CndFileUtils.exists(file)) {
                             unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
                         }

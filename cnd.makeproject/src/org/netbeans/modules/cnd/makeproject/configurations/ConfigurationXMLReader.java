@@ -81,7 +81,7 @@ import org.xml.sax.Attributes;
  */
 public class ConfigurationXMLReader extends XMLDocReader {
 
-    private static int DEPRECATED_VERSIONS = 26;
+    private static final int DEPRECATED_VERSIONS = 26;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final FileObject projectDirectory;
     private final Project project;

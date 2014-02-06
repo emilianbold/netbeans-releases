@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -79,16 +80,16 @@ public class ModelSource implements SourceFileProperties {
         if (TRACE_AMBIGUOUS){logger.setLevel(Level.ALL);}
     }
 
-    private Item item;
-    private CsmFile file;
-    private Map<String,List<String>> searchBase;
-    private Map<String,Item> projectSearchBase;
-    private PkgConfig pkgConfig;
+    private final Item item;
+    private final CsmFile file;
+    private final Map<String,List<String>> searchBase;
+    private final Map<String,Item> projectSearchBase;
+    private final PkgConfig pkgConfig;
     private String itemPath;
     private List<String> userIncludePaths;
-    private Set<String> includedFiles = new HashSet<String>();
+    private final Set<CharSequence> includedFiles = new HashSet<CharSequence>();
     private Map<String,String> userMacros;
-    private boolean preferLocal;
+    private final boolean preferLocal;
     
     public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, Map<String,Item> projectSearchBase, PkgConfig pkgConfig, boolean preferLocal){
         this.item = item;
@@ -99,7 +100,7 @@ public class ModelSource implements SourceFileProperties {
         this.preferLocal = preferLocal;
     }
 
-    public Set<String> getIncludedFiles() {
+    public Set<CharSequence> getIncludedFiles() {
         if (userIncludePaths == null) {
             getUserInludePaths();
         }
@@ -165,6 +166,11 @@ public class ModelSource implements SourceFileProperties {
             userIncludePaths = new ArrayList<String>(res);
         }
         return userIncludePaths;
+    }
+    
+    @Override
+    public List<String> getUserInludeFiles() {
+        return Collections.emptyList();
     }
     
     private String getRelativepath(String path){
@@ -256,7 +262,7 @@ public class ModelSource implements SourceFileProperties {
                     }
                 }
                 if (!reResolve) {
-                    includedFiles.add(resolved.getAbsolutePath().toString());
+                    includedFiles.add(resolved.getAbsolutePath());
                 }
                 if (level < 5 && resolved != null) {
                     analyzeUnresolved(res, resolved, level+1);
@@ -390,6 +396,11 @@ public class ModelSource implements SourceFileProperties {
     @Override
     public String getCompileLine() {
         return null;
+    }
+
+    @Override
+    public String getImportantFlags() {
+        return item.getImportantFlags();
     }
 }
 

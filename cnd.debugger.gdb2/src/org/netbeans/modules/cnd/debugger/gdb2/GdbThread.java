@@ -53,23 +53,28 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 
 public final class GdbThread extends Thread {
 
-    private final String line;
-    private final String file;
+    private String line;
+    private String file;
     private final String tid;
     private final String name;
+    private String state;
+    private Frame curFrame;
 
     GdbThread(NativeDebugger debugger, 
             ModelChangeDelegator updater, 
             String tid, 
             String name, 
-            Frame frame) {
+            Frame[] stack,
+            String state) {
 	super(debugger, updater);
 	this.tid = tid;
-	line = frame.getLineNo();
-	file = frame.getSource();
-	current_function = frame.getFunc();
-	address = frame.getCurrentPC();
         this.name = name;
+        this.state = state;
+        line = "";
+        file = "";
+        current_function = "";
+        address = "";
+        setStack(stack);
     }
     
     GdbThread(NativeDebugger debugger, ModelChangeDelegator updater, String consoleLine) {
@@ -92,6 +97,8 @@ public final class GdbThread extends Thread {
         line = "";
         file = "";
         current_function = "";
+        state = "";
+//        stack = new Frame[0]; // TODO if necessary use setStack(new Frame[0])
     }
 
     public String getName() {
@@ -124,9 +131,25 @@ public final class GdbThread extends Thread {
         return null; // Not supported
     }
 
+    public Frame getCurFrame() {
+        return curFrame;
+    }
+
     @Override
-    public Integer getStackSize() {
-        return null; // Not supported
+    public void setStack(Frame[] stack) {
+        super.setStack(stack);
+        
+        if (stack != null) {
+        for (Frame frame : stack) {
+                if (frame.isCurrent()) {
+                    curFrame = frame;
+                    line = frame.getLineNo();
+                    file = frame.getSource();
+                    current_function = frame.getFunc();
+                    address = frame.getCurrentPC();
+                }
+            }
+        }
     }
 
     @Override
@@ -141,11 +164,11 @@ public final class GdbThread extends Thread {
 
     @Override
     public String getState() {
-        return null; // Not supported
+        return state;
     }
 
     @Override
-    public boolean getSuspended() {
-        return false; // Not supported
+    public boolean isSuspended() {
+        return "stopped".equals(state); //NOI18N
     }
 }

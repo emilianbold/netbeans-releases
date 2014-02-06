@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.spi.support.JSchAccess;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -346,14 +347,17 @@ public final class ConnectionManager {
                     initiateConnection(env, jsch);
                     return;
                 } catch (IOException e) {
+                    if (MiscUtils.isJSCHTooLongException(e)) {
+                        MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
+                    }
                     if (!(e.getCause() instanceof JSchException)) {
                         throw e;
-                    }
+                        }
                     if (!"Auth fail".equals(e.getCause().getMessage())) { //NOI18N
-                        throw e;
+                            throw e;
+                        }
+                        ex = e;
                     }
-                    ex = e;
-                }
                 System.out.println("AUTH_FAIL: Connection failed, re-runing test " + retry); // NOI18N
                 retry--;
             }

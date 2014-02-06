@@ -79,7 +79,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
     @Override
     public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
         //return Collections.<Action>emptyList();
-        List<BuildAction> res = new ArrayList<BuildAction>();
+        List<BuildAction> res = new ArrayList<>();
         if (events != null && events.length == 2) {
             if (events[0].getType() == ProjectActionEvent.PredefinedType.CLEAN &&
                 events[1].getType() == ProjectActionEvent.PredefinedType.BUILD &&
@@ -92,8 +92,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
     }
 
     public static final class ConfigureAction extends AbstractAction implements BuildAction,  OutputStreamHandler {
-        private String ioTabName;
-        private ProjectActionEvent[] events;
+        private final String ioTabName;
+        private final ProjectActionEvent[] events;
         private int step = -1;
         private BufferedWriter bw;
         private ExecLogWrapper execLog;
@@ -212,7 +212,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
                 return;
             }
-            Map<String, Object> artifacts = new HashMap<String, Object>();
+            Map<String, Object> artifacts = new HashMap<>();
             if ("exec-log".equals(provider.getID())) { // NOI18N
                 artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
             } else {

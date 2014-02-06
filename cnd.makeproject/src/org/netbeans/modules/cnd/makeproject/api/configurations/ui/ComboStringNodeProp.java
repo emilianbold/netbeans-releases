@@ -56,7 +56,7 @@ public class ComboStringNodeProp extends Node.Property {
     private final ComboStringConfiguration comboStringConfiguration;
     private final String name;
     private final String description;
-    private boolean canWrite;
+    private final boolean canWrite;
     StringEditor intEditor = null;
 
     @SuppressWarnings("unchecked")

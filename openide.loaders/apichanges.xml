@@ -109,6 +109,26 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="org.netbeans.api.templates.TemplateRegistration.targetName">
+          <api name="loaders"/>
+          <summary>Introduce targetName for templates.</summary>
+          <version major="7" minor="56"/>
+          <date day="29" month="1" year="2014"/>
+          <author login="jhavlin"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"
+                         semantic="compatible" deprecation="no" deletion="no"
+                         modification="no"/>
+          <description>
+              <p>
+                  By default, files created from templates have name
+                  preinitialized to "new" + template name.
+                  TemplateRegistration.targetName can be used to customize how
+                  the file name will be preinitialized.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <issue number="239028"/>
+      </change>
       <change id="org.openide.loaders.DataFolder.SortMode.EXTENSIONS">
           <api name="loaders"/>
           <summary>Introduces SortMode for sorting by file extension.</summary>

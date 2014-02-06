@@ -168,14 +168,15 @@ final class GitOptionsPanelController extends OptionsPanelController implements 
             panel.cbOpenOutputWindow.addActionListener(this);
             panel.excludeNewFiles.addActionListener(this);
             panel.signOffCheckBox.addActionListener(this);
+            panel.txtProjectAnnotation.setText(GitModuleConfig.getDefault().getProjectAnnotationFormat());
             panel.txtProjectAnnotation.getDocument().addDocumentListener(this);
         }
         return panel;
     }
     
     private void changed () {
+        fireChanged();
         if (!changed) {
-            changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
@@ -198,6 +199,14 @@ final class GitOptionsPanelController extends OptionsPanelController implements 
         GitModuleConfig.getDefault().setAutoIgnoreFiles(panel.cbIgnoreNotSharableFiles.isSelected());
         GitModuleConfig.getDefault().setProjectAnnotationFormat(panel.txtProjectAnnotation.getText());
         Git.getInstance().getVCSAnnotator().refreshFormat();
+    }
+    
+    private void fireChanged() {
+        changed = GitModuleConfig.getDefault().getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
+                || GitModuleConfig.getDefault().getExludeNewFiles() != panel.excludeNewFiles.isSelected()
+                || GitModuleConfig.getDefault().getSignOff() != panel.signOffCheckBox.isSelected()
+                || GitModuleConfig.getDefault().getAutoIgnoreFiles() != panel.cbIgnoreNotSharableFiles.isSelected()
+                || !GitModuleConfig.getDefault().getProjectAnnotationFormat().equals(panel.txtProjectAnnotation.getText());
     }
 
     @NbBundle.Messages({

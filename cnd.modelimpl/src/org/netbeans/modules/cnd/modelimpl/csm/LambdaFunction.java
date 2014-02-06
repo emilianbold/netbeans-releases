@@ -77,7 +77,7 @@ public final class LambdaFunction<T> extends FunctionDDImpl<T> {
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
         LambdaFunction<T> functionDDImpl;
-        functionDDImpl = new LambdaFunction<T>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
+        functionDDImpl = new LambdaFunction<>(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(global, functionDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();

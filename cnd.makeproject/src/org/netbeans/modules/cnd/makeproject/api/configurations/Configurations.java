@@ -59,9 +59,9 @@ import org.openide.util.RequestProcessor;
 public final class Configurations {
 
     private final PropertyChangeSupport pcs;
-    private final List<Configuration> configurations = new ArrayList<Configuration>();
+    private final List<Configuration> configurations = new ArrayList<>();
     private final ReadWriteLock configurationsLock = new ReentrantReadWriteLock();
-    private final List<NamedRunnable> tasks = new ArrayList<NamedRunnable>();
+    private final List<NamedRunnable> tasks = new ArrayList<>();
     private static final RequestProcessor RP = new RequestProcessor("Configurations events", 1); //NOI18N
 
 
@@ -78,7 +78,7 @@ public final class Configurations {
     }
 
     public Configurations init(Configuration[] confs, int defaultConf) {
-        List<NamedRunnable> toRun = new ArrayList<NamedRunnable>();
+        List<NamedRunnable> toRun = new ArrayList<>();
         Configuration def = null;
         configurationsLock.writeLock().lock();
         try {
@@ -162,7 +162,7 @@ public final class Configurations {
     }
 
     public Collection<Configuration> getConfigurations() {
-        Collection<Configuration> collection = new LinkedHashSet<Configuration>();
+        Collection<Configuration> collection = new LinkedHashSet<>();
         configurationsLock.readLock().lock();
         try {
             collection.addAll(configurations);

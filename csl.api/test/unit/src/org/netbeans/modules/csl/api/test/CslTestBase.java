@@ -3009,7 +3009,12 @@ public abstract class CslTestBase extends NbTestCase {
                 String documentation;
                 if (cc instanceof CodeCompletionHandler2) {
                     CodeCompletionHandler2 cc2 = (CodeCompletionHandler2) cc;
-                    Documentation docu = cc2.documentElement(pr, match.getElement());
+                    Documentation docu = cc2.documentElement(pr, match.getElement(), new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return false;
+                        }
+                    });
                     documentation = docu == null ? cc2.document(pr, match.getElement()) : docu.getContent();
                 } else {
                     documentation = cc.document(pr, match.getElement());

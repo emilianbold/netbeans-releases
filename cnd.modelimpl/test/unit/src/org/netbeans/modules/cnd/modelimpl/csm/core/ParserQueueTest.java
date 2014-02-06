@@ -62,7 +62,7 @@ public class ParserQueueTest extends CndBaseTestCase {
     public ParserQueueTest(String testName) {
         super(testName);
         queue = ParserQueue.testInstance();
-        projectFiles = new ArrayList<FileImpl>();
+        projectFiles = new ArrayList<>();
     }
     
     @Override

@@ -124,7 +124,7 @@ public class KeyManager {
             @SuppressWarnings("unchecked")
             WeakSet<Key>[] ar = new WeakSet[ssize];
             for (int i = 0; i < ar.length; i++) {
-                ar[i] = new WeakSet<Key>(initialCapacity);
+                ar[i] = new WeakSet<>(initialCapacity);
             }
             instances = ar;
         }
@@ -145,7 +145,7 @@ public class KeyManager {
                     if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                         Object[] arr = instances[i].toArray();
                         System.out.println("Key cache " + instances[i].size()); // NOI18N
-                        Map<Class, Integer> classes = new HashMap<Class, Integer>();
+                        Map<Class, Integer> classes = new HashMap<>();
                         for (Object o : arr) {
                             if (o != null) {
                                 Integer num = classes.get(o.getClass());

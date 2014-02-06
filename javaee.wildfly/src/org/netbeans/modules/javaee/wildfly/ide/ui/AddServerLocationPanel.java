@@ -58,15 +58,15 @@ import org.openide.util.NbBundle;
  *
  * @author Ivan Sidorkin
  */
-public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeListener {
+public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
-    private final JBInstantiatingIterator instantiatingIterator;
+    private final WildflyInstantiatingIterator instantiatingIterator;
     
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
     private final transient Set listeners = new HashSet(1);
     
-    public AddServerLocationPanel(JBInstantiatingIterator instantiatingIterator){
+    public AddServerLocationPanel(WildflyInstantiatingIterator instantiatingIterator){
         this.instantiatingIterator = instantiatingIterator;
     }
     
@@ -108,7 +108,7 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
             return false;
         }
 
-        if (!JBPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
+        if (!WildflyPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
             return false;
@@ -116,10 +116,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
-        JBPluginProperties.getInstance().setInstallLocation(component.getInstallLocation());
-        JBPluginProperties.getInstance().setConfigLocation(component.getConfigurationLocation());
-        JBPluginProperties.getInstance().setDomainLocation(component.getConfigurationLocation());
-        JBPluginProperties.getInstance().saveProperties();
+        WildflyPluginProperties.getInstance().setInstallLocation(component.getInstallLocation());
+        WildflyPluginProperties.getInstance().setConfigLocation(component.getConfigurationLocation());
+        WildflyPluginProperties.getInstance().setDomainLocation(component.getConfigurationLocation());
+        WildflyPluginProperties.getInstance().saveProperties();
         instantiatingIterator.setInstallLocation(locationStr);
         return true;
     }
@@ -151,5 +151,10 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 ((AddServerLocationVisualPanel) getComponent()).getInstallLocation());
         instantiatingIterator.setConfigFile(
                 ((AddServerLocationVisualPanel) getComponent()).getConfigurationLocation());
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
     }
 }

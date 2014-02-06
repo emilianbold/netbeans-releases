@@ -67,10 +67,12 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     private SymfonyOptionsPanel symfonyOptionsPanel = null;
     private volatile boolean changed = false;
+    private boolean firstOpening = true;
 
     @Override
     public void update() {
-        if (!isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+        if(firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
+            firstOpening = false;
             symfonyOptionsPanel.setSymfony(getOptions().getSymfony());
             symfonyOptionsPanel.setIgnoreCache(getOptions().getIgnoreCache());
             symfonyOptionsPanel.setDefaultParamsForProject(getOptions().getDefaultParamsForProject());

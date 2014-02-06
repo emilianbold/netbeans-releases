@@ -218,7 +218,7 @@ public class TraceFlags {
     static {
          String text = System.getProperty("parser.log.macro"); //NOI18N
          if (text != null && text.length() > 0) {
-             List<String> l = new ArrayList<String>();
+             List<String> l = new ArrayList<>();
              for (StringTokenizer stringTokenizer = new StringTokenizer(text, ","); stringTokenizer.hasMoreTokens();) { //NOI18N
                  l.add(stringTokenizer.nextToken());
              }

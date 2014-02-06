@@ -125,33 +125,35 @@ public final class ActionToGoalUtils {
     public static RunConfig createRunConfig(String action, NbMavenProjectImpl project, Lookup lookup) {
         M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
         RunConfig rc = configs.getActiveConfiguration().createConfigForDefaultAction(action, project, lookup);
-        
-        if (rc == null) {
-            // for build and rebuild check the pom for default goal and run that one..
-            if (ActionProvider.COMMAND_BUILD.equals(action) || ActionProvider.COMMAND_REBUILD.equals(action)) {
-                Build bld = project.getOriginalMavenProject().getBuild();
-                if (bld != null) {
-                    String goal = bld.getDefaultGoal();
-                    if (goal != null && goal.trim().length() > 0) {
-                        BeanRunConfig brc = new BeanRunConfig();
-                        brc.setExecutionDirectory(FileUtil.toFile(project.getProjectDirectory()));
-                        brc.setProject(project);
-                        StringTokenizer tok = new StringTokenizer(goal, " ", false); //NOI18N
-                        List<String> toRet = new ArrayList<String>();
-                        while (tok.hasMoreTokens()) {
-                            toRet.add(tok.nextToken());
-                        }
-                        if (ActionProvider.COMMAND_REBUILD.equals(action)) {
-                            toRet.add(0, "clean"); //NOI18N
-                            }
-                        brc.setGoals(toRet);
-                        brc.setExecutionName(ProjectUtils.getInformation(project).getDisplayName());
-                        brc.setActivatedProfiles(Collections.<String>emptyList());
-                        rc = brc;
-                    }
-                }
-            }
-        }
+
+// #241340 let's comment this out and see if it's actually used, it's a bit unsystemic (something gets executed that was never visible in UI)
+//        
+//        if (rc == null) {
+//            // for build and rebuild check the pom for default goal and run that one..
+//            if (ActionProvider.COMMAND_BUILD.equals(action) || ActionProvider.COMMAND_REBUILD.equals(action)) {
+//                Build bld = project.getOriginalMavenProject().getBuild();
+//                if (bld != null) {
+//                    String goal = bld.getDefaultGoal();
+//                    if (goal != null && goal.trim().length() > 0) {
+//                        BeanRunConfig brc = new BeanRunConfig();
+//                        brc.setExecutionDirectory(FileUtil.toFile(project.getProjectDirectory()));
+//                        brc.setProject(project);
+//                        StringTokenizer tok = new StringTokenizer(goal, " ", false); //NOI18N
+//                        List<String> toRet = new ArrayList<String>();
+//                        while (tok.hasMoreTokens()) {
+//                            toRet.add(tok.nextToken());
+//                        }
+//                        if (ActionProvider.COMMAND_REBUILD.equals(action)) {
+//                            toRet.add(0, "clean"); //NOI18N
+//                            }
+//                        brc.setGoals(toRet);
+//                        brc.setExecutionName(ProjectUtils.getInformation(project).getDisplayName());
+//                        brc.setActivatedProfiles(Collections.<String>emptyList());
+//                        rc = brc;
+//                    }
+//                }
+//            }
+//        }
         if(rc==null){
             for (MavenActionsProvider add : actionProviders(project)) {
                         if (add.isActionEnable(action, project, lookup)) {

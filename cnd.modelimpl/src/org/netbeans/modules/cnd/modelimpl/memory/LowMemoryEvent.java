@@ -52,8 +52,8 @@ import java.util.EventObject;
  */
 public class LowMemoryEvent extends EventObject  {
     
-    private long maxMemory;
-    private long usedMemory;
+    private final long maxMemory;
+    private final long usedMemory;
     
     // package local
     LowMemoryEvent(Object source, long maxMemory, long usedMemory) {

@@ -53,6 +53,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -125,8 +128,7 @@ public class ThrowableNotThrown {
             enabled = true,
             suppressWarnings = { "ThrowableResultIgnored", "", "ThrowableResultOfMethodCallIgnored" })
     @TriggerPatterns({
-        @TriggerPattern(value = "$m($params$)"),
-        @TriggerPattern(value = "$expr.$m($params$)")
+        @TriggerPattern(value = "$m($params$)")
     })
     public static ErrorDescription methodInvocation(HintContext ctx) {
         TreePath p = ctx.getPath();
@@ -143,6 +145,15 @@ public class ThrowableNotThrown {
         if (tm == null || tm.getKind() == TypeKind.ERROR || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
             // does not return Throwable
             return null;
+        }
+
+        ExecutableElement initCause = (ExecutableElement)ctx.getInfo().getElementUtilities().findElement("java.lang.Throwable.initCause(java.lang.Throwable)"); // NOI18N
+        if (initCause != null) {
+            ExecutableElement thisMethod = (ExecutableElement)ctx.getInfo().getTrees().getElement(
+                    ctx.getVariables().get("$m")); // NOI18N
+            if (thisMethod != null && thisMethod == initCause || ctx.getInfo().getElements().overrides(thisMethod, initCause, (TypeElement)el)) {
+                return null;
+            }
         }
         TreePath enclosingMethodPath = findEnclosingMethodPath(ctx.getPath());
         ThrowableTracer tracer = new ThrowableTracer(ctx.getInfo(), enclosingMethodPath);

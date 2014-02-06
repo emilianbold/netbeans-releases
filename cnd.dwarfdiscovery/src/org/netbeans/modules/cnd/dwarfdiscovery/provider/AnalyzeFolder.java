@@ -73,7 +73,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class AnalyzeFolder extends BaseDwarfProvider {
-    private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String FOLDER_KEY = "folder"; // NOI18N
     public static final String FOLDER_PROVIDER_ID = "dwarf-folder"; // NOI18N
     

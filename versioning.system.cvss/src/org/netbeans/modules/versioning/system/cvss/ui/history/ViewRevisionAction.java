@@ -62,6 +62,10 @@ import javax.swing.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.cookies.OpenCookie;
 
 /**
@@ -127,7 +131,7 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
         for (File file : ctx.getRootFiles()) {
             if (file.isDirectory()) continue;
             try {
-                view(file, revision, tempFolder);
+                viewInternal(file, revision, tempFolder);
             } catch (Exception e) {
                 // the file cannot be opened, ignore
             }
@@ -142,7 +146,27 @@ public class ViewRevisionAction extends AbstractAction implements Runnable {
      * @param tempFolder temporary folder to use, it can be null bu this is not recommended if you will be calling this on multiple files in a row
      * @throws Exception if something goes wrong
      */
-    public static void view(File base, final String revision, File tempFolder) throws Exception {
+    @NbBundle.Messages("MSG_ViewRevisionAction.gettingFile=Getting File from History")
+    public static void view (final File base, final String revision, final File tempFolder) {
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.MSG_ViewRevisionAction_gettingFile());
+        ph.start();
+        CvsVersioningSystem.getInstance().getParallelRequestProcessor().post(new Runnable() {
+
+            @Override
+            public void run () {
+                try {
+                    viewInternal(base, revision, tempFolder);
+                } catch (Exception ex) {
+                    Logger.getLogger(ViewRevisionAction.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                } finally {
+                    ph.finish();
+                }
+            }
+        });
+    }
+    
+    private static void viewInternal (File base, final String revision, File tempFolder) throws Exception {
+        assert !SwingUtilities.isEventDispatchThread();
         if (tempFolder == null) tempFolder = Utils.getTempFolder();
         File original = VersionsCache.getInstance().getRemoteFile(base, revision, null);
         File daoFile = new File(tempFolder, base.getName());

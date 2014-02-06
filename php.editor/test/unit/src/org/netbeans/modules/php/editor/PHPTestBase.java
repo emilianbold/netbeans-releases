@@ -46,6 +46,7 @@ import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -64,6 +65,7 @@ public class PHPTestBase extends CslTestBase {
 
     public PHPTestBase(String testName) {
         super(testName);
+        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
     }
 
     @Override

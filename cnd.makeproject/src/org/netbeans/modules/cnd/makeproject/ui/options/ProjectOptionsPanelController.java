@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
 )
 public final class ProjectOptionsPanelController extends OptionsPanelController {
 
-    private ProjectOptionsPanel panel = new ProjectOptionsPanel();
+    private final ProjectOptionsPanel panel = new ProjectOptionsPanel();
 
     @Override
     public void update() {

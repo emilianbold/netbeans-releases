@@ -59,7 +59,7 @@ import org.openide.filesystems.FileSystem;
  * @author Alexander Simon
  */
 public class Root implements AbstractRoot {
-    private Map<String,AbstractRoot> children = new HashMap<String,AbstractRoot>();
+    private final Map<String,AbstractRoot> children = new HashMap<>();
     private final String name;
     private final String folder;
     private final FileSystem fileStystem;
@@ -125,7 +125,7 @@ public class Root implements AbstractRoot {
             } else {
                 List<String> fileList = current.getFiles();
                 if (fileList == null){
-                    fileList = new ArrayList<String>();
+                    fileList = new ArrayList<>();
                     current.setFiles(fileList);
                 }
                 fileList.add(child);

@@ -54,7 +54,7 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     private final Deque<CsmFile> files;
 
     CppParserEmptyActionImpl(CsmFile file) {
-        files = new ArrayDeque<CsmFile>();
+        files = new ArrayDeque<>();
         files.push(file);
     }
 

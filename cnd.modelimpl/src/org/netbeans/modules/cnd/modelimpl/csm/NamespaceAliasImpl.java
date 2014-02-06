@@ -268,7 +268,7 @@ public final class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNames
         private CsmObjectBuilder parent;
         private CsmScope scope;
         private NamespaceAliasImpl instance;
-        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        private final List<CsmOffsetableDeclaration> declarations = new ArrayList<>();
 
         public NamespaceAliasBuilder(FileContent fileContent) {
             assert fileContent != null;

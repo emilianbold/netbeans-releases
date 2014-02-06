@@ -187,7 +187,7 @@ public abstract class Configuration implements ProjectConfiguration {
     public ConfigurationAuxObject[] getAuxObjects() {
         List<ConfigurationAuxObject> list;
         synchronized (auxObjectsMap){
-            list = new ArrayList<ConfigurationAuxObject>(auxObjectsMap.values());
+            list = new ArrayList<>(auxObjectsMap.values());
         }
         return list.toArray(new ConfigurationAuxObject[list.size()]);
     }

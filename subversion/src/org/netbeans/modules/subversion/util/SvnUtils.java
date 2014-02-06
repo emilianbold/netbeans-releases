@@ -173,7 +173,7 @@ public class SvnUtils {
      * @throws java.net.MalformedURLException
      */
     public static SVNUrl decodeAndEncodeUrl(SVNUrl url) throws MalformedURLException {
-        return encodeUrl(decode(url));
+        return encodeUrl(decodeToString(url));
     }
 
     /**
@@ -183,11 +183,11 @@ public class SvnUtils {
      * @return encoded URL
      * @throws java.net.MalformedURLException encoded URL is of a bad format anyway
      */
-    public static SVNUrl encodeUrl(final SVNUrl url) throws MalformedURLException {
-        String sUrl = url.toString().replace("%20", " "); //NOI18N
-        StringBuilder sb = new StringBuilder(sUrl.length());
-        for (int i = 0; i < sUrl.length(); ++i) {
-            Character c = sUrl.charAt(i);
+    private static SVNUrl encodeUrl(String url) throws MalformedURLException {
+        url = url.replace("%20", " "); //NOI18N
+        StringBuilder sb = new StringBuilder(url.length());
+        for (int i = 0; i < url.length(); ++i) {
+            Character c = url.charAt(i);
             if (autoEscapedCharacters.contains(c)) {
                 char[] chars = Character.toChars(c);
                 for (int j = 0; j < chars.length; ++j) {
@@ -509,12 +509,11 @@ public class SvnUtils {
             }
 
             if (info != null && info.getUrl() != null) {
-                SVNUrl fileURL = decode(info.getUrl());
+                String fileLink = decodeToString(info.getUrl());
                 repositoryURL = info.getRepository();
+                String repositoryLink = decodeToString(repositoryURL);
 
-                if (fileURL != null && repositoryURL !=  null) {
-                    String fileLink = fileURL.toString();
-                    String repositoryLink = decode(repositoryURL).toString();
+                if (fileLink != null && repositoryLink !=  null) {
                     try {
                         repositoryPath = fileLink.substring(repositoryLink.length());
                     } catch (StringIndexOutOfBoundsException ex) {
@@ -806,25 +805,50 @@ public class SvnUtils {
      * @return decoded url
      */
     public static SVNUrl decode(SVNUrl url) {
+        try {
+            String decoded = decodeToString(url);
+            return decoded == null ? null : new SVNUrl(decoded);
+        } catch (java.net.MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * Decodes svn URI by decoding %XX escape sequences.
+     *
+     * @param url url to decode
+     * @return decoded url
+     */
+    public static String decodeToString (SVNUrl url) {
         if (url == null) return null;
-        String s = url.toString();
-        StringBuilder sb = new StringBuilder(s.length());
+        return decodeToString(url.toString());
+    }
+    
+    /**
+     * Decodes svn URI by decoding %XX escape sequences.
+     *
+     * @param url url to decode
+     * @return decoded url
+     */
+    public static String decodeToString (String url) {
+        if (url == null) return null;
+        StringBuilder sb = new StringBuilder(url.length());
 
         boolean inQuery = false;
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
+        for (int i = 0; i < url.length(); i++) {
+            char c = url.charAt(i);
             if (c == '?') {
                 inQuery = true;
             } else if (c == '+' && inQuery) {
                 sb.append(' ');
-            } else if (isEncodedByte(c, s, i)) {
+            } else if (isEncodedByte(c, url, i)) {
                 List<Byte> byteList = new ArrayList<Byte>();
                 do  {
-                    byteList.add((byte) Integer.parseInt(s.substring(i + 1, i + 3), 16));
+                    byteList.add((byte) Integer.parseInt(url.substring(i + 1, i + 3), 16));
                     i += 3;
-                    if (i >= s.length()) break;
-                    c = s.charAt(i);
-                } while(isEncodedByte(c, s, i));
+                    if (i >= url.length()) break;
+                    c = url.charAt(i);
+                } while(isEncodedByte(c, url, i));
 
                 if(byteList.size() > 0) {
                     byte[] bytes = new byte[byteList.size()];
@@ -842,11 +866,7 @@ public class SvnUtils {
                 sb.append(c);
             }
         }
-        try {
-            return new SVNUrl(sb.toString());
-        } catch (java.net.MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        return sb.toString();
     }
 
     private static boolean isEncodedByte(char c, String s, int i) {
@@ -866,7 +886,7 @@ public class SvnUtils {
     public static String getRepositoryPath(File file) throws SVNClientException {
         SVNUrl url = getRepositoryUrl(file);
         SVNUrl rootUrl = getRepositoryRootUrl(file);
-        return SVNUrlUtils.getRelativePath(rootUrl, url, true);
+        return decodeToString(SVNUrlUtils.getRelativePath(rootUrl, url, true));
     }
 
     /**
@@ -1229,7 +1249,7 @@ public class SvnUtils {
      */
     private static String getCopy(SVNUrl url, List<AnnotationExpression> annotationExpressions) {
         if (url != null) {
-            String urlString = url.toString();
+            String urlString = decodeToString(url);
             for (Iterator<AnnotationExpression> it = annotationExpressions.iterator(); it.hasNext();) {
                 String name = it.next().getCopyName(urlString);
                 if(name != null) {

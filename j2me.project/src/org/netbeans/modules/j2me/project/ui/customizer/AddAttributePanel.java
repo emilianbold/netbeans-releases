@@ -147,7 +147,7 @@ public class AddAttributePanel extends javax.swing.JPanel implements ActionListe
     
     protected void setDialogDescriptor(final DialogDescriptor desc) {
         this.dd = desc;
-        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel"));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.j2me.project.ui.customizer.AddAttributePanel")); //NOI18N
         actionPerformed(null);
     }
     

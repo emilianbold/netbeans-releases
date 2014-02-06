@@ -150,28 +150,7 @@ public class LogReader {
                     RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
                     if (resolvedPath == null) {
                         if (root != null) {
-                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
-                                @Override
-                                public boolean exists(String path) {
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid()) {
-                                        return true;
-                                    }
-                                    return false;
-                                }
-
-                                @Override
-                                public List<String> list(String path) {
-                                    List<String> res = new ArrayList<String>();
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                                        for (FileObject f : fo.getChildren()) {
-                                            res.add(f.getPath());
-                                        }
-                                    }
-                                    return res;
-                                }
-                            };
+                            RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
@@ -190,28 +169,7 @@ public class LogReader {
                     RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(fo.getPath());
                     if (resolvedPath == null) {
                         if (root != null) {
-                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
-                                @Override
-                                public boolean exists(String path) {
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid()) {
-                                        return true;
-                                    }
-                                    return false;
-                                }
-
-                                @Override
-                                public List<String> list(String path) {
-                                    List<String> res = new ArrayList<String>();
-                                    FileObject fo = fileSystem.findResource(path);
-                                    if (fo != null && fo.isValid() && fo.isFolder()) {
-                                        for (FileObject f : fo.getChildren()) {
-                                            res.add(f.getPath());
-                                        }
-                                    }
-                                    return res;
-                                }
-                            };
+                            RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
@@ -446,8 +404,8 @@ public class LogReader {
     private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
     private static final Pattern MAKE_DIRECTORY = Pattern.compile(".*make(?:\\.exe)?(?:\\[([0-9]+)\\])?: .*`([^']*)'$"); //NOI18N
     private boolean isEntered;
-    private Stack<Integer> relativesLevel = new Stack<Integer>();
-    private Stack<String> relativesTo = new Stack<String>();
+    private final Stack<Integer> relativesLevel = new Stack<Integer>();
+    private final Stack<String> relativesTo = new Stack<String>();
 
     private void popPath() {
         if (relativesTo.size() > 1) {
@@ -472,7 +430,7 @@ public class LogReader {
         if (relativesLevel.size() > 1) {
             return relativesLevel.peek();
         }
-        return Integer.valueOf(0);
+        return 0;
     }
 
     private String convertWindowsRelativePath(String path) {
@@ -505,7 +463,7 @@ public class LogReader {
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
             }
-        } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
+        } else if (line.contains(ENTERING_DIRECTORY)) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
@@ -514,7 +472,7 @@ public class LogReader {
             workDir = convertWindowsRelativePath(workDir);
             baseWorkingDir = workDir;
             enterMakeStack(workDir, getMakeLevel(line));
-        } else if (line.indexOf(LEAVING_DIRECTORY) >= 0) {
+        } else if (line.contains(LEAVING_DIRECTORY)) {
             String dirMessage = line.substring(line.indexOf(LEAVING_DIRECTORY) + LEAVING_DIRECTORY.length() + 1).trim();
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             workDir = convertWindowsRelativePath(workDir);
@@ -545,19 +503,19 @@ public class LogReader {
                 workDir = convertWindowsRelativePath(workDir);
                 baseWorkingDir = workDir;
             }
-        } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
+        } else if (line.startsWith("/") && !line.contains(" ")) {  //NOI18N
             workDir = convertPath(line.trim());
             workDir = convertWindowsRelativePath(workDir);
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 message = "**>> by [just path string] "; //NOI18N
             }
-        } else if (line.indexOf("make") >= 0 && line.length() < 2000) { //NOI18N
+        } else if (line.contains("make") && line.length() < 2000) { //NOI18N
             Matcher m = MAKE_DIRECTORY.matcher(line);
             boolean found = m.find();
             if (found && m.start() == 0) {
                 String levelString = m.group(1);
                 int level = levelString == null ? 0 : Integer.valueOf(levelString);
-                int baseLavel = peekLevel().intValue();
+                int baseLavel = peekLevel();
                 workDir = m.group(2);
                 workDir = convertPath(workDir);
                 workDir = convertWindowsRelativePath(workDir);
@@ -927,6 +885,10 @@ public class LogReader {
                 s = convertWindowsRelativePath(s);
                 userIncludesCached.add(PathCache.getString(s));
             }
+            List<String> userFilesCached = new ArrayList<String>(artifacts.userFiles.size());
+            for(String s : artifacts.userFiles){
+                userFilesCached.add(PathCache.getString(s));
+            }
             Map<String, String> userMacrosCached = new HashMap<String, String>(artifacts.userMacros.size());
             for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
                 if (e.getValue() == null) {
@@ -940,7 +902,8 @@ public class LogReader {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
-                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                        artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                 continue;
             }
             if (!isRelative) {
@@ -952,7 +915,8 @@ public class LogReader {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, workingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         continue;
                     }
                 }
@@ -964,7 +928,8 @@ public class LogReader {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                         DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
                     }
-                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                    result.add(new CommandLineSource(li, artifacts.languageArtifacts, guessWorkingDir, what, userIncludesCached, userFilesCached, userMacrosCached,
+                            artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                     continue;
                 }
             }
@@ -979,7 +944,8 @@ public class LogReader {
                     }
                 } else {
                     if (res.size() == 1) {
-                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userMacrosCached, artifacts.undefinedMacros, storage));
+                        result.add(new CommandLineSource(li, artifacts.languageArtifacts, res.get(0), what, userIncludesCached, userFilesCached, userMacrosCached,
+                                artifacts.undefinedMacros, storage, artifacts.getImportantFlags()));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
                         }
@@ -1000,7 +966,7 @@ public class LogReader {
         if (artifacts.output != null) {
             String what = artifacts.output;
             String baseName = CndPathUtilities.getBaseName(what);
-            if (!(baseName.endsWith(".exe") || baseName.indexOf(".") < 0)) { //NOI18N
+            if (!(baseName.endsWith(".exe") || !baseName.contains("."))) { //NOI18N
                 return;
             }
             String file;
@@ -1055,18 +1021,19 @@ public class LogReader {
     static class CommandLineSource extends RelocatableImpl implements SourceFileProperties {
 
         private String sourceName;
-        private String compiler;
+        private final String compiler;
         private ItemProperties.LanguageKind language;
         private ItemProperties.LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> systemIncludes = Collections.<String>emptyList();
-        private Map<String, String> userMacros;
-        private List<String> undefinedMacros;
-        private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private CompileLineStorage storage;
+        private final List<String> systemIncludes = Collections.<String>emptyList();
+        private final Map<String, String> userMacros;
+        private final List<String> undefinedMacros;
+        private final Map<String, String> systemMacros = Collections.<String, String>emptyMap();
+        private final CompileLineStorage storage;
         private int handler = -1;
+        private final String importantFlags;
 
         CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
-                List<String> userIncludes, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage) {
+                List<String> userIncludes, List<String> userFiles, Map<String, String> userMacros, List<String>undefs, CompileLineStorage storage, String importantFlags) {
             language = li.getLanguage();
             if (languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
@@ -1117,12 +1084,14 @@ public class LogReader {
             fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
+            this.userFiles = userFiles;
             this.userMacros = userMacros;
             this.undefinedMacros = undefs;
             this.storage = storage;
             if (storage != null) {
                 handler = storage.putCompileLine(li.compileLine);
             }
+            this.importantFlags = importantFlags;
         }
 
         @Override
@@ -1153,6 +1122,12 @@ public class LogReader {
         public List<String> getUserInludePaths() {
             return userIncludes;
         }
+
+        @Override
+        public List<String> getUserInludeFiles() {
+            return userFiles;
+        }
+
 
         @Override
         public List<String> getSystemInludePaths() {
@@ -1191,6 +1166,11 @@ public class LogReader {
         @Override
         public LanguageStandard getLanguageStandard() {
             return standard;
+        }
+
+        @Override
+        public String getImportantFlags() {
+            return importantFlags;
         }
     }
 
@@ -1334,4 +1314,5 @@ public class LogReader {
             }
         }
     }
+
 }

@@ -79,14 +79,14 @@ public final class IncludedFileContainer extends ProjectComponent {
 
     public IncludedFileContainer(ProjectBase startProject) {
         super(new IncludedFileStorageKey(startProject));
-        list = new CopyOnWriteArrayList<IncludedFileContainer.Entry>();
+        list = new CopyOnWriteArrayList<>();
         put();
     }
 
     public IncludedFileContainer(RepositoryDataInput aStream) throws IOException {
         super(aStream);
         int count = aStream.readInt();
-        Collection<Entry> aList = new ArrayList<IncludedFileContainer.Entry>(count);
+        Collection<Entry> aList = new ArrayList<>(count);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
 //        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
         for (int i = 0; i < count; i++) {
@@ -96,13 +96,13 @@ public final class IncludedFileContainer extends ProjectComponent {
             Storage storage = new Storage(aStream);
             aList.add(new Entry(includedProjectUID, storage));
         }
-        this.list = new CopyOnWriteArrayList<Entry>(aList);
+        this.list = new CopyOnWriteArrayList<>(aList);
     }
 
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
-        List<Entry> aList = new ArrayList<Entry>(list);
+        List<Entry> aList = new ArrayList<>(list);
         aStream.writeInt(aList.size());
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
 //        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
@@ -185,7 +185,7 @@ public final class IncludedFileContainer extends ProjectComponent {
      * for tracing purpose only.
      */
     public Map<CsmUID<CsmProject> , Collection<PreprocessorStatePair>> getPairsToDump(FileImpl fileToSearch) {
-        Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> out = new HashMap<CsmUID<CsmProject>, Collection<PreprocessorStatePair>>();
+        Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> out = new HashMap<>();
         CharSequence fileKey = FileContainer.getFileKey(fileToSearch.getAbsolutePath(), false);
         for (Entry entry : list) {
             FileEntry fileEntry = entry.getStorage().getFileEntry(fileKey);
@@ -246,7 +246,7 @@ public final class IncludedFileContainer extends ProjectComponent {
             return myFiles.get(fileKey);
         }
 
-        private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<CharSequence, FileContainer.FileEntry>();
+        private final ConcurrentMap<CharSequence, FileContainer.FileEntry> myFiles = new ConcurrentHashMap<>();
         private final FileSystem fileSystem;
         private final CsmUID<CsmProject> includedProjectUID;
 
@@ -305,7 +305,7 @@ public final class IncludedFileContainer extends ProjectComponent {
 
         private void debugClearState() {
             List<FileEntry> files;
-            files = new ArrayList<FileEntry>(myFiles.values());
+            files = new ArrayList<>(myFiles.values());
             for (FileEntry file : files) {
                 file.debugClearState();
             }

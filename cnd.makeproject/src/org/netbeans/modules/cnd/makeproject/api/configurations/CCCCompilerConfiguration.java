@@ -99,11 +99,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private IntConfiguration languageExt;
     private VectorConfiguration<String> includeDirectories;
     private BooleanConfiguration inheritIncludes;
+    private VectorConfiguration<String> includeFiles;
+    private BooleanConfiguration inheritFiles;
     private VectorConfiguration<String> preprocessorConfiguration;
     private VectorConfiguration<String> preprocessorUndefinedConfiguration;
     private BooleanConfiguration inheritPreprocessor;
     private BooleanConfiguration inheritUndefinedPreprocessor;
     private BooleanConfiguration useLinkerPkgConfigLibraries;
+    private StringConfiguration importantFlags;
     private MakeConfiguration owner;
 
     // Constructors
@@ -116,11 +119,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         languageExt = new IntConfiguration(master != null ? master.getLanguageExt() : null, LANGUAGE_EXT_DEFAULT, LANGUAGE_EXT_NAMES, getLanguageExtOptions());
         includeDirectories = new VectorConfiguration<>(master != null ? master.getIncludeDirectories() : null);
         inheritIncludes = new BooleanConfiguration(true);
+        includeFiles = new VectorConfiguration<>(master != null ? master.getIncludeFiles() : null);
+        inheritFiles = new BooleanConfiguration(true);
         preprocessorConfiguration = new VectorConfiguration<>(master != null ? master.getPreprocessorConfiguration() : null);
         preprocessorUndefinedConfiguration = new VectorConfiguration<>(master != null ? master.getUndefinedPreprocessorConfiguration() : null);
         inheritPreprocessor = new BooleanConfiguration(true);
         inheritUndefinedPreprocessor = new BooleanConfiguration(true);
         useLinkerPkgConfigLibraries = new BooleanConfiguration(true);
+        importantFlags = new StringConfiguration(null, "");
     }
 
     public void fixupMasterLinks(CCCCompilerConfiguration compilerConfiguration) {
@@ -133,17 +139,21 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
 
     @Override
     public boolean getModified() {
+        boolean modifiedFlags = importantFlags.getValue() != null && !importantFlags.getValue().isEmpty();
         return super.getModified() ||
                 libraryLevel.getModified() ||
                 standardsEvolution.getModified() ||
                 languageExt.getModified() ||
                 includeDirectories.getModified() ||
                 inheritIncludes.getModified() ||
+                includeFiles.getModified() ||
+                inheritFiles.getModified() ||
                 preprocessorConfiguration.getModified() ||
                 inheritPreprocessor.getModified() ||
                 preprocessorUndefinedConfiguration.getModified() ||
                 inheritUndefinedPreprocessor.getModified() ||
-                useLinkerPkgConfigLibraries.getModified();
+                useLinkerPkgConfigLibraries.getModified() ||
+                modifiedFlags;
     }
 
     protected final String[] getLibraryLevelOptions() {
@@ -203,6 +213,24 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         this.inheritIncludes = inheritIncludes;
     }
 
+    // Include Files
+    public VectorConfiguration<String> getIncludeFiles() {
+        return includeFiles;
+    }
+
+    public void setIncludeFiles(VectorConfiguration<String> includeFiles) {
+        this.includeFiles = includeFiles;
+    }
+
+    // Inherit Include Files
+    public BooleanConfiguration getInheritFiles() {
+        return inheritFiles;
+    }
+
+    public void setInheritFiles(BooleanConfiguration inheritFiles) {
+        this.inheritFiles = inheritFiles;
+    }
+
     // Preprocessor
     public VectorConfiguration<String> getPreprocessorConfiguration() {
         return preprocessorConfiguration;
@@ -247,6 +275,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         this.useLinkerPkgConfigLibraries = useLinkerPkgConfigLibraries;
     }
 
+    public StringConfiguration getImportantFlags() {
+        return importantFlags;
+    }
+    
+    public void setImportantFlags(StringConfiguration importantFlags) {
+        this.importantFlags = importantFlags;
+    }
+    
     /**
      * @return the owner
      */
@@ -271,11 +307,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         getLanguageExt().assign(conf.getLanguageExt());
         getIncludeDirectories().assign(conf.getIncludeDirectories());
         getInheritIncludes().assign(conf.getInheritIncludes());
+        getIncludeFiles().assign(conf.getIncludeFiles());
+        getInheritFiles().assign(conf.getInheritFiles());
         getPreprocessorConfiguration().assign(conf.getPreprocessorConfiguration());
         getInheritPreprocessor().assign(conf.getInheritPreprocessor());
         getUndefinedPreprocessorConfiguration().assign(conf.getUndefinedPreprocessorConfiguration());
         getInheritUndefinedPreprocessor().assign(conf.getInheritUndefinedPreprocessor());
         getUseLinkerLibraries().assign(conf.getUseLinkerLibraries());
+        getImportantFlags().assign(conf.getImportantFlags());
     }
 
     // Sheet
@@ -286,51 +325,82 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         set1.setName("General"); // NOI18N
         set1.setDisplayName(getString("GeneralTxt"));
         set1.setShortDescription(getString("GeneralHint"));
-        // Include Dirctories
-        StringBuilder inheritedValues = new StringBuilder();
-        List<CCCCompilerConfiguration> list = new ArrayList<>();
-        for(BasicCompilerConfiguration master : getMasters(false)) {
-            list.add((CCCCompilerConfiguration)master);
-            if (!((CCCCompilerConfiguration)master).getInheritIncludes().getValue()) {
-                break;
+        StringBuilder inheritedValues;
+        {
+            // Include Dirctories
+            inheritedValues = new StringBuilder();
+            List<CCCCompilerConfiguration> list = new ArrayList<>();
+            for(BasicCompilerConfiguration master : getMasters(false)) {
+                list.add((CCCCompilerConfiguration)master);
+                if (!((CCCCompilerConfiguration)master).getInheritIncludes().getValue()) {
+                    break;
+                }
             }
-        }
-        for(int i = list.size() - 1; i >= 0; i--) {
-            inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
-        }
-        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), 
-                new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()},
-                true, false, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
-            private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item);
-            @Override
-            protected List<String> convertToList(String text) {
-                return converter.convertToList(text);
+            for(int i = list.size() - 1; i >= 0; i--) {
+                inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
             }
-            @Override
-            protected String convertToString(List<String> list) {
-                return converter.convertToString(list);
+            set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), 
+                    new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()},
+                    true, false, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
+                private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-I"); //NOI18N
+                @Override
+                protected List<String> convertToList(String text) {
+                    return converter.convertToList(text);
+                }
+                @Override
+                protected String convertToString(List<String> list) {
+                    return converter.convertToString(list);
+                }
+            });
+        } 
+        {
+            // Include Dirctories
+            inheritedValues = new StringBuilder();
+            List<CCCCompilerConfiguration> list = new ArrayList<>();
+            for(BasicCompilerConfiguration master : getMasters(false)) {
+                list.add((CCCCompilerConfiguration)master);
+                if (!((CCCCompilerConfiguration)master).getInheritFiles().getValue()) {
+                    break;
+                }
             }
-        }); 
-        // Preprocessor Macros
-        inheritedValues = new StringBuilder();
-        for(BasicCompilerConfiguration master : getMasters(false)) {
-            inheritedValues.append(((CCCCompilerConfiguration)master).getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
-            if (!((CCCCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
-                break;
+            for(int i = list.size() - 1; i >= 0; i--) {
+                inheritedValues.append(list.get(i).getIncludeFiles().toString(visitor, "\n")); //NOI18N
             }
-        }
-        set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions")){  // NOI18N
-            @Override
-            protected List<String> convertToList(String text) {
-                return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
+            set1.put(new VectorNodeProp(getIncludeFiles(), getMaster() != null ? getInheritFiles() : null, owner.getBaseFSPath(), 
+                    new String[]{"IncludeFiles", getString("IncludeFilesTxt"), getString("IncludeFilesHint"), inheritedValues.toString()},
+                    true, false, new HelpCtx("AddtlIncludeFiles")){// NOI18N
+                private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item, "-include"); //NOI18N
+                @Override
+                protected List<String> convertToList(String text) {
+                    return converter.convertToList(text);
+                }
+                @Override
+                protected String convertToString(List<String> list) {
+                    return converter.convertToString(list);
+                }
+            });
+        } 
+        {
+            // Preprocessor Macros
+            inheritedValues = new StringBuilder();
+            for(BasicCompilerConfiguration master : getMasters(false)) {
+                inheritedValues.append(((CCCCompilerConfiguration)master).getPreprocessorConfiguration().toString(visitor, "\n")); //NOI18N
+                if (!((CCCCompilerConfiguration)master).getInheritPreprocessor().getValue()) {
+                    break;
+                }
             }
+            set1.put(new StringListNodeProp(getPreprocessorConfiguration(), getMaster() != null ? getInheritPreprocessor() : null, new String[]{"preprocessor-definitions", getString("PreprocessorDefinitionsTxt"), getString("PreprocessorDefinitionsHint"), getString("PreprocessorDefinitionsLbl"), inheritedValues.toString()}, true, new HelpCtx("preprocessor-definitions")){  // NOI18N
+                @Override
+                protected List<String> convertToList(String text) {
+                    return TokenizerFactory.MACRO_CONVERTER.convertToList(text);
+                }
 
-            @Override
-            protected String convertToString(List<String> list) {
-                return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
-            }
-        });
-     
+                @Override
+                protected String convertToString(List<String> list) {
+                    return TokenizerFactory.MACRO_CONVERTER.convertToString(list);
+                }
+            });
+        }
         if (owner.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
             // Undefined Macros
             inheritedValues = new StringBuilder();
@@ -416,6 +486,8 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     protected abstract String getUserIncludeFlag(CompilerSet cs);
+
+    protected abstract String getUserFileFlag(CompilerSet cs);
 
     protected abstract String getUserMacroFlag(CompilerSet cs);
 

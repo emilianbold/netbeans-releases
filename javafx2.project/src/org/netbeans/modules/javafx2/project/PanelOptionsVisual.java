@@ -299,12 +299,21 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void selectJavaFXEnabledPlatform() {
+        int firstFxPlatform = -1;
         for (int i = 0; i < platformsModel.getSize(); i++) {
             JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
             if (JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
-                platformComboBox.setSelectedIndex(i);
-                break;
+                if (platform.getProperties().get(JFXProjectProperties.PLATFORM_ANT_NAME).equals(JavaFXPlatformUtils.DEFAULT_PLATFORM)) {
+                    platformComboBox.setSelectedIndex(i);
+                    return;
+                }
+                if (firstFxPlatform < 0) {
+                    firstFxPlatform = i;
+                }
             }
+        }
+        if (firstFxPlatform >= 0) {
+            platformComboBox.setSelectedIndex(firstFxPlatform);
         }
     }
 
@@ -648,8 +657,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         txtLibFolder.setVisible(visible);
         btnLibFolder.setVisible(visible);
         lblHint.setVisible(visible);
-        createMainCheckBox.setVisible(visible);
-        mainClassTextField.setVisible(visible);
+        createMainCheckBox.setVisible(type != WizardType.EXTISTING && visible);
+        mainClassTextField.setVisible(type != WizardType.EXTISTING && visible);
     }
 
     @Override

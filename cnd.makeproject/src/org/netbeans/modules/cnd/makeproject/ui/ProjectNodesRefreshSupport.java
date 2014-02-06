@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 final class ProjectNodesRefreshSupport {
 
     private static final ProjectNodesRefreshSupport inst = new ProjectNodesRefreshSupport();
-    private final Set<ProjectNodeRefreshListener> listeners = new HashSet<ProjectNodeRefreshListener>();
+    private final Set<ProjectNodeRefreshListener> listeners = new HashSet<>();
 
     private ProjectNodesRefreshSupport() {
     }

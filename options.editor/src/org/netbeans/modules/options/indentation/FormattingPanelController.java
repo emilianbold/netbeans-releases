@@ -244,13 +244,14 @@ public final class FormattingPanelController extends OptionsPanelController {
     }
     
     public boolean isChanged() {
-        synchronized (this) {
-            return changed || areCNDPrefsChanged();
-        }
+        return changed || areCNDPrefsChanged();
     }
     
     private boolean areCNDPrefsChanged() {
         boolean isChanged = false;
+        if(pf == null || selector == null) {
+            return isChanged;
+        }
         for (String mimeType : pf.getAccessedMimeTypes()) {
             for (PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
                 if (c instanceof CustomizerSelector.WrapperCustomizer) {

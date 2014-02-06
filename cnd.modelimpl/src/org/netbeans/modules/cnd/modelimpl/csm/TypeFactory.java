@@ -50,7 +50,6 @@ import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
@@ -58,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.OffsetableIdentifiableBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.DeepUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -311,7 +309,7 @@ public class TypeFactory {
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                        List<CharSequence> l = new ArrayList<CharSequence>();
+                        List<CharSequence> l = new ArrayList<>();
                         int templateDepth = 0;
                         StringBuilder sb = new StringBuilder();
                         for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
@@ -394,7 +392,7 @@ public class TypeFactory {
         private StringBuilder specifierBuilder;
         
         private int pointerDepth = 0;
-        private int arrayDepth = 0;
+        private final int arrayDepth = 0;
 
         private int reference;
         private boolean _const;
@@ -406,7 +404,7 @@ public class TypeFactory {
         
         private CsmScope scope;
 
-        final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<>();
         
         public void setNameBuilder(NameBuilder nameBuilder) {
             this.nameBuilder = nameBuilder;
@@ -470,13 +468,13 @@ public class TypeFactory {
                 for (NameBuilder.NamePart namePart : nameBuilder.getNames()) {
                     if(first) {
                         first = false;
-                        List<CharSequence> nameList = new ArrayList<CharSequence>();
+                        List<CharSequence> nameList = new ArrayList<>();
                         type = new TypeImpl(getFile(), pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
                     } else {
-                        List<CharSequence> nameList = new ArrayList<CharSequence>();
+                        List<CharSequence> nameList = new ArrayList<>();
                         type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
@@ -552,7 +550,7 @@ public class TypeFactory {
     public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
         TypeImpl type = new TypeImpl(file, 0, 0, 0, false, startOffset, endOffset);
         type.setClassifierText(cls.getName());
-        List<CharSequence> l = new ArrayList<CharSequence>();
+        List<CharSequence> l = new ArrayList<>();
         l.add(cls.getName());
         type.setQName(l.toArray(new CharSequence[l.size()]));
         type.initClassifier(cls);

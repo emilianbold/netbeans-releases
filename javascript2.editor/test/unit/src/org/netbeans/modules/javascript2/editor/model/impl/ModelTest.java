@@ -139,6 +139,10 @@ public class ModelTest extends ModelTestBase {
     public void testissue230709() throws Exception {
         checkModel("testfiles/structure/issue230709.js");
     }
+    
+    public void testIssue241171() throws Exception {
+        checkModel("testfiles/markoccurences/issue241171.js");
+    }
 
     public void testPropertyWithNewAssignments() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");

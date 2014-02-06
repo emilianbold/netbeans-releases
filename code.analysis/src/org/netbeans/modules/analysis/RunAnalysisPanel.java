@@ -154,15 +154,20 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         Icon currentProjectIcon = null;
         NonRecursiveFolder pack = context.lookup(NonRecursiveFolder.class);
         FileObject currentFile = context.lookup(FileObject.class);
+        DataFolder folder = context.lookup(DataFolder.class);
 
         if (currentFile != null && currentFile.isData()) {
             scopes.add(new FileScopeDescription(currentFile));
         }
         
+        if (folder != null) {
+            scopes.add(new FolderScopeDescription(folder));
+        }
+        
         if (pack != null && currentFile == null) {
             currentFile = pack.getFolder();
         }
-        
+
         if (currentFile != null) {
             Project p = FileOwnerQuery.getOwner(currentFile);
 
@@ -498,12 +503,13 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 toRun = Collections.singleton((AnalyzerFactory) configurationCombo.getSelectedItem());
             }
         }
-
-        Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
         boolean someOk = false;
 
         for (AnalyzerFactory a : toRun) {
+            Configuration configuration = getConfiguration();
+            Preferences settings = configuration != null ? configuration.getPreferences().node(SPIAccessor.ACCESSOR.getAnalyzerId(a)) : null;
+            Context ctx = SPIAccessor.ACCESSOR.createContext(getSelectedScope(new AtomicBoolean(false)), settings, null, null, -1, -1);
             Collection<? extends MissingPlugin> req = a.requiredPlugins(ctx);
             plugins.addAll(req);
             someOk |= req.isEmpty();
@@ -959,6 +965,31 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         
         public String getId() {
             return "*currentPackage"; // NOI18N
+        }
+    }
+
+    private static final class FolderScopeDescription implements ScopeDescription {
+        private final DataFolder folder;
+        public FolderScopeDescription(DataFolder folder) {
+            this.folder = folder;
+        }
+        @Override
+        @Messages({"# {0} - folder display name", "DN_CurrentFolder=Current Folder ({0})"})
+        public String getDisplayName() {
+            return Bundle.DN_CurrentFolder(folder.getName());
+        }
+        @Override
+        public Icon getIcon() {
+            return ImageUtilities.image2Icon(folder.getNodeDelegate().getIcon(1));
+        }
+
+        @Override
+        public Scope getScope(AtomicBoolean cancel) {
+            return Scope.create(null, null, folder.files());
+        }
+        
+        public String getId() {
+            return "*currentFolder"; // NOI18N
         }
     }
 

@@ -194,7 +194,7 @@ public final class GCCErrorParser extends ErrorParser {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
             int level = levelString == null ? 0 : Integer.valueOf(levelString);
-            int baseLavel = relativesLevel.peek().intValue();
+            int baseLavel = relativesLevel.peek();
             String directory = m.group(2);
             if (level > baseLavel) {
                 isEntered = true;
@@ -263,7 +263,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if (relativeDir != null) {
                     FileObject fo = resolveRelativePath(relativeDir, file);
                     if (fo != null && fo.isValid()) {
-                        errorInludes.add(new StackIncludeItem(fo, line, lineNumber.intValue() - 1));
+                        errorInludes.add(new StackIncludeItem(fo, line, lineNumber - 1));
                         return new Results();
                     }
                 }
@@ -317,7 +317,7 @@ public final class GCCErrorParser extends ErrorParser {
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, listenerRegistry.register(fo, lineNumber.intValue() - 1, important, description));
+                        res.add(line, listenerRegistry.register(fo, lineNumber - 1, important, description));
                         return res;
                     }
                 }

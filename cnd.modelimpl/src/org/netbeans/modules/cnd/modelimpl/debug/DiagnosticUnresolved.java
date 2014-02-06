@@ -108,7 +108,7 @@ public class DiagnosticUnresolved {
     
     private static class UnresolvedInfoBase {
         
-        private String name;
+        private final String name;
         private int count;
         
         public UnresolvedInfoBase(String name) {
@@ -135,7 +135,7 @@ public class DiagnosticUnresolved {
     
     private static class UnresolvedInfoEx extends UnresolvedInfoBase {
 
-        private Map<CsmFile, IntArray> files = new HashMap<CsmFile, IntArray>();
+        private final Map<CsmFile, IntArray> files = new HashMap<>();
         
         public UnresolvedInfoEx(String name) {
             super(name);
@@ -170,7 +170,7 @@ public class DiagnosticUnresolved {
                 }
             };
             
-            List<CsmFile> list = new ArrayList<CsmFile>(files.keySet());
+            List<CsmFile> list = new ArrayList<>(files.keySet());
             Collections.sort(list, comp);
             for (Iterator it = list.iterator(); it.hasNext();) {
                 CsmFile file = (CsmFile) it.next();
@@ -183,7 +183,7 @@ public class DiagnosticUnresolved {
         
     }
     
-    private Map<String, UnresolvedInfoBase> map = new HashMap<String, UnresolvedInfoBase>();
+    private Map<String, UnresolvedInfoBase> map = new HashMap<>();
     private int level;
     
     public DiagnosticUnresolved(int level) {
@@ -238,7 +238,7 @@ public class DiagnosticUnresolved {
             }
         };
         
-        List<UnresolvedInfoBase> infos = new ArrayList<UnresolvedInfoBase>(map.values());
+        List<UnresolvedInfoBase> infos = new ArrayList<>(map.values());
         int total = 0;
         Collections.sort(infos, comp);
         for (Iterator it = infos.iterator(); it.hasNext();) {

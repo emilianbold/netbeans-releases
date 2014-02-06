@@ -42,9 +42,12 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -54,6 +57,7 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -89,7 +93,7 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     @Override
     public Collection<FileObject> getWebRoots() {
-        List<FileObject> webRootsFO = new ArrayList<>();
+        Set<FileObject> webRootsFO = new HashSet<>();
         List<String> webRoots = WebProjectUtils.getPluginProperty(project, new WebRootsBuilder());
 
         if (webRoots != null) {
@@ -106,11 +110,9 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
         // Default web resource directory is usually webapp
         // See also maven-war-plugin documentation for more details
-        if (webRootsFO.isEmpty()) {
-            FileObject defaultWebRoot = getDefaultWebRoot();
-            if (defaultWebRoot != null) {
-                webRootsFO.add(defaultWebRoot);
-            }
+        FileObject defaultWebRoot = getDefaultWebRoot();
+        if (defaultWebRoot != null) {
+            webRootsFO.add(defaultWebRoot);
         }
 
         return webRootsFO;
@@ -121,7 +123,15 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
         if (webSourceDir == null) {
             webSourceDir = "src/main/webapp"; // NOI18N
         }
-        return projectDir.getFileObject(webSourceDir);
+
+        // Try to find root using relative path
+        FileObject sourceRoot = projectDir.getFileObject(webSourceDir);
+        if (sourceRoot != null) {
+            return sourceRoot;
+        }
+
+        // Try to find resources root using absolute path --> See issue #241205
+        return FileUtil.toFileObject(new File(webSourceDir));
     }
 
     /**
