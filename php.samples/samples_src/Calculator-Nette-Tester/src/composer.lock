@@ -1,0 +1,77 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "hash": "db7b17a93ec23099cdd9f99d8d207f23",
+    "packages": [
+
+    ],
+    "packages-dev": [
+        {
+            "name": "nette/tester",
+            "version": "v0.9.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nette/tester.git",
+                "reference": "812b5ab2f59b0d742dd30035865467ec0b2f6ee7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nette/tester/zipball/812b5ab2f59b0d742dd30035865467ec0b2f6ee7",
+                "reference": "812b5ab2f59b0d742dd30035865467ec0b2f6ee7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "bin": [
+                "Tester/tester",
+                "Tester/coverage-report"
+            ],
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "Tester/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0",
+                "GPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "David Grudl",
+                    "homepage": "http://davidgrudl.com"
+                },
+                {
+                    "name": "Nette Community",
+                    "homepage": "http://nette.org/contributors"
+                }
+            ],
+            "description": "An easy-to-use PHP Unit Testing framework.",
+            "homepage": "http://nette.org",
+            "keywords": [
+                "nette",
+                "testing",
+                "unit"
+            ],
+            "time": "2013-12-30 23:49:37"
+        }
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [
+
+    ],
+    "platform": [
+
+    ],
+    "platform-dev": [
+
+    ]
+}

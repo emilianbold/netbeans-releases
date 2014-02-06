@@ -66,9 +66,9 @@ public class TapParserTest extends NbTestCase {
         putFileContent("Greeting.test.actual", ACTUAL_CONTENT);
     }
 
-    public void testParse() throws Exception {
+    public void testParse1() throws Exception {
         // prepare content
-        String log = getFileContent("nette-tester-tap.log");
+        String log = getFileContent("nette-tester-tap1.log");
         log = log.replace("%DIFF_BASE_DIR%", getWorkDirPath() + File.separator);
         // parse it
         TestSuiteVo suite = new TapParser()
@@ -165,6 +165,29 @@ public class TapParserTest extends NbTestCase {
         assertTrue(testCase1.getStackTrace().isEmpty());
         assertNull(testCase7.getFile());
         assertEquals(100L, testCase7.getTime());
+    }
+
+    public void testParse2() throws Exception {
+        TestSuiteVo suite = new TapParser()
+                .parse(getFileContent("nette-tester-tap2.log"), 100L);
+        assertEquals("Tests", suite.getName());
+        assertEquals(null, suite.getFile());
+
+        List<TestCaseVo> testCases = suite.getTestCases();
+        assertEquals(1, testCases.size());
+
+        TestCaseVo testCase = testCases.get(0);
+        assertEquals("Calculator-Nette-Tester/test/Calculator.test.phpt", testCase.getName());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
+        assertEquals("12 should be 3", testCase.getMessage());
+        assertEquals(Arrays.asList(
+                "in Tester/Framework/Assert.php(370)",
+                "in Tester/Framework/Assert.php(52) Tester\\Assert::fail()",
+                "in Calculator-Nette-Tester/test/Calculator.test.phpt(71) Tester\\Assert::same()"), testCase.getStackTrace());
+        assertNull(testCase.getDiff());
+        assertEquals("Calculator-Nette-Tester/test/Calculator.test.phpt", testCase.getFile());
+        assertEquals(71, testCase.getLine());
+        assertEquals(100L, testCase.getTime());
     }
 
     private String getFileContent(String filePath) throws IOException {

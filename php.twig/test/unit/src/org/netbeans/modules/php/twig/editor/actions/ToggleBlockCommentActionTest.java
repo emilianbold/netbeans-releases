@@ -134,6 +134,11 @@ public class ToggleBlockCommentActionTest extends TwigActionsTestBase {
         testInFile("testfiles/actions/toggleComment/testUncommentWholeLine_05.twig");
     }
 
+    public void testUncommentWholeLine_06() throws Exception {
+        TwigOptions.getInstance().setToggleCommentType(ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE);
+        testInFile("testfiles/actions/toggleComment/testUncommentWholeLine_06.twig");
+    }
+
     public void testUncommentTwigPart_01() throws Exception {
         TwigOptions.getInstance().setToggleCommentType(ToggleBlockCommentAction.ToggleCommentType.LANGUAGE_SENSITIVE);
         testInFile("testfiles/actions/toggleComment/testUncommentTwigPart_01.twig");

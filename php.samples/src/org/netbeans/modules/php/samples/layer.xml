@@ -91,6 +91,14 @@ made subject to such option by the copyright holder.
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="500"/>
                     </file>
+                    <file name="Calculator-Nette-Tester" url="Calculator-Nette-Tester.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/Calculator-Nette-Tester"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/calculator.png"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Calculator-Nette-Tester.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
                 </folder>
             </folder>
         </folder>

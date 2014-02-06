@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,72 +36,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.lexer;
 
-public class TwigTopLexerState {
+require __DIR__ . '/../src/Calculator.php';
+require __DIR__ . '/../src/vendor/autoload.php';
 
-    public enum Main {
-        INIT,
-        HTML,
-        OPEN,
-        TWIG,
-        CLOSE,
-        CLOSE_RAW,
-        RAW
-    };
+use Tester\Assert;
+use Tester\Environment;
 
-    public enum Type {
-        NONE,
-        BLOCK,
-        VAR,
-        COMMENT
-    };
+Environment::setup();
 
-    Main main;
-    Type type;
+$calculator = new Calculator();
 
-    public TwigTopLexerState() {
-        main = Main.INIT;
-        type = Type.NONE;
-    }
+Assert::same(0, $calculator->multiply(0, 0));
+Assert::same(0, $calculator->multiply(0, 1));
+Assert::same(0, $calculator->multiply(1, 0));
+Assert::same(1, $calculator->multiply(1, 1));
+Assert::same(6, $calculator->multiply(3, 2));
 
-    public TwigTopLexerState(TwigTopLexerState copy) {
-        main = copy.main;
-        type = copy.type;
-    }
-
-    public TwigTopLexerState(Main main, Type type) {
-        this.main = main;
-        this.type = type;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.main != null ? this.main.hashCode() : 0);
-        hash = 97 * hash + (this.type != null ? this.type.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (getClass() != object.getClass()) {
-            return false;
-        }
-        TwigTopLexerState compare = (TwigTopLexerState) object;
-        if (main != compare.main) {
-            return false;
-        }
-        if (type != compare.type) {
-            return false;
-        }
-        return true;
-    }
-}
+?>
