@@ -414,7 +414,7 @@ public class Operator {
                 debugger.notifySuspendAllNoFire(ignoredThreads);
             } else if (suspendedCurrentThread && (ignoredThreads == null || !ignoredThreads.contains(thref))) {
                 threadWasInitiallySuspended = suspendedThread.isSuspended();
-                suspendedThread.notifySuspendedNoFire();
+                suspendedThread.notifySuspendedNoFire(isThreadDeath);
             }
         }
         if (logger.isLoggable(Level.FINE)) {
@@ -586,12 +586,14 @@ public class Operator {
                 }*/
             }
             int sc = suspendCount.removeSuspendCountFor(thref);
-            for (int sci = 1; sci < sc; sci++) {
-                ThreadReferenceWrapper.suspend(thref);
-            }
-            if (sc > 1) {
-                JPDAThreadImpl jt = debugger.getThread(thref);
-                jt.updateSuspendCount(sc);
+            if (!isThreadDeath) {
+                for (int sci = 1; sci < sc; sci++) {
+                    ThreadReferenceWrapper.suspend(thref);
+                }
+                if (sc > 1) {
+                    JPDAThreadImpl jt = debugger.getThread(thref);
+                    jt.updateSuspendCount(sc);
+                }
             }
             if (!silent && suspendedAll) {
                 //TODO: Not really all might be suspended!

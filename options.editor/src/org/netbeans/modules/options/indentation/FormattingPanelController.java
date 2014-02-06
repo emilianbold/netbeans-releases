@@ -244,9 +244,7 @@ public final class FormattingPanelController extends OptionsPanelController {
     }
     
     public boolean isChanged() {
-        synchronized (this) {
-            return changed || areCNDPrefsChanged();
-        }
+        return changed || areCNDPrefsChanged();
     }
     
     private boolean areCNDPrefsChanged() {

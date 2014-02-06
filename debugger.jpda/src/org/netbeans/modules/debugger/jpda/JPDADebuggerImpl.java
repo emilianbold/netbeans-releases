@@ -1606,7 +1606,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                    status == JPDAThread.STATE_ZOMBIE);
                 if (!invalid) {
                     try {
-                        ((JPDAThreadImpl) threadOrGroup).notifySuspendedNoFire();
+                        ((JPDAThreadImpl) threadOrGroup).notifySuspendedNoFire(false);
                     } catch (ObjectCollectedException ocex) {
                         invalid = true;
                     }

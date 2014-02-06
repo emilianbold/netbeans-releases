@@ -294,13 +294,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 breakpoint);
         String[] names = classNames.getClassNames();
         String[] excludedNames = classNames.getExcludedClassNames();
-        setClassRequests (
+        boolean wasSet = setClassRequests (
             names,
             excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        for (String cn : names) {
-            checkLoadedClasses (cn, excludedNames);
+        if (wasSet) {
+            for (String cn : names) {
+                checkLoadedClasses (cn, excludedNames);
+            }
         }
     }
 
@@ -367,6 +369,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     } catch (ObjectCollectedExceptionWrapper e) {
                     } catch (InvalidRequestStateExceptionWrapper irse) {
                         Exceptions.printStackTrace(irse);
+                    } catch (RequestNotSupportedException rnsex) {
+                        setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
+                        return ;
                     }
                 }
             } // for

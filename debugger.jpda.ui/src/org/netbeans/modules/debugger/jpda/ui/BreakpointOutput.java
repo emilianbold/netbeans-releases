@@ -316,6 +316,17 @@ PropertyChangeListener {
             printText = printText.replace(threadNamePattern, "?");
         }
         
+        boolean isThreadDeath = false;
+        if (t != null) {
+            try {
+                java.lang.reflect.Field f = event.getClass().getDeclaredField("event"); // NOI18N
+                f.setAccessible(true);
+                com.sun.jdi.event.Event je = (com.sun.jdi.event.Event) f.get(event);
+                isThreadDeath = (je instanceof com.sun.jdi.event.ThreadDeathEvent);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         // 2) replace {className} by the name of current class
         if (event.getReferenceType () != null) {
             printText = printText.replace(classNamePattern, event.getReferenceType().name());
@@ -334,7 +345,7 @@ PropertyChangeListener {
         }
         String language = (session != null) ? session.getCurrentLanguage() : null;
         String methodName;
-        if (t != null) {
+        if (t != null && !isThreadDeath) {
             methodName  = t.getMethodName ();
             if ("".equals (methodName)) {
                 methodName = "?";
@@ -349,7 +360,7 @@ PropertyChangeListener {
             (methodName);
         
         // 4) replace {lineNumber} by the current line number
-        int lineNumber = (t != null) ? t.getLineNumber (language) : -1;
+        int lineNumber = (t != null && !isThreadDeath) ? t.getLineNumber (language) : -1;
         if (lineNumber < 0) {
             printText = lineNumberPattern.matcher (printText).replaceAll 
                 ("?");
@@ -407,7 +418,7 @@ PropertyChangeListener {
                     theDebugger = debugger;
                 }
                 CallStackFrame csf = null;
-                if (t != null) {
+                if (t != null && !isThreadDeath) {
                     try {
                         CallStackFrame[] topFramePtr = t.getCallStack(0, 1);
                         if (topFramePtr.length > 0) {
