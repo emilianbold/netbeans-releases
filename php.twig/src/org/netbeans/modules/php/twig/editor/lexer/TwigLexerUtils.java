@@ -268,10 +268,7 @@ public final class TwigLexerUtils {
             if (this.tokenId != other.tokenId) {
                 return false;
             }
-            if (!Objects.equals(this.tokenText, other.tokenText)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.tokenText, other.tokenText);
         }
 
         @Override
