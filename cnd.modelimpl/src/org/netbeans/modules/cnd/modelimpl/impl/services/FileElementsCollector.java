@@ -74,6 +74,10 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  * @author Vladimir Voskresensky
  */
 public class FileElementsCollector {
+    // use big negative instead of 0 as minimal start file offset
+    // because CsmInclude associated with "-include file" has negative start offset
+    private static final int MIN_FILE_OFFSET = Integer.MIN_VALUE;
+    private static final int MAX_FILE_OFFSET = Integer.MAX_VALUE;
     private final CsmFile destFile;
     private int startOffset;
     private int destOffset;
@@ -88,9 +92,9 @@ public class FileElementsCollector {
         this.destFile = file;
 //        this.project = (ProjectBase) file.getProject();
         this.destOffset = offset;
-        this.startOffset = 0;
-        this.returnPoint = 0;
-        this.localReturnPoint = 0;
+        this.startOffset = MIN_FILE_OFFSET;
+        this.returnPoint = MIN_FILE_OFFSET;
+        this.localReturnPoint = MIN_FILE_OFFSET;
         this.onlyInProject = onlyInProject;
     }
 
@@ -216,7 +220,7 @@ public class FileElementsCollector {
         for (CsmInclude inc : includeStack) {
             CsmFile includedFrom = inc.getContainingFile();
             int incOffset = inc.getStartOffset();
-            gatherFileMaps(visitedFiles, includedFrom, 0, incOffset);
+            gatherFileMaps(visitedFiles, includedFrom, MIN_FILE_OFFSET, incOffset);
         }
         // gather all visible by this file upto destination offset
         gatherFileMaps(visitedFiles, this.destFile, this.startOffset, this.destOffset);
@@ -236,7 +240,7 @@ public class FileElementsCollector {
             }
             // check that include is above the end offset
             if (inc.getEndOffset() < endOffset) {
-                if (endOffset != Integer.MAX_VALUE) {
+                if (endOffset != MAX_FILE_OFFSET) {
                     returnPoint = inc.getEndOffset();
                     localReturnPoint = returnPoint;
                     localEndPoint = localReturnPoint;
@@ -244,12 +248,12 @@ public class FileElementsCollector {
                 CsmFile incFile = inc.getIncludeFile();
                 if( incFile != null && (onlyInProject == null || incFile.getProject() == onlyInProject)) {
                     // in includes look for everything
-                    gatherFileMaps(visitedFiles, incFile, 0, Integer.MAX_VALUE);
+                    gatherFileMaps(visitedFiles, incFile, MIN_FILE_OFFSET, MAX_FILE_OFFSET);
                 }
             }
         }
         // gather this file maps
-        if (endOffset == Integer.MAX_VALUE) {
+        if (endOffset == MAX_FILE_OFFSET) {
             filter = CsmSelect.getFilterBuilder().createKindFilter(
                     CsmDeclaration.Kind.NAMESPACE_DEFINITION,
                     CsmDeclaration.Kind.NAMESPACE_ALIAS,
@@ -279,7 +283,7 @@ public class FileElementsCollector {
                 }
                 //assert o instanceof CsmScopeElement;
                 if(CsmKindUtilities.isScopeElement((CsmObject)o)) {
-                    if (endOffset != Integer.MAX_VALUE) {
+                    if (endOffset != MAX_FILE_OFFSET) {
                         if (global) {
                             returnPoint = Math.max(returnPoint, start);
                             localReturnPoint = returnPoint;
@@ -290,7 +294,7 @@ public class FileElementsCollector {
                         }
                     }
                     gatherScopeElementMaps((CsmScopeElement) o, end, endOffset, global);
-                    if (endOffset != Integer.MAX_VALUE) {
+                    if (endOffset != MAX_FILE_OFFSET) {
                         if (o instanceof CsmExpressionStatement) {
                             if (!global) {
                                 localEndPoint = Math.max(localEndPoint, end);
@@ -340,8 +344,8 @@ public class FileElementsCollector {
                     localDirectVisibleNamespaces.remove(namespace);
                     localDirectVisibleNamespaces.add(namespace);
                 }
-                gatherLocalNamespaceElementsFromMaps(nsd, 0, endOffset, global);
-                gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset, false);
+                gatherLocalNamespaceElementsFromMaps(nsd, MIN_FILE_OFFSET, endOffset, global);
+                gatherDeclarationsMaps(nsd.getDeclarations(), MIN_FILE_OFFSET, endOffset, false);
             }
             if (global) {
                 globalDirectVisibleNamespaceDefinitions.add(nsd);
@@ -374,11 +378,11 @@ public class FileElementsCollector {
         } else if (CsmKindUtilities.isDeclarationStatement(element)) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
             if (ds.getStartOffset() < endOffset) {
-                gatherDeclarationsMaps(((CsmDeclarationStatement) element).getDeclarators(), 0, endOffset, false);
+                gatherDeclarationsMaps(((CsmDeclarationStatement) element).getDeclarators(), MIN_FILE_OFFSET, endOffset, false);
             }
         } else if (CsmKindUtilities.isScope(element)) {
             if (endOffset < end) {
-                gatherDeclarationsMaps(((CsmScope) element).getScopeElements(), 0, endOffset, false);
+                gatherDeclarationsMaps(((CsmScope) element).getScopeElements(), MIN_FILE_OFFSET, endOffset, false);
             }
         }
     }
@@ -388,14 +392,14 @@ public class FileElementsCollector {
         if (global) {
             for (CsmNamespaceDefinition nsd : globalDirectVisibleNamespaceDefinitions) {
                 if (nsd.getQualifiedName().equals(nsName)) {
-                    gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);
+                    gatherDeclarationsMaps(nsd.getDeclarations(), MIN_FILE_OFFSET, MAX_FILE_OFFSET, false);
                 }
             }
         } else {
             LinkedHashSet<CsmNamespaceDefinition> currentDVNDs = new LinkedHashSet<>(localDirectVisibleNamespaceDefinitions);
             for (CsmNamespaceDefinition nsd : currentDVNDs) {
                 if (nsd.getQualifiedName().equals(nsName)) {
-                    gatherDeclarationsMaps(nsd.getDeclarations(), 0, Integer.MAX_VALUE, false);
+                    gatherDeclarationsMaps(nsd.getDeclarations(), MIN_FILE_OFFSET, MAX_FILE_OFFSET, false);
                 }
             }
         }
