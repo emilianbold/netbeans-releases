@@ -289,44 +289,22 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
     // --------
 
-    private static class ItemInfoRenderer extends JLabel
-                                               implements ListCellRenderer
-    {
-        private static final Border hasFocusBorder =
-            new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-        private static final Border noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
-
-        public ItemInfoRenderer() {
-            setOpaque(true);
-            setBorder(noFocusBorder);
-        }
-
+    private static class ItemInfoRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList list,
-                                                      Object value,
-                                                      int index,
-                                                      boolean isSelected,
-                                                      boolean cellHasFocus)
-        {
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                                                      boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
             String name = ((BeanInstaller.ItemInfo)value).classname;
-            setToolTipText(name); // full class name as tooltip
+            label.setToolTipText(name); // full class name as tooltip
 
             int i = name.lastIndexOf('.');
-            if (i >= 0)
+            if (i >= 0) {
                 name = name.substring(i+1);
-
-            setText(name); // short class name as the label text
-
-            if (isSelected){
-                setBackground(UIManager.getColor("List.selectionBackground")); // NOI18N
-                setForeground(UIManager.getColor("List.selectionForeground")); // NOI18N
             }
-            else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-            setBorder(cellHasFocus ? hasFocusBorder : noFocusBorder);
-            return this;
+            label.setText(name); // short class name as the label text
+
+            return label;
         }
     }
 

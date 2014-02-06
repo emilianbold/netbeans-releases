@@ -96,9 +96,9 @@ public class KdpDebugTask extends Task {
     private static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.mobility.project.ant.KdpDebugTask"); //NOI18N
     
     private long startTime;
-    private long delay = 5000;
+    private long delay = 0;
     private long timeout = 45000;
-    private long period = 2000;
+    private long period = 500;
     private String host = "localhost"; //NOI18N
     private String address;
     
@@ -231,11 +231,13 @@ public class KdpDebugTask extends Task {
         properties.put ("baseDir", getProject().getBaseDir()); // NOI18N
         
         
-        //sleep for defined delay
-        try {
-            Thread.sleep(this.delay);
-        } catch (InterruptedException e1) {
-            e1.printStackTrace();
+        //sleep for defined delay if delay is set
+        if (this.delay > 0) {
+            try {
+                Thread.sleep(this.delay);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
         }
         
         //start debugger
@@ -280,7 +282,7 @@ public class KdpDebugTask extends Task {
 
     private void sleep() {
         try {
-            Thread.sleep(this.period += 1000);
+            Thread.sleep(this.period);
         } catch (InterruptedException ie) {
             log(ie, Project.MSG_VERBOSE);
         }
