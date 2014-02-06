@@ -51,6 +51,7 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ExceptionRequest;
 
 import java.util.List;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.Session;
@@ -67,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.jdi.request.ExceptionRequestWrapper;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
 * Implementation of breakpoint on method.
@@ -96,13 +98,15 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
                 breakpoint);
         String[] names = classNames.getClassNames();
         String[] excludedNames = classNames.getExcludedClassNames();
-        setClassRequests (
+        boolean wasSet = setClassRequests (
             names,
             excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        for (String cn : names) {
-            checkLoadedClasses (cn, excludedNames);
+        if (wasSet) {
+            for (String cn : names) {
+                checkLoadedClasses (cn, excludedNames);
+            }
         }
     }
     
@@ -126,6 +130,8 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
             } catch (ObjectCollectedExceptionWrapper e) {
             } catch (InvalidRequestStateExceptionWrapper irse) {
                 Exceptions.printStackTrace(irse);
+            } catch (RequestNotSupportedException rnsex) {
+                setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(ClassBasedBreakpoint.class, "MSG_RequestNotSupported"));
             }
         }
     }

@@ -272,6 +272,7 @@ public class GroupsManager {
                 }
             }
 
+            Map<String, String> oldId2newId = new HashMap<>(id2tc.size());
             for( String oldId : id2tc.keySet() ) {
                 TopComponent tc = id2tc.get(oldId);
                 ModeImpl mode = tcid2mode.get(oldId);
@@ -279,6 +280,7 @@ public class GroupsManager {
                     mode.dockInto(tc);
                 }
                 tc.open();
+                oldId2newId.put(oldId, wmi.findTopComponentID(tc));
             }
             
             //restore selection in all modes
@@ -287,6 +289,8 @@ public class GroupsManager {
                 if( null == config )
                     continue;
                 String selectedId = config.selectedTopComponentID;
+                if( null != selectedId )
+                    selectedId = oldId2newId.get(selectedId);
                 if( null != selectedId ) {
                     if( mode.getOpenedTopComponentsIDs().contains(selectedId) ) {
                         TopComponent tc = wmi.findTopComponent(selectedId);

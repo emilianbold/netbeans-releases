@@ -63,6 +63,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -79,7 +80,9 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
+import org.netbeans.modules.debugger.jpda.ExpressionPool.Interval;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -319,6 +322,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
         Location bpLocation = null;
+        Interval expressionLines = null;
         if (expr != null) {
             Operation[] ops = expr.getOperations();
             for (int i = 0; i < ops.length; i++) {
@@ -330,26 +334,29 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     break;
                 }
             }
+            expressionLines = expr.getInterval();
         }
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
-        doAction(debugger, methodName, bpLocation, false, doResume);
+        doAction(debugger, methodName, bpLocation, expressionLines, false, doResume);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
                             final String methodName,
                             Location bpLocation,
+                            Interval expressionLines,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep) {
         
-        return doAction(debugger, methodName, bpLocation, setBoundaryStep, true);
+        return doAction(debugger, methodName, bpLocation, expressionLines, setBoundaryStep, true);
     }
 
     private static boolean doAction(final JPDADebuggerImpl debugger,
                                     final String methodName,
                                     Location bpLocation,
                                     // If it's important not to run far from the expression
+                                    Interval expressionLines,
                                     boolean setBoundaryStep,
                                     boolean doResume) {
         final VirtualMachine vm = debugger.getVirtualMachine();
@@ -479,7 +486,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     return false;
                 }
                 if (setBoundaryStep) {
-                    boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
+                    boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq, expressionLines);
                 }
             } catch (VMDisconnectedExceptionWrapper e) {
                 return false;
@@ -494,10 +501,11 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     }
 
     private static JPDAStep setBoundaryStepRequest(final JPDADebuggerImpl debugger,
-                                                   JPDAThread tr,
-                                                   final EventRequest request) {
+                                                   final JPDAThread tr,
+                                                   final EventRequest request,
+                                                   final Interval expressionLines) {
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
-        JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
+        final JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
         boundaryStep.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
 
             @Override
@@ -514,6 +522,19 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     } catch (InvalidRequestStateExceptionWrapper irex) {
                     }
                 }
+            }
+        });
+        ((JPDAStepImpl) boundaryStep).setStopHereCheck(new JPDAStepImpl.StopHereCheck() {
+            @Override
+            public boolean stopHere(boolean willStop) {
+                if (willStop) {
+                    int line = tr.getLineNumber(debugger.getSession().getCurrentLanguage());
+                    if (expressionLines.contains(line)) {
+                        // resume
+                        willStop = false;
+                    }
+                }
+                return willStop;
             }
         });
         boundaryStep.addStep(tr);

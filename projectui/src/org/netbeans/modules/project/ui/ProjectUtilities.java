@@ -186,7 +186,14 @@ public class ProjectUtilities {
                             // when not called from UI, only include TCs that arenot modified
                             tc2close.add(tc);
                         }
-                        wr.urls4project.get(owner).add(dobj.getPrimaryFile().toURL().toExternalForm());
+                        //#235897 split a single line to detect NPE better
+                        final Set<String> pwnr = wr.urls4project.get(owner);
+                        assert pwnr != null : "Owner project for file:" + fobj + " prj:" + owner;
+                        final FileObject pf = fobj;
+                        assert pf != null;
+                        URL u = pf.toURL();
+                        assert u != null;
+                        pwnr.add(u.toExternalForm());
                     }
                 } else {
                     ERR.log(Level.FINE, "#194243: no DataObject in lookup of {0} of {1}", new Object[] {tc.getName(), tc.getClass()});

@@ -166,7 +166,7 @@ public class NewGroupPanel extends JPanel {
                 if (fo != null && fo.isFolder()) {
                     try {
                         Project p = ProjectManager.getDefault().findProject(fo);
-                        if (p != null && nameField.getText().length() == 0) {
+                        if (p != null) {
                             nameField.setText(ProjectUtils.getInformation(p).getDisplayName());
                         }
                     } catch (IOException x) {
@@ -176,7 +176,7 @@ public class NewGroupPanel extends JPanel {
             }
         } else if (directoryKindRadio.isSelected()) {
             String s = directoryField.getText();
-            if (s != null && s.length() > 0 && nameField.getText().length() == 0) {
+            if (s != null && s.length() > 0) {
                 File f = new File(s);
                 nameField.setText(f.getName());
             }
