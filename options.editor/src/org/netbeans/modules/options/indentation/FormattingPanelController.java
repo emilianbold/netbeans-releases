@@ -249,6 +249,9 @@ public final class FormattingPanelController extends OptionsPanelController {
     
     private boolean areCNDPrefsChanged() {
         boolean isChanged = false;
+        if(pf == null || selector == null) {
+            return isChanged;
+        }
         for (String mimeType : pf.getAccessedMimeTypes()) {
             for (PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
                 if (c instanceof CustomizerSelector.WrapperCustomizer) {
