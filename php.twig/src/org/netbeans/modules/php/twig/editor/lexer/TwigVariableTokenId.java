@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -35,10 +35,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Sebastian Hörl
+ * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.util.Collection;
@@ -56,27 +57,24 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-public enum TwigTokenId implements TokenId {
-
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public enum TwigVariableTokenId implements TokenId {
     T_TWIG_NAME("twig_name"), //NOI18N
-    T_TWIG_STRING("twig_string"), //NOI18N
-    T_TWIG_NUMBER("twig_number"), //NOI18N
     T_TWIG_OPERATOR("twig_operator"), //NOI18N
     T_TWIG_PUNCTUATION("twig_punctuation"), //NOI18N
-    T_TWIG_WHITESPACE("twig_whitespace"), //NOI18N
-    T_TWIG_TAG("twig_tag"), //NOI18N
-    T_TWIG_BLOCK_START("twig_block"), //NOI18N
-    T_TWIG_BLOCK_END("twig_block"), //NOI18N
-    T_TWIG_VAR_START("twig_var"), //NOI18N
-    T_TWIG_VAR_END("twig_var"), //NOI18N
-    T_TWIG_COMMENT("twig_comment"), //NOI18N
-    T_TWIG_OTHER("twig_other"), //NOI18N
+    T_TWIG_NUMBER("twig_number"), //NOI18N
+    T_TWIG_STRING("twig_string"), //NOI18N
     T_TWIG_INTERPOLATION_START("twig_interpolation"), //NOI18N
-    T_TWIG_INTERPOLATION_END("twig_interpolation"); //NOI18N
+    T_TWIG_INTERPOLATION_END("twig_interpolation"), //NOI18N
+    T_TWIG_OTHER("twig_other"), //NOI18N
+    T_TWIG_WHITESPACE("twig_whitespace"); //NOI18N
 
     private final String primaryCategory;
 
-    TwigTokenId(String primaryCategory) {
+    TwigVariableTokenId(String primaryCategory) {
         this.primaryCategory = primaryCategory;
     }
 
@@ -84,38 +82,37 @@ public enum TwigTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
-
-    private static final Language<TwigTokenId> LANGUAGE =
-            new LanguageHierarchy<TwigTokenId>() {
+    private static final Language<TwigVariableTokenId> LANGUAGE =
+            new LanguageHierarchy<TwigVariableTokenId>() {
                 @Override
-                protected Collection<TwigTokenId> createTokenIds() {
-                    return EnumSet.allOf(TwigTokenId.class);
+                protected Collection<TwigVariableTokenId> createTokenIds() {
+                    return EnumSet.allOf(TwigVariableTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<TwigTokenId>> createTokenCategories() {
-                    Map<String, Collection<TwigTokenId>> cats = new HashMap<>();
+                protected Map<String, Collection<TwigVariableTokenId>> createTokenCategories() {
+                    Map<String, Collection<TwigVariableTokenId>> cats = new HashMap<>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<TwigTokenId> createLexer(LexerRestartInfo<TwigTokenId> info) {
-                    return new TwigLexer(info);
+                protected Lexer<TwigVariableTokenId> createLexer(LexerRestartInfo<TwigVariableTokenId> info) {
+                    return new TwigVariableLexer(info);
                 }
 
                 @Override
                 protected String mimeType() {
-                    return TwigLanguage.TWIG_MIME_TYPE + "-markup"; // NOI18N
+                    return TwigLanguage.TWIG_MIME_TYPE + "-variable"; // NOI18N
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<TwigTokenId> token,
+                protected LanguageEmbedding<?> embedding(Token<TwigVariableTokenId> token,
                         LanguagePath languagePath, InputAttributes inputAttributes) {
                     return null;
                 }
             }.language();
 
-    public static Language<TwigTokenId> language() {
+    public static Language<TwigVariableTokenId> language() {
         return LANGUAGE;
     }
 }
