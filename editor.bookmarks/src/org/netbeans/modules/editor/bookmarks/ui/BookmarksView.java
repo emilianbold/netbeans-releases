@@ -57,6 +57,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -102,6 +103,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -164,6 +166,12 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     private transient BookmarkInfo displayedBookmarkInfo;
     
     private transient boolean initialSelectionDone;
+    
+    private static final String PREFS_NODE = "BookmarksProperties"; //NOI18N
+    private static final Preferences prefs = NbPreferences.forModule(BookmarksView.class).node(PREFS_NODE);
+    private static final String TREE_VIEW_VISIBLE_PREF = "treeViewVisible"; //NOI18N
+    private static final String TREE_VIEW_VISIBLE_PREF_TRUE = "true"; //NOI18N
+    private static final String TREE_VIEW_VISIBLE_PREF_FALSE = "false";  //NOI18N
     
     BookmarksView() {
 //        getActionMap().put("rename", SystemAction.get(RenameAction.class));
@@ -252,8 +260,13 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
             add(splitPane, gridBagConstraints);
 
             // Make treeView visible
-            // treeViewVisible = false;
-            setTreeViewVisible(true);
+            if (TREE_VIEW_VISIBLE_PREF_FALSE.equals(prefs.get(TREE_VIEW_VISIBLE_PREF, TREE_VIEW_VISIBLE_PREF_TRUE))) {
+                treeViewShowing = true;
+                setTreeViewVisible(false);
+            } else {
+                setTreeViewVisible(true);
+            }
+            
             BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
             try {
                 lockedBookmarkManager.addBookmarkManagerListener(
@@ -272,6 +285,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     private void setTreeViewVisible(boolean treeViewVisible) {
         if (treeViewVisible != this.treeViewShowing) {
             this.treeViewShowing = treeViewVisible;
+            prefs.put(TREE_VIEW_VISIBLE_PREF, treeViewVisible ? TREE_VIEW_VISIBLE_PREF_TRUE : TREE_VIEW_VISIBLE_PREF_FALSE);
             TreeOrTableContainer container;
             boolean create;
             if (treeViewVisible) {
