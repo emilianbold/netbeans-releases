@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -74,11 +75,13 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
     private int index;
     private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
 
+    @Override
     public abstract Set<DataObject> instantiate(TemplateWizard wiz) throws IOException;
 
+    @Override
     public void initialize(TemplateWizard wizard) {
         WizardDescriptor.Panel<WizardDescriptor> folderPanel;
-        Project project = Templates.getProject( wizard );
+        Project project = Templates.getProject(wizard);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
         if (sourceGroups.length == 0) {
@@ -88,33 +91,24 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
         folderPanel = Templates.buildSimpleTargetChooser(project, sourceGroups).create();
-
-        Profile profile = null;
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if (webModule !=null) {
-            profile = webModule.getJ2eeProfile();
-            if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB)) {
-                folderPanel = new ErrorPanel();
-            }
-        }
-
-        panels = new WizardDescriptor.Panel[] { folderPanel };
+        folderPanel = new ValidationPanel(wizard, folderPanel);
+        panels = new WizardDescriptor.Panel[]{folderPanel};
 
         // Creating steps.
-        Object prop = wizard.getProperty (WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
+        Object prop = wizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
         String[] steps = createSteps(beforeSteps, panels);
 
         for (int i = 0; i < panels.length; i++) {
-            JComponent jc = (JComponent)panels[i].getComponent ();
+            JComponent jc = (JComponent) panels[i].getComponent();
             if (steps[i] == null) {
-                steps[i] = jc.getName ();
+                steps[i] = jc.getName();
             }
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
-            jc.putClientProperty (WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer (i)); // NOI18N
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
         }
 
         Templates.setTargetName(wizard, getDefaultName());
@@ -142,40 +136,49 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
         }
     }
 
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
 
+    @Override
     public Panel<WizardDescriptor> current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(ValidationConfigurationIterator.class, "TITLE_x_of_y",
                 index + 1, panels.length);
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (! hasNext ()) throw new NoSuchElementException ();
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
@@ -199,32 +202,27 @@ public abstract class AbstractIterator implements TemplateWizard.Iterator{
         return res;
     }
 
-    private static class ErrorPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+    private static class ValidationPanel extends DelegatingWizardDescriptorPanel {
 
-        public Component getComponent() {
-            JPanel panel = new JPanel(true);
-            panel.add(new JLabel(NbBundle.getMessage(AbstractIterator.class, "ERR_Wrong_JavaEE")));
-            return panel;
+        private final TemplateWizard wizard;
+
+        public ValidationPanel(TemplateWizard wizard, Panel delegate) {
+            super(delegate);
+            this.wizard = wizard;
         }
 
-        public HelpCtx getHelp() {
-            return new HelpCtx(this.getClass());
-        }
-
-        public void readSettings(WizardDescriptor settings) {
-        }
-
-        public void storeSettings(WizardDescriptor settings) {
-        }
-
+        @Override
         public boolean isValid() {
-            return false;
-        }
-
-        public void addChangeListener(ChangeListener l) {
-        }
-
-        public void removeChangeListener(ChangeListener l) {
+            Project project = Templates.getProject(wizard);
+            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+            if (webModule != null) {
+                Profile profile = webModule.getJ2eeProfile();
+                if (profile != null && !profile.isAtLeast(Profile.JAVA_EE_6_WEB)) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(AbstractIterator.class, "ERR_Wrong_JavaEE"));
+                    return false;
+                }
+            }
+            return super.isValid();
         }
 
     }
