@@ -93,7 +93,7 @@ import org.openide.util.lookup.Lookups;
     // A list of all client UnitDescriptors: clientUnitDescriptor <-> clientShortUnitID
     private final UnitDescriptorsDictionary clientUnitDescriptorsDictionary = new UnitDescriptorsDictionary();
     // For each clientShortUnitID: A list of all client FilePaths: filePathID <-> clientFilePaths
-    // (the same file has the same filePathID in any layer)
+    // (the same file has the same filePathID in any layer, the dictionary should keep file names for the client)
     private final Map<Integer, FilePathsDictionary> filePathDictionaries = new HashMap<Integer, FilePathsDictionary>();
     // For LayerDescriptor -> map of translation clientFileSystemID => fileSystemIndexInLayer
     private final Map<LayerDescriptor, Map<Integer, Integer>> fileSystemsTranslationMap = new HashMap<LayerDescriptor, Map<Integer, Integer>>();
@@ -443,8 +443,8 @@ import org.openide.util.lookup.Lookups;
                     convertedTable = new ArrayList<CharSequence>(fileNameTable.size());
                     for (CharSequence fname : fileNameTable) {
                         FilePath sourceFSPath = new FilePath(layer_to_read_files_from.getUnitsTable().get(unit_id_layer_to_read_files_from).getFileSystem(), fname.toString());
-                        CharSequence pathInLayer = RepositoryMapper.map(clientUnitDescriptor.getFileSystem(), sourceFSPath);
-                        convertedTable.add(pathInLayer);
+                        CharSequence pathInClient = RepositoryMapper.map(clientUnitDescriptor, sourceFSPath);
+                        convertedTable.add(pathInClient);
                     }
                 } else {
                     convertedTable = new ArrayList<CharSequence>();
@@ -586,7 +586,7 @@ import org.openide.util.lookup.Lookups;
             //throw new InternalError();
         }
         FileSystem clientFileSystem = clientFileSystemsDictionary.getFileSystem(clientFileSystemID);
-        return RepositoryMapper.map(clientFileSystem, layerUnitDescriptor);
+        return RepositoryMapper.mapToClient(clientFileSystem, layerUnitDescriptor);
     }
 
     private UnitDescriptor createLayerUnitDescriptor(Layer layer, UnitDescriptor clientUnitDescriptor) {
@@ -599,7 +599,7 @@ import org.openide.util.lookup.Lookups;
             fileSystemIndexInLayer = layer.getWriteCapability().registerClientFileSystem(clientFileSystem);
             map.put(clientFileSystemID, fileSystemIndexInLayer);
         }
-        return RepositoryMapper.map(layer.getFileSystemsTable().get(fileSystemIndexInLayer), clientUnitDescriptor);
+        return RepositoryMapper.mapToLayer(layer.getFileSystemsTable().get(fileSystemIndexInLayer), clientUnitDescriptor);
     }
 
     void removeUnit(int clientLongUnitID) {

@@ -465,6 +465,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    public static CharSequence getRepositoryUnitName(FileSystem fs, CharSequence projectSourceRoot) {
+        Parameters.notNull("FileSystem", fs); //NOI18N
+        String result = projectSourceRoot.toString() + "/N/"; // NOI18N
+        return ProjectNameCache.getManager().getString(result);
+    }
+
     public static CharSequence getRepositoryUnitName(FileSystem fs, NativeProject nativeProject) {
         Parameters.notNull("FileSystem", fs); //NOI18N
         String result = ((NativeProject) nativeProject).getProjectRoot() + "/N/"; // NOI18N

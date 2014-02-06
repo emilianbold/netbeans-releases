@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.spi;
 
-import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
-import org.openide.filesystems.FileSystem;
+package org.netbeans.modules.cnd.spi.project;
+
+import org.netbeans.modules.cnd.api.project.NativeProject;
 
 /**
+ * If we had a project on some machine with paths to the project :
+ * /export1/tmp/MYPROJECT and than we have parsed and and got repository copied
+ * repository to the local machine (and source file also) by path
+ * /export/home/MYPROJECT than in this particlar method we will get
+ * /export/home/MYPROJECT as NativeProject, /export1/tmp/MYPROJECT/src/test.cc
+ * as source file path (this is how it was stored in the repository originally)
+ * and it should return /export/home/MYPROJECT/src/test.cc as a result
  *
- * @author akrasny
+ * @author mtishkov
  */
-public interface UnitDescriptorsMatcherImplementation {
-
+public interface NativeProjectRelocationMapperProvider {
     /**
-     * @param descriptor1
-     * @param descriptor2
+     * If we had a project on some machine with paths to the project : 
+     * /export1/tmp/MYPROJECT and than we have parsed and and got repository
+     * copied repository to the local machine (and source file also) by path /export/home/MYPROJECT
+     * than in this particlar method 
+     * we will get /export/home/MYPROJECT  as NativeProject, /export1/tmp/MYPROJECT/src/test.cc as source file path
+     * (this is how it was stored in the repository originally) and it should return 
+     * /export/home/MYPROJECT/src/test.cc as a result
+     * @param project
+     * @param sourceFilePath
      * @return 
      */
-    public boolean matches(UnitDescriptor descriptor1, UnitDescriptor descriptor2);
+    public CharSequence getDestinationPath(NativeProject project, CharSequence sourceFilePath);
     
-    /**
-     * For native projects: we should find all native projects
-     * and find the project where old name is the same as <code>layerDescriptor</code>
-     * and return the new unit descriptor depending of the new project name
-     * @param targetFileSystem
-     * @param sourceUnitDescriptor
-     * @return 
-     */
-    public UnitDescriptor destinationDescriptor(FileSystem targetFileSystem, UnitDescriptor sourceUnitDescriptor);
+    public CharSequence getSourceProjectName(NativeProject project);
     
-    /**
-     * For native projects: we should find all native projects
-     * and find the project where old name is the same as <code>layerDescriptor</code>
-     * and return the new unit descriptor depending of the new project name
-     * @param targetFileSystem
-     * @param destinationDescriptor
-     * @return 
-     */
-    public UnitDescriptor sourceDescriptor(FileSystem targetFileSystem, UnitDescriptor destinationDescriptor);    
+    public NativeProject findDestinationProject(CharSequence sourceProjectName);
+    
 }
