@@ -49,7 +49,11 @@ public class Version {
     public static Version getVersion(
             final String string) {
         if (string!=null && string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
-            return new Version(string);
+            if (/* is JDK 1.8.0? */ string.startsWith("1.8.0")) {
+                return new Version(string, true);
+            } else {
+                return new Version(string, false);
+            }
         } else {
             return null;
         }
@@ -64,9 +68,9 @@ public class Version {
     private long build;
     
     private Version(
-            final String string) {
+            final String string, boolean isJDK180) {
         String[] split = string.split("[\\._\\-]+"); //NOI18N
-        
+
         if (split.length > 0) {
             major = new Long(split[0]);
         }
@@ -76,11 +80,21 @@ public class Version {
         if (split.length > 2) {
             micro = new Long(split[2]);
         }
-        if (split.length > 3) {
-            update = new Long(split[3]);
-        }
-        if (split.length > 4) {
-            build = new Long(split[4]);
+
+        if (isJDK180) {
+            if (split.length > 3) {
+                build = new Long(split[3]);
+            }
+            if (split.length > 4) {
+                update = new Long(split[4]);
+            }
+        } else {
+            if (split.length > 3) {
+                update = new Long(split[3]);
+            }
+            if (split.length > 4) {
+                build = new Long(split[4]);
+            }
         }
     }
     
