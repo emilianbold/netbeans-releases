@@ -211,10 +211,14 @@ public class StandardProjectSettings {
             ProjectUtils.getPreferences(project, ProjectSettings.class, true).put(keyHintSettingsFile, settings);
         }
 
+        private String encodeSettingsFileLocation(String fileLocation) {
+            return fileLocation.replace(" ", "%20"); //NOI18N
+        }
+        
         @Override
         public Preferences getProjectSettings(String mimeType) {
             if (hasLocation()) {
-                URI settingsLocation = project.getProjectDirectory().toURI().resolve(getSettingsFileLocation());
+                URI settingsLocation = project.getProjectDirectory().toURI().resolve(encodeSettingsFileLocation(getSettingsFileLocation()));
                 return ToolPreferences.from(settingsLocation).getPreferences(HINTS_TOOL_ID, mimeType);
             } else {
                 return ProjectUtils.getPreferences(project, ProjectSettings.class, true).node(mimeType);
@@ -223,7 +227,7 @@ public class StandardProjectSettings {
         
         public ToolPreferences preferencesFrom(String source) {
             assert hasLocation();
-            URI settingsLocation = project.getProjectDirectory().toURI().resolve(getSettingsFileLocation());
+            URI settingsLocation = project.getProjectDirectory().toURI().resolve(encodeSettingsFileLocation(getSettingsFileLocation()));
             return ToolPreferences.from(settingsLocation);
         }
 
