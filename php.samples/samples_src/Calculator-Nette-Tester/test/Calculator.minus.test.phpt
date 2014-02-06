@@ -43,9 +43,11 @@
 
 require __DIR__ . '/../src/Calculator.php';
 require __DIR__ . '/../src/vendor/autoload.php';
-require __DIR__ . '/../src/vendor/nette/tester/Tester/bootstrap.php';
 
 use Tester\Assert;
+use Tester\Environment;
+
+Environment::setup();
 
 $calculator = new Calculator();
 
